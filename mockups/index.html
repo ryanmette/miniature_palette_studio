@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Palette Studio for Miniatures — mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     DESIGN TOKENS — canonical, mirror CLAUDE.md §3. Do not drift.
+     ============================================================ */
+  :root{
+    --bg:#F7F7F5; --surface:#FFFFFF; --surface-2:#F1F1EE;
+    --border:#E4E4DF; --border-strong:#D2D2CB;
+    --text:#1B1B1A; --text-muted:#6B6B66; --text-faint:#9B9B95;
+    --accent:#4F46E5; --accent-hover:#4338CA; --accent-weak:#EEF0FF; --on-accent:#FFFFFF;
+    --success:#1D9E75; --success-weak:#E1F5EE;
+    --warning:#BA7517; --warning-weak:#FAEEDA;
+    --danger:#D8442F;  --danger-weak:#FBEAE7;
+    --info:#378ADD;    --info-weak:#E6F1FB;
+    --focus:0 0 0 3px rgba(79,70,229,.35);
+    --r-sm:6px; --r-md:10px; --r-lg:14px; --r-pill:999px;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+    --shadow-card:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{margin:0;font-weight:600}
+  button{font-family:inherit;font-size:inherit;cursor:pointer}
+  ::selection{background:var(--accent-weak)}
+  .mono{font-family:var(--mono)}
+  .micro{font-size:11.5px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text-faint)}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:20;background:rgba(247,247,245,.82);
+    backdrop-filter:saturate(180%) blur(8px);
+    border-bottom:1px solid var(--border);
+  }
+  .bar{max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:14px}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo svg{display:block}
+  .logo .t{font-weight:600;font-size:16px;letter-spacing:-.01em}
+  .logo .s{color:var(--text-faint);font-size:12.5px;margin-left:2px}
+  .pill{font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:var(--r-pill);
+        background:var(--accent-weak);color:var(--accent)}
+  .spacer{flex:1}
+  .btn{height:34px;padding:0 14px;border-radius:var(--r-md);border:1px solid var(--border);
+       background:var(--surface);color:var(--text);display:inline-flex;align-items:center;gap:7px;
+       transition:background .12s,border-color .12s}
+  .btn:hover{background:var(--surface-2);border-color:var(--border-strong)}
+  .btn:focus-visible{outline:none;box-shadow:var(--focus)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+  .btn.primary:hover{background:var(--accent-hover)}
+  .btn.ghost{background:transparent;border-color:transparent}
+  .btn.ghost:hover{background:var(--surface-2)}
+
+  /* ---------- layout ---------- */
+  main{max-width:1200px;margin:0 auto;padding:24px;display:grid;
+       grid-template-columns:320px 1fr;gap:24px;align-items:start}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+        box-shadow:var(--shadow-card)}
+  .pad{padding:20px}
+
+  /* ---------- picker ---------- */
+  .picker{position:sticky;top:80px}
+  .picker .head{padding:16px 20px 12px;border-bottom:1px solid var(--border)}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+  label.lab{font-size:12.5px;color:var(--text-muted);font-weight:500}
+  input[type=search],select{
+    height:36px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);
+    padding:0 10px;font-family:inherit;font-size:13.5px;color:var(--text);width:100%}
+  input[type=search]:focus,select:focus{outline:none;box-shadow:var(--focus);border-color:var(--accent)}
+  .list{max-height:520px;overflow:auto;padding:8px}
+  .paint{display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--r-md);
+         border:1px solid transparent;cursor:pointer;transition:background .12s}
+  .paint:hover{background:var(--surface-2)}
+  .paint[aria-selected=true]{background:var(--accent-weak);border-color:#D9DCFB}
+  .sw{flex:none;border-radius:var(--r-sm);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+  .paint .sw{width:30px;height:30px}
+  .paint .nm{font-size:13.5px;font-weight:500;line-height:1.25}
+  .paint .br{font-size:11.5px;color:var(--text-muted)}
+  .count{padding:8px 20px 14px;font-size:12px;color:var(--text-faint)}
+
+  /* ---------- base hero ---------- */
+  .hero{display:flex;gap:18px;align-items:center}
+  .hero .big{width:96px;height:96px;border-radius:var(--r-md);flex:none;
+             box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+  .hero h2{font-size:20px;letter-spacing:-.01em}
+  .tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .tag{font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:var(--r-pill);
+       background:var(--surface-2);color:var(--text-muted)}
+  .tag.approx{background:var(--warning-weak);color:var(--warning)}
+  .hexline{margin-top:9px;font-family:var(--mono);font-size:13px;color:var(--text-muted)}
+
+  /* ---------- segmented control ---------- */
+  .seg{display:inline-flex;background:var(--surface-2);border-radius:var(--r-md);padding:3px;gap:2px;flex-wrap:wrap}
+  .seg button{border:none;background:transparent;color:var(--text-muted);height:30px;padding:0 13px;
+              border-radius:7px;font-weight:500;font-size:13px;transition:.12s}
+  .seg button:hover{color:var(--text)}
+  .seg button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm)}
+  .seg button:focus-visible{outline:none;box-shadow:var(--focus)}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-top:4px}
+  .tabs button{border:none;background:transparent;padding:11px 4px;margin-right:18px;color:var(--text-muted);
+               font-weight:500;font-size:14px;border-bottom:2px solid transparent;transition:.12s}
+  .tabs button:hover{color:var(--text)}
+  .tabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent)}
+  .tabs button:focus-visible{outline:none;box-shadow:var(--focus);border-radius:4px}
+
+  /* ---------- palette strip ---------- */
+  .strip{display:flex;border-radius:var(--r-md);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);height:64px;margin:18px 0}
+  .strip>div{flex:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+  .strip .lbl{font-family:var(--mono);font-size:10.5px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.78);color:#222}
+
+  /* ---------- ideal vs actual rows ---------- */
+  .rows{display:grid;gap:12px}
+  .row{display:grid;grid-template-columns:1fr auto 1.4fr;gap:14px;align-items:center;
+       padding:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)}
+  .ideal,.actual{display:flex;align-items:center;gap:11px;min-width:0}
+  .ideal .sw,.actual .sw{width:46px;height:46px}
+  .ttl{font-size:11.5px;color:var(--text-faint);font-weight:500;margin-bottom:2px}
+  .ideal .hx{font-family:var(--mono);font-size:13px}
+  .actual .nm{font-size:13.5px;font-weight:500;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .actual .br{font-size:11.5px;color:var(--text-muted)}
+  .arrow{color:var(--text-faint);font-size:18px}
+  .de{display:inline-flex;align-items:center;gap:6px;margin-top:4px;font-size:11.5px;font-weight:500}
+  .de .dot{width:7px;height:7px;border-radius:50%}
+  .badge{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:5px;background:var(--surface-2);color:var(--text-muted)}
+
+  /* ---------- equivalents ---------- */
+  .eq{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .eqcard{display:flex;gap:11px;align-items:center;padding:11px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface)}
+  .eqcard .sw{width:42px;height:42px}
+
+  /* ---------- accessibility ---------- */
+  .cvd-row{display:grid;grid-template-columns:130px 1fr;gap:14px;align-items:center;margin-bottom:10px}
+  .cvd-row .name{font-size:13px;font-weight:500}
+  .cvd-row .name small{display:block;color:var(--text-faint);font-weight:400;font-size:11.5px}
+  .cvd-strip{display:flex;gap:6px}
+  .cvd-strip .sw{flex:1;height:40px}
+  .ctr{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:18px}
+  .ctr .box{border:1px solid var(--border);border-radius:var(--r-md);padding:13px}
+  .ctr .pair{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .ctr .pair .sw{width:26px;height:26px}
+  .ratio{font-size:22px;font-weight:600}
+  .verdict{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;margin-top:6px}
+
+  .note{max-width:1200px;margin:0 auto;padding:8px 24px 40px;color:var(--text-faint);font-size:12px;line-height:1.6}
+  .note a{color:var(--text-muted)}
+
+  @media(max-width:880px){
+    main{grid-template-columns:1fr}
+    .picker{position:static}
+    .row{grid-template-columns:1fr;gap:10px}
+    .arrow{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3c-4.97 0-9 3.58-9 8 0 3.31 2.69 6 6 6h1.2c.66 0 1.2.54 1.2 1.2 0 .32-.13.62-.34.84-.27.28-.42.66-.42 1.06 0 .94.86 1.6 1.86 1.5C18.04 21.2 21 17.6 21 13c0-5.52-4.03-10-9-10Z" fill="#4F46E5"/>
+        <circle cx="8.5" cy="10" r="1.4" fill="#fff"/><circle cx="12" cy="7.6" r="1.4" fill="#fff"/>
+        <circle cx="15.5" cy="10" r="1.4" fill="#fff"/><circle cx="9.6" cy="13.6" r="1.4" fill="#fff"/>
+      </svg>
+      <span class="t">Palette Studio<span class="s">for miniatures</span></span>
+    </div>
+    <span class="pill">Mockup · v0.1</span>
+    <div class="spacer"></div>
+    <button class="btn ghost" title="Demo only">↗ Share</button>
+    <button class="btn" title="Demo only">Export list</button>
+  </div>
+</header>
+
+<main>
+  <!-- PAINT PICKER -->
+  <aside class="card picker" aria-label="Paint picker">
+    <div class="head">
+      <div class="field">
+        <label class="lab" for="q">Find your paint</label>
+        <input id="q" type="search" placeholder="Search 35 paints…" autocomplete="off" />
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label class="lab" for="brand">Brand</label>
+        <select id="brand">
+          <option value="">All brands</option>
+        </select>
+      </div>
+    </div>
+    <div class="list" id="list" role="listbox" aria-label="Paints"></div>
+    <div class="count" id="count"></div>
+  </aside>
+
+  <!-- WORKSPACE -->
+  <section style="display:grid;gap:20px">
+    <div class="card pad">
+      <div class="micro" style="margin-bottom:12px">Base paint</div>
+      <div class="hero" id="hero"></div>
+    </div>
+
+    <div class="card pad">
+      <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between">
+        <div class="micro">Color scheme</div>
+        <div class="seg" id="seg" role="group" aria-label="Harmony type"></div>
+      </div>
+
+      <div class="tabs" id="tabs" role="tablist">
+        <button role="tab" data-tab="scheme" aria-selected="true">Scheme</button>
+        <button role="tab" data-tab="equiv" aria-selected="false">Cross-brand equivalents</button>
+        <button role="tab" data-tab="a11y" aria-selected="false">Accessibility</button>
+      </div>
+
+      <!-- SCHEME -->
+      <div data-panel="scheme">
+        <div class="strip" id="strip" aria-hidden="true"></div>
+        <div class="micro" style="margin:4px 0 10px">Ideal color → nearest real paint (ΔE 2000)</div>
+        <div class="rows" id="rows"></div>
+      </div>
+
+      <!-- EQUIVALENTS -->
+      <div data-panel="equiv" hidden>
+        <p style="color:var(--text-muted);margin:14px 0 16px;font-size:13.5px">
+          Closest matches to <strong id="eqName">this paint</strong> in other ranges, from its
+          equivalence group. ΔE is measured against the selected paint.</p>
+        <div class="eq" id="eq"></div>
+      </div>
+
+      <!-- ACCESSIBILITY -->
+      <div data-panel="a11y" hidden>
+        <p style="color:var(--text-muted);margin:14px 0 16px;font-size:13.5px">
+          How this scheme appears to viewers with color-vision deficiencies, and whether
+          adjacent colors stay distinguishable.</p>
+        <div id="cvd"></div>
+        <div class="micro" style="margin:20px 0 2px">Contrast checks (WCAG 2.1)</div>
+        <div class="ctr" id="ctr"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="note">
+  <strong>Illustrative mockup.</strong> Paint names and colors are a small demo sample for layout and
+  proof-of-concept only; production data will be a curated, attributed dataset assembled from
+  open community sources and manufacturer values (see <span class="mono">docs/PLAN.md</span> and
+  <span class="mono">CLAUDE.md §5</span>). Cross-reference concept credited to the DakkaDakka paint
+  range compatibility chart and the open paint-conversion datasets.
+</div>
+
+<script>
+/* =====================================================================
+   COLOR ENGINE  (mirrors CLAUDE.md §7 — same constants ship in src/)
+   ===================================================================== */
+const hex2rgb=h=>{h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
+const rgb2hex=([r,g,b])=>'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('').toUpperCase();
+const sRGB2lin=c=>{c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);};
+const lin2sRGB=c=>{c=c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;return c*255;};
+function rgb2lab([r,g,b]){
+  const R=sRGB2lin(r),G=sRGB2lin(g),B=sRGB2lin(b);
+  const x=(R*0.4124+G*0.3576+B*0.1805)/0.95047, y=(R*0.2126+G*0.7152+B*0.0722), z=(R*0.0193+G*0.1192+B*0.9505)/1.08883;
+  const f=t=>t>Math.pow(6/29,3)?Math.cbrt(t):t/(3*Math.pow(6/29,2))+4/29;
+  const fx=f(x),fy=f(y),fz=f(z);
+  return [116*fy-16,500*(fx-fy),200*(fy-fz)];
+}
+function deltaE00(l1,l2){
+  const [L1,a1,b1]=l1,[L2,a2,b2]=l2,rad=Math.PI/180,deg=180/Math.PI;
+  const C1=Math.hypot(a1,b1),C2=Math.hypot(a2,b2),Cb=(C1+C2)/2,Cb7=Math.pow(Cb,7);
+  const G=0.5*(1-Math.sqrt(Cb7/(Cb7+Math.pow(25,7))));
+  const a1p=(1+G)*a1,a2p=(1+G)*a2,C1p=Math.hypot(a1p,b1),C2p=Math.hypot(a2p,b2);
+  let h1=Math.atan2(b1,a1p);if(h1<0)h1+=2*Math.PI;let h2=Math.atan2(b2,a2p);if(h2<0)h2+=2*Math.PI;
+  const dL=L2-L1,dC=C2p-C1p;
+  let dh=0;if(C1p*C2p!==0){dh=h2-h1;if(dh>Math.PI)dh-=2*Math.PI;else if(dh<-Math.PI)dh+=2*Math.PI;}
+  const dH=2*Math.sqrt(C1p*C2p)*Math.sin(dh/2);
+  const Lb=(L1+L2)/2,Cbp=(C1p+C2p)/2;
+  let hb;if(C1p*C2p===0)hb=h1+h2;else{hb=(Math.abs(h1-h2)>Math.PI)?(h1+h2+2*Math.PI)/2:(h1+h2)/2;}
+  const T=1-0.17*Math.cos(hb-30*rad)+0.24*Math.cos(2*hb)+0.32*Math.cos(3*hb+6*rad)-0.20*Math.cos(4*hb-63*rad);
+  const dTheta=30*rad*Math.exp(-Math.pow((hb*deg-275)/25,2));
+  const Cbp7=Math.pow(Cbp,7),Rc=2*Math.sqrt(Cbp7/(Cbp7+Math.pow(25,7)));
+  const Sl=1+0.015*Math.pow(Lb-50,2)/Math.sqrt(20+Math.pow(Lb-50,2)),Sc=1+0.045*Cbp,Sh=1+0.015*Cbp*T;
+  const Rt=-Math.sin(2*dTheta)*Rc;
+  return Math.sqrt((dL/Sl)**2+(dC/Sc)**2+(dH/Sh)**2+Rt*(dC/Sc)*(dH/Sh));
+}
+function rgb2hsl([r,g,b]){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h,s,l=(mx+mn)/2;
+  if(mx===mn){h=s=0;}else{const d=mx-mn;s=l>0.5?d/(2-mx-mn):d/(mx+mn);
+    h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h/=6;}return [h*360,s,l];}
+function hsl2rgb([h,s,l]){h/=360;let r,g,b;if(s===0){r=g=b=l;}else{
+  const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q,f=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;
+    if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
+  r=f(p,q,h+1/3);g=f(p,q,h);b=f(p,q,h-1/3);}return [r*255,g*255,b*255];}
+const rotate=(hex,deg)=>{const [h,s,l]=rgb2hsl(hex2rgb(hex));return rgb2hex(hsl2rgb([(h+deg+360)%360,s,l]));};
+
+const HARMONY={
+  complementary:{label:'Complementary',off:[180]},
+  analogous:{label:'Analogous',off:[-30,30]},
+  triadic:{label:'Triadic',off:[120,240]},
+  split:{label:'Split-complementary',off:[150,210]},
+  tetradic:{label:'Tetradic',off:[60,180,240]},
+};
+/* Machado et al. 2009, severity 1.0 — linear RGB */
+const CVD={
+  protanopia:[[0.152286,1.052583,-0.204868],[0.114503,0.786281,0.099216],[-0.003882,-0.048116,1.051998]],
+  deuteranopia:[[0.367322,0.860646,-0.227968],[0.280085,0.672501,0.047413],[-0.011820,0.042940,0.968881]],
+  tritanopia:[[1.255528,-0.076749,-0.178779],[-0.078411,0.930809,0.147602],[0.004733,0.691367,0.303900]],
+};
+function simulate(hex,type){const [r,g,b]=hex2rgb(hex).map(sRGB2lin),m=CVD[type];
+  const o=[m[0][0]*r+m[0][1]*g+m[0][2]*b, m[1][0]*r+m[1][1]*g+m[1][2]*b, m[2][0]*r+m[2][1]*g+m[2][2]*b];
+  return rgb2hex(o.map(v=>lin2sRGB(Math.max(0,Math.min(1,v)))));}
+const relLum=hex=>{const [r,g,b]=hex2rgb(hex).map(sRGB2lin);return 0.2126*r+0.7152*g+0.0722*b;};
+const contrast=(a,b)=>{const L1=relLum(a),L2=relLum(b);return (Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05);};
+const textOn=hex=>relLum(hex)>0.4?'#15150F':'#FFFFFF';
+
+function quality(dE){
+  if(dE<=2)return {label:'Excellent',color:'var(--success)'};
+  if(dE<=3.5)return {label:'Good',color:'var(--success)'};
+  if(dE<=5)return {label:'Fair',color:'var(--warning)'};
+  if(dE<=10)return {label:'Loose',color:'var(--warning)'};
+  return {label:'Poor',color:'var(--danger)'};
+}
+
+/* =====================================================================
+   SEED DATA  (illustrative demo sample only — see footer)
+   ===================================================================== */
+const GROUPS={
+  'g-red-mephiston':'Deep red','g-red-blood':'Blood red','g-orange':'Hot orange','g-yellow':'Sunburst yellow',
+  'g-gold':'Gold','g-green-warp':'Warpstone green','g-green-moot':'Bright green','g-green-dark':'Dark green',
+  'g-teal':'Teal','g-blue-macragge':'Royal blue','g-blue-kantor':'Deep blue','g-blue-caledor':'Sky blue',
+  'g-blue-teclis':'Light blue','g-purple-xereus':'Purple','g-purple-nag':'Violet','g-pink':'Magenta',
+  'g-brown-mournfang':'Brown','g-brown-rhinox':'Dark brown','g-bone':'Bone','g-grey-admin':'Light grey',
+  'g-grey-mech':'Neutral grey','g-black':'Black','g-white':'White','g-silver':'Silver','g-gun':'Gunmetal'
+};
+const PAINTS=[
+  ['Citadel','Base','Mephiston Red','#9A1115','layer','g-red-mephiston',true],
+  ['Vallejo Game Color','—','Heavy Red','#A01418','layer','g-red-mephiston',true],
+  ['Vallejo Model Color','—','Red','#B0151A','layer','g-red-mephiston',true],
+  ['Army Painter','Warpaints','Vampire Red','#8E1014','layer','g-red-mephiston',true],
+  ['Citadel','Layer','Evil Sunz Scarlet','#C21920','layer','g-red-blood',false],
+  ['Vallejo Game Color','—','Bloody Red','#C92823','layer','g-red-blood',true],
+  ['Army Painter','Warpaints','Pure Red','#CE1F1C','layer','g-red-blood',true],
+  ['Reaper','MSP','Clear Red','#C41E1E','layer','g-red-blood',true],
+  ['Citadel','Layer','Troll Slayer Orange','#F46C2E','layer','g-orange',false],
+  ['Vallejo Game Color','—','Hot Orange','#F2742F','layer','g-orange',true],
+  ['Army Painter','Warpaints','Mythical Orange','#F36A26','layer','g-orange',true],
+  ['Citadel','Layer','Flash Gitz Yellow','#FFE700','layer','g-yellow',false],
+  ['Vallejo Game Color','—','Sunblast Yellow','#FCE10A','layer','g-yellow',true],
+  ['Army Painter','Warpaints','Demonic Yellow','#FFE200','layer','g-yellow',true],
+  ['Citadel','Base','Auric Armour Gold','#E7BD42','metal','g-gold',true],
+  ['Army Painter','Warpaints','Bright Gold','#E2B63C','metal','g-gold',true],
+  ['Citadel','Layer','Warpstone Glow','#106B21','layer','g-green-warp',false],
+  ['Vallejo Game Color','—','Sick Green','#16722A','layer','g-green-warp',true],
+  ['Reaper','MSP','Clear Green','#0E6E22','layer','g-green-warp',true],
+  ['Citadel','Layer','Moot Green','#A5D610','layer','g-green-moot',false],
+  ['Vallejo Game Color','—','Scorpy Green','#A8D81C','layer','g-green-moot',true],
+  ['Citadel','Base','Caliban Green','#005221','base','g-green-dark',false],
+  ['Army Painter','Warpaints','Angel Green','#0A5524','base','g-green-dark',true],
+  ['Citadel','Layer','Sotek Green','#006B5A','layer','g-teal',false],
+  ['Vallejo Game Color','—','Falcon Turquoise','#0A6E5E','layer','g-teal',true],
+  ['Citadel','Base','Macragge Blue','#2D567C','base','g-blue-macragge',false],
+  ['Vallejo Model Color','—','Prussian Blue','#28507A','base','g-blue-macragge',true],
+  ['Citadel','Base','Kantor Blue','#08085A','base','g-blue-kantor',false],
+  ['Army Painter','Warpaints','Deep Blue','#0B0E60','base','g-blue-kantor',true],
+  ['Citadel','Layer','Caledor Sky','#31639C','layer','g-blue-caledor',false],
+  ['Vallejo Game Color','—','Magic Blue','#2F66A2','layer','g-blue-caledor',true],
+  ['Citadel','Layer','Teclis Blue','#8BB9DD','layer','g-blue-teclis',false],
+  ['Citadel','Layer','Xereus Purple','#5A105E','layer','g-purple-xereus',false],
+  ['Vallejo Game Color','—','Hexed Lichen','#5A0F5C','layer','g-purple-xereus',true],
+  ['Citadel','Base','Naggaroth Night','#562F7E','base','g-purple-nag',false],
+  ['Citadel','Base','Screamer Pink','#9C0E4E','base','g-pink',false],
+  ['Vallejo Game Color','—','Warlord Purple','#9E1257','base','g-pink',true],
+  ['Citadel','Base','Mournfang Brown','#663300','base','g-brown-mournfang',false],
+  ['Vallejo Game Color','—','Beasty Brown','#6B3A12','base','g-brown-mournfang',true],
+  ['Citadel','Base','Rhinox Hide','#3A1416','base','g-brown-rhinox',false],
+  ['Citadel','Layer','Ushabti Bone','#EFD9A8','layer','g-bone',false],
+  ['Vallejo Game Color','—','Bonewhite','#ECD6A6','layer','g-bone',true],
+  ['Citadel','Layer','Administratum Grey','#B5B5B5','layer','g-grey-admin',false],
+  ['Citadel','Base','Mechanicus Standard Grey','#7C8286','base','g-grey-mech',false],
+  ['Citadel','Base','Abaddon Black','#111314','base','g-black',false],
+  ['Army Painter','Warpaints','Matt Black','#0E0F10','base','g-black',true],
+  ['Citadel','Layer','White Scar','#F7F7F4','layer','g-white',false],
+  ['Citadel','Layer','Runefang Steel','#B5B5BD','metal','g-silver',true],
+  ['Citadel','Base','Leadbelcher','#6E7177','metal','g-gun',true],
+].map((p,i)=>{
+  const [brand,line,name,hex,type,groupId,approx]=p;
+  return {id:brand.toLowerCase().replace(/[^a-z]/g,'')+'-'+name.toLowerCase().replace(/[^a-z]/g,''),
+          brand,line,name,hex,type,groupId,approx,lab:rgb2lab(hex2rgb(hex))};
+});
+
+function nearest(hex,excludeId){
+  const lab=rgb2lab(hex2rgb(hex));let best=null,bd=1e9;
+  for(const p of PAINTS){if(p.id===excludeId)continue;const d=deltaE00(lab,p.lab);if(d<bd){bd=d;best=p;}}
+  return {paint:best,dE:bd};
+}
+
+/* =====================================================================
+   STATE + RENDER
+   ===================================================================== */
+const state={baseId:PAINTS[0].id,harmony:'complementary',tab:'scheme',q:'',brand:''};
+const $=s=>document.querySelector(s);
+const base=()=>PAINTS.find(p=>p.id===state.baseId);
+const swatch=(hex,cls='sw',extra='')=>`<span class="${cls}" style="background:${hex};${extra}"></span>`;
+
+function renderBrandOptions(){
+  const brands=[...new Set(PAINTS.map(p=>p.brand))].sort();
+  $('#brand').insertAdjacentHTML('beforeend',brands.map(b=>`<option>${b}</option>`).join(''));
+}
+function renderList(){
+  const q=state.q.toLowerCase();
+  const items=PAINTS.filter(p=>(!state.brand||p.brand===state.brand)&&
+    (p.name.toLowerCase().includes(q)||p.brand.toLowerCase().includes(q)));
+  $('#list').innerHTML=items.map(p=>`
+    <div class="paint" role="option" tabindex="0" data-id="${p.id}" aria-selected="${p.id===state.baseId}">
+      ${swatch(p.hex)}
+      <div style="min-width:0"><div class="nm">${p.name}</div><div class="br">${p.brand}${p.line!=='—'?' · '+p.line:''}</div></div>
+    </div>`).join('')||`<div style="padding:18px;color:var(--text-faint);font-size:13px">No paints match.</div>`;
+  $('#count').textContent=`${items.length} of ${PAINTS.length} paints`;
+}
+function renderHero(){
+  const p=base();
+  $('#hero').innerHTML=`
+    ${swatch(p.hex,'big')}
+    <div>
+      <h2>${p.name}</h2>
+      <div style="color:var(--text-muted);font-size:13.5px;margin-top:2px">${p.brand}${p.line!=='—'?' · '+p.line:''}</div>
+      <div class="tagrow">
+        <span class="tag">${p.type}</span>
+        ${p.approx?'<span class="tag approx">approx hex</span>':'<span class="tag">official-ish</span>'}
+      </div>
+      <div class="hexline">${p.hex} · Lab ${p.lab.map(v=>v.toFixed(1)).join(', ')}</div>
+    </div>`;
+}
+function renderSeg(){
+  $('#seg').innerHTML=Object.entries(HARMONY).map(([k,v])=>
+    `<button data-h="${k}" aria-pressed="${k===state.harmony}">${v.label}</button>`).join('');
+}
+function schemeColors(){
+  const b=base().hex;return [{hex:b,deg:0},...HARMONY[state.harmony].off.map(d=>({hex:rotate(b,d),deg:d}))];}
+function renderStrip(){
+  $('#strip').innerHTML=schemeColors().map(c=>
+    `<div style="background:${c.hex}"><span class="lbl">${c.hex}</span></div>`).join('');
+}
+function renderRows(){
+  const b=base();
+  const partners=HARMONY[state.harmony].off.map(d=>({hex:rotate(b.hex,d),deg:d}));
+  $('#rows').innerHTML=partners.map(c=>{
+    const {paint,dE}=nearest(c.hex,b.id),q=quality(dE);
+    return `<div class="row">
+      <div class="ideal">${swatch(c.hex,'sw',`color:${textOn(c.hex)}`)}
+        <div><div class="ttl">Ideal · ${c.deg>0?'+':''}${c.deg}°</div><div class="hx">${c.hex}</div></div></div>
+      <div class="arrow">→</div>
+      <div class="actual">${swatch(paint.hex)}
+        <div style="min-width:0"><div class="ttl">Nearest real paint</div>
+          <div class="nm">${paint.name}</div>
+          <div class="br">${paint.brand}${paint.line!=='—'?' · '+paint.line:''}</div>
+          <div class="de"><span class="dot" style="background:${q.color}"></span>
+            <span style="color:${q.color}">${q.label}</span>
+            <span class="badge">ΔE ${dE.toFixed(1)}</span></div>
+        </div></div>
+    </div>`;}).join('');
+}
+function renderEquiv(){
+  const b=base();$('#eqName').textContent=b.name+' ('+b.brand+')';
+  const members=PAINTS.filter(p=>p.groupId===b.groupId);
+  const others=members.filter(p=>p.id!==b.id);
+  $('#eq').innerHTML=(others.length?others:[]).map(p=>{
+    const dE=deltaE00(b.lab,p.lab),q=quality(dE);
+    return `<div class="eqcard">${swatch(p.hex)}
+      <div style="min-width:0"><div class="nm" style="font-size:13.5px;font-weight:500">${p.name}</div>
+      <div class="br">${p.brand}${p.line!=='—'?' · '+p.line:''}</div>
+      <div class="de"><span class="dot" style="background:${q.color}"></span>
+        <span style="color:${q.color}">${q.label}</span><span class="badge">ΔE ${dE.toFixed(1)}</span></div>
+      </div></div>`;}).join('')||
+    `<div style="color:var(--text-faint);font-size:13px;grid-column:1/-1">No other brands recorded for this color group in the demo sample.</div>`;
+}
+function renderA11y(){
+  const cols=schemeColors().map(c=>c.hex);
+  const rows=[
+    ['Normal vision','as painted',cols],
+    ['Protanopia','red-blind',cols.map(h=>simulate(h,'protanopia'))],
+    ['Deuteranopia','green-blind',cols.map(h=>simulate(h,'deuteranopia'))],
+    ['Tritanopia','blue-blind',cols.map(h=>simulate(h,'tritanopia'))],
+  ];
+  $('#cvd').innerHTML=rows.map(([n,s,hexes])=>`
+    <div class="cvd-row"><div class="name">${n}<small>${s}</small></div>
+      <div class="cvd-strip">${hexes.map(h=>swatch(h,'sw')).join('')}</div></div>`).join('');
+  const b=base().hex,comp=rotate(b,180);
+  const checks=[['Base ↔ complement',b,comp],['Base ↔ white','#FFFFFF',b],['Base ↔ black','#000000',b]];
+  $('#ctr').innerHTML=checks.map(([t,a,c])=>{
+    const r=contrast(a,c),passAA=r>=4.5,passUI=r>=3;
+    const col=passAA?'var(--success)':passUI?'var(--warning)':'var(--danger)';
+    return `<div class="box"><div class="ttl" style="margin-bottom:8px">${t}</div>
+      <div class="pair">${swatch(a,'sw')}${swatch(c,'sw')}</div>
+      <div class="ratio" style="color:${col}">${r.toFixed(1)}:1</div>
+      <div class="verdict" style="color:${col}">${passAA?'Passes AA text':passUI?'Large/UI only':'Fails AA'}</div>
+    </div>`;}).join('');
+}
+function renderAll(){renderHero();renderStrip();renderRows();renderEquiv();renderA11y();
+  document.querySelectorAll('.paint').forEach(el=>el.setAttribute('aria-selected',el.dataset.id===state.baseId));}
+
+/* events */
+$('#q').addEventListener('input',e=>{state.q=e.target.value;renderList();});
+$('#brand').addEventListener('change',e=>{state.brand=e.target.value;renderList();});
+$('#list').addEventListener('click',e=>{const el=e.target.closest('.paint');if(el){state.baseId=el.dataset.id;renderList();renderAll();}});
+$('#list').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.dataset.id){e.preventDefault();state.baseId=e.target.dataset.id;renderList();renderAll();}});
+$('#seg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){state.harmony=b.dataset.h;renderSeg();renderStrip();renderRows();renderA11y();}});
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  state.tab=b.dataset.tab;
+  document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==state.tab);});
+
+renderBrandOptions();renderSeg();renderList();renderAll();
+</script>
+</body>
+</html>

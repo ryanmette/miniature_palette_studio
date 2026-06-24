@@ -1,0 +1,16 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Node (dev tooling only — never required at runtime)
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Build/scratch
+dist/
+.cache/
+*.local
