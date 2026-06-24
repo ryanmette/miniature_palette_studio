@@ -1,0 +1,13 @@
+{
+  "name": "palette-studio-for-miniatures",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Static, dependency-free web tool for miniature paint palettes (harmonies + ideal-vs-actual matching).",
+  "scripts": {
+    "test": "node --test",
+    "build:data": "node scripts/build-dataset.mjs",
+    "validate:data": "node scripts/validate-data.mjs"
+  },
+  "license": "UNLICENSED"
+}

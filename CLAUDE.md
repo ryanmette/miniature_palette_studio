@@ -159,6 +159,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── CLAUDE.md                  ← this file (constitution)
 ├── README.md                  ← what it is, how to run/deploy
 ├── CHANGELOG.md               ← Keep a Changelog format
+├── package.json               ← dev config (ESM + npm scripts) — NOT shipped
 ├── docs/
 │   ├── PLAN.md                ← roadmap, milestones, decisions
 │   ├── USE_CASES.md           ← personas, entry modes, scheme roles, UC catalog
@@ -176,7 +177,8 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── scripts/                   ← dev tooling, NOT shipped (never required at runtime)
 │   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
 │   └── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5)
-└── src/                       ← the app (data shipped at M1; engine/UI from M2)
+├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/a11y/data)
+└── src/                       ← the app (data shipped M1; engine M2; UI M3)
     ├── index.html             ← (M3)
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)
@@ -249,7 +251,7 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 ## 6. Coding standards
 
 - ES2020+, modules, `const`/`let`, no transpilation assumed.
-- **Dependencies: none at runtime.** Inter (font) and a future test runner are the only sanctioned externals; anything else needs a line here. We hand-roll color math (it's small and well-specified) rather than pull a library.
+- **Dependencies: none at runtime.** Inter (font) is the only sanctioned runtime external. Tests use Node's **built-in** runner (`node --test` / `node:assert`) — no install, no devDependency. Anything else needs a line here. We hand-roll colour math (it's small and well-specified) rather than pull a library.
 - Pure functions for math; side effects only in `ui.js`/`app.js`.
 - Accessibility: semantic HTML, labelled controls, keyboard operable, visible focus, `aria-live` for dynamic palette updates, respects `prefers-reduced-motion`.
 - Performance budget: first render < 100ms after JSON load; nearest-paint search over the full dataset < 16ms (precompute Lab once).

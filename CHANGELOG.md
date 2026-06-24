@@ -5,13 +5,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Changed
-- `CLAUDE.md` §4 file tree now indexes **every** file (docs, mockups, scripts, shipped data) and is
-  declared the authoritative index; §5.1 schema documents per-paint provenance/date fields
-  (`source`, `sourceUrl`, `captured`) — every paint carries a `captured` record date (validator-enforced).
 ### Planned
-- M2: extract the verified colour engine into `src/js/` with unit tests.
-- M3: UI shell + paint picker + entry modes.
+- M3: UI shell + paint picker + entry modes (`src/index.html`, `styles/`, `js/ui.js`, `js/app.js`).
+
+## [0.3.0] — 2026-06-24
+### Added
+- **Colour engine** in `src/js/` (pure ESM, no DOM): `color.js` (sRGB↔Lab, CIEDE2000, HSL,
+  luminance/contrast, `textOn`), `harmony.js` (the five harmonies), `a11y.js` (Machado CVD
+  simulation + WCAG), `data.js` (index + nearest-paint search + cross-brand equivalents + ΔE
+  match-quality).
+- **21 unit tests** via Node's built-in runner (`npm test` → `node --test`); `package.json`
+  (ESM + test/build/validate scripts, **zero dependencies**). CIEDE2000 re-verified against the
+  Sharma reference pairs in CI form.
+### Changed
+- `CLAUDE.md` §4 file tree indexes every file (now incl. `package.json`, `test/`) and is the
+  authoritative index; §5.1 documents per-paint provenance/date (`source`, `sourceUrl`, `captured`);
+  §6 specifies the built-in test runner.
 
 ## [0.2.0] — 2026-06-24
 ### Added
