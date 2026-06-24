@@ -187,10 +187,10 @@ Rules:
 
 The dataset is a **curated compilation** assembled from open-licensed community datasets and
 manufacturer-published values — **not** a copy of DakkaDakka's page. We credit DakkaDakka and
-upstream sources in-app (a "Data & credits" panel) and in `data/SOURCES.md`. Full sourcing &
+upstream sources in-app (a "Data & credits" panel) and in `src/data/SOURCES.md`. Full sourcing &
 verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 
-### 5.1 Schema (`data/paints.json`)
+### 5.1 Schema (`src/data/paints.json`)
 ```jsonc
 {
   "version": "1.0.0",
@@ -216,7 +216,8 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 ```
 
 ### 5.2 Data rules
-- Every paint **must** carry a `source` provenance entry in `SOURCES.md` (brand official vs community).
+- Every paint **must** carry a `source` provenance entry in `src/data/SOURCES.md` (brand official vs community).
+- v1 omits precomputed `groups`; cross-brand equivalents are computed at runtime by ΔE 2000. `groupId` is reserved for a future curated equivalence layer.
 - `hex` is sRGB. `lab` is **derived at runtime** (D65) — do not store stale Lab.
 - Mark `approx: true` unless the value is manufacturer-official; the UI shows an "approx" tag.
 - Adding a brand = add rows + a credit line. Never scrape into the repo without recording the source and its license.

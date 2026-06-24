@@ -27,7 +27,10 @@ We prefer higher tiers and only drop down to fill gaps.
 
 > Licensing rule (from `CLAUDE.md` §5): we only **redistribute** data we have the right to.
 > Anything we can't redistribute is used to **verify**, not to copy. Every source is credited
-> in `data/SOURCES.md` and the in-app "Data & credits" panel.
+> in `src/data/SOURCES.md` and the in-app "Data & credits" panel.
+>
+> **Realized in v0.2.0:** the seed dataset uses [`Arcturus5404/miniature-paints`](https://github.com/Arcturus5404/miniature-paints)
+> — **MIT-licensed** (© 2022 Rick Fleuren / Miniature Painter Pro), which permits redistribution with attribution.
 
 ---
 
@@ -99,8 +102,8 @@ Run as a Node script in CI and before every dataset release. Output is a **repor
 
 - `scripts/validate-data.mjs` — runs §5.1–5.4, exits non-zero on hard failures, prints a flag report.
 - `scripts/derive-lab.mjs` — sanity tool to preview Lab/ΔE locally (runtime still derives Lab).
-- A short `SOURCES.md` table: source → license → date captured → reviewer.
-- CI gate: PRs touching `data/` must pass the validator and update `SOURCES.md`.
+- A short `src/data/SOURCES.md` table: source → license → date captured → reviewer.
+- CI gate: PRs touching `src/data/` must pass the validator and update `src/data/SOURCES.md`.
 
 ---
 

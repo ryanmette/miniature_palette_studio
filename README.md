@@ -9,8 +9,9 @@ Built to embed in a Squarespace page via iframe. No backend, no build step, no r
 dependencies.
 
 ## Status
-**Pre-build / planning baseline (`v0.1.0`).** This milestone contains the project
-constitution, the build plan, and an interactive proof-of-concept mockup.
+**M1 complete — dataset v1.0.0 (tag `v0.2.0`).** The repo contains the project constitution,
+plans, interactive mockups + the generative loader, and the verified 374-paint dataset
+(`src/data/paints.json`). The app engine and UI come next (M2+).
 
 ## Repo map
 | Path | What |
@@ -18,8 +19,9 @@ constitution, the build plan, and an interactive proof-of-concept mockup.
 | [`CLAUDE.md`](CLAUDE.md) | Project constitution — scope, design system, conventions, guardrails. **Read first.** |
 | [`docs/PLAN.md`](docs/PLAN.md) | Roadmap, architecture, milestones, embedding plan. |
 | [`mockups/index.html`](mockups/index.html) | Interactive mockup (open in a browser). Runs the real color math on demo data. |
-| [`data/SOURCES.md`](data/SOURCES.md) | Attribution + licensing log for the dataset. |
-| `src/` | Production app — created from Milestone 2 on. |
+| [`src/data/paints.json`](src/data/paints.json) · [`SOURCES.md`](src/data/SOURCES.md) | The curated 374-paint dataset + provenance. |
+| `scripts/` | `build-dataset.mjs` (assemble dataset) · `validate-data.mjs` (QA). |
+| `src/` | Production app — `data/` shipped; engine/UI from Milestone 2 on. |
 
 ## Run the mockup
 Open `mockups/index.html` in any modern browser. No server needed.

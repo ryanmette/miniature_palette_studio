@@ -5,6 +5,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Planned
+- M2: extract the verified colour engine into `src/js/` with unit tests.
+- M3: UI shell + paint picker + entry modes.
+
+## [0.2.0] — 2026-06-24
+### Added
+- **Dataset v1.0.0** (`src/data/paints.json`) — 374 paints (Citadel 147 · Vallejo 150 · Army Painter 77)
+  with real per-brand sRGB hex, compiled from MIT-licensed `Arcturus5404/miniature-paints`
+  (© 2022 Rick Fleuren / Miniature Painter Pro); provenance in `src/data/SOURCES.md`.
+- `scripts/build-dataset.mjs` (assemble) and `scripts/validate-data.mjs` (QA — hard schema/hex/id
+  checks pass; ΔE near-duplicate and name/hue soft flags reviewed as thematic, not errors).
+### Changed
+- Dataset ships at `src/data/` so `src/` is self-contained; `CLAUDE.md` §5 and `docs/DATA_SOURCING.md`
+  updated. Cross-brand equivalents are computed at runtime by ΔE 2000 (curated groups deferred).
+
+## [0.1.1] — 2026-06-24
 ### Added
 - `mockups/persona-flows.html` — interactive experience-flow storyboard walking each persona
   (Priya/Sam/Marcus/Dana/Quinn) through their end-to-end journey to a stated outcome.
@@ -38,9 +54,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (interactive wheel = M5; deploy = M9).
 - Scope **locked for v1** (2026-06-24): explorer wheel; full role-aware output incl. derived
   wash + highlight; arbitrary hex input; 'paints I own' filter; compare-two-schemes; export list.
-### Planned
-- M1: Curated seed dataset (Citadel, Vallejo Game/Model, Army Painter) + validator + `SOURCES.md`.
-- M2: Extract verified color engine into `src/js/` with unit tests.
 
 ## [0.1.0] — 2026-06-24
 ### Added
