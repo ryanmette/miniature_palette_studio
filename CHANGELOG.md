@@ -6,6 +6,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- `mockups/persona-flows.html` — interactive experience-flow storyboard walking each persona
+  (Priya/Sam/Marcus/Dana/Quinn) through their end-to-end journey to a stated outcome.
 - `mockups/quick-complement.html` — minimal "quick complement" mode (primary → exact complementary
   pair + nearest paints) for the new P5 quick-complement persona (`docs/USE_CASES.md` UC-22).
 - Motion system (`CLAUDE.md` §3.4): fade-rise card reveals, swatch/hero bounce-on-update, panel
