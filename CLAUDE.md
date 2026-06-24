@@ -41,7 +41,8 @@ gets a **derived wash + highlight** paint in v1; deeper multi-step ladders are a
 ### Out of scope (v1) — do not build without updating this file
 User accounts, server/database, payments, paint inventory sync, a "buy" checkout,
 native mobile apps, AI color suggestions, image upload / color-from-photo.
-These are parked in [`docs/PLAN.md`](docs/PLAN.md) §Future.
+These are parked in [`docs/PLAN.md`](docs/PLAN.md) §Future; a native iPhone app is explored
+separately in [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) (v2 only).
 
 ### Non-negotiables
 - **No backend.** Everything runs in the browser. The dataset is a static JSON file.
@@ -155,31 +156,48 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 
 ```
 /
-├── CLAUDE.md                ← this file (constitution)
-├── README.md                ← what it is, how to run/deploy
-├── CHANGELOG.md             ← Keep a Changelog format
+├── CLAUDE.md                  ← this file (constitution)
+├── README.md                  ← what it is, how to run/deploy
+├── CHANGELOG.md               ← Keep a Changelog format
 ├── docs/
-│   ├── PLAN.md              ← roadmap, milestones, decisions
-│   └── EMBED.md             ← Squarespace embedding guide (added at M8)
-├── mockups/
-│   └── index.html          ← canonical visual mockup (this milestone)
-└── src/                     ← (created at M2+, not yet)
-    ├── index.html
-    ├── styles/tokens.css    ← §3 tokens, nothing else
-    ├── styles/app.css
-    ├── js/color.js          ← pure color math (see §7). No DOM.
-    ├── js/data.js           ← load + index dataset, nearest-paint search
-    ├── js/harmony.js        ← harmony generation (see §7)
-    ├── js/a11y.js           ← color-blindness sim + WCAG contrast
-    ├── js/ui.js             ← rendering + events
-    ├── js/app.js            ← state, URL share encoding, wiring
-    └── data/paints.json     ← curated dataset (see §5)
+│   ├── PLAN.md                ← roadmap, milestones, decisions
+│   ├── USE_CASES.md           ← personas, entry modes, scheme roles, UC catalog
+│   ├── DATA_SOURCING.md       ← data sourcing + verification methodology (§5)
+│   ├── IOS_APP_PLAN.md        ← iPhone app (v2) exploration — future, not v1
+│   └── EMBED.md               ← Squarespace embedding guide (added at M8)
+├── mockups/                   ← design references, NOT shipped (no runtime role)
+│   ├── index.html             ← canonical app mockup (unified light/dark)
+│   ├── style-directions.html  ← 5-way visual-direction exploration
+│   ├── quick-complement.html  ← P5 "quick complement" mode mock
+│   ├── persona-flows.html     ← end-to-end experience-flow storyboard
+│   └── loaders/
+│       ├── MOLTEN_HARMONICS.md ← loader philosophy (see §3.4)
+│       └── loader.html        ← determinate loader (drop → wheel → wells)
+├── scripts/                   ← dev tooling, NOT shipped (never required at runtime)
+│   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
+│   └── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5)
+└── src/                       ← the app (data shipped at M1; engine/UI from M2)
+    ├── index.html             ← (M3)
+    ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
+    ├── styles/app.css         ← (M3)
+    ├── js/color.js            ← pure color math (see §7). No DOM. (M2)
+    ├── js/data.js             ← load + index dataset, nearest-paint search (M2)
+    ├── js/harmony.js          ← harmony generation (see §7) (M2)
+    ├── js/a11y.js             ← color-blindness sim + WCAG contrast (M2)
+    ├── js/ui.js               ← rendering + events (M3)
+    ├── js/app.js              ← state, URL share encoding, wiring (M3)
+    └── data/
+        ├── paints.json        ← curated dataset (see §5) — shipped ✓ M1
+        └── SOURCES.md         ← provenance + licensing (see §5) — shipped ✓ M1
 ```
+
+> This tree is the authoritative file index. When you add a file, add it here in the same commit.
 
 Rules:
 - `color.js`, `harmony.js`, `a11y.js` are **pure** (no DOM, no globals) so they are unit-testable.
 - State lives in one place (`app.js`). UI reads state, emits events; no scattered globals.
 - Palette state is encoded in the URL query (shareable, like Adobe Color). No storage needed for sharing; `localStorage` only for "my owned paints" convenience.
+- `mockups/` (design references) and `scripts/` (dev tooling) are **never** loaded by the app at runtime — they don't count against the no-dependency rule in §6.
 
 ---
 
@@ -205,8 +223,12 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
       "type": "layer",                        // layer|base|wash|metal|contrast|primer|ink
       "discontinued": false,
       "approx": true,                         // is the hex approximate?
-      "groupId": "red-blood-01"               // equivalence group (cross-brand)
-      // lab[] is computed at load time, never hand-authored
+      "source": "community",                  // manufacturer | community | sampled
+      "sourceUrl": "https://…",               // where the value came from
+      "captured": "2026-06-24"                // date the value was recorded — provenance record, not shown in the UI
+      // "groupId" reserved for a future curated equivalence layer (see §5.2)
+      // lab[] is derived at load time, never stored. Manufacturer *release* dates
+      // are not available from our sources; "captured" is the record date.
     }
   ],
   "groups": [

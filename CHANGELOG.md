@@ -5,6 +5,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- `CLAUDE.md` §4 file tree now indexes **every** file (docs, mockups, scripts, shipped data) and is
+  declared the authoritative index; §5.1 schema documents per-paint provenance/date fields
+  (`source`, `sourceUrl`, `captured`) — every paint carries a `captured` record date (validator-enforced).
 ### Planned
 - M2: extract the verified colour engine into `src/js/` with unit tests.
 - M3: UI shell + paint picker + entry modes.
