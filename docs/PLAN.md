@@ -11,7 +11,9 @@ miniature paint into a usable color scheme. The signature feature is **"ideal vs
 color theory generates the *perfect* harmony color, and a perceptual-distance search
 (ΔE 2000) finds the *closest paint you can actually buy* — so a painter leaves with a
 shopping list, not just hex codes. It also does cross-brand paint equivalents and
-color-blindness / contrast accessibility checks (the Adobe Color angle).
+color-blindness / contrast accessibility checks (the Adobe Color angle). It serves two
+temperaments — deliberate **planning** and live **exploration** (drag the wheel, watch the
+whole scheme shift). Full persona/use-case breakdown in [`USE_CASES.md`](USE_CASES.md).
 
 ---
 
@@ -47,6 +49,7 @@ All of it is pure functions over one static `paints.json`. No network calls afte
 - **Data**: one `data/paints.json`, loaded once; Lab values precomputed in memory.
 - **Color engine** (`color.js`, `harmony.js`, `a11y.js`): pure, unit-tested, DOM-free.
 - **State** (`app.js`): single state object → URL query for sharing; `localStorage` only for an optional "paints I own" filter.
+- **Entry modes & exploration** (see [`USE_CASES.md`](USE_CASES.md)): owned paint · main colour · accent colour · arbitrary hex · interactive **drag-wheel** · shared URL — all produce seed colours for the same engine. The wheel is a view that maps drag → seed and recomputes the scheme + nearest paints live (<16ms budget).
 - **Deploy**: static files on GitHub Pages / Netlify → embedded in Squarespace via iframe.
 
 ### Why this stack
@@ -76,15 +79,16 @@ the "durable, boring tech" principle in the constitution.
 
 | # | Milestone | Output | Tag |
 |---|-----------|--------|-----|
-| **M0** | Plan, mockup, constitution, repo | this PR | `v0.1.0` |
+| **M0** | Plan, mockup, constitution, use-cases, repo | this baseline | `v0.1.x` |
 | M1 | Data pipeline + seed dataset (3–4 brands) | `data/paints.json`, `SOURCES.md`, validator | `v0.2.0` |
 | M2 | Color engine + unit tests | `color.js`, `harmony.js`, `a11y.js` + tests | `v0.3.0` |
-| M3 | UI shell + paint picker (search, filter) | `index.html`, tokens.css, app.css | `v0.4.0` |
-| M4 | Harmonies + **ideal-vs-actual** matching | core feature live | `v0.5.0` |
-| M5 | Cross-brand equivalents panel | feature live | `v0.6.0` |
-| M6 | Accessibility module (CVD sim + contrast) | feature live | `v0.7.0` |
-| M7 | Share URLs, owned-paints, export, responsive polish | shippable | `v0.9.0` |
-| M8 | Deploy (GH Pages) + Squarespace embed guide | `docs/EMBED.md`, live URL | `v1.0.0` |
+| M3 | UI shell + picker + entry modes (owned paint, hex, main/accent) | `index.html`, tokens.css, app.css | `v0.4.0` |
+| M4 | Harmonies + **ideal-vs-actual** + scheme roles + derived wash/highlight | core feature live | `v0.5.0` |
+| M5 | **Interactive harmony wheel** (drag, lock, randomise, S/L) | Explorer mode live | `v0.6.0` |
+| M6 | Cross-brand equivalents panel | feature live | `v0.7.0` |
+| M7 | Accessibility module (CVD sim + contrast + safe-swap) | feature live | `v0.8.0` |
+| M8 | Share URLs, owned-paints, compare, export, responsive polish | shippable | `v0.9.0` |
+| M9 | Deploy (GH Pages) + Squarespace embed guide | `docs/EMBED.md`, live URL | `v1.0.0` |
 
 Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` always deployable.
 
@@ -131,6 +135,10 @@ community-submitted palettes · more brands · localization.
 ---
 
 ## 9. Open questions for Ryan
+
+> Scope decisions from the expanded use-cases live in [`USE_CASES.md`](USE_CASES.md) §9
+> (interactive wheel in v1? role-aware output v1 vs v1.1? owned-paints in v1?). My
+> recommendations are noted there. Plus:
 
 1. **Product name** — keep "Palette Studio for Miniatures", or something punchier? (One-line change.)
 2. **GitHub account** — which account/repo should host it for GitHub Pages?

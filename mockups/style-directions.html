@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="studio">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Palette Studio — updated mockup + visual directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Cinzel:wght@600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ===== THEME TOKENS — 5 visual directions. Studio Light = current CLAUDE.md §3 ===== */
+  :root,[data-theme="studio"]{
+    --bg:#F7F7F5;--surface:#FFFFFF;--s2:#F1F1EE;--border:#E4E4DF;--bstrong:#D2D2CB;
+    --text:#1B1B1A;--muted:#6B6B66;--faint:#9B9B95;
+    --accent:#4F46E5;--accent-weak:#EEF0FF;--on-accent:#FFFFFF;
+    --success:#1D9E75;--success-weak:#E1F5EE;--warning:#BA7517;--warning-weak:#FAEEDA;--danger:#D8442F;--danger-weak:#FBEAE7;
+    --r:12px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+    --font:"Inter",system-ui,sans-serif;--display:"Inter",sans-serif;
+  }
+  [data-theme="dark"]{
+    --bg:#17191C;--surface:#1E2125;--s2:#262A2F;--border:#333942;--bstrong:#444C57;
+    --text:#ECEDEE;--muted:#9AA0A6;--faint:#6B7280;
+    --accent:#A78BFA;--accent-weak:#2A2540;--on-accent:#17191C;
+    --success:#34D399;--success-weak:#15301F;--warning:#FBBF24;--warning-weak:#3A2E12;--danger:#F87171;--danger-weak:#3A1D1D;
+    --r:10px;--shadow:none;--font:"Inter",system-ui,sans-serif;--display:"Inter",sans-serif;
+  }
+  [data-theme="grim"]{
+    --bg:#141110;--surface:#1C1815;--s2:#251F1A;--border:#3A302A;--bstrong:#4D4138;
+    --text:#ECE3D8;--muted:#A8998A;--faint:#7C6F62;
+    --accent:#B8862F;--accent-weak:#2C2113;--on-accent:#1A140A;
+    --success:#7FA055;--success-weak:#232A16;--warning:#C9923A;--warning-weak:#2E2412;--danger:#C9503B;--danger-weak:#2E1A14;
+    --r:6px;--shadow:none;--font:"Inter",system-ui,sans-serif;--display:"Cinzel",serif;
+  }
+  [data-theme="paper"]{
+    --bg:#F1EADC;--surface:#FBF6EC;--s2:#E9E0CE;--border:#D9CDB5;--bstrong:#C7B898;
+    --text:#2C271F;--muted:#7C7163;--faint:#A99E8B;
+    --accent:#B4552D;--accent-weak:#F0E2D2;--on-accent:#FBF6EC;
+    --success:#4C6B4F;--success-weak:#E2EAD9;--warning:#A9772B;--warning-weak:#F1E6CF;--danger:#B23B26;--danger-weak:#F3DDD3;
+    --r:12px;--shadow:0 1px 2px rgba(60,40,20,.08);--font:"Inter",system-ui,sans-serif;--display:"Fraunces",Georgia,serif;
+  }
+  [data-theme="play"]{
+    --bg:#FBFBFE;--surface:#FFFFFF;--s2:#F1F2FF;--border:#E6E7F8;--bstrong:#D3D5F0;
+    --text:#20223A;--muted:#6E7293;--faint:#A2A6C4;
+    --accent:#7C3AED;--accent-weak:#F0EAFE;--on-accent:#FFFFFF;
+    --success:#16A34A;--success-weak:#DCFCE7;--warning:#D97706;--warning-weak:#FEF0DA;--danger:#E11D48;--danger-weak:#FDE4EA;
+    --r:18px;--shadow:0 2px 8px rgba(80,60,160,.08);--font:"Poppins",system-ui,sans-serif;--display:"Poppins",sans-serif;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+  h1,h2,h3{margin:0;font-weight:600}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}
+  .micro{font-size:11.5px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+  button{font-family:inherit;cursor:pointer}
+
+  /* theme switcher bar */
+  .themebar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 24px;background:var(--s2);border-bottom:1px solid var(--border)}
+  .themebar .lbl{font-size:12px;color:var(--muted);margin-right:4px}
+  .tchip{border:1px solid var(--bstrong);background:var(--surface);color:var(--text);height:30px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:7px}
+  .tchip[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-weak)}
+  .dot{width:11px;height:11px;border-radius:50%}
+
+  header{background:var(--bg);border-bottom:1px solid var(--border)}
+  .bar{display:flex;align-items:center;gap:12px;padding:12px 24px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:9px}
+  .logo .mark{width:24px;height:24px;border-radius:7px;background:var(--accent)}
+  .logo .t{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:.01em}
+  .spacer{flex:1}
+  .hexin{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0 10px;height:36px}
+  .hexin span{color:var(--faint);font-size:13px}
+  .hexin input{border:none;background:transparent;color:var(--text);font-family:ui-monospace,monospace;font-size:13px;width:74px;outline:none;text-transform:uppercase}
+  .btn{height:36px;padding:0 13px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500}
+  .btn:hover{border-color:var(--bstrong)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+  .toggle{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);user-select:none}
+  .sw-toggle{width:34px;height:20px;border-radius:999px;background:var(--bstrong);position:relative;transition:.15s}
+  .sw-toggle::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
+  .toggle[aria-pressed="true"] .sw-toggle{background:var(--accent)}
+  .toggle[aria-pressed="true"] .sw-toggle::after{left:16px}
+
+  main{max-width:1200px;margin:0 auto;padding:24px;display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow)}
+  .pad{padding:18px}
+  .sw{border-radius:calc(var(--r) - 4px);box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
+
+  /* picker */
+  .picker .head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+  input[type=search],select{height:34px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--text);padding:0 10px;font-family:inherit;font-size:13px;width:100%}
+  input:focus,select:focus,.hexin:focus-within{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+  .list{max-height:440px;overflow:auto;padding:6px}
+  .paint{display:flex;align-items:center;gap:9px;padding:7px;border-radius:var(--r);cursor:pointer;border:1px solid transparent}
+  .paint:hover{background:var(--s2)}
+  .paint[aria-selected=true]{background:var(--accent-weak);border-color:var(--accent)}
+  .paint .nm{font-size:13px;font-weight:500}
+  .paint .br{font-size:11px;color:var(--muted)}
+
+  .hero{display:flex;gap:16px;align-items:center}
+  .hero .big{width:84px;height:84px;flex:none}
+  .hero h2{font-family:var(--display);font-size:21px}
+  .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:999px;background:var(--s2);color:var(--muted)}
+  .tag.role{background:var(--accent-weak);color:var(--accent)}
+
+  .seg{display:inline-flex;background:var(--s2);border-radius:var(--r);padding:3px;gap:2px;flex-wrap:wrap}
+  .seg button{border:none;background:transparent;color:var(--muted);height:30px;padding:0 12px;border-radius:calc(var(--r) - 4px);font-weight:500;font-size:12.5px}
+  .seg button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+  .tabs{display:flex;gap:18px;border-bottom:1px solid var(--border);margin-top:6px}
+  .tabs button{border:none;background:transparent;padding:10px 2px;color:var(--muted);font-weight:500;font-size:13.5px;border-bottom:2px solid transparent}
+  .tabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent)}
+
+  /* role slots */
+  .slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:16px}
+  .slot{border:1px solid var(--border);border-radius:var(--r);padding:14px;background:var(--surface)}
+  .slot .shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .slot .role{font-family:var(--display);font-weight:600;font-size:14px}
+  .slot .wt{font-size:11px;color:var(--faint)}
+  .ivsa{display:flex;align-items:center;gap:10px}
+  .ivsa .ideal{width:42px;height:42px;flex:none}
+  .ivsa .arr{color:var(--faint)}
+  .ivsa .act{width:42px;height:42px;flex:none}
+  .ivsa .nm{font-size:12.5px;font-weight:500;line-height:1.2}
+  .ivsa .br{font-size:11px;color:var(--muted)}
+  .de{display:inline-flex;align-items:center;gap:5px;margin-top:3px;font-size:11px;font-weight:500}
+  .de .d{width:7px;height:7px;border-radius:50%}
+  .badge{font-family:ui-monospace,monospace;font-size:10.5px;padding:1px 6px;border-radius:5px;background:var(--s2);color:var(--muted)}
+  .ladder{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+  .ladder .step{flex:1;text-align:center}
+  .ladder .step .sw{width:100%;height:30px}
+  .ladder .step .cap{font-size:10px;color:var(--muted);margin-top:4px}
+  .ladder .step .pn{font-size:10.5px;font-weight:500;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .eq{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:16px}
+  .eqc{display:flex;gap:9px;align-items:center;border:1px solid var(--border);border-radius:var(--r);padding:9px}
+  .eqc .sw{width:36px;height:36px}
+  .cvd .row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin:8px 0}
+  .cvd .strip{display:flex;gap:5px}.cvd .strip .sw{flex:1;height:30px}
+  .ctrbox{border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-top:14px;display:inline-flex;gap:14px;align-items:center}
+  .ratio{font-size:20px;font-weight:600}
+
+  .wheelwrap{display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-top:16px}
+  .note{max-width:1200px;margin:0 auto;padding:6px 24px 36px;color:var(--faint);font-size:12px}
+  @media(max-width:860px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="themebar" id="themebar" role="group" aria-label="Visual direction">
+  <span class="lbl">Visual direction:</span>
+  <button class="tchip" data-th="studio" aria-pressed="true"><span class="dot" style="background:#4F46E5"></span>Studio Light</button>
+  <button class="tchip" data-th="dark" aria-pressed="false"><span class="dot" style="background:#A78BFA"></span>Workbench Dark</button>
+  <button class="tchip" data-th="grim" aria-pressed="false"><span class="dot" style="background:#B8862F"></span>Grimdark Tabletop</button>
+  <button class="tchip" data-th="paper" aria-pressed="false"><span class="dot" style="background:#B4552D"></span>Sketchbook Paper</button>
+  <button class="tchip" data-th="play" aria-pressed="false"><span class="dot" style="background:#7C3AED"></span>Playful Bright</button>
+</div>
+
+<header>
+  <div class="bar">
+    <div class="logo"><span class="mark"></span><span class="t">Palette Studio</span></div>
+    <div class="spacer"></div>
+    <div class="hexin" title="Type any hex to seed a scheme"><span>#</span><input id="hex" maxlength="6" value="9A1115" aria-label="Hex colour" /></div>
+    <button class="toggle" id="owned" aria-pressed="false" title="Demo"><span class="sw-toggle"></span>Paints I own</button>
+    <button class="btn" title="Demo">Compare</button>
+    <button class="btn" title="Demo">Export list</button>
+    <button class="btn primary" title="Demo">Share</button>
+  </div>
+</header>
+
+<main>
+  <aside class="card picker">
+    <div class="head">
+      <input id="q" type="search" placeholder="Search paints…" aria-label="Search paints" />
+      <select id="brand"><option value="">All brands</option></select>
+    </div>
+    <div class="list" id="list" role="listbox" aria-label="Paints"></div>
+  </aside>
+
+  <section style="display:grid;gap:18px">
+    <div class="card pad">
+      <div class="micro" style="margin-bottom:10px">Base colour</div>
+      <div class="hero" id="hero"></div>
+    </div>
+
+    <div class="card pad">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+        <div class="micro">Scheme</div>
+        <div class="seg" id="seg" role="group" aria-label="Harmony"></div>
+      </div>
+      <div class="tabs" id="tabs" role="tablist">
+        <button role="tab" data-tab="plan" aria-selected="true">Plan · roles</button>
+        <button role="tab" data-tab="explore" aria-selected="false">Explore · wheel</button>
+        <button role="tab" data-tab="equiv" aria-selected="false">Equivalents</button>
+        <button role="tab" data-tab="a11y" aria-selected="false">Accessibility</button>
+      </div>
+
+      <div data-panel="plan">
+        <div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint, with a derived wash + highlight</div>
+        <div class="slots" id="slots"></div>
+      </div>
+      <div data-panel="explore" hidden>
+        <div class="wheelwrap">
+          <svg id="wheel" width="220" height="220" viewBox="0 0 220 220" role="img" aria-label="Harmony wheel preview"></svg>
+          <div style="max-width:320px">
+            <h3 style="font-family:var(--display);font-size:16px;margin-bottom:6px">Live exploration (M5)</h3>
+            <p style="color:var(--muted);font-size:13px;margin:0">Drag the base node and every harmony node plus its nearest real paint updates in real time — the Adobe-Color feel. Lock a node, shuffle, or push saturation/lightness. (Interactive in the build; static preview here.)</p>
+          </div>
+        </div>
+      </div>
+      <div data-panel="equiv" hidden>
+        <p style="color:var(--muted);font-size:13px;margin:14px 0 0">Closest matches to the base in other ranges (ΔE 2000).</p>
+        <div class="eq" id="eq"></div>
+      </div>
+      <div data-panel="a11y" hidden>
+        <div class="cvd" id="cvd" style="margin-top:14px"></div>
+        <div class="ctrbox" id="ctr"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="note"><strong>Illustrative mockup.</strong> Demo paint sample only; production data is the curated, attributed dataset (see <span class="mono">docs/PLAN.md</span>, <span class="mono">CLAUDE.md §5</span>). Switch the visual direction up top — the design tokens swap, the paint colours stay true.</div>
+
+<script>
+const hx=h=>{h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
+const xh=([r,g,b])=>'#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('').toUpperCase();
+const lin=c=>{c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);};
+const ulin=c=>{c=c<=0.0031308?12.92*c:1.055*Math.pow(c,1/2.4)-0.055;return c*255;};
+function lab([r,g,b]){const R=lin(r),G=lin(g),B=lin(b);const x=(R*0.4124+G*0.3576+B*0.1805)/0.95047,y=R*0.2126+G*0.7152+B*0.0722,z=(R*0.0193+G*0.1192+B*0.9505)/1.08883;const f=t=>t>Math.pow(6/29,3)?Math.cbrt(t):t/(3*Math.pow(6/29,2))+4/29;return[116*f(y)-16,500*(f(x)-f(y)),200*(f(y)-f(z))];}
+function dE(l1,l2){const[L1,a1,b1]=l1,[L2,a2,b2]=l2,r=Math.PI/180,d=180/Math.PI;const C1=Math.hypot(a1,b1),C2=Math.hypot(a2,b2),Cb=(C1+C2)/2,Cb7=Math.pow(Cb,7),G=0.5*(1-Math.sqrt(Cb7/(Cb7+Math.pow(25,7))));const A1=(1+G)*a1,A2=(1+G)*a2,P1=Math.hypot(A1,b1),P2=Math.hypot(A2,b2);let h1=Math.atan2(b1,A1);if(h1<0)h1+=2*Math.PI;let h2=Math.atan2(b2,A2);if(h2<0)h2+=2*Math.PI;const dL=L2-L1,dC=P2-P1;let dh=0;if(P1*P2!==0){dh=h2-h1;if(dh>Math.PI)dh-=2*Math.PI;else if(dh<-Math.PI)dh+=2*Math.PI;}const dH=2*Math.sqrt(P1*P2)*Math.sin(dh/2),Lb=(L1+L2)/2,Pb=(P1+P2)/2;let hb;if(P1*P2===0)hb=h1+h2;else hb=(Math.abs(h1-h2)>Math.PI)?(h1+h2+2*Math.PI)/2:(h1+h2)/2;const T=1-0.17*Math.cos(hb-30*r)+0.24*Math.cos(2*hb)+0.32*Math.cos(3*hb+6*r)-0.2*Math.cos(4*hb-63*r);const dT=30*r*Math.exp(-Math.pow((hb*d-275)/25,2)),Pb7=Math.pow(Pb,7),Rc=2*Math.sqrt(Pb7/(Pb7+Math.pow(25,7))),Sl=1+0.015*Math.pow(Lb-50,2)/Math.sqrt(20+Math.pow(Lb-50,2)),Sc=1+0.045*Pb,Sh=1+0.015*Pb*T,Rt=-Math.sin(2*dT)*Rc;return Math.sqrt((dL/Sl)**2+(dC/Sc)**2+(dH/Sh)**2+Rt*(dC/Sc)*(dH/Sh));}
+const r2h=([r,g,b])=>{r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h,s,l=(mx+mn)/2;if(mx===mn)h=s=0;else{const dd=mx-mn;s=l>0.5?dd/(2-mx-mn):dd/(mx+mn);h=mx===r?(g-b)/dd+(g<b?6:0):mx===g?(b-r)/dd+2:(r-g)/dd+4;h/=6;}return[h*360,s,l];};
+const h2h=(h,s,l)=>{h=(h%360+360)%360;const C=(1-Math.abs(2*l-1))*s,X=C*(1-Math.abs((h/60)%2-1)),m=l-C/2;let a;if(h<60)a=[C,X,0];else if(h<120)a=[X,C,0];else if(h<180)a=[0,C,X];else if(h<240)a=[0,X,C];else if(h<300)a=[X,0,C];else a=[C,0,X];return xh([(a[0]+m)*255,(a[1]+m)*255,(a[2]+m)*255]);};
+const rot=(hex,d)=>{const[h,s,l]=r2h(hx(hex));return h2h(h+d,s,l);};
+const adj=(hex,dl,ds)=>{let[h,s,l]=r2h(hx(hex));return h2h(h,Math.max(0,Math.min(1,s+ds)),Math.max(0,Math.min(1,l+dl)));};
+const relL=hex=>{const[r,g,b]=hx(hex).map(lin);return 0.2126*r+0.7152*g+0.0722*b;};
+const contrast=(a,b)=>{const L1=relL(a),L2=relL(b);return (Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05);};
+const textOn=hex=>relL(hex)>0.4?'#15150F':'#FFFFFF';
+const CVD={protan:[[0.152286,1.052583,-0.204868],[0.114503,0.786281,0.099216],[-0.003882,-0.048116,1.051998]],deuter:[[0.367322,0.860646,-0.227968],[0.280085,0.672501,0.047413],[-0.011820,0.042940,0.968881]],tritan:[[1.255528,-0.076749,-0.178779],[-0.078411,0.930809,0.147602],[0.004733,0.691367,0.303900]]};
+const sim=(hex,t)=>{const[r,g,b]=hx(hex).map(lin),m=CVD[t];return xh([m[0][0]*r+m[0][1]*g+m[0][2]*b,m[1][0]*r+m[1][1]*g+m[1][2]*b,m[2][0]*r+m[2][1]*g+m[2][2]*b].map(v=>ulin(Math.max(0,Math.min(1,v)))));};
+
+const PAINTS=[
+ ["Citadel","Base","Mephiston Red","#9A1115","layer",true],["Citadel","Layer","Evil Sunz Scarlet","#C21920","layer",true],
+ ["Citadel","Layer","Troll Slayer Orange","#F46C2E","layer",false],["Citadel","Layer","Yriel Yellow","#FFCE00","layer",true],
+ ["Citadel","Layer","Flash Gitz Yellow","#FFE700","layer",false],["Citadel","Base","Averland Sunset","#FCB41D","base",true],
+ ["Citadel","Layer","Moot Green","#A5D610","layer",false],["Citadel","Layer","Warpstone Glow","#106B21","layer",true],
+ ["Citadel","Base","Caliban Green","#005221","base",true],["Citadel","Layer","Sotek Green","#006B5A","layer",true],
+ ["Citadel","Layer","Kabalite Green","#069B7D","layer",false],["Citadel","Layer","Teclis Blue","#8BB9DD","layer",true],
+ ["Citadel","Layer","Caledor Sky","#31639C","layer",false],["Citadel","Base","Macragge Blue","#2D567C","base",true],
+ ["Citadel","Base","Kantor Blue","#08085A","base",true],["Citadel","Base","Naggaroth Night","#562F7E","base",false],
+ ["Citadel","Layer","Xereus Purple","#5A105E","layer",true],["Citadel","Base","Screamer Pink","#9C0E4E","base",false],
+ ["Citadel","Layer","Pink Horror","#9C3D9C","layer",false],["Citadel","Layer","Bugman's Glow","#A95C3E","layer",true],
+ ["Citadel","Base","Mournfang Brown","#663300","base",true],["Citadel","Base","Rhinox Hide","#3A1416","base",true],
+ ["Citadel","Layer","Ushabti Bone","#EFD9A8","layer",true],["Citadel","Layer","Administratum Grey","#B5B5B5","layer",true],
+ ["Citadel","Base","Abaddon Black","#111314","base",true],["Citadel","Layer","White Scar","#F7F7F4","layer",true],
+ ["Citadel","Base","Auric Armour Gold","#C8A13A","metal",true],["Citadel","Layer","Runefang Steel","#B5B5BD","metal",true],
+ ["Citadel","Base","Leadbelcher","#6E7177","metal",true],
+ ["Vallejo Game Color","—","Magic Blue","#2F66A2","layer",false],["Vallejo Game Color","—","Sick Green","#16722A","layer",false],
+ ["Army Painter","Warpaints","Mythical Orange","#F36A26","layer",false],["Army Painter","Warpaints","Deep Blue","#0B0E60","base",false],
+].map((p,i)=>{const[brand,line,name,hex,type,owned]=p;return{id:'p'+i,brand,line,name,hex,type,owned,lab:lab(hx(hex))};});
+
+const HARM={complementary:[180],analogous:[-30,30],triadic:[120,240],split:[150,210],tetradic:[60,180,240]};
+const state={baseId:'p0',harmony:'complementary',tab:'plan',ownedOnly:false,customHex:null};
+const $=s=>document.querySelector(s);
+const baseHex=()=>state.customHex||PAINTS.find(p=>p.id===state.baseId).hex;
+const baseName=()=>state.customHex?('Custom '+state.customHex):PAINTS.find(p=>p.id===state.baseId).name;
+const baseMeta=()=>state.customHex?'typed hex':((p=>p.brand+(p.line!=='—'?' · '+p.line:''))(PAINTS.find(p=>p.id===state.baseId)));
+function near(hex){let pool=PAINTS;if(state.ownedOnly)pool=PAINTS.filter(p=>p.owned);const t=lab(hx(hex));let best=null,bd=1e9;for(const p of pool){const d=dE(t,p.lab);if(d<bd){bd=d;best=p;}}return{p:best,d:bd};}
+function qual(d){if(d<=2)return['Excellent','var(--success)'];if(d<=3.5)return['Good','var(--success)'];if(d<=5)return['Fair','var(--warning)'];if(d<=10)return['Loose','var(--warning)'];return['Poor','var(--danger)'];}
+
+function scheme(){
+  const b=baseHex();const offs=HARM[state.harmony];const parts=offs.map(o=>rot(b,o));
+  const lb=lab(hx(b));
+  let accent=parts[0],amax=-1;parts.forEach(p=>{const d=dE(lb,lab(hx(p)));if(d>amax){amax=d;accent=p;}});
+  let secondary=parts.find(p=>p!==accent)||rot(b,30);
+  const[bh]=r2h(hx(b));const warm=(bh<70||bh>300);
+  const metal=warm?'#C8A13A':(bh>150&&bh<280?'#B5B5BD':'#6E7177');
+  return [
+    {role:'Body',wt:'~60%',hex:b},
+    {role:'Secondary',wt:'~30%',hex:secondary},
+    {role:'Accent',wt:'~10%',hex:accent},
+    {role:'Metal',wt:'spot',hex:metal},
+  ];
+}
+const swHTML=(hex,cls,extra='')=>`<span class="sw ${cls}" style="background:${hex};${extra}"></span>`;
+
+function renderHero(){
+  const b=baseHex();
+  $('#hero').innerHTML=`${swHTML(b,'big')}
+   <div><h2>${baseName()}</h2>
+   <div style="color:var(--muted);font-size:13px;margin-top:2px">${baseMeta()}</div>
+   <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="tag role">body / dominant</span><span class="tag mono">${b}</span></div></div>`;
+}
+function renderSlots(){
+  $('#slots').innerHTML=scheme().map(s=>{
+    const m=near(s.hex),q=qual(m.d);
+    const wash=adj(s.hex,-0.16,0.06),hi=adj(s.hex,0.24,-0.12);
+    const wm=near(wash),hm=near(hi);
+    return `<div class="slot">
+      <div class="shead"><span class="role">${s.role}</span><span class="wt">${s.wt}</span></div>
+      <div class="ivsa">
+        ${swHTML(s.hex,'ideal',`color:${textOn(s.hex)}`)}
+        <span class="arr">→</span>
+        ${swHTML(m.p.hex,'act')}
+        <div style="min-width:0"><div class="nm">${m.p.name}</div><div class="br">${m.p.brand}</div>
+          <div class="de"><span class="d" style="background:${q[1]}"></span><span style="color:${q[1]}">${q[0]}</span><span class="badge">ΔE ${m.d.toFixed(1)}</span></div></div>
+      </div>
+      <div class="ladder">
+        <div class="step">${swHTML(wash,'')}<div class="cap">wash</div><div class="pn">${wm.p.name}</div></div>
+        <div class="step">${swHTML(s.hex,'')}<div class="cap">base</div><div class="pn">${m.p.name}</div></div>
+        <div class="step">${swHTML(hi,'')}<div class="cap">highlight</div><div class="pn">${hm.p.name}</div></div>
+      </div>
+    </div>`;}).join('');
+}
+function renderWheel(){
+  const b=baseHex();const[bh,bs]=r2h(hx(b));const nodes=[{h:bh,hex:b,base:true},...HARM[state.harmony].map(o=>({h:bh+o,hex:rot(b,o)}))];
+  const cx=110,cy=110,R=86;let g='';
+  for(let a=0;a<360;a+=6){const c=h2h(a,0.9,0.5);const x1=cx+Math.sin(a*Math.PI/180)*(R-12),y1=cy-Math.cos(a*Math.PI/180)*(R-12),x2=cx+Math.sin(a*Math.PI/180)*R,y2=cy-Math.cos(a*Math.PI/180)*R;g+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="7"/>`;}
+  nodes.forEach(n=>{const x=cx+Math.sin(n.h*Math.PI/180)*bs*(R-20),y=cy-Math.cos(n.h*Math.PI/180)*bs*(R-20);g+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--bstrong)" stroke-width="1.5"/>`;});
+  nodes.forEach(n=>{const x=cx+Math.sin(n.h*Math.PI/180)*bs*(R-20),y=cy-Math.cos(n.h*Math.PI/180)*bs*(R-20);g+=`<circle cx="${x}" cy="${y}" r="${n.base?11:8}" fill="${n.hex}" stroke="#fff" stroke-width="${n.base?3:2}"/>`;});
+  $('#wheel').innerHTML=g;
+}
+function renderEquiv(){
+  const b=baseHex();const baseBrand=state.customHex?null:PAINTS.find(p=>p.id===state.baseId).brand;
+  const lb=lab(hx(b));
+  const others=PAINTS.filter(p=>p.brand!==baseBrand&&p.hex!==b).map(p=>({p,d:dE(lb,p.lab)})).sort((a,b)=>a.d-b.d).slice(0,6);
+  $('#eq').innerHTML=others.map(({p,d})=>{const q=qual(d);return `<div class="eqc">${swHTML(p.hex,'')}
+    <div style="min-width:0"><div class="nm" style="font-size:12.5px;font-weight:500">${p.name}</div><div class="br" style="font-size:11px;color:var(--muted)">${p.brand}</div>
+    <div class="de"><span class="d" style="background:${q[1]}"></span><span style="color:${q[1]}">${q[0]}</span><span class="badge">ΔE ${d.toFixed(1)}</span></div></div></div>`;}).join('');
+}
+function renderA11y(){
+  const cols=scheme().map(s=>s.hex);
+  const rows=[['Normal',cols],['Deuteranopia',cols.map(c=>sim(c,'deuter'))],['Protanopia',cols.map(c=>sim(c,'protan'))],['Tritanopia',cols.map(c=>sim(c,'tritan'))]];
+  $('#cvd').innerHTML=rows.map(([n,cs])=>`<div class="row"><div style="font-size:12.5px;font-weight:500">${n}</div><div class="strip">${cs.map(c=>swHTML(c,'')).join('')}</div></div>`).join('');
+  const body=cols[0],acc=cols[2],r=contrast(body,acc),pass=r>=4.5,col=pass?'var(--success)':r>=3?'var(--warning)':'var(--danger)';
+  $('#ctr').innerHTML=`<div><div class="micro">Body ↔ accent</div><div class="ratio" style="color:${col}">${r.toFixed(1)}:1</div></div>
+    <div style="font-size:12.5px;color:${col};font-weight:500">${pass?'Passes AA text':r>=3?'Large/UI only':'Fails AA — low separation'}</div>`;
+}
+function renderList(){
+  const q=($('#q').value||'').toLowerCase(),bf=$('#brand').value;
+  const items=PAINTS.filter(p=>(!bf||p.brand===bf)&&(p.name.toLowerCase().includes(q)||p.brand.toLowerCase().includes(q)));
+  $('#list').innerHTML=items.map(p=>`<div class="paint" data-id="${p.id}" role="option" aria-selected="${p.id===state.baseId&&!state.customHex}">
+    ${swHTML(p.hex,'',`width:28px;height:28px`)}<div style="min-width:0"><div class="nm">${p.name}</div><div class="br">${p.brand}${p.owned?' · owned':''}</div></div></div>`).join('');
+}
+function renderAll(){renderHero();renderSlots();renderWheel();renderEquiv();renderA11y();}
+
+function initControls(){
+  $('#brand').innerHTML+=[...new Set(PAINTS.map(p=>p.brand))].sort().map(b=>`<option>${b}</option>`).join('');
+  $('#seg').innerHTML=Object.keys(HARM).map(k=>`<button data-h="${k}" aria-pressed="${k===state.harmony}">${k[0].toUpperCase()+k.slice(1)}</button>`).join('');
+}
+$('#themebar').addEventListener('click',e=>{const b=e.target.closest('.tchip');if(!b)return;document.documentElement.dataset.theme=b.dataset.th;document.querySelectorAll('.tchip').forEach(x=>x.setAttribute('aria-pressed',x===b));renderAll();});
+document.addEventListener('click',e=>{
+  const seg=e.target.closest('#seg button');if(seg){state.harmony=seg.dataset.h;document.querySelectorAll('#seg button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.h===state.harmony));renderAll();}
+  const tab=e.target.closest('#tabs button');if(tab){state.tab=tab.dataset.tab;document.querySelectorAll('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===tab));document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==state.tab);}
+  const pt=e.target.closest('.paint');if(pt){state.baseId=pt.dataset.id;state.customHex=null;$('#hex').value=baseHex().replace('#','');renderList();renderAll();}
+  const ow=e.target.closest('#owned');if(ow){state.ownedOnly=!state.ownedOnly;ow.setAttribute('aria-pressed',state.ownedOnly);renderAll();}
+});
+$('#q').addEventListener('input',renderList);$('#brand').addEventListener('change',renderList);
+$('#hex').addEventListener('input',e=>{const v=e.target.value.replace(/[^0-9a-fA-F]/g,'').slice(0,6);if(v.length===6){state.customHex='#'+v.toUpperCase();renderList();renderAll();}});
+initControls();renderList();renderAll();
+</script>
+</body>
+</html>

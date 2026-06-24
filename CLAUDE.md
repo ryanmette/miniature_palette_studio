@@ -12,7 +12,8 @@ Status: **Pre-build / planning.** Approved scope is in [`docs/PLAN.md`](docs/PLA
 
 ## 1. Purpose & scope
 
-A single-page web tool where a miniature painter picks a paint they own, and gets:
+A single-page web tool where a miniature painter **picks or explores a colour** — a paint they
+own, a chosen main/accent colour, a target hex, or by dragging an interactive wheel — and gets:
 
 1. **Color harmonies** — complementary, analogous, triadic, split-complementary, tetradic — generated from that paint's color.
 2. **Ideal vs. actual** — for every harmony color, the *theoretical ideal* swatch **and** the *nearest real paint you can actually buy*, matched by perceptual color distance (ΔE 2000), with a quality badge.
@@ -21,6 +22,21 @@ A single-page web tool where a miniature painter picks a paint they own, and get
 
 ### In scope (v1)
 Client-side only. Static files. Works embedded in a Squarespace page via iframe.
+
+**Entry modes** — all feed one engine (full breakdown in [`docs/USE_CASES.md`](docs/USE_CASES.md)):
+start from an owned paint, a chosen *main* colour, a chosen *accent* colour, an arbitrary hex,
+an interactive **drag-the-wheel** exploration, or a shared URL.
+
+**Two temperaments, both first-class:** deliberate **planning** (persona Priya) and live
+**exploration** (persona Sam — drag a node and the whole scheme + nearest real paints update in
+real time, the Adobe-Color feel).
+
+**Role-aware output:** harmony colours map to miniature paint *roles* — body / secondary /
+accent / metal / shade / highlight (~60-30-10) — each shown as ideal-vs-actual. Each slot also
+gets a **derived wash + highlight** paint in v1; deeper multi-step ladders are a later enhancement.
+
+**v1 conveniences (confirmed):** arbitrary **hex input**, a **'paints I own'** filter,
+**compare two schemes**, and **export** to a shopping list.
 
 ### Out of scope (v1) — do not build without updating this file
 User accounts, server/database, payments, paint inventory sync, a "buy" checkout,
@@ -47,42 +63,46 @@ These are parked in [`docs/PLAN.md`](docs/PLAN.md) §Future.
 
 ## 3. Design system (the cohesive ethos)
 
-Aesthetic: **clean modern studio tool.** Think a calm, white, precise instrument — neutral
-greys, one restrained accent, lots of whitespace, the color comes from the data. Flat
-surfaces, hairline borders, soft elevation only where it aids hierarchy.
+Aesthetic: **two cohesive themes, one instrument.** The tool ships a **light** theme
+(*Playful Bright* — bright, rounded, friendly; the default) and a **dark** theme
+(*Grimdark Tabletop* — forge-dark, brass accent; on-theme for wargamers). Both share **one
+component system** — the *same* fonts, buttons, spacing, radii and motion — so only colour
+changes between them. The colour always comes from the paint data; chrome stays quiet.
 
-**These tokens are canonical.** Mockups and production CSS use these exact values as CSS
-custom properties (`:root`). Do not introduce off-token colors, sizes, or radii.
+**These tokens are canonical.** Production CSS defines the shared tokens once and the two
+colour sets as `:root`/`[data-theme="light"]` and `[data-theme="dark"]`. Do not introduce
+off-token colours, sizes, or radii, and never style a component differently per theme — unify it.
 
-### 3.1 Color tokens
+### 3.1 Colour tokens — shared shape, two colour sets
+Component tokens (radii, fonts, `--tap`, motion) are shared — see §3.3–3.4. Only the colour
+sets below change between themes.
+
 ```
-/* Surfaces & text (light theme — the default) */
---bg:           #F7F7F5;   /* page background, warm off-white */
---surface:      #FFFFFF;   /* cards, panels */
---surface-2:    #F1F1EE;   /* insets, hovered rows, track fills */
---border:       #E4E4DF;   /* hairline borders (1px) */
---border-strong:#D2D2CB;   /* emphasized dividers */
---text:         #1B1B1A;   /* primary text */
---text-muted:   #6B6B66;   /* secondary text, labels */
---text-faint:   #9B9B95;   /* hints, captions */
+/* LIGHT — "Playful Bright" (default, :root) */
+--bg:#FBFBFE; --surface:#FFFFFF; --surface-2:#F1F2FF;
+--border:#E6E7F8; --border-strong:#D3D5F0;
+--text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
+--accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+--success:#16A34A; --success-weak:#DCFCE7;
+--warning:#C2740B; --warning-weak:#FBEBD3;
+--danger:#DC2647;  --danger-weak:#FCE4EA;
+--shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
 
-/* Brand accent — used sparingly: primary buttons, focus, active states */
---accent:       #4F46E5;   /* indigo */
---accent-hover: #4338CA;
---accent-weak:  #EEF0FF;   /* accent-tinted fills */
---on-accent:    #FFFFFF;
+/* DARK — "Grimdark Tabletop" ([data-theme="dark"]) */
+--bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+--border:#3A302A; --border-strong:#4D4138;
+--text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+--accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+--success:#86A559; --success-weak:#232A16;
+--warning:#C9923A; --warning-weak:#2E2412;
+--danger:#D2563F;  --danger-weak:#2E1A14;
+--shadow:0 1px 2px rgba(0,0,0,.45);
 
-/* Semantic (match-quality, contrast verdicts, etc.) */
---success:      #1D9E75;   --success-weak: #E1F5EE;
---warning:      #BA7517;   --warning-weak: #FAEEDA;
---danger:       #D8442F;   --danger-weak:  #FBEAE7;
---info:         #378ADD;   --info-weak:    #E6F1FB;
-
-/* Focus ring */
---focus:        0 0 0 3px rgba(79,70,229,.35);
+--focus: 0 0 0 3px var(--accent-weak);   /* both themes */
 ```
-A dark theme is a **future** token set, not v1. Author all CSS with variables so a dark
-theme is a drop-in later — never hardcode a hex outside `:root`.
+**Both themes are v1.** Light is the default; a `◐` control toggles dark and we honour
+`prefers-color-scheme` on first load. Author every rule with variables — never hardcode a hex
+outside these blocks. A swatch's own colour is paint *data*, never a token.
 
 ### 3.2 Match-quality scale (ΔE 2000) — fixed mapping, reuse everywhere
 | ΔE 2000 | Label | Token |
@@ -94,24 +114,37 @@ theme is a drop-in later — never hardcode a hex outside `:root`.
 | ≤ 10  | Loose | `--warning` |
 | > 10  | Poor | `--danger` |
 
-### 3.3 Typography
-- Font: `"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`. Inter loaded from a CDN with a system fallback; the tool must look correct if the webfont fails.
-- Hex codes & ΔE: `ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace`.
-- Scale: display 28/600 · h1 20/600 · h2 16/600 · body 14/400 · small 12.5/400 · micro 11.5/500-caps-labels.
-- Line-height 1.5 body. Sentence case everywhere. No ALL CAPS except the 11.5px micro-label style (letter-spacing .04em).
+### 3.3 Typography (shared by both themes)
+- **Display / headings / wordmark:** `"Space Grotesk", "Inter", system-ui, sans-serif` (500–700). Geometric, lightly edged — modern in light, tactical in dark.
+- **Body / UI / labels:** `"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif` (400/500). Best for dense data and small sizes.
+- **Hex & ΔE:** `ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace`.
+- Both webfonts load from Google Fonts with system fallbacks; the tool must look correct if a webfont fails.
+- Scale: display 28/600 · h1 22/600 · h2 16/600 · body 14/400 · small 12.5/400 · micro 11.5/500-caps-labels.
+- Line-height 1.5 body. Sentence case everywhere. No ALL CAPS except the 11.5px micro-label style (letter-spacing .05em).
 
 ### 3.4 Space, radius, elevation, motion
 - Spacing scale (px): **4, 8, 12, 16, 24, 32, 48**. Nothing off-scale.
-- Radius: `--r-sm:6 · --r-md:10 · --r-lg:14 · --r-pill:999`.
+- Radius (unified, both themes): cards `--r-card:14` · controls & buttons `--r-ctrl:10` · pills/badges `--r-pill:999`. One radius vocabulary everywhere — never per-theme radii.
 - Elevation (use sparingly): `--shadow-sm: 0 1px 2px rgba(0,0,0,.05)` · `--shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04)`.
-- Motion: 120ms (hover) – 200ms (panel) ease-out. Respect `prefers-reduced-motion`.
+- Motion (shared, both themes) — **fades + gentle bounce, to confirm not decorate**:
+  - Durations: 120ms hover · 180–220ms enter/exit & panel cross-fade · ~320ms card reveal. Standard ease `cubic-bezier(.2,.7,.2,1)`; **bounce/overshoot** `cubic-bezier(.34,1.56,.64,1)` for swatch & hero reveals.
+  - Patterns: panels **cross-fade**; cards/role-slots **fade-rise** with a small stagger; swatches and the hero swatch **pop** (scale-bounce) when they appear or the scheme changes; buttons press to `scale(.96)`.
+  - **Loading state:** the *Molten Harmonics* loader — a **determinate** drop → harmony-wheel → wells resolve that ends on the finished palette and maps to real load progress; seeded, themed via tokens, vanilla canvas (no runtime dep). Philosophy: [`mockups/loaders/MOLTEN_HARMONICS.md`](mockups/loaders/MOLTEN_HARMONICS.md).
+  - **Always honour `prefers-reduced-motion`**: disable transforms/animation and the loader loop (fall back to a single still frame).
 
 ### 3.5 Component rules
 - **Swatch**: square, `--r-md`, 1px inset border `rgba(0,0,0,.12)` so white-ish paints stay visible. Text on a swatch is auto black/white by relative luminance — never a fixed color.
-- **Buttons**: primary = accent fill; secondary = surface + 1px border; ghost = text only. 36px min height, 44px touch target on mobile.
+- **Buttons (one style, both themes)**: primary = accent fill + `--on-accent` text; secondary = surface + 1px `--border`; ghost = text only. Radius `--r-ctrl`. Height `--tap` = 38px desktop, **44px on touch / ≤520px**. Identical shape in light and dark — only colour differs.
 - **Cards/panels**: `--surface`, 1px `--border`, `--r-lg`, `--shadow-card`, padding 16–24px.
 - **Badges/pills**: weak semantic fill + strong semantic text from the same family.
 - Focus: always visible `--focus` ring. Never remove outlines without a replacement.
+
+### 3.6 Responsive & mobile (must work on phones)
+Embedded in a Squarespace page with heavy mobile traffic, so the tool is **mobile-first and
+fully responsive**, not a desktop layout that merely shrinks.
+- Breakpoints: **≤860px** → single column (picker collapses above the workspace); **≤520px** → compact paddings, header controls wrap (hex field full-width), role slots stack, tabs scroll horizontally.
+- **Touch targets ≥44px** below 520px (`--tap` → 44). The interactive wheel (M5) supports touch drag and fits a phone.
+- No horizontal page scroll; swatches and wheel scale fluidly. Verify at 360 / 768 / 1180px.
 
 ---
 
@@ -154,7 +187,8 @@ Rules:
 
 The dataset is a **curated compilation** assembled from open-licensed community datasets and
 manufacturer-published values — **not** a copy of DakkaDakka's page. We credit DakkaDakka and
-upstream sources in-app (a "Data & credits" panel) and in `data/SOURCES.md`.
+upstream sources in-app (a "Data & credits" panel) and in `data/SOURCES.md`. Full sourcing &
+verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 
 ### 5.1 Schema (`data/paints.json`)
 ```jsonc
