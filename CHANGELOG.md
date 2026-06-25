@@ -43,6 +43,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `.btn.primary` in the header, surfacing the one outcome a pure colour tool can't produce.
 
 ### Fixed
+- **Hard-to-see picker scrollbar on dark theme.** The paint-list scrollbar used the browser default,
+  nearly invisible on the forge-dark surface. It now has a token-styled thumb (`--text-muted`, → `--text`
+  on hover) that's legible in both themes (`scrollbar-color` + `::-webkit-scrollbar`).
 - **Wheel node outline invisible in light mode.** The base/partner node bezels used `--surface` (white
   in the light theme), so they had no visible edge there. Nodes now use a per-node contrast ring
   (`textOn`), giving a crisp outline in both themes.

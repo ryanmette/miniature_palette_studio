@@ -57,7 +57,10 @@ main { max-width: 1180px; margin: 0 auto; padding: 20px; display: grid; grid-tem
 input[type="search"], select { height: var(--tap); border: 1px solid var(--border); border-radius: var(--r-ctrl);
   background: var(--surface); color: var(--text); padding: 0 10px; font-family: inherit; font-size: 13px; width: 100%; }
 input:focus, select:focus, .hexin:focus-within { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
-.list { max-height: 60vh; overflow: auto; padding: 6px; }
+.list { max-height: 60vh; overflow: auto; padding: 6px; scrollbar-width: thin; scrollbar-color: var(--text-muted) transparent; }
+.list::-webkit-scrollbar { width: 11px; }
+.list::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 999px; border: 2px solid var(--surface); background-clip: padding-box; }
+.list::-webkit-scrollbar-thumb:hover { background: var(--text); }
 .paintrow { display: flex; align-items: center; gap: 2px; }
 .paint { display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: var(--r-ctrl); cursor: pointer; border: 1px solid transparent; flex: 1; min-width: 0; text-align: left; background: transparent; color: var(--text); }
 .paint:hover { background: var(--surface-2); }
