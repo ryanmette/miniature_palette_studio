@@ -1,7 +1,7 @@
 // a11y.js — colour-vision-deficiency simulation + WCAG contrast (CLAUDE.md §7).
 // Pure: no DOM. CVD uses Machado et al. (2009) severity-1.0 matrices applied in LINEAR RGB.
 
-import { hexToRgb, rgbToHex, rgbToLinear, linearToRgb, clamp01, contrastRatio } from './color.js';
+import { hexToRgb, rgbToHex, rgbToLinear, linearToRgb, clamp01, contrastRatio, deltaE2000, hexToLab } from './color.js';
 
 /** Machado et al. (2009), severity 1.0. Row-major 3×3, operate on linear RGB. */
 export const CVD_MATRICES = Object.freeze({
@@ -50,3 +50,16 @@ export function wcag(a, b) {
 }
 
 export { contrastRatio } from './color.js';
+
+/** Smallest ΔE2000 between any pair of colours after simulating a CVD type (collision risk). */
+export function minPairDelta(hexes, type) {
+  const labs = hexes.map(h => hexToLab(simulateCvd(h, type)));
+  let delta = Infinity, pair = null;
+  for (let i = 0; i < labs.length; i++) {
+    for (let j = i + 1; j < labs.length; j++) {
+      const d = deltaE2000(labs[i], labs[j]);
+      if (d < delta) { delta = d; pair = [i, j]; }
+    }
+  }
+  return { delta, pair };
+}

@@ -125,6 +125,17 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .mrow .arr { color: var(--text-faint); }
 .mrow .mn { font-weight: 500; min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* accessibility (M7) */
+.crow { display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center; margin: 7px 0; }
+.crow .clab { font-size: 12px; font-weight: 500; }
+.cstrip { display: flex; gap: 5px; }
+.ctr { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; }
+.ctrbox { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 12px; }
+.ctrbox .pair { display: flex; gap: 7px; margin: 8px 0; }
+.ratio { font-size: 20px; font-weight: 600; font-family: var(--display); }
+.collide { margin-top: 16px; font-size: 12.5px; background: var(--warning-weak); color: var(--warning); border-radius: var(--r-ctrl); padding: 10px 12px; }
+.collide.ok { background: var(--success-weak); color: var(--success); }
+
 /* responsive */
 @media (max-width: 860px) {
   main { grid-template-columns: 1fr; gap: 16px; }

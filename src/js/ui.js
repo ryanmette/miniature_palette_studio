@@ -101,3 +101,28 @@ export function miniRoles(scheme) {
   }).join('')}</div>`;
 }
 
+/** Accessibility panel. model: { names, sims:[{label,colors}], contrasts:[{a,b,labelA,labelB,ratio,passAAText,passAALarge}], collision }. */
+export function a11yPanel(model) {
+  const strip = cols => `<div class="cstrip">${cols.map(c => `<span class="sw" style="flex:1;height:30px;background:${c}"></span>`).join('')}</div>`;
+  const simRows = model.sims.map(s => `<div class="crow"><span class="clab">${esc(s.label)}</span>${strip(s.colors)}</div>`).join('');
+  const verdict = c => c.passAAText ? ['Passes AA text', 'var(--success)'] : c.passAALarge ? ['Large/UI only', 'var(--warning)'] : ['Fails AA', 'var(--danger)'];
+  const ctr = model.contrasts.map(c => {
+    const [v, col] = verdict(c);
+    return `<div class="ctrbox"><div class="ttl">${esc(c.labelA)} ↔ ${esc(c.labelB)}</div>`
+      + `<div class="pair">${swatch(c.a, '', 'width:24px;height:24px')}${swatch(c.b, '', 'width:24px;height:24px')}</div>`
+      + `<div class="ratio" style="color:${col}">${c.ratio.toFixed(1)}:1</div>`
+      + `<div style="font-size:11.5px;color:${col};font-weight:500">${v}</div></div>`;
+  }).join('');
+  let coll;
+  if (model.collision) {
+    const s = model.collision.suggestion;
+    coll = `<div class="collide"><strong>Heads-up:</strong> ${esc(model.collision.roles[0])} and ${esc(model.collision.roles[1])} look similar under deuteranopia (ΔE ${model.collision.delta.toFixed(1)}).`
+      + (s ? ` Try a shifted accent ${swatch(s.hex, '', 'width:16px;height:16px;display:inline-block;vertical-align:-2px')}${s.match ? ' — nearest paint ' + esc(s.match.paint.name) + ' (' + esc(s.match.paint.brand) + ')' : ''}.` : '')
+      + '</div>';
+  } else {
+    coll = '<div class="collide ok">No major colour-blindness collisions in this scheme.</div>';
+  }
+  return `<div class="micro" style="margin:14px 0 8px">Colour-blindness simulation (role colours)</div>${simRows}`
+    + `<div class="micro" style="margin:18px 0 8px">Contrast (WCAG 2.1)</div><div class="ctr">${ctr}</div>${coll}`;
+}
+

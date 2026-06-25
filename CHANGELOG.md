@@ -6,7 +6,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Planned
-- M7–M9: accessibility module, owned/compare/export, deploy + embed guide.
+- M8–M9: owned-paints / compare / export, deploy + embed guide.
+
+## [0.8.0] — 2026-06-24
+### Added
+- **M7 — accessibility** (Accessibility tab): colour-blindness simulation (protan/deutan/tritan) of the
+  role colours, WCAG contrast cards (Body↔Accent / white / black), and a collision flag + safe-swap
+  accent suggestion when role colours merge under deuteranopia. `a11y.minPairDelta` (unit-tested).
 
 ## [0.7.0] — 2026-06-24
 ### Added

@@ -3,7 +3,8 @@
 
 import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue } from './color.js';
-import { loadDataset, equivalents, nearestPaints } from './data.js';
+import { simulateCvd, wcag, minPairDelta } from './a11y.js';
+import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js';
 import { buildScheme } from './scheme.js';
 import * as ui from './ui.js';
 
@@ -96,7 +97,32 @@ function renderEquiv() {
     $('#panel-equiv').innerHTML = ui.equivalentsPanel(`your colour ${baseHex()}`, nearestPaints(state.idx, baseHex(), 8));
   }
 }
-function renderA11y() { $('#panel-a11y').innerHTML = ui.placeholder('Accessibility checks — arriving in M7.'); }
+function renderA11y() {
+  const s = state.scheme = buildScheme(state.idx, baseHex(), state.harmony, matchOpts());
+  const colors = s.roles.map(r => r.idealHex);
+  const names = s.roles.map(r => r.role);
+  const sims = [
+    { label: 'Normal', colors },
+    { label: 'Deuteranopia', colors: colors.map(c => simulateCvd(c, 'deuteranopia')) },
+    { label: 'Protanopia', colors: colors.map(c => simulateCvd(c, 'protanopia')) },
+    { label: 'Tritanopia', colors: colors.map(c => simulateCvd(c, 'tritanopia')) },
+  ];
+  const mk = (a, b, labelA, labelB) => { const w = wcag(a, b); return { a, b, labelA, labelB, ratio: w.ratio, passAAText: w.passAAText, passAALarge: w.passAALarge }; };
+  const contrasts = [mk(colors[0], colors[2], 'Body', 'Accent'), mk(colors[0], '#FFFFFF', 'Body', 'white'), mk(colors[0], '#000000', 'Body', 'black')];
+  const col = minPairDelta(colors, 'deuteranopia');
+  let collision = null;
+  if (col.delta < 10) {
+    collision = { roles: [names[col.pair[0]], names[col.pair[1]]], delta: col.delta };
+    let bestMin = col.delta, best = null;
+    for (const d of [25, -25, 40, -40, 55, -55]) {
+      const alt = rotateHue(colors[2], d);
+      const m = minPairDelta([colors[0], colors[1], alt, colors[3]], 'deuteranopia').delta;
+      if (m > bestMin + 1) { bestMin = m; best = alt; }
+    }
+    if (best) collision.suggestion = { hex: best, match: nearestPaint(state.idx, best, matchOpts()) };
+  }
+  $('#panel-a11y').innerHTML = ui.a11yPanel({ names, sims, contrasts, collision });
+}
 const renderers = { plan: renderPlan, explore: renderExplore, equiv: renderEquiv, a11y: renderA11y };
 function renderActive() { renderers[state.tab](); }
 

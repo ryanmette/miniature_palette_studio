@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { simulateCvd, CVD_TYPES, CVD_MATRICES, wcag, WCAG_AA } from '../src/js/a11y.js';
+import { simulateCvd, CVD_TYPES, CVD_MATRICES, wcag, WCAG_AA, minPairDelta } from '../src/js/a11y.js';
 
 test('three CVD types with 3×3 matrices', () => {
   assert.deepEqual(CVD_TYPES, ['protanopia', 'deuteranopia', 'tritanopia']);
@@ -30,4 +30,11 @@ test('WCAG verdicts', () => {
   assert.equal(lo.passAAText, false);
   assert.equal(WCAG_AA.text, 4.5);
   assert.equal(WCAG_AA.large, 3.0);
+});
+
+test('minPairDelta flags red/green collision under deuteranopia', () => {
+  const far = minPairDelta(['#C01411', '#FFFFFF', '#08085A'], 'deuteranopia');
+  const near = minPairDelta(['#0F702A', '#C01411'], 'deuteranopia'); // green vs red → merge
+  assert.ok(near.delta < far.delta);
+  assert.deepEqual(near.pair, [0, 1]);
 });
