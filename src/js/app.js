@@ -127,6 +127,7 @@ function setupWheel() {
     const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
     for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = ring; ctx.stroke();
+    if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
   }
   wheelDraw = draw;          // expose the redraw for discrete base/harmony changes (picker, hex, harmony)
   let raf = 0;
@@ -144,33 +145,67 @@ function setupWheel() {
   }
   const pointerXY = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height)]; };
   const pointerPolar = e => { const [px, py] = pointerXY(e), dx = px - cx, dy = py - cy; return [(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, Math.max(0, Math.min(1, Math.hypot(dx, dy) / R))]; };
-  function hitNodes() {                  // screen positions of every grabbable node (base, partners, free)
+  function hitNodes() {                  // every grabbable node: kind, its hue/sat, and screen position
     const [h, s] = rgbToHsl(hexToRgb(baseHex())), [bx, by] = pos(h, s);
-    const ns = [{ kind: 'base', x: bx, y: by }];
-    HARMONY_OFFSETS[state.harmony].forEach(o => { const [x, y] = pos(h + o, s); ns.push({ kind: 'partner', deg: o, x, y }); });
-    state.extraNodes.forEach((o, i) => { const [x, y] = pos(o.h, o.s); ns.push({ kind: 'free', idx: i, x, y }); });
+    const ns = [{ kind: 'base', h, s, x: bx, y: by }];
+    HARMONY_OFFSETS[state.harmony].forEach(o => { const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
+    state.extraNodes.forEach((o, i) => { const [x, y] = pos(o.h, o.s); ns.push({ kind: 'free', idx: i, h: o.h, s: o.s, x, y }); });
     return ns;
   }
   function pickNode(e) {                 // nearest node within the touch-safe hit radius (free > partner > base on a tie)
     const [px, py] = pointerXY(e);
     let best = null;
-    for (const n of hitNodes()) {
-      const d = Math.hypot(n.x - px, n.y - py); if (d > NODE.hit) continue;
+    hitNodes().forEach((n, i) => {
+      const d = Math.hypot(n.x - px, n.y - py); if (d > NODE.hit) return;
       const pri = n.kind === 'free' ? 0 : n.kind === 'partner' ? 1 : 2;
-      if (!best || d < best.d - 4 || (d < best.d + 4 && pri < best.pri)) best = { ...n, d, pri };
-    }
+      if (!best || d < best.d - 4 || (d < best.d + 4 && pri < best.pri)) best = { ...n, d, pri, index: i };
+    });
     return best;
   }
-  let active = null, dragging = false;
+  let active = null, dragging = false, activeIdx = 0, focused = false;
   function applyDrag(e) {                // route the drag to whichever node was grabbed
     const [ph, ps] = pointerPolar(e);
     if (active && active.kind === 'partner') setBase((ph - active.deg + 360) % 360, ps);   // rotate the whole harmony rigidly
     else if (active && active.kind === 'free') { state.extraNodes[active.idx] = { h: ph, s: ps }; commit(); }
     else setBase(ph, ps);               // base node, or empty space → move the base
   }
-  cv.addEventListener('pointerdown', e => { dragging = true; active = pickNode(e); cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });
+  cv.addEventListener('pointerdown', e => { dragging = true; active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });
   cv.addEventListener('pointermove', e => { if (dragging) applyDrag(e); });
   cv.addEventListener('pointerup', () => { dragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); });
+  // --- keyboard operability (WCAG): focus the wheel, then arrows adjust the active node, [ ] cycle, +/- add/remove ---
+  function announceActive() {
+    const ns = hitNodes(); if (!ns.length) return;
+    const n = ns[Math.min(activeIdx, ns.length - 1)];
+    const label = n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added colour' : `Partner ${Math.round(n.deg)} degrees`;
+    const hex = rgbToHex(hslToRgb([n.h, n.s, state.wheelL]));
+    const m = nearestPaint(state.idx, hex, matchOpts());
+    $('#status').textContent = m ? `${label}, ${hex}, nearest ${m.paint.name}, ΔE ${m.deltaE.toFixed(1)}.` : `${label}, ${hex}, no close paint.`;
+  }
+  function nudgeActive(dh, ds) {
+    const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1);
+    const n = ns[activeIdx];
+    const nh = ((n.h + dh) % 360 + 360) % 360, nsv = Math.max(0, Math.min(1, n.s + ds));
+    if (n.kind === 'free') { state.extraNodes[n.idx] = { h: nh, s: nsv }; commit(); }
+    else setBase(n.kind === 'partner' ? ((nh - n.deg) % 360 + 360) % 360 : nh, nsv);
+  }
+  cv.addEventListener('focus', () => { focused = true; const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1); announceActive(); draw(); });
+  cv.addEventListener('blur', () => { focused = false; draw(); });
+  cv.addEventListener('keydown', e => {
+    const len = hitNodes().length, big = e.shiftKey ? 5 : 1;
+    let handled = true;
+    switch (e.key) {
+      case 'ArrowLeft': nudgeActive(-2 * big, 0); break;
+      case 'ArrowRight': nudgeActive(2 * big, 0); break;
+      case 'ArrowUp': nudgeActive(0, 0.04 * big); break;
+      case 'ArrowDown': nudgeActive(0, -0.04 * big); break;
+      case '[': activeIdx = (activeIdx - 1 + len) % len; announceActive(); draw(); break;
+      case ']': activeIdx = (activeIdx + 1) % len; announceActive(); draw(); break;
+      case '+': case '=': addFreeNode(); activeIdx = hitNodes().length - 1; announceActive(); draw(); break;
+      case '-': case '_': removeFreeNode(); activeIdx = Math.min(activeIdx, hitNodes().length - 1); announceActive(); draw(); break;
+      default: handled = false;
+    }
+    if (handled) e.preventDefault();
+  });
   $('#wl').addEventListener('input', e => { state.wheelL = +e.target.value / 100; const [h, s] = rgbToHsl(hexToRgb(baseHex())); setBase(h, s); });
   $('#wrand').addEventListener('click', () => setBase(Math.random() * 360, 0.5 + Math.random() * 0.45));
   measure();

@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Keyboard-operable wheel (P0.6 / S6, WCAG).** The now-central wheel is focusable (`tabindex=0`,
+  `role="application"`); arrow keys adjust the focused colour (hue ±2°, saturation ±0.04; Shift = ×5),
+  `[`/`]` cycle between colours, and `+`/`−` add/remove a free colour. The focused node shows an accent
+  halo and a visible focus ring, and every change announces the node + its nearest real paint + ΔE via
+  the `aria-live` status region. Per-frame nearest-paint scans (≤ rule + free nodes ≈ 10) stay under the
+  §6 budget; the canvas is event-driven so `prefers-reduced-motion` is unaffected.
 - **Add / remove free colours on the wheel (P0.5 / S5).** A `+` drops a new draggable colour node at
   the widest hue gap (accent-ringed on the wheel, capped at 6); `−` removes the last. Each free node
   gets its own live-palette "Added" column with its nearest real paint + ΔE + quality, and persists in
