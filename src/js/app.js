@@ -1,7 +1,7 @@
 // app.js — application state, dataset loading, entry modes, tabs, conveniences, theme, URL sharing.
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
-import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS } from './harmony.js';
+import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js';
@@ -15,6 +15,7 @@ const state = {
   harmony: 'complementary',
   q: '', brand: '', seedRole: 'main', tab: 'plan', theme: 'light',
   owned: new Set(), ownedOnly: false, compareA: null, wheelL: null,
+  extraNodes: [], showReal: false,   // free/added wheel nodes [{h,s}] (S5); live-palette ideal↔real fill
 };
 
 const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
@@ -47,8 +48,19 @@ function renderPlan() {
     + ui.roleSlots(state.scheme);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
-/** Render the live palette beside the wheel (S1: role list; S3 swaps to the variable harmony palette). */
-function renderLive() { const el = $('#livepal'); if (el) el.innerHTML = ui.miniRoles(currentScheme()); }
+/** Derived palette: harmony-rule colours (never stored) + any free/added nodes. Feeds wheel + live palette. */
+function paletteNodes() {
+  const base = schemeBase();
+  const rule = harmonize(base, state.harmony).map((n, i) => ({ id: 'p' + i, kind: i ? 'partner' : 'base', hex: n.hex, deg: n.deg }));
+  const free = state.extraNodes.map((o, i) => ({ id: 'x' + i, kind: 'free', deg: null, hex: rgbToHex(hslToRgb([o.h, o.s, state.wheelL])) }));
+  return [...rule, ...free];
+}
+/** Render the variable live palette: one column per harmony/free colour → nearest paint (ideal/real fill). */
+function renderLive() {
+  const el = $('#livepal'); if (!el) return;
+  const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, matchOpts()) }));
+  el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal');
+}
 /** Redraw the always-visible studio (wheel + live palette) after a discrete base/harmony change. */
 function refreshStudio() {
   state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
@@ -177,6 +189,7 @@ function updateUrl() {
   if (state.tab !== 'plan') p.set('v', state.tab);
   if (state.seedRole === 'accent') p.set('r', 'accent');
   if (state.theme === 'dark') p.set('t', 'dark');
+  if (state.showReal) p.set('f', '1');
   history.replaceState(null, '', '?' + p.toString());
 }
 /** Debounced URL write for rapid-fire updates (wheel/slider drag); see setBase(). */
@@ -267,6 +280,12 @@ function wire() {
     for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
     refreshStudio(); renderActive(); announce(); updateUrl();
   });
+  $('#realtoggle').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.showReal = b.dataset.fill === 'real';
+    for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
+    renderLive(); scheduleAnnounce(); updateUrl();
+  });
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
   $('#tabs').addEventListener('keydown', e => {
     const tabs = [...$('#tabs').children];
@@ -309,12 +328,14 @@ async function init() {
 
   const h = url.get('h'); if (h && isHarmony(h)) state.harmony = h;
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;
+  if (url.get('f') === '1') state.showReal = true;
   if (url.get('r') === 'accent') { state.seedRole = 'accent'; for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'accent')); }
   const c = url.get('c');
   if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();
   else state.baseId = state.idx.paints[0].id;
 
   $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
+  for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   $('#hex').value = baseHex().replace('#', '');
   syncTabs();
   wire();

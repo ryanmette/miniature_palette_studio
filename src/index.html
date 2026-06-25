@@ -53,9 +53,13 @@
           <div class="wctrl"><span class="micro">Light</span><input id="wl" type="range" min="6" max="94" step="1" aria-label="Lightness" style="flex:1" /><button class="btn" id="wrand" style="height:32px;padding:0 12px">↻ Shuffle</button></div>
         </div>
         <div class="palcol">
+          <div class="seg" id="seg" role="group" aria-label="Harmony type" style="margin-bottom:12px"></div>
           <div class="palhead">
             <div class="micro">Live palette → nearest paint</div>
-            <div class="seg" id="seg" role="group" aria-label="Harmony type"></div>
+            <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">
+              <button data-fill="ideal" aria-pressed="true">Ideal</button>
+              <button data-fill="real" aria-pressed="false">Real</button>
+            </div>
           </div>
           <div id="livepal" aria-live="off"></div>
         </div>

@@ -114,16 +114,25 @@ export function equivalentsPanel(name, equivs) {
     }).join('')}</div>`;
 }
 
-/** Compact live scheme rows for the Explore wheel: ideal → nearest paint + ΔE. */
-export function miniRoles(scheme) {
-  return `<div class="mini">${scheme.roles.map(r => {
-    const m = r.match;
-    return `<div class="mrow">${swatch(r.idealHex, '', 'width:24px;height:24px')}<span class="arr">→</span>`
-      + (m ? swatch(m.paint.hex, '', 'width:24px;height:24px') : '')
-      + `<span class="mn">${esc(r.role)}: ${m ? esc(m.paint.name) : '—'}</span>`
-      + (m ? `<span class="de" style="margin:0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
-          + `<span style="color:${tier(m.quality.tier)}">${esc(m.quality.label)}</span>`
-          + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>` : '') + '</div>';
+/** Variable live palette beside the wheel: one column per harmony/free colour → its nearest real paint.
+ *  vm: [{ id, kind:'base'|'partner'|'free', deg, hex, match }]. `fill`: 'ideal' | 'real' (column fill).
+ *  The nearest paint + ΔE + quality label stay visible in BOTH fill modes (honesty, §2/§3.2). */
+export function livePalette(vm, fill) {
+  if (!vm.length) return '';
+  const real = fill === 'real';
+  return `<div class="livepal">${vm.map(c => {
+    const bg = safeColor(real && c.match ? c.match.paint.hex : c.hex);   // hex label + copy follow the fill
+    const t = textOn(bg), m = c.match;
+    const tag = c.kind === 'base' ? 'Base' : c.kind === 'free' ? 'Added' : `${c.deg > 0 ? '+' : ''}${c.deg}°`;
+    const foot = m
+      ? `<span class="lcname">${esc(m.paint.name)}</span>`
+        + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
+        + `<span style="color:${tier(m.quality.tier)}">${esc(m.quality.label)}</span>`
+        + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>`
+      : `<span class="lcname">—</span><span class="br">no close paint</span>`;
+    return `<button type="button" class="lcol" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}">`
+      + `<span class="lctop" style="background:${bg};color:${t}"><span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></span>`
+      + `<span class="lcfoot">${foot}</span></button>`;
   }).join('')}</div>`;
 }
 
