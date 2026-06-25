@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Palette Studio for Miniatures</title>
+<meta name="description" content="Pick a miniature paint and get colour harmonies matched to the real paints you can buy." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles/tokens.css" />
+<link rel="stylesheet" href="styles/app.css" />
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo"><span class="mark">P</span><span class="t">Palette Studio<small>for miniatures</small></span></div>
+    <div class="spacer"></div>
+    <div class="hexin" title="Type any hex to seed a scheme"><span>#</span><input id="hex" maxlength="6" inputmode="text" aria-label="Hex colour" /></div>
+    <div class="seg" id="seedRole" role="group" aria-label="Seed role">
+      <button data-role="main" aria-pressed="true">Main</button>
+      <button data-role="accent" aria-pressed="false">Accent</button>
+    </div>
+    <button class="btn icon" id="theme" aria-label="Toggle light/dark theme" title="Toggle theme">◐</button>
+  </div>
+</header>
+
+<main>
+  <aside class="card picker" aria-label="Paint picker">
+    <div class="head">
+      <label class="sr-only" for="q">Search paints</label>
+      <input id="q" type="search" placeholder="Search paints…" autocomplete="off" />
+      <label class="sr-only" for="brand">Filter by brand</label>
+      <select id="brand"><option value="">All brands</option></select>
+    </div>
+    <div class="list" id="list" role="listbox" aria-label="Paints" tabindex="0"></div>
+    <div class="count" id="count"></div>
+  </aside>
+
+  <section class="workspace">
+    <div class="card pad">
+      <div class="micro" id="baseLabel" style="margin-bottom:12px">Base colour · main</div>
+      <div class="hero" id="hero"></div>
+    </div>
+    <div class="card pad">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+        <div class="micro">Colour scheme</div>
+        <div class="seg" id="seg" role="group" aria-label="Harmony type"></div>
+      </div>
+      <div class="strip" id="strip" aria-hidden="true"></div>
+      <p class="hint">Ideal harmony colours. The nearest real paint, role mapping, and derived wash/highlight arrive in the next milestone.</p>
+    </div>
+  </section>
+</main>
+
+<div id="status" class="sr-only" aria-live="polite"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

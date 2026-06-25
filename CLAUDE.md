@@ -178,7 +178,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
 │   └── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5)
 ├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/a11y/data)
-└── src/                       ← the app (data shipped M1; engine M2; UI M3)
+└── src/                       ← the app (data ✓M1 · engine ✓M2 · shell ✓M3 · feature UI M4+)
     ├── index.html             ← (M3)
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)

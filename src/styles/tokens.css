@@ -1,0 +1,37 @@
+/* tokens.css — canonical design tokens (CLAUDE.md §3). Nothing else lives here.
+   One component system; only the colour set changes between the two themes. */
+:root {
+  /* shared, theme-independent */
+  --r-card: 14px; --r-ctrl: 10px; --r-pill: 999px;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  --tap: 38px;                      /* control height; 44px on touch (≤520px) */
+  --focus: 0 0 0 3px var(--accent-weak);
+  /* type scale */
+  --fs-display: 28px; --fs-h1: 22px; --fs-h2: 16px; --fs-body: 14px; --fs-small: 12.5px; --fs-micro: 11.5px;
+}
+
+/* LIGHT — "Playful Bright" (default) */
+:root, [data-theme="light"] {
+  --bg: #FBFBFE; --surface: #FFFFFF; --surface-2: #F1F2FF;
+  --border: #E6E7F8; --border-strong: #D3D5F0;
+  --text: #20223A; --text-muted: #6E7293; --text-faint: #A2A6C4;
+  --accent: #7C3AED; --accent-weak: #F0EAFE; --on-accent: #FFFFFF;
+  --success: #16A34A; --success-weak: #DCFCE7;
+  --warning: #C2740B; --warning-weak: #FBEBD3;
+  --danger: #DC2647;  --danger-weak: #FCE4EA;
+  --shadow: 0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+}
+
+/* DARK — "Grimdark Tabletop" */
+[data-theme="dark"] {
+  --bg: #141110; --surface: #1C1815; --surface-2: #251F1A;
+  --border: #3A302A; --border-strong: #4D4138;
+  --text: #ECE3D8; --text-muted: #A8998A; --text-faint: #7C6F62;
+  --accent: #C2912F; --accent-weak: #2C2113; --on-accent: #15100A;
+  --success: #86A559; --success-weak: #232A16;
+  --warning: #C9923A; --warning-weak: #2E2412;
+  --danger: #D2563F;  --danger-weak: #2E1A14;
+  --shadow: 0 1px 2px rgba(0,0,0,.45);
+}

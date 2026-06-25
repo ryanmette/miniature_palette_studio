@@ -6,7 +6,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Planned
-- M3: UI shell + paint picker + entry modes (`src/index.html`, `styles/`, `js/ui.js`, `js/app.js`).
+- M4: harmonies + **ideal-vs-actual** nearest-paint matching + scheme roles (body/secondary/accent/metal) + derived wash/highlight.
+
+## [0.4.0] — 2026-06-24
+### Added
+- **App shell (M3):** `src/index.html`, `styles/tokens.css` (two themes) + `styles/app.css` (components,
+  responsive, motion), `src/js/ui.js` (pure render helpers) and `src/js/app.js` (state, dataset loading,
+  **entry modes** — pick a paint · type a hex · main/accent seed — a theme toggle honouring
+  `prefers-color-scheme`, and `?c=&h=` URL share encoding). Loads the real 374-paint dataset and shows
+  the chosen colour's harmony (ideal colours).
+### Fixed
+- Harmony labels render in sentence case ("Split-complementary", §3.3) — caught by a render smoke test.
 
 ## [0.3.0] — 2026-06-24
 ### Added
