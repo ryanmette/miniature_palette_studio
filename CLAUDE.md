@@ -140,6 +140,9 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 - **Cards/panels**: `--surface`, 1px `--border`, `--r-lg`, `--shadow-card`, padding 16–24px.
 - **Badges/pills**: weak semantic fill + strong semantic text from the same family.
 - Focus: always visible `--focus` ring. Never remove outlines without a replacement.
+- **State vs interaction — two separate visual languages.** Express what a thing *is* (owned, to-buy, ΔE quality) with persistent **badges / fills**; express what you're *doing* to it (hover, selected, focused) with **rings / outlines / elevation**. Never conflate the two (e.g. a coloured border that means both "to-buy" and "selected").
+- **Semantic state colours are app-wide and single-meaning.** Owned, to-buy, and each ΔE-quality tier get **one** colour used everywhere it appears (collection, resolve, shopping list, future studio markers). Never overload one colour across two meanings — the to-buy colour must differ from the selection/marquee colour.
+- **Every interaction has a keyboard + screen-reader path.** Mouse-rich surfaces (the collection marquee / multi-select) provide keyboard equivalents (e.g. P/U/X + arrows) and announce selection/state via `aria-live`. WCAG 2.1 AA (§6/§9) holds on every new surface, not just the original ones.
 
 ### 3.6 Responsive & mobile (must work on phones)
 Embedded in a Squarespace page with heavy mobile traffic, so the tool is **mobile-first and
