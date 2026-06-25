@@ -8,17 +8,20 @@ const label = t => t.charAt(0).toUpperCase() + t.slice(1); // sentence case (§3
 
 export const swatch = (hex, cls = '', extra = '') => `<span class="sw ${cls}" style="background:${hex};${extra}"></span>`;
 
-/** Picker list of paints (each row is a focusable option button). */
+/** Picker list: each row pairs a focusable select button with a separate owned-toggle button.
+ *  (Keeping the toggle a sibling — not nested in the option — makes it keyboard-operable.) */
 export function pickerList(paints, selectedId, owned = new Set()) {
   if (!paints.length) return `<div style="padding:18px;color:var(--text-faint);font-size:13px">No paints match.</div>`;
   return paints.map(p => {
     const own = owned.has(p.id);
-    return `<button class="paint" role="option" data-id="${esc(p.id)}" aria-selected="${p.id === selectedId}">`
+    return `<div class="paintrow">`
+      + `<button class="paint" role="option" data-id="${esc(p.id)}" aria-selected="${p.id === selectedId}">`
       + swatch(p.hex, '', 'width:30px;height:30px')
       + `<span style="min-width:0;flex:1"><span class="nm">${esc(p.name)}</span><br>`
       + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</span></span>`
-      + `<span class="own${own ? ' on' : ''}" data-own="${esc(p.id)}" role="checkbox" aria-checked="${own}" title="Mark as owned">${own ? '★' : '☆'}</span>`
-      + '</button>';
+      + `</button>`
+      + `<button class="own${own ? ' on' : ''}" data-own="${esc(p.id)}" aria-pressed="${own}" aria-label="Mark ${esc(p.name)} as owned" title="Mark as owned">${own ? '★' : '☆'}</button>`
+      + `</div>`;
   }).join('');
 }
 
@@ -40,15 +43,6 @@ export function hero(base) {
     + `<div style="color:var(--text-muted);font-size:13px;margin-top:2px">${meta}</div>`
     + `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${tags}</div>`
     + `<div class="hexline">${esc(base.hex)}</div></div>`;
-}
-
-/** Ideal-colour strip for a harmony scheme ([{hex, deg}], base first). */
-export function harmonyStrip(scheme) {
-  return scheme.map(c => {
-    const t = textOn(c.hex);
-    const pill = t === '#FFFFFF' ? 'rgba(0,0,0,.38)' : 'rgba(255,255,255,.72)';
-    return `<div style="background:${c.hex}"><span class="lbl" style="background:${pill};color:${t}">${esc(c.hex)}</span></div>`;
-  }).join('');
 }
 
 /** Segmented control for harmony types. */
@@ -99,8 +93,6 @@ export function equivalentsPanel(name, equivs) {
         + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div></div></div>`;
     }).join('')}</div>`;
 }
-
-export const placeholder = msg => `<div class="placeholder">${esc(msg)}</div>`;
 
 /** Compact live scheme rows for the Explore wheel: ideal → nearest paint + ΔE. */
 export function miniRoles(scheme) {

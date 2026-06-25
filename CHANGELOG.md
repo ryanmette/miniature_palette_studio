@@ -5,7 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- **Explore wheel on WebKit/Safari:** dragging the wheel called `history.replaceState` on every
+  pointer move, which trips WebKit's ~100-calls-per-30s limit (uncaught `SecurityError` mid-drag).
+  The URL write is now debounced and flushed on pointer-up; the live redraw (≈12 nearest-paint
+  scans + canvas) is coalesced to one per animation frame, keeping the §6 search budget.
+- **Owned toggle keyboard access (WCAG AA):** the per-paint ★ was a non-focusable
+  `role="checkbox"` `<span>` nested inside the option `<button>` (invalid, mouse-only). It is now a
+  sibling toggle `<button aria-pressed>` with an accessible label; keyboard focus is restored to it
+  after the list re-renders.
+- **Export:** defer `URL.revokeObjectURL` until after the download starts (was revoked synchronously
+  right after `click()`).
+
 ### Changed
+- Removed unused `ui.harmonyStrip` / `ui.placeholder` helpers and their orphaned `.strip` / `.lbl` CSS.
 - CI (dev-only): bump GitHub Actions in `deploy.yml` to Node 24 majors — `checkout@v5`,
   `configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5` — clearing the Node 20
   deprecation warning. No runtime or app change.

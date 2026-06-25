@@ -54,7 +54,8 @@ input[type="search"], select { height: var(--tap); border: 1px solid var(--borde
   background: var(--surface); color: var(--text); padding: 0 10px; font-family: inherit; font-size: 13px; width: 100%; }
 input:focus, select:focus, .hexin:focus-within { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
 .list { max-height: 60vh; overflow: auto; padding: 6px; }
-.paint { display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: var(--r-ctrl); cursor: pointer; border: 1px solid transparent; width: 100%; text-align: left; background: transparent; }
+.paintrow { display: flex; align-items: center; gap: 2px; }
+.paint { display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: var(--r-ctrl); cursor: pointer; border: 1px solid transparent; flex: 1; min-width: 0; text-align: left; background: transparent; }
 .paint:hover { background: var(--surface-2); }
 .paint[aria-selected="true"] { background: var(--accent-weak); border-color: var(--accent); }
 .paint .nm { font-size: 13px; font-weight: 500; }
@@ -70,10 +71,6 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .tag.approx { background: var(--warning-weak); color: var(--warning); }
 .hexline { margin-top: 9px; font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
 
-/* harmony strip (ideal colours) */
-.strip { display: flex; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); height: 72px; margin: 16px 0 8px; }
-.strip > div { flex: 1; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 7px; }
-.strip .lbl { font-family: var(--mono); font-size: 10.5px; padding: 2px 6px; border-radius: 5px; }
 .hint { color: var(--text-faint); font-size: 12px; margin: 6px 0 0; }
 
 /* tabs + panels */
@@ -137,8 +134,11 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .collide.ok { background: var(--success-weak); color: var(--success); }
 
 /* owned star + compare + toast (M8) */
-.own { flex: none; font-size: 16px; line-height: 1; color: var(--text-faint); cursor: pointer; padding: 2px 4px; }
-.own.on { color: var(--accent); }
+.own { flex: none; font-size: 16px; line-height: 1; color: var(--text-faint); cursor: pointer; padding: 4px 6px;
+  background: transparent; border: none; border-radius: var(--r-ctrl); }
+.own:hover { color: var(--text-muted); }
+.own:focus-visible { outline: none; box-shadow: var(--focus); }
+.own.on, .own.on:hover { color: var(--accent); }
 .compare { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 10px 12px; margin: 4px 0 10px; background: var(--surface-2); }
 .cmphead { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
 .cmprow { display: flex; align-items: center; gap: 10px; margin: 5px 0; flex-wrap: wrap; }

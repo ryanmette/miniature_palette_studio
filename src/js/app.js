@@ -75,10 +75,15 @@ function setupWheel() {
     for (const o of offs) { const [x, y] = pos(h + o, s); ctx.fillStyle = rotateHue(b, o); ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, 11, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
   }
+  let raf = 0;
   function setBase(h, s) {
     state.customHex = rgbToHex(hslToRgb([h, s, state.wheelL]));
     $('#hex').value = state.customHex.replace('#', '');
-    draw(); renderMini(); renderHero(); announce(); updateUrl();
+    // Coalesce the heavy redraw (≈12 nearest-paint scans + canvas) to one per frame, and
+    // debounce the history write — a drag fires pointermove far faster than WebKit's
+    // ~100-calls-per-30s replaceState limit, which would otherwise throw mid-drag.
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderMini(); renderHero(); announce(); });
+    scheduleUrlUpdate();
   }
   function fromPointer(e) {
     const r = cv.getBoundingClientRect();
@@ -88,7 +93,7 @@ function setupWheel() {
   let dragging = false;
   cv.addEventListener('pointerdown', e => { dragging = true; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); fromPointer(e); });
   cv.addEventListener('pointermove', e => { if (dragging) fromPointer(e); });
-  cv.addEventListener('pointerup', () => { dragging = false; cv.style.cursor = 'grab'; });
+  cv.addEventListener('pointerup', () => { dragging = false; cv.style.cursor = 'grab'; updateUrl(); });
   $('#wl').addEventListener('input', e => { state.wheelL = +e.target.value / 100; const [h, s] = rgbToHsl(hexToRgb(baseHex())); setBase(h, s); });
   $('#wrand').addEventListener('click', () => setBase(Math.random() * 360, 0.5 + Math.random() * 0.45));
   draw();
@@ -138,7 +143,9 @@ function renderHero() {
   $('#baseLabel').textContent = `Base colour · ${state.seedRole}`;
 }
 function announce() { $('#status').textContent = `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.`; }
+let urlTimer = null;
 function updateUrl() {
+  if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
   const p = new URLSearchParams();
   p.set('c', baseHex().replace('#', ''));
   p.set('h', state.harmony);
@@ -146,6 +153,11 @@ function updateUrl() {
   if (state.seedRole === 'accent') p.set('r', 'accent');
   if (state.theme === 'dark') p.set('t', 'dark');
   history.replaceState(null, '', '?' + p.toString());
+}
+/** Debounced URL write for rapid-fire updates (wheel/slider drag); see setBase(). */
+function scheduleUrlUpdate() {
+  if (urlTimer) clearTimeout(urlTimer);
+  urlTimer = setTimeout(updateUrl, 250);
 }
 function renderAll() { renderList(); renderHero(); renderActive(); announce(); updateUrl(); }
 
@@ -164,7 +176,9 @@ function setTab(tab) {
 function toggleOwned(id) {
   if (state.owned.has(id)) state.owned.delete(id); else state.owned.add(id);
   try { localStorage.setItem('ps-owned', JSON.stringify([...state.owned])); } catch { /* */ }
-  renderList(); if (state.ownedOnly) renderActive();
+  renderList();
+  document.querySelector(`[data-own="${CSS.escape(id)}"]`)?.focus(); // keep keyboard place after re-render
+  if (state.ownedOnly) renderActive();
 }
 function toast(msg) {
   const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('role', 'status');
@@ -176,8 +190,9 @@ function doExport() {
   for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}\n`;
   t += '\nHex values are approximate; ΔE = perceptual distance to the ideal colour.\n';
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([t], { type: 'text/plain' }));
-  a.download = 'palette-shopping-list.txt'; a.click(); URL.revokeObjectURL(a.href);
+  const href = URL.createObjectURL(new Blob([t], { type: 'text/plain' }));
+  a.href = href; a.download = 'palette-shopping-list.txt'; a.click();
+  setTimeout(() => URL.revokeObjectURL(href), 0); // revoke after the click's download starts
   if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {});
   toast('Shopping list exported');
 }
