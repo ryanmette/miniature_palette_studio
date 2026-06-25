@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Two Thin Coats brand added — dataset v1.1.0.** Duncan Rhodes' *Two Thin Coats* range (all 180
+  paints across Waves 1–3) is now in the dataset (**554 paints**, 4 brands), pulled from the same
+  MIT-licensed community source (`Arcturus5404/miniature-paints`, `paints/Duncan.md`) the rest of the
+  data uses — provenance recorded in `src/data/SOURCES.md`, parser added to `build-dataset.mjs`. They
+  appear in the picker, the brand filter ("Two Thin Coats · Wave N"), and the cross-brand match pool.
+  Hard validation passes; soft flags (18 cross-brand near-dups, 45 thematic name/hue) reviewed/accepted.
 - **Keyboard-operable wheel (P0.6 / S6, WCAG).** The now-central wheel is focusable (`tabindex=0`,
   `role="application"`); arrow keys adjust the focused colour (hue ±2°, saturation ±0.04; Shift = ×5),
   `[`/`]` cycle between colours, and `+`/`−` add/remove a free colour. The focused node shows an accent

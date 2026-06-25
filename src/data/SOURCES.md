@@ -1,4 +1,4 @@
-# Data sources & attribution — dataset v1.0.0
+# Data sources & attribution — dataset v1.1.0
 
 Provenance for `src/data/paints.json` (built `2026-06-24`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
@@ -7,7 +7,7 @@ Every paint row also carries its own `source`, `sourceUrl`, and `captured` field
 
 | Source | Brands used | License | Captured |
 |--------|-------------|---------|----------|
-| **[Arcturus5404/miniature-paints](https://github.com/Arcturus5404/miniature-paints)** (Miniature Painter Pro) | Citadel (Base/Layer/Shade/Contrast), Vallejo (Game Color + Model Color), Army Painter (Warpaints) | **MIT** | 2026-06-24 |
+| **[Arcturus5404/miniature-paints](https://github.com/Arcturus5404/miniature-paints)** (Miniature Painter Pro) | Citadel (Base/Layer/Shade/Contrast), Vallejo (Game Color + Model Color), Army Painter (Warpaints), Two Thin Coats (Duncan Rhodes; Waves 1–3, `paints/Duncan.md`) | **MIT** | 2026-06-24 |
 
 > **MIT License** — Copyright (c) 2022 Rick Fleuren. Permission is hereby granted, free of charge,
 > to any person obtaining a copy of this software and associated documentation files (the "Software"),
@@ -23,8 +23,9 @@ not copied.
 - Built by [`scripts/build-dataset.mjs`](../../scripts/build-dataset.mjs) (re-fetch the three brand
   markdown files from the source repo into a raw dir, then run the script).
 - Citadel rows are transcribed from `paints/Citadel_Colour.md` (current Base/Layer/Shade/Contrast);
-  Army Painter (Warpaints) and Vallejo (Game/Model Color) are parsed from their files.
-- **374 paints** — Citadel 147, Vallejo 150, Army Painter 77.
+  Army Painter (Warpaints), Vallejo (Game/Model Color), and Two Thin Coats (`paints/Duncan.md`, all
+  three Waves) are parsed from their files.
+- **554 paints** — Citadel 147, Vallejo 150, Army Painter 77, Two Thin Coats 180 (Duncan Rhodes, Waves 1–3).
 - All rows are `approx: true` (community-sourced). `lab` is derived at runtime, never stored.
 - v1 has **no precomputed equivalence groups**; cross-brand matches are computed at runtime by ΔE 2000.
 
@@ -34,13 +35,15 @@ Run [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs). On the 2026-
 
 - **Hard checks PASS** — valid sRGB hex, required fields, unique ids, allowed types.
 - **Soft flags (reviewed, accepted):**
-  - *Cross-brand near-duplicates (ΔE<1)* — blacks/whites genuinely match across brands; e.g. Ahriman
-    Blue ≈ Vallejo Dark Turquoise (ΔE 0.41) is a true equivalence. Informational, not errors.
-  - *Name/hue mismatches (32)* — thematic naming (teal paints named "green", golden "yellows",
+  - *Cross-brand near-duplicates (ΔE<1), 18 pairs* — blacks/whites/clears genuinely match across
+    brands; e.g. Two Thin Coats *Cursed Blue* ≈ Vallejo *Electric Blue* (ΔE 0.31) is a true
+    equivalence. Informational, not errors.
+  - *Name/hue mismatches (45)* — thematic naming (teal paints named "green", golden "yellows",
     "Gal Vorbak Red" a dark burgundy). Reviewed against source; hex values are correct.
 
 ## Re-verification cadence
 
 Revisit on manufacturer range changes and at least annually; `captured` dates make staleness visible
 (`CLAUDE.md` §8, dataset SemVer). Next planned: add per-brand confidence + curated equivalence groups,
-and widen brands (P3, Scale75, Reaper — all available under the same MIT source).
+and widen brands further (P3, Scale75, Reaper — all available under the same MIT source; **Two Thin
+Coats added in v1.1.0**).

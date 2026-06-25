@@ -5,15 +5,16 @@
  * Sources (all MIT-licensed, © 2022 Rick Fleuren, "Miniature Painter Pro"):
  *   - Citadel: embedded below (current Base/Layer/Shade/Contrast ranges), transcribed
  *     from paints/Citadel_Colour.md of github.com/Arcturus5404/miniature-paints
- *   - Army Painter (Warpaints) + Vallejo (Game Color + Model Color): parsed at build time
- *     from the staged raw markdown files (paints/Army_Painter.md, paints/Vallejo.md).
+ *   - Army Painter (Warpaints) + Vallejo (Game Color + Model Color) + Two Thin Coats (Duncan
+ *     Rhodes, all three Waves): parsed at build time from the staged raw markdown files
+ *     (paints/Army_Painter.md, paints/Vallejo.md, paints/Duncan.md).
  *
  * Per CLAUDE.md §5: hex is sRGB; Lab is derived at runtime (never stored). All entries are
  * community-sourced → approx:true. Cross-brand equivalents are computed at runtime by ΔE 2000
  * (no precomputed groups in v1). Provenance is recorded in data/SOURCES.md.
  *
  * Usage:  node scripts/build-dataset.mjs [RAW_DIR]
- *   RAW_DIR defaults to the staged fetch location; must contain army.md and vallejo.md.
+ *   RAW_DIR defaults to the staged fetch location; must contain army.md, vallejo.md, and duncan.md.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -27,6 +28,7 @@ const SRC = {
   Citadel: REPO + '/blob/main/paints/Citadel_Colour.md',
   'Army Painter': REPO + '/blob/main/paints/Army_Painter.md',
   Vallejo: REPO + '/blob/main/paints/Vallejo.md',
+  'Two Thin Coats': REPO + '/blob/main/paints/Duncan.md',
 };
 
 /* ---- Citadel: current ranges, transcribed from the fetched file ---- */
@@ -104,6 +106,11 @@ function parseBrandTable(text){           // for Army/Vallejo: |Name|Code|Set|R|
     .map(l=>{const c=l.split('|').map(x=>x.trim()); const m=(c[7]||'').match(/`#([0-9A-Fa-f]{6})`/);
       return m ? {name:c[1], line:c[3], hex:'#'+m[1].toUpperCase()} : null;}).filter(Boolean);
 }
+function parseDuncan(text){               // Two Thin Coats has no Code column: |Name|Set|R|G|B|Hex|
+  return text.split('\n').filter(l=>l.startsWith('|') && !l.startsWith('|---') && !l.startsWith('|Name'))
+    .map(l=>{const c=l.split('|').map(x=>x.trim()); const m=(c[6]||'').match(/`#([0-9A-Fa-f]{6})`/);
+      return m ? {name:c[1], line:c[2], hex:'#'+m[1].toUpperCase()} : null;}).filter(Boolean);
+}
 
 /* ---- assemble ---- */
 const paints = [];
@@ -127,10 +134,14 @@ for (const p of army) if (p.line === 'Warpaints') add('Army Painter','Warpaints'
 const vallejo = parseBrandTable(readFileSync(join(RAW,'vallejo.md'),'utf8'));
 for (const p of vallejo) if (p.line === 'Game Color' || p.line === 'Model Color') add('Vallejo', p.line, p.name, p.hex);
 
+// Two Thin Coats (Duncan Rhodes) — all three Waves, line = the Set (Wave 1/2/3)
+const duncan = parseDuncan(readFileSync(join(RAW,'duncan.md'),'utf8'));
+for (const p of duncan) add('Two Thin Coats', p.line, p.name, p.hex);
+
 paints.sort((a,b)=> a.brand.localeCompare(b.brand) || a.line.localeCompare(b.line) || a.name.localeCompare(b.name));
 
 const dataset = {
-  version: '1.0.0',
+  version: '1.1.0',
   generated: CAPTURED,
   license: 'Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.',
   attribution: 'Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.',
