@@ -181,6 +181,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/a11y/data)
 └── src/                       ← the app (✓ M1–M8: data, engine, shell, all feature UI)
     ├── index.html             ← (M3)
+    ├── CNAME · .nojekyll       ← GitHub Pages: custom domain (palette.ryanmette.com) + disable Jekyll (M9)
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)
     ├── js/color.js            ← pure color math (see §7). No DOM. (M2)
