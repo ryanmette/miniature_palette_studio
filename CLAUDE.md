@@ -143,8 +143,9 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 ### 3.6 Responsive & mobile (must work on phones)
 Embedded in a Squarespace page with heavy mobile traffic, so the tool is **mobile-first and
 fully responsive**, not a desktop layout that merely shrinks.
-- Breakpoints: **≤860px** → single column (picker collapses above the workspace); **≤520px** → compact paddings, header controls wrap (hex field full-width), role slots stack, tabs scroll horizontally.
-- **Touch targets ≥44px** below 520px (`--tap` → 44). The interactive wheel (M5) supports touch drag and fits a phone.
+- **Layout (all devices):** the harmony **wheel + live palette form an always-visible *studio*** at the top of the workspace; **Plan·roles / Equivalents / Accessibility** are drill-down tabs below it (the wheel is no longer a tab). The role-mapped ~60-30-10 ideal-vs-actual output lives in the **Plan** tab.
+- Breakpoints: **≤860px** → single column (picker collapses above the workspace; the studio stacks the wheel over the live palette); **≤520px** → compact paddings, header controls wrap (hex field full-width), role slots stack, tabs scroll horizontally.
+- **Touch targets ≥44px** below 520px (`--tap` → 44). The interactive wheel supports touch drag and fits a phone.
 - No horizontal page scroll; swatches and wheel scale fluidly. Verify at 360 / 768 / 1180px.
 
 ---

@@ -51,6 +51,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   set each draw, so the wheel adapts to the forge-dark theme (the hue ring and node fills stay colour data).
 
 ### Changed
+- **Wheel promoted to an always-visible studio hero (P0.1).** The harmony wheel + a live palette now
+  sit at the top of the workspace on every device (stacking the wheel over the palette ≤860px); the
+  `Explore` tab is removed and `Plan·roles / Equivalents / Accessibility` become drill-down tabs. The
+  wheel is built once as static markup and bound at init; picker/hex/harmony/seed changes refresh it
+  via `refreshStudio()`. Stale `?v=explore` links self-heal to Plan. Constitution §3.6 updated to match.
 - **Accessibility — tabs/list ARIA.** Scheme-view tabs now implement the full WAI-ARIA tabs pattern:
   `aria-controls`/`role="tabpanel"`/`aria-labelledby` linkage, roving `tabindex`, and
   Arrow/Home/End keyboard navigation. The paint picker drops the inconsistent

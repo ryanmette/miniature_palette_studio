@@ -47,18 +47,27 @@
       <div class="hero" id="hero"></div>
     </div>
     <div class="card pad">
-      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
-        <div class="micro">Colour scheme</div>
-        <div class="seg" id="seg" role="group" aria-label="Harmony type"></div>
+      <div class="stage">
+        <div class="wheelcol">
+          <canvas id="wheel" class="wcanvas" width="280" height="280" role="img" aria-label="Harmony wheel — drag a node to change the colour"></canvas>
+          <div class="wctrl"><span class="micro">Light</span><input id="wl" type="range" min="6" max="94" step="1" aria-label="Lightness" style="flex:1" /><button class="btn" id="wrand" style="height:32px;padding:0 12px">↻ Shuffle</button></div>
+        </div>
+        <div class="palcol">
+          <div class="palhead">
+            <div class="micro">Live palette → nearest paint</div>
+            <div class="seg" id="seg" role="group" aria-label="Harmony type"></div>
+          </div>
+          <div id="livepal" aria-live="off"></div>
+        </div>
       </div>
+    </div>
+    <div class="card pad">
       <div class="tabs" id="tabs" role="tablist" aria-label="Scheme views">
         <button role="tab" id="tab-plan" data-tab="plan" aria-controls="panel-plan" aria-selected="true" tabindex="0">Plan · roles</button>
-        <button role="tab" id="tab-explore" data-tab="explore" aria-controls="panel-explore" aria-selected="false" tabindex="-1">Explore · wheel</button>
         <button role="tab" id="tab-equiv" data-tab="equiv" aria-controls="panel-equiv" aria-selected="false" tabindex="-1">Equivalents</button>
         <button role="tab" id="tab-a11y" data-tab="a11y" aria-controls="panel-a11y" aria-selected="false" tabindex="-1">Accessibility</button>
       </div>
       <div data-panel="plan" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0"></div>
-      <div data-panel="explore" id="panel-explore" role="tabpanel" aria-labelledby="tab-explore" tabindex="0" hidden></div>
       <div data-panel="equiv" id="panel-equiv" role="tabpanel" aria-labelledby="tab-equiv" tabindex="0" hidden></div>
       <div data-panel="a11y" id="panel-a11y" role="tabpanel" aria-labelledby="tab-a11y" tabindex="0" hidden></div>
     </div>

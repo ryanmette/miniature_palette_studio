@@ -46,17 +46,14 @@ function renderPlan() {
     + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus a derived wash + highlight</div>'
     + ui.roleSlots(state.scheme);
 }
-function renderMini() { $('#mini').innerHTML = ui.miniRoles(currentScheme()); }
-function renderExplore() {
-  $('#panel-explore').innerHTML = `<div class="wheelwrap">
-    <div class="wheelcol">
-      <canvas id="wheel" class="wcanvas" width="280" height="280" role="img" aria-label="Harmony wheel — drag the centre node to change the base colour"></canvas>
-      <div class="wctrl"><span class="micro">Light</span><input id="wl" type="range" min="6" max="94" step="1" aria-label="Lightness" style="flex:1" /><button class="btn" id="wrand" style="height:32px;padding:0 12px">↻ Shuffle</button></div>
-    </div>
-    <div class="miniwrap"><div class="micro" style="margin-bottom:8px">Live scheme → nearest paint</div><div id="mini"></div></div>
-  </div>`;
-  setupWheel();
-  renderMini();
+let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
+/** Render the live palette beside the wheel (S1: role list; S3 swaps to the variable harmony palette). */
+function renderLive() { const el = $('#livepal'); if (el) el.innerHTML = ui.miniRoles(currentScheme()); }
+/** Redraw the always-visible studio (wheel + live palette) after a discrete base/harmony change. */
+function refreshStudio() {
+  state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
+  const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
+  wheelDraw(); renderLive();
 }
 function setupWheel() {
   const cv = $('#wheel'), ctx = cv.getContext('2d');
@@ -81,6 +78,7 @@ function setupWheel() {
     for (const o of offs) { const [x, y] = pos(h + o, s); ctx.fillStyle = rotateHue(b, o); ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = ring; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, 11, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = ring; ctx.stroke();
   }
+  wheelDraw = draw;          // expose the redraw for discrete base/harmony changes (picker, hex, harmony)
   let raf = 0;
   function setBase(h, s) {
     state.customHex = rgbToHex(hslToRgb([h, s, state.wheelL]));
@@ -88,7 +86,7 @@ function setupWheel() {
     // Coalesce the heavy redraw (≈12 nearest-paint scans + canvas) to one per frame, and
     // debounce the history write — a drag fires pointermove far faster than WebKit's
     // ~100-calls-per-30s replaceState limit, which would otherwise throw mid-drag.
-    if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderMini(); renderHero(); });
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderLive(); renderHero(); });
     scheduleUrlUpdate(); scheduleAnnounce();
   }
   function fromPointer(e) {
@@ -141,7 +139,7 @@ function renderA11y() {
   }
   $('#panel-a11y').innerHTML = ui.a11yPanel({ names, sims, contrasts, collision });
 }
-const renderers = { plan: renderPlan, explore: renderExplore, equiv: renderEquiv, a11y: renderA11y };
+const renderers = { plan: renderPlan, equiv: renderEquiv, a11y: renderA11y };
 function renderActive() { renderers[state.tab](); }
 
 /* ---- chrome ---- */
@@ -179,7 +177,7 @@ function scheduleAnnounce() {
   if (announceTimer) clearTimeout(announceTimer);
   announceTimer = setTimeout(announce, 400);
 }
-function renderAll() { renderList(); renderHero(); renderActive(); announce(); updateUrl(); }
+function renderAll() { renderList(); renderHero(); refreshStudio(); renderActive(); announce(); updateUrl(); }
 
 function setTheme(t) {
   state.theme = t === 'dark' ? 'dark' : 'light';
@@ -249,13 +247,13 @@ function wire() {
   $('#hex').addEventListener('input', e => {
     const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6).toUpperCase();
     e.target.value = v;
-    if (v.length === 6) { state.customHex = '#' + v; renderHero(); renderActive(); renderList(); announce(); updateUrl(); }
+    if (v.length === 6) { state.customHex = '#' + v; renderHero(); refreshStudio(); renderActive(); renderList(); announce(); updateUrl(); }
   });
   $('#seg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.harmony = b.dataset.h;
     for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
-    renderActive(); announce(); updateUrl();
+    refreshStudio(); renderActive(); announce(); updateUrl();
   });
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
   $('#tabs').addEventListener('keydown', e => {
@@ -272,7 +270,7 @@ function wire() {
     const b = e.target.closest('button'); if (!b) return;
     state.seedRole = b.dataset.role;
     for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
-    renderHero(); renderActive(); announce(); updateUrl();
+    renderHero(); refreshStudio(); renderActive(); announce(); updateUrl();
   });
   $('#owned').addEventListener('click', () => { state.ownedOnly = !state.ownedOnly; $('#owned').setAttribute('aria-pressed', String(state.ownedOnly)); renderActive(); });
   $('#compare').addEventListener('click', () => {
@@ -308,6 +306,7 @@ async function init() {
   $('#hex').value = baseHex().replace('#', '');
   syncTabs();
   wire();
+  setupWheel();   // wheel is now always-visible static markup; bind it once
   renderAll();
 }
 
