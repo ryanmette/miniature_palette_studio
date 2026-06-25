@@ -5,8 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Planned
-- M9: deploy (GitHub Pages) + Squarespace link/subdomain embed guide.
+
+## [1.0.0] — 2026-06-24
+### Added
+- **M9 — deploy.** `.github/workflows/deploy.yml` publishes `src/` to GitHub Pages on push to `main`;
+  `src/.nojekyll`; `docs/EMBED.md` covers deploy + surfacing on Squarespace via a **link or subdomain**
+  (no Business plan needed; inline iframe documented for Business). Git remote set to the project repo.
+- **v1.0.0 — feature-complete** static app: colour engine + 374-paint dataset + full UI
+  (plan / wheel / equivalents / accessibility, plus owned / compare / export / share), 28 tests,
+  zero runtime dependencies.
 
 ## [0.9.0] — 2026-06-24
 ### Added

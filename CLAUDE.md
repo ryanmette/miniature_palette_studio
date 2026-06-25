@@ -177,15 +177,17 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── scripts/                   ← dev tooling, NOT shipped (never required at runtime)
 │   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
 │   └── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5)
+├── .github/workflows/         ← deploy.yml — publish src/ to GitHub Pages (M9, dev-only)
 ├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/a11y/data)
-└── src/                       ← the app (data ✓M1 · engine ✓M2 · shell ✓M3 · feature UI M4+)
+└── src/                       ← the app (✓ M1–M8: data, engine, shell, all feature UI)
     ├── index.html             ← (M3)
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)
     ├── js/color.js            ← pure color math (see §7). No DOM. (M2)
     ├── js/data.js             ← load + index dataset, nearest-paint search (M2)
     ├── js/harmony.js          ← harmony generation (see §7) (M2)
-    ├── js/a11y.js             ← color-blindness sim + WCAG contrast (M2)
+    ├── js/a11y.js             ← colour-blindness sim + WCAG contrast + CVD collision (M2/M7)
+    ├── js/scheme.js           ← role mapping + ideal-vs-actual + wash/highlight (M4)
     ├── js/ui.js               ← rendering + events (M3)
     ├── js/app.js              ← state, URL share encoding, wiring (M3)
     └── data/
@@ -285,7 +287,7 @@ If any constant or formula changes, bump dataset/app version and note it in CHAN
 - **CHANGELOG.md** in Keep a Changelog format; update it in the same PR as the change.
 - **Tags** mark releases (`v0.1.0` = approved plan + mockup baseline).
 - **One concern per commit.** If a change touches design tokens, it updates §3 here too.
-- Deploy = push static `src/` to GitHub Pages (or Netlify); Squarespace embeds it via iframe (see `docs/EMBED.md` at M8).
+- Deploy = push `src/` to GitHub Pages via `.github/workflows/deploy.yml`; Squarespace **links** to it (an inline iframe needs the Business plan). See `docs/EMBED.md`.
 
 ---
 
