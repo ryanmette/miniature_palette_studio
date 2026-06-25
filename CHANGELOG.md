@@ -14,6 +14,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   plumbing, with a graceful "select manually" fallback).
 - **Active-tab auto-scroll.** When the scheme-view tab strip overflows on a narrow screen, selecting a
   tab (pointer or keyboard) now scrolls it into view (`scrollIntoView`, guarded to the overflow case).
+- **Full-bleed palette band (colour-as-hero).** The Plan view's 48px palette strip is now a bold
+  `clamp(104px, 17vh, 168px)` colour band; each segment is labelled with its role + hex (auto-luminance
+  via `textOn`), and stays a copyable `[data-copy]` button. Narrow screens show the hex only.
+- **Prominent Export CTA.** The terminal "Export shopping list" action is now the accent-filled
+  `.btn.primary` in the header, surfacing the one outcome a pure colour tool can't produce.
 
 ### Fixed
 - **Explore wheel on WebKit/Safari:** dragging the wheel called `history.replaceState` on every

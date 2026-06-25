@@ -86,9 +86,12 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .tabs button:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
 [data-panel] { animation: mh-fade .22s ease both; }
 @keyframes mh-fade { from { opacity: 0; } to { opacity: 1; } }
-.palette { display: flex; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); height: 48px; margin: 14px 0 0; }
-.palette > .pblock { flex: 1; border: none; padding: 0; cursor: pointer; }
-.palette > .pblock:focus-visible { outline: none; box-shadow: var(--focus); position: relative; z-index: 1; }
+.palette { display: flex; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); min-height: clamp(104px, 17vh, 168px); margin: 14px 0 0; }
+.palette > .pblock { flex: 1; border: none; padding: 10px 12px; cursor: pointer; display: flex; align-items: flex-end; text-align: left; }
+.palette > .pblock:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+.pblock .pbl { display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
+.pblock .pbr { font-size: 11.5px; font-weight: 600; opacity: .92; }
+.pblock .pbh { font-family: var(--mono); font-size: 12px; opacity: .85; }
 
 /* role slots (ideal vs actual) */
 .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 14px; }
@@ -173,6 +176,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
   .seg button { flex: 1; text-align: center; }
   #seg button { justify-content: center; }
   .hglyph { display: none; }          /* text-only harmony control on phones (no room for glyphs) */
+  .pblock .pbr { display: none; }     /* palette band keeps just the hex on narrow blocks */
 }
 
 /* motion — fades + gentle bounce (§3.4) */

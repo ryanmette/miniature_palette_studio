@@ -87,7 +87,8 @@ export function matchChip(m) {
 export const paletteOverview = scheme =>
   `<div class="palette">${scheme.roles.map(r => {
     const hex = safeColor(r.idealHex);
-    return `<button type="button" class="pblock" data-copy="${hex}" title="Copy ${hex}" aria-label="Copy ${esc(r.role)} colour ${hex}" style="background:${hex}"></button>`;
+    return `<button type="button" class="pblock" data-copy="${hex}" title="Copy ${hex}" aria-label="Copy ${esc(r.role)} colour ${hex}" style="background:${hex};color:${textOn(hex)}">`
+      + `<span class="pbl"><span class="pbr">${esc(r.role)}</span><span class="pbh">${hex}</span></span></button>`;
   }).join('')}</div>`;
 
 /** Role slots: each role's ideal → nearest real paint, plus a derived wash/highlight ladder. */
