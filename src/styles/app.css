@@ -40,6 +40,10 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
   border-radius: 8px; font-weight: 500; font-size: 12.5px; }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 .seg button:focus-visible { outline: none; box-shadow: var(--focus); }
+#seg button { display: inline-flex; align-items: center; gap: 6px; }
+.hglyph { width: 15px; height: 15px; flex: none; opacity: .85; }
+.hglyph line { stroke: currentColor; stroke-width: 1.3; }
+.hglyph circle { fill: currentColor; }
 
 /* layout */
 main { max-width: 1180px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
@@ -69,7 +73,9 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .tag { font-size: 11.5px; font-weight: 500; padding: 3px 9px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); }
 .tag.role { background: var(--accent-weak); color: var(--accent); }
 .tag.approx { background: var(--warning-weak); color: var(--warning); }
-.hexline { margin-top: 9px; font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+.hexline { margin-top: 9px; margin-left: -5px; display: inline-block; font-family: var(--mono); font-size: 13px; color: var(--text-muted); border: none; background: none; padding: 2px 5px; border-radius: 6px; cursor: pointer; }
+.hexline:hover { color: var(--text); background: var(--surface-2); }
+.hexline:focus-visible { outline: none; box-shadow: var(--focus); }
 
 .hint { color: var(--text-faint); font-size: 12px; margin: 6px 0 0; }
 
@@ -81,7 +87,8 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 [data-panel] { animation: mh-fade .22s ease both; }
 @keyframes mh-fade { from { opacity: 0; } to { opacity: 1; } }
 .palette { display: flex; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); height: 48px; margin: 14px 0 0; }
-.palette > div { flex: 1; }
+.palette > .pblock { flex: 1; border: none; padding: 0; cursor: pointer; }
+.palette > .pblock:focus-visible { outline: none; box-shadow: var(--focus); position: relative; z-index: 1; }
 
 /* role slots (ideal vs actual) */
 .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 14px; }
@@ -164,6 +171,8 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
   .hero .big { width: 64px; height: 64px; }
   .seg { width: 100%; }
   .seg button { flex: 1; text-align: center; }
+  #seg button { justify-content: center; }
+  .hglyph { display: none; }          /* text-only harmony control on phones (no room for glyphs) */
 }
 
 /* motion — fades + gentle bounce (§3.4) */

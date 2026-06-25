@@ -2,6 +2,7 @@
 // DOM wiring lives in app.js. Colour decisions come from the engine (color.js).
 
 import { textOn } from './color.js';
+import { HARMONY_OFFSETS } from './harmony.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const label = t => t.charAt(0).toUpperCase() + t.slice(1); // sentence case (§3.3)
@@ -47,12 +48,22 @@ export function hero(base) {
     + `<div><h2>${esc(base.name)}</h2>`
     + `<div style="color:var(--text-muted);font-size:13px;margin-top:2px">${meta}</div>`
     + `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${tags}</div>`
-    + `<div class="hexline">${esc(base.hex)}</div></div>`;
+    + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button></div>`;
 }
 
-/** Segmented control for harmony types. */
+/** Tiny line-art glyph of a harmony's geometry, generated from HARMONY_OFFSETS so it can't drift. */
+const harmonyGlyph = type => {
+  const angles = [0, ...(HARMONY_OFFSETS[type] || [])];
+  const cx = 11, cy = 11, r = 7;
+  const pt = a => [cx + Math.sin(a * Math.PI / 180) * r, cy - Math.cos(a * Math.PI / 180) * r];
+  const lines = angles.map(a => { const [x, y] = pt(a); return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; }).join('');
+  const dots = angles.map((a, i) => { const [x, y] = pt(a); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${i === 0 ? 2.4 : 1.7}"/>`; }).join('');
+  return `<svg class="hglyph" viewBox="0 0 22 22" aria-hidden="true">${lines}${dots}</svg>`;
+};
+
+/** Segmented control for harmony types — each option shows a glyph of its geometry + label. */
 export const segmented = (types, active) =>
-  types.map(t => `<button data-h="${esc(t)}" aria-pressed="${t === active}">${esc(label(t))}</button>`).join('');
+  types.map(t => `<button data-h="${esc(t)}" aria-pressed="${t === active}">${harmonyGlyph(t)}<span class="hlbl">${esc(label(t))}</span></button>`).join('');
 
 /** <option> list for the brand filter. */
 export const brandOptions = brands => brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
@@ -74,7 +85,10 @@ export function matchChip(m) {
 
 /** Small overview bar of the scheme's role ideal colours. */
 export const paletteOverview = scheme =>
-  `<div class="palette">${scheme.roles.map(r => `<div style="background:${safeColor(r.idealHex)}"></div>`).join('')}</div>`;
+  `<div class="palette">${scheme.roles.map(r => {
+    const hex = safeColor(r.idealHex);
+    return `<button type="button" class="pblock" data-copy="${hex}" title="Copy ${hex}" aria-label="Copy ${esc(r.role)} colour ${hex}" style="background:${hex}"></button>`;
+  }).join('')}</div>`;
 
 /** Role slots: each role's ideal → nearest real paint, plus a derived wash/highlight ladder. */
 export function roleSlots(scheme) {

@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Harmony-rule glyphs (Adobe-Color "hero" pass).** Each option in the scheme switcher now shows a
+  small line-art glyph of its geometry — generated from `HARMONY_OFFSETS` so it can't drift — beside the
+  label, for at-a-glance rule selection. Hidden below 520px where there's no room (labels stay).
+- **Click-to-copy colours.** The hero hex value and each palette-overview block are now accessible
+  `<button>`s that copy their hex via a delegated `[data-copy]` handler (reusing the toast/clipboard
+  plumbing, with a graceful "select manually" fallback).
+- **Active-tab auto-scroll.** When the scheme-view tab strip overflows on a narrow screen, selecting a
+  tab (pointer or keyboard) now scrolls it into view (`scrollIntoView`, guarded to the overflow case).
+
 ### Fixed
 - **Explore wheel on WebKit/Safari:** dragging the wheel called `history.replaceState` on every
   pointer move, which trips WebKit's ~100-calls-per-30s limit (uncaught `SecurityError` mid-drag).

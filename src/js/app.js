@@ -188,11 +188,14 @@ function setTheme(t) {
 }
 function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
 function syncTabs(focusActive = false) {
-  for (const b of $('#tabs').children) {
+  const tabs = $('#tabs');
+  for (const b of tabs.children) {
     const sel = b.dataset.tab === state.tab;
     b.setAttribute('aria-selected', String(sel));
     b.tabIndex = sel ? 0 : -1;        // roving tabindex (WAI-ARIA tabs pattern)
     if (sel && focusActive) b.focus();
+    // On narrow screens the tab strip scrolls horizontally — keep the active tab in view.
+    if (sel && tabs.scrollWidth > tabs.clientWidth) b.scrollIntoView({ inline: 'center', block: 'nearest' });
   }
   for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== state.tab;
 }
@@ -211,6 +214,11 @@ function toggleOwned(id) {
 function toast(msg) {
   const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('role', 'status');
   document.body.appendChild(d); setTimeout(() => d.remove(), 1700);
+}
+/** Click-to-copy for any [data-copy] element (hero hex, palette blocks). Best-effort + graceful fallback. */
+function copyText(val) {
+  if (navigator.clipboard) navigator.clipboard.writeText(val).then(() => toast(`Copied ${val}`)).catch(() => toast('Copy unavailable — select the value manually'));
+  else toast('Copy unavailable — select the value manually');
 }
 function doExport() {
   const s = currentScheme();
@@ -237,6 +245,7 @@ function wire() {
     const own = e.target.closest('.own'); if (own) { e.stopPropagation(); toggleOwned(own.dataset.own); return; }
     const b = e.target.closest('.paint'); if (b) selectPaint(b.dataset.id);
   });
+  $('main').addEventListener('click', e => { const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy); });
   $('#hex').addEventListener('input', e => {
     const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6).toUpperCase();
     e.target.value = v;
