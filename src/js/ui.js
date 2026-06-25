@@ -45,3 +45,48 @@ export const segmented = (types, active) =>
 
 /** <option> list for the brand filter. */
 export const brandOptions = brands => brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+
+const tier = t => `var(--${t})`;
+
+/** Render a nearest-paint match (or a graceful empty state). */
+export function matchChip(m) {
+  if (!m) return '<div class="br" style="color:var(--text-faint)">no close paint — consider mixing</div>';
+  const p = m.paint, q = m.quality;
+  return swatch(p.hex, 'act')
+    + `<div style="min-width:0"><div class="ttl">Nearest real paint</div>`
+    + `<div class="nm">${esc(p.name)}</div>`
+    + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</div>`
+    + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
+    + `<span style="color:${tier(q.tier)}">${esc(q.label)}</span>`
+    + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div></div>`;
+}
+
+/** Small overview bar of the scheme's role ideal colours. */
+export const paletteOverview = scheme =>
+  `<div class="palette">${scheme.roles.map(r => `<div style="background:${r.idealHex}"></div>`).join('')}</div>`;
+
+/** Role slots: each role's ideal → nearest real paint, plus a derived wash/highlight ladder. */
+export function roleSlots(scheme) {
+  const lad = (hex, m, cap) => `<div class="step">${swatch(hex, '')}<div class="cap">${cap}</div><div class="pn">${m ? esc(m.paint.name) : '—'}</div></div>`;
+  return `<div class="slots">${scheme.roles.map(r => `<div class="slot">`
+    + `<div class="shead"><span class="role">${esc(r.role)}</span><span class="wt">${esc(r.weight)}</span></div>`
+    + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match)}</div>`
+    + `<div class="ladder">${lad(r.wash.idealHex, r.wash.match, 'wash')}${lad(r.idealHex, r.match, 'base')}${lad(r.highlight.idealHex, r.highlight.match, 'highlight')}</div>`
+    + `</div>`).join('')}</div>`;
+}
+
+/** Cross-brand equivalents list (M6). `equivs`: [{paint, deltaE, quality}]. */
+export function equivalentsPanel(name, equivs) {
+  if (!equivs.length) return '<div class="placeholder">No other-brand matches in the dataset for this paint.</div>';
+  return `<p class="hint" style="margin:14px 0 0">Closest matches to <strong>${esc(name)}</strong> in other ranges (ΔE 2000).</p>`
+    + `<div class="eq">${equivs.map(e => {
+      const p = e.paint, q = e.quality;
+      return `<div class="eqc">${swatch(p.hex, '')}<div style="min-width:0">`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</div>`
+        + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tier(q.tier)}">${esc(q.label)}</span>`
+        + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div></div></div>`;
+    }).join('')}</div>`;
+}
+
+export const placeholder = msg => `<div class="placeholder">${esc(msg)}</div>`;
+

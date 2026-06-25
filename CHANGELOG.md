@@ -6,7 +6,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Planned
-- M4: harmonies + **ideal-vs-actual** nearest-paint matching + scheme roles (body/secondary/accent/metal) + derived wash/highlight.
+- M5–M9: interactive wheel, accessibility module, owned/compare/export, deploy + embed guide.
+
+## [0.5.0] — 2026-06-24
+### Added
+- **M4 — ideal-vs-actual.** `src/js/scheme.js` (pure) maps base + harmony → roles
+  (Body/Secondary/Accent/Metal), each with the **nearest real paint** (ΔE 2000) and a derived
+  **wash + highlight** (6 scheme tests). Tabbed workspace (Plan/Explore/Equivalents/Accessibility);
+  Plan renders the role slots; Equivalents lists cross-brand matches.
 
 ## [0.4.0] — 2026-06-24
 ### Added

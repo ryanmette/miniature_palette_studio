@@ -76,6 +76,43 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .strip .lbl { font-family: var(--mono); font-size: 10.5px; padding: 2px 6px; border-radius: 5px; }
 .hint { color: var(--text-faint); font-size: 12px; margin: 6px 0 0; }
 
+/* tabs + panels */
+.tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--border); margin-top: 8px; overflow-x: auto; }
+.tabs button { border: none; background: transparent; padding: 11px 2px; color: var(--text-muted); font-weight: 500; font-size: 13.5px; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+.tabs button:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
+[data-panel] { animation: mh-fade .22s ease both; }
+@keyframes mh-fade { from { opacity: 0; } to { opacity: 1; } }
+.palette { display: flex; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); height: 48px; margin: 14px 0 0; }
+.palette > div { flex: 1; }
+
+/* role slots (ideal vs actual) */
+.slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 14px; }
+.slot { border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px; background: var(--surface); }
+.slot .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.slot .role { font-family: var(--display); font-weight: 600; font-size: 14px; }
+.slot .wt { font-size: 11px; color: var(--text-faint); }
+.ivsa { display: flex; align-items: center; gap: 10px; }
+.ivsa .ideal, .ivsa .act { width: 44px; height: 44px; flex: none; }
+.ivsa .arr { color: var(--text-faint); }
+.ivsa .nm { font-size: 12.5px; font-weight: 500; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ivsa .br { font-size: 11px; color: var(--text-muted); }
+.ttl { font-size: 11px; color: var(--text-faint); font-weight: 500; margin-bottom: 2px; }
+.de { display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; font-weight: 500; }
+.de .dot { width: 7px; height: 7px; border-radius: 50%; }
+.badge { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px; border-radius: 5px; background: var(--surface-2); color: var(--text-muted); }
+.ladder { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
+.ladder .step { flex: 1; text-align: center; }
+.ladder .step .sw { width: 100%; height: 30px; }
+.ladder .step .cap { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.ladder .step .pn { font-size: 10.5px; font-weight: 500; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* generic chips/rows reused by equivalents + a11y */
+.eq { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 14px; }
+.eqc { display: flex; gap: 9px; align-items: center; border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 9px; }
+.eqc .sw { width: 38px; height: 38px; }
+.placeholder { color: var(--text-faint); font-size: 13px; padding: 24px 4px; }
+
 /* responsive */
 @media (max-width: 860px) {
   main { grid-template-columns: 1fr; gap: 16px; }

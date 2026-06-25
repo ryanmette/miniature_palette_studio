@@ -47,8 +47,16 @@
         <div class="micro">Colour scheme</div>
         <div class="seg" id="seg" role="group" aria-label="Harmony type"></div>
       </div>
-      <div class="strip" id="strip" aria-hidden="true"></div>
-      <p class="hint">Ideal harmony colours. The nearest real paint, role mapping, and derived wash/highlight arrive in the next milestone.</p>
+      <div class="tabs" id="tabs" role="tablist" aria-label="Scheme views">
+        <button role="tab" data-tab="plan" aria-selected="true">Plan · roles</button>
+        <button role="tab" data-tab="explore" aria-selected="false">Explore · wheel</button>
+        <button role="tab" data-tab="equiv" aria-selected="false">Equivalents</button>
+        <button role="tab" data-tab="a11y" aria-selected="false">Accessibility</button>
+      </div>
+      <div data-panel="plan" id="panel-plan"></div>
+      <div data-panel="explore" id="panel-explore" hidden></div>
+      <div data-panel="equiv" id="panel-equiv" hidden></div>
+      <div data-panel="a11y" id="panel-a11y" hidden></div>
     </div>
   </section>
 </main>

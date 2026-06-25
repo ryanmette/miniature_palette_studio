@@ -1,6 +1,6 @@
 {
   "name": "palette-studio-for-miniatures",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "description": "Static, dependency-free web tool for miniature paint palettes (harmonies + ideal-vs-actual matching).",
