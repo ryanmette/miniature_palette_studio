@@ -37,7 +37,7 @@
       <label class="sr-only" for="brand">Filter by brand</label>
       <select id="brand"><option value="">All brands</option></select>
     </div>
-    <div class="list" id="list" role="listbox" aria-label="Paints" tabindex="0"></div>
+    <div class="list" id="list" role="list" aria-label="Paints"></div>
     <div class="count" id="count"></div>
   </aside>
 
@@ -52,15 +52,15 @@
         <div class="seg" id="seg" role="group" aria-label="Harmony type"></div>
       </div>
       <div class="tabs" id="tabs" role="tablist" aria-label="Scheme views">
-        <button role="tab" data-tab="plan" aria-selected="true">Plan · roles</button>
-        <button role="tab" data-tab="explore" aria-selected="false">Explore · wheel</button>
-        <button role="tab" data-tab="equiv" aria-selected="false">Equivalents</button>
-        <button role="tab" data-tab="a11y" aria-selected="false">Accessibility</button>
+        <button role="tab" id="tab-plan" data-tab="plan" aria-controls="panel-plan" aria-selected="true" tabindex="0">Plan · roles</button>
+        <button role="tab" id="tab-explore" data-tab="explore" aria-controls="panel-explore" aria-selected="false" tabindex="-1">Explore · wheel</button>
+        <button role="tab" id="tab-equiv" data-tab="equiv" aria-controls="panel-equiv" aria-selected="false" tabindex="-1">Equivalents</button>
+        <button role="tab" id="tab-a11y" data-tab="a11y" aria-controls="panel-a11y" aria-selected="false" tabindex="-1">Accessibility</button>
       </div>
-      <div data-panel="plan" id="panel-plan"></div>
-      <div data-panel="explore" id="panel-explore" hidden></div>
-      <div data-panel="equiv" id="panel-equiv" hidden></div>
-      <div data-panel="a11y" id="panel-a11y" hidden></div>
+      <div data-panel="plan" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0"></div>
+      <div data-panel="explore" id="panel-explore" role="tabpanel" aria-labelledby="tab-explore" tabindex="0" hidden></div>
+      <div data-panel="equiv" id="panel-equiv" role="tabpanel" aria-labelledby="tab-equiv" tabindex="0" hidden></div>
+      <div data-panel="a11y" id="panel-a11y" role="tabpanel" aria-labelledby="tab-a11y" tabindex="0" hidden></div>
     </div>
   </section>
 </main>

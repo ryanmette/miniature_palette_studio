@@ -39,13 +39,15 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
   ];
 
   const roles = defs.map(d => {
-    const matchOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
-    const ladder = ideal => ({ idealHex: ideal, match: nearestPaint(idx, ideal, opts) });
+    // A metal role keeps its type filter across the whole ladder (match + wash + highlight),
+    // so its derived shades resolve to real metallics rather than flat colours.
+    const roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
+    const ladder = ideal => ({ idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) });
     return {
       role: d.role,
       weight: d.weight,
       idealHex: d.idealHex,
-      match: nearestPaint(idx, d.idealHex, matchOpts),
+      match: nearestPaint(idx, d.idealHex, roleOpts),
       wash: ladder(adjustHsl(d.idealHex, WASH)),
       highlight: ladder(adjustHsl(d.idealHex, HIGHLIGHT)),
     };

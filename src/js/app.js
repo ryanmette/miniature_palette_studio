@@ -118,14 +118,20 @@ function renderA11y() {
   const col = minPairDelta(colors, 'deuteranopia');
   let collision = null;
   if (col.delta < 10) {
-    collision = { roles: [names[col.pair[0]], names[col.pair[1]]], delta: col.delta };
+    const [i, j] = col.pair;
+    collision = { roles: [names[i], names[j]], delta: col.delta };
+    // Shift whichever of the *colliding* roles is least disruptive to move — the old code
+    // always rotated the Accent, so it couldn't fix e.g. a Body/Secondary collision.
+    const freedom = { Accent: 0, Secondary: 1, Metal: 2, Body: 3 };
+    const shiftIdx = (freedom[names[i]] ?? 9) <= (freedom[names[j]] ?? 9) ? i : j;
     let bestMin = col.delta, best = null;
     for (const d of [25, -25, 40, -40, 55, -55]) {
-      const alt = rotateHue(colors[2], d);
-      const m = minPairDelta([colors[0], colors[1], alt, colors[3]], 'deuteranopia').delta;
-      if (m > bestMin + 1) { bestMin = m; best = alt; }
+      const trial = colors.slice();
+      trial[shiftIdx] = rotateHue(colors[shiftIdx], d);
+      const m = minPairDelta(trial, 'deuteranopia').delta;
+      if (m > bestMin + 1) { bestMin = m; best = trial[shiftIdx]; }
     }
-    if (best) collision.suggestion = { hex: best, match: nearestPaint(state.idx, best, matchOpts()) };
+    if (best) collision.suggestion = { role: names[shiftIdx], hex: best, match: nearestPaint(state.idx, best, matchOpts()) };
   }
   $('#panel-a11y').innerHTML = ui.a11yPanel({ names, sims, contrasts, collision });
 }
@@ -167,10 +173,18 @@ function setTheme(t) {
   try { localStorage.setItem('ps-theme', state.theme); } catch { /* private mode */ }
 }
 function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
-function setTab(tab) {
+function syncTabs(focusActive = false) {
+  for (const b of $('#tabs').children) {
+    const sel = b.dataset.tab === state.tab;
+    b.setAttribute('aria-selected', String(sel));
+    b.tabIndex = sel ? 0 : -1;        // roving tabindex (WAI-ARIA tabs pattern)
+    if (sel && focusActive) b.focus();
+  }
+  for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== state.tab;
+}
+function setTab(tab, focusActive = false) {
   state.tab = tab;
-  for (const b of $('#tabs').children) b.setAttribute('aria-selected', String(b.dataset.tab === tab));
-  for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== tab;
+  syncTabs(focusActive);
   renderActive(); announce(); updateUrl();
 }
 function toggleOwned(id) {
@@ -221,6 +235,16 @@ function wire() {
     renderActive(); announce(); updateUrl();
   });
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
+  $('#tabs').addEventListener('keydown', e => {
+    const tabs = [...$('#tabs').children];
+    const i = tabs.findIndex(b => b.dataset.tab === state.tab);
+    let j = -1;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') j = (i - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') j = 0;
+    else if (e.key === 'End') j = tabs.length - 1;
+    if (j >= 0) { e.preventDefault(); setTab(tabs[j].dataset.tab, true); }
+  });
   $('#seedRole').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.seedRole = b.dataset.role;
@@ -259,8 +283,7 @@ async function init() {
 
   $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
   $('#hex').value = baseHex().replace('#', '');
-  for (const b of $('#tabs').children) b.setAttribute('aria-selected', String(b.dataset.tab === state.tab));
-  for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== state.tab;
+  syncTabs();
   wire();
   renderAll();
 }

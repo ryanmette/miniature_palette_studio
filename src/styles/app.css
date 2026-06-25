@@ -57,7 +57,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .paintrow { display: flex; align-items: center; gap: 2px; }
 .paint { display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: var(--r-ctrl); cursor: pointer; border: 1px solid transparent; flex: 1; min-width: 0; text-align: left; background: transparent; }
 .paint:hover { background: var(--surface-2); }
-.paint[aria-selected="true"] { background: var(--accent-weak); border-color: var(--accent); }
+.paint[aria-current="true"] { background: var(--accent-weak); border-color: var(--accent); }
 .paint .nm { font-size: 13px; font-weight: 500; }
 .paint .br { font-size: 11px; color: var(--text-muted); }
 .count { padding: 8px 14px 14px; font-size: 12px; color: var(--text-faint); }

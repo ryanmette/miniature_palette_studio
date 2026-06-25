@@ -6,7 +6,12 @@ import { textOn } from './color.js';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const label = t => t.charAt(0).toUpperCase() + t.slice(1); // sentence case (§3.3)
 
-export const swatch = (hex, cls = '', extra = '') => `<span class="sw ${cls}" style="background:${hex};${extra}"></span>`;
+// Defence-in-depth: any colour interpolated into an inline style must be a literal #hex.
+// Inputs are already validated upstream (rgbToHex output, URL/-input regex, dataset QA), but we
+// re-assert here so a future caller can't turn a swatch into a CSS/HTML-injection sink.
+const safeColor = c => (/^#[0-9a-fA-F]{6}$/.test(c) ? c : '#000000');
+
+export const swatch = (hex, cls = '', extra = '') => `<span class="sw ${cls}" style="background:${safeColor(hex)};${extra}"></span>`;
 
 /** Picker list: each row pairs a focusable select button with a separate owned-toggle button.
  *  (Keeping the toggle a sibling — not nested in the option — makes it keyboard-operable.) */
@@ -14,8 +19,8 @@ export function pickerList(paints, selectedId, owned = new Set()) {
   if (!paints.length) return `<div style="padding:18px;color:var(--text-faint);font-size:13px">No paints match.</div>`;
   return paints.map(p => {
     const own = owned.has(p.id);
-    return `<div class="paintrow">`
-      + `<button class="paint" role="option" data-id="${esc(p.id)}" aria-selected="${p.id === selectedId}">`
+    return `<div class="paintrow" role="listitem">`
+      + `<button class="paint" data-id="${esc(p.id)}" aria-current="${p.id === selectedId}">`
       + swatch(p.hex, '', 'width:30px;height:30px')
       + `<span style="min-width:0;flex:1"><span class="nm">${esc(p.name)}</span><br>`
       + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</span></span>`
@@ -28,7 +33,7 @@ export function pickerList(paints, selectedId, owned = new Set()) {
 /** Compare two schemes side by side. a/b: { base, harmony, colors:[ideal hexes] }. */
 export function compareBar(a, b) {
   const row = (g, lbl) => `<div class="cmprow"><span class="cmplab">${esc(lbl)} · ${esc(g.harmony)} · <span class="mono">${esc(g.base)}</span></span>`
-    + `<div class="cmppal">${g.colors.map(c => `<span style="background:${c}"></span>`).join('')}</div></div>`;
+    + `<div class="cmppal">${g.colors.map(c => `<span style="background:${safeColor(c)}"></span>`).join('')}</div></div>`;
   return `<div class="compare"><div class="cmphead">Compare</div>${row(a, 'A')}${row(b, 'B · current')}</div>`;
 }
 
@@ -69,7 +74,7 @@ export function matchChip(m) {
 
 /** Small overview bar of the scheme's role ideal colours. */
 export const paletteOverview = scheme =>
-  `<div class="palette">${scheme.roles.map(r => `<div style="background:${r.idealHex}"></div>`).join('')}</div>`;
+  `<div class="palette">${scheme.roles.map(r => `<div style="background:${safeColor(r.idealHex)}"></div>`).join('')}</div>`;
 
 /** Role slots: each role's ideal → nearest real paint, plus a derived wash/highlight ladder. */
 export function roleSlots(scheme) {
@@ -107,7 +112,7 @@ export function miniRoles(scheme) {
 
 /** Accessibility panel. model: { names, sims:[{label,colors}], contrasts:[{a,b,labelA,labelB,ratio,passAAText,passAALarge}], collision }. */
 export function a11yPanel(model) {
-  const strip = cols => `<div class="cstrip">${cols.map(c => `<span class="sw" style="flex:1;height:30px;background:${c}"></span>`).join('')}</div>`;
+  const strip = cols => `<div class="cstrip">${cols.map(c => `<span class="sw" style="flex:1;height:30px;background:${safeColor(c)}"></span>`).join('')}</div>`;
   const simRows = model.sims.map(s => `<div class="crow"><span class="clab">${esc(s.label)}</span>${strip(s.colors)}</div>`).join('');
   const verdict = c => c.passAAText ? ['Passes AA text', 'var(--success)'] : c.passAALarge ? ['Large/UI only', 'var(--warning)'] : ['Fails AA', 'var(--danger)'];
   const ctr = model.contrasts.map(c => {
@@ -121,7 +126,7 @@ export function a11yPanel(model) {
   if (model.collision) {
     const s = model.collision.suggestion;
     coll = `<div class="collide"><strong>Heads-up:</strong> ${esc(model.collision.roles[0])} and ${esc(model.collision.roles[1])} look similar under deuteranopia (ΔE ${model.collision.delta.toFixed(1)}).`
-      + (s ? ` Try a shifted accent ${swatch(s.hex, '', 'width:16px;height:16px;display:inline-block;vertical-align:-2px')}${s.match ? ' — nearest paint ' + esc(s.match.paint.name) + ' (' + esc(s.match.paint.brand) + ')' : ''}.` : '')
+      + (s ? ` Try a shifted ${esc(s.role.toLowerCase())} ${swatch(s.hex, '', 'width:16px;height:16px;display:inline-block;vertical-align:-2px')}${s.match ? ' — nearest paint ' + esc(s.match.paint.name) + ' (' + esc(s.match.paint.brand) + ')' : ''}.` : '')
       + '</div>';
   } else {
     coll = '<div class="collide ok">No major colour-blindness collisions in this scheme.</div>';

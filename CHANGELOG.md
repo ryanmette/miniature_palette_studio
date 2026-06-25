@@ -16,8 +16,20 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   after the list re-renders.
 - **Export:** defer `URL.revokeObjectURL` until after the download starts (was revoked synchronously
   right after `click()`).
+- **CVD collision suggestion:** the deuteranopia "shifted colour" remedy always rotated the Accent,
+  so it could not resolve a collision between two other roles (e.g. Body/Secondary). It now shifts
+  whichever of the *colliding* roles is least disruptive to move and names that role in the hint.
+- **Scheme — metal ladder:** a metal role's derived wash/highlight ignored its `type: metal` filter
+  and matched any paint; the filter now applies across the whole ladder so metals stay metallic.
 
 ### Changed
+- **Accessibility — tabs/list ARIA.** Scheme-view tabs now implement the full WAI-ARIA tabs pattern:
+  `aria-controls`/`role="tabpanel"`/`aria-labelledby` linkage, roving `tabindex`, and
+  Arrow/Home/End keyboard navigation. The paint picker drops the inconsistent
+  `listbox`/`option`+focusable-button combo for a `role="list"` of `listitem` rows, marking the
+  selected paint with `aria-current`.
+- **Defence-in-depth:** colours interpolated into inline `style` now pass through a `#hex` validator
+  (`safeColor`) in `ui.js`, so a future unvalidated colour can't become a CSS/HTML-injection sink.
 - Removed unused `ui.harmonyStrip` / `ui.placeholder` helpers and their orphaned `.strip` / `.lbl` CSS.
 - CI (dev-only): bump GitHub Actions in `deploy.yml` to Node 24 majors — `checkout@v5`,
   `configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5` — clearing the Node 20
