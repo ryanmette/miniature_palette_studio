@@ -56,9 +56,13 @@
           <div class="seg" id="seg" role="group" aria-label="Harmony type" style="margin-bottom:12px"></div>
           <div class="palhead">
             <div class="micro">Live palette → nearest paint</div>
-            <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">
-              <button data-fill="ideal" aria-pressed="true">Ideal</button>
-              <button data-fill="real" aria-pressed="false">Real</button>
+            <div class="palctl">
+              <button class="btn" id="addnode" aria-label="Add a colour" title="Add a colour">+</button>
+              <button class="btn" id="delnode" aria-label="Remove the last added colour" title="Remove the last added colour">−</button>
+              <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">
+                <button data-fill="ideal" aria-pressed="true">Ideal</button>
+                <button data-fill="real" aria-pressed="false">Real</button>
+              </div>
             </div>
           </div>
           <div id="livepal" aria-live="off"></div>

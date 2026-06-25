@@ -6,6 +6,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Add / remove free colours on the wheel (P0.5 / S5).** A `+` drops a new draggable colour node at
+  the widest hue gap (accent-ringed on the wheel, capped at 6); `−` removes the last. Each free node
+  gets its own live-palette "Added" column with its nearest real paint + ΔE + quality, and persists in
+  the share URL via `?x=hue.sat-…`. Free nodes share the lightness slider (`+`/`−` disable at the cap/0).
 - **Variable live palette + ideal↔real toggle (P0.3 / S3).** The wheel's live palette now renders one
   colour column per harmony-rule colour (complementary 2 … tetradic 4) plus any free nodes, each as a
   full-bleed block with its nearest real paint, ΔE and quality label (kept visible in both modes). An

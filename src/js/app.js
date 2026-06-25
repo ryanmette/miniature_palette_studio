@@ -67,6 +67,30 @@ function refreshStudio() {
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
   wheelDraw(); renderLive();
 }
+const MAX_FREE = 6;   // bounds URL length + per-frame nearest-paint scans (S5 micro-decision)
+/** Add a free/draggable colour node at the widest hue gap (free nodes share the lightness slider). */
+function addFreeNode() {
+  if (state.extraNodes.length >= MAX_FREE) return;
+  const [bh] = rgbToHsl(hexToRgb(baseHex()));
+  const hues = [bh, ...HARMONY_OFFSETS[state.harmony].map(o => ((bh + o) % 360 + 360) % 360), ...state.extraNodes.map(n => n.h)].sort((a, b) => a - b);
+  let bestGap = -1, at = (bh + 90) % 360;
+  for (let i = 0; i < hues.length; i++) {
+    const lo = hues[i], hi = i + 1 < hues.length ? hues[i + 1] : hues[0] + 360, g = hi - lo;
+    if (g > bestGap) { bestGap = g; at = ((lo + g / 2) % 360 + 360) % 360; }
+  }
+  state.extraNodes.push({ h: at, s: 0.6 });
+  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+}
+/** Remove a free node (by index, or the last when omitted). */
+function removeFreeNode(idx) {
+  if (typeof idx === 'number' && idx >= 0) state.extraNodes.splice(idx, 1); else state.extraNodes.pop();
+  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+}
+function syncNodeBtns() {
+  const a = $('#addnode'), d = $('#delnode');
+  if (a) a.disabled = state.extraNodes.length >= MAX_FREE;
+  if (d) d.disabled = state.extraNodes.length === 0;
+}
 function setupWheel() {
   const cv = $('#wheel'), ctx = cv.getContext('2d');
   const COARSE = matchMedia('(pointer:coarse)').matches;
@@ -218,6 +242,7 @@ function updateUrl() {
   if (state.seedRole === 'accent') p.set('r', 'accent');
   if (state.theme === 'dark') p.set('t', 'dark');
   if (state.showReal) p.set('f', '1');
+  if (state.extraNodes.length) p.set('x', state.extraNodes.map(n => `${Math.round(n.h)}.${Math.round(n.s * 100)}`).join('-'));
   history.replaceState(null, '', '?' + p.toString());
 }
 /** Debounced URL write for rapid-fire updates (wheel/slider drag); see setBase(). */
@@ -314,6 +339,8 @@ function wire() {
     for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
     renderLive(); scheduleAnnounce(); updateUrl();
   });
+  $('#addnode').addEventListener('click', addFreeNode);
+  $('#delnode').addEventListener('click', () => removeFreeNode());
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
   $('#tabs').addEventListener('keydown', e => {
     const tabs = [...$('#tabs').children];
@@ -357,6 +384,8 @@ async function init() {
   const h = url.get('h'); if (h && isHarmony(h)) state.harmony = h;
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;
   if (url.get('f') === '1') state.showReal = true;
+  const xp = url.get('x');
+  if (xp) state.extraNodes = xp.split('-').map(s => { const [hh, sa] = s.split('.'); const H = +hh, S = +sa / 100; return (Number.isFinite(H) && Number.isFinite(S)) ? { h: ((H % 360) + 360) % 360, s: Math.min(1, Math.max(0, S)) } : null; }).filter(Boolean).slice(0, MAX_FREE);
   if (url.get('r') === 'accent') { state.seedRole = 'accent'; for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'accent')); }
   const c = url.get('c');
   if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();
@@ -364,6 +393,7 @@ async function init() {
 
   $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
+  syncNodeBtns();
   $('#hex').value = baseHex().replace('#', '');
   syncTabs();
   wire();

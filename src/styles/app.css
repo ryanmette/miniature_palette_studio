@@ -128,6 +128,9 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .wctrl input[type="range"] { accent-color: var(--accent); }
 .palcol { min-width: 0; }
 .palhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.palctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+#addnode, #delnode { width: 30px; height: 30px; padding: 0; justify-content: center; font-size: 17px; line-height: 1; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
 .livepal { display: flex; gap: 8px; }
 .lcol { flex: 1; min-width: 0; display: flex; flex-direction: column; border: none; padding: 0; cursor: pointer; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); background: var(--surface-2); text-align: left; }
 .lcol:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
