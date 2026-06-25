@@ -83,6 +83,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   set each draw, so the wheel adapts to the forge-dark theme (the hue ring and node fills stay colour data).
 
 ### Changed
+- **Filled HSV disc (P0.7 / S7).** The wheel's dotted 60-point hue ring is replaced by a continuous
+  filled HSV disc — hue = angle, saturation = radius, lightness = the slider — the Adobe-Color look.
+  It's rasterised once per (size, lightness) into an offscreen canvas and blitted each frame (cached,
+  so base drags never rebuild); the disc is pure colour data (theme-independent) while spokes / node
+  rings / focus halo stay token chrome. No animation loop, so `prefers-reduced-motion` is unaffected.
 - **Moving the base moves the whole palette (Adobe-style).** Dragging the base (or a partner, or
   nudging it by keyboard) now rotates any free/added colours by the same hue delta, so the locked set
   moves together instead of leaving free nodes behind.

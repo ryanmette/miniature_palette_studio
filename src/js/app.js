@@ -106,16 +106,34 @@ function setupWheel() {
   state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
   $('#wl').value = Math.round(state.wheelL * 100);
   const pos = (h, s) => [cx + Math.sin(h * Math.PI / 180) * s * R, cy - Math.cos(h * Math.PI / 180) * s * R];
+  const disc = document.createElement('canvas');   // offscreen filled HSV disc, rasterised once per (size, lightness)
+  let discKey = '';
+  function buildDisc() {                            // hue = angle, saturation = radius, lightness = the wheel slider
+    const key = W + ':' + Math.round(state.wheelL * 100);   // colour data only → theme-independent; cached
+    if (key === discKey) return;
+    discKey = key; disc.width = W; disc.height = H;
+    const dctx = disc.getContext('2d'), img = dctx.createImageData(W, H), data = img.data, L = state.wheelL;
+    for (let j = 0; j < H; j++) {
+      const dy = j - cy;
+      for (let i = 0; i < W; i++) {
+        const dx = i - cx, dist = Math.sqrt(dx * dx + dy * dy), idx = (j * W + i) * 4;
+        if (dist > R + 0.5) { data[idx + 3] = 0; continue; }   // outside the disc → transparent
+        const [r, g, bl] = hslToRgb([(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, dist >= R ? 1 : dist / R, L]);
+        data[idx] = r; data[idx + 1] = g; data[idx + 2] = bl; data[idx + 3] = 255;
+      }
+    }
+    dctx.putImageData(img, 0, 0);
+  }
   function draw() {
     const b = baseHex();
     const [h, s] = rgbToHsl(hexToRgb(b));
-    // Chrome reads from the §3 token set (re-read each draw so a theme toggle is reflected); the
-    // hue ring and node fills stay colour *data*. Node bezel uses --surface so it reads as the
-    // node punched out of the panel in both the light and the forge-dark theme (§3.1/§10).
+    // Chrome (spokes/rings/halo) reads from the §3 token set (re-read each draw so a theme toggle is
+    // reflected); the HSV disc + node fills are colour *data*. Node outlines use a per-node contrast
+    // (textOn) so they stay visible on any colour in both the light and forge-dark themes (§3.1/§10).
     const cs = getComputedStyle(document.documentElement);
     const spoke = cs.getPropertyValue('--border-strong').trim() || '#888';
     ctx.clearRect(0, 0, W, H);
-    for (let a = 0; a < 360; a += 6) { const [x, y] = pos(a, 1); ctx.fillStyle = rgbToHex(hslToRgb([a, 0.7, 0.5])); ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); }
+    buildDisc(); ctx.drawImage(disc, 0, 0, W, H);   // filled HSV colour field (replaces the dotted hue ring)
     const offs = HARMONY_OFFSETS[state.harmony];
     ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
     const spokeTo = (hh, ss) => { const [x, y] = pos(hh, ss); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); };
