@@ -67,13 +67,19 @@ function setupWheel() {
   function draw() {
     const b = baseHex();
     const [h, s] = rgbToHsl(hexToRgb(b));
+    // Chrome reads from the §3 token set (re-read each draw so a theme toggle is reflected); the
+    // hue ring and node fills stay colour *data*. Node bezel uses --surface so it reads as the
+    // node punched out of the panel in both the light and the forge-dark theme (§3.1/§10).
+    const cs = getComputedStyle(document.documentElement);
+    const spoke = cs.getPropertyValue('--border-strong').trim() || '#888';
+    const ring = cs.getPropertyValue('--surface').trim() || '#fff';
     ctx.clearRect(0, 0, W, H);
     for (let a = 0; a < 360; a += 6) { const [x, y] = pos(a, 1); ctx.fillStyle = rgbToHex(hslToRgb([a, 0.7, 0.5])); ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); }
     const offs = HARMONY_OFFSETS[state.harmony];
-    ctx.strokeStyle = 'rgba(128,128,128,.35)'; ctx.lineWidth = 1.5;
+    ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
     for (const o of offs) { const [x, y] = pos(h + o, s); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); }
-    for (const o of offs) { const [x, y] = pos(h + o, s); ctx.fillStyle = rotateHue(b, o); ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke(); }
-    const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, 11, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
+    for (const o of offs) { const [x, y] = pos(h + o, s); ctx.fillStyle = rotateHue(b, o); ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = ring; ctx.stroke(); }
+    const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, 11, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = ring; ctx.stroke();
   }
   let raf = 0;
   function setBase(h, s) {
@@ -82,8 +88,8 @@ function setupWheel() {
     // Coalesce the heavy redraw (≈12 nearest-paint scans + canvas) to one per frame, and
     // debounce the history write — a drag fires pointermove far faster than WebKit's
     // ~100-calls-per-30s replaceState limit, which would otherwise throw mid-drag.
-    if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderMini(); renderHero(); announce(); });
-    scheduleUrlUpdate();
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderMini(); renderHero(); });
+    scheduleUrlUpdate(); scheduleAnnounce();
   }
   function fromPointer(e) {
     const r = cv.getBoundingClientRect();
@@ -93,7 +99,7 @@ function setupWheel() {
   let dragging = false;
   cv.addEventListener('pointerdown', e => { dragging = true; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); fromPointer(e); });
   cv.addEventListener('pointermove', e => { if (dragging) fromPointer(e); });
-  cv.addEventListener('pointerup', () => { dragging = false; cv.style.cursor = 'grab'; updateUrl(); });
+  cv.addEventListener('pointerup', () => { dragging = false; cv.style.cursor = 'grab'; updateUrl(); announce(); });
   $('#wl').addEventListener('input', e => { state.wheelL = +e.target.value / 100; const [h, s] = rgbToHsl(hexToRgb(baseHex())); setBase(h, s); });
   $('#wrand').addEventListener('click', () => setBase(Math.random() * 360, 0.5 + Math.random() * 0.45));
   draw();
@@ -148,8 +154,11 @@ function renderHero() {
   $('#hero').innerHTML = ui.hero(baseInfo());
   $('#baseLabel').textContent = `Base colour · ${state.seedRole}`;
 }
-function announce() { $('#status').textContent = `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.`; }
-let urlTimer = null;
+let urlTimer = null, announceTimer = null;
+function announce() {
+  if (announceTimer) { clearTimeout(announceTimer); announceTimer = null; }
+  $('#status').textContent = `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.`;
+}
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
   const p = new URLSearchParams();
@@ -164,6 +173,11 @@ function updateUrl() {
 function scheduleUrlUpdate() {
   if (urlTimer) clearTimeout(urlTimer);
   urlTimer = setTimeout(updateUrl, 250);
+}
+/** Debounced live-region announce — a per-frame announce() during a drag floods screen readers. */
+function scheduleAnnounce() {
+  if (announceTimer) clearTimeout(announceTimer);
+  announceTimer = setTimeout(announce, 400);
 }
 function renderAll() { renderList(); renderHero(); renderActive(); announce(); updateUrl(); }
 

@@ -25,6 +25,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   badge was squeezed against it, wrapped its own text ("ΔE" / "0.0"), and clipped past the card
   edge. The quality row now wraps as a unit (`.de` `flex-wrap`) and the badge stays on one line
   (`white-space: nowrap`).
+- **Live wheel view showed a bare ΔE (honesty, §2/§3.2):** the Explore tab's live scheme rows
+  (`ui.miniRoles`) printed `ΔE x.x` with no plain-language label — the constitution's "never a bare
+  number". Each row now carries the quality dot + label (Indistinguishable/Good/Loose/…) before the badge.
+- **aria-live flooded screen readers during a wheel drag:** `announce()` ran inside the per-frame
+  redraw, firing the live region up to ~60×/s. It is now debounced to settle (~400 ms) and flushed
+  immediately on pointer-up.
+- **Off-token wheel chrome (§3.1/§10):** the harmony wheel hard-coded `#fff` node bezels and
+  `rgba(128,128,128,.35)` spokes. Chrome now reads `--surface` / `--border-strong` from the token
+  set each draw, so the wheel adapts to the forge-dark theme (the hue ring and node fills stay colour data).
 
 ### Changed
 - **Accessibility — tabs/list ARIA.** Scheme-view tabs now implement the full WAI-ARIA tabs pattern:

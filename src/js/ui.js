@@ -106,7 +106,9 @@ export function miniRoles(scheme) {
     return `<div class="mrow">${swatch(r.idealHex, '', 'width:24px;height:24px')}<span class="arr">→</span>`
       + (m ? swatch(m.paint.hex, '', 'width:24px;height:24px') : '')
       + `<span class="mn">${esc(r.role)}: ${m ? esc(m.paint.name) : '—'}</span>`
-      + (m ? `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span>` : '') + '</div>';
+      + (m ? `<span class="de" style="margin:0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
+          + `<span style="color:${tier(m.quality.tier)}">${esc(m.quality.label)}</span>`
+          + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>` : '') + '</div>';
   }).join('')}</div>`;
 }
 
