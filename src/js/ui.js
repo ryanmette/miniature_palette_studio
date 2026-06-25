@@ -39,12 +39,12 @@ export function compareBar(a, b) {
 }
 
 /** Base-paint hero. `base`: { hex, name, brand?, line?, type?, approx?, custom? }. */
-export function hero(base) {
+export function hero(base, animate = true) {
   const meta = base.custom ? 'typed hex' : `${esc(base.brand || '')}${base.line ? ' · ' + esc(base.line) : ''}`;
   const tags = base.custom
     ? '<span class="tag">custom</span>'
     : `<span class="tag">${esc(base.type || 'paint')}</span>${base.approx ? '<span class="tag approx">approx hex</span>' : ''}`;
-  return swatch(base.hex, 'big')
+  return swatch(base.hex, animate ? 'big pop' : 'big')
     + `<div><h2>${esc(base.name)}</h2>`
     + `<div style="color:var(--text-muted);font-size:13px;margin-top:2px">${meta}</div>`
     + `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${tags}</div>`

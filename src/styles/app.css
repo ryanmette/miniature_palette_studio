@@ -198,6 +198,6 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 @keyframes mh-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes mh-pop { 0% { transform: scale(.82); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .card { animation: mh-rise .32s cubic-bezier(.2,.7,.2,1) both; }
-.hero .big { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }
+.hero .big.pop { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }   /* pop only on discrete base changes, not per drag frame */
 .btn:active, .seg button:active { transform: scale(.96); }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

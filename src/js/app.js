@@ -2,7 +2,7 @@
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
 import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue } from './color.js';
+import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js';
 import { buildScheme, shoppingList } from './scheme.js';
@@ -114,7 +114,6 @@ function setupWheel() {
     // node punched out of the panel in both the light and the forge-dark theme (§3.1/§10).
     const cs = getComputedStyle(document.documentElement);
     const spoke = cs.getPropertyValue('--border-strong').trim() || '#888';
-    const ring = cs.getPropertyValue('--surface').trim() || '#fff';
     ctx.clearRect(0, 0, W, H);
     for (let a = 0; a < 360; a += 6) { const [x, y] = pos(a, 1); ctx.fillStyle = rgbToHex(hslToRgb([a, 0.7, 0.5])); ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); }
     const offs = HARMONY_OFFSETS[state.harmony];
@@ -123,10 +122,10 @@ function setupWheel() {
     spokeTo(h, s);                                          // base — a spoke to every colour (Adobe-style)
     for (const o of offs) spokeTo(h + o, s);               // partners
     for (const o of state.extraNodes) spokeTo(o.h, o.s);   // free/added
-    for (const o of offs) { const [x, y] = pos(h + o, s); ctx.fillStyle = rotateHue(b, o); ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = ring; ctx.stroke(); }
+    for (const o of offs) { const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
     const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
     for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
-    const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = ring; ctx.stroke();
+    const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
     if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
   }
   wheelDraw = draw;          // expose the redraw for discrete base/harmony changes (picker, hex, harmony)
@@ -135,10 +134,14 @@ function setupWheel() {
     // Coalesce the heavy redraw (≈nearest-paint scans + canvas) to one per frame, and debounce the
     // history write + aria-live — a drag fires pointermove far faster than WebKit's ~100-calls-per-30s
     // replaceState limit (which would throw mid-drag) and faster than a screen reader can speak.
-    if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderLive(); renderHero(); });
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderLive(); renderHero(false); });   // no pop during a live drag
     scheduleUrlUpdate(); scheduleAnnounce();
   }
   function setBase(h, s) {
+    // Adobe-style: moving the base moves everything. Partners are derived (they already follow);
+    // free nodes are absolute, so rotate them by the base's hue delta to keep their relationship.
+    const dh = ((h - rgbToHsl(hexToRgb(baseHex()))[0]) % 360 + 360) % 360;
+    if (dh && state.extraNodes.length) state.extraNodes = state.extraNodes.map(n => ({ h: ((n.h + dh) % 360 + 360) % 360, s: n.s }));
     state.customHex = rgbToHex(hslToRgb([h, s, state.wheelL]));
     $('#hex').value = state.customHex.replace('#', '');
     commit();
@@ -259,8 +262,8 @@ function renderList() {
   $('#list').innerHTML = ui.pickerList(items, state.customHex ? null : state.baseId, state.owned);
   $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${state.owned.size ? ` · ${state.owned.size} owned` : ''}`;
 }
-function renderHero() {
-  $('#hero').innerHTML = ui.hero(baseInfo());
+function renderHero(animate = true) {
+  $('#hero').innerHTML = ui.hero(baseInfo(), animate);   // animate=false during a live drag (no pop spam)
   $('#baseLabel').textContent = `Base colour · ${state.seedRole}`;
 }
 let urlTimer = null, announceTimer = null;

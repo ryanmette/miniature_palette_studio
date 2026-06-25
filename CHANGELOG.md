@@ -43,6 +43,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `.btn.primary` in the header, surfacing the one outcome a pure colour tool can't produce.
 
 ### Fixed
+- **Wheel node outline invisible in light mode.** The base/partner node bezels used `--surface` (white
+  in the light theme), so they had no visible edge there. Nodes now use a per-node contrast ring
+  (`textOn`), giving a crisp outline in both themes.
+- **Base-colour card "popped" on every wheel-drag frame.** The §3.4 swatch scale-bounce — a one-time
+  confirm when a new base is chosen — was replaying each frame because the hero re-renders during a
+  drag, making it feel like the base was being re-selected. The pop is now gated to discrete base
+  changes only (`renderHero(false)` on the drag/commit path).
 - **Dark-mode picker readability.** Paint names in the picker list inherited the browser's default
   button text colour (black) instead of a theme token, so they were hard to read on the dark theme
   (the brand line was fine — it set `--text-muted`). The `.paint` row now sets `color: var(--text)`.
@@ -76,6 +83,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   set each draw, so the wheel adapts to the forge-dark theme (the hue ring and node fills stay colour data).
 
 ### Changed
+- **Moving the base moves the whole palette (Adobe-style).** Dragging the base (or a partner, or
+  nudging it by keyboard) now rotates any free/added colours by the same hue delta, so the locked set
+  moves together instead of leaving free nodes behind.
 - **Wheel draws a spoke to every node.** The harmony wheel previously drew centre-lines only to the
   partner nodes; it now draws one to the base (and free) nodes too — a line to each colour, matching
   the Adobe-Color wheel.
