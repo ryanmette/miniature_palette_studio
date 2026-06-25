@@ -8,6 +8,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Planned
 - M7–M9: accessibility module, owned/compare/export, deploy + embed guide.
 
+## [0.7.0] — 2026-06-24
+### Added
+- **M6 — cross-brand equivalents** (Equivalents tab): a picked paint lists its nearest matches in other
+  brands; a typed hex / wheel colour lists the nearest paints across all brands (ΔE 2000).
+
 ## [0.6.0] — 2026-06-24
 ### Added
 - **M5 — interactive harmony wheel** (Explore tab): drag the centre node to set the base colour live,

@@ -3,7 +3,7 @@
 
 import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue } from './color.js';
-import { loadDataset, equivalents } from './data.js';
+import { loadDataset, equivalents, nearestPaints } from './data.js';
 import { buildScheme } from './scheme.js';
 import * as ui from './ui.js';
 
@@ -90,8 +90,11 @@ function setupWheel() {
 }
 function renderEquiv() {
   const p = basePaint();
-  if (!p) { $('#panel-equiv').innerHTML = ui.placeholder('Pick a paint (not a typed hex) to see its cross-brand equivalents.'); return; }
-  $('#panel-equiv').innerHTML = ui.equivalentsPanel(p.name, equivalents(state.idx, state.idx.byId.get(p.id), { n: 8 }));
+  if (p) {
+    $('#panel-equiv').innerHTML = ui.equivalentsPanel(`${p.name} (${p.brand})`, equivalents(state.idx, state.idx.byId.get(p.id), { n: 8 }));
+  } else {
+    $('#panel-equiv').innerHTML = ui.equivalentsPanel(`your colour ${baseHex()}`, nearestPaints(state.idx, baseHex(), 8));
+  }
 }
 function renderA11y() { $('#panel-a11y').innerHTML = ui.placeholder('Accessibility checks — arriving in M7.'); }
 const renderers = { plan: renderPlan, explore: renderExplore, equiv: renderEquiv, a11y: renderA11y };
