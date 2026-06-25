@@ -5,6 +5,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- CI (dev-only): bump GitHub Actions in `deploy.yml` to Node 24 majors — `checkout@v5`,
+  `configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5` — clearing the Node 20
+  deprecation warning. No runtime or app change.
 
 ## [1.0.0] — 2026-06-24
 ### Added
