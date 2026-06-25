@@ -66,6 +66,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   set each draw, so the wheel adapts to the forge-dark theme (the hue ring and node fills stay colour data).
 
 ### Changed
+- **Wheel draws a spoke to every node.** The harmony wheel previously drew centre-lines only to the
+  partner nodes; it now draws one to the base (and free) nodes too — a line to each colour, matching
+  the Adobe-Color wheel.
 - **Wheel canvas is responsive + retina-crisp (P0.2 / S2).** The wheel sizes from its container
   (`min(90vw, 300px)`, square) with a `devicePixelRatio`-scaled backing buffer and CSS-pixel geometry,
   re-measuring on resize/orientation; node radii/hit-targets enlarge on coarse (touch) pointers. Drag

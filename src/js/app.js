@@ -95,7 +95,10 @@ function setupWheel() {
     for (let a = 0; a < 360; a += 6) { const [x, y] = pos(a, 1); ctx.fillStyle = rgbToHex(hslToRgb([a, 0.7, 0.5])); ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); }
     const offs = HARMONY_OFFSETS[state.harmony];
     ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
-    for (const o of offs) { const [x, y] = pos(h + o, s); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); }
+    const spokeTo = (hh, ss) => { const [x, y] = pos(hh, ss); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); };
+    spokeTo(h, s);                                          // base — a spoke to every colour (Adobe-style)
+    for (const o of offs) spokeTo(h + o, s);               // partners
+    for (const o of state.extraNodes) spokeTo(o.h, o.s);   // free/added
     for (const o of offs) { const [x, y] = pos(h + o, s); ctx.fillStyle = rotateHue(b, o); ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = ring; ctx.stroke(); }
     const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
     for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
