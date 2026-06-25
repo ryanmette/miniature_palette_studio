@@ -13,6 +13,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   buyable paint — the hex caption and click-to-copy follow the fill, so the ideal-vs-actual gap is
   visible on the canvas. Fill mode round-trips via `?f=1`. The role-mapped 60-30-10 output stays on the
   `Plan` tab. (Replaces the old role-list `miniRoles`.)
+- **Grab any wheel node (P0.4 / S4).** Dragging a harmony **partner** node now rotates the whole
+  locked harmony rigidly — the base follows (persisted via `?c=`) — instead of partners being
+  read-only output; dragging the base node or empty space moves the base as before. Per-node
+  hit-testing uses a touch-sized radius (free > partner > base on a tie). Free/added nodes (S5) draw
+  with a distinct accent ring.
 - **Harmony-rule glyphs (Adobe-Color "hero" pass).** Each option in the scheme switcher now shows a
   small line-art glyph of its geometry — generated from `HARMONY_OFFSETS` so it can't drift — beside the
   label, for at-a-glance rule selection. Hidden below 520px where there's no room (labels stay).

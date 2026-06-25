@@ -97,28 +97,53 @@ function setupWheel() {
     ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
     for (const o of offs) { const [x, y] = pos(h + o, s); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); }
     for (const o of offs) { const [x, y] = pos(h + o, s); ctx.fillStyle = rotateHue(b, o); ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = ring; ctx.stroke(); }
+    const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
+    for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = ring; ctx.stroke();
   }
   wheelDraw = draw;          // expose the redraw for discrete base/harmony changes (picker, hex, harmony)
   let raf = 0;
-  function setBase(h, s) {
-    state.customHex = rgbToHex(hslToRgb([h, s, state.wheelL]));
-    $('#hex').value = state.customHex.replace('#', '');
-    // Coalesce the heavy redraw (≈12 nearest-paint scans + canvas) to one per frame, and
-    // debounce the history write — a drag fires pointermove far faster than WebKit's
-    // ~100-calls-per-30s replaceState limit, which would otherwise throw mid-drag.
+  function commit() {
+    // Coalesce the heavy redraw (≈nearest-paint scans + canvas) to one per frame, and debounce the
+    // history write + aria-live — a drag fires pointermove far faster than WebKit's ~100-calls-per-30s
+    // replaceState limit (which would throw mid-drag) and faster than a screen reader can speak.
     if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderLive(); renderHero(); });
     scheduleUrlUpdate(); scheduleAnnounce();
   }
-  function fromPointer(e) {
-    const r = cv.getBoundingClientRect();
-    const dx = (e.clientX - r.left) * (W / r.width) - cx, dy = (e.clientY - r.top) * (H / r.height) - cy;
-    setBase((Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, Math.max(0, Math.min(1, Math.hypot(dx, dy) / R)));
+  function setBase(h, s) {
+    state.customHex = rgbToHex(hslToRgb([h, s, state.wheelL]));
+    $('#hex').value = state.customHex.replace('#', '');
+    commit();
   }
-  let dragging = false;
-  cv.addEventListener('pointerdown', e => { dragging = true; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); fromPointer(e); });
-  cv.addEventListener('pointermove', e => { if (dragging) fromPointer(e); });
-  cv.addEventListener('pointerup', () => { dragging = false; cv.style.cursor = 'grab'; updateUrl(); announce(); });
+  const pointerXY = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height)]; };
+  const pointerPolar = e => { const [px, py] = pointerXY(e), dx = px - cx, dy = py - cy; return [(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, Math.max(0, Math.min(1, Math.hypot(dx, dy) / R))]; };
+  function hitNodes() {                  // screen positions of every grabbable node (base, partners, free)
+    const [h, s] = rgbToHsl(hexToRgb(baseHex())), [bx, by] = pos(h, s);
+    const ns = [{ kind: 'base', x: bx, y: by }];
+    HARMONY_OFFSETS[state.harmony].forEach(o => { const [x, y] = pos(h + o, s); ns.push({ kind: 'partner', deg: o, x, y }); });
+    state.extraNodes.forEach((o, i) => { const [x, y] = pos(o.h, o.s); ns.push({ kind: 'free', idx: i, x, y }); });
+    return ns;
+  }
+  function pickNode(e) {                 // nearest node within the touch-safe hit radius (free > partner > base on a tie)
+    const [px, py] = pointerXY(e);
+    let best = null;
+    for (const n of hitNodes()) {
+      const d = Math.hypot(n.x - px, n.y - py); if (d > NODE.hit) continue;
+      const pri = n.kind === 'free' ? 0 : n.kind === 'partner' ? 1 : 2;
+      if (!best || d < best.d - 4 || (d < best.d + 4 && pri < best.pri)) best = { ...n, d, pri };
+    }
+    return best;
+  }
+  let active = null, dragging = false;
+  function applyDrag(e) {                // route the drag to whichever node was grabbed
+    const [ph, ps] = pointerPolar(e);
+    if (active && active.kind === 'partner') setBase((ph - active.deg + 360) % 360, ps);   // rotate the whole harmony rigidly
+    else if (active && active.kind === 'free') { state.extraNodes[active.idx] = { h: ph, s: ps }; commit(); }
+    else setBase(ph, ps);               // base node, or empty space → move the base
+  }
+  cv.addEventListener('pointerdown', e => { dragging = true; active = pickNode(e); cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });
+  cv.addEventListener('pointermove', e => { if (dragging) applyDrag(e); });
+  cv.addEventListener('pointerup', () => { dragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); });
   $('#wl').addEventListener('input', e => { state.wheelL = +e.target.value / 100; const [h, s] = rgbToHsl(hexToRgb(baseHex())); setBase(h, s); });
   $('#wrand').addEventListener('click', () => setBase(Math.random() * 360, 0.5 + Math.random() * 0.45));
   measure();
