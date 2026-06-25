@@ -196,6 +196,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── js/scheme.js           ← role mapping + ideal-vs-actual + wash/highlight (M4)
     ├── js/ui.js               ← rendering + events (M3)
     ├── js/app.js              ← state, URL share encoding, wiring (M3)
+    ├── js/store.js            ← versioned, portable collection (owned/to-buy) + prefs persistence — the storage chokepoint
     └── data/
         ├── paints.json        ← curated dataset (see §5) — shipped ✓ M1
         └── SOURCES.md         ← provenance + licensing (see §5) — shipped ✓ M1
@@ -206,7 +207,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 Rules:
 - `color.js`, `harmony.js`, `a11y.js` are **pure** (no DOM, no globals) so they are unit-testable.
 - State lives in one place (`app.js`). UI reads state, emits events; no scattered globals.
-- Palette state is encoded in the URL query (shareable, like Adobe Color). No storage needed for sharing; `localStorage` only for "my owned paints" convenience.
+- Palette/scheme state is encoded in the URL query (shareable, like Adobe Color) — no storage needed for sharing. Persistent personal data (owned + to-buy collection, prefs) goes through **`store.js`** only — one versioned, serialisable model (export/import JSON, paintRack-CSV-ready) so it can move from `localStorage` to IndexedDB / native / sync without touching callers. No personal data leaves the device.
 - `mockups/` (design references) and `scripts/` (dev tooling) are **never** loaded by the app at runtime — they don't count against the no-dependency rule in §6.
 
 ---

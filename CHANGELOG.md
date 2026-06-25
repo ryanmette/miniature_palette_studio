@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **`store.js` — versioned, portable persistence chokepoint (collection build, scaffold).** One
+  serialisable model (`{v, owned[], want[], prefs}`) behind a small API (`isOwned`/`setMark`/`markOf`/
+  `getPref`/`setPref`/`exportJSON`/`importJSON`); migrates the legacy `ps-owned`/`ps-theme` keys on
+  first load. Owned + theme now route through it (no scattered `localStorage`); `want` (to-buy) +
+  prefs (ladder, fill, locale) are wired for the upcoming collection features. Lets storage move to
+  IndexedDB / native / sync without touching callers.
 - **Two Thin Coats brand added — dataset v1.1.0.** Duncan Rhodes' *Two Thin Coats* range (all 180
   paints across Waves 1–3) is now in the dataset (**554 paints**, 4 brands), pulled from the same
   MIT-licensed community source (`Arcturus5404/miniature-paints`, `paints/Duncan.md`) the rest of the

@@ -7,6 +7,7 @@ import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js';
 import { buildScheme, shoppingList } from './scheme.js';
 import * as ui from './ui.js';
+import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 
 const $ = sel => document.querySelector(sel);
 const state = {
@@ -14,14 +15,14 @@ const state = {
   baseId: null, customHex: null,
   harmony: 'complementary',
   q: '', brand: '', seedRole: 'main', tab: 'plan', theme: 'light',
-  owned: new Set(), ownedOnly: false, compareA: null, wheelL: null,
+  ownedOnly: false, compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
   extraNodes: [], showReal: false,   // free/added wheel nodes [{h,s}] (S5); live-palette ideal↔real fill
 };
 
 const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
 /** Entry mode C: when the seed is the *accent*, build the scheme around its complement. */
 const schemeBase = () => (state.seedRole === 'accent' ? rotateHue(baseHex(), 180) : baseHex());
-const matchOpts = () => (state.ownedOnly && state.owned.size ? { ownedIds: state.owned } : {});
+const matchOpts = () => (state.ownedOnly && store.ownedIds().size ? { ownedIds: store.ownedIds() } : {});
 
 function baseInfo() {
   if (state.customHex) return { hex: state.customHex, name: 'Custom ' + state.customHex, custom: true };
@@ -277,8 +278,8 @@ function renderActive() { renderers[state.tab](); }
 /* ---- chrome ---- */
 function renderList() {
   const items = filteredPaints();
-  $('#list').innerHTML = ui.pickerList(items, state.customHex ? null : state.baseId, state.owned);
-  $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${state.owned.size ? ` · ${state.owned.size} owned` : ''}`;
+  $('#list').innerHTML = ui.pickerList(items, state.customHex ? null : state.baseId, store.ownedIds());
+  $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${store.counts().owned ? ` · ${store.counts().owned} owned` : ''}`;
 }
 function renderHero(animate = true) {
   $('#hero').innerHTML = ui.hero(baseInfo(), animate);   // animate=false during a live drag (no pop spam)
@@ -316,7 +317,7 @@ function renderAll() { renderList(); renderHero(); refreshStudio(); renderActive
 function setTheme(t) {
   state.theme = t === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = state.theme;
-  try { localStorage.setItem('ps-theme', state.theme); } catch { /* private mode */ }
+  store.setPref('theme', state.theme);
 }
 function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
 function syncTabs(focusActive = false) {
@@ -337,8 +338,7 @@ function setTab(tab, focusActive = false) {
   renderActive(); announce(); updateUrl();
 }
 function toggleOwned(id) {
-  if (state.owned.has(id)) state.owned.delete(id); else state.owned.add(id);
-  try { localStorage.setItem('ps-owned', JSON.stringify([...state.owned])); } catch { /* */ }
+  store.setMark(id, store.isOwned(id) ? 'none' : 'owned');
   renderList();
   document.querySelector(`[data-own="${CSS.escape(id)}"]`)?.focus(); // keep keyboard place after re-render
   if (state.ownedOnly) renderActive();
@@ -428,10 +428,9 @@ function wire() {
 async function init() {
   const url = new URLSearchParams(location.search);
   let theme = url.get('t');
-  if (!theme) { try { theme = localStorage.getItem('ps-theme'); } catch { /* */ } }
+  if (!theme) theme = store.getPref('theme');   // owned/to-buy + prefs are loaded by store.js on import
   if (!theme) theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   setTheme(theme);
-  try { state.owned = new Set(JSON.parse(localStorage.getItem('ps-owned') || '[]')); } catch { state.owned = new Set(); }
 
   state.idx = await loadDataset('./data/paints.json');
   const brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
