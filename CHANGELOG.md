@@ -6,7 +6,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Planned
-- M5–M9: interactive wheel, accessibility module, owned/compare/export, deploy + embed guide.
+- M7–M9: accessibility module, owned/compare/export, deploy + embed guide.
+
+## [0.6.0] — 2026-06-24
+### Added
+- **M5 — interactive harmony wheel** (Explore tab): drag the centre node to set the base colour live,
+  with a lightness slider, shuffle, and the role scheme + nearest paints updating beside it.
+  Touch-friendly (pointer events + capture). `ui.miniRoles` compact render.
 
 ## [0.5.0] — 2026-06-24
 ### Added

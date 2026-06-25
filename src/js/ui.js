@@ -90,3 +90,14 @@ export function equivalentsPanel(name, equivs) {
 
 export const placeholder = msg => `<div class="placeholder">${esc(msg)}</div>`;
 
+/** Compact live scheme rows for the Explore wheel: ideal → nearest paint + ΔE. */
+export function miniRoles(scheme) {
+  return `<div class="mini">${scheme.roles.map(r => {
+    const m = r.match;
+    return `<div class="mrow">${swatch(r.idealHex, '', 'width:24px;height:24px')}<span class="arr">→</span>`
+      + (m ? swatch(m.paint.hex, '', 'width:24px;height:24px') : '')
+      + `<span class="mn">${esc(r.role)}: ${m ? esc(m.paint.name) : '—'}</span>`
+      + (m ? `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span>` : '') + '</div>';
+  }).join('')}</div>`;
+}
+
