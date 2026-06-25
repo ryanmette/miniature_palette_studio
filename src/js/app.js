@@ -57,7 +57,16 @@ function refreshStudio() {
 }
 function setupWheel() {
   const cv = $('#wheel'), ctx = cv.getContext('2d');
-  const W = cv.width, H = cv.height, cx = W / 2, cy = H / 2, R = W / 2 - 16;
+  const COARSE = matchMedia('(pointer:coarse)').matches;
+  const NODE = COARSE ? { base: 15, part: 12, hit: 26 } : { base: 11, part: 8, hit: 18 };  // hit: used in S4
+  let W, H, cx, cy, R;
+  function measure() {                          // size the buffer to the CSS box × DPR; geometry stays in CSS px
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = Math.round(cv.getBoundingClientRect().width) || 280; H = W;   // square (aspect-ratio:1 in CSS)
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);     // draw in CSS px → crisp on retina
+    cx = W / 2; cy = H / 2; R = W / 2 - 16;
+  }
   state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
   $('#wl').value = Math.round(state.wheelL * 100);
   const pos = (h, s) => [cx + Math.sin(h * Math.PI / 180) * s * R, cy - Math.cos(h * Math.PI / 180) * s * R];
@@ -75,8 +84,8 @@ function setupWheel() {
     const offs = HARMONY_OFFSETS[state.harmony];
     ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
     for (const o of offs) { const [x, y] = pos(h + o, s); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); }
-    for (const o of offs) { const [x, y] = pos(h + o, s); ctx.fillStyle = rotateHue(b, o); ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = ring; ctx.stroke(); }
-    const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, 11, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = ring; ctx.stroke();
+    for (const o of offs) { const [x, y] = pos(h + o, s); ctx.fillStyle = rotateHue(b, o); ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = ring; ctx.stroke(); }
+    const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = ring; ctx.stroke();
   }
   wheelDraw = draw;          // expose the redraw for discrete base/harmony changes (picker, hex, harmony)
   let raf = 0;
@@ -100,7 +109,10 @@ function setupWheel() {
   cv.addEventListener('pointerup', () => { dragging = false; cv.style.cursor = 'grab'; updateUrl(); announce(); });
   $('#wl').addEventListener('input', e => { state.wheelL = +e.target.value / 100; const [h, s] = rgbToHsl(hexToRgb(baseHex())); setBase(h, s); });
   $('#wrand').addEventListener('click', () => setBase(Math.random() * 360, 0.5 + Math.random() * 0.45));
+  measure();
   draw();
+  let rtimer = 0;   // re-measure + redraw when the responsive canvas box changes (resize / orientation / stack)
+  window.addEventListener('resize', () => { clearTimeout(rtimer); rtimer = setTimeout(() => { measure(); draw(); }, 150); });
 }
 function renderEquiv() {
   const p = basePaint();

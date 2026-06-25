@@ -54,6 +54,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   set each draw, so the wheel adapts to the forge-dark theme (the hue ring and node fills stay colour data).
 
 ### Changed
+- **Wheel canvas is responsive + retina-crisp (P0.2 / S2).** The wheel sizes from its container
+  (`min(90vw, 300px)`, square) with a `devicePixelRatio`-scaled backing buffer and CSS-pixel geometry,
+  re-measuring on resize/orientation; node radii/hit-targets enlarge on coarse (touch) pointers. Drag
+  math is unchanged (already normalised via `getBoundingClientRect`).
 - **Wheel promoted to an always-visible studio hero (P0.1).** The harmony wheel + a live palette now
   sit at the top of the workspace on every device (stacking the wheel over the palette ≤860px); the
   `Explore` tab is removed and `Plan·roles / Equivalents / Accessibility` become drill-down tabs. The
