@@ -3,8 +3,8 @@
 How to put **Palette Studio** online and surface it from your Squarespace site. The app is a
 self-contained static page (no backend, no build), so hosting is just "serve the `src/` folder."
 
-Repo: `https://github.com/ryanmette/miniature_pallete_studio`
-Live URL (after step 2): **`https://ryanmette.github.io/miniature_pallete_studio/`**
+Repo: `https://github.com/ryanmette/miniature_palette_studio`
+Live URL (after step 2): **`https://ryanmette.github.io/miniature_palette_studio/`**
 
 > **Squarespace note:** embedding arbitrary HTML/iframes needs a **Business plan or higher**
 > (Code Block / Code Injection). Since you're not on Business, the supported path is to **host the
@@ -30,7 +30,7 @@ git push origin --tags        # optional: publish the version tags
 2. **Build and deployment → Source: GitHub Actions**.
 3. That's it. The included workflow (`.github/workflows/deploy.yml`) publishes `src/` on every push
    to `main`. Watch it under the repo's **Actions** tab; when it's green the site is live at
-   **`https://ryanmette.github.io/miniature_pallete_studio/`**.
+   **`https://ryanmette.github.io/miniature_palette_studio/`**.
 
 To update the app later: commit and `git push` — it redeploys automatically.
 
@@ -38,7 +38,7 @@ To update the app later: commit and `git push` — it redeploys automatically.
 
 ### 3a. Link or button (recommended — any plan)
 - Edit the page → add a **Button** (or text **Link**).
-- Set the link to `https://ryanmette.github.io/miniature_pallete_studio/`.
+- Set the link to `https://ryanmette.github.io/miniature_palette_studio/`.
 - Set it to **open in a new tab**. Done — visitors launch the tool from your site.
 
 ### 3b. Custom subdomain so it feels native (any plan + DNS)
@@ -52,7 +52,7 @@ Serve the app at e.g. `palette.yourdomain.com`:
 With a Business plan you can add a **Code Block** containing a responsive iframe:
 ```html
 <div style="position:relative;width:100%;min-height:820px">
-  <iframe src="https://ryanmette.github.io/miniature_pallete_studio/"
+  <iframe src="https://ryanmette.github.io/miniature_palette_studio/"
           style="position:absolute;inset:0;width:100%;height:100%;border:0"
           title="Palette Studio for Miniatures" loading="lazy"></iframe>
 </div>
