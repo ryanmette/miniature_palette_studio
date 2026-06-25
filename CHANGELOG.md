@@ -21,6 +21,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   whichever of the *colliding* roles is least disruptive to move and names that role in the hint.
 - **Scheme — metal ladder:** a metal role's derived wash/highlight ignored its `type: metal` filter
   and matched any paint; the filter now applies across the whole ladder so metals stay metallic.
+- **Role-slot ΔE badge clipping:** when a quality label was long (e.g. "Indistinguishable") the ΔE
+  badge was squeezed against it, wrapped its own text ("ΔE" / "0.0"), and clipped past the card
+  edge. The quality row now wraps as a unit (`.de` `flex-wrap`) and the badge stays on one line
+  (`white-space: nowrap`).
 
 ### Changed
 - **Accessibility — tabs/list ARIA.** Scheme-view tabs now implement the full WAI-ARIA tabs pattern:

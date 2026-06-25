@@ -95,9 +95,9 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .ivsa .nm { font-size: 12.5px; font-weight: 500; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ivsa .br { font-size: 11px; color: var(--text-muted); }
 .ttl { font-size: 11px; color: var(--text-faint); font-weight: 500; margin-bottom: 2px; }
-.de { display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; font-weight: 500; }
+.de { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; font-weight: 500; }
 .de .dot { width: 7px; height: 7px; border-radius: 50%; }
-.badge { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px; border-radius: 5px; background: var(--surface-2); color: var(--text-muted); }
+.badge { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px; border-radius: 5px; background: var(--surface-2); color: var(--text-muted); white-space: nowrap; }
 .ladder { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
 .ladder .step { flex: 1; text-align: center; }
 .ladder .step .sw { width: 100%; height: 30px; }
