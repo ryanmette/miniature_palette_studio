@@ -6,7 +6,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Planned
-- M8–M9: owned-paints / compare / export, deploy + embed guide.
+- M9: deploy (GitHub Pages) + Squarespace link/subdomain embed guide.
+
+## [0.9.0] — 2026-06-24
+### Added
+- **M8 — conveniences:** a 'paints I own' filter (per-paint ★, saved in `localStorage`) restricting
+  matches to owned paints; **compare** two schemes side by side; **export** the shopping list
+  (file + clipboard); **share**-link copy; the accent-seed entry mode (scheme built around the
+  complement); toasts.
+### Changed
+- Header adds Owned / Compare / Export / Share; URL state extended to `?c,h,v,r,t`.
 
 ## [0.8.0] — 2026-06-24
 ### Added

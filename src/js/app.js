@@ -1,11 +1,11 @@
-// app.js — application state, dataset loading, entry modes, tabs, events, theme, URL sharing.
-// The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/ui.
+// app.js — application state, dataset loading, entry modes, tabs, conveniences, theme, URL sharing.
+// The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
 import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js';
-import { buildScheme } from './scheme.js';
+import { buildScheme, shoppingList } from './scheme.js';
 import * as ui from './ui.js';
 
 const $ = sel => document.querySelector(sel);
@@ -14,10 +14,13 @@ const state = {
   baseId: null, customHex: null,
   harmony: 'complementary',
   q: '', brand: '', seedRole: 'main', tab: 'plan', theme: 'light',
+  owned: new Set(), ownedOnly: false, compareA: null, wheelL: null,
 };
 
 const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
-const matchOpts = () => ({});   // M8 will add { ownedIds, brands } here
+/** Entry mode C: when the seed is the *accent*, build the scheme around its complement. */
+const schemeBase = () => (state.seedRole === 'accent' ? rotateHue(baseHex(), 180) : baseHex());
+const matchOpts = () => (state.ownedOnly && state.owned.size ? { ownedIds: state.owned } : {});
 
 function baseInfo() {
   if (state.customHex) return { hex: state.customHex, name: 'Custom ' + state.customHex, custom: true };
@@ -25,6 +28,7 @@ function baseInfo() {
   return { hex: p.hex, name: p.name, brand: p.brand, line: p.line, type: p.type, approx: p.approx };
 }
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
+function currentScheme() { return buildScheme(state.idx, schemeBase(), state.harmony, matchOpts()); }
 
 function filteredPaints() {
   const q = state.q.toLowerCase();
@@ -35,14 +39,14 @@ function filteredPaints() {
 
 /* ---- per-tab renderers ---- */
 function renderPlan() {
-  state.scheme = buildScheme(state.idx, baseHex(), state.harmony, matchOpts());
-  $('#panel-plan').innerHTML = ui.paletteOverview(state.scheme)
+  state.scheme = currentScheme();
+  const cur = { base: schemeBase(), harmony: state.harmony, colors: state.scheme.roles.map(r => r.idealHex) };
+  const cmp = state.compareA ? ui.compareBar(state.compareA, cur) : '';
+  $('#panel-plan').innerHTML = cmp + ui.paletteOverview(state.scheme)
     + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus a derived wash + highlight</div>'
     + ui.roleSlots(state.scheme);
 }
-function renderMini() {
-  $('#mini').innerHTML = ui.miniRoles(buildScheme(state.idx, baseHex(), state.harmony, matchOpts()));
-}
+function renderMini() { $('#mini').innerHTML = ui.miniRoles(currentScheme()); }
 function renderExplore() {
   $('#panel-explore').innerHTML = `<div class="wheelwrap">
     <div class="wheelcol">
@@ -91,14 +95,11 @@ function setupWheel() {
 }
 function renderEquiv() {
   const p = basePaint();
-  if (p) {
-    $('#panel-equiv').innerHTML = ui.equivalentsPanel(`${p.name} (${p.brand})`, equivalents(state.idx, state.idx.byId.get(p.id), { n: 8 }));
-  } else {
-    $('#panel-equiv').innerHTML = ui.equivalentsPanel(`your colour ${baseHex()}`, nearestPaints(state.idx, baseHex(), 8));
-  }
+  if (p) $('#panel-equiv').innerHTML = ui.equivalentsPanel(`${p.name} (${p.brand})`, equivalents(state.idx, state.idx.byId.get(p.id), { n: 8 }));
+  else $('#panel-equiv').innerHTML = ui.equivalentsPanel(`your colour ${baseHex()}`, nearestPaints(state.idx, baseHex(), 8));
 }
 function renderA11y() {
-  const s = state.scheme = buildScheme(state.idx, baseHex(), state.harmony, matchOpts());
+  const s = state.scheme = currentScheme();
   const colors = s.roles.map(r => r.idealHex);
   const names = s.roles.map(r => r.role);
   const sims = [
@@ -107,7 +108,7 @@ function renderA11y() {
     { label: 'Protanopia', colors: colors.map(c => simulateCvd(c, 'protanopia')) },
     { label: 'Tritanopia', colors: colors.map(c => simulateCvd(c, 'tritanopia')) },
   ];
-  const mk = (a, b, labelA, labelB) => { const w = wcag(a, b); return { a, b, labelA, labelB, ratio: w.ratio, passAAText: w.passAAText, passAALarge: w.passAALarge }; };
+  const mk = (a, b, la, lb) => { const w = wcag(a, b); return { a, b, labelA: la, labelB: lb, ratio: w.ratio, passAAText: w.passAAText, passAALarge: w.passAALarge }; };
   const contrasts = [mk(colors[0], colors[2], 'Body', 'Accent'), mk(colors[0], '#FFFFFF', 'Body', 'white'), mk(colors[0], '#000000', 'Body', 'black')];
   const col = minPairDelta(colors, 'deuteranopia');
   let collision = null;
@@ -129,8 +130,8 @@ function renderActive() { renderers[state.tab](); }
 /* ---- chrome ---- */
 function renderList() {
   const items = filteredPaints();
-  $('#list').innerHTML = ui.pickerList(items, state.customHex ? null : state.baseId);
-  $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints`;
+  $('#list').innerHTML = ui.pickerList(items, state.customHex ? null : state.baseId, state.owned);
+  $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${state.owned.size ? ` · ${state.owned.size} owned` : ''}`;
 }
 function renderHero() {
   $('#hero').innerHTML = ui.hero(baseInfo());
@@ -142,6 +143,7 @@ function updateUrl() {
   p.set('c', baseHex().replace('#', ''));
   p.set('h', state.harmony);
   if (state.tab !== 'plan') p.set('v', state.tab);
+  if (state.seedRole === 'accent') p.set('r', 'accent');
   if (state.theme === 'dark') p.set('t', 'dark');
   history.replaceState(null, '', '?' + p.toString());
 }
@@ -152,22 +154,46 @@ function setTheme(t) {
   document.documentElement.dataset.theme = state.theme;
   try { localStorage.setItem('ps-theme', state.theme); } catch { /* private mode */ }
 }
-function selectPaint(id) {
-  state.baseId = id; state.customHex = null;
-  $('#hex').value = baseHex().replace('#', '');
-  renderAll();
-}
+function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
 function setTab(tab) {
   state.tab = tab;
   for (const b of $('#tabs').children) b.setAttribute('aria-selected', String(b.dataset.tab === tab));
   for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== tab;
   renderActive(); announce(); updateUrl();
 }
+function toggleOwned(id) {
+  if (state.owned.has(id)) state.owned.delete(id); else state.owned.add(id);
+  try { localStorage.setItem('ps-owned', JSON.stringify([...state.owned])); } catch { /* */ }
+  renderList(); if (state.ownedOnly) renderActive();
+}
+function toast(msg) {
+  const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('role', 'status');
+  document.body.appendChild(d); setTimeout(() => d.remove(), 1700);
+}
+function doExport() {
+  const s = currentScheme();
+  let t = `Palette Studio for Miniatures — shopping list\nBase ${s.base} · ${s.harmony} scheme\n\n`;
+  for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}\n`;
+  t += '\nHex values are approximate; ΔE = perceptual distance to the ideal colour.\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([t], { type: 'text/plain' }));
+  a.download = 'palette-shopping-list.txt'; a.click(); URL.revokeObjectURL(a.href);
+  if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {});
+  toast('Shopping list exported');
+}
+function doShare() {
+  const url = location.href;
+  if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast('Share link copied')).catch(() => toast('Copy the URL from the address bar'));
+  else toast('Copy the URL from the address bar');
+}
 
 function wire() {
   $('#q').addEventListener('input', e => { state.q = e.target.value; renderList(); });
   $('#brand').addEventListener('change', e => { state.brand = e.target.value; renderList(); });
-  $('#list').addEventListener('click', e => { const b = e.target.closest('.paint'); if (b) selectPaint(b.dataset.id); });
+  $('#list').addEventListener('click', e => {
+    const own = e.target.closest('.own'); if (own) { e.stopPropagation(); toggleOwned(own.dataset.own); return; }
+    const b = e.target.closest('.paint'); if (b) selectPaint(b.dataset.id);
+  });
   $('#hex').addEventListener('input', e => {
     const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6).toUpperCase();
     e.target.value = v;
@@ -184,8 +210,16 @@ function wire() {
     const b = e.target.closest('button'); if (!b) return;
     state.seedRole = b.dataset.role;
     for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
-    renderHero(); announce(); updateUrl();
+    renderHero(); renderActive(); announce(); updateUrl();
   });
+  $('#owned').addEventListener('click', () => { state.ownedOnly = !state.ownedOnly; $('#owned').setAttribute('aria-pressed', String(state.ownedOnly)); renderActive(); });
+  $('#compare').addEventListener('click', () => {
+    if (state.compareA) { state.compareA = null; $('#compare').setAttribute('aria-pressed', 'false'); }
+    else { const s = currentScheme(); state.compareA = { base: schemeBase(), harmony: state.harmony, colors: s.roles.map(r => r.idealHex) }; $('#compare').setAttribute('aria-pressed', 'true'); setTab('plan'); toast('Pinned A — change the scheme to compare'); }
+    if (state.tab === 'plan') renderPlan();
+  });
+  $('#export').addEventListener('click', doExport);
+  $('#share').addEventListener('click', doShare);
   $('#theme').addEventListener('click', () => { setTheme(state.theme === 'dark' ? 'light' : 'dark'); updateUrl(); });
 }
 
@@ -195,6 +229,7 @@ async function init() {
   if (!theme) { try { theme = localStorage.getItem('ps-theme'); } catch { /* */ } }
   if (!theme) theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   setTheme(theme);
+  try { state.owned = new Set(JSON.parse(localStorage.getItem('ps-owned') || '[]')); } catch { state.owned = new Set(); }
 
   state.idx = await loadDataset('./data/paints.json');
   const brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
@@ -202,6 +237,7 @@ async function init() {
 
   const h = url.get('h'); if (h && isHarmony(h)) state.harmony = h;
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;
+  if (url.get('r') === 'accent') { state.seedRole = 'accent'; for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'accent')); }
   const c = url.get('c');
   if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();
   else state.baseId = state.idx.paints[0].id;

@@ -9,12 +9,24 @@ const label = t => t.charAt(0).toUpperCase() + t.slice(1); // sentence case (§3
 export const swatch = (hex, cls = '', extra = '') => `<span class="sw ${cls}" style="background:${hex};${extra}"></span>`;
 
 /** Picker list of paints (each row is a focusable option button). */
-export function pickerList(paints, selectedId) {
+export function pickerList(paints, selectedId, owned = new Set()) {
   if (!paints.length) return `<div style="padding:18px;color:var(--text-faint);font-size:13px">No paints match.</div>`;
-  return paints.map(p => `<button class="paint" role="option" data-id="${esc(p.id)}" aria-selected="${p.id === selectedId}">`
-    + swatch(p.hex, '', 'width:30px;height:30px')
-    + `<span style="min-width:0"><span class="nm">${esc(p.name)}</span><br>`
-    + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</span></span></button>`).join('');
+  return paints.map(p => {
+    const own = owned.has(p.id);
+    return `<button class="paint" role="option" data-id="${esc(p.id)}" aria-selected="${p.id === selectedId}">`
+      + swatch(p.hex, '', 'width:30px;height:30px')
+      + `<span style="min-width:0;flex:1"><span class="nm">${esc(p.name)}</span><br>`
+      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</span></span>`
+      + `<span class="own${own ? ' on' : ''}" data-own="${esc(p.id)}" role="checkbox" aria-checked="${own}" title="Mark as owned">${own ? '★' : '☆'}</span>`
+      + '</button>';
+  }).join('');
+}
+
+/** Compare two schemes side by side. a/b: { base, harmony, colors:[ideal hexes] }. */
+export function compareBar(a, b) {
+  const row = (g, lbl) => `<div class="cmprow"><span class="cmplab">${esc(lbl)} · ${esc(g.harmony)} · <span class="mono">${esc(g.base)}</span></span>`
+    + `<div class="cmppal">${g.colors.map(c => `<span style="background:${c}"></span>`).join('')}</div></div>`;
+  return `<div class="compare"><div class="cmphead">Compare</div>${row(a, 'A')}${row(b, 'B · current')}</div>`;
 }
 
 /** Base-paint hero. `base`: { hex, name, brand?, line?, type?, approx?, custom? }. */
