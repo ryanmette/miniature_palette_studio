@@ -8,6 +8,7 @@ import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js
 import { buildScheme, shoppingList } from './scheme.js';
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
+import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
 
 const $ = sel => document.querySelector(sel);
 const state = {
@@ -283,7 +284,7 @@ function renderList() {
 }
 function renderHero(animate = true) {
   $('#hero').innerHTML = ui.hero(baseInfo(), animate);   // animate=false during a live drag (no pop spam)
-  $('#baseLabel').textContent = `Base colour · ${state.seedRole}`;
+  $('#baseLabel').textContent = `${i18n.t('baseColour')} · ${state.seedRole}`;
 }
 let urlTimer = null, announceTimer = null;
 function announce() {
@@ -452,6 +453,7 @@ async function init() {
   $('#hex').value = baseHex().replace('#', '');
   syncTabs();
   wire();
+  i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
   setupWheel();   // wheel is now always-visible static markup; bind it once
   renderAll();
 }

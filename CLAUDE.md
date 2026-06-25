@@ -187,6 +187,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 └── src/                       ← the app (✓ M1–M8: data, engine, shell, all feature UI)
     ├── index.html             ← (M3)
     ├── CNAME · .nojekyll       ← GitHub Pages: custom domain (palette.ryanmette.com) + disable Jekyll (M9)
+    ├── manifest.webmanifest · sw.js · icon.svg  ← PWA: installable + offline app shell (collection branch)
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)
     ├── js/color.js            ← pure color math (see §7). No DOM. (M2)
@@ -197,6 +198,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── js/ui.js               ← rendering + events (M3)
     ├── js/app.js              ← state, URL share encoding, wiring (M3)
     ├── js/store.js            ← versioned, portable collection (owned/to-buy) + prefs persistence — the storage chokepoint
+    ├── js/i18n.js             ← lightweight UI-string localization (chrome only; auto-detect locale + en-GB/en-US)
     └── data/
         ├── paints.json        ← curated dataset (see §5) — shipped ✓ M1
         └── SOURCES.md         ← provenance + licensing (see §5) — shipped ✓ M1
@@ -208,6 +210,8 @@ Rules:
 - `color.js`, `harmony.js`, `a11y.js` are **pure** (no DOM, no globals) so they are unit-testable.
 - State lives in one place (`app.js`). UI reads state, emits events; no scattered globals.
 - Palette/scheme state is encoded in the URL query (shareable, like Adobe Color) — no storage needed for sharing. Persistent personal data (owned + to-buy collection, prefs) goes through **`store.js`** only — one versioned, serialisable model (export/import JSON, paintRack-CSV-ready) so it can move from `localStorage` to IndexedDB / native / sync without touching callers. No personal data leaves the device.
+- The app is an **installable, offline-capable PWA**: `sw.js` cache-firsts the static shell + dataset (cross-origin fonts pass through, with the system-font fallback covering offline); `manifest.webmanifest` + `icon.svg` make it installable. This is the foundation for the future Capacitor app (`docs/IOS_APP_PLAN.md` approach A→B). Both `sw.js` and `i18n.js` are vanilla — no dependency (§6).
+- **`i18n.js`** localizes **chrome strings only** — paint names are data and never translate. Locale auto-detects from the device (`navigator.language`), overridable via prefs; en-GB is canonical, en-US a sparse spelling-override layer (`colour`/`color`). Mark static text `data-i18n` / placeholders `data-i18n-ph`; use `t(key)` for dynamic strings.
 - `mockups/` (design references) and `scripts/` (dev tooling) are **never** loaded by the app at runtime — they don't count against the no-dependency rule in §6.
 
 ---

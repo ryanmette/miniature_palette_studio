@@ -6,6 +6,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Installable, offline-capable PWA (collection branch).** `manifest.webmanifest` + `icon.svg` + a
+  cache-first `sw.js` (app shell + bundled dataset; cross-origin fonts pass through, covered by the
+  system-font fallback offline) — the tool installs to the home screen and works offline after first
+  load. Foundation for the future Capacitor app (docs/IOS_APP_PLAN.md approach A→B).
+- **`i18n.js` — UI-string localization scaffold.** Auto-detects the device locale (`navigator.language`);
+  en-GB canonical with a sparse en-US spelling-override layer (`colour`/`color`), overridable via prefs.
+  Chrome strings only via `data-i18n` / `t(key)` — paint names never translate.
 - **`store.js` — versioned, portable persistence chokepoint (collection build, scaffold).** One
   serialisable model (`{v, owned[], want[], prefs}`) behind a small API (`isOwned`/`setMark`/`markOf`/
   `getPref`/`setPref`/`exportJSON`/`importJSON`); migrates the legacy `ps-owned`/`ps-theme` keys on

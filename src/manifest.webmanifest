@@ -1,0 +1,14 @@
+{
+  "name": "Palette Studio for Miniatures",
+  "short_name": "Palette Studio",
+  "description": "Pick a miniature paint and get colour harmonies matched to the real paints you can buy.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#141110",
+  "theme_color": "#141110",
+  "icons": [
+    { "src": "./icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ]
+}
