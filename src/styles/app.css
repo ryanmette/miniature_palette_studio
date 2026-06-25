@@ -59,7 +59,7 @@ input[type="search"], select { height: var(--tap); border: 1px solid var(--borde
 input:focus, select:focus, .hexin:focus-within { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
 .list { max-height: 60vh; overflow: auto; padding: 6px; }
 .paintrow { display: flex; align-items: center; gap: 2px; }
-.paint { display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: var(--r-ctrl); cursor: pointer; border: 1px solid transparent; flex: 1; min-width: 0; text-align: left; background: transparent; }
+.paint { display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: var(--r-ctrl); cursor: pointer; border: 1px solid transparent; flex: 1; min-width: 0; text-align: left; background: transparent; color: var(--text); }
 .paint:hover { background: var(--surface-2); }
 .paint[aria-current="true"] { background: var(--accent-weak); border-color: var(--accent); }
 .paint .nm { font-size: 13px; font-weight: 500; }

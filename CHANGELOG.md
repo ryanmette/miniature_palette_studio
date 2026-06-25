@@ -21,6 +21,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `.btn.primary` in the header, surfacing the one outcome a pure colour tool can't produce.
 
 ### Fixed
+- **Dark-mode picker readability.** Paint names in the picker list inherited the browser's default
+  button text colour (black) instead of a theme token, so they were hard to read on the dark theme
+  (the brand line was fine — it set `--text-muted`). The `.paint` row now sets `color: var(--text)`.
 - **Explore wheel on WebKit/Safari:** dragging the wheel called `history.replaceState` on every
   pointer move, which trips WebKit's ~100-calls-per-30s limit (uncaught `SecurityError` mid-drag).
   The URL write is now debounced and flushed on pointer-up; the live redraw (≈12 nearest-paint
