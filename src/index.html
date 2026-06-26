@@ -90,7 +90,14 @@
 
   <section class="card pad shelf" id="shelf" aria-label="My paint shelf" hidden>
     <div class="shelfhead">
-      <h2 data-i18n="myShelf">My paint shelf</h2>
+      <div class="shelftop">
+        <h2 data-i18n="myShelf">My paint shelf</h2>
+        <div class="shelftools">
+          <button class="btn sm" id="importColl" title="Import a paintRack CSV or a Palette Studio JSON backup">Import…</button>
+          <button class="btn sm" id="exportColl" title="Download your collection as CSV">Export CSV</button>
+          <input id="importFile" type="file" accept=".csv,.json,text/csv,application/json" hidden />
+        </div>
+      </div>
       <div class="shelfstats micro" id="shelfStats" aria-live="polite"></div>
       <p class="shelfhint" id="shelfHint"></p>
       <div class="brandchips" id="brandChips" role="group" aria-label="Filter the shelf by brand"></div>

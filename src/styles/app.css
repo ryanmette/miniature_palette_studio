@@ -195,6 +195,8 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelf { grid-column: 1 / -1; }     /* full-width when shown (picker + workspace are hidden in shelf mode) */
 .shelfhead { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.shelftop { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.shelftools { display: flex; gap: 8px; }
 .shelfhead h2 { font-size: var(--fs-h1); }
 .shelfstats { color: var(--text-muted); }
 .shelfstats .s-owned { color: var(--success); }

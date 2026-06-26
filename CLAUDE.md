@@ -205,6 +205,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── js/ui.js               ← rendering + events (M3)
     ├── js/app.js              ← state, URL share encoding, wiring (M3)
     ├── js/store.js            ← versioned, portable collection (owned/to-buy) + prefs persistence — the storage chokepoint
+    ├── js/collection-io.js    ← paintRack-CSV ⇄ marks + CSV export; pure matcher (#27)
     ├── js/i18n.js             ← lightweight UI-string localization (chrome only; auto-detect locale + en-GB/en-US)
     └── data/
         ├── paints.json        ← curated dataset (see §5) — shipped ✓ M1

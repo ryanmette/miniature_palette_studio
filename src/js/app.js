@@ -6,6 +6,7 @@ import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn } from './col
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js';
 import { buildScheme, shoppingList, schemeGaps } from './scheme.js';
+import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
@@ -610,6 +611,41 @@ function doShare() {
   if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast('Share link copied')).catch(() => toast('Copy the URL from the address bar'));
   else toast('Copy the URL from the address bar');
 }
+function download(filename, text, type = 'text/plain') {
+  const a = document.createElement('a');
+  const href = URL.createObjectURL(new Blob([text], { type }));
+  a.href = href; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(href), 0);   // revoke after the download starts
+}
+/** Export the collection as paintRack-compatible CSV (#27). */
+function exportCollectionCsv() {
+  const n = store.counts();
+  if (!n.owned && !n.want) { toast('Your shelf is empty — nothing to export'); return; }
+  download('my-paint-shelf.csv', marksToCsv(state.idx, store.ownedIds(), store.wantIds()), 'text/csv');
+  toast(`Exported ${n.owned} owned · ${n.want} to buy`);
+}
+/** Import a paintRack CSV (merges) or a Palette Studio JSON backup (restores) (#27). */
+function importCollectionFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = String(reader.result || '');
+    if (/\.json$/i.test(file.name) || /^\s*[{[]/.test(text)) {
+      toast(store.importJSON(text) ? 'Collection restored from JSON backup' : 'Could not read that JSON file');
+    } else {
+      const { matched, unmatched } = applyCsv(text);
+      toast(`Imported ${matched} paint${matched === 1 ? '' : 's'}${unmatched.length ? ` · ${unmatched.length} unmatched` : ''}`);
+    }
+    if (state.mode === 'shelf') renderShelf();
+    renderList(); renderLive(); renderActive();
+  };
+  reader.onerror = () => toast('Could not read that file');
+  reader.readAsText(file);
+}
+function applyCsv(text) {
+  const res = csvToMarks(state.idx, text);
+  res.marks.forEach(m => store.setMark(m.id, m.mark));   // merge onto the current shelf
+  return res;
+}
 
 function wire() {
   $('#q').addEventListener('input', e => { state.q = e.target.value; renderList(); });
@@ -685,6 +721,9 @@ function wire() {
     else applyMark(b.dataset.act);
   });
   $('#shelfMenu').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b) { applyMark(b.dataset.act); closeMenu(); } });
+  $('#exportColl').addEventListener('click', exportCollectionCsv);
+  $('#importColl').addEventListener('click', () => $('#importFile').click());
+  $('#importFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importCollectionFile(f); e.target.value = ''; });
   document.addEventListener('pointerdown', e => { if (menuOpen && !e.target.closest('#shelfMenu')) closeMenu(); }, true);
   document.addEventListener('keydown', shelfKeydown);
   setupShelf();

@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Collection import / export (collection build #27).** The Shelf gains **Import…** and **Export CSV**.
+  Export writes a **paintRack-compatible CSV** (`brand,name,status`) of your owned + to-buy paints.
+  Import accepts that CSV (matched to the dataset by brand+name, with brand aliases and a name-only
+  fallback; unmatched rows are reported, not dropped) **or** a Palette Studio JSON backup
+  (`store.importJSON`). New pure, tested module `src/js/collection-io.js`. Makes the collection portable
+  across the web app, a future native app, and other paint trackers.
 - **Want-to-buy → shopping list (collection build #5).** Each nearest-paint chip in the Plan tab gets a
   **+ buy** toggle, and a one-click **"Add N to buy"** flags every paint a scheme needs that you don't
   own (`schemeGaps`). The accumulated to-buy collection is appended to **Export** as its own list — the
