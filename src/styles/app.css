@@ -188,7 +188,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .chip:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--accent); }
 .chip[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 
-.shelfgrid { position: relative; display: grid; gap: 8px; user-select: none; touch-action: pan-y;
+.shelfgrid { position: relative; display: grid; gap: 8px; -webkit-user-select: none; user-select: none; touch-action: pan-y;
   grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
 .shelfgrid:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-ctrl); }
 /* the cell IS the swatch: colour is paint data; a fixed 1px inset keeps white-ish paints visible.

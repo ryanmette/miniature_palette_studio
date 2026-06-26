@@ -279,6 +279,7 @@ function renderActive() { renderers[state.tab](); }
 
 /* ---- shelf (collection) — Finder-style bulk stocking, wired to store.setMark ---- */
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
+const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
 const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null };   // ids; selection is transient (not persisted)
 const shelfPaints = () => state.idx.paints.filter(p => !state.shelfBrand || p.brand === state.shelfBrand);
 const cellEl = id => document.getElementById('sc-' + id);
@@ -368,28 +369,33 @@ function setupShelf() {
     return;
   }
 
-  let down = null, marquee = null, base = null, moved = false;
+  let down = null, marquee = null, base = null, moved = false, dragRects = null;
   grid.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;                   // left button only (right-click → context menu)
+    // On macOS, Ctrl+click IS the system secondary-click (fires contextmenu) — so use ⌘ (meta) as the
+    // multi-select toggle there, and Ctrl elsewhere. Avoids a Ctrl+click both toggling AND opening the menu.
+    const toggle = IS_MAC ? e.metaKey : e.ctrlKey;
     const c = e.target.closest('.cell');
-    down = { x: e.clientX, y: e.clientY, id: c ? c.dataset.id : null, shift: e.shiftKey, meta: e.metaKey || e.ctrlKey };
+    down = { x: e.clientX, y: e.clientY, id: c ? c.dataset.id : null, shift: e.shiftKey, meta: toggle };
     base = (down.shift || down.meta) ? new Set(shelf.sel) : new Set();
-    moved = false; grid.setPointerCapture(e.pointerId);
+    moved = false; dragRects = null; grid.setPointerCapture(e.pointerId);
   });
   grid.addEventListener('pointermove', e => {
     if (!down) return;
     if (!moved && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 5) return;   // movement threshold → drag
     moved = true;
     const r = grid.getBoundingClientRect();
-    if (!marquee) { marquee = document.createElement('div'); marquee.className = 'marquee'; grid.appendChild(marquee); }
+    if (!marquee) {
+      marquee = document.createElement('div'); marquee.className = 'marquee'; grid.appendChild(marquee);
+      // snapshot cell rects once — they don't move during a captured drag, so we avoid a 554× layout read per move
+      dragRects = [...grid.children].filter(el => el !== marquee).map(el => ({ id: el.dataset.id, b: el.getBoundingClientRect() }));
+    }
     const x0 = Math.min(down.x, e.clientX), y0 = Math.min(down.y, e.clientY), x1 = Math.max(down.x, e.clientX), y1 = Math.max(down.y, e.clientY);
     marquee.style.left = (x0 - r.left) + 'px'; marquee.style.top = (y0 - r.top) + 'px';
     marquee.style.width = (x1 - x0) + 'px'; marquee.style.height = (y1 - y0) + 'px';
     const hit = new Set(base);
-    for (const cell of grid.children) {
-      if (cell === marquee) continue;
-      const b = cell.getBoundingClientRect();
-      if (b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1) hit.add(cell.dataset.id);
+    for (const { id, b } of dragRects) {
+      if (id && b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1) hit.add(id);
     }
     shelf.sel = hit; paintSelected(); renderShelfBar();
   });
