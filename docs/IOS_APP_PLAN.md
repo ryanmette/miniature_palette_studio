@@ -31,16 +31,31 @@ A phone unlocks things the web version can't do as well:
 
 ---
 
-## 2. Approaches & trade-offs
+## 2. The progression — one ratchet, four stages
 
-| Approach | What it is | Code reuse | Native feel | Store? | Effort |
-|----------|-----------|-----------:|-------------|:------:|-------:|
-| **A · PWA / installable web app** | Add a manifest + service worker to the existing site | ~100% | Low–medium | No (Home-screen only) | **XS** |
-| **B · Capacitor wrapper** ⭐ | Wrap the web app in a native shell; add native plugins (camera, haptics, share) | ~90% | Medium–high | **Yes** | **S–M** |
-| **C · React Native / Expo** | Rebuild UI in RN; reuse the pure JS engine as a shared module | ~40% (engine + data) | High | Yes | **M–L** |
-| **D · Native SwiftUI** | Full native app; port the colour math to Swift (small, well-specified) or run it via JavaScriptCore | Engine logic only | Highest | Yes | **L** |
+These are **not four competing choices**; they're **stages on one path**, each reusing the last.
+**Native SwiftUI is the destination** (the goal Ryan wants to reach) — but every stage must *earn*
+the next. You can't skip ahead, and you don't advance until the previous stage proves the demand.
 
-⭐ = recommended starting point.
+| Stage | What it is | Code reuse | Native feel | Store? | Advance to the next when… |
+|-------|-----------|-----------:|-------------|:------:|---------------------------|
+| **0 · PWA** ✅ | manifest + service worker; installable, offline | ~100% | low–med | Home-screen only | **done** — it's the live foundation |
+| **1 · Capacitor wrap** ⭐ | the web app in a native shell + native plugins (camera, barcode, haptics, share) | ~90% | med–high | **Yes** | there's real demand and you want camera/inventory in-store |
+| **2 · Selective native (hybrid)** | replace hot / native-feel screens (wheel, camera) with native modules; the rest stays web | ~70% | high | Yes | specific screens need native perf or feel |
+| **3 · Full native SwiftUI** | rebuild the UI in SwiftUI; port the colour math to Swift, or run it via JavaScriptCore | engine only | highest | Yes | reviews / usage / iPad + Pencil demand a fully native app |
+
+⭐ = the first App-Store release (v2.0).
+
+**What survives every stage:** the **pure engine + static dataset**. That's exactly why the
+constitution keeps them framework-free — they drop into a PWA, a Capacitor app, a native module, or
+a Swift port *unchanged*. The colour math even ships with reference test vectors (Sharma pairs), so
+a future Swift port is verifiable against the JS one.
+
+**The honest cost of reaching stage 3:** a SwiftUI UI is a *second* UI codebase, maintained
+**alongside** the web UI — the same shape as Discord (an Electron desktop/web app **plus** a separate
+React Native mobile app, sharing core logic but not the UI). Worth it only once the app has clearly
+earned it. (React Native is the same idea as stage 3 with more web-world tooling and Android for free;
+SwiftUI is chosen here for maximal iOS-native feel — revisit at v2 kickoff, §9.)
 
 ---
 
@@ -68,15 +83,20 @@ So v1 is, deliberately, already 40–90% of a v2 app depending on approach.
 
 ---
 
-## 4. Recommended path
+## 4. Recommended path (walk the stages in §2; gate each one)
 
-1. **Ship v1 web.** Measure interest (usage, requests for an app).
-2. **v2.0 = Capacitor wrap (approach B).** Fastest route to the App Store with the camera
-   eyedropper and offline library — maximal reuse of the web work, minimal new code.
-3. **v2.x = go native (approach D) only if it earns it** — if reviews ask for a more native feel,
-   iPad/Pencil, or performance, reimplement the UI in SwiftUI while keeping the verified algorithms.
+1. **Ship v1 web + PWA (stage 0 — done).** Measure interest (usage, "is there an app?" requests).
+2. **Stage 1 — Capacitor wrap = v2.0**, when demand appears. Fastest route to the App Store with the
+   camera eyedropper + offline inventory; maximal reuse, minimal new code. The collection / **Shelf**
+   already built on the web (`store.js` + the Finder grid) is the inventory foundation it builds on.
+3. **Stage 2 — go hybrid** only for the screens that actually need native perf/feel (e.g. the wheel,
+   the camera capture), leaving everything else as the shared web UI.
+4. **Stage 3 — full SwiftUI** only once reviews / usage / iPad demand justify maintaining a second UI
+   codebase.
 
-This avoids a big native rewrite before there's evidence anyone wants the app.
+The point: **native is the destination, reached by a ratchet rather than a rewrite** — each stage
+reuses the last, and you only advance when the previous stage has proven the demand. This gets you to
+a native app without a big speculative native build before there's evidence anyone wants it.
 
 ---
 

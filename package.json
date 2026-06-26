@@ -9,5 +9,5 @@
     "build:data": "node scripts/build-dataset.mjs",
     "validate:data": "node scripts/validate-data.mjs"
   },
-  "license": "UNLICENSED"
+  "license": "SEE LICENSE IN LICENSE"
 }

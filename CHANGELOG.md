@@ -18,6 +18,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Tone-ladder choice (collection build #7).** Each role's recipe ladder can be **Wash · base ·
   highlight** (technique), **Shadow · mid · highlight** (value structure), or **Both** — selectable in
   the Plan tab and persisted. Export and the shopping list follow the chosen ladder.
+- **`LICENSE` — proprietary, all rights reserved.** Explicit licence for the code (view-only; reuse/
+  redeploy/commercial use prohibited without permission). The dataset is excluded and remains governed
+  by its upstream sources (`src/data/SOURCES.md`). `package.json` now points at it (`SEE LICENSE IN LICENSE`).
 - **`SECURITY.md` security policy.** Documents the static/no-backend/no-PII scope, in/out-of-scope
   vulnerability classes (XSS via hex/URL/import inputs), and private vulnerability reporting via the
   GitHub Security tab. Recorded in the CLAUDE.md §4 file index.

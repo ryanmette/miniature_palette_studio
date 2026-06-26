@@ -1,0 +1,37 @@
+Palette Studio for Miniatures — Proprietary License
+
+Copyright (c) 2026 Ryan Mette. All rights reserved.
+
+This software and its source code (the "Software") are the proprietary and
+confidential property of the copyright holder. The Software is published
+publicly on GitHub for transparency and demonstration purposes only; doing so
+grants no license to use it beyond the limited permissions below.
+
+YOU MAY:
+  - View and read the source code.
+  - Fork the repository within GitHub for the sole purpose of preparing and
+    submitting a contribution back to this project (subject to acceptance by
+    the copyright holder).
+
+YOU MAY NOT, without the prior written permission of the copyright holder:
+  - Copy, reproduce, modify, or create derivative works of the Software;
+  - Use the Software, in whole or in part, in any other project or product;
+  - Distribute, publish, sublicense, sell, rent, or host the Software or any
+    derivative of it;
+  - Use the Software for any commercial purpose.
+
+DATA. The paint dataset under src/data/ is a curated compilation assembled from
+third-party community and manufacturer sources, each governed by its own license
+and terms. The dataset is NOT licensed to you under this file. See
+src/data/SOURCES.md and docs/DATA_SOURCING.md for provenance and the applicable
+upstream terms. Nothing in this license grants any rights over those third-party
+sources, and the permissions above do not extend to the dataset.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For licensing inquiries, contact the copyright holder.
