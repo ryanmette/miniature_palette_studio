@@ -22,12 +22,21 @@ export function indexDataset(dataset) {
   return { ...dataset, paints, byId: new Map(paints.map(p => [p.id, p])) };
 }
 
-function passesFilter(p, { excludeId, brands, excludeBrands, ownedIds, types } = {}) {
+/**
+ * "Finish" types — paints that aren't flat opaque colour (washes/shades, inks, contrast, glazes,
+ * effects/technical). They read very differently on the model, so they're excluded from harmony
+ * *suggestions* by default (the live palette + role ladders) — but stay browsable in the picker,
+ * the Shelf, and cross-brand Equivalents. `metal` is deliberately NOT here (the Metal role wants it).
+ */
+export const FINISH_TYPES = ['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect', 'technical'];
+
+function passesFilter(p, { excludeId, brands, excludeBrands, ownedIds, types, excludeTypes } = {}) {
   if (excludeId && p.id === excludeId) return false;
   if (brands && !brands.has(p.brand)) return false;
   if (excludeBrands && excludeBrands.has(p.brand)) return false;
   if (ownedIds && !ownedIds.has(p.id)) return false;
   if (types && !types.has(p.type)) return false;
+  if (excludeTypes && excludeTypes.has(p.type)) return false;
   return true;
 }
 

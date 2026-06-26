@@ -151,7 +151,7 @@ export function matchChip(m, markOf) {
 
 /** Plan-tab controls (#5/#6/#7): tone-ladder style · how-to-use-collection tri-state · "add gaps to buy".
  *  `collection` ∈ 'off' | 'prefer' (soft boost) | 'only' (hard filter) — one control, no overlap. */
-export function planControls(ladder, collection, gapCount) {
+export function planControls(ladder, collection, includeContrast, gapCount) {
   const lad = [['wash', 'Wash · base · highlight'], ['tone', 'Shadow · mid · highlight'], ['both', 'Both']]
     .map(([v, l]) => `<button data-ladder="${v}" aria-pressed="${v === ladder}">${esc(l)}</button>`).join('');
   const col = [['off', 'Off'], ['prefer', 'Prefer owned'], ['only', 'Only owned']]
@@ -159,6 +159,7 @@ export function planControls(ladder, collection, gapCount) {
   return `<div class="planctl">`
     + `<div class="ctlgrp"><span class="micro">Tone ladder</span><div class="seg ladsel" role="group" aria-label="Tone ladder">${lad}</div></div>`
     + `<div class="ctlgrp"><span class="micro">Use my collection</span><div class="seg colsel" role="group" aria-label="Use my collection" title="Off · prefer paints you own (boost, still honest) · only paints you own (filter)">${col}</div></div>`
+    + `<button class="btn sm incl-contrast" id="inclContrast" aria-pressed="${!!includeContrast}" title="Washes, shades and effects are kept out of suggestions; tick to include Contrast paints (used as one-coat base colours)">Include Contrast</button>`
     + (gapCount > 0
       ? `<button class="btn sm primary" id="addGaps">+ Add ${gapCount} to buy</button>`
       : `<span class="micro nogaps">Nothing new to buy for this scheme</span>`)

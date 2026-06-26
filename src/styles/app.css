@@ -123,6 +123,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .planctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
 .ctlgrp { display: flex; align-items: center; gap: 8px; }
 .ladsel button { font-size: 12px; }
+.btn.incl-contrast[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 .nogaps { color: var(--text-faint); align-self: center; }
 
 /* owned / adjust / buy affordances on match chips (#5/#6) */

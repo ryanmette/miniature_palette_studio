@@ -4,7 +4,7 @@
 import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000 } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js';
+import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES } from './data.js';
 import { buildScheme, shoppingList, schemeGaps } from './scheme.js';
 import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
@@ -21,6 +21,7 @@ const state = {
   extraNodes: [], showReal: false,   // free/added wheel nodes [{h,s}] (S5); live-palette ideal↔real fill
   mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
+  includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
 };
 const OWNED_BOOST = 6;   // ΔE the soft owned-boost is "worth" — owned paints up to ~6 ΔE worse can still win (#6)
 
@@ -33,6 +34,10 @@ function matchOpts() {
   const owned = store.ownedIds();
   if (state.collection === 'only' && owned.size) o.ownedIds = owned;
   else if (state.collection === 'prefer' && owned.size) { o.boostIds = owned; o.boostAmount = OWNED_BOOST; }
+  // Keep finishes (washes/shades/contrast/effects) out of harmony suggestions; Contrast is opt-in.
+  const ex = new Set(FINISH_TYPES);
+  if (state.includeContrast) ex.delete('contrast');
+  o.excludeTypes = ex;
   return o;
 }
 
@@ -74,7 +79,7 @@ function renderPlan() {
   // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5).
   const gaps = schemeGaps(state.scheme, store.ownedIds());
   const addable = gaps.filter(g => store.markOf(g.paint.id) !== 'want').length;
-  $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.collection, addable)
+  $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.collection, state.includeContrast, addable)
     + ui.paletteOverview(state.scheme)
     + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus the selected tone ladder</div>'
     + ui.roleSlots(state.scheme, store.markOf);
@@ -598,6 +603,10 @@ function setCollection(v) {                      // #6 — off · prefer (boost)
   state.collection = v; store.setPref('collection', v);
   renderLive(); renderActive();
 }
+function toggleContrast() {                       // include Contrast paints in harmony suggestions (persisted)
+  state.includeContrast = !state.includeContrast; store.setPref('contrast', state.includeContrast);
+  renderLive(); renderActive();
+}
 function toast(msg) {
   const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('role', 'status');
   document.body.appendChild(d); setTimeout(() => d.remove(), 1700);
@@ -686,6 +695,7 @@ function wire() {
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
     const col = e.target.closest('[data-collection]'); if (col) { setCollection(col.dataset.collection); return; }
+    if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
     if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
   });
@@ -790,6 +800,7 @@ async function init() {
 
   const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
   const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
+  state.includeContrast = !!store.getPref('contrast');
 
   const h = url.get('h'); if (h && isHarmony(h)) state.harmony = h;
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;

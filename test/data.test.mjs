@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { indexDataset, nearestPaint, nearestPaints, equivalents, matchQuality } from '../src/js/data.js';
+import { indexDataset, nearestPaint, nearestPaints, equivalents, matchQuality, FINISH_TYPES } from '../src/js/data.js';
 
 const fixture = {
   version: 'test',
@@ -67,6 +67,20 @@ test('owned-boost is bounded: a far-off owned paint does NOT beat a near unowned
 test('no ownership context leaves the match shape plain (no owned/adjust keys)', () => {
   const m = nearestPaint(idx, '#9B1216');
   assert.equal('owned' in m, false);
+});
+
+test('excludeTypes keeps finish paints (washes/contrast) out of suggestions', () => {
+  const fx = indexDataset({ version: 'test', paints: [
+    { id: 'wash-near', brand: 'Citadel', line: 'Shade', name: 'Reikland Fleshshade', hex: '#9B1216', type: 'wash' },
+    { id: 'contrast-near', brand: 'Citadel', line: 'Contrast', name: 'Flesh Tearers Red', hex: '#9A1217', type: 'contrast' },
+    { id: 'layer-far', brand: 'Citadel', line: 'Layer', name: 'Evil Sunz Scarlet', hex: '#C8202A', type: 'layer' },
+  ] });
+  const target = '#9B1216';
+  assert.equal(nearestPaint(fx, target).paint.id, 'wash-near');                       // unfiltered → the wash wins
+  const ex = new Set(FINISH_TYPES);
+  assert.equal(nearestPaint(fx, target, { excludeTypes: ex }).paint.id, 'layer-far'); // finishes excluded → flat layer
+  ex.delete('contrast');                                                              // "Include Contrast"
+  assert.equal(nearestPaint(fx, target, { excludeTypes: ex }).paint.id, 'contrast-near');
 });
 
 test('matchQuality boundary labels (CLAUDE.md §3.2)', () => {

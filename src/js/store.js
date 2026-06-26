@@ -6,7 +6,7 @@
 
 const KEY = 'ps-state';
 const VERSION = 1;
-const PREF_DEFAULTS = { theme: null, ladder: 'wash', fill: 'ideal', locale: null, collection: 'off' };
+const PREF_DEFAULTS = { theme: null, ladder: 'wash', fill: 'ideal', locale: null, collection: 'off', contrast: false };
 
 const fresh = () => ({ v: VERSION, owned: [], want: [], prefs: { ...PREF_DEFAULTS } });
 

@@ -5,6 +5,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Finish-aware suggestions (washes/shades/contrast no longer offered as flat-colour matches).** Harmony
+  suggestions (the live palette + role ladders) now exclude "finish" paints — `wash · shade · ink ·
+  contrast · glaze · effect` — which read very differently on the model even when the hex is close. They
+  remain fully browsable in the picker, the Shelf, and cross-brand Equivalents. A Plan-tab **"Include
+  Contrast"** toggle opts Contrast paints back in (they're used as one-coat base colours). Persisted via
+  `store` prefs. (`metal` is untouched — the Metal role still surfaces metallics.)
 
 ## [1.2.0] - 2026-06-25
 The **clarity release**: header reorganized by stage, picker filters/sort, collection markers everywhere, native share.
