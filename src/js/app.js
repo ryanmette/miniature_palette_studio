@@ -18,6 +18,7 @@ const state = {
   q: '', brand: '', seedRole: 'main', tab: 'plan', theme: 'light',
   ownedOnly: false, compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
   extraNodes: [], showReal: false,   // free/added wheel nodes [{h,s}] (S5); live-palette ideal↔real fill
+  mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
 };
 
 const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
@@ -276,6 +277,183 @@ function renderA11y() {
 const renderers = { plan: renderPlan, equiv: renderEquiv, a11y: renderA11y };
 function renderActive() { renderers[state.tab](); }
 
+/* ---- shelf (collection) — Finder-style bulk stocking, wired to store.setMark ---- */
+const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
+const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null };   // ids; selection is transient (not persisted)
+const shelfPaints = () => state.idx.paints.filter(p => !state.shelfBrand || p.brand === state.shelfBrand);
+const cellEl = id => document.getElementById('sc-' + id);
+const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length); };
+
+function shelfHint() {
+  return COARSE
+    ? 'Tap a swatch to cycle owned → to buy → clear.'
+    : 'Click to select · ⇧ or ⌘ for many · drag a box · then P (owned) · U (to buy) · X (clear). Right-click for options.';
+}
+function renderShelfStats() {
+  const c = store.counts(), total = state.idx.paints.length;
+  $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} to buy</span> · ${total} total`;
+}
+function renderShelfBar() {
+  $('#shelfBar').innerHTML = ui.shelfBar(shelf.sel.size);
+}
+function renderShelf() {
+  $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
+  $('#brandChips').innerHTML = ui.brandChips(state.brands, state.shelfBrand);
+  $('#shelfGrid').innerHTML = ui.shelfGrid(shelfPaints(), store.markOf, shelf.sel);
+  // tag each cell with a DOM id for aria-activedescendant (keyboard cursor)
+  for (const c of $('#shelfGrid').children) c.id = 'sc-' + c.dataset.id;
+  renderShelfStats(); renderShelfBar();
+}
+function announceShelf(msg) { $('#status').textContent = msg; }
+
+/* selection primitives — outline only (CSS), so no reflow (§3.4) */
+function paintSelected() {
+  for (const c of $('#shelfGrid').children) c.setAttribute('aria-selected', String(shelf.sel.has(c.dataset.id)));
+}
+function setSelection(ids, { anchor, cursor } = {}) {
+  shelf.sel = new Set(ids);
+  if (anchor !== undefined) shelf.anchor = anchor;
+  if (cursor !== undefined) shelf.cursor = cursor;
+  paintSelected(); setCursor(shelf.cursor); renderShelfBar();
+}
+function setCursor(id) {
+  shelf.cursor = id;
+  const g = $('#shelfGrid');
+  for (const c of g.children) c.classList.toggle('cursor', c.dataset.id === id);
+  if (id) g.setAttribute('aria-activedescendant', 'sc-' + id); else g.removeAttribute('aria-activedescendant');
+}
+function rangeIds(aId, bId) {
+  const list = shelfPaints().map(p => p.id);
+  let i = list.indexOf(aId), j = list.indexOf(bId);
+  if (i < 0) i = j; if (i < 0 || j < 0) return bId ? [bId] : [];
+  if (i > j) [i, j] = [j, i];
+  return list.slice(i, j + 1);
+}
+/** Apply a mark ('owned'|'want'|'none') to the current selection (or the cursor/hover cell as a fallback). */
+function applyMark(mark) {
+  let ids = [...shelf.sel];
+  if (!ids.length) { const f = shelf.cursor || shelf.hover; if (f) ids = [f]; }
+  if (!ids.length) return;
+  for (const id of ids) {
+    store.setMark(id, mark);
+    const c = cellEl(id); if (c) { updateCell(c, mark); c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); }
+  }
+  renderShelfStats();
+  const verb = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'cleared';
+  announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} marked ${verb}.`);
+}
+function updateCell(c, mark) {
+  c.dataset.mark = mark;
+  c.querySelector('.cbadge')?.remove();
+  const html = ui.markBadge(mark);
+  if (html) c.querySelector('.celltip').insertAdjacentHTML('beforebegin', html);
+  const st = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
+  c.setAttribute('aria-label', c.getAttribute('aria-label').replace(/—.*$/, '— ' + st));
+}
+
+/* mouse: click-select + marquee drag (mouse only; touch uses tap-to-cycle) */
+function setupShelf() {
+  const grid = $('#shelfGrid');
+  grid.addEventListener('pointerover', e => { const c = e.target.closest('.cell'); shelf.hover = c ? c.dataset.id : null; });
+  grid.addEventListener('pointerout', e => { if (!e.relatedTarget || !grid.contains(e.relatedTarget)) shelf.hover = null; });
+
+  if (COARSE) {                                  // touch: tap cycles a single swatch's mark (approach C)
+    grid.addEventListener('click', e => {
+      const c = e.target.closest('.cell'); if (!c) return;
+      const next = { none: 'owned', owned: 'want', want: 'none' }[c.dataset.mark || 'none'];
+      store.setMark(c.dataset.id, next); updateCell(c, next);
+      c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
+      renderShelfStats();
+    });
+    return;
+  }
+
+  let down = null, marquee = null, base = null, moved = false;
+  grid.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return;                   // left button only (right-click → context menu)
+    const c = e.target.closest('.cell');
+    down = { x: e.clientX, y: e.clientY, id: c ? c.dataset.id : null, shift: e.shiftKey, meta: e.metaKey || e.ctrlKey };
+    base = (down.shift || down.meta) ? new Set(shelf.sel) : new Set();
+    moved = false; grid.setPointerCapture(e.pointerId);
+  });
+  grid.addEventListener('pointermove', e => {
+    if (!down) return;
+    if (!moved && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 5) return;   // movement threshold → drag
+    moved = true;
+    const r = grid.getBoundingClientRect();
+    if (!marquee) { marquee = document.createElement('div'); marquee.className = 'marquee'; grid.appendChild(marquee); }
+    const x0 = Math.min(down.x, e.clientX), y0 = Math.min(down.y, e.clientY), x1 = Math.max(down.x, e.clientX), y1 = Math.max(down.y, e.clientY);
+    marquee.style.left = (x0 - r.left) + 'px'; marquee.style.top = (y0 - r.top) + 'px';
+    marquee.style.width = (x1 - x0) + 'px'; marquee.style.height = (y1 - y0) + 'px';
+    const hit = new Set(base);
+    for (const cell of grid.children) {
+      if (cell === marquee) continue;
+      const b = cell.getBoundingClientRect();
+      if (b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1) hit.add(cell.dataset.id);
+    }
+    shelf.sel = hit; paintSelected(); renderShelfBar();
+  });
+  grid.addEventListener('pointerup', e => {
+    if (!down) return;
+    if (marquee) { marquee.remove(); marquee = null; }
+    if (!moved) {                                  // a click, not a drag → Finder selection rules
+      const id = down.id;
+      if (!id) setSelection([], { anchor: null, cursor: null });
+      else if (down.shift && shelf.anchor) setSelection(rangeIds(shelf.anchor, id), { cursor: id });
+      else if (down.meta) { const s = new Set(shelf.sel); s.has(id) ? s.delete(id) : s.add(id); setSelection(s, { anchor: id, cursor: id }); }
+      else setSelection([id], { anchor: id, cursor: id });
+    } else {
+      shelf.anchor = down.id || shelf.anchor; setCursor(down.id || shelf.cursor); renderShelfBar();
+    }
+    down = null; base = null;
+  });
+
+  // right-click context menu → mark the selection (selecting the target first if it's outside the selection)
+  grid.addEventListener('contextmenu', e => {
+    const c = e.target.closest('.cell'); if (!c) return;
+    e.preventDefault();
+    if (!shelf.sel.has(c.dataset.id)) setSelection([c.dataset.id], { anchor: c.dataset.id, cursor: c.dataset.id });
+    openMenu(e.clientX, e.clientY);
+  });
+}
+
+let menuOpen = false;
+function openMenu(x, y) {
+  const m = $('#shelfMenu'); m.hidden = false; menuOpen = true;
+  const w = m.offsetWidth, h = m.offsetHeight;
+  m.style.left = Math.min(x, innerWidth - w - 8) + 'px';
+  m.style.top = Math.min(y, innerHeight - h - 8) + 'px';
+  m.querySelector('button')?.focus();
+}
+function closeMenu() { if (menuOpen) { $('#shelfMenu').hidden = true; menuOpen = false; $('#shelfGrid').focus(); } }
+
+/** Lightroom-style keyboard triage; active only in shelf mode, ignored while typing in a field. */
+function shelfKeydown(e) {
+  if (state.mode !== 'shelf') return;
+  const ae = document.activeElement;
+  // act only when the grid (or nothing) has focus — never hijack keys from chips, nav, or a text field
+  if (ae && ae !== document.body && ae.id !== 'shelfGrid' && !ae.closest('#shelfGrid')) return;
+  const k = e.key.toLowerCase();
+  if (k === 'p') { applyMark('owned'); e.preventDefault(); }
+  else if (k === 'u') { applyMark('want'); e.preventDefault(); }
+  else if (k === 'x') { applyMark('none'); e.preventDefault(); }
+  else if (e.key === 'Escape') { if (menuOpen) closeMenu(); else setSelection([], { anchor: null }); e.preventDefault(); }
+  else if (e.key.startsWith('Arrow')) { moveCursor(e.key, e.shiftKey); e.preventDefault(); }
+}
+function moveCursor(key, extend) {
+  const list = shelfPaints().map(p => p.id); if (!list.length) return;
+  let i = shelf.cursor ? list.indexOf(shelf.cursor) : -1;
+  if (i < 0) i = 0;
+  else { const cols = gridCols(); i += key === 'ArrowRight' ? 1 : key === 'ArrowLeft' ? -1 : key === 'ArrowDown' ? cols : -cols; }
+  i = Math.max(0, Math.min(list.length - 1, i));
+  const id = list[i];
+  if (extend && shelf.anchor) setSelection(rangeIds(shelf.anchor, id), { cursor: id });
+  else setSelection([id], { anchor: id, cursor: id });
+  cellEl(id)?.scrollIntoView({ block: 'nearest' });
+  const p = state.idx.byId.get(id);
+  announceShelf(`${p.name}, ${p.brand}, ${store.markOf(id) === 'owned' ? 'owned' : store.markOf(id) === 'want' ? 'to buy' : 'not owned'}.`);
+}
+
 /* ---- chrome ---- */
 function renderList() {
   const items = filteredPaints();
@@ -296,6 +474,7 @@ function updateUrl() {
   const p = new URLSearchParams();
   p.set('c', baseHex().replace('#', ''));
   p.set('h', state.harmony);
+  if (state.mode === 'shelf') p.set('m', 'shelf');
   if (state.tab !== 'plan') p.set('v', state.tab);
   if (state.seedRole === 'accent') p.set('r', 'accent');
   if (state.theme === 'dark') p.set('t', 'dark');
@@ -319,6 +498,18 @@ function setTheme(t) {
   state.theme = t === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = state.theme;
   store.setPref('theme', state.theme);
+}
+function setMode(mode) {
+  state.mode = mode === 'shelf' ? 'shelf' : 'studio';
+  const on = state.mode === 'shelf';
+  document.querySelector('main').dataset.mode = state.mode;
+  document.querySelector('.picker').hidden = on;
+  document.querySelector('.workspace').hidden = on;
+  $('#shelf').hidden = !on;
+  for (const b of $('#modeNav').children) b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
+  if (on) { renderShelf(); $('#shelfGrid').focus(); }
+  else { renderList(); }   // refresh the picker's owned stars in case the shelf changed them
+  updateUrl();
 }
 function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
 function syncTabs(focusActive = false) {
@@ -424,6 +615,24 @@ function wire() {
   $('#export').addEventListener('click', doExport);
   $('#share').addEventListener('click', doShare);
   $('#theme').addEventListener('click', () => { setTheme(state.theme === 'dark' ? 'light' : 'dark'); updateUrl(); });
+
+  // shelf chrome
+  $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
+  $('#brandChips').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    state.shelfBrand = b.dataset.brand;
+    setSelection([], { anchor: null, cursor: null });   // selection ids may no longer be visible
+    renderShelf();
+  });
+  $('#shelfBar').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    if (b.dataset.act === 'deselect') setSelection([], { anchor: null });
+    else applyMark(b.dataset.act);
+  });
+  $('#shelfMenu').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b) { applyMark(b.dataset.act); closeMenu(); } });
+  document.addEventListener('pointerdown', e => { if (menuOpen && !e.target.closest('#shelfMenu')) closeMenu(); }, true);
+  document.addEventListener('keydown', shelfKeydown);
+  setupShelf();
 }
 
 async function init() {
@@ -434,8 +643,8 @@ async function init() {
   setTheme(theme);
 
   state.idx = await loadDataset('./data/paints.json');
-  const brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
-  $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(brands));
+  state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
+  $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
 
   const h = url.get('h'); if (h && isHarmony(h)) state.harmony = h;
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;
@@ -456,6 +665,7 @@ async function init() {
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
   setupWheel();   // wheel is now always-visible static markup; bind it once
   renderAll();
+  if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf
 }
 
 init().catch(err => {

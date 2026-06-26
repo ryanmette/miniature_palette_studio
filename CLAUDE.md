@@ -84,6 +84,7 @@ sets below change between themes.
 --border:#E6E7F8; --border-strong:#D3D5F0;
 --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
 --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+--buy:#2563EB; --buy-weak:#DBEAFE; --on-buy:#FFFFFF;   /* "to-buy" state — single-meaning, never the selection colour (§3.5) */
 --success:#16A34A; --success-weak:#DCFCE7;
 --warning:#C2740B; --warning-weak:#FBEBD3;
 --danger:#DC2647;  --danger-weak:#FCE4EA;
@@ -94,6 +95,7 @@ sets below change between themes.
 --border:#3A302A; --border-strong:#4D4138;
 --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
 --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+--buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;   /* cold steel-blue cart, distinct from the brass accent */
 --success:#86A559; --success-weak:#232A16;
 --warning:#C9923A; --warning-weak:#2E2412;
 --danger:#D2563F;  --danger-weak:#2E1A14;
@@ -147,7 +149,8 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 ### 3.6 Responsive & mobile (must work on phones)
 Embedded in a Squarespace page with heavy mobile traffic, so the tool is **mobile-first and
 fully responsive**, not a desktop layout that merely shrinks.
-- **Layout (all devices):** the harmony **wheel + live palette form an always-visible *studio*** at the top of the workspace; **Plan·roles / Equivalents / Accessibility** are drill-down tabs below it (the wheel is no longer a tab). The role-mapped ~60-30-10 ideal-vs-actual output lives in the **Plan** tab.
+- **Top-level modes (maps to a future app tab bar):** a primary **Studio / Shelf** switch in the header. **Studio** is the scheme workspace (picker + studio + tabs). **Shelf** ("My paint shelf") is the full-width collection grid for stocking what you own / want to buy — bulk-toggled, Finder-style. The compact picker stays for in-context selection while planning.
+- **Layout (Studio, all devices):** the harmony **wheel + live palette form an always-visible *studio*** at the top of the workspace; **Plan·roles / Equivalents / Accessibility** are drill-down tabs below it (the wheel is no longer a tab). The role-mapped ~60-30-10 ideal-vs-actual output lives in the **Plan** tab.
 - Breakpoints: **≤860px** → single column (picker collapses above the workspace; the studio stacks the wheel over the live palette); **≤520px** → compact paddings, header controls wrap (hex field full-width), role slots stack, tabs scroll horizontally.
 - **Touch targets ≥44px** below 520px (`--tap` → 44). The interactive wheel supports touch drag and fits a phone.
 - No horizontal page scroll; swatches and wheel scale fluidly. Verify at 360 / 768 / 1180px.

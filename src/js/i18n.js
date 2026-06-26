@@ -12,6 +12,9 @@ const LOCALES = {
     colourScheme: 'Colour scheme',
     searchPaints: 'Search paints…',
     allBrands: 'All brands',
+    studio: 'Studio',
+    shelf: 'Shelf',
+    myShelf: 'My paint shelf',
   },
   'en-US': {
     baseColour: 'Base color',

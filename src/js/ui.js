@@ -31,6 +31,53 @@ export function pickerList(paints, selectedId, owned = new Set()) {
   }).join('');
 }
 
+/** Finder-style collection grid. Each cell is a square swatch (colour = paint data) with a corner
+ *  state badge (owned ✓ / to-buy cart) and, on hover/focus, an overlaid name tooltip. Selection is an
+ *  outline (interaction, §3.5) — never a border-width change, so neighbours never reflow (§3.4 no-jiggle).
+ *  `markOf(id)` → 'owned'|'want'|'none'; `selected` is a Set of selected ids. */
+export function shelfGrid(paints, markOf, selected = new Set()) {
+  if (!paints.length) return `<div class="placeholder">No paints match this filter.</div>`;
+  return paints.map(p => {
+    const mark = markOf(p.id), sel = selected.has(p.id);
+    const badge = markBadge(mark);
+    const state = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
+    return `<div class="cell" role="option" data-id="${esc(p.id)}" data-mark="${mark}"`
+      + ` aria-selected="${sel}" aria-label="${esc(p.name)}, ${esc(p.brand)} — ${state}"`
+      + ` style="--cell:${safeColor(p.hex)}">`
+      + `${badge}<span class="celltip">${esc(p.name)} · ${esc(p.brand)}</span>`
+      + `</div>`;
+  }).join('');
+}
+
+// Small cart glyph for the to-buy badge (inline SVG so it inherits the badge's --on-buy colour).
+const cartGlyph = `<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">`
+  + `<path fill="currentColor" d="M1 1h2l.6 2H15l-1.7 6.2a1.4 1.4 0 0 1-1.35 1H5.4a1.4 1.4 0 0 1-1.36-1L2.2 2.4 1.9 1.3 1 1zm4.7 12.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm6 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>`;
+
+/** State badge for a paint's mark — owned ✓ / to-buy cart / nothing. Shared by the grid + in-place updates. */
+export const markBadge = mark =>
+  mark === 'owned' ? `<span class="cbadge owned" aria-hidden="true">✓</span>`
+    : mark === 'want' ? `<span class="cbadge want" aria-hidden="true">${cartGlyph}</span>`
+      : '';
+
+/** Brand filter chips for the shelf. `active` is the selected brand ('' = all). */
+export function brandChips(brands, active = '') {
+  const chip = (val, lbl) => `<button class="chip" data-brand="${esc(val)}" aria-pressed="${val === active}">${esc(lbl)}</button>`;
+  return chip('', 'All') + brands.map(b => chip(b, b)).join('');
+}
+
+/** Shelf action bar: fixed-height row (reserved space → no reflow when it fills, §3.4). Empty until a
+ *  selection exists, then shows "N selected" + mark actions. The persistent how-to hint lives up top. */
+export function shelfBar(count) {
+  if (!count) return '';
+  return `<span class="barcount">${count} selected</span>`
+    + `<span class="baracts">`
+    + `<button class="btn sm" data-act="owned">Mark owned</button>`
+    + `<button class="btn sm" data-act="want">Mark to buy</button>`
+    + `<button class="btn sm" data-act="none">Clear</button>`
+    + `<button class="btn sm ghost" data-act="deselect">Deselect</button>`
+    + `</span>`;
+}
+
 /** Compare two schemes side by side. a/b: { base, harmony, colors:[ideal hexes] }. */
 export function compareBar(a, b) {
   const row = (g, lbl) => `<div class="cmprow"><span class="cmplab">${esc(lbl)} · ${esc(g.harmony)} · <span class="mono">${esc(g.base)}</span></span>`

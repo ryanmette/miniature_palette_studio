@@ -6,6 +6,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Shelf — the collection view (collection build, #3 Collection IA).** A new top-level **Studio / Shelf**
+  mode switch in the header opens a full-width "My paint shelf": a Finder-style grid of all 554 paints for
+  bulk-stocking what you own / want to buy, wired to `store.setMark`. Mouse: click to select, ⇧-click range,
+  ⌘/Ctrl-click toggle, **drag a marquee** anywhere in the grid, **right-click** for a mark menu. Keyboard
+  (Lightroom-style triage): **P** = owned · **U** = to buy · **X** = clear · **Esc** = deselect · arrows move
+  the selection (announced via `aria-live`, `aria-activedescendant`). Touch: **tap-to-cycle** owned → to-buy →
+  clear. State is shown symmetrically — owned = green ✓ badge, to-buy = cart badge in the new `--buy` colour —
+  with selection expressed as an outline ring, never a border (§3.5 state-vs-interaction). No reflow on
+  selecting/marking (§3.4 no-jiggle): `box-sizing:border-box`, outline-only selection, a fixed-height action
+  row, and overlay tooltips. Brand chips filter the wall; `?m=shelf` deep-links/refreshes into it.
+- **`--buy` / `--buy-weak` / `--on-buy` colour tokens (both themes).** A dedicated, single-meaning "to-buy"
+  colour (blue in light, cold steel-blue in dark) that carries app-wide and is distinct from the selection
+  colour — per §3.5. Documented in CLAUDE.md §3.1.
 - **Installable, offline-capable PWA (collection branch).** `manifest.webmanifest` + `icon.svg` + a
   cache-first `sw.js` (app shell + bundled dataset; cross-origin fonts pass through, covered by the
   system-font fallback offline) — the tool installs to the home screen and works offline after first

@@ -18,6 +18,7 @@
   --border: #E6E7F8; --border-strong: #D3D5F0;
   --text: #20223A; --text-muted: #6E7293; --text-faint: #A2A6C4;
   --accent: #7C3AED; --accent-weak: #F0EAFE; --on-accent: #FFFFFF;
+  --buy: #2563EB; --buy-weak: #DBEAFE; --on-buy: #FFFFFF;   /* "to-buy" — single-meaning, app-wide; never the selection colour */
   --success: #16A34A; --success-weak: #DCFCE7;
   --warning: #C2740B; --warning-weak: #FBEBD3;
   --danger: #DC2647;  --danger-weak: #FCE4EA;
@@ -30,6 +31,7 @@
   --border: #3A302A; --border-strong: #4D4138;
   --text: #ECE3D8; --text-muted: #A8998A; --text-faint: #7C6F62;
   --accent: #C2912F; --accent-weak: #2C2113; --on-accent: #15100A;
+  --buy: #5E93C9; --buy-weak: #16242F; --on-buy: #0E1620;   /* cold steel-blue cart, distinct from the brass accent */
   --success: #86A559; --success-weak: #232A16;
   --warning: #C9923A; --warning-weak: #2E2412;
   --danger: #D2563F;  --danger-weak: #2E1A14;
