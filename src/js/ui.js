@@ -85,17 +85,24 @@ export function compareBar(a, b) {
   return `<div class="compare"><div class="cmphead">Compare</div>${row(a, 'A')}${row(b, 'B · current')}</div>`;
 }
 
-/** Base-paint hero. `base`: { hex, name, brand?, line?, type?, approx?, custom? }. */
-export function hero(base, animate = true) {
+/** Owned/to-buy affordance for a real paint chip — owned tick or a buy toggle. `mark` ∈ owned|want|none. */
+const ownOrBuy = (id, mark) => mark === 'owned'
+  ? '<span class="owntag">✓ owned</span>'
+  : buyBtn(id, mark);
+
+/** Base-paint hero. `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy. */
+export function hero(base, animate = true, markOf) {
   const meta = base.custom ? 'typed hex' : `${esc(base.brand || '')}${base.line ? ' · ' + esc(base.line) : ''}`;
   const tags = base.custom
     ? '<span class="tag">custom</span>'
     : `<span class="tag">${esc(base.type || 'paint')}</span>${base.approx ? '<span class="tag approx">approx hex</span>' : ''}`;
+  const own = (!base.custom && base.id && markOf) ? `<div class="ownline" style="margin-top:8px">${ownOrBuy(base.id, markOf(base.id))}</div>` : '';
   return swatch(base.hex, animate ? 'big pop' : 'big')
     + `<div><h2>${esc(base.name)}</h2>`
     + `<div style="color:var(--text-muted);font-size:13px;margin-top:2px">${meta}</div>`
     + `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${tags}</div>`
-    + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button></div>`;
+    + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button>`
+    + own + `</div>`;
 }
 
 /** Tiny line-art glyph of a harmony's geometry, generated from HARMONY_OFFSETS so it can't drift. */
@@ -177,16 +184,18 @@ export function roleSlots(scheme, markOf) {
     + `</div>`).join('')}</div>`;
 }
 
-/** Cross-brand equivalents list (M6). `equivs`: [{paint, deltaE, quality}]. */
-export function equivalentsPanel(name, equivs) {
+/** Cross-brand equivalents list (M6). `equivs`: [{paint, deltaE, quality}]. markOf adds owned/buy. */
+export function equivalentsPanel(name, equivs, markOf) {
   if (!equivs.length) return '<div class="placeholder">No other-brand matches in the dataset for this paint.</div>';
   return `<p class="hint" style="margin:14px 0 0">Closest matches to <strong>${esc(name)}</strong> in other ranges (ΔE 2000).</p>`
     + `<div class="eq">${equivs.map(e => {
       const p = e.paint, q = e.quality;
+      const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, '')}<div style="min-width:0">`
         + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</div>`
         + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tier(q.tier)}">${esc(q.label)}</span>`
-        + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div></div></div>`;
+        + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div>`
+        + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
     }).join('')}</div>`;
 }
 

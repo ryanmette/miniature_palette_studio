@@ -2,7 +2,7 @@
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
 import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn } from './color.js';
+import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000 } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js';
 import { buildScheme, shoppingList, schemeGaps } from './scheme.js';
@@ -16,7 +16,7 @@ const state = {
   idx: null, scheme: null,
   baseId: null, customHex: null,
   harmony: 'complementary',
-  q: '', brand: '', seedRole: 'main', tab: 'plan', theme: 'light',
+  q: '', brand: '', ptype: '', psort: '', seedRole: 'main', tab: 'plan', theme: 'light',
   compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
   extraNodes: [], showReal: false,   // free/added wheel nodes [{h,s}] (S5); live-palette ideal↔real fill
   mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
@@ -39,16 +39,31 @@ function matchOpts() {
 function baseInfo() {
   if (state.customHex) return { hex: state.customHex, name: 'Custom ' + state.customHex, custom: true };
   const p = state.idx.byId.get(state.baseId);
-  return { hex: p.hex, name: p.name, brand: p.brand, line: p.line, type: p.type, approx: p.approx };
+  return { id: p.id, hex: p.hex, name: p.name, brand: p.brand, line: p.line, type: p.type, approx: p.approx };
 }
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
 function currentScheme() { return buildScheme(state.idx, schemeBase(), state.harmony, matchOpts()); }
 
 function filteredPaints() {
   const q = state.q.toLowerCase();
-  return state.idx.paints.filter(p =>
+  const list = state.idx.paints.filter(p =>
     (!state.brand || p.brand === state.brand) &&
+    (!state.ptype || p.type === state.ptype) &&
     (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)));
+  return sortPaints(list);
+}
+/** Sort the picker list per state.psort (stable copy; '' keeps dataset order). */
+function sortPaints(list) {
+  const hsl = p => rgbToHsl(hexToRgb(p.hex));
+  switch (state.psort) {
+    case 'name': return list.slice().sort((a, b) => a.name.localeCompare(b.name));
+    case 'brand': return list.slice().sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
+    case 'hue': return list.slice().sort((a, b) => hsl(a)[0] - hsl(b)[0]);
+    case 'light': return list.slice().sort((a, b) => hsl(a)[2] - hsl(b)[2]);
+    case 'de': { const bl = hexToLab(baseHex()); return list.slice().sort((a, b) => deltaE2000(bl, a.lab) - deltaE2000(bl, b.lab)); }
+    case 'owned': return list.slice().sort((a, b) => (store.isOwned(b.id) - store.isOwned(a.id)) || a.name.localeCompare(b.name));
+    default: return list;   // dataset order
+  }
 }
 
 /* ---- per-tab renderers ---- */
@@ -253,8 +268,8 @@ function setupWheel() {
 }
 function renderEquiv() {
   const p = basePaint();
-  if (p) $('#panel-equiv').innerHTML = ui.equivalentsPanel(`${p.name} (${p.brand})`, equivalents(state.idx, state.idx.byId.get(p.id), { n: 8 }));
-  else $('#panel-equiv').innerHTML = ui.equivalentsPanel(`your colour ${baseHex()}`, nearestPaints(state.idx, baseHex(), 8));
+  if (p) $('#panel-equiv').innerHTML = ui.equivalentsPanel(`${p.name} (${p.brand})`, equivalents(state.idx, state.idx.byId.get(p.id), { n: 8 }), store.markOf);
+  else $('#panel-equiv').innerHTML = ui.equivalentsPanel(`your colour ${baseHex()}`, nearestPaints(state.idx, baseHex(), 8), store.markOf);
 }
 function renderA11y() {
   const s = state.scheme = currentScheme();
@@ -481,7 +496,7 @@ function renderList() {
   $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${store.counts().owned ? ` · ${store.counts().owned} owned` : ''}`;
 }
 function renderHero(animate = true) {
-  $('#hero').innerHTML = ui.hero(baseInfo(), animate);   // animate=false during a live drag (no pop spam)
+  $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf);   // animate=false during a live drag (no pop spam)
   $('#baseLabel').textContent = `${i18n.t('baseColour')} · ${state.seedRole}`;
 }
 let urlTimer = null, announceTimer = null;
@@ -561,7 +576,7 @@ function toggleOwned(id) {
 function toggleBuy(id) {
   if (store.isOwned(id)) return;
   store.setMark(id, store.isWant(id) ? 'none' : 'want');
-  renderLive(); renderActive();
+  renderLive(); renderActive(); renderHero();   // hero may show the same paint's buy state
   if (state.mode === 'shelf') renderShelf();
 }
 /** One click: flag every paint this scheme needs (that you don't own) as to-buy (#5). */
@@ -607,13 +622,20 @@ function doExport() {
   const href = URL.createObjectURL(new Blob([t], { type: 'text/plain' }));
   a.href = href; a.download = 'palette-shopping-list.txt'; a.click();
   setTimeout(() => URL.revokeObjectURL(href), 0); // revoke after the click's download starts
-  if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {});
-  toast('Shopping list exported');
+  toast('Shopping list exported');   // download is the artefact — no silent clipboard write (native-share direction)
 }
-function doShare() {
+/** Share the current scheme URL. Prefers the native share sheet (Web Share → OS sheet under Capacitor),
+ *  then clipboard, then a visible-URL prompt. No silent clipboard side-effects. */
+async function doShare() {
   const url = location.href;
-  if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast('Share link copied')).catch(() => toast('Copy the URL from the address bar'));
-  else toast('Copy the URL from the address bar');
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Palette Studio for Miniatures', url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }   // user dismissed the sheet
+  }
+  if (navigator.clipboard) {
+    try { await navigator.clipboard.writeText(url); toast('Share link copied'); return; } catch { /* fall through */ }
+  }
+  toast('Copy the URL from the address bar');
 }
 function download(filename, text, type = 'text/plain') {
   const a = document.createElement('a');
@@ -654,6 +676,8 @@ function applyCsv(text) {
 function wire() {
   $('#q').addEventListener('input', e => { state.q = e.target.value; renderList(); });
   $('#brand').addEventListener('change', e => { state.brand = e.target.value; renderList(); });
+  $('#ptype').addEventListener('change', e => { state.ptype = e.target.value; renderList(); });
+  $('#psort').addEventListener('change', e => { state.psort = e.target.value; renderList(); });
   $('#list').addEventListener('click', e => {
     const own = e.target.closest('.own'); if (own) { e.stopPropagation(); toggleOwned(own.dataset.own); return; }
     const b = e.target.closest('.paint'); if (b) selectPaint(b.dataset.id);
@@ -761,6 +785,8 @@ async function init() {
   state.idx = await loadDataset('./data/paints.json');
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
+  const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
+  $('#ptype').insertAdjacentHTML('beforeend', types.map(t => `<option value="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}</option>`).join(''));
 
   const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
   const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;

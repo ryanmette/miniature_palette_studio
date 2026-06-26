@@ -42,6 +42,18 @@
       <input id="q" type="search" placeholder="Search paints…" data-i18n-ph="searchPaints" autocomplete="off" />
       <label class="sr-only" for="brand">Filter by brand</label>
       <select id="brand"><option value="" data-i18n="allBrands">All brands</option></select>
+      <label class="sr-only" for="ptype">Filter by type</label>
+      <select id="ptype"><option value="">All types</option></select>
+      <label class="sr-only" for="psort">Sort paints</label>
+      <select id="psort">
+        <option value="">Default order</option>
+        <option value="name">Sort: name</option>
+        <option value="brand">Sort: brand</option>
+        <option value="hue">Sort: hue</option>
+        <option value="light">Sort: lightness</option>
+        <option value="de">Sort: closest to base</option>
+        <option value="owned">Sort: owned first</option>
+      </select>
     </div>
     <div class="list" id="list" role="list" aria-label="Paints"></div>
     <div class="count" id="count"></div>

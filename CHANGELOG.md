@@ -5,7 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.2.0] - 2026-06-25
+The **clarity release**: header reorganized by stage, picker filters/sort, collection markers everywhere, native share.
+### Added
+- **Picker filters & sort (#2).** The paint picker gains a **type** filter (base/layer/shade/…) and a
+  **sort** control: name · brand · hue · lightness · closest to the current base (ΔE) · owned first.
+- **Owned / to-buy markers on every paint surface.** The owned ✓ tag and the **+ buy** toggle now appear
+  on the **Studio base hero** and the **Equivalents** chips too — not just the Plan role chips — all
+  reading the one shared `store` model.
 ### Changed
+- **Share uses the native share sheet (Web Share API).** Share now opens the OS share sheet where
+  available (and under a future Capacitor wrap), falling back to clipboard then a visible-URL prompt.
+  Export no longer writes silently to the clipboard — the downloaded file is the artefact. Moves the app
+  off implicit clipboard side-effects (native-share direction for the app).
 - **Header reorganized by stage (#4 header clarity).** The header now holds only the **Studio / Shelf**
   switch and a **⋯ settings** popover (the light/dark theme toggle moved in here; locale will join it).
   Everything else moved to the stage it belongs to: **seed** (hex, Main/Accent) + **Compare** sit atop
