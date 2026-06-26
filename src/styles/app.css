@@ -117,6 +117,25 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .ladder .step .sw { width: 100%; height: 30px; }
 .ladder .step .cap { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 .ladder .step .pn { font-size: 10.5px; font-weight: 500; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ladcap { font-size: 10px; font-weight: 600; letter-spacing: .03em; color: var(--text-faint); margin-top: 12px; text-transform: capitalize; }
+
+/* plan controls — tone ladder · prefer-owned · add-to-buy (#5/#6/#7) */
+.planctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
+.ctlgrp { display: flex; align-items: center; gap: 8px; }
+.ladsel button { font-size: 12px; }
+.btn.boosttgl[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
+.nogaps { color: var(--text-faint); align-self: center; }
+
+/* owned / adjust / buy affordances on match chips (#5/#6) */
+.ownline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; }
+.owntag { font-size: 11px; font-weight: 600; color: var(--success); }
+.adjust { font-size: 11px; color: var(--text-muted); font-style: italic; }
+.ownmini { font-size: 10px; font-weight: 600; color: var(--success); }
+.buybtn { margin-top: 6px; height: 26px; padding: 0 11px; border-radius: var(--r-pill); border: 1px solid var(--border-strong);
+  background: var(--surface); color: var(--buy); font-weight: 600; font-size: 11.5px; cursor: pointer; }
+.buybtn:hover { background: var(--buy-weak); border-color: var(--buy); }
+.buybtn.on { background: var(--buy); border-color: var(--buy); color: var(--on-buy); }
+.buybtn:focus-visible { outline: none; box-shadow: var(--focus); }
 
 /* generic chips/rows reused by equivalents + a11y */
 .eq { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 14px; }

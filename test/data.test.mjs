@@ -44,6 +44,31 @@ test('nearestPaints returns N sorted', () => {
   assert.ok(top[0].deltaE <= top[1].deltaE);
 });
 
+test('owned-boost prefers an owned paint over a slightly-closer unowned one, but reports the TRUE ΔE', () => {
+  const target = '#9B1216';                                  // citadel-red is the closest paint
+  const plain = nearestPaint(idx, target);
+  assert.equal(plain.paint.id, 'citadel-red');
+  // boost vallejo-red (which the user "owns"): with a big enough boost it should win the ranking…
+  const boosted = nearestPaint(idx, target, { boostIds: new Set(['vallejo-red']), boostAmount: 6 });
+  assert.equal(boosted.paint.id, 'vallejo-red');
+  assert.equal(boosted.owned, true);
+  // …but the reported ΔE is vallejo-red's real distance (honesty), i.e. larger than the closest match's.
+  assert.ok(boosted.deltaE > plain.deltaE);
+  assert.ok(typeof boosted.adjust === 'string' || boosted.adjust === null);
+});
+
+test('owned-boost is bounded: a far-off owned paint does NOT beat a near unowned match', () => {
+  const target = '#9B1216';
+  const boosted = nearestPaint(idx, target, { boostIds: new Set(['citadel-blue']), boostAmount: 6 });
+  assert.equal(boosted.paint.id, 'citadel-red');             // blue is way too far; boost can't rescue it
+  assert.equal(boosted.owned, false);
+});
+
+test('no ownership context leaves the match shape plain (no owned/adjust keys)', () => {
+  const m = nearestPaint(idx, '#9B1216');
+  assert.equal('owned' in m, false);
+});
+
 test('matchQuality boundary labels (CLAUDE.md §3.2)', () => {
   assert.equal(matchQuality(0.5).label, 'Indistinguishable');
   assert.equal(matchQuality(2).label, 'Excellent');

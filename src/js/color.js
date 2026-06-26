@@ -130,6 +130,28 @@ export function adjustHsl(hex, { dl = 0, ds = 0 } = {}) {
   return rgbToHex(hslToRgb([h, clamp01(s + ds), clamp01(l + dl)]));
 }
 
+/**
+ * Plain-language direction to nudge an owned `paintHex` toward the `idealHex` (use-what-you-own, #6).
+ * Picks the single most-impactful axis (lightness > saturation > hue) so the hint stays actionable.
+ * @returns {string|null} e.g. "lighten slightly", "darken", "mute", "saturate", "shift hue" — or null if already close.
+ */
+export function adjustDirection(idealHex, paintHex) {
+  const [ih, is, il] = rgbToHsl(hexToRgb(idealHex));
+  const [ph, ps, pl] = rgbToHsl(hexToRgb(paintHex));
+  const dl = il - pl, ds = is - ps;
+  let dh = ih - ph; if (dh > 180) dh -= 360; if (dh < -180) dh += 360;
+  // Compare on a common ~0–1 scale; lightness/saturation read more strongly to a painter than hue.
+  const cands = [
+    { m: Math.abs(dl), word: dl > 0 ? 'lighten' : 'darken' },
+    { m: Math.abs(ds) * 0.8, word: ds > 0 ? 'saturate' : 'mute' },
+    { m: (Math.abs(dh) / 180) * 0.6, word: 'shift hue' },
+  ];
+  cands.sort((a, b) => b.m - a.m);
+  const top = cands[0];
+  if (top.m < 0.03) return null;                 // effectively the same colour — no adjustment worth naming
+  return top.word + (top.m < 0.12 ? ' slightly' : '');
+}
+
 /** WCAG 2.1 relative luminance of a colour (hex or [r,g,b]), 0–1. */
 export function relativeLuminance(color) {
   const [r, g, b] = (typeof color === 'string' ? hexToRgb(color) : color).map(srgbToLinear);

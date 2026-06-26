@@ -5,7 +5,7 @@ import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS, harmonize } from './harmony.
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint } from './data.js';
-import { buildScheme, shoppingList } from './scheme.js';
+import { buildScheme, shoppingList, schemeGaps } from './scheme.js';
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
@@ -19,12 +19,20 @@ const state = {
   ownedOnly: false, compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
   extraNodes: [], showReal: false,   // free/added wheel nodes [{h,s}] (S5); live-palette ideal↔real fill
   mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
+  ladder: 'wash', boostOwned: false,            // #7 tone-ladder style; #6 soft "prefer paints I own"
 };
+const OWNED_BOOST = 6;   // ΔE the soft owned-boost is "worth" — owned paints up to ~6 ΔE worse can still win (#6)
 
 const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
 /** Entry mode C: when the seed is the *accent*, build the scheme around its complement. */
 const schemeBase = () => (state.seedRole === 'accent' ? rotateHue(baseHex(), 180) : baseHex());
-const matchOpts = () => (state.ownedOnly && store.ownedIds().size ? { ownedIds: store.ownedIds() } : {});
+/** Match/scheme options: hard owned-only filter OR soft owned-boost (mutually exclusive) + tone ladder. */
+function matchOpts() {
+  const o = { ladder: state.ladder };
+  if (state.ownedOnly && store.ownedIds().size) o.ownedIds = store.ownedIds();
+  else if (state.boostOwned && store.ownedIds().size) { o.boostIds = store.ownedIds(); o.boostAmount = OWNED_BOOST; }
+  return o;
+}
 
 function baseInfo() {
   if (state.customHex) return { hex: state.customHex, name: 'Custom ' + state.customHex, custom: true };
@@ -46,9 +54,13 @@ function renderPlan() {
   state.scheme = currentScheme();
   const cur = { base: schemeBase(), harmony: state.harmony, colors: state.scheme.roles.map(r => r.idealHex) };
   const cmp = state.compareA ? ui.compareBar(state.compareA, cur) : '';
-  $('#panel-plan').innerHTML = cmp + ui.paletteOverview(state.scheme)
-    + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus a derived wash + highlight</div>'
-    + ui.roleSlots(state.scheme);
+  // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5).
+  const gaps = schemeGaps(state.scheme, store.ownedIds());
+  const addable = gaps.filter(g => store.markOf(g.paint.id) !== 'want').length;
+  $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.boostOwned, addable)
+    + ui.paletteOverview(state.scheme)
+    + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus the selected tone ladder</div>'
+    + ui.roleSlots(state.scheme, store.markOf);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
 /** Derived palette: harmony-rule colours (never stored) + any free/added nodes. Feeds wheel + live palette. */
@@ -541,6 +553,31 @@ function toggleOwned(id) {
   document.querySelector(`[data-own="${CSS.escape(id)}"]`)?.focus(); // keep keyboard place after re-render
   if (state.ownedOnly) renderActive();
 }
+/** Toggle a paint on/off the to-buy list (#5). Owned paints have no buy control, but guard anyway. */
+function toggleBuy(id) {
+  if (store.isOwned(id)) return;
+  store.setMark(id, store.isWant(id) ? 'none' : 'want');
+  renderLive(); renderActive();
+  if (state.mode === 'shelf') renderShelf();
+}
+/** One click: flag every paint this scheme needs (that you don't own) as to-buy (#5). */
+function addGapsToBuy() {
+  let n = 0;
+  for (const g of schemeGaps(state.scheme, store.ownedIds())) {
+    if (store.markOf(g.paint.id) !== 'want') { store.setMark(g.paint.id, 'want'); n++; }
+  }
+  toast(n ? `Added ${n} paint${n > 1 ? 's' : ''} to your buy list` : 'Nothing new to add');
+  renderLive(); renderActive();
+}
+function setLadder(v) {                          // #7 — tone-ladder style (persisted)
+  if (!['wash', 'tone', 'both'].includes(v)) return;
+  state.ladder = v; store.setPref('ladder', v);
+  renderActive();
+}
+function toggleBoost() {                         // #6 — soft "prefer paints I own" (persisted)
+  state.boostOwned = !state.boostOwned; store.setPref('boost', state.boostOwned);
+  renderLive(); renderActive();
+}
 function toast(msg) {
   const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('role', 'status');
   document.body.appendChild(d); setTimeout(() => d.remove(), 1700);
@@ -552,8 +589,14 @@ function copyText(val) {
 }
 function doExport() {
   const s = currentScheme();
-  let t = `Palette Studio for Miniatures — shopping list\nBase ${s.base} · ${s.harmony} scheme\n\n`;
-  for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}\n`;
+  let t = `Palette Studio for Miniatures — shopping list\nBase ${s.base} · ${s.harmony} scheme · ${s.ladder} ladder\n\n`;
+  for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}${r.owned ? '  ✓ owned' : ''}\n`;
+  // The accumulated to-buy collection (#5) — the SHOP output, independent of the current scheme.
+  const want = [...store.wantIds()].map(id => state.idx.byId.get(id)).filter(Boolean);
+  if (want.length) {
+    t += `\nYour to-buy list (${want.length}):\n`;
+    for (const p of want) t += `  ${p.name} (${p.brand}${p.line && p.line !== '—' ? ' ' + p.line : ''}) ${p.hex}\n`;
+  }
   t += '\nHex values are approximate; ΔE = perceptual distance to the ideal colour.\n';
   const a = document.createElement('a');
   const href = URL.createObjectURL(new Blob([t], { type: 'text/plain' }));
@@ -575,7 +618,13 @@ function wire() {
     const own = e.target.closest('.own'); if (own) { e.stopPropagation(); toggleOwned(own.dataset.own); return; }
     const b = e.target.closest('.paint'); if (b) selectPaint(b.dataset.id);
   });
-  $('main').addEventListener('click', e => { const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy); });
+  $('main').addEventListener('click', e => {
+    const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
+    const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
+    if (e.target.closest('#boostOwned')) { toggleBoost(); return; }
+    if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
+    const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
+  });
   $('#hex').addEventListener('input', e => {
     const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6).toUpperCase();
     e.target.value = v;
@@ -651,6 +700,9 @@ async function init() {
   state.idx = await loadDataset('./data/paints.json');
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
+
+  const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
+  state.boostOwned = !!store.getPref('boost');
 
   const h = url.get('h'); if (h && isHarmony(h)) state.harmony = h;
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;

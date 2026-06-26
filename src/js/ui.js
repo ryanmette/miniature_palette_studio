@@ -117,17 +117,42 @@ export const brandOptions = brands => brands.map(b => `<option value="${esc(b)}"
 
 const tier = t => `var(--${t})`;
 
-/** Render a nearest-paint match (or a graceful empty state). */
-export function matchChip(m) {
+/** A per-paint "to-buy" toggle (#5). Hidden for paints already owned. `mark` ∈ 'owned'|'want'|'none'. */
+const buyBtn = (id, mark) => mark === 'owned' ? '' :
+  `<button type="button" class="buybtn${mark === 'want' ? ' on' : ''}" data-buy="${esc(id)}" aria-pressed="${mark === 'want'}"`
+  + ` title="${mark === 'want' ? 'On your buy list — click to remove' : 'Add to your buy list'}">`
+  + `${mark === 'want' ? '✓ on buy list' : '+ buy'}</button>`;
+
+/** Render a nearest-paint match (or a graceful empty state). `markOf(id)` adds owned/adjust + a buy toggle. */
+export function matchChip(m, markOf) {
   if (!m) return '<div class="br" style="color:var(--text-faint)">no close paint — consider mixing</div>';
   const p = m.paint, q = m.quality;
+  const mark = markOf ? markOf(p.id) : 'none';
+  // "Boost owned, but honest" (#6): flag what you own + how to nudge it, never hiding the ΔE gap.
+  const ownTag = mark === 'owned'
+    ? `<div class="ownline"><span class="owntag">✓ owned</span>${m.adjust ? `<span class="adjust">${esc(m.adjust)}</span>` : ''}</div>`
+    : '';
   return swatch(p.hex, 'act')
     + `<div style="min-width:0"><div class="ttl">Nearest real paint</div>`
     + `<div class="nm">${esc(p.name)}</div>`
     + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</div>`
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
     + `<span style="color:${tier(q.tier)}">${esc(q.label)}</span>`
-    + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div></div>`;
+    + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
+    + ownTag + buyBtn(p.id, mark) + `</div>`;
+}
+
+/** Plan-tab controls (#6/#7/#5): tone-ladder style · prefer-owned toggle · one-click "add gaps to buy". */
+export function planControls(ladder, boost, gapCount) {
+  const seg = [['wash', 'Wash · base · highlight'], ['tone', 'Shadow · mid · highlight'], ['both', 'Both']]
+    .map(([v, l]) => `<button data-ladder="${v}" aria-pressed="${v === ladder}">${esc(l)}</button>`).join('');
+  return `<div class="planctl">`
+    + `<div class="ctlgrp"><span class="micro">Tone ladder</span><div class="seg ladsel" role="group" aria-label="Tone ladder">${seg}</div></div>`
+    + `<button class="btn sm boosttgl" id="boostOwned" aria-pressed="${!!boost}" title="Rank paints you own higher (still shows the ΔE gap)">Prefer paints I own</button>`
+    + (gapCount > 0
+      ? `<button class="btn sm primary" id="addGaps">+ Add ${gapCount} to buy</button>`
+      : `<span class="micro nogaps">Nothing new to buy for this scheme</span>`)
+    + `</div>`;
 }
 
 /** Small overview bar of the scheme's role ideal colours. */
@@ -138,13 +163,14 @@ export const paletteOverview = scheme =>
       + `<span class="pbl"><span class="pbr">${esc(r.role)}</span><span class="pbh">${hex}</span></span></button>`;
   }).join('')}</div>`;
 
-/** Role slots: each role's ideal → nearest real paint, plus a derived wash/highlight ladder. */
-export function roleSlots(scheme) {
-  const lad = (hex, m, cap) => `<div class="step">${swatch(hex, '')}<div class="cap">${cap}</div><div class="pn">${m ? esc(m.paint.name) : '—'}</div></div>`;
+/** Role slots: each role's ideal → nearest real paint, plus the selected tone ladder(s) (#7). */
+export function roleSlots(scheme, markOf) {
+  const step = s => `<div class="step">${swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div><div class="pn">${s.match ? esc(s.match.paint.name) : '—'}</div></div>`;
   return `<div class="slots">${scheme.roles.map(r => `<div class="slot">`
     + `<div class="shead"><span class="role">${esc(r.role)}</span><span class="wt">${esc(r.weight)}</span></div>`
-    + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match)}</div>`
-    + `<div class="ladder">${lad(r.wash.idealHex, r.wash.match, 'wash')}${lad(r.idealHex, r.match, 'base')}${lad(r.highlight.idealHex, r.highlight.match, 'highlight')}</div>`
+    + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match, markOf)}</div>`
+    + r.ladders.map(lad => (r.ladders.length > 1 ? `<div class="ladcap">${esc(lad.label)}</div>` : '')
+      + `<div class="ladder">${lad.steps.map(step).join('')}</div>`).join('')
     + `</div>`).join('')}</div>`;
 }
 
@@ -172,7 +198,7 @@ export function livePalette(vm, fill) {
     const t = textOn(bg), m = c.match;
     const tag = c.kind === 'base' ? 'Base' : c.kind === 'free' ? 'Added' : `${c.deg > 0 ? '+' : ''}${c.deg}°`;
     const foot = m
-      ? `<span class="lcname">${esc(m.paint.name)}</span>`
+      ? `<span class="lcname">${esc(m.paint.name)}${m.owned ? ' <span class="ownmini">✓ owned</span>' : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
         + `<span style="color:${tier(m.quality.tier)}">${esc(m.quality.label)}</span>`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>`

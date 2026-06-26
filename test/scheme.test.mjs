@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { indexDataset } from '../src/js/data.js';
-import { buildScheme, metalIdeal, shoppingList } from '../src/js/scheme.js';
+import { buildScheme, metalIdeal, shoppingList, schemeGaps } from '../src/js/scheme.js';
 
 const fx = indexDataset({
   version: 'test',
@@ -25,10 +25,24 @@ test('buildScheme yields 4 roles; Body = base; nearest is itself', () => {
   assert.equal(s.roles[0].match.paint.id, 'c-red');
 });
 
-test('each role carries wash + highlight ladders with matches', () => {
+test('default ladder is wash·base·highlight, each step matched', () => {
   const s = buildScheme(fx, '#2D567C', 'triadic');
-  for (const r of s.roles) { assert.ok(r.wash.idealHex && r.highlight.idealHex); }
-  assert.ok(s.roles[0].wash.match && s.roles[0].highlight.match);
+  assert.equal(s.ladder, 'wash');
+  for (const r of s.roles) {
+    assert.equal(r.ladders.length, 1);
+    assert.deepEqual(r.ladders[0].steps.map(x => x.key), ['wash', 'base', 'highlight']);
+    for (const st of r.ladders[0].steps) assert.ok(st.idealHex && st.match);
+  }
+  // the 'base' step's ideal is the role ideal itself (unadjusted)
+  assert.equal(s.roles[0].ladders[0].steps[1].idealHex, s.roles[0].idealHex);
+});
+
+test('tone ladder = shadow·mid·highlight; both = two ladders', () => {
+  const tone = buildScheme(fx, '#2D567C', 'triadic', { ladder: 'tone' });
+  assert.equal(tone.ladder, 'tone');
+  assert.deepEqual(tone.roles[0].ladders[0].steps.map(x => x.key), ['shadow', 'mid', 'highlight']);
+  const both = buildScheme(fx, '#2D567C', 'triadic', { ladder: 'both' });
+  assert.deepEqual(both.roles[0].ladders.map(l => l.style), ['wash', 'tone']);
 });
 
 test('metal slot resolves to a metal-typed paint', () => {
@@ -47,8 +61,20 @@ test('owned filter restricts matches', () => {
   assert.equal(s.roles[3].match.paint.id, 'c-gold');
 });
 
-test('shoppingList flattens roles + ladders', () => {
+test('shoppingList flattens roles + ladders (deduped by paint)', () => {
   const list = shoppingList(buildScheme(fx, '#9A1115', 'complementary'));
   assert.ok(list.length >= 4);
   assert.ok(list.every(r => r.name && r.brand && typeof r.deltaE === 'number'));
+  const ids = list.map(r => r.hex + r.name);
+  assert.equal(ids.length, new Set(ids).size);   // no duplicate paints
+});
+
+test('schemeGaps lists distinct unowned paints; excludes owned', () => {
+  const s = buildScheme(fx, '#9A1115', 'complementary');
+  const all = schemeGaps(s);
+  assert.ok(all.length >= 1);
+  const ownedOne = all[0].paint.id;
+  const fewer = schemeGaps(s, new Set([ownedOne]));
+  assert.ok(fewer.length < all.length);
+  assert.ok(!fewer.some(g => g.paint.id === ownedOne));
 });

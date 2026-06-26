@@ -6,6 +6,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Want-to-buy → shopping list (collection build #5).** Each nearest-paint chip in the Plan tab gets a
+  **+ buy** toggle, and a one-click **"Add N to buy"** flags every paint a scheme needs that you don't
+  own (`schemeGaps`). The accumulated to-buy collection is appended to **Export** as its own list — the
+  SHOP stage of the STOCK→PLAN→RESOLVE→SHOP→PAINT flow. Routed through `store.setMark` (shared with the Shelf).
+- **Prefer paints I own — soft owned-boost (collection build #6).** A Plan-tab toggle ranks paints you
+  own as if `~6` ΔE closer, so a paint you already have can win over a marginally-better one you'd need
+  to buy — **but the displayed ΔE stays the true distance**, with an **adjust hint** (e.g. "lighten
+  slightly", "mute") on owned matches. "Boost owned, but honest" (CLAUDE.md §2). Distinct from the
+  existing hard *owned-only* filter; persisted via `store` prefs.
+- **Tone-ladder choice (collection build #7).** Each role's recipe ladder can be **Wash · base ·
+  highlight** (technique), **Shadow · mid · highlight** (value structure), or **Both** — selectable in
+  the Plan tab and persisted. Export and the shopping list follow the chosen ladder.
 - **`SECURITY.md` security policy.** Documents the static/no-backend/no-PII scope, in/out-of-scope
   vulnerability classes (XSS via hex/URL/import inputs), and private vulnerability reporting via the
   GitHub Security tab. Recorded in the CLAUDE.md §4 file index.
