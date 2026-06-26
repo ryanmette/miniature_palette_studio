@@ -5,6 +5,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.3.0] - 2026-06-25
+The **data release**: 8 brands / 2,508 paints, finish-aware suggestions, faster matcher, and a service-worker fix.
+### Fixed
+- **Stale service-worker shell (live site showed "Couldn't load the paint data").** The SW is now
+  **network-first for the app shell** (navigations + same-origin JS/CSS) so a deploy can't leave a browser
+  running a new `index.html` against an old `app.js`; stable assets (fonts, dataset) stay cache-first, and
+  the cache is bumped (`ps-v3`). The earlier breakage came from not bumping the SW cache on the v1.2.0 deploy.
 ### Added
 - **Four new brands + much fuller existing ranges — dataset v1.2.0 (2,508 paints, 8 brands).** Added
   **Reaper MSP, Scale75, P3, and Pro Acryl (Monument)**, and expanded Citadel (incl. **Technical → `effect`**
