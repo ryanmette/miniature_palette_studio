@@ -252,6 +252,34 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   font-size: 13px; padding: 8px 10px; border-radius: 7px; }
 .menu button:hover, .menu button:focus-visible { background: var(--surface-2); outline: none; }
 
+/* footer + About & data modal */
+.appfoot { max-width: 1180px; margin: 0 auto; padding: 24px 20px 40px; display: flex; align-items: center;
+  gap: 14px; flex-wrap: wrap; border-top: 1px solid var(--border); }
+.footlink { background: none; border: none; padding: 0; color: var(--accent); font: inherit; font-weight: 500;
+  font-size: 13px; cursor: pointer; border-radius: 4px; }
+.footlink:hover { text-decoration: underline; }
+.footlink:focus-visible { outline: none; box-shadow: var(--focus); }
+.footnote { font-size: 12px; color: var(--text-faint); }
+
+.about { width: min(620px, 92vw); max-height: 86vh; padding: 0; border: 1px solid var(--border-strong);
+  border-radius: var(--r-card); background: var(--surface); color: var(--text); box-shadow: var(--shadow); overflow: hidden; }
+.about::backdrop { background: rgba(0,0,0,.45); }
+.abouthead { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); }
+.abouthead h2 { font-size: var(--fs-h2); }
+.iconbtn { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: var(--r-ctrl); background: var(--surface);
+  color: var(--text-muted); font-size: 14px; cursor: pointer; display: grid; place-items: center; }
+.iconbtn:hover { background: var(--surface-2); color: var(--text); }
+.iconbtn:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--accent); }
+.aboutbody { padding: 18px 20px 24px; overflow: auto; max-height: calc(86vh - 60px); }
+.aboutbody h3 { font-family: var(--display); font-size: 14px; font-weight: 600; margin: 18px 0 6px; }
+.aboutbody p { margin: 0 0 8px; font-size: 13px; line-height: 1.6; color: var(--text); }
+.aboutbody a { color: var(--accent); font-weight: 500; }
+.aboutbody .aboutfine { margin-top: 16px; font-size: 11.5px; color: var(--text-faint); }
+@media (prefers-reduced-motion: no-preference) {
+  .about[open] { animation: mh-rise .2s cubic-bezier(.2,.7,.2,1); }
+}
+
 /* responsive */
 @media (max-width: 860px) {
   main { grid-template-columns: 1fr; gap: 16px; }

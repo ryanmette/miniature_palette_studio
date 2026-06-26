@@ -106,6 +106,50 @@
   </section>
 </main>
 
+<footer class="appfoot">
+  <button class="footlink" id="aboutOpen" aria-haspopup="dialog">About &amp; data</button>
+  <span class="footnote">Hex values are approximate · runs locally, no tracking</span>
+</footer>
+
+<dialog id="about" class="about" aria-labelledby="aboutTitle">
+  <div class="abouthead">
+    <h2 id="aboutTitle">About Palette Studio</h2>
+    <button class="iconbtn" id="aboutClose" aria-label="Close">✕</button>
+  </div>
+  <div class="aboutbody">
+    <p>A single-page tool for miniature painters: pick or explore a colour and get colour harmonies
+      matched to real paints you can buy — with cross-brand equivalents, colour-blindness simulation
+      and WCAG contrast checks.</p>
+
+    <h3>How the matching works — and why it's honest</h3>
+    <p>Colours are converted sRGB → CIELAB (D65) and matched by <strong>CIEDE2000 (ΔE 2000)</strong>;
+      harmonies rotate hue in HSL. That maths is exact and unit-tested. But paint hex values are
+      <strong>approximate</strong> (most are community-sourced and tagged “approx”), so every match
+      shows its <strong>ΔE and a plain-language quality label</strong> — “ideal vs actual” always
+      surfaces the gap and never implies a perfect match.
+      <a href="https://github.com/ryanmette/miniature_palette_studio/blob/main/docs/DATA_SOURCING.md"
+         target="_blank" rel="noopener">Sourcing &amp; methodology →</a></p>
+
+    <h3>Data &amp; credits</h3>
+    <p>The dataset (554 paints across Citadel, Vallejo, The Army Painter and Two Thin Coats) is a
+      curated compilation from the community dataset
+      <a href="https://github.com/Arcturus5404/miniature-paints" target="_blank" rel="noopener">Arcturus5404/miniature-paints</a>,
+      used under the <strong>MIT License, © 2022 Rick Fleuren</strong>. <strong>DakkaDakka</strong> is
+      credited for the cross-reference concept; its chart was not copied.
+      <a href="https://github.com/ryanmette/miniature_palette_studio/blob/main/src/data/SOURCES.md"
+         target="_blank" rel="noopener">Full provenance →</a></p>
+
+    <h3>Privacy</h3>
+    <p>Runs entirely in your browser — no accounts, no server, no tracking, and no external requests.
+      Your collection (owned / to-buy paints) and preferences are stored locally on your device only.
+      <a href="https://github.com/ryanmette/miniature_palette_studio/blob/main/SECURITY.md"
+         target="_blank" rel="noopener">Security policy →</a></p>
+
+    <p class="aboutfine">Paint names and brands are trademarks of their respective owners and are used
+      for identification only.</p>
+  </div>
+</dialog>
+
 <div id="shelfMenu" class="menu" role="menu" aria-label="Mark selection" hidden>
   <button role="menuitem" data-act="owned">Mark owned</button>
   <button role="menuitem" data-act="want">Mark to buy</button>

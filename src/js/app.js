@@ -727,6 +727,12 @@ function wire() {
   document.addEventListener('pointerdown', e => { if (menuOpen && !e.target.closest('#shelfMenu')) closeMenu(); }, true);
   document.addEventListener('keydown', shelfKeydown);
   setupShelf();
+
+  // About & data modal — native <dialog> handles Esc + focus trap; close on backdrop click.
+  const about = $('#about');
+  $('#aboutOpen').addEventListener('click', () => about.showModal());
+  $('#aboutClose').addEventListener('click', () => about.close());
+  about.addEventListener('click', e => { if (e.target === about) about.close(); });   // click outside the panel
 }
 
 async function init() {

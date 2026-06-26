@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **About & data panel (mandatory attribution + colour-trust story).** A footer "About & data" link opens
+  an accessible modal (native `<dialog>`: focus-trapped, Esc/backdrop close, reduced-motion aware) covering:
+  what the tool is; **how matching works and why it's honest** (sRGB↔Lab/ΔE 2000, exact + tested, but
+  hexes are approximate and ΔE is always shown); **data credits** — Arcturus5404/miniature-paints under
+  MIT © 2022 Rick Fleuren + DakkaDakka for the concept (satisfies CLAUDE.md §1/§5 in-app attribution and
+  the MIT notice requirement); and **privacy** (local-only, no tracking, no external requests). Links to
+  SOURCES.md / DATA_SOURCING.md / SECURITY.md.
+
 ### Changed
 - **Self-hosted webfonts — zero third-party runtime requests (security to-do).** Inter (400/500/600) and
   Space Grotesk (500/600/700) are now served from `src/assets/fonts/*.woff2` via `src/styles/fonts.css`
