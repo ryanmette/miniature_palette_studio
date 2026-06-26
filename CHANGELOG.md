@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-06-26
+### Fixed
+- **Stale `app.js` still served after v1.3.0 (the "Couldn't load the paint data" error persisted).** The
+  network-first service worker used a plain `fetch()`, which still honoured the browser HTTP cache — and
+  GitHub Pages sends `cache-control: max-age=600`, so the SW kept serving a 10-minute-stale `app.js` against
+  a fresh `index.html`. Shell fetches now use `{cache: 'reload'}` to bypass the HTTP cache (always origin-
+  fresh), the SW cache is bumped to `ps-v4`, and the page now **auto-reloads once when a new SW takes
+  control** so a mismatched shell can't linger.
+
 ## [1.4.0] - 2026-06-25
 ### Added
 - **Curated equivalence groups (Phase B) — dataset v1.3.0.** The build now auto-seeds cross-brand

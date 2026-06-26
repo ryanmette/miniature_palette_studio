@@ -6,9 +6,12 @@
 //    This means a deploy can't leave a browser running mismatched HTML+JS even if CACHE isn't bumped.
 //  • Stable assets — fonts (.woff2), the dataset (paints.json), icon/manifest → CACHE-FIRST (big, rarely
 //    change; fast + offline). They refresh whenever CACHE is bumped (install re-precaches).
+// Shell fetches use {cache:'reload'} so they BYPASS the browser HTTP cache — GitHub Pages sends
+// `cache-control: max-age=600`, so a plain network-first fetch can still return a stale app.js against a
+// fresh index.html (the v1.3.0 bug). 'reload' always hits the origin and refreshes the HTTP cache.
 // Bump CACHE on any shell/asset change. skipWaiting + clients.claim hand control to the new SW promptly.
 
-const CACHE = 'ps-v3';
+const CACHE = 'ps-v4';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './styles/fonts.css', './styles/tokens.css', './styles/app.css',
@@ -40,9 +43,9 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin) return;   // anything cross-origin → straight to network
 
   if (isShell(req, url)) {
-    // network-first: latest code when online, cache (then index.html) when offline
+    // network-first, bypassing the HTTP cache: latest code when online, cache (then index.html) when offline
     e.respondWith(
-      fetch(req).then(res => {
+      fetch(req, { cache: 'reload' }).then(res => {
         const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy));
         return res;
       }).catch(() => caches.match(req).then(hit => hit || caches.match('./index.html')))

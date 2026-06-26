@@ -184,6 +184,17 @@
 
 <div id="status" class="sr-only" aria-live="polite"></div>
 <script type="module" src="js/app.js"></script>
-<script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
+<script>
+if ('serviceWorker' in navigator) {
+  // If a SW already controls this page, reload once when a NEW SW takes over so the page can't keep
+  // running an old shell against fresh assets (the v1.3.0 stale-cache bug). No reload on first install.
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController && !reloaded) { reloaded = true; location.reload(); }
+  });
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
 </body>
 </html>
