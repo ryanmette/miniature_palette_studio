@@ -149,9 +149,10 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 ### 3.6 Responsive & mobile (must work on phones)
 Embedded in a Squarespace page with heavy mobile traffic, so the tool is **mobile-first and
 fully responsive**, not a desktop layout that merely shrinks.
+- **Header is minimal (IA by stage, not by widget):** the header holds only the **Studio / Shelf** mode switch + a **⋯ settings** popover (theme; locale later). Every other control lives in the stage it belongs to — **seed** (hex, Main/Accent) + **Compare** sit atop the Studio; the **Use my collection** control (off · prefer · only) lives in the Plan tab; **Export list / Share link** form a **finish** cluster at the bottom of the Studio. Don't move stage controls back into the header.
 - **Top-level modes (maps to a future app tab bar):** a primary **Studio / Shelf** switch in the header. **Studio** is the scheme workspace (picker + studio + tabs). **Shelf** ("My paint shelf") is the full-width collection grid for stocking what you own / want to buy — bulk-toggled, Finder-style. The compact picker stays for in-context selection while planning.
 - **Layout (Studio, all devices):** the harmony **wheel + live palette form an always-visible *studio*** at the top of the workspace; **Plan·roles / Equivalents / Accessibility** are drill-down tabs below it (the wheel is no longer a tab). The role-mapped ~60-30-10 ideal-vs-actual output lives in the **Plan** tab.
-- Breakpoints: **≤860px** → single column (picker collapses above the workspace; the studio stacks the wheel over the live palette); **≤520px** → compact paddings, header controls wrap (hex field full-width), role slots stack, tabs scroll horizontally.
+- Breakpoints: **≤860px** → single column (picker collapses above the workspace; the studio stacks the wheel over the live palette); **≤520px** → compact paddings, the seed bar wraps (hex field full-width), role slots stack, tabs scroll horizontally.
 - **Touch targets ≥44px** below 520px (`--tap` → 44). The interactive wheel supports touch drag and fits a phone.
 - No horizontal page scroll; swatches and wheel scale fluidly. Verify at 360 / 768 / 1180px.
 

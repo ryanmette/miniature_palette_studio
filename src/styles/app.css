@@ -123,7 +123,6 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .planctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
 .ctlgrp { display: flex; align-items: center; gap: 8px; }
 .ladsel button { font-size: 12px; }
-.btn.boosttgl[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 .nogaps { color: var(--text-faint); align-self: center; }
 
 /* owned / adjust / buy affordances on match chips (#5/#6) */
@@ -252,6 +251,15 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   font-size: 13px; padding: 8px 10px; border-radius: 7px; }
 .menu button:hover, .menu button:focus-visible { background: var(--surface-2); outline: none; }
 
+/* header IA (#4): seed bar atop the studio · finish bar at the bottom · settings popover (theme) */
+.seedbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.finishbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 2px; }
+.finishlbl { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); }
+.popover { position: fixed; z-index: 60; background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--r-ctrl); box-shadow: var(--shadow); padding: 12px 14px; }
+.setrow { display: flex; align-items: center; gap: 12px; }
+.setlbl { font-size: 13px; color: var(--text-muted); }
+
 /* footer + About & data modal */
 .appfoot { max-width: 1180px; margin: 0 auto; padding: 24px 20px 40px; display: flex; align-items: center;
   gap: 14px; flex-wrap: wrap; border-top: 1px solid var(--border); }
@@ -291,7 +299,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   :root { --tap: 44px; }
   .bar { padding: 10px 14px; gap: 8px; }
   .logo .t small { display: none; }
-  .hexin { order: 3; flex: 1 1 100%; }
+  .seedbar .hexin { flex: 1 1 100%; }   /* hex spans a row in the seed bar on phones */
   .hexin input { width: 100%; }
   main { padding: 14px; }
   .pad { padding: 14px; }

@@ -21,18 +21,19 @@
       <button data-mode="shelf" aria-pressed="false" data-i18n="shelf">Shelf</button>
     </div>
     <div class="spacer"></div>
-    <div class="hexin" title="Type any hex to seed a scheme"><span>#</span><input id="hex" maxlength="6" inputmode="text" aria-label="Hex colour" /></div>
-    <div class="seg" id="seedRole" role="group" aria-label="Seed role">
-      <button data-role="main" aria-pressed="true">Main</button>
-      <button data-role="accent" aria-pressed="false">Accent</button>
-    </div>
-    <button class="btn" id="owned" aria-pressed="false" title="Match only paints you own">Owned</button>
-    <button class="btn" id="compare" aria-pressed="false" title="Pin this scheme, then compare">Compare</button>
-    <button class="btn primary" id="export" title="Export the shopping list">Export</button>
-    <button class="btn" id="share" title="Copy a share link">Share</button>
-    <button class="btn icon" id="theme" aria-label="Toggle light/dark theme" title="Toggle theme">◐</button>
+    <button class="btn icon" id="settingsBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Settings" title="Settings">⋯</button>
   </div>
 </header>
+
+<div id="settingsMenu" class="popover settings" role="menu" aria-label="Settings" hidden>
+  <div class="setrow">
+    <span class="setlbl">Theme</span>
+    <div class="seg" id="themeSeg" role="group" aria-label="Theme">
+      <button data-theme="light" aria-pressed="true">Light</button>
+      <button data-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</div>
 
 <main>
   <aside class="card picker" aria-label="Paint picker">
@@ -48,6 +49,14 @@
 
   <section class="workspace">
     <div class="card pad">
+      <div class="seedbar">
+        <div class="hexin" title="Type any hex to seed a scheme"><span>#</span><input id="hex" maxlength="6" inputmode="text" aria-label="Hex colour" /></div>
+        <div class="seg" id="seedRole" role="group" aria-label="Seed role">
+          <button data-role="main" aria-pressed="true">Main</button>
+          <button data-role="accent" aria-pressed="false">Accent</button>
+        </div>
+        <button class="btn" id="compare" aria-pressed="false" title="Pin this scheme, then compare">Compare</button>
+      </div>
       <div class="micro" id="baseLabel" style="margin-bottom:12px">Base colour · main</div>
       <div class="hero" id="hero"></div>
     </div>
@@ -83,6 +92,11 @@
       <div data-panel="plan" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0"></div>
       <div data-panel="equiv" id="panel-equiv" role="tabpanel" aria-labelledby="tab-equiv" tabindex="0" hidden></div>
       <div data-panel="a11y" id="panel-a11y" role="tabpanel" aria-labelledby="tab-a11y" tabindex="0" hidden></div>
+    </div>
+    <div class="finishbar">
+      <span class="finishlbl">Finish</span>
+      <button class="btn primary" id="export" title="Export the shopping list">Export list</button>
+      <button class="btn" id="share" title="Copy a share link">Share link</button>
     </div>
   </section>
 

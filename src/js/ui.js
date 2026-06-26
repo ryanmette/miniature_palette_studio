@@ -142,13 +142,16 @@ export function matchChip(m, markOf) {
     + ownTag + buyBtn(p.id, mark) + `</div>`;
 }
 
-/** Plan-tab controls (#6/#7/#5): tone-ladder style · prefer-owned toggle · one-click "add gaps to buy". */
-export function planControls(ladder, boost, gapCount) {
-  const seg = [['wash', 'Wash · base · highlight'], ['tone', 'Shadow · mid · highlight'], ['both', 'Both']]
+/** Plan-tab controls (#5/#6/#7): tone-ladder style · how-to-use-collection tri-state · "add gaps to buy".
+ *  `collection` ∈ 'off' | 'prefer' (soft boost) | 'only' (hard filter) — one control, no overlap. */
+export function planControls(ladder, collection, gapCount) {
+  const lad = [['wash', 'Wash · base · highlight'], ['tone', 'Shadow · mid · highlight'], ['both', 'Both']]
     .map(([v, l]) => `<button data-ladder="${v}" aria-pressed="${v === ladder}">${esc(l)}</button>`).join('');
+  const col = [['off', 'Off'], ['prefer', 'Prefer owned'], ['only', 'Only owned']]
+    .map(([v, l]) => `<button data-collection="${v}" aria-pressed="${v === collection}">${esc(l)}</button>`).join('');
   return `<div class="planctl">`
-    + `<div class="ctlgrp"><span class="micro">Tone ladder</span><div class="seg ladsel" role="group" aria-label="Tone ladder">${seg}</div></div>`
-    + `<button class="btn sm boosttgl" id="boostOwned" aria-pressed="${!!boost}" title="Rank paints you own higher (still shows the ΔE gap)">Prefer paints I own</button>`
+    + `<div class="ctlgrp"><span class="micro">Tone ladder</span><div class="seg ladsel" role="group" aria-label="Tone ladder">${lad}</div></div>`
+    + `<div class="ctlgrp"><span class="micro">Use my collection</span><div class="seg colsel" role="group" aria-label="Use my collection" title="Off · prefer paints you own (boost, still honest) · only paints you own (filter)">${col}</div></div>`
     + (gapCount > 0
       ? `<button class="btn sm primary" id="addGaps">+ Add ${gapCount} to buy</button>`
       : `<span class="micro nogaps">Nothing new to buy for this scheme</span>`)

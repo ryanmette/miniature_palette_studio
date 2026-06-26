@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Header reorganized by stage (#4 header clarity).** The header now holds only the **Studio / Shelf**
+  switch and a **⋯ settings** popover (the light/dark theme toggle moved in here; locale will join it).
+  Everything else moved to the stage it belongs to: **seed** (hex, Main/Accent) + **Compare** sit atop
+  the Studio; **Export list / Share link** form a "finish" cluster at the bottom of the Studio.
+- **One "Use my collection" control (off · prefer owned · only owned).** The old header *Owned* filter
+  and the Plan tab's separate *Prefer paints I own* toggle — which overlapped — are unified into a single
+  tri-state segmented control in the Plan tab. `off` = ignore; `prefer` = soft boost (still honest);
+  `only` = hard filter. Persisted via `store` prefs (`collection`).
 
 ## [1.1.0] - 2026-06-25
 The **collection release**: a paint shelf, collection-aware planning, portability, and release hardening.

@@ -17,21 +17,22 @@ const state = {
   baseId: null, customHex: null,
   harmony: 'complementary',
   q: '', brand: '', seedRole: 'main', tab: 'plan', theme: 'light',
-  ownedOnly: false, compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
+  compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
   extraNodes: [], showReal: false,   // free/added wheel nodes [{h,s}] (S5); live-palette ideal↔real fill
   mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
-  ladder: 'wash', boostOwned: false,            // #7 tone-ladder style; #6 soft "prefer paints I own"
+  ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
 };
 const OWNED_BOOST = 6;   // ΔE the soft owned-boost is "worth" — owned paints up to ~6 ΔE worse can still win (#6)
 
 const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
 /** Entry mode C: when the seed is the *accent*, build the scheme around its complement. */
 const schemeBase = () => (state.seedRole === 'accent' ? rotateHue(baseHex(), 180) : baseHex());
-/** Match/scheme options: hard owned-only filter OR soft owned-boost (mutually exclusive) + tone ladder. */
+/** Match/scheme options from the single "use my collection" control: off · prefer (boost) · only (filter). */
 function matchOpts() {
   const o = { ladder: state.ladder };
-  if (state.ownedOnly && store.ownedIds().size) o.ownedIds = store.ownedIds();
-  else if (state.boostOwned && store.ownedIds().size) { o.boostIds = store.ownedIds(); o.boostAmount = OWNED_BOOST; }
+  const owned = store.ownedIds();
+  if (state.collection === 'only' && owned.size) o.ownedIds = owned;
+  else if (state.collection === 'prefer' && owned.size) { o.boostIds = owned; o.boostAmount = OWNED_BOOST; }
   return o;
 }
 
@@ -58,7 +59,7 @@ function renderPlan() {
   // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5).
   const gaps = schemeGaps(state.scheme, store.ownedIds());
   const addable = gaps.filter(g => store.markOf(g.paint.id) !== 'want').length;
-  $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.boostOwned, addable)
+  $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.collection, addable)
     + ui.paletteOverview(state.scheme)
     + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus the selected tone ladder</div>'
     + ui.roleSlots(state.scheme, store.markOf);
@@ -517,6 +518,8 @@ function setTheme(t) {
   state.theme = t === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = state.theme;
   store.setPref('theme', state.theme);
+  const seg = document.querySelector('#themeSeg');   // keep the settings-menu theme control in sync
+  if (seg) for (const x of seg.children) x.setAttribute('aria-pressed', String(x.dataset.theme === state.theme));
 }
 function setMode(mode) {
   state.mode = mode === 'shelf' ? 'shelf' : 'studio';
@@ -552,7 +555,7 @@ function toggleOwned(id) {
   store.setMark(id, store.isOwned(id) ? 'none' : 'owned');
   renderList();
   document.querySelector(`[data-own="${CSS.escape(id)}"]`)?.focus(); // keep keyboard place after re-render
-  if (state.ownedOnly) renderActive();
+  if (state.collection !== 'off') { renderLive(); renderActive(); }   // matches depend on the owned set
 }
 /** Toggle a paint on/off the to-buy list (#5). Owned paints have no buy control, but guard anyway. */
 function toggleBuy(id) {
@@ -575,8 +578,9 @@ function setLadder(v) {                          // #7 — tone-ladder style (pe
   state.ladder = v; store.setPref('ladder', v);
   renderActive();
 }
-function toggleBoost() {                         // #6 — soft "prefer paints I own" (persisted)
-  state.boostOwned = !state.boostOwned; store.setPref('boost', state.boostOwned);
+function setCollection(v) {                      // #6 — off · prefer (boost) · only (filter); persisted
+  if (!['off', 'prefer', 'only'].includes(v)) return;
+  state.collection = v; store.setPref('collection', v);
   renderLive(); renderActive();
 }
 function toast(msg) {
@@ -657,7 +661,7 @@ function wire() {
   $('main').addEventListener('click', e => {
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
-    if (e.target.closest('#boostOwned')) { toggleBoost(); return; }
+    const col = e.target.closest('[data-collection]'); if (col) { setCollection(col.dataset.collection); return; }
     if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
   });
@@ -697,7 +701,6 @@ function wire() {
     for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
     renderHero(); refreshStudio(); renderActive(); announce(); updateUrl();
   });
-  $('#owned').addEventListener('click', () => { state.ownedOnly = !state.ownedOnly; $('#owned').setAttribute('aria-pressed', String(state.ownedOnly)); renderActive(); });
   $('#compare').addEventListener('click', () => {
     if (state.compareA) { state.compareA = null; $('#compare').setAttribute('aria-pressed', 'false'); }
     else { const s = currentScheme(); state.compareA = { base: schemeBase(), harmony: state.harmony, colors: s.roles.map(r => r.idealHex) }; $('#compare').setAttribute('aria-pressed', 'true'); setTab('plan'); toast('Pinned A — change the scheme to compare'); }
@@ -705,7 +708,20 @@ function wire() {
   });
   $('#export').addEventListener('click', doExport);
   $('#share').addEventListener('click', doShare);
-  $('#theme').addEventListener('click', () => { setTheme(state.theme === 'dark' ? 'light' : 'dark'); updateUrl(); });
+
+  // settings menu (theme lives here now) — toggle, theme control, click-outside / Esc close
+  const sMenu = $('#settingsMenu'), sBtn = $('#settingsBtn');
+  const openSettings = () => {
+    sMenu.hidden = false; sBtn.setAttribute('aria-expanded', 'true');
+    const r = sBtn.getBoundingClientRect();
+    sMenu.style.left = Math.min(r.left, innerWidth - sMenu.offsetWidth - 8) + 'px';
+    sMenu.style.top = (r.bottom + 6) + 'px';
+  };
+  const closeSettings = () => { sMenu.hidden = true; sBtn.setAttribute('aria-expanded', 'false'); };
+  sBtn.addEventListener('click', e => { e.stopPropagation(); sMenu.hidden ? openSettings() : closeSettings(); });
+  $('#themeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.theme); wheelDraw(); updateUrl(); });
+  document.addEventListener('pointerdown', e => { if (!sMenu.hidden && !e.target.closest('#settingsMenu') && !e.target.closest('#settingsBtn')) closeSettings(); }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sMenu.hidden) { closeSettings(); sBtn.focus(); } });
 
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
@@ -747,7 +763,7 @@ async function init() {
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
 
   const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
-  state.boostOwned = !!store.getPref('boost');
+  const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
 
   const h = url.get('h'); if (h && isHarmony(h)) state.harmony = h;
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;
