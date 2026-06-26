@@ -1,5 +1,5 @@
 {
- "version": "1.3.0",
+ "version": "1.4.0",
  "generated": "2026-06-25",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
@@ -10630,6 +10630,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "texture",
    "groupId": "orange-13"
   },
   {
@@ -10644,6 +10645,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "texture",
    "groupId": "orange-13"
   },
   {
@@ -10657,7 +10659,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "citadel-technical-armageddon-dust",
@@ -10670,7 +10673,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "citadel-technical-astrogranite",
@@ -10684,6 +10688,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "texture",
    "groupId": "grey-08"
   },
   {
@@ -10698,6 +10703,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "texture",
    "groupId": "grey-09"
   },
   {
@@ -10712,6 +10718,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "gloss",
    "groupId": "deep-red-06"
   },
   {
@@ -10739,6 +10746,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "texture",
    "groupId": "red-03"
   },
   {
@@ -10753,6 +10761,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "texture",
    "groupId": "red-03"
   },
   {
@@ -10767,6 +10776,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "texture",
    "groupId": "near-black-02"
   },
   {
@@ -10807,7 +10817,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "slime"
   },
   {
    "id": "citadel-technical-soulstone-blue",
@@ -10820,7 +10831,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "citadel-technical-spiritstone-red",
@@ -10833,7 +10845,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "citadel-technical-stirland-battlemire",
@@ -10847,6 +10860,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "texture",
    "groupId": "deep-orange-02"
   },
   {
@@ -10860,7 +10874,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "citadel-technical-stormshield",
@@ -10887,7 +10902,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "citadel-technical-typhus-corrosion",
@@ -10900,7 +10916,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "citadel-technical-valhallan-blizzard",
@@ -10914,6 +10931,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "fx": "texture",
    "groupId": "near-white-02"
   },
   {
@@ -10927,7 +10945,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "p3-p3-jack-bone",
@@ -23501,7 +23520,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "scale75-soil-works-dark-mud",
@@ -23514,7 +23534,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "scale75-soil-works-dark-rust",
@@ -23527,7 +23548,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "scale75-soil-works-dark-sand",
@@ -23540,7 +23562,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "scale75-soil-works-dark-stains",
@@ -23567,7 +23590,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "scale75-soil-works-fuel-and-grease",
@@ -23620,7 +23644,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "scale75-soil-works-mid-ground-earth",
@@ -23633,7 +23658,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "scale75-soil-works-pale-dust",
@@ -23646,7 +23672,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "scale75-warfront-american-olive",
@@ -32679,7 +32706,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "vallejo-special-fx-demon-blood",
@@ -32692,7 +32720,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "vallejo-special-fx-flesh-blood",
@@ -32705,7 +32734,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "vallejo-special-fx-frost",
@@ -32731,7 +32761,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "vallejo-special-fx-green-rush",
@@ -32770,7 +32801,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "vallejo-special-fx-thick-blood",
@@ -32783,7 +32815,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "vallejo-special-fx-vomit",

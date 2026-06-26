@@ -8,10 +8,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.5.0] - 2026-06-26
 ### Added
-- **Finish icons + metallic sheen.** Non-flat paints now carry a small finish pill (metallic / contrast /
-  wash / shade / ink / effect) on every chip — so a suggestion can't be mistaken for flat paint — and
-  **metallic** swatches get a subtle, non-tinting specular sheen (`--metal-sheen`) instead of reading as a
-  flat colour. (CLAUDE.md §2 carves out this one swatch-overlay exception for metals.)
+- **Finish icons + finish-aware swatch overlays.** Non-flat paints now carry a small finish pill (metallic /
+  contrast / wash / shade / ink / effect) on every chip — so a suggestion can't be mistaken for flat paint —
+  **and** a non-tinting overlay that conveys the finish: a specular **sheen** for metallics (`--metal-sheen`),
+  a satin **translucency** for wash/ink/shade/glaze + contrast, and curated bespoke effects for technical
+  paints — wet **gloss** (Blood for the Blood God, gems), goopy **slime** (Nurgle's Rot), gritty matte
+  **texture** (Stirland Mud, Typhus Corrosion, basing paints). Special effects are build-seeded by keyword
+  into a new `fx` field — **dataset v1.4.0** (33 paints tagged). CLAUDE.md §2 carves out these overlays.
 - **Distinct role assignment + shared-paint guidance.** With a limited collection two close-hued roles
   used to collapse onto the *same* paint. The scheme now assigns distinct paints per role where the pool
   allows; when reuse is unavoidable it flags the role **shared** with how to differentiate it (adjust

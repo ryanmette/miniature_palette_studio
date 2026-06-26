@@ -54,7 +54,7 @@ separately in [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) (v2 only).
 
 ## 2. Product principles
 
-1. **The paint is the hero.** UI chrome is neutral and quiet so real colors read true. We never tint swatches with our own styling. *One narrow exception:* **metallic** paints carry a subtle, non-tinting specular sheen (a fixed highlight→shadow overlay, `--metal-sheen`) because a flat hex misrepresents a metallic finish — it conveys finish, never alters the colour. Non-flat finishes also carry a small **finish icon** (metallic/contrast/wash/…) so a suggestion isn't mistaken for flat paint.
+1. **The paint is the hero.** UI chrome is neutral and quiet so real colors read true. We never tint swatches with our own styling. *One narrow exception — finish overlays:* a flat hex misrepresents a non-flat finish, so swatches may carry a **subtle, non-tinting overlay that conveys finish, never alters the colour** — a specular sheen for **metallics** (`--metal-sheen`); a satin translucency for **wash/ink/shade/glaze** and **contrast**; and curated bespoke effects for technical paints (wet **gloss** e.g. Blood for the Blood God, goopy **slime** e.g. Nurgle's Rot, gritty matte **texture** e.g. Stirland Mud / Typhus Corrosion). Non-flat finishes also carry a small **finish icon** so a suggestion isn't mistaken for flat paint.
 2. **Honest about approximation.** Hex values for physical paint are *approximate*. We always show the match quality (ΔE) and never imply a perfect match. "Ideal vs actual" is the whole point — surface the gap, don't hide it.
 3. **One click to value.** Pick a paint → see a usable palette. No setup, no login, no wizard.
 4. **Explain, don't mystify.** Every number (ΔE, contrast ratio) has a plain-language label ("excellent match", "fails AA").
@@ -137,7 +137,7 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 - **Layout stability — no jiggle.** Selecting, marking, hovering, or revealing controls must **never reflow** surrounding content. Express state with non-layout properties (`outline` / inset / overlay — not `border-width`; use `box-sizing: border-box` when a border width must change), **reserve space** for transient controls (fixed-height action rows; swap a hover tooltip for selection options in the *same* reserved slot), and float per-item affordances (tooltips, option popovers) as overlays. If a reflow is genuinely unavoidable, content shifts in **one consistent direction** — never a two-way jiggle. Especially the collection grid: marking owned/to-buy must not nudge neighbouring swatches.
 
 ### 3.5 Component rules
-- **Swatch**: square, `--r-md`, 1px inset border `rgba(0,0,0,.12)` so white-ish paints stay visible. Text on a swatch is auto black/white by relative luminance — never a fixed color. **Metallic** swatches add `--metal-sheen` (the only sanctioned swatch overlay, §2); a paint's **finish icon** (`finishTag`) flags metallic/contrast/wash/shade/ink/effect.
+- **Swatch**: square, `--r-md`, 1px inset border `rgba(0,0,0,.12)` so white-ish paints stay visible. Text on a swatch is auto black/white by relative luminance — never a fixed color. Non-flat paints carry a **finish overlay** (`fxCls` → `.metal` sheen · `.fx-wash`/`.fx-contrast` translucency · curated `.fx-gloss`/`.fx-slime`/`.fx-texture`) — the only sanctioned swatch overlays (§2) — plus a **finish icon** (`finishTag`) flagging metallic/contrast/wash/shade/ink/effect.
 - **Roles** are **Primary · Secondary · Accent · Metal** (~60-30-10 + spot). With a limited collection two close-hued roles can't both get a distinct owned paint; the engine assigns distinctly where it can, and flags any forced reuse as a **shared paint** with how to differentiate (adjust direction) + the nearest distinct paint to buy.
 - **Buttons (one style, both themes)**: primary = accent fill + `--on-accent` text; secondary = surface + 1px `--border`; ghost = text only. Radius `--r-ctrl`. Height `--tap` = 38px desktop, **44px on touch / ≤520px**. Identical shape in light and dark — only colour differs.
 - **Cards/panels**: `--surface`, 1px `--border`, `--r-lg`, `--shadow-card`, padding 16–24px.
@@ -252,7 +252,8 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
       "approx": true,                         // is the hex approximate?
       "source": "community",                  // manufacturer | community | sampled
       "sourceUrl": "https://…",               // where the value came from
-      "captured": "2026-06-24"                // date the value was recorded — provenance record, not shown in the UI
+      "captured": "2026-06-24",               // date the value was recorded — provenance record, not shown in the UI
+      "fx": "texture"                          // optional, effect-type only: gloss|slime|texture — drives the bespoke swatch finish (build-seeded by keyword)
       // "groupId" links a paint to its equivalence group in groups[] (auto-seeded ΔE≤1; see §5.2)
       // lab[] is derived at load time, never stored. Manufacturer *release* dates
       // are not available from our sources; "captured" is the record date.

@@ -137,6 +137,25 @@ for (const b of BRANDS) {
 
 paints.sort((a, b) => a.brand.localeCompare(b.brand) || a.line.localeCompare(b.line) || a.name.localeCompare(b.name));
 
+/* ---- curated special-effect tags (drive bespoke swatch VFX in the UI) ----
+   Only effect/technical paints get an `fx`; keyword rules so similar paints across the range are covered.
+   slime (goopy gloss) → Nurgle's Rot etc · gloss (wet) → Blood for the Blood God, 'Ard Coat, gems ·
+   texture (gritty matte) → Stirland Mud, Typhus Corrosion, Agrellan Earth, Astrogranite, rust/sand/… */
+const FX_RULES = [
+  ['slime', /\b(rot|nurgle|slime|ooze|mucus|plague)\b/],
+  ['gloss', /blood|ard ?coat|gloss|soulstone|spirit ?stone|waystone|tesseract|\bglass\b|\bgem/],
+  ['texture', /mud|earth|dune|dust|granite|sand|crackle|ground|stirland|agrellan|astrogranite|armageddon|martian|barak|valhallan|corrosion|rust|texture/],
+];
+const fxCount = { gloss: 0, slime: 0, texture: 0 }, fxSample = [];
+for (const p of paints) {
+  if (p.type !== 'effect') continue;
+  const n = p.name.toLowerCase();
+  const hit = FX_RULES.find(([, re]) => re.test(n));
+  if (hit) { p.fx = hit[0]; fxCount[hit[0]]++; if (fxSample.length < 12) fxSample.push(`${hit[0]}:${p.brand} ${p.name}`); }
+}
+console.log(`special-effect fx → gloss ${fxCount.gloss}, slime ${fxCount.slime}, texture ${fxCount.texture}`);
+console.log('  e.g. ' + fxSample.join(' · '));
+
 /* ---- curated equivalence groups (auto-seeded by tight ΔE2000) ---- */
 const hx = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const srgbToLin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
@@ -185,7 +204,7 @@ groups.sort((a, b) => a.id.localeCompare(b.id));
 console.log(`equivalence groups: ${groups.length} (max group diameter ΔE ${maxDiameter.toFixed(2)})`);
 
 const dataset = {
-  version: '1.3.0',
+  version: '1.4.0',
   generated: CAPTURED,
   license: 'Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.',
   attribution: 'Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.',

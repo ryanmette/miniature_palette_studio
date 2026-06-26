@@ -15,8 +15,11 @@ const safeColor = c => (/^#[0-9a-fA-F]{6}$/.test(c) ? c : '#000000');
 // background-color (not the `background` shorthand) so the metallic-sheen background-image can layer on top.
 export const swatch = (hex, cls = '', extra = '') => `<span class="sw ${cls}" style="background-color:${safeColor(hex)};${extra}"></span>`;
 
-/** ' metal' modifier class for metallic paints, so their swatch carries the specular sheen (§3.5). */
-const metalCls = p => (p && p.type === 'metal') ? ' metal' : '';
+// Finish VFX modifier class for a swatch (§2/§3.5 finish overlays — non-tinting, convey finish not colour):
+//  metal → specular sheen · wash/ink/shade/glaze → translucent satin · contrast → softer translucent ·
+//  curated p.fx (gloss/slime/texture) → bespoke wet-gloss / goopy / gritty-matte for technical paints.
+const FX_BY_TYPE = { metal: 'metal', wash: 'fx-wash', ink: 'fx-wash', shade: 'fx-wash', glaze: 'fx-wash', contrast: 'fx-contrast' };
+const fxCls = p => { if (!p) return ''; if (p.fx) return ' fx-' + p.fx; const c = FX_BY_TYPE[p.type]; return c ? ' ' + c : ''; };
 
 // Finish-type glyphs (inline SVG so they inherit colour/size). Flat paints (base/layer/dry/primer) get none.
 const GEM = '<svg viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"><path fill="currentColor" d="M3 6l5-4 5 4-5 8z"/></svg>';
@@ -34,7 +37,7 @@ export function pickerList(paints, selectedId, owned = new Set()) {
     const own = owned.has(p.id);
     return `<div class="paintrow" role="listitem">`
       + `<button class="paint" data-id="${esc(p.id)}" aria-current="${p.id === selectedId}">`
-      + swatch(p.hex, metalCls(p).trim(), 'width:30px;height:30px')
+      + swatch(p.hex, fxCls(p).trim(), 'width:30px;height:30px')
       + `<span style="min-width:0;flex:1"><span class="nm">${esc(p.name)}</span><br>`
       + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</span></span>`
       + `</button>`
@@ -53,7 +56,7 @@ export function shelfGrid(paints, markOf, selected = new Set()) {
     const mark = markOf(p.id), sel = selected.has(p.id);
     const badge = markBadge(mark);
     const state = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
-    return `<div class="cell${p.type === 'metal' ? ' metal' : ''}" role="option" data-id="${esc(p.id)}" data-mark="${mark}"`
+    return `<div class="cell${fxCls(p)}" role="option" data-id="${esc(p.id)}" data-mark="${mark}"`
       + ` aria-selected="${sel}" aria-label="${esc(p.name)}, ${esc(p.brand)} — ${state}"`
       + ` style="--cell:${safeColor(p.hex)}">`
       + `${badge}<span class="celltip">${esc(p.name)} · ${esc(p.brand)}</span>`
@@ -109,7 +112,7 @@ export function hero(base, animate = true, markOf) {
     ? '<span class="tag">custom</span>'
     : `<span class="tag">${esc(base.type || 'paint')}</span>${base.approx ? '<span class="tag approx">approx hex</span>' : ''}`;
   const own = (!base.custom && base.id && markOf) ? `<div class="ownline" style="margin-top:8px">${ownOrBuy(base.id, markOf(base.id))}</div>` : '';
-  return swatch(base.hex, (animate ? 'big pop' : 'big') + (base.type === 'metal' ? ' metal' : ''))
+  return swatch(base.hex, (animate ? 'big pop' : 'big') + fxCls(base))
     + `<div><h2>${esc(base.name)}</h2>`
     + `<div style="color:var(--text-muted);font-size:13px;margin-top:2px">${meta}</div>`
     + `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${tags}</div>`
@@ -151,7 +154,7 @@ export function matchChip(m, markOf) {
   const ownTag = mark === 'owned'
     ? `<div class="ownline"><span class="owntag">✓ owned</span>${m.adjust ? `<span class="adjust">${esc(m.adjust)}</span>` : ''}</div>`
     : '';
-  return swatch(p.hex, 'act' + metalCls(p))
+  return swatch(p.hex, 'act' + fxCls(p))
     + `<div style="min-width:0"><div class="ttl">Nearest real paint</div>`
     + `<div class="nm">${esc(p.name)}</div>`
     + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
@@ -211,7 +214,7 @@ export function equivGroup(label, members, markOf) {
     + `Interchangeable — same colour (ΔE ≤ 1): <strong>${esc(label)}</strong> · ${members.length} paints across ${brands} brand${brands === 1 ? '' : 's'}.</p>`
     + `<div class="eq">${members.map(p => {
       const mark = markOf ? markOf(p.id) : 'none';
-      return `<div class="eqc">${swatch(p.hex, metalCls(p).trim())}<div style="min-width:0">`
+      return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
         + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
     }).join('')}</div></div>`;
@@ -224,7 +227,7 @@ export function equivalentsPanel(name, equivs, markOf) {
     + `<div class="eq">${equivs.map(e => {
       const p = e.paint, q = e.quality;
       const mark = markOf ? markOf(p.id) : 'none';
-      return `<div class="eqc">${swatch(p.hex, metalCls(p).trim())}<div style="min-width:0">`
+      return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
         + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
         + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tier(q.tier)}">${esc(q.label)}</span>`
         + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div>`
@@ -242,7 +245,7 @@ export function livePalette(vm, fill) {
     const bg = safeColor(real && c.match ? c.match.paint.hex : c.hex);   // hex label + copy follow the fill
     const t = textOn(bg), m = c.match;
     const tag = c.kind === 'base' ? 'Base' : c.kind === 'free' ? 'Added' : `${c.deg > 0 ? '+' : ''}${c.deg}°`;
-    const metal = real && m && m.paint.type === 'metal';   // sheen only when the column shows a real metallic
+    const fx = real && m ? fxCls(m.paint).trim() : '';   // finish overlay only when the column shows a real paint
     const foot = m
       ? `<span class="lcname">${esc(m.paint.name)}${m.owned ? ' <span class="ownmini">✓ owned</span>' : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
@@ -250,7 +253,7 @@ export function livePalette(vm, fill) {
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
     return `<button type="button" class="lcol" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}">`
-      + `<span class="lctop${metal ? ' metal' : ''}" style="background-color:${bg};color:${t}"><span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></span>`
+      + `<span class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}"><span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></span>`
       + `<span class="lcfoot">${foot}</span></button>`;
   }).join('')}</div>`;
 }
