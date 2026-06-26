@@ -5,6 +5,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Self-hosted webfonts — zero third-party runtime requests (security to-do).** Inter (400/500/600) and
+  Space Grotesk (500/600/700) are now served from `src/assets/fonts/*.woff2` via `src/styles/fonts.css`
+  (latin subset, `font-display: swap`, ~120 KB total) instead of the Google Fonts CDN. The app now makes
+  **no external calls at all**; the service worker precaches the fonts so they work offline (cache `ps-v2`).
+  Updated CLAUDE.md §3.3/§6.
+
 ### Added
 - **Collection import / export (collection build #27).** The Shelf gains **Import…** and **Export CSV**.
   Export writes a **paintRack-compatible CSV** (`brand,name,status`) of your owned + to-buy paints.

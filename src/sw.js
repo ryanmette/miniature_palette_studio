@@ -1,13 +1,15 @@
-// sw.js — service worker for offline use (PWA shell + bundled dataset). Cache-first for same-origin
-// GETs; cross-origin (the Google Fonts CDN) passes through to the network with the in-app system-font
-// fallback covering offline. Bump CACHE to invalidate. The app is a static file set, so this is simple.
+// sw.js — service worker for offline use (PWA shell + bundled dataset + self-hosted fonts). Cache-first
+// for same-origin GETs. Fonts are now first-party (styles/fonts.css + assets/fonts/*.woff2), so there
+// are NO third-party runtime requests. Bump CACHE to invalidate. The app is a static file set.
 
-const CACHE = 'ps-v1';
+const CACHE = 'ps-v2';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
-  './styles/tokens.css', './styles/app.css',
+  './styles/fonts.css', './styles/tokens.css', './styles/app.css',
   './js/app.js', './js/color.js', './js/harmony.js', './js/data.js', './js/a11y.js',
-  './js/scheme.js', './js/ui.js', './js/store.js', './js/i18n.js',
+  './js/scheme.js', './js/ui.js', './js/store.js', './js/collection-io.js', './js/i18n.js',
+  './assets/fonts/inter-400.woff2', './assets/fonts/inter-500.woff2', './assets/fonts/inter-600.woff2',
+  './assets/fonts/space-grotesk-500.woff2', './assets/fonts/space-grotesk-600.woff2', './assets/fonts/space-grotesk-700.woff2',
   './data/paints.json',
 ];
 

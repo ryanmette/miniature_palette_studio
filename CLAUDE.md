@@ -121,7 +121,7 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 - **Display / headings / wordmark:** `"Space Grotesk", "Inter", system-ui, sans-serif` (500–700). Geometric, lightly edged — modern in light, tactical in dark.
 - **Body / UI / labels:** `"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif` (400/500). Best for dense data and small sizes.
 - **Hex & ΔE:** `ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace`.
-- Both webfonts load from Google Fonts with system fallbacks; the tool must look correct if a webfont fails.
+- Both webfonts are **self-hosted** (`src/styles/fonts.css` + `src/assets/fonts/*.woff2`, latin subset, `font-display: swap`) — no external requests. System fallbacks remain; the tool must look correct if a webfont fails to load.
 - Scale: display 28/600 · h1 22/600 · h2 16/600 · body 14/400 · small 12.5/400 · micro 11.5/500-caps-labels.
 - Line-height 1.5 body. Sentence case everywhere. No ALL CAPS except the 11.5px micro-label style (letter-spacing .05em).
 
@@ -195,8 +195,10 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── index.html             ← (M3)
     ├── CNAME · .nojekyll       ← GitHub Pages: custom domain (palette.ryanmette.com) + disable Jekyll (M9)
     ├── manifest.webmanifest · sw.js · icon.svg  ← PWA: installable + offline app shell (collection branch)
+    ├── styles/fonts.css       ← @font-face for the self-hosted webfonts (§3.3/§6)
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)
+    ├── assets/fonts/          ← self-hosted Inter + Space Grotesk woff2 (latin) — no external font requests
     ├── js/color.js            ← pure color math (see §7). No DOM. (M2)
     ├── js/data.js             ← load + index dataset, nearest-paint search (M2)
     ├── js/harmony.js          ← harmony generation (see §7) (M2)
@@ -272,7 +274,7 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 ## 6. Coding standards
 
 - ES2020+, modules, `const`/`let`, no transpilation assumed.
-- **Dependencies: none at runtime.** Inter (font) is the only sanctioned runtime external. Tests use Node's **built-in** runner (`node --test` / `node:assert`) — no install, no devDependency. Anything else needs a line here. We hand-roll colour math (it's small and well-specified) rather than pull a library.
+- **Dependencies: none at runtime, and zero third-party runtime requests.** The webfonts (Inter, Space Grotesk) are **self-hosted** (§3.3), so the app makes no external calls at all. Tests use Node's **built-in** runner (`node --test` / `node:assert`) — no install, no devDependency. Anything else needs a line here. We hand-roll colour math (it's small and well-specified) rather than pull a library.
 - Pure functions for math; side effects only in `ui.js`/`app.js`.
 - Accessibility: semantic HTML, labelled controls, keyboard operable, visible focus, `aria-live` for dynamic palette updates, respects `prefers-reduced-motion`.
 - Performance budget: first render < 100ms after JSON load; nearest-paint search over the full dataset < 16ms (precompute Lab once).

@@ -1,0 +1,17 @@
+/* fonts.css — self-hosted webfonts (no external requests; §6 zero-third-party-runtime).
+   Inter (body/UI) 400/500/600 + Space Grotesk (display) 500/600/700, latin subset, woff2.
+   font-display: swap keeps the system-font fallback visible until the file loads. */
+
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("../assets/fonts/inter-400.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("../assets/fonts/inter-500.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("../assets/fonts/inter-600.woff2") format("woff2"); }
+
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("../assets/fonts/space-grotesk-500.woff2") format("woff2"); }
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("../assets/fonts/space-grotesk-600.woff2") format("woff2"); }
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: swap;
+  src: url("../assets/fonts/space-grotesk-700.woff2") format("woff2"); }
