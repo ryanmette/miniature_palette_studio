@@ -1,0 +1,17 @@
+# Dependabot — scoped to GitHub Actions ONLY.
+# Rationale: the app ships ZERO runtime/npm dependencies (CLAUDE.md §6), so there is nothing for
+# Dependabot to update there. The one moving target is the actions pinned in workflows/deploy.yml
+# (actions/checkout, configure-pages, upload-pages-artifact, deploy-pages). This keeps those current
+# with minimal noise: monthly, all bumps grouped into a single PR. Do NOT add an npm ecosystem here —
+# adding runtime deps requires a §6 amendment first, not an automated PR.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"

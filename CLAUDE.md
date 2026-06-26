@@ -185,7 +185,9 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── scripts/                   ← dev tooling, NOT shipped (never required at runtime)
 │   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
 │   └── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5)
-├── .github/workflows/         ← deploy.yml — publish src/ to GitHub Pages (M9, dev-only)
+├── .github/
+│   ├── workflows/             ← deploy.yml — publish src/ to GitHub Pages (M9, dev-only)
+│   └── dependabot.yml         ← keep workflow actions current (github-actions ecosystem only; no npm)
 ├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/a11y/data)
 └── src/                       ← the app (✓ M1–M8: data, engine, shell, all feature UI)
     ├── index.html             ← (M3)
