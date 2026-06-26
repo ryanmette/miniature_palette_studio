@@ -166,6 +166,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 /
 ├── CLAUDE.md                  ← this file (constitution)
 ├── README.md                  ← what it is, how to run/deploy
+├── SECURITY.md                ← security policy (static/no-backend scope; private vuln reporting)
 ├── CHANGELOG.md               ← Keep a Changelog format
 ├── package.json               ← dev config (ESM + npm scripts) — NOT shipped
 ├── docs/

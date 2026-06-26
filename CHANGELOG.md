@@ -6,6 +6,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **`SECURITY.md` security policy.** Documents the static/no-backend/no-PII scope, in/out-of-scope
+  vulnerability classes (XSS via hex/URL/import inputs), and private vulnerability reporting via the
+  GitHub Security tab. Recorded in the CLAUDE.md §4 file index.
 - **Shelf — the collection view (collection build, #3 Collection IA).** A new top-level **Studio / Shelf**
   mode switch in the header opens a full-width "My paint shelf": a Finder-style grid of all 554 paints for
   bulk-stocking what you own / want to buy, wired to `store.setMark`. Mouse: click to select, ⇧-click range,

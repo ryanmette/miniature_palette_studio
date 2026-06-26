@@ -6,6 +6,13 @@ It exists so v1 is built in a way that makes a future app cheap (it already is �
 > v1 stays a static web app embedded in Squarespace. Everything below is optional, future, and
 > would get its own constitution before any code.
 
+> **Update (2026-06-25 — collection build).** Two big "make v2 cheap" decisions are now **shipped on
+> the web**: (1) the **PWA** (approach A — manifest + service worker + installable/offline) is done,
+> which *is* the Capacitor-wrap foundation; and (2) the **collection / Shelf** — the app's killer
+> "inventory in your pocket" feature — now exists on the web (`store.js` portable model + a Finder-style
+> Shelf grid). So the inventory feature is no longer net-new mobile work to *invent*; v2 mostly *wraps*
+> and adds the native edges (camera, barcode). See §3 and §5.
+
 ---
 
 ## 1. Why a native app could be worth it
@@ -15,6 +22,10 @@ A phone unlocks things the web version can't do as well:
   nearest paints. (This is the single most compelling mobile feature; it's parked as out-of-scope
   for the web v1 precisely because it shines on a phone.)
 - **Paint inventory in your pocket** — "my paints" with optional **barcode scan** at the store.
+  *(Foundation already built on the web: the **Shelf** collection — owned + to-buy, bulk-stocked,
+  persisted via `store.js`. v2 adds the native edges — camera match, barcode add — on top of it,
+  rather than building inventory from scratch. Positioning stays "collection-aware planner," not a
+  full inventory app — see [`USE_CASES.md`](USE_CASES.md) §0.5/§10.)*
 - **Haptics on the wheel**, native **share sheet**, offline-by-default, Home-screen presence.
 - iPad + **Apple Pencil** for the harmony wheel.
 
@@ -45,6 +56,16 @@ to be **pure, framework-free, dependency-free**. That means:
 
 So v1 is, deliberately, already 40–90% of a v2 app depending on approach.
 
+**Now also shipped toward v2 (collection build):**
+- **PWA** (manifest + cache-first service worker + installable/offline) — approach A complete; it's the
+  literal foundation a Capacitor wrap (approach B) builds on.
+- **`store.js`** — the collection (owned + to-buy) and prefs are **one versioned, serialisable model**
+  with `exportJSON`/`importJSON`, deliberately abstracted so storage can move `localStorage` → IndexedDB
+  → native/sync **without touching callers**. This is the data-portability decision that lets the
+  collection survive a web→app move.
+- **Capability-adaptive input** — the Shelf already branches on `pointer: coarse` (touch tap-to-cycle)
+  vs mouse (multi-select), so the same UI is touch-correct under Capacitor without a rewrite.
+
 ---
 
 ## 4. Recommended path
@@ -63,6 +84,11 @@ This avoids a big native rewrite before there's evidence anyone wants the app.
 
 In: camera colour pick, barcode paint-add, offline dataset, haptic wheel, native share/export,
 push for "back in stock" (much later). Out (still): accounts, server, payments, social feed.
+
+Net-new for mobile is now **smaller**: the inventory/collection UI + persistence already exist on the
+web (the Shelf + `store.js`), and offline is handled by the PWA service worker. The genuinely native
+work is the **camera eyedropper** and **barcode add** (the two things a phone does that the web can't),
+plus haptics and the native share sheet — exactly the "real native value" Apple's review wants (§7).
 
 ---
 
