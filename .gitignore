@@ -14,3 +14,6 @@ package-lock.json
 dist/
 .cache/
 *.local
+
+# Claude Code local session tooling (worktrees, preview launch config) — never shipped
+.claude/
