@@ -1,7 +1,7 @@
 // scheme.js — turn a base colour + harmony into a role-mapped, paint-matched scheme.
 // Pure (takes an indexed dataset); the heart of "ideal vs actual" (CLAUDE.md §1, USE_CASES §3).
 
-import { rotateHue, adjustHsl, rgbToHsl, hexToRgb, hexToLab, deltaE2000 } from './color.js';
+import { rotateHue, adjustHsl, adjustDirection, rgbToHsl, hexToRgb, hexToLab, deltaE2000 } from './color.js';
 import { harmonyPartners } from './harmony.js';
 import { nearestPaint } from './data.js';
 
@@ -48,30 +48,42 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
   const secondaryHex = secondary ? secondary.hex : rotateHue(baseHex, 30);
 
   const defs = [
-    { role: 'Body', weight: '~60%', idealHex: baseHex },
+    { role: 'Primary', weight: '~60%', idealHex: baseHex },
     { role: 'Secondary', weight: '~30%', idealHex: secondaryHex },
     { role: 'Accent', weight: '~10%', idealHex: accent.hex },
     { role: 'Metal', weight: 'spot', idealHex: metalIdeal(baseHex), metal: true },
   ];
   const styles = LADDER_STYLES[opts.ladder] || LADDER_STYLES.wash;
+  // Distinct role assignment: a small (owned-only) pool can map two close-hued roles to the SAME paint.
+  // Assign roles in order, preferring a paint no earlier role used; if none is left, reuse it but flag the
+  // role `shared` with a way to differentiate (adjust direction) + the nearest distinct paint to BUY.
+  const usedIds = new Set();
 
   const roles = defs.map(d => {
     // A metal role keeps its type filter across the whole ladder (match + every step), so its
     // derived shades resolve to real metallics rather than flat colours.
     const roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
     const step = ideal => ({ idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) });
+
+    let match = nearestPaint(idx, d.idealHex, { ...roleOpts, excludeIds: usedIds });
+    let shared = false, differentiate = null, buy = null;
+    if (!match) {                                   // pool out of distinct options → reuse + flag honestly
+      match = nearestPaint(idx, d.idealHex, roleOpts);
+      if (match) {
+        shared = true;
+        differentiate = adjustDirection(match.paint.hex, d.idealHex) || 'darken or lighten to separate';
+        // nearest DISTINCT paint to buy — search the full catalogue (drop owned/boost filters, keep finishes out)
+        buy = nearestPaint(idx, d.idealHex, { excludeTypes: opts.excludeTypes, excludeIds: usedIds });
+      }
+    }
+    if (match) usedIds.add(match.paint.id);
+
     const ladders = styles.map(st => ({
       style: st,
       label: LADDERS[st].label,
       steps: LADDERS[st].steps.map(s => ({ key: s.key, ...step(s.adj ? adjustHsl(d.idealHex, s.adj) : d.idealHex) })),
     }));
-    return {
-      role: d.role,
-      weight: d.weight,
-      idealHex: d.idealHex,
-      match: nearestPaint(idx, d.idealHex, roleOpts),
-      ladders,
-    };
+    return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, ladders };
   });
   return { base: baseHex, harmony, ladder: opts.ladder || 'wash', roles };
 }

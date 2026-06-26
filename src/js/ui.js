@@ -12,7 +12,19 @@ const label = t => t.charAt(0).toUpperCase() + t.slice(1); // sentence case (§3
 // re-assert here so a future caller can't turn a swatch into a CSS/HTML-injection sink.
 const safeColor = c => (/^#[0-9a-fA-F]{6}$/.test(c) ? c : '#000000');
 
-export const swatch = (hex, cls = '', extra = '') => `<span class="sw ${cls}" style="background:${safeColor(hex)};${extra}"></span>`;
+// background-color (not the `background` shorthand) so the metallic-sheen background-image can layer on top.
+export const swatch = (hex, cls = '', extra = '') => `<span class="sw ${cls}" style="background-color:${safeColor(hex)};${extra}"></span>`;
+
+/** ' metal' modifier class for metallic paints, so their swatch carries the specular sheen (§3.5). */
+const metalCls = p => (p && p.type === 'metal') ? ' metal' : '';
+
+// Finish-type glyphs (inline SVG so they inherit colour/size). Flat paints (base/layer/dry/primer) get none.
+const GEM = '<svg viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"><path fill="currentColor" d="M3 6l5-4 5 4-5 8z"/></svg>';
+const DROP = '<svg viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"><path fill="currentColor" d="M8 2c2.4 3.2 4 5.2 4 7.2A4 4 0 0 1 4 9.2C4 7.2 5.6 5.2 8 2z"/></svg>';
+const STAR = '<svg viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"><path fill="currentColor" d="M8 1l1.6 4.4L14 7l-4.4 1.6L8 13 6.4 8.6 2 7l4.4-1.6z"/></svg>';
+const FINISHES = { metal: ['metallic', GEM], contrast: ['contrast', DROP], wash: ['wash', DROP], shade: ['shade', DROP], ink: ['ink', DROP], glaze: ['glaze', DROP], effect: ['effect', STAR] };
+/** Small finish pill (icon + label) flagging non-flat paints (metallic/contrast/wash/…); '' for flat paints. */
+export const finishTag = type => { const f = FINISHES[type]; return f ? `<span class="finish finish-${type}">${f[1]}${f[0]}</span>` : ''; };
 
 /** Picker list: each row pairs a focusable select button with a separate owned-toggle button.
  *  (Keeping the toggle a sibling — not nested in the option — makes it keyboard-operable.) */
@@ -22,9 +34,9 @@ export function pickerList(paints, selectedId, owned = new Set()) {
     const own = owned.has(p.id);
     return `<div class="paintrow" role="listitem">`
       + `<button class="paint" data-id="${esc(p.id)}" aria-current="${p.id === selectedId}">`
-      + swatch(p.hex, '', 'width:30px;height:30px')
+      + swatch(p.hex, metalCls(p).trim(), 'width:30px;height:30px')
       + `<span style="min-width:0;flex:1"><span class="nm">${esc(p.name)}</span><br>`
-      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</span></span>`
+      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</span></span>`
       + `</button>`
       + `<button class="own${own ? ' on' : ''}" data-own="${esc(p.id)}" aria-pressed="${own}" aria-label="Mark ${esc(p.name)} as owned" title="Mark as owned">${own ? '★' : '☆'}</button>`
       + `</div>`;
@@ -41,7 +53,7 @@ export function shelfGrid(paints, markOf, selected = new Set()) {
     const mark = markOf(p.id), sel = selected.has(p.id);
     const badge = markBadge(mark);
     const state = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
-    return `<div class="cell" role="option" data-id="${esc(p.id)}" data-mark="${mark}"`
+    return `<div class="cell${p.type === 'metal' ? ' metal' : ''}" role="option" data-id="${esc(p.id)}" data-mark="${mark}"`
       + ` aria-selected="${sel}" aria-label="${esc(p.name)}, ${esc(p.brand)} — ${state}"`
       + ` style="--cell:${safeColor(p.hex)}">`
       + `${badge}<span class="celltip">${esc(p.name)} · ${esc(p.brand)}</span>`
@@ -97,7 +109,7 @@ export function hero(base, animate = true, markOf) {
     ? '<span class="tag">custom</span>'
     : `<span class="tag">${esc(base.type || 'paint')}</span>${base.approx ? '<span class="tag approx">approx hex</span>' : ''}`;
   const own = (!base.custom && base.id && markOf) ? `<div class="ownline" style="margin-top:8px">${ownOrBuy(base.id, markOf(base.id))}</div>` : '';
-  return swatch(base.hex, animate ? 'big pop' : 'big')
+  return swatch(base.hex, (animate ? 'big pop' : 'big') + (base.type === 'metal' ? ' metal' : ''))
     + `<div><h2>${esc(base.name)}</h2>`
     + `<div style="color:var(--text-muted);font-size:13px;margin-top:2px">${meta}</div>`
     + `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${tags}</div>`
@@ -139,10 +151,10 @@ export function matchChip(m, markOf) {
   const ownTag = mark === 'owned'
     ? `<div class="ownline"><span class="owntag">✓ owned</span>${m.adjust ? `<span class="adjust">${esc(m.adjust)}</span>` : ''}</div>`
     : '';
-  return swatch(p.hex, 'act')
+  return swatch(p.hex, 'act' + metalCls(p))
     + `<div style="min-width:0"><div class="ttl">Nearest real paint</div>`
     + `<div class="nm">${esc(p.name)}</div>`
-    + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</div>`
+    + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
     + `<span style="color:${tier(q.tier)}">${esc(q.label)}</span>`
     + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
@@ -177,9 +189,15 @@ export const paletteOverview = scheme =>
 /** Role slots: each role's ideal → nearest real paint, plus the selected tone ladder(s) (#7). */
 export function roleSlots(scheme, markOf) {
   const step = s => `<div class="step">${swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div><div class="pn">${s.match ? esc(s.match.paint.name) : '—'}</div></div>`;
-  return `<div class="slots">${scheme.roles.map(r => `<div class="slot">`
+  // When a limited collection forces two roles onto the same paint, say so + how to separate / what to buy.
+  const sharedNote = r => r.shared
+    ? `<div class="sharednote"><span class="warnpill">shared paint</span> reused for another role — ${esc(r.differentiate)} to separate`
+      + (r.buy ? `, or buy <strong>${esc(r.buy.paint.name)}</strong> <span class="br">(${esc(r.buy.paint.brand)} · ΔE ${r.buy.deltaE.toFixed(1)})</span>` : '') + `.</div>`
+    : '';
+  return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}">`
     + `<div class="shead"><span class="role">${esc(r.role)}</span><span class="wt">${esc(r.weight)}</span></div>`
     + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match, markOf)}</div>`
+    + sharedNote(r)
     + r.ladders.map(lad => (r.ladders.length > 1 ? `<div class="ladcap">${esc(lad.label)}</div>` : '')
       + `<div class="ladder">${lad.steps.map(step).join('')}</div>`).join('')
     + `</div>`).join('')}</div>`;
@@ -193,8 +211,8 @@ export function equivGroup(label, members, markOf) {
     + `Interchangeable — same colour (ΔE ≤ 1): <strong>${esc(label)}</strong> · ${members.length} paints across ${brands} brand${brands === 1 ? '' : 's'}.</p>`
     + `<div class="eq">${members.map(p => {
       const mark = markOf ? markOf(p.id) : 'none';
-      return `<div class="eqc">${swatch(p.hex, '')}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</div>`
+      return `<div class="eqc">${swatch(p.hex, metalCls(p).trim())}<div style="min-width:0">`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
     }).join('')}</div></div>`;
 }
@@ -206,8 +224,8 @@ export function equivalentsPanel(name, equivs, markOf) {
     + `<div class="eq">${equivs.map(e => {
       const p = e.paint, q = e.quality;
       const mark = markOf ? markOf(p.id) : 'none';
-      return `<div class="eqc">${swatch(p.hex, '')}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</div>`
+      return `<div class="eqc">${swatch(p.hex, metalCls(p).trim())}<div style="min-width:0">`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
         + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tier(q.tier)}">${esc(q.label)}</span>`
         + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
@@ -224,14 +242,15 @@ export function livePalette(vm, fill) {
     const bg = safeColor(real && c.match ? c.match.paint.hex : c.hex);   // hex label + copy follow the fill
     const t = textOn(bg), m = c.match;
     const tag = c.kind === 'base' ? 'Base' : c.kind === 'free' ? 'Added' : `${c.deg > 0 ? '+' : ''}${c.deg}°`;
+    const metal = real && m && m.paint.type === 'metal';   // sheen only when the column shows a real metallic
     const foot = m
       ? `<span class="lcname">${esc(m.paint.name)}${m.owned ? ' <span class="ownmini">✓ owned</span>' : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
         + `<span style="color:${tier(m.quality.tier)}">${esc(m.quality.label)}</span>`
-        + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>`
+        + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
     return `<button type="button" class="lcol" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}">`
-      + `<span class="lctop" style="background:${bg};color:${t}"><span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></span>`
+      + `<span class="lctop${metal ? ' metal' : ''}" style="background-color:${bg};color:${t}"><span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></span>`
       + `<span class="lcfoot">${foot}</span></button>`;
   }).join('')}</div>`;
 }

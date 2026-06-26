@@ -103,7 +103,7 @@ an abstract harmony into these slots (loosely the **60 / 30 / 10** rule):
 
 | Role | ~Weight | Source |
 |------|--------:|--------|
-| **Body / base** | 60% | the dominant seed (or harmony root) |
+| **Primary / base** | 60% | the dominant seed (or harmony root) |
 | **Secondary** | 30% | a harmony partner |
 | **Accent / spot** | 10% | the highest-contrast harmony partner |
 | **Metal** | — | suggested neutral/metal that fits |
@@ -112,7 +112,7 @@ an abstract harmony into these slots (loosely the **60 / 30 / 10** rule):
 
 This is the payoff of "ideal vs actual": for **every** slot we show the theoretical colour
 **and** the nearest real paint (+ derived wash/highlight as a mini recipe ladder). Entry mode
-B drops the seed into *Body*; mode C drops it into *Accent* and solves for *Body*.
+B drops the seed into *Primary*; mode C drops it into *Accent* and solves for *Primary*.
 
 > Shade/highlight **derivation** is **confirmed for v1** (decided): each slot gets one derived
 > wash + one highlight paint. Deeper multi-step ladders remain a later enhancement.
@@ -124,8 +124,8 @@ B drops the seed into *Body*; mode C drops it into *Accent* and solves for *Body
 Each: *who · trigger · flow · output · features*. IDs are stable.
 
 ### Planner (P1)
-- **UC-1 — Scheme from a main colour.** *Trigger:* "My armour is Macragge Blue." *Flow:* seed→Body, pick harmony, see secondary/accent + real paints. *Out:* a buyable scheme. *Feat:* harmonies, ΔE match, roles.
-- **UC-2 — Scheme from an accent.** *Trigger:* "I want gold as the spot colour." *Flow:* seed→Accent, engine solves a complementary Body. *Out:* scheme. *Feat:* inverse harmony, roles.
+- **UC-1 — Scheme from a main colour.** *Trigger:* "My armour is Macragge Blue." *Flow:* seed→Primary, pick harmony, see secondary/accent + real paints. *Out:* a buyable scheme. *Feat:* harmonies, ΔE match, roles.
+- **UC-2 — Scheme from an accent.** *Trigger:* "I want gold as the spot colour." *Flow:* seed→Accent, engine solves a complementary Primary. *Out:* scheme. *Feat:* inverse harmony, roles.
 - **UC-3 — Complete a scheme I started.** *Trigger:* "I have a body and an accent — what else?" *Flow:* lock both seeds, generate secondary/metal/wash/highlight. *Out:* full slate. *Feat:* multi-seed, locking, derivation.
 - **UC-4 — Stay within paints I own / one brand.** *Trigger:* "Only show me Citadel I have." *Flow:* filter the match pool to owned/brand. *Out:* scheme achievable now. *Feat:* owned-paints filter.
 - **UC-5 — Shopping list / export.** *Trigger:* "What do I buy?" *Flow:* export scheme as a paint list (names, brands, hex, ΔE). *Out:* copyable list. *Feat:* export.
@@ -169,9 +169,9 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 
 **Priya — "I have a main colour" (UC-1, mode B)**
 1. Lands on tool → tab "I have a main colour."
-2. Types/searches her body paint (or pastes a hex) → it fills the **Body** slot.
+2. Types/searches her body paint (or pastes a hex) → it fills the **Primary** slot.
 3. Picks a harmony (default: complementary). Engine fills Secondary/Accent + suggests Metal.
-4. Each slot shows ideal swatch → nearest real paint + ΔE badge; a derived wash & highlight appear under Body.
+4. Each slot shows ideal swatch → nearest real paint + ΔE badge; a derived wash & highlight appear under Primary.
 5. Toggles "only paints I own" to make it buildable now. Exports the shopping list. Shares the URL.
 
 **Sam — "just playing" (UC-8/10/11, mode D)**
@@ -230,7 +230,7 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 ## 9. Scope decisions (locked 2026-06-24)
 
 1. **Interactive drag wheel — IN v1** (milestone M5).
-2. **Role-aware output — FULL in v1:** body / secondary / accent / metal slots **plus** a
+2. **Role-aware output — FULL in v1:** primary / secondary / accent / metal slots **plus** a
    derived wash + highlight per slot. Deeper multi-step ladders → v1.1.
 3. **Arbitrary hex input — IN v1.** Eyedropper / from-photo remain Future (per CLAUDE.md §1).
 4. **'Paints I own' filter — IN v1** (localStorage).

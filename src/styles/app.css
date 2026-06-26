@@ -52,6 +52,23 @@ main { max-width: 1180px; margin: 0 auto; padding: 20px; display: grid; grid-tem
 .pad { padding: 18px; }
 .workspace { display: grid; gap: 16px; }
 .sw { border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); flex: none; }
+/* metallic sheen — a non-tinting specular overlay so metallics don't read as flat colour (§3.5).
+   The base colour is inline background-color; this only adds a curved highlight→shadow on top. */
+:root { --metal-sheen: linear-gradient(158deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.26) 100%); }
+.sw.metal, .cell.metal, .lctop.metal { background-image: var(--metal-sheen); }
+/* finish pill — flags non-flat paints (metallic/contrast/wash/…) so a suggestion isn't mistaken for flat */
+.finish { display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; padding: 1px 6px;
+  border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); white-space: nowrap; vertical-align: 1px; }
+.finish svg { width: 10px; height: 10px; }
+.finish-metal { background: var(--warning-weak); color: var(--warning); }
+.finish-contrast { background: var(--accent-weak); color: var(--accent); }
+/* shared-paint note — when a limited collection reuses one paint across roles (scheme.js distinct assignment) */
+.slot.is-shared { border-color: var(--warning); }
+.sharednote { margin-top: 10px; font-size: 11.5px; color: var(--text-muted); background: var(--warning-weak);
+  border-radius: var(--r-ctrl); padding: 7px 10px; line-height: 1.45; }
+.warnpill { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--warning); background: var(--surface); border: 1px solid var(--warning); border-radius: var(--r-pill); padding: 0 7px; margin-right: 5px; }
+.sharednote .br { color: var(--text-faint); }
 
 /* picker */
 .picker .head { padding: 14px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }

@@ -31,7 +31,7 @@ an interactive **drag-the-wheel** exploration, or a shared URL.
 **exploration** (persona Sam — drag a node and the whole scheme + nearest real paints update in
 real time, the Adobe-Color feel).
 
-**Role-aware output:** harmony colours map to miniature paint *roles* — body / secondary /
+**Role-aware output:** harmony colours map to miniature paint *roles* — primary / secondary /
 accent / metal / shade / highlight (~60-30-10) — each shown as ideal-vs-actual. Each slot also
 gets a **derived wash + highlight** paint in v1; deeper multi-step ladders are a later enhancement.
 
@@ -54,7 +54,7 @@ separately in [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) (v2 only).
 
 ## 2. Product principles
 
-1. **The paint is the hero.** UI chrome is neutral and quiet so real colors read true. We never tint swatches with our own styling.
+1. **The paint is the hero.** UI chrome is neutral and quiet so real colors read true. We never tint swatches with our own styling. *One narrow exception:* **metallic** paints carry a subtle, non-tinting specular sheen (a fixed highlight→shadow overlay, `--metal-sheen`) because a flat hex misrepresents a metallic finish — it conveys finish, never alters the colour. Non-flat finishes also carry a small **finish icon** (metallic/contrast/wash/…) so a suggestion isn't mistaken for flat paint.
 2. **Honest about approximation.** Hex values for physical paint are *approximate*. We always show the match quality (ΔE) and never imply a perfect match. "Ideal vs actual" is the whole point — surface the gap, don't hide it.
 3. **One click to value.** Pick a paint → see a usable palette. No setup, no login, no wizard.
 4. **Explain, don't mystify.** Every number (ΔE, contrast ratio) has a plain-language label ("excellent match", "fails AA").
@@ -137,7 +137,8 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 - **Layout stability — no jiggle.** Selecting, marking, hovering, or revealing controls must **never reflow** surrounding content. Express state with non-layout properties (`outline` / inset / overlay — not `border-width`; use `box-sizing: border-box` when a border width must change), **reserve space** for transient controls (fixed-height action rows; swap a hover tooltip for selection options in the *same* reserved slot), and float per-item affordances (tooltips, option popovers) as overlays. If a reflow is genuinely unavoidable, content shifts in **one consistent direction** — never a two-way jiggle. Especially the collection grid: marking owned/to-buy must not nudge neighbouring swatches.
 
 ### 3.5 Component rules
-- **Swatch**: square, `--r-md`, 1px inset border `rgba(0,0,0,.12)` so white-ish paints stay visible. Text on a swatch is auto black/white by relative luminance — never a fixed color.
+- **Swatch**: square, `--r-md`, 1px inset border `rgba(0,0,0,.12)` so white-ish paints stay visible. Text on a swatch is auto black/white by relative luminance — never a fixed color. **Metallic** swatches add `--metal-sheen` (the only sanctioned swatch overlay, §2); a paint's **finish icon** (`finishTag`) flags metallic/contrast/wash/shade/ink/effect.
+- **Roles** are **Primary · Secondary · Accent · Metal** (~60-30-10 + spot). With a limited collection two close-hued roles can't both get a distinct owned paint; the engine assigns distinctly where it can, and flags any forced reuse as a **shared paint** with how to differentiate (adjust direction) + the nearest distinct paint to buy.
 - **Buttons (one style, both themes)**: primary = accent fill + `--on-accent` text; secondary = surface + 1px `--border`; ghost = text only. Radius `--r-ctrl`. Height `--tap` = 38px desktop, **44px on touch / ≤520px**. Identical shape in light and dark — only colour differs.
 - **Cards/panels**: `--surface`, 1px `--border`, `--r-lg`, `--shadow-card`, padding 16–24px.
 - **Badges/pills**: weak semantic fill + strong semantic text from the same family.

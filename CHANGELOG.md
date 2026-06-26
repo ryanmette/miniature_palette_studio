@@ -6,6 +6,20 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-06-26
+### Added
+- **Finish icons + metallic sheen.** Non-flat paints now carry a small finish pill (metallic / contrast /
+  wash / shade / ink / effect) on every chip — so a suggestion can't be mistaken for flat paint — and
+  **metallic** swatches get a subtle, non-tinting specular sheen (`--metal-sheen`) instead of reading as a
+  flat colour. (CLAUDE.md §2 carves out this one swatch-overlay exception for metals.)
+- **Distinct role assignment + shared-paint guidance.** With a limited collection two close-hued roles
+  used to collapse onto the *same* paint. The scheme now assigns distinct paints per role where the pool
+  allows; when reuse is unavoidable it flags the role **shared** with how to differentiate it (adjust
+  direction) and the nearest distinct paint to **buy**.
+### Changed
+- **Role renamed: "Body" → "Primary"** (Primary · Secondary · Accent · Metal) — clearer general-design
+  language. Updated across the engine, a11y labels, CLAUDE.md §1, and USE_CASES.
+
 ## [1.4.1] - 2026-06-26
 ### Fixed
 - **Stale `app.js` still served after v1.3.0 (the "Couldn't load the paint data" error persisted).** The

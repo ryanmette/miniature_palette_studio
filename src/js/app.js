@@ -296,15 +296,15 @@ function renderA11y() {
     { label: 'Tritanopia', colors: colors.map(c => simulateCvd(c, 'tritanopia')) },
   ];
   const mk = (a, b, la, lb) => { const w = wcag(a, b); return { a, b, labelA: la, labelB: lb, ratio: w.ratio, passAAText: w.passAAText, passAALarge: w.passAALarge }; };
-  const contrasts = [mk(colors[0], colors[2], 'Body', 'Accent'), mk(colors[0], '#FFFFFF', 'Body', 'white'), mk(colors[0], '#000000', 'Body', 'black')];
+  const contrasts = [mk(colors[0], colors[2], 'Primary', 'Accent'), mk(colors[0], '#FFFFFF', 'Primary', 'white'), mk(colors[0], '#000000', 'Primary', 'black')];
   const col = minPairDelta(colors, 'deuteranopia');
   let collision = null;
   if (col.delta < 10) {
     const [i, j] = col.pair;
     collision = { roles: [names[i], names[j]], delta: col.delta };
     // Shift whichever of the *colliding* roles is least disruptive to move — the old code
-    // always rotated the Accent, so it couldn't fix e.g. a Body/Secondary collision.
-    const freedom = { Accent: 0, Secondary: 1, Metal: 2, Body: 3 };
+    // always rotated the Accent, so it couldn't fix e.g. a Primary/Secondary collision.
+    const freedom = { Accent: 0, Secondary: 1, Metal: 2, Primary: 3 };
     const shiftIdx = (freedom[names[i]] ?? 9) <= (freedom[names[j]] ?? 9) ? i : j;
     let bestMin = col.delta, best = null;
     for (const d of [25, -25, 40, -40, 55, -55]) {

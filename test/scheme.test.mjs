@@ -17,10 +17,10 @@ const fx = indexDataset({
   ],
 });
 
-test('buildScheme yields 4 roles; Body = base; nearest is itself', () => {
+test('buildScheme yields 4 roles; Primary = base; nearest is itself', () => {
   const s = buildScheme(fx, '#9A1115', 'complementary');
   assert.equal(s.roles.length, 4);
-  assert.deepEqual(s.roles.map(r => r.role), ['Body', 'Secondary', 'Accent', 'Metal']);
+  assert.deepEqual(s.roles.map(r => r.role), ['Primary', 'Secondary', 'Accent', 'Metal']);
   assert.equal(s.roles[0].idealHex, '#9A1115');
   assert.equal(s.roles[0].match.paint.id, 'c-red');
 });
@@ -59,6 +59,27 @@ test('owned filter restricts matches', () => {
   const s = buildScheme(fx, '#9A1115', 'complementary', { ownedIds: new Set(['v-red', 'c-gold']) });
   assert.equal(s.roles[0].match.paint.id, 'v-red');
   assert.equal(s.roles[3].match.paint.id, 'c-gold');
+});
+
+test('distinct role assignment: a tiny owned pool flags reuse as shared + offers a buy', () => {
+  // Own only ONE red and the gold. Primary takes the red; Secondary/Accent can't get a distinct owned
+  // colour → they reuse it but are flagged shared, with a differentiate hint + a nearest distinct buy.
+  const s = buildScheme(fx, '#9A1115', 'complementary', { ownedIds: new Set(['c-red', 'c-gold']) });
+  assert.equal(s.roles[0].match.paint.id, 'c-red');
+  assert.equal(s.roles[0].shared, false);
+  const shared = s.roles.slice(0, 3).filter(r => r.shared);   // 3 colour roles, only 2 owned → ≥1 reuse
+  assert.ok(shared.length >= 1, 'a colour role is flagged shared when the owned pool is too small');
+  for (const r of shared) {
+    assert.equal(typeof r.differentiate, 'string');
+    assert.ok(r.buy && r.buy.paint.id !== r.match.paint.id);  // a distinct paint to buy (full catalogue)
+  }
+});
+
+test('full pool assigns distinct paints per colour role (no accidental reuse)', () => {
+  const s = buildScheme(fx, '#9A1115', 'complementary');
+  const colourIds = s.roles.slice(0, 3).map(r => r.match && r.match.paint.id).filter(Boolean);
+  assert.equal(colourIds.length, new Set(colourIds).size);
+  assert.ok(s.roles.slice(0, 3).every(r => !r.shared));
 });
 
 test('shoppingList flattens roles + ladders (deduped by paint)', () => {

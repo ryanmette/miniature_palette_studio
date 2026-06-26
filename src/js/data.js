@@ -43,8 +43,9 @@ export function groupOf(indexed, paint) {
  */
 export const FINISH_TYPES = ['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect', 'technical'];
 
-function passesFilter(p, { excludeId, brands, excludeBrands, ownedIds, types, excludeTypes } = {}) {
+function passesFilter(p, { excludeId, excludeIds, brands, excludeBrands, ownedIds, types, excludeTypes } = {}) {
   if (excludeId && p.id === excludeId) return false;
+  if (excludeIds && excludeIds.has(p.id)) return false;
   if (brands && !brands.has(p.brand)) return false;
   if (excludeBrands && excludeBrands.has(p.brand)) return false;
   if (ownedIds && !ownedIds.has(p.id)) return false;
