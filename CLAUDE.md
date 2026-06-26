@@ -246,7 +246,7 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
       "line": "Base",                        // Base/Layer/Shade/Contrast/… or brand range
       "name": "Mephiston Red",
       "hex": "#9A1115",
-      "type": "layer",                        // layer|base|wash|metal|contrast|primer|ink
+      "type": "layer",                        // base|layer|dry|shade|wash|ink|contrast|glaze|effect|metal (finishes excluded from harmony suggestions; metal = Metal role)
       "discontinued": false,
       "approx": true,                         // is the hex approximate?
       "source": "community",                  // manufacturer | community | sampled

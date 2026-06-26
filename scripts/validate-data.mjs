@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const data = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'paints.json'), 'utf8'));
 const P = data.paints;
-const ALLOWED_TYPES = new Set(['base','layer','wash','shade','contrast','metal','ink','dry','technical','glaze','primer','air']);
+const ALLOWED_TYPES = new Set(['base','layer','wash','shade','contrast','metal','ink','dry','technical','glaze','effect','primer','air']);
 
 /* ---- colour math (CLAUDE.md §7; ΔE2000 verified against Sharma) ---- */
 const hx = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];

@@ -60,14 +60,45 @@ function decorate(m, targetHex, opts) {
 }
 
 /**
+ * Candidate pool for a search: paints passing the filter. Over PREFILTER_OVER, prune to the KEEP
+ * nearest by *cheap* squared-Lab (Euclidean) distance before the expensive ΔE2000 — a big dataset
+ * would otherwise do thousands of ΔE2000s per live-palette frame (§6 perf). The ΔE2000 winner is, in
+ * practice, always within the Euclidean top-KEEP, so the reported ΔE2000 result doesn't drift (§7).
+ * Boosted (owned) paints are always kept so the soft owned-boost (#6) can't be pruned out.
+ */
+const KEEP = 64;
+function candidatePool(indexed, target, opts) {
+  const [L, A, B] = target;
+  // Allocation-free top-KEEP by cheap squared-Lab distance (no per-call sort / object array).
+  const kd = new Float64Array(KEEP).fill(Infinity), kp = new Array(KEEP);
+  let filled = 0, worst = Infinity, wi = 0;
+  for (const p of indexed.paints) {
+    if (!passesFilter(p, opts)) continue;
+    const dl = L - p.lab[0], da = A - p.lab[1], db = B - p.lab[2], e = dl * dl + da * da + db * db;
+    if (filled < KEEP) {
+      kd[filled] = e; kp[filled] = p; filled++;
+      if (filled === KEEP) { worst = -1; for (let i = 0; i < KEEP; i++) if (kd[i] > worst) { worst = kd[i]; wi = i; } }
+    } else if (e < worst) {
+      kd[wi] = e; kp[wi] = p; worst = -1; for (let i = 0; i < KEEP; i++) if (kd[i] > worst) { worst = kd[i]; wi = i; }
+    }
+  }
+  const top = kp.slice(0, filled);
+  // Always keep boosted (owned) paints so the soft owned-boost (#6) can never be pruned.
+  if (opts.boostIds && filled === KEEP) {
+    const inTop = new Set(top);
+    for (const p of indexed.paints) if (opts.boostIds.has(p.id) && passesFilter(p, opts) && !inTop.has(p)) top.push(p);
+  }
+  return top;
+}
+
+/**
  * Nearest paint to a target hex by ΔE2000, honouring filters and the soft owned-boost (#6).
  * @returns {{paint:object, deltaE:number, quality:{label:string,tier:string}, owned?:boolean, adjust?:string|null}|null}
  */
 export function nearestPaint(indexed, hex, opts = {}) {
   const target = hexToLab(hex);
   let best = null, bestD = Infinity, bestScore = Infinity;
-  for (const p of indexed.paints) {
-    if (!passesFilter(p, opts)) continue;
+  for (const p of candidatePool(indexed, target, opts)) {
     const d = deltaE2000(target, p.lab);
     const score = rankScore(d, p, opts);
     if (score < bestScore) { bestScore = score; bestD = d; best = p; }
@@ -78,8 +109,7 @@ export function nearestPaint(indexed, hex, opts = {}) {
 /** Top-N nearest paints to a hex, ranked by the same owned-boost; reported ΔE stays true. */
 export function nearestPaints(indexed, hex, n = 5, opts = {}) {
   const target = hexToLab(hex);
-  return indexed.paints
-    .filter(p => passesFilter(p, opts))
+  return candidatePool(indexed, target, opts)
     .map(p => { const deltaE = deltaE2000(target, p.lab); return { paint: p, deltaE, score: rankScore(deltaE, p, opts) }; })
     .sort((a, b) => a.score - b.score)
     .slice(0, n)

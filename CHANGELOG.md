@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Four new brands + much fuller existing ranges — dataset v1.2.0 (2,508 paints, 8 brands).** Added
+  **Reaper MSP, Scale75, P3, and Pro Acryl (Monument)**, and expanded Citadel (incl. **Technical → `effect`**
+  paints like Blood for the Blood God, plus Dry/Glaze), Vallejo (Mecha, Xpress, washes, Metal Color), and
+  Army Painter (Warpaints Fanatic, Speedpaint, Nolzur's, …). All from the same MIT source (Arcturus5404),
+  credited in `src/data/SOURCES.md`. Curated-broad scope: skips airbrush duplicates, primers, craft/weathering
+  lines, and non-colour mediums/varnishes. New `effect`/`shade`/`dry`/`glaze`/`ink` types recorded.
+- **Faster nearest-paint search (allocation-free Euclidean prefilter).** With ~4.5× more paints, harmony
+  suggestions prune to the cheapest-distance top-64 before the exact ΔE 2000 rerank — a 5-node live-palette
+  frame dropped from ~26 ms to ~3 ms, keeping the live drag smooth (§6). Returns the same ΔE 2000 result
+  (verified vs brute force over 300 random targets: differences only at exact ΔE ties).
 ### Changed
 - **Finish-aware suggestions (washes/shades/contrast no longer offered as flat-colour matches).** Harmony
   suggestions (the live palette + role ladders) now exclude "finish" paints — `wash · shade · ink ·

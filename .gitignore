@@ -17,3 +17,6 @@ dist/
 
 # Claude Code local session tooling (worktrees, preview launch config) — never shipped
 .claude/
+
+# dataset build cache (raw source markdown, fetched not committed)
+.cache/

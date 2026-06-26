@@ -1,49 +1,62 @@
-# Data sources & attribution — dataset v1.1.0
+# Data sources & attribution — dataset v1.2.0
 
-Provenance for `src/data/paints.json` (built `2026-06-24`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
+Provenance for `src/data/paints.json` (built `2026-06-25`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
 
 ## Primary source (used)
 
-| Source | Brands used | License | Captured |
-|--------|-------------|---------|----------|
-| **[Arcturus5404/miniature-paints](https://github.com/Arcturus5404/miniature-paints)** (Miniature Painter Pro) | Citadel (Base/Layer/Shade/Contrast), Vallejo (Game Color + Model Color), Army Painter (Warpaints), Two Thin Coats (Duncan Rhodes; Waves 1–3, `paints/Duncan.md`) | **MIT** | 2026-06-24 |
+| Source | License | Captured |
+|--------|---------|----------|
+| **[Arcturus5404/miniature-paints](https://github.com/Arcturus5404/miniature-paints)** (Miniature Painter Pro) | **MIT** | 2026-06-25 |
 
 > **MIT License** — Copyright (c) 2022 Rick Fleuren. Permission is hereby granted, free of charge,
 > to any person obtaining a copy of this software and associated documentation files (the "Software"),
 > to deal in the Software without restriction… The above copyright notice and this permission notice
 > shall be included in all copies or substantial portions of the Software. (Full text in the source repo.)
 
-MIT permits use, modification, and redistribution with attribution — satisfied here and in the in-app
-"Data & credits" panel. **DakkaDakka** is credited for the cross-reference *concept* only; its chart was
-not copied.
+All brands below are parsed from that single MIT-licensed compilation. MIT permits use, modification, and
+redistribution with attribution — satisfied here, in the in-app "About & data" panel, and in the dataset's
+own `attribution` field. **DakkaDakka** is credited for the cross-reference *concept* only; its chart was
+not copied. Paint and brand names are trademarks of their respective owners, used for identification only.
 
-## Build & coverage
+## Coverage — 2508 paints, 8 brands
 
-- Built by [`scripts/build-dataset.mjs`](../../scripts/build-dataset.mjs) (re-fetch the three brand
-  markdown files from the source repo into a raw dir, then run the script).
-- Citadel rows are transcribed from `paints/Citadel_Colour.md` (current Base/Layer/Shade/Contrast);
-  Army Painter (Warpaints), Vallejo (Game/Model Color), and Two Thin Coats (`paints/Duncan.md`, all
-  three Waves) are parsed from their files.
-- **554 paints** — Citadel 147, Vallejo 150, Army Painter 77, Two Thin Coats 180 (Duncan Rhodes, Waves 1–3).
+| Brand | Count | Lines included |
+|-------|------:|----------------|
+| Citadel | 259 | Base, Layer, Dry, Shade, Contrast, Technical, Glaze |
+| Vallejo | 540 | Game Color, Model Color, Mecha Color, Xpress, Metal Color, Wash, Special FX |
+| Army Painter | 503 | Warpaints, Warpaints Fanatic, Speedpaint, Wash, Metallics, Skin Tones, Nolzur's, D&D |
+| Two Thin Coats | 178 | Wave 1–3 (Duncan Rhodes) |
+| Reaper | 429 | Master Series (Core), Pathfinder, Bones, Wash |
+| Scale75 | 350 | Scalecolor, Fantasy & Games, Artist, Warfront, Instant, Inktensity, Metal n Alchemy, FX, Soil Works |
+| P3 | 130 | Formula P3, P3 Wash |
+| Pro Acryl | 119 | Pro Acryl, Signature, Wash |
+
+**Curated-broad scope (by `scripts/build-dataset.mjs`):** we include the real hobby colour ranges plus
+their washes / contrast / metallics / effects, and **skip**: airbrush ranges (they duplicate the colour
+ranges — Citadel Air, Vallejo Model/Game Air, Army Painter Warpaints Air), primers/sprays, craft &
+weathering lines (Vallejo Arte Deco, Panzer Aces, Weathering FX, Nocturna, Hobby Paint), discontinued
+Citadel Foundation, and non-colour utility products (mediums, varnishes, sealers, thinners — filtered by name).
+
+## Types & finish handling
+
+`type` ∈ base · layer · dry · shade · wash · ink · contrast · glaze · effect · metal. The **finish** types
+(wash · shade · ink · contrast · glaze · effect) are excluded from harmony *suggestions* at runtime (they
+read differently on the model), while staying browsable in the picker, Shelf, and Equivalents; Contrast is
+opt-in via a Plan-tab toggle. `metal` is the Metal role. Citadel's **Technical** line is recorded as `effect`
+(e.g. Blood for the Blood God, texture paints); its **Shade** line as `shade`.
+
+## Build & verification
+
+- Built by [`scripts/build-dataset.mjs`](../../scripts/build-dataset.mjs): stage the raw brand markdown
+  from the source repo into `.cache/raw/`, then `node scripts/build-dataset.mjs`.
 - All rows are `approx: true` (community-sourced). `lab` is derived at runtime, never stored.
-- v1 has **no precomputed equivalence groups**; cross-brand matches are computed at runtime by ΔE 2000.
-
-## Verification (per `docs/DATA_SOURCING.md` §5)
-
-Run [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs). On the 2026-06-24 build:
-
-- **Hard checks PASS** — valid sRGB hex, required fields, unique ids, allowed types.
-- **Soft flags (reviewed, accepted):**
-  - *Cross-brand near-duplicates (ΔE<1), 18 pairs* — blacks/whites/clears genuinely match across
-    brands; e.g. Two Thin Coats *Cursed Blue* ≈ Vallejo *Electric Blue* (ΔE 0.31) is a true
-    equivalence. Informational, not errors.
-  - *Name/hue mismatches (45)* — thematic naming (teal paints named "green", golden "yellows",
-    "Gal Vorbak Red" a dark burgundy). Reviewed against source; hex values are correct.
+- Cross-brand equivalents are computed at runtime by ΔE 2000 (curated equivalence groups are a planned layer).
+- QA: [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs) — **hard checks PASS** (valid sRGB hex,
+  required fields, unique ids, allowed types). Soft flags (reviewed, accepted): cross-brand near-duplicates
+  (whites/blacks/greys genuinely match across brands) and thematic name/hue mismatches.
 
 ## Re-verification cadence
 
 Revisit on manufacturer range changes and at least annually; `captured` dates make staleness visible
-(`CLAUDE.md` §8, dataset SemVer). Next planned: add per-brand confidence + curated equivalence groups,
-and widen brands further (P3, Scale75, Reaper — all available under the same MIT source; **Two Thin
-Coats added in v1.1.0**).
+(`CLAUDE.md` §8, dataset SemVer). Planned next: curated equivalence groups (+ `groupId`), per-brand confidence.
