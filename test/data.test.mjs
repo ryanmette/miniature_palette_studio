@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { indexDataset, nearestPaint, nearestPaints, equivalents, matchQuality, FINISH_TYPES } from '../src/js/data.js';
+import { indexDataset, nearestPaint, nearestPaints, equivalents, matchQuality, FINISH_TYPES, groupMembers, groupOf } from '../src/js/data.js';
 
 const fixture = {
   version: 'test',
@@ -81,6 +81,19 @@ test('excludeTypes keeps finish paints (washes/contrast) out of suggestions', ()
   assert.equal(nearestPaint(fx, target, { excludeTypes: ex }).paint.id, 'layer-far'); // finishes excluded → flat layer
   ex.delete('contrast');                                                              // "Include Contrast"
   assert.equal(nearestPaint(fx, target, { excludeTypes: ex }).paint.id, 'contrast-near');
+});
+
+test('curated equivalence groups: groupMembers (excl. self) + groupOf', () => {
+  const fx = indexDataset({ version: 't', groups: [{ id: 'deep-red-01', refHex: '#9A1115', label: 'deep red' }], paints: [
+    { id: 'a', brand: 'Citadel', line: 'Base', name: 'Mephiston Red', hex: '#9A1115', type: 'base', groupId: 'deep-red-01' },
+    { id: 'b', brand: 'Vallejo', line: 'Game Color', name: 'Bloody Red', hex: '#9B1216', type: 'layer', groupId: 'deep-red-01' },
+    { id: 'c', brand: 'Citadel', line: 'Base', name: 'Macragge Blue', hex: '#2D567C', type: 'base' },
+  ] });
+  const mem = groupMembers(fx, fx.byId.get('a'));
+  assert.equal(mem.length, 1);
+  assert.equal(mem[0].id, 'b');
+  assert.equal(groupOf(fx, fx.byId.get('a')).label, 'deep red');
+  assert.deepEqual(groupMembers(fx, fx.byId.get('c')), []);   // ungrouped → none
 });
 
 test('matchQuality boundary labels (CLAUDE.md §3.2)', () => {

@@ -185,6 +185,20 @@ export function roleSlots(scheme, markOf) {
     + `</div>`).join('')}</div>`;
 }
 
+/** Curated equivalence group — interchangeable paints (ΔE ≤ 1) across brands. `members`: [paint]. */
+export function equivGroup(label, members, markOf) {
+  if (!members.length) return '';
+  const brands = new Set(members.map(m => m.brand)).size;
+  return `<div class="eqgroup"><p class="hint" style="margin:14px 0 6px">`
+    + `Interchangeable — same colour (ΔE ≤ 1): <strong>${esc(label)}</strong> · ${members.length} paints across ${brands} brand${brands === 1 ? '' : 's'}.</p>`
+    + `<div class="eq">${members.map(p => {
+      const mark = markOf ? markOf(p.id) : 'none';
+      return `<div class="eqc">${swatch(p.hex, '')}<div style="min-width:0">`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''}</div>`
+        + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
+    }).join('')}</div></div>`;
+}
+
 /** Cross-brand equivalents list (M6). `equivs`: [{paint, deltaE, quality}]. markOf adds owned/buy. */
 export function equivalentsPanel(name, equivs, markOf) {
   if (!equivs.length) return '<div class="placeholder">No other-brand matches in the dataset for this paint.</div>';

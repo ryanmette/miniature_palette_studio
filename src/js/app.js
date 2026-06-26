@@ -4,7 +4,7 @@
 import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000 } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES } from './data.js';
+import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps } from './scheme.js';
 import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
@@ -273,8 +273,17 @@ function setupWheel() {
 }
 function renderEquiv() {
   const p = basePaint();
-  if (p) $('#panel-equiv').innerHTML = ui.equivalentsPanel(`${p.name} (${p.brand})`, equivalents(state.idx, state.idx.byId.get(p.id), { n: 8 }), store.markOf);
-  else $('#panel-equiv').innerHTML = ui.equivalentsPanel(`your colour ${baseHex()}`, nearestPaints(state.idx, baseHex(), 8), store.markOf);
+  if (p) {
+    const self = state.idx.byId.get(p.id);
+    const members = groupMembers(state.idx, self);                 // curated equivalents (ΔE ≤ 1)
+    const memberIds = new Set(members.map(m => m.id));
+    const label = groupOf(state.idx, self)?.label || 'this colour';
+    const eq = equivalents(state.idx, self, { n: 8 }).filter(e => !memberIds.has(e.paint.id));   // avoid dupes
+    $('#panel-equiv').innerHTML = ui.equivGroup(label, members, store.markOf)
+      + ui.equivalentsPanel(`${p.name} (${p.brand})`, eq, store.markOf);
+  } else {
+    $('#panel-equiv').innerHTML = ui.equivalentsPanel(`your colour ${baseHex()}`, nearestPaints(state.idx, baseHex(), 8), store.markOf);
+  }
 }
 function renderA11y() {
   const s = state.scheme = currentScheme();

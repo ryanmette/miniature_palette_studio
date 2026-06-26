@@ -137,12 +137,60 @@ for (const b of BRANDS) {
 
 paints.sort((a, b) => a.brand.localeCompare(b.brand) || a.line.localeCompare(b.line) || a.name.localeCompare(b.name));
 
+/* ---- curated equivalence groups (auto-seeded by tight ΔE2000) ---- */
+const hx = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const srgbToLin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+function toLab([r, g, b]) { const R = srgbToLin(r), G = srgbToLin(g), B = srgbToLin(b); const x = (R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047, y = R * 0.2126 + G * 0.7152 + B * 0.0722, z = (R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883; const f = t => t > Math.pow(6 / 29, 3) ? Math.cbrt(t) : t / (3 * Math.pow(6 / 29, 2)) + 4 / 29; return [116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))]; }
+function dE(l1, l2) { const [L1, a1, b1] = l1, [L2, a2, b2] = l2, rad = Math.PI / 180; const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2), Cb = (C1 + C2) / 2, Cb7 = Math.pow(Cb, 7), G = 0.5 * (1 - Math.sqrt(Cb7 / (Cb7 + Math.pow(25, 7)))); const a1p = (1 + G) * a1, a2p = (1 + G) * a2, C1p = Math.hypot(a1p, b1), C2p = Math.hypot(a2p, b2); let h1 = Math.atan2(b1, a1p); if (h1 < 0) h1 += 2 * Math.PI; let h2 = Math.atan2(b2, a2p); if (h2 < 0) h2 += 2 * Math.PI; const dL = L2 - L1, dC = C2p - C1p; let dh = 0; if (C1p * C2p !== 0) { dh = h2 - h1; if (dh > Math.PI) dh -= 2 * Math.PI; else if (dh < -Math.PI) dh += 2 * Math.PI; } const dH = 2 * Math.sqrt(C1p * C2p) * Math.sin(dh / 2), Lb = (L1 + L2) / 2, Cbp = (C1p + C2p) / 2; let hb; if (C1p * C2p === 0) hb = h1 + h2; else hb = (Math.abs(h1 - h2) > Math.PI) ? (h1 + h2 + 2 * Math.PI) / 2 : (h1 + h2) / 2; const T = 1 - 0.17 * Math.cos(hb - 30 * rad) + 0.24 * Math.cos(2 * hb) + 0.32 * Math.cos(3 * hb + 6 * rad) - 0.2 * Math.cos(4 * hb - 63 * rad); const dT = 30 * rad * Math.exp(-Math.pow((hb * (180 / Math.PI) - 275) / 25, 2)), Cbp7 = Math.pow(Cbp, 7), Rc = 2 * Math.sqrt(Cbp7 / (Cbp7 + Math.pow(25, 7))), Sl = 1 + 0.015 * Math.pow(Lb - 50, 2) / Math.sqrt(20 + Math.pow(Lb - 50, 2)), Sc = 1 + 0.045 * Cbp, Sh = 1 + 0.015 * Cbp * T, Rt = -Math.sin(2 * dT) * Rc; return Math.sqrt((dL / Sl) ** 2 + (dC / Sc) ** 2 + (dH / Sh) ** 2 + Rt * (dC / Sc) * (dH / Sh)); }
+function hueName(h) { return (h < 15 || h >= 345) ? 'red' : h < 40 ? 'orange' : h < 65 ? 'yellow' : h < 160 ? 'green' : h < 195 ? 'teal' : h < 255 ? 'blue' : h < 290 ? 'purple' : h < 330 ? 'magenta' : 'red'; }
+function colourName(hex) {
+  const [r, g, b] = hx(hex).map(v => v / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  if (s < 0.12) return l < 0.12 ? 'near-black' : l > 0.88 ? 'near-white' : l < 0.4 ? 'dark grey' : l > 0.66 ? 'light grey' : 'grey';
+  let h; if (mx === r) h = ((g - b) / d) % 6; else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4; h = (h * 60 + 360) % 360;
+  return (l < 0.28 ? 'deep ' : l > 0.74 ? 'pale ' : l < 0.45 ? 'dark ' : '') + hueName(h);
+}
+
+// Union–find over pairs within ΔE ≤ EQUIV_DE ("indistinguishable"). A cheap Euclidean-Lab gate skips
+// obviously-far pairs so we don't run ΔE2000 on all ~3M combinations.
+const EQUIV_DE = 1.0;
+const labs = paints.map(p => toLab(hx(p.hex)));
+const parent = paints.map((_, i) => i);
+const find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+for (let i = 0; i < paints.length; i++) for (let j = i + 1; j < paints.length; j++) {
+  const dl = labs[i][0] - labs[j][0], da = labs[i][1] - labs[j][1], db = labs[i][2] - labs[j][2];
+  if (dl * dl + da * da + db * db > 36) continue;                 // ΔE≤1 ⇒ Euclidean Lab ≪ 6; cheap reject
+  if (dE(labs[i], labs[j]) <= EQUIV_DE) { const ri = find(i), rj = find(j); if (ri !== rj) parent[ri] = rj; }
+}
+const members = new Map();
+for (let i = 0; i < paints.length; i++) { const r = find(i); (members.get(r) || members.set(r, []).get(r)).push(i); }
+const groups = [];
+const labelSeq = {};
+let maxDiameter = 0;
+for (const idxs of members.values()) {
+  if (idxs.length < 2) continue;                                  // singletons aren't a group
+  // representative = member nearest the group's mean Lab
+  const mean = [0, 0, 0]; for (const k of idxs) for (let c = 0; c < 3; c++) mean[c] += labs[k][c] / idxs.length;
+  let rep = idxs[0], repD = Infinity, diam = 0;
+  for (const k of idxs) { const d = dE(labs[k], mean); if (d < repD) { repD = d; rep = k; } }
+  for (let a = 0; a < idxs.length; a++) for (let b = a + 1; b < idxs.length; b++) diam = Math.max(diam, dE(labs[idxs[a]], labs[idxs[b]]));
+  maxDiameter = Math.max(maxDiameter, diam);
+  const label = colourName(paints[rep].hex);
+  const seq = labelSeq[label] = (labelSeq[label] || 0) + 1;
+  const id = `${slug(label)}-${String(seq).padStart(2, '0')}`;
+  groups.push({ id, refHex: paints[rep].hex, label });
+  for (const k of idxs) paints[k].groupId = id;
+}
+groups.sort((a, b) => a.id.localeCompare(b.id));
+console.log(`equivalence groups: ${groups.length} (max group diameter ΔE ${maxDiameter.toFixed(2)})`);
+
 const dataset = {
-  version: '1.2.0',
+  version: '1.3.0',
   generated: CAPTURED,
   license: 'Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.',
   attribution: 'Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.',
-  note: 'Hex is sRGB and approximate; Lab is derived at runtime (CLAUDE.md §5/§7). Finishes (wash/shade/ink/contrast/glaze/effect) are excluded from harmony suggestions at runtime.',
+  note: 'Hex is sRGB and approximate; Lab is derived at runtime (CLAUDE.md §5/§7). Finishes (wash/shade/ink/contrast/glaze/effect) are excluded from harmony suggestions at runtime. groups[] = curated equivalence clusters (paints within ΔE 1.0); paints carry groupId.',
+  groups,
   paints,
 };
 mkdirSync(join(ROOT, 'src', 'data'), { recursive: true });

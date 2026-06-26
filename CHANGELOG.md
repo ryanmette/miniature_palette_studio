@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-06-25
+### Added
+- **Curated equivalence groups (Phase B) — dataset v1.3.0.** The build now auto-seeds cross-brand
+  "same colour" groups: paints within **ΔE 2000 ≤ 1.0** are union-find clustered into `groups[]` (each with
+  a representative hex + basic-colour label), and each member carries a `groupId` (**175 groups, 431 paints**,
+  max group diameter ΔE 2.84). The **Equivalents** tab now leads with "Interchangeable — same colour (N paints
+  across M brands)" before the closest-by-ΔE matches. Finishes/effects remain fully browsable + ownable in the
+  picker and Shelf (only excluded from harmony *suggestions*).
+
 ## [1.3.0] - 2026-06-25
 The **data release**: 8 brands / 2,508 paints, finish-aware suggestions, faster matcher, and a service-worker fix.
 ### Fixed

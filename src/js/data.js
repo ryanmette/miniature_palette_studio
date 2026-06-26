@@ -19,7 +19,20 @@ export function matchQuality(dE) {
  */
 export function indexDataset(dataset) {
   const paints = dataset.paints.map(p => ({ ...p, lab: hexToLab(p.hex) }));
-  return { ...dataset, paints, byId: new Map(paints.map(p => [p.id, p])) };
+  const byGroup = new Map();
+  for (const p of paints) if (p.groupId) { let g = byGroup.get(p.groupId); if (!g) byGroup.set(p.groupId, g = []); g.push(p); }
+  return { ...dataset, paints, byId: new Map(paints.map(p => [p.id, p])), byGroup };
+}
+
+/** Other paints in the same curated equivalence group (cross-brand "same colour", ΔE ≤ 1); [] if ungrouped. */
+export function groupMembers(indexed, paint) {
+  if (!paint || !paint.groupId || !indexed.byGroup) return [];
+  return (indexed.byGroup.get(paint.groupId) || []).filter(p => p.id !== paint.id);
+}
+/** The curated group's metadata ({id, refHex, label}) for a paint, or null. */
+export function groupOf(indexed, paint) {
+  if (!paint || !paint.groupId) return null;
+  return (indexed.groups || []).find(g => g.id === paint.groupId) || null;
 }
 
 /**

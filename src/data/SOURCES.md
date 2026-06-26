@@ -1,4 +1,4 @@
-# Data sources & attribution — dataset v1.2.0
+# Data sources & attribution — dataset v1.3.0
 
 Provenance for `src/data/paints.json` (built `2026-06-25`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
@@ -51,7 +51,10 @@ opt-in via a Plan-tab toggle. `metal` is the Metal role. Citadel's **Technical**
 - Built by [`scripts/build-dataset.mjs`](../../scripts/build-dataset.mjs): stage the raw brand markdown
   from the source repo into `.cache/raw/`, then `node scripts/build-dataset.mjs`.
 - All rows are `approx: true` (community-sourced). `lab` is derived at runtime, never stored.
-- Cross-brand equivalents are computed at runtime by ΔE 2000 (curated equivalence groups are a planned layer).
+- **Curated equivalence groups** are auto-seeded at build time: paints within **ΔE 2000 ≤ 1.0** ("indistinguishable")
+  are union-find clustered into `groups[]` (each with a representative `refHex` + a basic-colour `label`), and every
+  member paint carries a `groupId`. v1.3.0: **175 groups, 431 paints** (max group diameter ΔE 2.84). Surfaced in the
+  Equivalents tab; the *closest other-brand* matches are still computed at runtime by ΔE 2000.
 - QA: [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs) — **hard checks PASS** (valid sRGB hex,
   required fields, unique ids, allowed types). Soft flags (reviewed, accepted): cross-brand near-duplicates
   (whites/blacks/greys genuinely match across brands) and thematic name/hue mismatches.
@@ -59,4 +62,4 @@ opt-in via a Plan-tab toggle. `metal` is the Metal role. Citadel's **Technical**
 ## Re-verification cadence
 
 Revisit on manufacturer range changes and at least annually; `captured` dates make staleness visible
-(`CLAUDE.md` §8, dataset SemVer). Planned next: curated equivalence groups (+ `groupId`), per-brand confidence.
+(`CLAUDE.md` §8, dataset SemVer). Planned next: per-brand confidence; manual curation of the auto-seeded groups.
