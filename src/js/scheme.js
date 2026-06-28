@@ -72,8 +72,10 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
       if (match) {
         shared = true;
         differentiate = adjustDirection(match.paint.hex, d.idealHex) || 'darken or lighten to separate';
-        // nearest DISTINCT paint to buy — search the full catalogue (drop owned/boost filters, keep finishes out)
-        buy = nearestPaint(idx, d.idealHex, { excludeTypes: opts.excludeTypes, excludeIds: usedIds });
+        // nearest DISTINCT paint to buy — search the full catalogue (drop owned/boost filters). A metal role
+        // keeps its metal-type filter so the buy is a real metallic; colour roles just keep finishes out.
+        const buyOpts = d.metal ? { types: new Set(['metal']) } : { excludeTypes: opts.excludeTypes };
+        buy = nearestPaint(idx, d.idealHex, { ...buyOpts, excludeIds: usedIds });
       }
     }
     if (match) usedIds.add(match.paint.id);

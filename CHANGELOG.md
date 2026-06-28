@@ -6,6 +6,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-06-26
+### Changed
+- **Shared-paint "buy" is now a clickable `+ buy`.** When a limited collection forces a role to reuse
+  another role's paint, the suggested distinct paint to buy is an actual to-buy toggle (adds it to your
+  list / Export) instead of plain text.
+- **A shared Metal role's buy stays metallic.** The Metal role's buy suggestion now keeps the metal-type
+  filter, so it never suggests a flat colour to replace a metal.
+
 ## [1.5.0] - 2026-06-26
 ### Added
 - **Finish icons + finish-aware swatch overlays.** Non-flat paints now carry a small finish pill (metallic /

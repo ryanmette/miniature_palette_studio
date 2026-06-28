@@ -72,6 +72,7 @@ test('distinct role assignment: a tiny owned pool flags reuse as shared + offers
   for (const r of shared) {
     assert.equal(typeof r.differentiate, 'string');
     assert.ok(r.buy && r.buy.paint.id !== r.match.paint.id);  // a distinct paint to buy (full catalogue)
+    if (r.role === 'Metal') assert.equal(r.buy.paint.type, 'metal');  // metal role's buy stays a metallic
   }
 });
 

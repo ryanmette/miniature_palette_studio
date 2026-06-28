@@ -195,7 +195,7 @@ export function roleSlots(scheme, markOf) {
   // When a limited collection forces two roles onto the same paint, say so + how to separate / what to buy.
   const sharedNote = r => r.shared
     ? `<div class="sharednote"><span class="warnpill">shared paint</span> reused for another role — ${esc(r.differentiate)} to separate`
-      + (r.buy ? `, or buy <strong>${esc(r.buy.paint.name)}</strong> <span class="br">(${esc(r.buy.paint.brand)} · ΔE ${r.buy.deltaE.toFixed(1)})</span>` : '') + `.</div>`
+      + (r.buy ? `, or buy <strong>${esc(r.buy.paint.name)}</strong> <span class="br">(${esc(r.buy.paint.brand)} · ΔE ${r.buy.deltaE.toFixed(1)})</span> ${buyBtn(r.buy.paint.id, markOf ? markOf(r.buy.paint.id) : 'none')}` : '') + `.</div>`
     : '';
   return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}">`
     + `<div class="shead"><span class="role">${esc(r.role)}</span><span class="wt">${esc(r.weight)}</span></div>`
