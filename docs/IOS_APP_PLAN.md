@@ -98,6 +98,22 @@ The point: **native is the destination, reached by a ratchet rather than a rewri
 reuses the last, and you only advance when the previous stage has proven the demand. This gets you to
 a native app without a big speculative native build before there's evidence anyone wants it.
 
+### 4a. Capacitor scaffold (stage-1 starting point — in repo, not yet built)
+`capacitor.config.json` is committed (`appId com.ryanmette.palettestudio`, `webDir: "src"` — no build
+step, so Capacitor wraps `src/` directly). Building the actual app needs the native toolchain (Node +
+Xcode) and is **not** doable from the web repo. When you're ready on a Mac with Xcode:
+
+```bash
+npm i -D @capacitor/cli @capacitor/core @capacitor/ios
+npx cap add ios          # reads capacitor.config.json → creates ios/ native project
+npx cap sync             # copies src/ into the native shell
+npx cap open ios         # opens Xcode to build/run/submit
+```
+Add native plugins as features land — `@capacitor/camera` (eyedropper from a live photo),
+`@capacitor/share` (the Web Share API already used falls through to the native sheet),
+`@capacitor/haptics`. The pure engine + `store.js` + dataset carry over unchanged (§3). Keep the npm
+Capacitor deps **dev-only** — they never enter the web runtime, so §6's no-runtime-dependency rule holds.
+
 ---
 
 ## 5. Mobile-specific scope (new vs. web)

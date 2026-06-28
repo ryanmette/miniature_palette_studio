@@ -172,6 +172,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── SECURITY.md                ← security policy (static/no-backend scope; private vuln reporting)
 ├── CHANGELOG.md               ← Keep a Changelog format
 ├── package.json               ← dev config (ESM + npm scripts) — NOT shipped
+├── capacitor.config.json      ← v2 native-wrap scaffold (webDir=src); built with Xcode later, not from this repo (IOS_APP_PLAN §4a)
 ├── docs/
 │   ├── PLAN.md                ← roadmap, milestones, decisions
 │   ├── USE_CASES.md           ← personas, entry modes, scheme roles, UC catalog
@@ -201,6 +202,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)
     ├── assets/fonts/          ← self-hosted Inter + Space Grotesk woff2 (latin) — no external font requests
+    ├── assets/icons/ · assets/art/  ← designer asset library (SVG source; READMEs) — swappable without touching logic
     ├── js/color.js            ← pure color math (see §7). No DOM. (M2)
     ├── js/data.js             ← load + index dataset, nearest-paint search (M2)
     ├── js/harmony.js          ← harmony generation (see §7) (M2)
