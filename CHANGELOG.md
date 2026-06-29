@@ -5,6 +5,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- **Settings theme toggle painted itself in the wrong palette.** The Theme control's buttons used a
+  `data-theme="light"`/`"dark"` attribute, which collided with the global `[data-theme="…"]` token
+  selectors (tokens.css) — each button re-scoped the *entire* colour palette to its own theme, so in
+  dark mode the "Light" button rendered with light-theme tokens (lavender text / white selected pill)
+  regardless of the active theme. Renamed the attribute to `data-set-theme` so the buttons follow the
+  active theme like every other control (CLAUDE.md §3: never style a component differently per theme).
+
 ### Added
 - **Tests for `store.js` (the persistence chokepoint).** Covers owned/to-buy mutual exclusivity,
   `localStorage` persistence + read-back, defensive coercion of corrupt data, pre-v1 legacy migration

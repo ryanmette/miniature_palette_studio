@@ -569,7 +569,7 @@ function setTheme(t) {
   document.documentElement.dataset.theme = state.theme;
   store.setPref('theme', state.theme);
   const seg = document.querySelector('#themeSeg');   // keep the settings-menu theme control in sync
-  if (seg) for (const x of seg.children) x.setAttribute('aria-pressed', String(x.dataset.theme === state.theme));
+  if (seg) for (const x of seg.children) x.setAttribute('aria-pressed', String(x.dataset.setTheme === state.theme));
 }
 function syncLocaleSeg() {                            // reflect the active locale in the settings-menu control
   const cur = i18n.getLocale(), seg = $('#localeSeg');
@@ -839,7 +839,7 @@ function wire() {
   };
   const closeSettings = () => { sMenu.hidden = true; sBtn.setAttribute('aria-expanded', 'false'); };
   sBtn.addEventListener('click', e => { e.stopPropagation(); sMenu.hidden ? openSettings() : closeSettings(); });
-  $('#themeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.theme); wheelDraw(); updateUrl(); });
+  $('#themeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.setTheme); wheelDraw(); updateUrl(); });
   $('#localeSeg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
