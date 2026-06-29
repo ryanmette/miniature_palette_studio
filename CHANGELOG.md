@@ -15,6 +15,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   single page column ≤860px. Amends CLAUDE.md §3.6. No JS/behaviour change — markup + CSS only.
 
 ### Fixed
+- **Reorder added swatches by keyboard & touch.** The drag-reorder added this cycle was mouse-only —
+  HTML5 drag-and-drop doesn't fire on touch and has no keyboard path, which broke the "every interaction
+  has a keyboard + screen-reader path" rule (§3.5) and silently didn't work on phones. Each added swatch
+  now has **◂/▸ move buttons** (focusable + tappable, disabled at the ends); native drag stays as a
+  mouse-only enhancement.
 - **Photo eyedropper now locks the colour on click.** Previously the sampled colour kept tracking the
   cursor on hover, so by the time you moved to "Use as base colour" the committed colour had drifted to
   wherever the pointer left the canvas. A click/tap (or a held drag) now *commits* the colour; plain

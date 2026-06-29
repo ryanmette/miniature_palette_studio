@@ -241,6 +241,7 @@ export function equivalentsPanel(name, equivs, markOf) {
 export function livePalette(vm, fill) {
   if (!vm.length) return '';
   const real = fill === 'real';
+  const freeCount = vm.filter(c => c.kind === 'free').length;   // added swatches are the reorderable ones
   return `<div class="livepal">${vm.map(c => {
     const bg = safeColor(real && c.match ? c.match.paint.hex : c.hex);   // hex label + copy follow the fill
     const t = textOn(bg), m = c.match;
@@ -253,6 +254,7 @@ export function livePalette(vm, fill) {
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
     const isBase = c.kind === 'base', isFree = c.kind === 'free';
+    const fi = isFree ? +c.id.slice(1) : -1;                                     // index among the added swatches
     const sw = isBase ? 'base' : isFree ? 'x:' + c.id.slice(1) : 'p:' + c.deg;   // addressable swatch key
     const canDetach = isFree || (c.kind === 'partner' && c.detachable);          // value-harmony partners can't be pinned uniquely
     const cHex = safeColor(c.hex);                         // the swatch's own (ideal) colour — what "use as base"/edit start from
@@ -263,6 +265,8 @@ export function livePalette(vm, fill) {
       + `<div class="lcact">`
       +   ((isBase || canDetach) ? `<button type="button" class="lcbtn" data-edit="${sw}" title="Edit colour" aria-label="Edit ${esc(tag)} colour">✎</button>` : '')
       +   (canDetach ? `<button type="button" class="lcbtn${lockOn ? ' on' : ''}" data-lock="${sw}" title="${lockOn ? 'Unlock' : 'Lock'} colour" aria-label="${lockOn ? 'Unlock' : 'Lock'} ${esc(tag)}" aria-pressed="${lockOn}">${lockOn ? '🔒' : '🔓'}</button>` : '')
+      +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:-1"${fi === 0 ? ' disabled' : ''} title="Move earlier" aria-label="Move ${esc(tag)} earlier">◂</button>` : '')
+      +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:1"${fi === freeCount - 1 ? ' disabled' : ''} title="Move later" aria-label="Move ${esc(tag)} later">▸</button>` : '')
       +   `<button type="button" class="lcbtn" data-setbase="${cHex}" title="Use as base colour" aria-label="Use ${esc(tag)} as the base colour">◎</button>`
       +   (isFree ? `<button type="button" class="lcbtn" data-delnode="${c.id.slice(1)}" title="Remove this colour" aria-label="Remove ${esc(tag)}">✕</button>` : '')
       + `</div>`
