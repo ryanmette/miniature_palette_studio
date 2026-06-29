@@ -190,6 +190,10 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── style-directions.html  ← 5-way visual-direction exploration
 │   ├── quick-complement.html  ← P5 "quick complement" mode mock
 │   ├── persona-flows.html     ← end-to-end experience-flow storyboard
+│   ├── studio-layouts.html    ← 5-way Studio layout exploration (scroll-reduction) + judge ranking
+│   ├── layouts/               ← the 5 standalone layout mocks embedded by studio-layouts.html
+│   │   ├── split-sticky-studio.html · cockpit-3col.html · instrument-band.html
+│   │   └── bento-dashboard.html · sticky-studio-rail.html
 │   └── loaders/
 │       ├── MOLTEN_HARMONICS.md ← loader philosophy (see §3.4)
 │       └── loader.html        ← determinate loader (drop → wheel → wells)

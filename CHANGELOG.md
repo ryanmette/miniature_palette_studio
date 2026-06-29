@@ -23,6 +23,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   active theme like every other control (CLAUDE.md §3: never style a component differently per theme).
 
 ### Added
+- **Studio layout explorations (mockups, not shipped).** `mockups/studio-layouts.html` — a 5-way
+  exploration of scroll-reducing Studio arrangements (split + sticky studio · 3-column cockpit ·
+  instrument band · bento dashboard · sticky studio + section rail), each a standalone on-token mock
+  under `mockups/layouts/`, with a 3-lens design-review ranking and a recommendation. Aimed at the
+  "have to scroll to reach the role plan" complaint; nothing here is wired up yet.
 - **Tests for `store.js` (the persistence chokepoint).** Covers owned/to-buy mutual exclusivity,
   `localStorage` persistence + read-back, defensive coercion of corrupt data, pre-v1 legacy migration
   (`ps-owned`/`ps-theme`), and the JSON export/import round-trip — closing a previously untested module.

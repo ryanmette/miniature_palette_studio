@@ -1,0 +1,377 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Palette Studio</title><style>
+:root{
+--bg:#FBFBFE;--surface:#FFFFFF;--surface-2:#F1F2FF;--border:#E6E7F8;--border-strong:#D3D5F0;
+--text:#20223A;--text-muted:#6E7293;--text-faint:#A2A6C4;
+--accent:#7C3AED;--accent-weak:#F0EAFE;--on-accent:#FFFFFF;--buy:#2563EB;--buy-weak:#DBEAFE;--on-buy:#FFFFFF;
+--success:#16A34A;--success-weak:#DCFCE7;--warning:#C2740B;--warning-weak:#FBEBD3;--danger:#DC2647;--danger-weak:#FCE4EA;
+--shadow:0 1px 2px rgba(60,50,120,.06),0 6px 18px rgba(60,50,120,.05);
+--r-card:14px;--r-ctrl:10px;--r-pill:999px;--tap:38px;
+--display:"Space Grotesk","Inter",system-ui,sans-serif;--ui:"Inter",system-ui,sans-serif;--mono:ui-monospace,Menlo,monospace;}
+[data-theme="dark"]{--bg:#141110;--surface:#1C1815;--surface-2:#251F1A;--border:#3A302A;--border-strong:#4D4138;
+--text:#ECE3D8;--text-muted:#A8998A;--text-faint:#7C6F62;--accent:#C2912F;--accent-weak:#2C2113;--on-accent:#15100A;
+--buy:#5E93C9;--buy-weak:#16242F;--on-buy:#0E1620;--success:#86A559;--success-weak:#232A16;--warning:#C9923A;--warning-weak:#2E2412;--danger:#D2563F;--danger-weak:#2E1A14;--shadow:0 1px 2px rgba(0,0,0,.45);}
+*{box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:var(--ui);margin:0;font-size:14px}
+
+h1,h2,h3{font-family:var(--display);margin:0;font-weight:600}
+button{font-family:var(--ui);cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono)}
+.muted{color:var(--text-muted)}
+.faint{color:var(--text-faint)}
+
+/* ---- shared atoms ---- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);box-shadow:var(--shadow)}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:var(--r-ctrl);padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--text-muted);border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:500;min-height:var(--tap)}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(60,50,120,.08)}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--r-ctrl);padding:0 14px;height:var(--tap);font-weight:500;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--text-muted)}
+.sw{width:44px;height:44px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);flex:none}
+.badge{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:5px;background:var(--surface-2);color:var(--text-muted);white-space:nowrap}
+.badge.ok{background:var(--success-weak);color:var(--success)}
+.badge.warn{background:var(--warning-weak);color:var(--warning)}
+.badge.bad{background:var(--danger-weak);color:var(--danger)}
+.tag{font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);background:var(--surface-2);padding:2px 7px;border-radius:var(--r-pill)}
+.tile-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.tile-h h3{font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--text-faint);font-family:var(--ui);font-weight:600}
+.tile-h .exp{font-size:11px;color:var(--text-muted);background:var(--surface-2);border:0;border-radius:var(--r-pill);padding:3px 9px}
+
+/* ---- shell ---- */
+.app{max-width:1280px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px;min-height:100vh}
+header.bar{display:flex;align-items:center;gap:16px;padding:10px 14px}
+.logo{width:30px;height:30px;border-radius:9px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:16px}
+.word{font-family:var(--display);font-weight:600;font-size:16px}
+header .spacer{flex:1}
+.iconbtn{width:var(--tap);height:var(--tap);border-radius:var(--r-ctrl);border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-size:18px;line-height:1}
+
+/* ---- the bento grid ---- */
+.bento{display:grid;gap:16px;
+  grid-template-columns:248px 1fr 1fr 360px;
+  grid-template-rows:auto auto auto;
+  grid-template-areas:
+    "picker seed   seed   plan"
+    "picker hero   live   plan"
+    "picker wheel  live   plan";}
+.t-picker{grid-area:picker}
+.t-seed{grid-area:seed}
+.t-hero{grid-area:hero}
+.t-wheel{grid-area:wheel}
+.t-live{grid-area:live}
+.t-plan{grid-area:plan}
+.tile{padding:16px;display:flex;flex-direction:column;min-width:0}
+
+/* ---- picker ---- */
+.t-picker .field{width:100%;height:var(--tap);border:1px solid var(--border);border-radius:var(--r-ctrl);background:var(--surface-2);padding:0 10px;font-size:13px;color:var(--text)}
+.selrow{display:flex;gap:8px;margin:8px 0}
+.selrow select{flex:1;min-width:0;height:34px;border:1px solid var(--border);border-radius:var(--r-ctrl);background:var(--surface);color:var(--text);font-size:12px;padding:0 6px}
+.plist{flex:1;overflow:auto;margin:4px -6px 8px;border-radius:var(--r-ctrl);max-height:330px}
+.prow{display:flex;align-items:center;gap:10px;padding:6px 6px;border-radius:8px}
+.prow:hover{background:var(--surface-2)}
+.prow.sel{background:var(--accent-weak)}
+.prow .sw{width:30px;height:30px}
+.prow .nm{font-size:12.5px;font-weight:500;line-height:1.2}
+.prow .br{font-size:11px;color:var(--text-muted)}
+.count{font-size:11.5px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:8px}
+
+/* ---- seed bar ---- */
+.t-seed{flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px}
+.hexfield{display:flex;align-items:center;gap:8px;border:1px solid var(--border-strong);border-radius:var(--r-ctrl);padding:0 10px;height:var(--tap);background:var(--surface)}
+.hexfield .dot{width:20px;height:20px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.hexfield input{border:0;background:transparent;font-family:var(--mono);font-size:14px;color:var(--text);width:96px}
+.seedspace{flex:1}
+
+/* ---- hero ---- */
+.hero-row{display:flex;gap:16px;align-items:center}
+.hero-sw{width:84px;height:84px;border-radius:var(--r-ctrl);box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);flex:none}
+.hero-meta h2{font-size:20px;margin-bottom:2px}
+.hero-tags{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
+
+/* ---- wheel ---- */
+.wheel-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.wheel{width:208px;height:208px;border-radius:50%;background:conic-gradient(from 90deg,#ff0000,#ff00ff,#0000ff,#00ffff,#00ff00,#ffff00,#ff0000);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);position:relative;flex:none}
+.node{position:absolute;width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.4);transform:translate(-50%,-50%)}
+.wheel-ctrls{display:flex;align-items:center;gap:10px;width:100%;justify-content:center}
+.slider{flex:1;max-width:140px;height:6px;border-radius:var(--r-pill);background:linear-gradient(90deg,#000,#F9DF1C,#fff)}
+
+/* ---- live palette ---- */
+.live-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.live-top .right{display:flex;gap:8px;align-items:center}
+.stepbtn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:16px;line-height:1}
+.pal{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.pcol{flex:1;min-width:92px;display:flex;flex-direction:column;gap:4px}
+.pblock{height:72px;border-radius:var(--r-ctrl);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);position:relative}
+.angle{position:absolute;top:5px;left:6px;font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.82);color:#20223A;padding:0 4px;border-radius:4px}
+.pcol .hx{font-family:var(--mono);font-size:11px;color:var(--text-muted)}
+.pcol .pn{font-size:11.5px;font-weight:500;line-height:1.15}
+
+/* ---- plan tile ---- */
+.t-plan .ptabs{margin-bottom:12px}
+.roles{display:flex;flex-direction:column;gap:10px}
+.role{border:1px solid var(--border);border-radius:var(--r-ctrl);padding:10px;background:var(--surface)}
+.role .rh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.role .rh .nm{font-weight:600;font-size:13px}
+.role .rh .pct{font-size:11px;color:var(--text-muted)}
+.iva{display:flex;align-items:center;gap:8px}
+.iva .sw{width:34px;height:34px}
+.arrow{color:var(--text-faint);font-size:14px}
+.iva .info{min-width:0;flex:1}
+.iva .info .pn{font-size:12.5px;font-weight:500;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iva .info .br{font-size:11px;color:var(--text-muted)}
+.ladder{display:flex;gap:6px;margin-top:8px;align-items:center}
+.ladder .lab{font-size:10px;color:var(--text-faint);width:54px;flex:none}
+.ladder .chips{display:flex;gap:6px;flex:1}
+.lchip{flex:1;height:22px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);position:relative}
+.lchip span{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:9px;color:rgba(0,0,0,.55);font-weight:600}
+.plan-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* ---- peek tiles row ---- */
+.peeks{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.peek{padding:14px}
+.peek .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.peek .ph h3{font-size:13px;font-family:var(--ui);font-weight:600;color:var(--text)}
+.equiv-rows{display:flex;flex-direction:column;gap:6px}
+.equiv{display:flex;align-items:center;gap:8px}
+.equiv .sw{width:26px;height:26px}
+.equiv .nm{font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cvd{display:flex;gap:8px;flex-wrap:wrap}
+.cvd .col{flex:1;min-width:78px}
+.cvd .lab{font-size:11px;color:var(--text-muted);margin-bottom:4px}
+.cvd .strip{display:flex;height:24px;border-radius:6px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.cvd .strip i{flex:1}
+.contrast{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+/* ---- finish bar ---- */
+.finish{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:12px 16px}
+.finish .lead{margin-right:auto;font-size:12px;color:var(--text-muted)}
+
+/* ============ responsive ============ */
+@media (max-width:860px){
+  .bento{grid-template-columns:1fr;grid-template-rows:none;
+    grid-template-areas:"picker" "seed" "hero" "wheel" "live" "plan";}
+  .plist{max-height:240px}
+  .wheel{width:240px;height:240px}
+}
+@media (max-width:520px){
+  :root{--tap:44px}
+  .app{padding:8px;gap:12px}
+  .tile{padding:12px}
+  .t-seed{padding:12px}
+  .hexfield input{width:100%}
+  .hexfield{flex:1 1 100%}
+  .seedspace{display:none}
+  .hero-row{flex-direction:column;align-items:flex-start}
+  .iva{flex-wrap:wrap}
+  .peeks{grid-template-columns:1fr}
+  .finish{flex-wrap:wrap}
+  .finish .btn{flex:1}
+}
+</style></head><body>
+<div class="app">
+
+  <header class="bar card">
+    <div class="logo">P</div>
+    <div class="word">Palette Studio <span class="muted" style="font-weight:400">for miniatures</span></div>
+    <div class="spacer"></div>
+    <div class="seg" role="tablist" aria-label="Mode">
+      <button class="on" aria-selected="true">Studio</button>
+      <button aria-selected="false">Shelf</button>
+    </div>
+    <button class="iconbtn" aria-label="Settings">&#8943;</button>
+  </header>
+
+  <main class="bento">
+
+    <!-- PICKER -->
+    <section class="t-picker tile card" aria-label="Paint picker">
+      <input class="field" type="search" placeholder="Search paints&hellip;" aria-label="Search paints">
+      <div class="selrow">
+        <select aria-label="Brand"><option>All brands</option><option>Citadel</option><option>Army Painter</option></select>
+        <select aria-label="Type"><option>All types</option><option>Layer</option><option>Metal</option></select>
+        <select aria-label="Sort"><option>By hue</option><option>A&ndash;Z</option></select>
+      </div>
+      <div class="plist" role="listbox" aria-label="Paints">
+        <div class="prow sel" role="option" aria-selected="true"><span class="sw" style="background:#9A1115"></span><div><div class="nm">Mephiston Red</div><div class="br">Citadel &middot; Base</div></div></div>
+        <div class="prow" role="option"><span class="sw" style="background:#C8161D"></span><div><div class="nm">Evil Sunz Scarlet</div><div class="br">Citadel &middot; Layer</div></div></div>
+        <div class="prow" role="option"><span class="sw" style="background:#1F3A6E"></span><div><div class="nm">Macragge Blue</div><div class="br">Citadel &middot; Base</div></div></div>
+        <div class="prow" role="option"><span class="sw" style="background:#1C7A4D"></span><div><div class="nm">Sotek Green</div><div class="br">Citadel &middot; Layer</div></div></div>
+        <div class="prow" role="option"><span class="sw" style="background:#B8860B"></span><div><div class="nm">Auric Armour Gold</div><div class="br">Army Painter &middot; D&amp;D</div></div></div>
+        <div class="prow" role="option"><span class="sw" style="background:#9FA7AD"></span><div><div class="nm">Runefang Steel</div><div class="br">Citadel &middot; Layer</div></div></div>
+        <div class="prow" role="option"><span class="sw" style="background:#F2C200"></span><div><div class="nm">Averland Sunset</div><div class="br">Citadel &middot; Base</div></div></div>
+        <div class="prow" role="option"><span class="sw" style="background:#5B3A8C"></span><div><div class="nm">Naggaroth Night</div><div class="br">Citadel &middot; Base</div></div></div>
+      </div>
+      <div class="count">2508 of 2508 paints &middot; 77 owned</div>
+    </section>
+
+    <!-- SEED BAR -->
+    <section class="t-seed tile card" aria-label="Seed colour">
+      <div class="hexfield"><span class="dot" style="background:#F9DF1C"></span><span class="faint">#</span><input value="F9DF1C" aria-label="Hex colour"></div>
+      <div class="seg" aria-label="Seed role">
+        <button class="on">Main</button>
+        <button>Accent</button>
+      </div>
+      <button class="btn">&#9673; From photo</button>
+      <div class="seedspace"></div>
+      <button class="btn">&#8646; Compare</button>
+    </section>
+
+    <!-- BASE HERO -->
+    <section class="t-hero tile card" aria-label="Base colour">
+      <div class="hero-row">
+        <div class="hero-sw" style="background:#F9DF1C"></div>
+        <div class="hero-meta">
+          <h2>Custom #F9DF1C</h2>
+          <div class="muted" style="font-size:12.5px">typed hex</div>
+          <div class="hero-tags">
+            <span class="tag">custom</span>
+            <span class="mono muted">#F9DF1C</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHEEL -->
+    <section class="t-wheel tile card" aria-label="Harmony wheel">
+      <div class="tile-h"><h3>Wheel</h3><button class="exp">Tetradic</button></div>
+      <div class="wheel-wrap">
+        <div class="wheel" role="img" aria-label="Colour wheel with draggable harmony nodes">
+          <span class="node" style="background:#F9DF1C;top:12%;left:62%"></span>
+          <span class="node" style="background:#1CC0F9;top:50%;left:8%"></span>
+          <span class="node" style="background:#7C1CF9;top:80%;left:42%"></span>
+          <span class="node" style="background:#F91C8B;top:46%;left:92%"></span>
+        </div>
+        <div class="wheel-ctrls">
+          <span class="faint" style="font-size:11px">Light</span>
+          <span class="slider" role="slider" aria-label="Lightness" aria-valuenow="62"></span>
+          <button class="btn ghost">&#10227; Shuffle</button>
+        </div>
+        <div class="seg" aria-label="Harmony type" style="flex-wrap:wrap;justify-content:center">
+          <button>Comp</button><button>Analog</button><button>Triad</button><button>Split</button><button class="on">Tetradic</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE PALETTE -->
+    <section class="t-live tile card" aria-label="Live palette">
+      <div class="live-top">
+        <div class="tile-h" style="margin:0"><h3>Live palette</h3></div>
+        <div class="right">
+          <div class="seg" aria-label="Ideal or real"><button class="on">Ideal</button><button>Real</button></div>
+          <button class="stepbtn" aria-label="Fewer colours">&minus;</button>
+          <button class="stepbtn" aria-label="More colours">+</button>
+        </div>
+      </div>
+      <div class="pal">
+        <div class="pcol"><div class="pblock" style="background:#F9DF1C"><span class="angle">base</span></div><div class="hx">#F9DF1C</div><div class="pn">Averland Sunset</div><span class="badge ok">&Delta;E 1.2&middot;Excellent</span></div>
+        <div class="pcol"><div class="pblock" style="background:#1CC0F9"><span class="angle">+60</span></div><div class="hx">#1CC0F9</div><div class="pn">Temple Guard Blue</div><span class="badge ok">&Delta;E 2.1&middot;Good</span></div>
+        <div class="pcol"><div class="pblock" style="background:#7C1CF9"><span class="angle">+120</span></div><div class="hx">#7C1CF9</div><div class="pn">Xereus Purple</div><span class="badge warn">&Delta;E 4.6&middot;Fair</span></div>
+        <div class="pcol"><div class="pblock" style="background:#1C3AF9"><span class="angle">+180</span></div><div class="hx">#1C3AF9</div><div class="pn">Macragge Blue</div><span class="badge ok">&Delta;E 3.0&middot;Good</span></div>
+        <div class="pcol"><div class="pblock" style="background:#F91C8B"><span class="angle">+240</span></div><div class="hx">#F91C8B</div><div class="pn">Pink Horror</div><span class="badge warn">&Delta;E 5.4&middot;Loose</span></div>
+        <div class="pcol"><div class="pblock" style="background:#1CF96A"><span class="angle">+300</span></div><div class="hx">#1CF96A</div><div class="pn">Sotek Green</div><span class="badge ok">&Delta;E 2.8&middot;Good</span></div>
+        <div class="pcol"><div class="pblock" style="background:#F97A1C"><span class="angle">+30</span></div><div class="hx">#F97A1C</div><div class="pn">Troll Slayer Orange</div><span class="badge bad">&Delta;E 11&middot;Poor</span></div>
+      </div>
+    </section>
+
+    <!-- PLAN -->
+    <section class="t-plan tile card" aria-label="Plan and roles">
+      <div class="tile-h"><h3>Plan &middot; roles</h3><button class="exp">Focus</button></div>
+      <div class="seg ptabs" role="tablist" aria-label="Output">
+        <button class="on" aria-selected="true">Plan &middot; roles</button>
+        <button aria-selected="false">Equivalents</button>
+        <button aria-selected="false">Accessibility</button>
+      </div>
+      <div class="roles">
+        <div class="role">
+          <div class="rh"><span class="nm">Primary</span><span class="pct">~60%</span></div>
+          <div class="iva">
+            <span class="sw" style="background:#F9DF1C"></span><span class="arrow">&rarr;</span>
+            <span class="sw" style="background:#F2C200"></span>
+            <div class="info"><div class="pn">Averland Sunset</div><div class="br">Citadel &middot; Base</div></div>
+            <span class="badge ok">&Delta;E 1.2</span>
+          </div>
+          <div class="ladder"><span class="lab">wash&middot;base&middot;hi</span><div class="chips">
+            <div class="lchip" style="background:#7A5A00"><span>wash</span></div>
+            <div class="lchip" style="background:#F2C200"><span>base</span></div>
+            <div class="lchip" style="background:#FFF0A6"><span>hi</span></div>
+          </div></div>
+        </div>
+        <div class="role">
+          <div class="rh"><span class="nm">Secondary</span><span class="pct">~30%</span></div>
+          <div class="iva">
+            <span class="sw" style="background:#1C3AF9"></span><span class="arrow">&rarr;</span>
+            <span class="sw" style="background:#1F3A6E"></span>
+            <div class="info"><div class="pn">Macragge Blue</div><div class="br">Citadel &middot; Base</div></div>
+            <span class="badge ok">&Delta;E 3.0</span>
+          </div>
+          <div class="ladder"><span class="lab">wash&middot;base&middot;hi</span><div class="chips">
+            <div class="lchip" style="background:#0F1E3A"><span>wash</span></div>
+            <div class="lchip" style="background:#1F3A6E"><span>base</span></div>
+            <div class="lchip" style="background:#5C7FC2"><span>hi</span></div>
+          </div></div>
+        </div>
+        <div class="role">
+          <div class="rh"><span class="nm">Accent</span><span class="pct">~10%</span></div>
+          <div class="iva">
+            <span class="sw" style="background:#F91C8B"></span><span class="arrow">&rarr;</span>
+            <span class="sw" style="background:#C8161D"></span>
+            <div class="info"><div class="pn">Evil Sunz Scarlet</div><div class="br">Citadel &middot; Layer</div></div>
+            <span class="badge warn">&Delta;E 5.4</span>
+          </div>
+          <div class="ladder"><span class="lab">wash&middot;base&middot;hi</span><div class="chips">
+            <div class="lchip" style="background:#6E0A0E"><span>wash</span></div>
+            <div class="lchip" style="background:#C8161D"><span>base</span></div>
+            <div class="lchip" style="background:#F26A6E"><span>hi</span></div>
+          </div></div>
+        </div>
+        <div class="role">
+          <div class="rh"><span class="nm">Metal</span><span class="pct">spot</span></div>
+          <div class="iva">
+            <span class="sw" style="background:#B8860B"></span><span class="arrow">&rarr;</span>
+            <span class="sw" style="background:#B8860B"></span>
+            <div class="info"><div class="pn">Auric Armour Gold</div><div class="br">Army Painter &middot; D&amp;D</div></div>
+            <span class="badge ok">&Delta;E 1.9</span>
+          </div>
+        </div>
+      </div>
+      <div class="plan-foot">
+        <div class="seg" aria-label="Tone ladder"><button class="on">Tone ladder</button><button>Off</button></div>
+        <button class="btn ghost">&#9673; Use my collection</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PEEK TILES -->
+  <div class="peeks">
+    <section class="peek card" aria-label="Equivalents">
+      <div class="ph"><h3>Equivalents</h3><button class="exp">Open</button></div>
+      <div class="equiv-rows">
+        <div class="equiv"><span class="sw" style="background:#F2C200"></span><span class="nm">Averland Sunset &middot; Citadel</span><span class="badge ok">&Delta;E 0.0</span></div>
+        <div class="equiv"><span class="sw" style="background:#F4C518"></span><span class="nm">Daemonic Yellow &middot; Army Painter</span><span class="badge ok">&Delta;E 1.4</span></div>
+        <div class="equiv"><span class="sw" style="background:#EDC21A"></span><span class="nm">Sun Yellow &middot; Vallejo</span><span class="badge ok">&Delta;E 2.6</span></div>
+        <div class="equiv"><span class="sw" style="background:#F0CA34"></span><span class="nm">Sulphur Yellow &middot; P3</span><span class="badge warn">&Delta;E 4.1</span></div>
+      </div>
+    </section>
+    <section class="peek card" aria-label="Accessibility">
+      <div class="ph"><h3>Accessibility</h3><button class="exp">Open</button></div>
+      <div class="cvd">
+        <div class="col"><div class="lab">Normal</div><div class="strip"><i style="background:#F9DF1C"></i><i style="background:#1C3AF9"></i><i style="background:#C8161D"></i><i style="background:#1CF96A"></i></div></div>
+        <div class="col"><div class="lab">Deuteranopia</div><div class="strip"><i style="background:#D6D24A"></i><i style="background:#2E3CB8"></i><i style="background:#7A6A1E"></i><i style="background:#C9CC6E"></i></div></div>
+      </div>
+      <div class="contrast">
+        <span class="badge ok">Text AA &middot; 7.1:1</span>
+        <span class="badge warn">UI &middot; 2.8:1</span>
+        <span class="muted" style="font-size:11px">2 of 7 swatches collide for tritan</span>
+      </div>
+    </section>
+  </div>
+
+  <!-- FINISH BAR -->
+  <footer class="finish card">
+    <span class="lead">7 colours &middot; 4 roles &middot; 2 to buy</span>
+    <button class="btn">&#128279; Share link</button>
+    <button class="btn primary">&#11015; Export list</button>
+  </footer>
+
+</div>
+</body></html>

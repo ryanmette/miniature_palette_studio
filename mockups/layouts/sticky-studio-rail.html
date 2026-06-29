@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palette Studio for miniatures</title>
+<style>
+:root{
+--bg:#FBFBFE;--surface:#FFFFFF;--surface-2:#F1F2FF;--border:#E6E7F8;--border-strong:#D3D5F0;
+--text:#20223A;--text-muted:#6E7293;--text-faint:#A2A6C4;
+--accent:#7C3AED;--accent-weak:#F0EAFE;--on-accent:#FFFFFF;--buy:#2563EB;--buy-weak:#DBEAFE;--on-buy:#FFFFFF;
+--success:#16A34A;--success-weak:#DCFCE7;--warning:#C2740B;--warning-weak:#FBEBD3;--danger:#DC2647;--danger-weak:#FCE4EA;
+--shadow:0 1px 2px rgba(60,50,120,.06),0 6px 18px rgba(60,50,120,.05);
+--r-card:14px;--r-ctrl:10px;--r-pill:999px;--tap:38px;
+--display:"Space Grotesk","Inter",system-ui,sans-serif;--ui:"Inter",system-ui,sans-serif;--mono:ui-monospace,Menlo,monospace;}
+[data-theme="dark"]{--bg:#141110;--surface:#1C1815;--surface-2:#251F1A;--border:#3A302A;--border-strong:#4D4138;
+--text:#ECE3D8;--text-muted:#A8998A;--text-faint:#7C6F62;--accent:#C2912F;--accent-weak:#2C2113;--on-accent:#15100A;
+--buy:#5E93C9;--buy-weak:#16242F;--on-buy:#0E1620;--success:#86A559;--success-weak:#232A16;--warning:#C9923A;--warning-weak:#2E2412;--danger:#D2563F;--danger-weak:#2E1A14;--shadow:0 1px 2px rgba(0,0,0,.45);}
+*{box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:var(--ui);margin:0;font-size:14px}
+
+a{color:inherit}
+h1,h2,h3,h4{font-family:var(--display);margin:0;font-weight:600}
+button{font-family:var(--ui);cursor:pointer}
+:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-weak);border-radius:var(--r-ctrl)}
+
+/* ---------- HEADER ---------- */
+.hdr{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:16px;
+  padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:8px}
+.logo .mark{width:30px;height:30px;border-radius:8px;background:var(--accent);color:var(--on-accent);
+  font-family:var(--display);font-weight:700;display:grid;place-items:center;font-size:17px}
+.logo .word{font-family:var(--display);font-weight:600;font-size:16px;white-space:nowrap}
+.hdr-sp{flex:1}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:var(--r-ctrl);padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--text-muted);font-size:13px;font-weight:500;
+  padding:0 12px;height:var(--tap);border-radius:8px}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.icbtn{width:var(--tap);height:var(--tap);border-radius:var(--r-ctrl);border:1px solid var(--border);
+  background:var(--surface);color:var(--text-muted);font-size:18px;line-height:1}
+
+/* ---------- LAYOUT SHELL ---------- */
+.shell{display:flex;gap:0;max-width:1280px;margin:0 auto}
+.drawer{width:268px;flex:none;border-right:1px solid var(--border);background:var(--surface);
+  align-self:flex-start;position:sticky;top:55px;max-height:calc(100vh - 55px);overflow:auto}
+.main{flex:1;min-width:0;position:relative}
+
+/* ---------- PICKER (drawer) ---------- */
+.pick{padding:16px}
+.pick h2{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);font-weight:500;margin-bottom:8px}
+.field{width:100%;height:var(--tap);border:1px solid var(--border);border-radius:var(--r-ctrl);
+  background:var(--surface-2);color:var(--text);padding:0 10px;font-size:13px;font-family:var(--ui)}
+.selrow{display:flex;gap:8px;margin-top:8px}
+.selrow select{flex:1;min-width:0;height:var(--tap);border:1px solid var(--border);border-radius:var(--r-ctrl);
+  background:var(--surface-2);color:var(--text);padding:0 8px;font-size:12.5px;font-family:var(--ui)}
+.plist{margin-top:12px;display:flex;flex-direction:column;gap:2px;max-height:420px;overflow:auto;
+  border:1px solid var(--border);border-radius:var(--r-ctrl);padding:4px}
+.prow{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px}
+.prow:hover{background:var(--surface-2)}
+.prow.sel{background:var(--accent-weak)}
+.dot{width:22px;height:22px;border-radius:6px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.prow .nm{font-size:13px;font-weight:500;line-height:1.2}
+.prow .mt{font-size:11.5px;color:var(--text-muted);font-family:var(--mono)}
+.count{margin-top:10px;font-size:12px;color:var(--text-muted);font-family:var(--mono)}
+
+/* ---------- STICKY STUDIO BAND ---------- */
+.band{position:sticky;top:55px;z-index:30;background:var(--bg);
+  border-bottom:1px solid var(--border-strong);padding:16px 24px 16px;box-shadow:0 6px 14px rgba(60,50,120,.04)}
+.seedbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.hexin{display:flex;align-items:center;gap:6px;height:var(--tap);border:1px solid var(--border-strong);
+  border-radius:var(--r-ctrl);background:var(--surface);padding:0 10px;font-family:var(--mono);font-size:13px}
+.hexin .chip{width:18px;height:18px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.btn{height:var(--tap);border-radius:var(--r-ctrl);border:1px solid var(--border);background:var(--surface);
+  color:var(--text);font-size:13px;font-weight:500;padding:0 14px;display:inline-flex;align-items:center;gap:6px}
+.btn.pri{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.studio{display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start}
+
+/* wheel column */
+.wheelcol{display:flex;flex-direction:column;gap:10px;align-items:center}
+.herorow{display:flex;align-items:center;gap:12px;align-self:stretch}
+.hero-sw{width:72px;height:72px;border-radius:12px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.hero-meta .ht{font-family:var(--display);font-size:18px;font-weight:600}
+.hero-meta .hs{font-size:12px;color:var(--text-muted)}
+.tag{display:inline-block;font-size:11px;font-weight:500;padding:1px 7px;border-radius:var(--r-pill);
+  background:var(--surface-2);color:var(--text-muted);margin-left:6px}
+.hero-meta .hx{font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-top:2px}
+.wheel{width:212px;height:212px;border-radius:50%;
+  background:conic-gradient(from 90deg,#ff0000,#ff00ff,#0000ff,#00ffff,#00ff00,#ffff00,#ff0000);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);position:relative}
+.node{position:absolute;width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 3px #fff,0 1px 4px rgba(0,0,0,.4);
+  transform:translate(-50%,-50%)}
+.wheelctl{display:flex;align-items:center;gap:10px;align-self:stretch}
+.wheelctl .lbl{font-size:11.5px;color:var(--text-muted)}
+.slider{flex:1;height:6px;border-radius:var(--r-pill);background:linear-gradient(90deg,#000,#F9DF1C,#fff)}
+
+/* palette column */
+.palcol{min-width:0}
+.htype{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.htype .seg button{height:30px;font-size:12px;padding:0 9px}
+.palhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px}
+.palhead h3{font-size:13px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.palhead .right{display:flex;align-items:center;gap:8px}
+.stepbtn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface);
+  color:var(--text);font-size:16px;line-height:1}
+.palette{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.swcol{border:1px solid var(--border);border-radius:var(--r-ctrl);background:var(--surface);overflow:hidden;min-width:0}
+.swcol .block{height:58px;position:relative}
+.swcol .ang{position:absolute;top:5px;left:5px;font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.85);
+  color:#20223A;padding:0 4px;border-radius:5px}
+.swcol .info{padding:6px}
+.swcol .hx{font-family:var(--mono);font-size:11px}
+.swcol .np{font-size:11px;color:var(--text-muted);line-height:1.25;margin:2px 0 4px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{font-family:var(--mono);font-size:10.5px;padding:1px 5px;border-radius:5px;
+  background:var(--surface-2);color:var(--text-muted);display:inline-block}
+.badge.ok{background:var(--success-weak);color:var(--success)}
+.badge.warn{background:var(--warning-weak);color:var(--warning)}
+.badge.bad{background:var(--danger-weak);color:var(--danger)}
+
+/* ---------- SECTION RAIL ---------- */
+.rail{position:fixed;top:50%;right:14px;transform:translateY(-50%);z-index:35;
+  display:flex;flex-direction:column;gap:14px;align-items:center}
+.rail a{display:flex;align-items:center;gap:8px;text-decoration:none;flex-direction:row-reverse}
+.rail .rd{width:12px;height:12px;border-radius:50%;background:var(--border-strong);box-shadow:inset 0 0 0 2px var(--surface)}
+.rail a.on .rd{background:var(--accent)}
+.rail .rt{font-size:11px;font-weight:500;color:var(--text-muted);background:var(--surface);
+  border:1px solid var(--border);padding:2px 8px;border-radius:var(--r-pill);box-shadow:var(--shadow)}
+.rail a.on .rt{color:var(--accent)}
+
+/* ---------- OUTPUT SECTIONS ---------- */
+.sections{padding:20px 56px 20px 24px;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);box-shadow:var(--shadow)}
+.sec{padding:20px 24px}
+.sechd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.sechd h2{font-size:18px}
+.sechd .tabs{display:flex;gap:4px}
+.sechd .tabs button{border:0;background:transparent;color:var(--text-muted);font-size:13px;font-weight:500;
+  height:32px;padding:0 12px;border-radius:8px}
+.sechd .tabs button.on{background:var(--accent-weak);color:var(--accent)}
+.plantools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.plantools .lbl{font-size:12px;color:var(--text-muted)}
+
+/* role slots */
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.role{border:1px solid var(--border);border-radius:var(--r-card);padding:14px;background:var(--surface)}
+.roletop{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.roletop .pct{font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-left:auto}
+.roletop h4{font-size:14px}
+.iva{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sw{width:44px;height:44px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);flex:none}
+.sw.sm{width:34px;height:34px}
+.arrow{color:var(--text-faint);font-size:16px;flex:none}
+.actual{min-width:0}
+.actual .an{font-size:13px;font-weight:600;line-height:1.2}
+.actual .ab{font-size:11.5px;color:var(--text-muted)}
+.ladder{display:flex;gap:6px;align-items:flex-end;border-top:1px solid var(--border);padding-top:10px}
+.lstep{flex:1;text-align:center}
+.lstep .lsw{height:30px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);margin-bottom:4px}
+.lstep .ll{font-size:10.5px;color:var(--text-muted)}
+
+/* equiv + a11y stubs */
+.eqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.eqrow{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:var(--r-ctrl);padding:8px}
+.eqrow .nm{font-size:12.5px;font-weight:500;line-height:1.2}
+.eqrow .mt{font-size:11px;color:var(--text-muted);font-family:var(--mono)}
+.cvd{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.cvdcol h4{font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:6px}
+.cvdcol .strip{display:flex;gap:4px}
+.cvdcol .strip span{flex:1;height:34px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.contrast{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.crow{display:flex;align-items:center;gap:10px;font-size:12.5px}
+.crow .pair{width:54px;height:24px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);flex:none}
+
+/* ---------- FINISH BAR ---------- */
+.finish{display:flex;align-items:center;gap:10px;padding:16px 56px 24px 24px}
+.finish .btn.pri{padding:0 20px}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:860px){
+  .shell{flex-direction:column}
+  .drawer{width:auto;position:static;max-height:none;border-right:0;border-bottom:1px solid var(--border)}
+  .plist{max-height:240px}
+  .studio{grid-template-columns:1fr}
+  .wheelcol{order:0}
+  .palette{grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:120px;overflow-x:auto;
+    padding-bottom:6px}
+  .roles{grid-template-columns:1fr}
+  .rail{position:static;transform:none;flex-direction:row;justify-content:center;gap:8px;
+    padding:8px 0;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:55px;z-index:25}
+  .rail a{flex-direction:row}
+  .sections{padding:16px}
+  .finish{padding:16px}
+  .cvd{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:520px){
+  :root{--tap:44px}
+  .hdr{padding:10px 12px;gap:8px}
+  .logo .word{font-size:14px}
+  .band{padding:12px}
+  .sec{padding:14px}
+  .iva{flex-wrap:wrap}
+  .ladder{flex-wrap:wrap}
+  .lstep{min-width:60px}
+  .eqgrid{grid-template-columns:1fr}
+  .cvd{grid-template-columns:1fr}
+  .finish .btn{flex:1;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo"><div class="mark">P</div><div class="word">Palette Studio for miniatures</div></div>
+  <div class="hdr-sp"></div>
+  <div class="seg" role="tablist" aria-label="Mode">
+    <button class="on">Studio</button><button>Shelf</button>
+  </div>
+  <button class="icbtn" aria-label="Settings">&#8943;</button>
+</header>
+
+<!-- right-edge section rail -->
+<nav class="rail" aria-label="Jump to section">
+  <a href="#plan" class="on"><span class="rt">Plan</span><span class="rd"></span></a>
+  <a href="#equiv"><span class="rt">Equiv</span><span class="rd"></span></a>
+  <a href="#a11y"><span class="rt">A11y</span><span class="rd"></span></a>
+</nav>
+
+<div class="shell">
+
+  <!-- PICKER drawer -->
+  <aside class="drawer">
+    <div class="pick">
+      <h2>Pick a paint</h2>
+      <input class="field" placeholder="Search 2508 paints…" aria-label="Search paints">
+      <div class="selrow">
+        <select aria-label="Brand"><option>All brands</option><option>Citadel</option><option>Army Painter</option></select>
+        <select aria-label="Type"><option>All types</option><option>Base</option><option>Layer</option></select>
+        <select aria-label="Sort"><option>Name A–Z</option><option>By hue</option></select>
+      </div>
+      <div class="plist" role="listbox" aria-label="Paint results">
+        <div class="prow sel" role="option" aria-selected="true"><span class="dot" style="background:#9A1115"></span><div><div class="nm">Mephiston Red</div><div class="mt">Citadel · Base</div></div></div>
+        <div class="prow" role="option"><span class="dot" style="background:#C8161D"></span><div><div class="nm">Evil Sunz Scarlet</div><div class="mt">Citadel · Layer</div></div></div>
+        <div class="prow" role="option"><span class="dot" style="background:#0F3D6E"></span><div><div class="nm">Macragge Blue</div><div class="mt">Citadel · Base</div></div></div>
+        <div class="prow" role="option"><span class="dot" style="background:#1E7A52"></span><div><div class="nm">Sotek Green</div><div class="mt">Citadel · Layer</div></div></div>
+        <div class="prow" role="option"><span class="dot" style="background:#B8902B"></span><div><div class="nm">Auric Armour Gold</div><div class="mt">Army Painter · D&amp;D</div></div></div>
+        <div class="prow" role="option"><span class="dot" style="background:#9AA0A6"></span><div><div class="nm">Runefang Steel</div><div class="mt">Citadel · Layer</div></div></div>
+        <div class="prow" role="option"><span class="dot" style="background:#E4C73F"></span><div><div class="nm">Averland Sunset</div><div class="mt">Citadel · Base</div></div></div>
+        <div class="prow" role="option"><span class="dot" style="background:#5B2B82"></span><div><div class="nm">Naggaroth Night</div><div class="mt">Citadel · Layer</div></div></div>
+      </div>
+      <div class="count">2508 of 2508 paints · 77 owned</div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- STICKY STUDIO BAND -->
+    <div class="band">
+      <div class="seedbar">
+        <label class="hexin"><span class="chip" style="background:#F9DF1C"></span><span>#F9DF1C</span></label>
+        <div class="seg"><button class="on">Main</button><button>Accent</button></div>
+        <button class="btn">From photo</button>
+        <button class="btn">Compare</button>
+      </div>
+
+      <div class="studio">
+        <!-- wheel column with hero -->
+        <div class="wheelcol">
+          <div class="herorow">
+            <div class="hero-sw" style="background:#F9DF1C"></div>
+            <div class="hero-meta">
+              <div class="ht">Custom #F9DF1C <span class="tag">custom</span></div>
+              <div class="hs">typed hex</div>
+              <div class="hx">#F9DF1C</div>
+            </div>
+          </div>
+          <div class="wheel" aria-label="Harmony wheel">
+            <span class="node" style="left:50%;top:14%;background:#F9DF1C"></span>
+            <span class="node" style="left:86%;top:62%;background:#1CD6F9"></span>
+            <span class="node" style="left:14%;top:62%;background:#3C1CF9"></span>
+            <span class="node" style="left:30%;top:24%;background:#9CF91C"></span>
+          </div>
+          <div class="wheelctl">
+            <span class="lbl">Light</span>
+            <span class="slider" aria-label="Lightness"></span>
+            <button class="btn" style="padding:0 10px">Shuffle</button>
+          </div>
+        </div>
+
+        <!-- palette column -->
+        <div class="palcol">
+          <div class="htype" role="tablist" aria-label="Harmony type">
+            <div class="seg">
+              <button>Complementary</button>
+              <button>Analogous</button>
+              <button>Triadic</button>
+              <button>Split-comp</button>
+              <button class="on">Tetradic</button>
+            </div>
+          </div>
+          <div class="palhead">
+            <h3>Live palette · tetradic</h3>
+            <div class="right">
+              <div class="seg"><button class="on">Ideal</button><button>Real</button></div>
+              <button class="stepbtn" aria-label="Remove colour">&minus;</button>
+              <button class="stepbtn" aria-label="Add colour">+</button>
+            </div>
+          </div>
+          <div class="palette">
+            <div class="swcol"><div class="block" style="background:#F9DF1C"><span class="ang">0°</span></div><div class="info"><div class="hx">#F9DF1C</div><div class="np">Averland Sunset</div><span class="badge ok">ΔE 1.8 · Excellent</span></div></div>
+            <div class="swcol"><div class="block" style="background:#9CF91C"><span class="ang">+60</span></div><div class="info"><div class="hx">#9CF91C</div><div class="np">Moot Green</div><span class="badge warn">ΔE 4.6 · Fair</span></div></div>
+            <div class="swcol"><div class="block" style="background:#1CD6F9"><span class="ang">+180</span></div><div class="info"><div class="hx">#1CD6F9</div><div class="np">Temple Guard Blue</div><span class="badge ok">ΔE 3.1 · Good</span></div></div>
+            <div class="swcol"><div class="block" style="background:#3C1CF9"><span class="ang">+240</span></div><div class="info"><div class="hx">#3C1CF9</div><div class="np">Macragge Blue</div><span class="badge bad">ΔE 11.4 · Poor</span></div></div>
+            <div class="swcol"><div class="block" style="background:#C8161D"><span class="ang">+120</span></div><div class="info"><div class="hx">#C8161D</div><div class="np">Evil Sunz Scarlet</div><span class="badge ok">ΔE 2.0 · Excellent</span></div></div>
+            <div class="swcol"><div class="block" style="background:#1E7A52"><span class="ang">+150</span></div><div class="info"><div class="hx">#1E7A52</div><div class="np">Sotek Green</div><span class="badge ok">ΔE 2.9 · Good</span></div></div>
+            <div class="swcol"><div class="block" style="background:#B8902B"><span class="ang">+30</span></div><div class="info"><div class="hx">#B8902B</div><div class="np">Auric Armour Gold</div><span class="badge warn">ΔE 5.4 · Loose</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OUTPUT SECTIONS -->
+    <div class="sections">
+
+      <!-- PLAN -->
+      <section class="card sec" id="plan">
+        <div class="sechd">
+          <h2>Plan · roles</h2>
+          <div class="tabs"><button class="on">Plan · roles</button><button>Equivalents</button><button>Accessibility</button></div>
+        </div>
+        <div class="plantools">
+          <span class="lbl">Tone ladder</span>
+          <div class="seg"><button class="on">On</button><button>Off</button></div>
+          <span class="lbl">Use my collection</span>
+          <div class="seg"><button>Off</button><button class="on">Prefer</button><button>Only</button></div>
+        </div>
+        <div class="roles">
+
+          <div class="role">
+            <div class="roletop"><h4>Primary</h4><span class="pct">~60%</span></div>
+            <div class="iva">
+              <div class="sw" style="background:#F9DF1C"></div>
+              <span class="arrow">&rarr;</span>
+              <div class="sw" style="background:#E4C73F"></div>
+              <div class="actual"><div class="an">Averland Sunset</div><div class="ab">Citadel · Base</div></div>
+              <span class="badge ok" style="margin-left:auto">ΔE 1.8</span>
+            </div>
+            <div class="ladder">
+              <div class="lstep"><div class="lsw" style="background:#7A6A12"></div><div class="ll">Wash</div></div>
+              <div class="lstep"><div class="lsw" style="background:#E4C73F"></div><div class="ll">Base</div></div>
+              <div class="lstep"><div class="lsw" style="background:#FBEFA0"></div><div class="ll">Highlight</div></div>
+            </div>
+          </div>
+
+          <div class="role">
+            <div class="roletop"><h4>Secondary</h4><span class="pct">~30%</span></div>
+            <div class="iva">
+              <div class="sw" style="background:#1CD6F9"></div>
+              <span class="arrow">&rarr;</span>
+              <div class="sw" style="background:#2A93B8"></div>
+              <div class="actual"><div class="an">Temple Guard Blue</div><div class="ab">Citadel · Layer</div></div>
+              <span class="badge ok" style="margin-left:auto">ΔE 3.1</span>
+            </div>
+            <div class="ladder">
+              <div class="lstep"><div class="lsw" style="background:#143B49"></div><div class="ll">Wash</div></div>
+              <div class="lstep"><div class="lsw" style="background:#2A93B8"></div><div class="ll">Base</div></div>
+              <div class="lstep"><div class="lsw" style="background:#9BE0F2"></div><div class="ll">Highlight</div></div>
+            </div>
+          </div>
+
+          <div class="role">
+            <div class="roletop"><h4>Accent</h4><span class="pct">~10%</span></div>
+            <div class="iva">
+              <div class="sw" style="background:#C8161D"></div>
+              <span class="arrow">&rarr;</span>
+              <div class="sw" style="background:#9A1115"></div>
+              <div class="actual"><div class="an">Mephiston Red</div><div class="ab">Citadel · Base</div></div>
+              <span class="badge warn" style="margin-left:auto">ΔE 4.2</span>
+            </div>
+            <div class="ladder">
+              <div class="lstep"><div class="lsw" style="background:#54090B"></div><div class="ll">Wash</div></div>
+              <div class="lstep"><div class="lsw" style="background:#9A1115"></div><div class="ll">Base</div></div>
+              <div class="lstep"><div class="lsw" style="background:#D8554A"></div><div class="ll">Highlight</div></div>
+            </div>
+          </div>
+
+          <div class="role">
+            <div class="roletop"><h4>Metal</h4><span class="pct">spot</span></div>
+            <div class="iva">
+              <div class="sw" style="background:#B8902B"></div>
+              <span class="arrow">&rarr;</span>
+              <div class="sw" style="background:#9AA0A6"></div>
+              <div class="actual"><div class="an">Runefang Steel</div><div class="ab">Citadel · Layer</div></div>
+              <span class="badge ok" style="margin-left:auto">ΔE 2.6</span>
+            </div>
+            <div class="ladder">
+              <div class="lstep"><div class="lsw" style="background:#4A4D52"></div><div class="ll">Wash</div></div>
+              <div class="lstep"><div class="lsw" style="background:#9AA0A6"></div><div class="ll">Base</div></div>
+              <div class="lstep"><div class="lsw" style="background:#E2E5E9"></div><div class="ll">Highlight</div></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- EQUIVALENTS -->
+      <section class="card sec" id="equiv">
+        <div class="sechd"><h2>Equivalents</h2><span class="badge">Averland Sunset · cross-brand</span></div>
+        <div class="eqgrid">
+          <div class="eqrow"><span class="dot" style="background:#E4C73F"></span><div><div class="nm">Averland Sunset</div><div class="mt">Citadel ΔE 0</div></div></div>
+          <div class="eqrow"><span class="dot" style="background:#E6C53A"></span><div><div class="nm">Daemonic Yellow</div><div class="mt">Army P. ΔE 1.4</div></div></div>
+          <div class="eqrow"><span class="dot" style="background:#E2C944"></span><div><div class="nm">Golden Yellow</div><div class="mt">Vallejo ΔE 1.9</div></div></div>
+          <div class="eqrow"><span class="dot" style="background:#DBC23B"></span><div><div class="nm">Sulfide Ochre</div><div class="mt">P3 ΔE 2.7</div></div></div>
+        </div>
+      </section>
+
+      <!-- ACCESSIBILITY -->
+      <section class="card sec" id="a11y">
+        <div class="sechd"><h2>Accessibility</h2><span class="badge">CVD sim + WCAG</span></div>
+        <div class="cvd">
+          <div class="cvdcol"><h4>Normal</h4><div class="strip"><span style="background:#F9DF1C"></span><span style="background:#1CD6F9"></span><span style="background:#C8161D"></span><span style="background:#9AA0A6"></span></div></div>
+          <div class="cvdcol"><h4>Protan</h4><div class="strip"><span style="background:#D8D86E"></span><span style="background:#6FB9D9"></span><span style="background:#6B5A2A"></span><span style="background:#999B9E"></span></div></div>
+          <div class="cvdcol"><h4>Deutan</h4><div class="strip"><span style="background:#E0D26A"></span><span style="background:#74B6D2"></span><span style="background:#7C5E2E"></span><span style="background:#9DA0A2"></span></div></div>
+          <div class="cvdcol"><h4>Tritan</h4><div class="strip"><span style="background:#F7D9C0"></span><span style="background:#3FB9C0"></span><span style="background:#C81B33"></span><span style="background:#9AA0A6"></span></div></div>
+        </div>
+        <div class="contrast">
+          <div class="crow"><span class="pair" style="background:#F9DF1C"></span> Yellow on white text · <span class="badge bad">1.2:1 fails AA</span></div>
+          <div class="crow"><span class="pair" style="background:#9A1115"></span> White on Mephiston Red · <span class="badge ok">6.8:1 passes AA</span></div>
+          <div class="crow"><span class="pair" style="background:#0F3D6E"></span> White on Macragge Blue · <span class="badge ok">9.1:1 passes AA</span></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- FINISH BAR -->
+    <div class="finish">
+      <button class="btn pri">Export list</button>
+      <button class="btn">Share link</button>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>
