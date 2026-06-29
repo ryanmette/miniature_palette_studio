@@ -5,6 +5,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Paint picker is now sticky too.** In the split layout the left paint list stays pinned below the
+  header (alongside the sticky studio) instead of scrolling away, so you can keep picking while reading
+  the role plan. Both columns now clear the 63px sticky header; the picker un-sticks where it stacks (≤860px).
 
 ## [1.7.0] - 2026-06-29
 The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),

@@ -175,8 +175,11 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .seedtoolbar #fromPhoto { margin-left: auto; }
 .herowrap { min-width: 0; }
 .wsplit { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
-.studio { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.studio { position: sticky; top: 79px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }  /* 79 = 63px sticky header + 16 */
 .output { min-width: 0; }
+/* keep the paint picker in view too (it sticks below the header like the studio) */
+.picker { position: sticky; top: 79px; align-self: start; max-height: calc(100vh - 95px); display: flex; flex-direction: column; }
+.picker .list { flex: 1; max-height: none; }   /* the list fills the picker's remaining height and scrolls within it */
 .wheelcol { display: flex; flex-direction: column; align-items: center; }
 .wcanvas { touch-action: none; cursor: grab; display: block; width: min(90vw, 300px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -353,8 +356,8 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 }
 @media (max-width: 860px) {
   main { grid-template-columns: 1fr; gap: 16px; }
-  .picker { order: -1; }
-  .list { max-height: 230px; }
+  .picker { order: -1; position: static; max-height: none; display: block; }   /* picker stacks on top; no longer sticky */
+  .picker .list { max-height: 230px; flex: none; }
 }
 @media (max-width: 520px) {
   :root { --tap: 44px; }
