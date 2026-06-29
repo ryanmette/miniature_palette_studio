@@ -92,6 +92,20 @@ the "durable, boring tech" principle in the constitution.
 
 Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` always deployable.
 
+### Release history (post-v1.0) — see CHANGELOG.md for detail
+- **v1.0.0** — M1–M9 baseline: engine, picker, harmonies, ideal-vs-actual, wheel, equivalents, a11y, deploy.
+- **v1.1.0** — collection release: paint **Shelf** (Finder-style grid), `store.js` (portable owned/to-buy + prefs), PWA (installable/offline), i18n scaffold, want-to-buy↔Export, owned-boost, tone ladders, CSV/JSON import, About & data panel, self-hosted fonts, LICENSE (proprietary), SECURITY.md, Dependabot.
+- **v1.2.0** — clarity release: header reorg by stage (Studio/Shelf + ⋯ settings), picker filters/sort, markers on all surfaces, Web Share.
+- **v1.3.0 / v1.4.x** — data release: **8 brands / 2,508 paints**, finish-aware suggestions + Include-Contrast, faster matcher, curated equivalence groups, **service-worker fix** (network-first + `cache:reload`).
+- **v1.5.x** — finish overlays (metallic sheen · wash/contrast translucency · gloss/slime/texture via `fx`), distinct role assignment + shared-paint guidance, role **Body→Primary**.
+- **v1.6.0** — v2 backlog (web): **photo eyedropper** (on-device), language picker, mobile Shelf multi-select, manual group curation (`group-overrides.json`); Capacitor + asset-library scaffolds.
+
+### Current status (2026-06-29)
+Web app is **comprehensively feature-complete**. Open: **the add/remove-colours wheel bug** (the only
+pending feature — awaiting the exact "differs from Adobe Color how?" detail). Needs tooling/people outside
+this repo: the **native app** build (Capacitor → Xcode, the reserved `v2.0`), a **designer** to fill the
+asset library, and an optional **palette-from-photo** enhancement to the eyedropper.
+
 ---
 
 ## 6. Squarespace embedding (M8 preview)
@@ -127,10 +141,16 @@ Squarespace doesn't run custom builds, so we host the static app externally and 
 
 ---
 
-## 8. Future (explicitly not v1 — needs a constitution update first)
+## 8. Future (not yet built)
 
-Dark theme · "color from photo" upload · paint inventory sync · printable/PDF scheme cards ·
-community-submitted palettes · more brands · localization.
+*Shipped since this was written: dark theme, colour-from-photo, more brands (8/2,508), localization
+scaffold + picker. Still future:*
+- **Native iOS app** — Capacitor → SwiftUI (reserved `v2.0`); see `docs/IOS_APP_PLAN.md`.
+- **Palette-from-photo** — dominant-colour extraction (extends the single-pick eyedropper).
+- **Per-brand match confidence** in the dataset; more locales beyond en-GB/en-US.
+- **Designer asset library** — fill the `src/assets/{icons,art}` scaffold (needs a designer).
+- Printable/PDF scheme cards · community-submitted palettes · paint inventory sync (still out of scope —
+  needs a constitution update first).
 
 ---
 

@@ -62,4 +62,5 @@ opt-in via a Plan-tab toggle. `metal` is the Metal role. Citadel's **Technical**
 ## Re-verification cadence
 
 Revisit on manufacturer range changes and at least annually; `captured` dates make staleness visible
-(`CLAUDE.md` §8, dataset SemVer). Planned next: per-brand confidence; manual curation of the auto-seeded groups.
+(`CLAUDE.md` §8, dataset SemVer). Auto-seeded equivalence groups are correctable by hand via
+`src/data/group-overrides.json` (relabel / split / exclude). Planned next: per-brand confidence.
