@@ -9,7 +9,24 @@ test('harmony offsets are locked (CLAUDE.md §7)', () => {
   assert.deepEqual(HARMONY_OFFSETS.triadic, [120, 240]);
   assert.deepEqual(HARMONY_OFFSETS['split-complementary'], [150, 210]);
   assert.deepEqual(HARMONY_OFFSETS.tetradic, [60, 180, 240]);
-  assert.equal(HARMONY_TYPES.length, 5);
+  assert.deepEqual(HARMONY_OFFSETS.square, [90, 180, 270]);
+  assert.deepEqual(HARMONY_OFFSETS.compound, [30, 180, 210]);
+  assert.deepEqual(HARMONY_OFFSETS.custom, []);
+  assert.equal(HARMONY_TYPES.length, 8);
+});
+
+test('custom harmony has no partners; harmonize returns just the base', () => {
+  assert.equal(isHarmony('custom'), true);
+  assert.deepEqual(harmonyPartners('#2D567C', 'custom'), []);
+  const s = harmonize('#2D567C', 'custom');
+  assert.equal(s.length, 1);
+  assert.deepEqual(s[0], { hex: '#2D567C', deg: 0 });
+});
+
+test('square + compound = base then their partners', () => {
+  assert.equal(harmonize('#2D567C', 'square').length, 4);
+  assert.equal(harmonize('#2D567C', 'compound').length, 4);
+  assert.equal(harmonyPartners('#2D567C', 'square')[1].deg, 180);
 });
 
 test('harmonize = base (0°) then partners, hexes match rotateHue', () => {

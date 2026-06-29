@@ -25,6 +25,13 @@ test('buildScheme yields 4 roles; Primary = base; nearest is itself', () => {
   assert.equal(s.roles[0].match.paint.id, 'c-red');
 });
 
+test('custom harmony (no partners) still yields 4 roles without crashing', () => {
+  const s = buildScheme(fx, '#9A1115', 'custom');
+  assert.equal(s.roles.length, 4);
+  assert.equal(s.roles[0].idealHex, '#9A1115');
+  assert.ok(s.roles[2].idealHex && s.roles[2].idealHex !== s.roles[0].idealHex);  // accent falls back to a rotation, not undefined
+});
+
 test('default ladder is wash·base·highlight, each step matched', () => {
   const s = buildScheme(fx, '#2D567C', 'triadic');
   assert.equal(s.ladder, 'wash');

@@ -307,6 +307,13 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   - triadic `+120°, +240°`
   - split-complementary `+150°, +210°`
   - tetradic (rectangle) `+60°, +180°, +240°`
+  - square `+90°, +180°, +270°`
+  - compound `+30°, +180°, +210°` (base + a neighbour + the complement + the complement's neighbour)
+  - **custom** — no rule (zero offsets); the palette is whatever the painter builds by hand via the
+    per-swatch lock/edit/add controls. The role plan still derives a Secondary/Accent from base rotations.
+  - *Planned (not yet built):* **shades** and **monochromatic** are single-hue **value / saturation ramps**,
+    not hue rotations, so they need a generalised generator (H/S/L deltas) rather than this offset model —
+    tracked for a later change; do not assume they exist until this list says so.
 - **Color-blindness simulation**: Machado et al. (2009) severity-1.0 matrices applied in linear RGB, for protanopia / deuteranopia / tritanopia.
 - **Contrast**: WCAG 2.1 relative-luminance ratio; AA thresholds 4.5:1 (text) / 3:1 (large/UI).
 - **Text-on-swatch** legibility: choose black/white by relative luminance threshold 0.5 (with the standard sRGB→linear step).

@@ -32,6 +32,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   active theme like every other control (CLAUDE.md §3: never style a component differently per theme).
 
 ### Added
+- **Three more harmonies: Square · Compound · Custom.** The harmony control grows from 5 to 8 — Square
+  (`+90/+180/+270`), Compound (`+30/+180/+210`), and **Custom** (no rule: build the palette by hand with
+  the per-swatch lock/edit/add controls). Amends CLAUDE.md §7. The role engine now guards against a
+  rule-less harmony so Custom's Plan still derives a Secondary/Accent from base rotations. Shades +
+  Monochromatic (single-hue value/saturation ramps, not hue rotations) need a generalised generator and
+  are tracked in §7 for a later change.
 - **Per-swatch editing: lock · edit-hex · drag-reorder.** Each live-palette swatch can now be **locked**
   (it survives Generate and harmony changes — the rule stops regenerating that hue via a `dropOffsets`
   detach, and the swatch becomes an independent pinned colour), **edited** to any hex through a native

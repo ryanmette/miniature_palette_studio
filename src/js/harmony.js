@@ -10,6 +10,9 @@ export const HARMONY_OFFSETS = Object.freeze({
   triadic: [120, 240],
   'split-complementary': [150, 210],
   tetradic: [60, 180, 240], // rectangle
+  square: [90, 180, 270],   // four hues evenly spaced 90° apart
+  compound: [30, 180, 210], // base + a neighbour + the complement + the complement's neighbour
+  custom: [],               // no rule — the palette is whatever you build/lock/edit by hand
 });
 
 export const HARMONY_TYPES = Object.freeze(Object.keys(HARMONY_OFFSETS));
