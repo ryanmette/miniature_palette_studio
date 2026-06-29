@@ -5,6 +5,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Tests for `store.js` (the persistence chokepoint).** Covers owned/to-buy mutual exclusivity,
+  `localStorage` persistence + read-back, defensive coercion of corrupt data, pre-v1 legacy migration
+  (`ps-owned`/`ps-theme`), and the JSON export/import round-trip — closing a previously untested module.
+- **Tests for `adjustDirection` (colour nudge hints).** Pins the user-facing guidance strings
+  (lighten/darken/mute/saturate/shift hue, the "slightly" suffix, and the no-change `null`) and the
+  lightness > saturation > hue axis priority.
 
 ## [1.6.0] - 2026-06-29
 The **v2-backlog release** (web): photo eyedropper, locale picker, mobile multi-select, manual group curation.
