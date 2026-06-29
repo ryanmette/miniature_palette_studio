@@ -551,7 +551,47 @@ function updateUrl() {
   if (state.showReal) p.set('f', '1');
   if (state.extraNodes.length) p.set('x', state.extraNodes.map(n => `${Math.round(n.h)}.${Math.round(n.s * 100)}`).join('-'));
   history.replaceState(null, '', '?' + p.toString());
+  pushHistory();
 }
+
+/* ---- undo / redo: snapshot the palette at each settled change (updateUrl is the single chokepoint) ---- */
+const HIST = { stack: [], i: -1, busy: false };
+function paletteSnap() {
+  return JSON.stringify({
+    customHex: state.customHex || null,
+    baseId: state.customHex ? null : state.baseId,
+    harmony: state.harmony, seedRole: state.seedRole, showReal: state.showReal,
+    extraNodes: state.extraNodes.map(n => ({ h: Math.round(n.h * 10) / 10, s: Math.round(n.s * 1000) / 1000 })),
+  });
+}
+function pushHistory() {
+  if (HIST.busy) return;
+  const s = paletteSnap();
+  if (HIST.stack[HIST.i] === s) return;            // view-only change (tab/theme) → no new palette entry
+  HIST.stack.length = HIST.i + 1;                  // a fresh edit drops the redo branch
+  HIST.stack.push(s); HIST.i++;
+  if (HIST.stack.length > 100) { HIST.stack.shift(); HIST.i--; }
+  syncHistBtns();
+}
+function applySnap(json) {
+  const o = JSON.parse(json);
+  state.customHex = o.customHex; state.baseId = o.baseId;
+  state.harmony = isHarmony(o.harmony) ? o.harmony : state.harmony;
+  state.seedRole = o.seedRole === 'accent' ? 'accent' : 'main';
+  state.showReal = !!o.showReal;
+  state.extraNodes = (o.extraNodes || []).map(n => ({ h: n.h, s: n.s }));
+  state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
+  $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
+  for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
+  for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
+  const hx = $('#hex'); if (hx) hx.value = baseHex().replace('#', '');
+  const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
+  syncNodeBtns();
+}
+function undo() { if (HIST.i > 0) { HIST.i--; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
+function redo() { if (HIST.i < HIST.stack.length - 1) { HIST.i++; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
+function syncHistBtns() { const u = $('#undo'), r = $('#redo'); if (u) u.disabled = HIST.i <= 0; if (r) r.disabled = HIST.i >= HIST.stack.length - 1; }
+
 /** Debounced URL write for rapid-fire updates (wheel/slider drag); see setBase(). */
 function scheduleUrlUpdate() {
   if (urlTimer) clearTimeout(urlTimer);
@@ -795,6 +835,8 @@ function wire() {
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
     const col = e.target.closest('[data-collection]'); if (col) { setCollection(col.dataset.collection); return; }
+    const sb = e.target.closest('[data-setbase]'); if (sb) { e.stopPropagation(); seedFromHex(sb.dataset.setbase); return; }   // promote a swatch to the base colour
+    const dn = e.target.closest('[data-delnode]'); if (dn) { e.stopPropagation(); removeFreeNode(+dn.dataset.delnode); return; }  // delete an added swatch
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
     if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
@@ -818,6 +860,14 @@ function wire() {
   });
   $('#addnode').addEventListener('click', addFreeNode);
   $('#delnode').addEventListener('click', () => removeFreeNode());
+  $('#undo').addEventListener('click', undo);
+  $('#redo').addEventListener('click', redo);
+  document.addEventListener('keydown', e => {                                  // ⌘/Ctrl+Z undo · ⇧ or Ctrl+Y redo
+    if (!(e.metaKey || e.ctrlKey) || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    const k = e.key.toLowerCase();
+    if (k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+    else if (k === 'y') { e.preventDefault(); redo(); }
+  });
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
   $('#tabs').addEventListener('keydown', e => {
     const tabs = [...$('#tabs').children];

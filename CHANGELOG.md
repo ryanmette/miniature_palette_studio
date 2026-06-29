@@ -32,6 +32,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   active theme like every other control (CLAUDE.md §3: never style a component differently per theme).
 
 ### Added
+- **Adobe-style live-palette editing (first slice).** The live palette gains **undo/redo** (↶/↷ buttons +
+  Ctrl/⌘+Z, Shift for redo), **per-swatch hover actions** (copy · use-as-base · delete an added colour), and
+  the wheel's **Generate** button re-rolls a random base. Every swatch still resolves to its nearest real
+  paint + ΔE — the thing that sets us apart from a generic generator. Lock / edit-hex / drag-reorder and the
+  expanded harmony set (Custom · Square · Compound · Shades · Monochromatic, a §7 update) come next.
 - **Studio layout explorations (mockups, not shipped).** `mockups/studio-layouts.html` — a 5-way
   exploration of scroll-reducing Studio arrangements (split + sticky studio · 3-column cockpit ·
   instrument band · bento dashboard · sticky studio + section rail), each a standalone on-token mock

@@ -87,12 +87,14 @@
         </div>
         <div class="wheelcol">
           <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
-          <div class="wctrl"><span class="micro">Light</span><input id="wl" type="range" min="6" max="94" step="1" aria-label="Lightness" style="flex:1" /><button class="btn" id="wrand" style="height:32px;padding:0 12px">↻ Shuffle</button></div>
+          <div class="wctrl"><span class="micro">Light</span><input id="wl" type="range" min="6" max="94" step="1" aria-label="Lightness" style="flex:1" /><button class="btn" id="wrand" style="height:32px;padding:0 12px" title="Generate a random base colour">↻ Generate</button></div>
         </div>
         <div class="seg" id="seg" role="group" aria-label="Harmony type"></div>
         <div class="palhead">
           <div class="micro">Live palette → nearest paint</div>
           <div class="palctl">
+            <button class="btn" id="undo" aria-label="Undo" title="Undo (Ctrl/⌘+Z)" disabled>↶</button>
+            <button class="btn" id="redo" aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)" disabled>↷</button>
             <button class="btn" id="addnode" aria-label="Add a colour" title="Add a colour">+</button>
             <button class="btn" id="delnode" aria-label="Remove the last added colour" title="Remove the last added colour">−</button>
             <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">

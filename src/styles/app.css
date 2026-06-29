@@ -185,12 +185,20 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .palcol { min-width: 0; }
 .palhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .palctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-#addnode, #delnode { width: 30px; height: 30px; padding: 0; justify-content: center; font-size: 17px; line-height: 1; }
+#addnode, #delnode, #undo, #redo { width: 30px; height: 30px; padding: 0; justify-content: center; font-size: 17px; line-height: 1; }
+#undo, #redo { font-size: 15px; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .livepal { display: flex; gap: 8px; }
-.lcol { flex: 1; min-width: 0; display: flex; flex-direction: column; border: none; padding: 0; cursor: pointer; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); background: var(--surface-2); text-align: left; }
-.lcol:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
-.lctop { flex: 1; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 8px 9px; }
+.lcol { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); background: var(--surface-2); text-align: left; }
+.lctop { flex: 1; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 8px 9px; border: none; width: 100%; cursor: pointer; text-align: left; font: inherit; }
+.lctop:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+/* per-swatch hover actions (Adobe-style) — overlay so revealing them never reflows the palette (§3.4) */
+.lcact { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transition: opacity .12s ease; pointer-events: none; }
+.lcol:hover .lcact, .lcol:focus-within .lcact { opacity: 1; pointer-events: auto; }
+.lcbtn { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px;
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 12px; line-height: 1; cursor: pointer; box-shadow: var(--shadow); }
+.lcbtn:hover { background: var(--surface-2); }
+.lcbtn:focus-visible { outline: none; box-shadow: var(--focus); }
 .lctag { font-size: 11px; font-weight: 600; opacity: .92; }
 .lchex { font-family: var(--mono); font-size: 11.5px; opacity: .9; }
 .lcfoot { padding: 7px 9px 9px; min-width: 0; }

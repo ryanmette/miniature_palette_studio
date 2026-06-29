@@ -252,9 +252,16 @@ export function livePalette(vm, fill) {
         + `<span style="color:${tier(m.quality.tier)}">${esc(m.quality.label)}</span>`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
-    return `<button type="button" class="lcol" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}">`
-      + `<span class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}"><span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></span>`
-      + `<span class="lcfoot">${foot}</span></button>`;
+    const isFree = c.kind === 'free';
+    const cHex = safeColor(c.hex);                         // the swatch's own (ideal) colour — what "use as base" applies
+    return `<div class="lcol">`
+      + `<button type="button" class="lctop${fx ? ' ' + fx : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}" style="background-color:${bg};color:${t}">`
+      +   `<span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></button>`
+      + `<div class="lcact">`
+      +   `<button type="button" class="lcbtn" data-setbase="${cHex}" title="Use as base colour" aria-label="Use ${esc(tag)} as the base colour">◎</button>`
+      +   (isFree ? `<button type="button" class="lcbtn" data-delnode="${c.id.slice(1)}" title="Remove this colour" aria-label="Remove ${esc(tag)}">✕</button>` : '')
+      + `</div>`
+      + `<span class="lcfoot">${foot}</span></div>`;
   }).join('')}</div>`;
 }
 
