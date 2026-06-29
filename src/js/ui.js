@@ -105,14 +105,17 @@ const ownOrBuy = (id, mark) => mark === 'owned'
   ? '<span class="owntag">✓ owned</span>'
   : buyBtn(id, mark);
 
-/** Base-paint hero. `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy. */
-export function hero(base, animate = true, markOf) {
+/** Base-paint hero. `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy.
+ *  `seedRole` ('main'|'accent') badges the hero swatch with the role the *picked paint* plays — the swatch-level
+ *  reflection of the Main/Accent control (the hero always shows your pick, so this reads true in both modes). */
+export function hero(base, animate = true, markOf, seedRole = '') {
   const meta = base.custom ? 'typed hex' : `${esc(base.brand || '')}${base.line ? ' · ' + esc(base.line) : ''}`;
   const tags = base.custom
     ? '<span class="tag">custom</span>'
     : `<span class="tag">${esc(base.type || 'paint')}</span>${base.approx ? '<span class="tag approx">approx hex</span>' : ''}`;
   const own = (!base.custom && base.id && markOf) ? `<div class="ownline" style="margin-top:8px">${ownOrBuy(base.id, markOf(base.id))}</div>` : '';
-  return swatch(base.hex, (animate ? 'big pop' : 'big') + fxCls(base))
+  const seed = seedRole ? `<span class="seedbadge seed-${esc(seedRole)}">${esc(seedRole)}</span>` : '';
+  return swatch(base.hex, (animate ? 'big pop' : 'big') + fxCls(base)) + seed
     + `<div><h2>${esc(base.name)}</h2>`
     + `<div style="color:var(--text-muted);font-size:13px;margin-top:2px">${meta}</div>`
     + `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${tags}</div>`
@@ -181,11 +184,12 @@ export function planControls(ladder, collection, includeContrast, gapCount) {
     + `</div>`;
 }
 
-/** Small overview bar of the scheme's role ideal colours. */
+/** Small overview bar of the scheme's role ideal colours. `data-hex` links each role block to the
+ *  matching wheel node + live-palette column on the left (hover/focus highlight — app.js linkHighlight). */
 export const paletteOverview = scheme =>
   `<div class="palette">${scheme.roles.map(r => {
     const hex = safeColor(r.idealHex);
-    return `<button type="button" class="pblock" data-copy="${hex}" title="Copy ${hex}" aria-label="Copy ${esc(r.role)} colour ${hex}" style="background:${hex};color:${textOn(hex)}">`
+    return `<button type="button" class="pblock" data-copy="${hex}" data-hex="${hex}" title="Copy ${hex} · hover to find it on the wheel" aria-label="Copy ${esc(r.role)} colour ${hex}" style="background:${hex};color:${textOn(hex)}">`
       + `<span class="pbl"><span class="pbr">${esc(r.role)}</span><span class="pbh">${hex}</span></span></button>`;
   }).join('')}</div>`;
 
@@ -259,7 +263,7 @@ export function livePalette(vm, fill) {
     const canDetach = isFree || (c.kind === 'partner' && c.detachable);          // value-harmony partners can't be pinned uniquely
     const cHex = safeColor(c.hex);                         // the swatch's own (ideal) colour — what "use as base"/edit start from
     const lockOn = !!c.locked;
-    return `<div class="lcol${lockOn ? ' locked' : ''}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
+    return `<div class="lcol${lockOn ? ' locked' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
       + `<button type="button" class="lctop${fx ? ' ' + fx : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}" style="background-color:${bg};color:${t}">`
       +   `<span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></button>`
       + `<div class="lcact">`

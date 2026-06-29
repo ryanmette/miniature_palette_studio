@@ -6,15 +6,29 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **The wheel and the plan are now one instrument — a colour link.** Hovering (or keyboard-focusing) a
+  role block in the Plan (right) now rings that *same colour* wherever it lives on the left — the matching
+  **wheel node** and **live-palette column** — and the reverse: hovering a live column lights up its Plan
+  role block. This binds the two columns that previously read as separate panels. The highlight is an
+  **outline ring** (interaction, §3.5) so nothing reflows (§3.4); each surface is matched by `data-hex`.
+- **Main/Accent now reads on the swatch.** The hero (your picked paint) carries a small **main / accent
+  badge** mirroring the Main/Accent control — a swatch-level cue for which role your seed plays. (It sits
+  on the hero because the hero always shows *your pick*; the live-palette "Base" column is always the
+  scheme's main, so the badge would mislead there in accent mode.)
 - **Monetization survey (docs only).** `docs/MONETIZATION.md` — a high-level, *speculative* survey of
   ways the tool could earn (affiliate links on the existing shopping list + the native app as the paid
   product fit v1's no-backend posture; payments/accounts still need a §1 scope change first). Linked
   from `PLAN.md` §8 and the `CLAUDE.md` file tree. Nothing is built or committed to — exploration only.
 
 ### Changed
+- **Harmony comparisons are now one scrollable strip.** The 10 schemes (complementary · analogous · …)
+  no longer wrap into a multi-row block that pushes the studio down — they read as a single horizontally
+  scrollable list (swipe/scroll, edge fades, active chip auto-centred). One row on every width, phones
+  included. Amends `CLAUDE.md §3.6`.
 - **Paint picker is now sticky too.** In the split layout the left paint list stays pinned below the
   header (alongside the sticky studio) instead of scrolling away, so you can keep picking while reading
   the role plan. Both columns now clear the 63px sticky header; the picker un-sticks where it stacks (≤860px).
+- Service-worker cache bumped to `ps-v6` (shell changed: app.js/ui.js/app.css/index.html).
 
 ## [1.7.0] - 2026-06-29
 The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),

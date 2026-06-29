@@ -17,7 +17,8 @@ const state = {
   baseId: null, customHex: null,
   harmony: 'complementary',
   q: '', brand: '', ptype: '', psort: '', seedRole: 'main', tab: 'plan', theme: 'light',
-  compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
+  compareA: null, wheelL: null, hiHex: null,   // hiHex = the colour link-highlighted across wheel/plan/live palette
+
   extraNodes: [], showReal: false,   // editable swatches [{h,s,l?,locked?}] (S5); live-palette ideal↔real fill
   dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
   mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
@@ -103,6 +104,23 @@ function renderLive() {
   const el = $('#livepal'); if (!el) return;
   const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, matchOpts()) }));
   el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal');
+  applyLinkHighlight();   // re-assert any active hover-link after the columns are rebuilt
+}
+/** Cross-surface colour link (§3 "one instrument"): hovering/focusing a role block (Plan, right) or a
+ *  live-palette column (left) rings the *same colour* wherever it appears — both DOM surfaces + the wheel
+ *  node — so the wheel and the plan read as one tool. Transient interaction → outline ring (§3.5), never a
+ *  border-width change (no reflow, §3.4). hex=null clears. */
+function applyLinkHighlight() {
+  const h = state.hiHex;
+  for (const el of document.querySelectorAll('[data-hex]'))
+    el.classList.toggle('linkhi', h != null && el.dataset.hex.toUpperCase() === h);
+}
+function linkHighlight(hex) {
+  const h = hex && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex.toUpperCase() : null;
+  if (state.hiHex === h) return;
+  state.hiHex = h;
+  applyLinkHighlight();
+  wheelDraw();   // redraw so the matching wheel node gains/loses its ring
 }
 /** Redraw the always-visible studio (wheel + live palette) after a discrete base/harmony change. */
 function refreshStudio() {
@@ -226,6 +244,13 @@ function setupWheel() {
     for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = o.locked ? 3.5 : 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
     if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
+    // Colour link (hover a role/column elsewhere): ring whichever node is that same colour — recomputing
+    // each node's drawn hex the way it's filled, so the match is exact (no wheelL/rounding drift).
+    if (state.hiHex) for (const n of hitNodes()) {
+      const nh = n.kind === 'base' ? b : n.kind === 'partner' ? rotateHue(b, n.deg)
+        : rgbToHex(hslToRgb([n.h, n.s, state.extraNodes[n.idx]?.l ?? state.wheelL]));
+      if (nh.toUpperCase() === state.hiHex) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 5, 0, 7); ctx.lineWidth = 3; ctx.strokeStyle = accent; ctx.stroke(); }
+    }
   }
   wheelDraw = draw;          // expose the redraw for discrete base/harmony changes (picker, hex, harmony)
   let raf = 0;
@@ -575,7 +600,7 @@ function renderList() {
   $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${store.counts().owned ? ` · ${store.counts().owned} owned` : ''}`;
 }
 function renderHero(animate = true) {
-  $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf);   // animate=false during a live drag (no pop spam)
+  $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole);   // animate=false during a live drag (no pop spam)
   $('#baseLabel').textContent = `${i18n.t('baseColour')} · ${state.seedRole}`;
 }
 let urlTimer = null, announceTimer = null;
@@ -629,6 +654,7 @@ function applySnap(json) {
   state.dropOffsets = [...(o.dropOffsets || [])];
   state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
   $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
+  scrollHarmonyActive();
   for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   const hx = $('#hex'); if (hx) hx.value = baseHex().replace('#', '');
@@ -675,6 +701,11 @@ function setMode(mode) {
   updateUrl();
 }
 function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
+/** Centre the active harmony chip in the scrollable strip — horizontal only (no page jump). */
+function scrollHarmonyActive() {
+  const seg = $('#seg'), el = seg && seg.querySelector('button[aria-pressed="true"]');
+  if (el) seg.scrollLeft = el.offsetLeft - (seg.clientWidth - el.offsetWidth) / 2;
+}
 function syncTabs(focusActive = false) {
   const tabs = $('#tabs');
   for (const b of tabs.children) {
@@ -901,8 +932,15 @@ function wire() {
     state.harmony = b.dataset.h;
     state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
     for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
+    scrollHarmonyActive();
     refreshStudio(); renderActive(); announce(); updateUrl();
   });
+  // Cross-surface colour link: hover/focus a role block (Plan) or a live column → ring that colour everywhere.
+  const ws = document.querySelector('.workspace');
+  ws.addEventListener('mouseover', e => { const el = e.target.closest('[data-hex]'); linkHighlight(el ? el.dataset.hex : null); });
+  ws.addEventListener('mouseleave', () => linkHighlight(null));
+  ws.addEventListener('focusin', e => { const el = e.target.closest('[data-hex]'); linkHighlight(el ? el.dataset.hex : null); });
+  ws.addEventListener('focusout', e => { if (!e.relatedTarget || !e.relatedTarget.closest('[data-hex]')) linkHighlight(null); });
   $('#realtoggle').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.showReal = b.dataset.fill === 'real';
@@ -1040,6 +1078,7 @@ async function init() {
   else state.baseId = state.idx.paints[0].id;
 
   $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
+  scrollHarmonyActive();
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   syncNodeBtns();
   $('#hex').value = baseHex().replace('#', '');
