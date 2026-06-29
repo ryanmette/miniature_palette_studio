@@ -184,6 +184,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── USE_CASES.md           ← personas, entry modes, scheme roles, UC catalog
 │   ├── DATA_SOURCING.md       ← data sourcing + verification methodology (§5)
 │   ├── IOS_APP_PLAN.md        ← iPhone app (v2) exploration — future, not v1
+│   ├── MONETIZATION.md        ← speculative monetization survey (affiliate/funnel fit v1; payments need a §1 change) — exploration only
 │   └── EMBED.md               ← Squarespace embedding guide (added at M8)
 ├── mockups/                   ← design references, NOT shipped (no runtime role)
 │   ├── index.html             ← canonical app mockup (unified light/dark)

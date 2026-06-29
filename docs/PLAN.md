@@ -151,6 +151,8 @@ scaffold + picker. Still future:*
 - **Designer asset library** — fill the `src/assets/{icons,art}` scaffold (needs a designer).
 - Printable/PDF scheme cards · community-submitted palettes · paint inventory sync (still out of scope —
   needs a constitution update first).
+- **Monetization** — speculative survey in [`MONETIZATION.md`](MONETIZATION.md) (affiliate links + funnel
+  fit v1; payments/accounts still need a §1 scope change first). Exploration only; nothing committed.
 
 ---
 

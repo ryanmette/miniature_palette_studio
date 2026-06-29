@@ -5,6 +5,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Monetization survey (docs only).** `docs/MONETIZATION.md` — a high-level, *speculative* survey of
+  ways the tool could earn (affiliate links on the existing shopping list + the native app as the paid
+  product fit v1's no-backend posture; payments/accounts still need a §1 scope change first). Linked
+  from `PLAN.md` §8 and the `CLAUDE.md` file tree. Nothing is built or committed to — exploration only.
+
 ### Changed
 - **Paint picker is now sticky too.** In the split layout the left paint list stays pinned below the
   header (alongside the sticky studio) instead of scrolling away, so you can keep picking while reading
