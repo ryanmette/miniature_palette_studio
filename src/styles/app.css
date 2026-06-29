@@ -199,6 +199,10 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
   border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 12px; line-height: 1; cursor: pointer; box-shadow: var(--shadow); }
 .lcbtn:hover { background: var(--surface-2); }
 .lcbtn:focus-visible { outline: none; box-shadow: var(--focus); }
+.lcbtn.on { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
+.lcol.locked { box-shadow: inset 0 0 0 2px var(--accent); }   /* a locked swatch survives Generate + harmony changes */
+.lcol[draggable="true"] .lctop { cursor: grab; }
+.lcol.dragging { opacity: .5; }
 .lctag { font-size: 11px; font-weight: 600; opacity: .92; }
 .lchex { font-family: var(--mono); font-size: 11.5px; opacity: .9; }
 .lcfoot { padding: 7px 9px 9px; min-width: 0; }

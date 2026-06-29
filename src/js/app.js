@@ -18,7 +18,8 @@ const state = {
   harmony: 'complementary',
   q: '', brand: '', ptype: '', psort: '', seedRole: 'main', tab: 'plan', theme: 'light',
   compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
-  extraNodes: [], showReal: false,   // free/added wheel nodes [{h,s}] (S5); live-palette ideal↔real fill
+  extraNodes: [], showReal: false,   // editable swatches [{h,s,l?,locked?}] (S5); live-palette ideal↔real fill
+  dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
   mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
   includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
@@ -88,8 +89,12 @@ let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony c
 /** Derived palette: harmony-rule colours (never stored) + any free/added nodes. Feeds wheel + live palette. */
 function paletteNodes() {
   const base = schemeBase();
-  const rule = harmonize(base, state.harmony).map((n, i) => ({ id: 'p' + i, kind: i ? 'partner' : 'base', hex: n.hex, deg: n.deg }));
-  const free = state.extraNodes.map((o, i) => ({ id: 'x' + i, kind: 'free', deg: null, hex: rgbToHex(hslToRgb([o.h, o.s, state.wheelL])) }));
+  const drop = new Set(state.dropOffsets);
+  const rule = harmonize(base, state.harmony)
+    .map((n, i) => ({ id: 'p' + i, kind: i ? 'partner' : 'base', hex: n.hex, deg: n.deg }))
+    .filter(n => n.kind === 'base' || !drop.has(n.deg));   // a detached (locked/edited) partner is now a free swatch
+  const free = state.extraNodes.map((o, i) => ({ id: 'x' + i, kind: 'free', deg: null, locked: !!o.locked,
+    hex: rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])) }));
   return [...rule, ...free];
 }
 /** Render the variable live palette: one column per harmony/free colour → nearest paint (ideal/real fill). */
@@ -127,6 +132,46 @@ function syncNodeBtns() {
   const a = $('#addnode'), d = $('#delnode');
   if (a) a.disabled = state.extraNodes.length >= MAX_FREE;
   if (d) d.disabled = state.extraNodes.length === 0;
+}
+/** Current hex of an addressable swatch key ('base' | 'p:<deg>' | 'x:<idx>'). */
+function swatchHex(sw) {
+  if (sw.startsWith('p:')) return rotateHue(baseHex(), +sw.slice(2));
+  if (sw.startsWith('x:')) { const o = state.extraNodes[+sw.slice(2)]; if (o) return rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); }
+  return baseHex();
+}
+/** Detach a harmony partner into the editable free-swatch list (so lock/edit can pin it independently). */
+function detachPartner(deg, extra) {
+  if (state.extraNodes.length >= MAX_FREE) return false;
+  const [bh, bs] = rgbToHsl(hexToRgb(baseHex()));
+  if (!state.dropOffsets.includes(deg)) state.dropOffsets.push(deg);
+  state.extraNodes.push({ h: ((bh + deg) % 360 + 360) % 360, s: bs, l: state.wheelL, ...extra });
+  return true;
+}
+/** Lock toggle for a swatch — locked swatches survive Generate + harmony changes. The base can't be locked. */
+function lockSwatch(sw) {
+  if (sw === 'base') return;
+  if (sw.startsWith('p:')) detachPartner(+sw.slice(2), { locked: true });
+  else if (sw.startsWith('x:')) { const o = state.extraNodes[+sw.slice(2)]; if (o) o.locked = !o.locked; }
+  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+}
+/** Set an arbitrary hex on a swatch (the base re-seeds; any other swatch becomes a pinned free swatch). */
+function editSwatch(sw, hex) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  if (sw === 'base') { seedFromHex(hex); return; }
+  const [h, s, l] = rgbToHsl(hexToRgb(hex));
+  if (sw.startsWith('p:')) detachPartner(+sw.slice(2), { h, s, l });
+  else if (sw.startsWith('x:')) { const i = +sw.slice(2); if (state.extraNodes[i]) state.extraNodes[i] = { ...state.extraNodes[i], h, s, l }; }
+  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+}
+let swEditTarget = null;   // swatch key being edited via the native colour picker
+/** Open the per-swatch colour editor (native picker), seeded with the swatch's current colour. */
+function openSwatchEditor(sw) { const inp = $('#swEdit'); if (!inp) return; swEditTarget = sw; inp.value = swatchHex(sw); inp.click(); }
+/** Move an added swatch within the free list (drag-reorder). */
+function moveFreeNode(from, to) {
+  const a = state.extraNodes;
+  if (!(from >= 0 && from < a.length && to >= 0 && to < a.length) || from === to) return;
+  const [m] = a.splice(from, 1); a.splice(to, 0, m);
+  wheelDraw(); renderLive(); updateUrl();
 }
 function setupWheel() {
   const cv = $('#wheel'), ctx = cv.getContext('2d');
@@ -175,11 +220,11 @@ function setupWheel() {
     ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
     const spokeTo = (hh, ss) => { const [x, y] = pos(hh, ss); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); };
     spokeTo(h, s);                                          // base — a spoke to every colour (Adobe-style)
-    for (const o of offs) spokeTo(h + o, s);               // partners
+    for (const o of offs) if (!state.dropOffsets.includes(o)) spokeTo(h + o, s);   // partners (skip detached)
     for (const o of state.extraNodes) spokeTo(o.h, o.s);   // free/added
-    for (const o of offs) { const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
+    for (const o of offs) { if (state.dropOffsets.includes(o)) continue; const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
     const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
-    for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
+    for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = o.locked ? 3.5 : 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
     if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
   }
@@ -196,7 +241,7 @@ function setupWheel() {
     // Adobe-style: moving the base moves everything. Partners are derived (they already follow);
     // free nodes are absolute, so rotate them by the base's hue delta to keep their relationship.
     const dh = ((h - rgbToHsl(hexToRgb(baseHex()))[0]) % 360 + 360) % 360;
-    if (dh && state.extraNodes.length) state.extraNodes = state.extraNodes.map(n => ({ h: ((n.h + dh) % 360 + 360) % 360, s: n.s }));
+    if (dh && state.extraNodes.length) state.extraNodes = state.extraNodes.map(n => n.locked ? n : { ...n, h: ((n.h + dh) % 360 + 360) % 360 });
     state.customHex = rgbToHex(hslToRgb([h, s, state.wheelL]));
     $('#hex').value = state.customHex.replace('#', '');
     commit();
@@ -206,7 +251,7 @@ function setupWheel() {
   function hitNodes() {                  // every grabbable node: kind, its hue/sat, and screen position
     const [h, s] = rgbToHsl(hexToRgb(baseHex())), [bx, by] = pos(h, s);
     const ns = [{ kind: 'base', h, s, x: bx, y: by }];
-    HARMONY_OFFSETS[state.harmony].forEach(o => { const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
+    HARMONY_OFFSETS[state.harmony].forEach(o => { if (state.dropOffsets.includes(o)) return; const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
     state.extraNodes.forEach((o, i) => { const [x, y] = pos(o.h, o.s); ns.push({ kind: 'free', idx: i, h: o.h, s: o.s, x, y }); });
     return ns;
   }
@@ -549,7 +594,8 @@ function updateUrl() {
   if (state.seedRole === 'accent') p.set('r', 'accent');
   if (state.theme === 'dark') p.set('t', 'dark');
   if (state.showReal) p.set('f', '1');
-  if (state.extraNodes.length) p.set('x', state.extraNodes.map(n => `${Math.round(n.h)}.${Math.round(n.s * 100)}`).join('-'));
+  if (state.extraNodes.length) p.set('x', state.extraNodes.map(n => `${Math.round(n.h)}.${Math.round(n.s * 100)}.${Math.round((n.l ?? state.wheelL) * 100)}${n.locked ? '!' : ''}`).join('-'));
+  if (state.dropOffsets.length) p.set('d', state.dropOffsets.join('.'));
   history.replaceState(null, '', '?' + p.toString());
   pushHistory();
 }
@@ -561,7 +607,8 @@ function paletteSnap() {
     customHex: state.customHex || null,
     baseId: state.customHex ? null : state.baseId,
     harmony: state.harmony, seedRole: state.seedRole, showReal: state.showReal,
-    extraNodes: state.extraNodes.map(n => ({ h: Math.round(n.h * 10) / 10, s: Math.round(n.s * 1000) / 1000 })),
+    extraNodes: state.extraNodes.map(n => ({ h: Math.round(n.h * 10) / 10, s: Math.round(n.s * 1000) / 1000, l: n.l ?? null, locked: !!n.locked })),
+    dropOffsets: [...state.dropOffsets],
   });
 }
 function pushHistory() {
@@ -579,7 +626,8 @@ function applySnap(json) {
   state.harmony = isHarmony(o.harmony) ? o.harmony : state.harmony;
   state.seedRole = o.seedRole === 'accent' ? 'accent' : 'main';
   state.showReal = !!o.showReal;
-  state.extraNodes = (o.extraNodes || []).map(n => ({ h: n.h, s: n.s }));
+  state.extraNodes = (o.extraNodes || []).map(n => ({ h: n.h, s: n.s, ...(n.l != null ? { l: n.l } : {}), ...(n.locked ? { locked: true } : {}) }));
+  state.dropOffsets = [...(o.dropOffsets || [])];
   state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
   $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
   for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
@@ -835,6 +883,8 @@ function wire() {
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
     const col = e.target.closest('[data-collection]'); if (col) { setCollection(col.dataset.collection); return; }
+    const lk = e.target.closest('[data-lock]'); if (lk) { e.stopPropagation(); lockSwatch(lk.dataset.lock); return; }              // lock / unlock a swatch
+    const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openSwatchEditor(ed.dataset.edit); return; }        // edit a swatch's hex
     const sb = e.target.closest('[data-setbase]'); if (sb) { e.stopPropagation(); seedFromHex(sb.dataset.setbase); return; }   // promote a swatch to the base colour
     const dn = e.target.closest('[data-delnode]'); if (dn) { e.stopPropagation(); removeFreeNode(+dn.dataset.delnode); return; }  // delete an added swatch
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
@@ -849,6 +899,7 @@ function wire() {
   $('#seg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.harmony = b.dataset.h;
+    state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
     for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
     refreshStudio(); renderActive(); announce(); updateUrl();
   });
@@ -862,6 +913,13 @@ function wire() {
   $('#delnode').addEventListener('click', () => removeFreeNode());
   $('#undo').addEventListener('click', undo);
   $('#redo').addEventListener('click', redo);
+  $('#swEdit').addEventListener('change', e => { if (swEditTarget) { editSwatch(swEditTarget, e.target.value.toUpperCase()); swEditTarget = null; } });
+  // drag-reorder the added swatches (delegated on #livepal so it survives re-renders)
+  const lp = $('#livepal');
+  lp.addEventListener('dragstart', e => { const col = e.target.closest('[data-dragidx]'); if (!col) return; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', col.dataset.dragidx); col.classList.add('dragging'); });
+  lp.addEventListener('dragover', e => { if (e.target.closest('[data-dragidx]')) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; } });
+  lp.addEventListener('drop', e => { const tgt = e.target.closest('[data-dragidx]'); if (!tgt) return; e.preventDefault(); moveFreeNode(+e.dataTransfer.getData('text/plain'), +tgt.dataset.dragidx); });
+  lp.addEventListener('dragend', () => lp.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging')));
   document.addEventListener('keydown', e => {                                  // ⌘/Ctrl+Z undo · ⇧ or Ctrl+Y redo
     if (!(e.metaKey || e.ctrlKey) || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
     const k = e.key.toLowerCase();
@@ -968,7 +1026,14 @@ async function init() {
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;
   if (url.get('f') === '1') state.showReal = true;
   const xp = url.get('x');
-  if (xp) state.extraNodes = xp.split('-').map(s => { const [hh, sa] = s.split('.'); const H = +hh, S = +sa / 100; return (Number.isFinite(H) && Number.isFinite(S)) ? { h: ((H % 360) + 360) % 360, s: Math.min(1, Math.max(0, S)) } : null; }).filter(Boolean).slice(0, MAX_FREE);
+  if (xp) state.extraNodes = xp.split('-').map(tok => {
+    const locked = tok.endsWith('!'); const t = locked ? tok.slice(0, -1) : tok;
+    const [hh, sa, la] = t.split('.'); const H = +hh, S = +sa / 100, L = +la / 100;
+    if (!(Number.isFinite(H) && Number.isFinite(S))) return null;
+    return { h: ((H % 360) + 360) % 360, s: Math.min(1, Math.max(0, S)),
+      ...(Number.isFinite(L) ? { l: Math.min(1, Math.max(0, L)) } : {}), ...(locked ? { locked: true } : {}) };
+  }).filter(Boolean).slice(0, MAX_FREE);
+  const dp = url.get('d'); if (dp) state.dropOffsets = dp.split('.').map(Number).filter(Number.isFinite);
   if (url.get('r') === 'accent') { state.seedRole = 'accent'; for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'accent')); }
   const c = url.get('c');
   if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();

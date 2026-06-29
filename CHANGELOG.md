@@ -32,6 +32,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   active theme like every other control (CLAUDE.md §3: never style a component differently per theme).
 
 ### Added
+- **Per-swatch editing: lock · edit-hex · drag-reorder.** Each live-palette swatch can now be **locked**
+  (it survives Generate and harmony changes — the rule stops regenerating that hue via a `dropOffsets`
+  detach, and the swatch becomes an independent pinned colour), **edited** to any hex through a native
+  colour picker, and **drag-reordered** among the added swatches. With copy / use-as-base / delete from
+  the previous slice that's the full per-swatch action set, and every swatch still resolves to its nearest
+  real paint + ΔE. The wheel, harmony engine and role plan are untouched — locking just detaches a swatch
+  from the rule. URL share + undo/redo carry the new per-swatch lightness, lock and detach state. Next: the
+  expanded harmony set (Custom · Square · Compound · Shades · Monochromatic, a §7 update).
 - **Adobe-style live-palette editing (first slice).** The live palette gains **undo/redo** (↶/↷ buttons +
   Ctrl/⌘+Z, Shift for redo), **per-swatch hover actions** (copy · use-as-base · delete an added colour), and
   the wheel's **Generate** button re-rolls a random base. Every swatch still resolves to its nearest real
