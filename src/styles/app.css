@@ -168,7 +168,15 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .placeholder { color: var(--text-faint); font-size: 13px; padding: 24px 4px; }
 
 /* explore wheel (M5) */
-.stage { display: grid; grid-template-columns: minmax(260px, 320px) 1fr; gap: 24px; align-items: start; }
+/* split-sticky Studio layout: a full-width seed+hero bar, then a sticky studio beside the scrolling output */
+/* seed toolbar spans the workspace width: hex on the left, photo/compare pushed to the right edge */
+.seedtoolbar .seedbar { margin-bottom: 0; }
+.seedtoolbar .hexin { flex: 0 1 280px; min-width: 140px; }
+.seedtoolbar #fromPhoto { margin-left: auto; }
+.herowrap { min-width: 0; }
+.wsplit { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
+.studio { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.output { min-width: 0; }
 .wheelcol { display: flex; flex-direction: column; align-items: center; }
 .wcanvas { touch-action: none; cursor: grab; display: block; width: min(90vw, 300px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -325,11 +333,14 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .edpickrow { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
 
 /* responsive */
+@media (max-width: 1024px) {
+  .wsplit { grid-template-columns: 1fr; }   /* studio stacks above the output; both span the full width */
+  .studio { position: static; }
+}
 @media (max-width: 860px) {
   main { grid-template-columns: 1fr; gap: 16px; }
   .picker { order: -1; }
   .list { max-height: 230px; }
-  .stage { grid-template-columns: 1fr; }   /* wheel over palette */
 }
 @media (max-width: 520px) {
   :root { --tap: 44px; }

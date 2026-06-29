@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Studio relaid out as a sticky split (the "Split + sticky studio" exploration).** A full-width seed
+  toolbar tops the workspace; below it, on wide screens (>1024px) the studio (base hero + wheel + live
+  palette) becomes a **sticky left column** beside a **scrolling tabbed output** column (Plan·roles /
+  Equivalents / Accessibility) — so the role plan reads next to the wheel without scrolling past it.
+  The base hero now heads the studio column (above the wheel), and the top toolbar uses the full width
+  (From photo / Compare pushed to the right edge). Collapses to a single workspace column ≤1024px and a
+  single page column ≤860px. Amends CLAUDE.md §3.6. No JS/behaviour change — markup + CSS only.
+
 ### Fixed
 - **Photo eyedropper now locks the colour on click.** Previously the sampled colour kept tracking the
   cursor on hover, so by the time you moved to "Use as base colour" the committed colour had drifted to
