@@ -29,8 +29,8 @@
   <div class="setrow">
     <span class="setlbl">Theme</span>
     <div class="seg" id="themeSeg" role="group" aria-label="Theme">
-      <button data-theme="light" aria-pressed="true">Light</button>
-      <button data-theme="dark" aria-pressed="false">Dark</button>
+      <button data-set-theme="light" aria-pressed="true">Light</button>
+      <button data-set-theme="dark" aria-pressed="false">Dark</button>
     </div>
   </div>
   <div class="setrow">
@@ -67,7 +67,7 @@
   </aside>
 
   <section class="workspace">
-    <div class="card pad">
+    <div class="card pad seedtoolbar">
       <div class="seedbar">
         <div class="hexin" title="Type any hex to seed a scheme"><span>#</span><input id="hex" maxlength="6" inputmode="text" aria-label="Hex colour" /></div>
         <div class="seg" id="seedRole" role="group" aria-label="Seed role">
@@ -78,41 +78,44 @@
         <input id="photoFile" type="file" accept="image/*" hidden />
         <button class="btn" id="compare" aria-pressed="false" title="Pin this scheme, then compare">Compare</button>
       </div>
-      <div class="micro" id="baseLabel" style="margin-bottom:12px">Base colour · main</div>
-      <div class="hero" id="hero"></div>
     </div>
-    <div class="card pad">
-      <div class="stage">
+    <div class="wsplit">
+      <div class="card pad studio">
+        <div class="herowrap">
+          <div class="micro" id="baseLabel" style="margin-bottom:6px">Base colour · main</div>
+          <div class="hero" id="hero"></div>
+        </div>
         <div class="wheelcol">
           <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
-          <div class="wctrl"><span class="micro">Light</span><input id="wl" type="range" min="6" max="94" step="1" aria-label="Lightness" style="flex:1" /><button class="btn" id="wrand" style="height:32px;padding:0 12px">↻ Shuffle</button></div>
+          <div class="wctrl"><span class="micro">Light</span><input id="wl" type="range" min="6" max="94" step="1" aria-label="Lightness" style="flex:1" /><button class="btn" id="wrand" style="height:32px;padding:0 12px" title="Generate a random base colour">↻ Generate</button></div>
         </div>
-        <div class="palcol">
-          <div class="seg" id="seg" role="group" aria-label="Harmony type" style="margin-bottom:12px"></div>
-          <div class="palhead">
-            <div class="micro">Live palette → nearest paint</div>
-            <div class="palctl">
-              <button class="btn" id="addnode" aria-label="Add a colour" title="Add a colour">+</button>
-              <button class="btn" id="delnode" aria-label="Remove the last added colour" title="Remove the last added colour">−</button>
-              <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">
-                <button data-fill="ideal" aria-pressed="true">Ideal</button>
-                <button data-fill="real" aria-pressed="false">Real</button>
-              </div>
+        <div class="seg" id="seg" role="group" aria-label="Harmony type"></div>
+        <div class="palhead">
+          <div class="micro">Live palette → nearest paint</div>
+          <div class="palctl">
+            <button class="btn" id="undo" aria-label="Undo" title="Undo (Ctrl/⌘+Z)" disabled>↶</button>
+            <button class="btn" id="redo" aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)" disabled>↷</button>
+            <button class="btn" id="addnode" aria-label="Add a colour" title="Add a colour">+</button>
+            <button class="btn" id="delnode" aria-label="Remove the last added colour" title="Remove the last added colour">−</button>
+            <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">
+              <button data-fill="ideal" aria-pressed="true">Ideal</button>
+              <button data-fill="real" aria-pressed="false">Real</button>
             </div>
           </div>
-          <div id="livepal" aria-live="off"></div>
         </div>
+        <div id="livepal" aria-live="off"></div>
+        <input type="color" id="swEdit" hidden aria-hidden="true" tabindex="-1" />
       </div>
-    </div>
-    <div class="card pad">
-      <div class="tabs" id="tabs" role="tablist" aria-label="Scheme views">
-        <button role="tab" id="tab-plan" data-tab="plan" aria-controls="panel-plan" aria-selected="true" tabindex="0">Plan · roles</button>
-        <button role="tab" id="tab-equiv" data-tab="equiv" aria-controls="panel-equiv" aria-selected="false" tabindex="-1">Equivalents</button>
-        <button role="tab" id="tab-a11y" data-tab="a11y" aria-controls="panel-a11y" aria-selected="false" tabindex="-1">Accessibility</button>
+      <div class="card pad output">
+        <div class="tabs" id="tabs" role="tablist" aria-label="Scheme views">
+          <button role="tab" id="tab-plan" data-tab="plan" aria-controls="panel-plan" aria-selected="true" tabindex="0">Plan · roles</button>
+          <button role="tab" id="tab-equiv" data-tab="equiv" aria-controls="panel-equiv" aria-selected="false" tabindex="-1">Equivalents</button>
+          <button role="tab" id="tab-a11y" data-tab="a11y" aria-controls="panel-a11y" aria-selected="false" tabindex="-1">Accessibility</button>
+        </div>
+        <div data-panel="plan" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0"></div>
+        <div data-panel="equiv" id="panel-equiv" role="tabpanel" aria-labelledby="tab-equiv" tabindex="0" hidden></div>
+        <div data-panel="a11y" id="panel-a11y" role="tabpanel" aria-labelledby="tab-a11y" tabindex="0" hidden></div>
       </div>
-      <div data-panel="plan" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0"></div>
-      <div data-panel="equiv" id="panel-equiv" role="tabpanel" aria-labelledby="tab-equiv" tabindex="0" hidden></div>
-      <div data-panel="a11y" id="panel-a11y" role="tabpanel" aria-labelledby="tab-a11y" tabindex="0" hidden></div>
     </div>
     <div class="finishbar">
       <span class="finishlbl">Finish</span>

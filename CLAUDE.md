@@ -158,8 +158,8 @@ Embedded in a Squarespace page with heavy mobile traffic, so the tool is **mobil
 fully responsive**, not a desktop layout that merely shrinks.
 - **Header is minimal (IA by stage, not by widget):** the header holds only the **Studio / Shelf** mode switch + a **⋯ settings** popover (theme; locale later). Every other control lives in the stage it belongs to — **seed** (hex, Main/Accent) + **Compare** sit atop the Studio; the **Use my collection** control (off · prefer · only) lives in the Plan tab; **Export list / Share link** form a **finish** cluster at the bottom of the Studio. Don't move stage controls back into the header.
 - **Top-level modes (maps to a future app tab bar):** a primary **Studio / Shelf** switch in the header. **Studio** is the scheme workspace (picker + studio + tabs). **Shelf** ("My paint shelf") is the full-width collection grid for stocking what you own / want to buy — bulk-toggled, Finder-style. The compact picker stays for in-context selection while planning.
-- **Layout (Studio, all devices):** the harmony **wheel + live palette form an always-visible *studio*** at the top of the workspace; **Plan·roles / Equivalents / Accessibility** are drill-down tabs below it (the wheel is no longer a tab). The role-mapped ~60-30-10 ideal-vs-actual output lives in the **Plan** tab.
-- Breakpoints: **≤860px** → single column (picker collapses above the workspace; the studio stacks the wheel over the live palette); **≤520px** → compact paddings, the seed bar wraps (hex field full-width), role slots stack, tabs scroll horizontally.
+- **Layout (Studio):** a full-width **seed toolbar** (hex · Main/Accent · From photo · Compare) tops the workspace. Below it, on wide screens (>1024px) the workspace **splits into two columns: a sticky *studio* column** (base **hero** + harmony **wheel** + **live palette**) that stays in view, and a **tabbed output** column (**Plan·roles / Equivalents / Accessibility**) that scrolls beside it — so the role plan reads next to the wheel without scrolling past it (the wheel is no longer a tab). The role-mapped ~60-30-10 ideal-vs-actual output lives in the **Plan** tab.
+- Breakpoints: **≤1024px** → the split collapses to one workspace column (the studio un-sticks and stacks above the output); **≤860px** → single column (picker collapses above the workspace; the studio stacks the wheel over the live palette); **≤520px** → compact paddings, the seed toolbar wraps (hex field full-width), role slots stack, tabs scroll horizontally.
 - **Touch targets ≥44px** below 520px (`--tap` → 44). The interactive wheel supports touch drag and fits a phone.
 - No horizontal page scroll; swatches and wheel scale fluidly. Verify at 360 / 768 / 1180px.
 
@@ -190,6 +190,10 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── style-directions.html  ← 5-way visual-direction exploration
 │   ├── quick-complement.html  ← P5 "quick complement" mode mock
 │   ├── persona-flows.html     ← end-to-end experience-flow storyboard
+│   ├── studio-layouts.html    ← 5-way Studio layout exploration (scroll-reduction) + judge ranking
+│   ├── layouts/               ← the 5 standalone layout mocks embedded by studio-layouts.html
+│   │   ├── split-sticky-studio.html · cockpit-3col.html · instrument-band.html
+│   │   └── bento-dashboard.html · sticky-studio-rail.html
 │   └── loaders/
 │       ├── MOLTEN_HARMONICS.md ← loader philosophy (see §3.4)
 │       └── loader.html        ← determinate loader (drop → wheel → wells)
@@ -297,12 +301,25 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 
 - **Conversions**: sRGB ↔ linear ↔ XYZ ↔ **CIELAB (D65)**. Matching is done in Lab.
 - **Distance**: **CIEDE2000 (ΔE 2000)** with kL=kC=kH=1. This is the single matching metric.
-- **Harmonies** are computed by rotating **hue in HSL**, keeping S/L of the base:
+- **Harmonies** are computed from the base in HSL. Most rotate **hue** (keeping S/L); the two *value*
+  harmonies instead vary **lightness/saturation** at the base hue. Each partner is a locked `{dh,ds,dl}`
+  step from the base (`harmony.js` `HARMONY_STEPS`):
   - complementary `+180°`
   - analogous `−30°, +30°`
   - triadic `+120°, +240°`
   - split-complementary `+150°, +210°`
   - tetradic (rectangle) `+60°, +180°, +240°`
+  - square `+90°, +180°, +270°`
+  - compound `+30°, +180°, +210°` (base + a neighbour + the complement + the complement's neighbour)
+  - **shades** — same hue & saturation, lightness `−0.24, −0.12, +0.12, +0.24` (a value ramp)
+  - **monochromatic** — same hue, saturation `−0.34, −0.17, +0.10` (with a touch of value)
+  - **custom** — no rule (zero steps); the palette is whatever the painter builds by hand via the
+    per-swatch lock/edit/add controls. The role plan still derives a Secondary/Accent from base rotations.
+- **Adding a colour** (the live palette's `+`, "add along the line") extends the base's **value ramp** —
+  alternating tints/shades stepping outward — rather than inventing a new hue.
+- The wheel can only place **hue** partners on the ring, so for the value harmonies (shades/monochromatic)
+  it shows just the base + any added/free nodes; the value ramp itself is read in the live-palette strip,
+  and those partners are display-only there (no per-swatch lock/edit, since they can't be keyed by hue).
 - **Color-blindness simulation**: Machado et al. (2009) severity-1.0 matrices applied in linear RGB, for protanopia / deuteranopia / tritanopia.
 - **Contrast**: WCAG 2.1 relative-luminance ratio; AA thresholds 4.5:1 (text) / 3:1 (large/UI).
 - **Text-on-swatch** legibility: choose black/white by relative luminance threshold 0.5 (with the standard sRGB→linear step).

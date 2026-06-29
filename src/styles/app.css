@@ -168,7 +168,15 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .placeholder { color: var(--text-faint); font-size: 13px; padding: 24px 4px; }
 
 /* explore wheel (M5) */
-.stage { display: grid; grid-template-columns: minmax(260px, 320px) 1fr; gap: 24px; align-items: start; }
+/* split-sticky Studio layout: a full-width seed+hero bar, then a sticky studio beside the scrolling output */
+/* seed toolbar spans the workspace width: hex on the left, photo/compare pushed to the right edge */
+.seedtoolbar .seedbar { margin-bottom: 0; }
+.seedtoolbar .hexin { flex: 0 1 280px; min-width: 140px; }
+.seedtoolbar #fromPhoto { margin-left: auto; }
+.herowrap { min-width: 0; }
+.wsplit { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
+.studio { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.output { min-width: 0; }
 .wheelcol { display: flex; flex-direction: column; align-items: center; }
 .wcanvas { touch-action: none; cursor: grab; display: block; width: min(90vw, 300px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -177,12 +185,26 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .palcol { min-width: 0; }
 .palhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .palctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-#addnode, #delnode { width: 30px; height: 30px; padding: 0; justify-content: center; font-size: 17px; line-height: 1; }
+#addnode, #delnode, #undo, #redo { width: 30px; height: 30px; padding: 0; justify-content: center; font-size: 17px; line-height: 1; }
+#undo, #redo { font-size: 15px; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .livepal { display: flex; gap: 8px; }
-.lcol { flex: 1; min-width: 0; display: flex; flex-direction: column; border: none; padding: 0; cursor: pointer; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); background: var(--surface-2); text-align: left; }
-.lcol:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
-.lctop { flex: 1; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 8px 9px; }
+.lcol { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); background: var(--surface-2); text-align: left; }
+.lctop { flex: 1; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 8px 9px; border: none; width: 100%; cursor: pointer; text-align: left; font: inherit; }
+.lctop:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+/* per-swatch hover actions (Adobe-style) — overlay so revealing them never reflows the palette (§3.4) */
+.lcact { position: absolute; top: 6px; right: 6px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px;
+  max-width: calc(100% - 12px); opacity: 0; transition: opacity .12s ease; pointer-events: none; }
+.lcol:hover .lcact, .lcol:focus-within .lcact { opacity: 1; pointer-events: auto; }
+.lcbtn { width: 21px; height: 21px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px;
+  border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 12px; line-height: 1; cursor: pointer; box-shadow: var(--shadow); }
+.lcbtn:hover { background: var(--surface-2); }
+.lcbtn:focus-visible { outline: none; box-shadow: var(--focus); }
+.lcbtn:disabled { opacity: .35; cursor: default; }
+.lcbtn.on { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
+.lcol.locked { box-shadow: inset 0 0 0 2px var(--accent); }   /* a locked swatch survives Generate + harmony changes */
+.lcol[draggable="true"] .lctop { cursor: grab; }
+.lcol.dragging { opacity: .5; }
 .lctag { font-size: 11px; font-weight: 600; opacity: .92; }
 .lchex { font-family: var(--mono); font-size: 11.5px; opacity: .9; }
 .lcfoot { padding: 7px 9px 9px; min-width: 0; }
@@ -284,6 +306,10 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   border-radius: var(--r-ctrl); box-shadow: var(--shadow); padding: 12px 14px; }
 .setrow { display: flex; align-items: center; gap: 12px; }
 .setlbl { font-size: 13px; color: var(--text-muted); }
+/* settings popover — align the two control groups in a grid and give them room to breathe */
+.popover.settings { display: grid; grid-template-columns: auto auto; justify-content: start;
+  align-items: center; gap: 12px 18px; padding: 16px; }
+.popover.settings .setrow { display: contents; }
 
 /* footer + About & data modal */
 .appfoot { max-width: 1180px; margin: 0 auto; padding: 24px 20px 40px; display: flex; align-items: center;
@@ -316,16 +342,19 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .edstage { position: relative; display: flex; justify-content: center; }
 .edcanvas { display: block; max-width: 100%; height: auto; border-radius: 10px; cursor: crosshair; touch-action: none;
   box-shadow: inset 0 0 0 1px var(--border); background: var(--surface-2); }
-.edloupe { position: absolute; top: 8px; right: 8px; border-radius: 50%; display: none; pointer-events: none;
+.edloupe { position: absolute; left: 0; top: 0; border-radius: 50%; display: none; pointer-events: none;
   box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.4), 0 3px 10px rgba(0,0,0,.35); }
 .edpickrow { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
 
 /* responsive */
+@media (max-width: 1024px) {
+  .wsplit { grid-template-columns: 1fr; }   /* studio stacks above the output; both span the full width */
+  .studio { position: static; }
+}
 @media (max-width: 860px) {
   main { grid-template-columns: 1fr; gap: 16px; }
   .picker { order: -1; }
   .list { max-height: 230px; }
-  .stage { grid-template-columns: 1fr; }   /* wheel over palette */
 }
 @media (max-width: 520px) {
   :root { --tap: 44px; }

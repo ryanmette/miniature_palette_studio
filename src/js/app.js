@@ -1,7 +1,7 @@
 // app.js — application state, dataset loading, entry modes, tabs, conveniences, theme, URL sharing.
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
-import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
+import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000 } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
@@ -18,7 +18,8 @@ const state = {
   harmony: 'complementary',
   q: '', brand: '', ptype: '', psort: '', seedRole: 'main', tab: 'plan', theme: 'light',
   compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
-  extraNodes: [], showReal: false,   // free/added wheel nodes [{h,s}] (S5); live-palette ideal↔real fill
+  extraNodes: [], showReal: false,   // editable swatches [{h,s,l?,locked?}] (S5); live-palette ideal↔real fill
+  dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
   mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
   includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
@@ -88,8 +89,13 @@ let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony c
 /** Derived palette: harmony-rule colours (never stored) + any free/added nodes. Feeds wheel + live palette. */
 function paletteNodes() {
   const base = schemeBase();
-  const rule = harmonize(base, state.harmony).map((n, i) => ({ id: 'p' + i, kind: i ? 'partner' : 'base', hex: n.hex, deg: n.deg }));
-  const free = state.extraNodes.map((o, i) => ({ id: 'x' + i, kind: 'free', deg: null, hex: rgbToHex(hslToRgb([o.h, o.s, state.wheelL])) }));
+  const drop = new Set(state.dropOffsets);
+  const hueH = isHueHarmony(state.harmony);   // value harmonies (shades/mono) can't be uniquely detached by hue
+  const rule = harmonize(base, state.harmony)
+    .map((n, i) => ({ id: 'p' + i, kind: i ? 'partner' : 'base', hex: n.hex, deg: n.deg, detachable: i > 0 && hueH }))
+    .filter(n => n.kind === 'base' || !drop.has(n.deg));   // a detached (locked/edited) partner is now a free swatch
+  const free = state.extraNodes.map((o, i) => ({ id: 'x' + i, kind: 'free', deg: null, locked: !!o.locked,
+    hex: rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])) }));
   return [...rule, ...free];
 }
 /** Render the variable live palette: one column per harmony/free colour → nearest paint (ideal/real fill). */
@@ -105,17 +111,14 @@ function refreshStudio() {
   wheelDraw(); renderLive();
 }
 const MAX_FREE = 6;   // bounds URL length + per-frame nearest-paint scans (S5 micro-decision)
-/** Add a free/draggable colour node at the widest hue gap (free nodes share the lightness slider). */
+/** Add a colour "along the line": extend the base's value ramp (alternating lighter/darker tints &
+ *  shades, stepping outward) rather than inventing a new hue. New swatches are draggable + editable. */
 function addFreeNode() {
   if (state.extraNodes.length >= MAX_FREE) return;
-  const [bh] = rgbToHsl(hexToRgb(baseHex()));
-  const hues = [bh, ...HARMONY_OFFSETS[state.harmony].map(o => ((bh + o) % 360 + 360) % 360), ...state.extraNodes.map(n => n.h)].sort((a, b) => a - b);
-  let bestGap = -1, at = (bh + 90) % 360;
-  for (let i = 0; i < hues.length; i++) {
-    const lo = hues[i], hi = i + 1 < hues.length ? hues[i + 1] : hues[0] + 360, g = hi - lo;
-    if (g > bestGap) { bestGap = g; at = ((lo + g / 2) % 360 + 360) % 360; }
-  }
-  state.extraNodes.push({ h: at, s: 0.6 });
+  const [bh, bs, bl] = rgbToHsl(hexToRgb(baseHex()));
+  const k = state.extraNodes.length, dir = k % 2 === 0 ? 1 : -1, mag = 0.12 + 0.10 * Math.floor(k / 2);
+  const l = Math.min(0.94, Math.max(0.06, bl + dir * mag));
+  state.extraNodes.push({ h: bh, s: bs, l });
   syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
 }
 /** Remove a free node (by index, or the last when omitted). */
@@ -127,6 +130,46 @@ function syncNodeBtns() {
   const a = $('#addnode'), d = $('#delnode');
   if (a) a.disabled = state.extraNodes.length >= MAX_FREE;
   if (d) d.disabled = state.extraNodes.length === 0;
+}
+/** Current hex of an addressable swatch key ('base' | 'p:<deg>' | 'x:<idx>'). */
+function swatchHex(sw) {
+  if (sw.startsWith('p:')) return rotateHue(baseHex(), +sw.slice(2));
+  if (sw.startsWith('x:')) { const o = state.extraNodes[+sw.slice(2)]; if (o) return rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); }
+  return baseHex();
+}
+/** Detach a harmony partner into the editable free-swatch list (so lock/edit can pin it independently). */
+function detachPartner(deg, extra) {
+  if (state.extraNodes.length >= MAX_FREE) return false;
+  const [bh, bs] = rgbToHsl(hexToRgb(baseHex()));
+  if (!state.dropOffsets.includes(deg)) state.dropOffsets.push(deg);
+  state.extraNodes.push({ h: ((bh + deg) % 360 + 360) % 360, s: bs, l: state.wheelL, ...extra });
+  return true;
+}
+/** Lock toggle for a swatch — locked swatches survive Generate + harmony changes. The base can't be locked. */
+function lockSwatch(sw) {
+  if (sw === 'base') return;
+  if (sw.startsWith('p:')) detachPartner(+sw.slice(2), { locked: true });
+  else if (sw.startsWith('x:')) { const o = state.extraNodes[+sw.slice(2)]; if (o) o.locked = !o.locked; }
+  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+}
+/** Set an arbitrary hex on a swatch (the base re-seeds; any other swatch becomes a pinned free swatch). */
+function editSwatch(sw, hex) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  if (sw === 'base') { seedFromHex(hex); return; }
+  const [h, s, l] = rgbToHsl(hexToRgb(hex));
+  if (sw.startsWith('p:')) detachPartner(+sw.slice(2), { h, s, l });
+  else if (sw.startsWith('x:')) { const i = +sw.slice(2); if (state.extraNodes[i]) state.extraNodes[i] = { ...state.extraNodes[i], h, s, l }; }
+  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+}
+let swEditTarget = null;   // swatch key being edited via the native colour picker
+/** Open the per-swatch colour editor (native picker), seeded with the swatch's current colour. */
+function openSwatchEditor(sw) { const inp = $('#swEdit'); if (!inp) return; swEditTarget = sw; inp.value = swatchHex(sw); inp.click(); }
+/** Move an added swatch within the free list (drag-reorder). */
+function moveFreeNode(from, to) {
+  const a = state.extraNodes;
+  if (!(from >= 0 && from < a.length && to >= 0 && to < a.length) || from === to) return;
+  const [m] = a.splice(from, 1); a.splice(to, 0, m);
+  wheelDraw(); renderLive(); updateUrl();
 }
 function setupWheel() {
   const cv = $('#wheel'), ctx = cv.getContext('2d');
@@ -172,14 +215,15 @@ function setupWheel() {
     ctx.clearRect(0, 0, W, H);
     buildDisc(); ctx.drawImage(disc, 0, 0, W, H);   // filled HSV colour field (replaces the dotted hue ring)
     const offs = HARMONY_OFFSETS[state.harmony];
+    const hueH = isHueHarmony(state.harmony);   // value harmonies (shades/mono) have no ring partners to draw
     ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
     const spokeTo = (hh, ss) => { const [x, y] = pos(hh, ss); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); };
     spokeTo(h, s);                                          // base — a spoke to every colour (Adobe-style)
-    for (const o of offs) spokeTo(h + o, s);               // partners
+    if (hueH) for (const o of offs) if (!state.dropOffsets.includes(o)) spokeTo(h + o, s);   // hue partners (skip detached)
     for (const o of state.extraNodes) spokeTo(o.h, o.s);   // free/added
-    for (const o of offs) { const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
+    if (hueH) for (const o of offs) { if (state.dropOffsets.includes(o)) continue; const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
     const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
-    for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
+    for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = o.locked ? 3.5 : 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
     if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
   }
@@ -196,7 +240,7 @@ function setupWheel() {
     // Adobe-style: moving the base moves everything. Partners are derived (they already follow);
     // free nodes are absolute, so rotate them by the base's hue delta to keep their relationship.
     const dh = ((h - rgbToHsl(hexToRgb(baseHex()))[0]) % 360 + 360) % 360;
-    if (dh && state.extraNodes.length) state.extraNodes = state.extraNodes.map(n => ({ h: ((n.h + dh) % 360 + 360) % 360, s: n.s }));
+    if (dh && state.extraNodes.length) state.extraNodes = state.extraNodes.map(n => n.locked ? n : { ...n, h: ((n.h + dh) % 360 + 360) % 360 });
     state.customHex = rgbToHex(hslToRgb([h, s, state.wheelL]));
     $('#hex').value = state.customHex.replace('#', '');
     commit();
@@ -206,7 +250,7 @@ function setupWheel() {
   function hitNodes() {                  // every grabbable node: kind, its hue/sat, and screen position
     const [h, s] = rgbToHsl(hexToRgb(baseHex())), [bx, by] = pos(h, s);
     const ns = [{ kind: 'base', h, s, x: bx, y: by }];
-    HARMONY_OFFSETS[state.harmony].forEach(o => { const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
+    if (isHueHarmony(state.harmony)) HARMONY_OFFSETS[state.harmony].forEach(o => { if (state.dropOffsets.includes(o)) return; const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
     state.extraNodes.forEach((o, i) => { const [x, y] = pos(o.h, o.s); ns.push({ kind: 'free', idx: i, h: o.h, s: o.s, x, y }); });
     return ns;
   }
@@ -549,9 +593,52 @@ function updateUrl() {
   if (state.seedRole === 'accent') p.set('r', 'accent');
   if (state.theme === 'dark') p.set('t', 'dark');
   if (state.showReal) p.set('f', '1');
-  if (state.extraNodes.length) p.set('x', state.extraNodes.map(n => `${Math.round(n.h)}.${Math.round(n.s * 100)}`).join('-'));
+  if (state.extraNodes.length) p.set('x', state.extraNodes.map(n => `${Math.round(n.h)}.${Math.round(n.s * 100)}.${Math.round((n.l ?? state.wheelL) * 100)}${n.locked ? '!' : ''}`).join('-'));
+  if (state.dropOffsets.length) p.set('d', state.dropOffsets.join('.'));
   history.replaceState(null, '', '?' + p.toString());
+  pushHistory();
 }
+
+/* ---- undo / redo: snapshot the palette at each settled change (updateUrl is the single chokepoint) ---- */
+const HIST = { stack: [], i: -1, busy: false };
+function paletteSnap() {
+  return JSON.stringify({
+    customHex: state.customHex || null,
+    baseId: state.customHex ? null : state.baseId,
+    harmony: state.harmony, seedRole: state.seedRole, showReal: state.showReal,
+    extraNodes: state.extraNodes.map(n => ({ h: Math.round(n.h * 10) / 10, s: Math.round(n.s * 1000) / 1000, l: n.l ?? null, locked: !!n.locked })),
+    dropOffsets: [...state.dropOffsets],
+  });
+}
+function pushHistory() {
+  if (HIST.busy) return;
+  const s = paletteSnap();
+  if (HIST.stack[HIST.i] === s) return;            // view-only change (tab/theme) → no new palette entry
+  HIST.stack.length = HIST.i + 1;                  // a fresh edit drops the redo branch
+  HIST.stack.push(s); HIST.i++;
+  if (HIST.stack.length > 100) { HIST.stack.shift(); HIST.i--; }
+  syncHistBtns();
+}
+function applySnap(json) {
+  const o = JSON.parse(json);
+  state.customHex = o.customHex; state.baseId = o.baseId;
+  state.harmony = isHarmony(o.harmony) ? o.harmony : state.harmony;
+  state.seedRole = o.seedRole === 'accent' ? 'accent' : 'main';
+  state.showReal = !!o.showReal;
+  state.extraNodes = (o.extraNodes || []).map(n => ({ h: n.h, s: n.s, ...(n.l != null ? { l: n.l } : {}), ...(n.locked ? { locked: true } : {}) }));
+  state.dropOffsets = [...(o.dropOffsets || [])];
+  state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
+  $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
+  for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
+  for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
+  const hx = $('#hex'); if (hx) hx.value = baseHex().replace('#', '');
+  const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
+  syncNodeBtns();
+}
+function undo() { if (HIST.i > 0) { HIST.i--; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
+function redo() { if (HIST.i < HIST.stack.length - 1) { HIST.i++; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
+function syncHistBtns() { const u = $('#undo'), r = $('#redo'); if (u) u.disabled = HIST.i <= 0; if (r) r.disabled = HIST.i >= HIST.stack.length - 1; }
+
 /** Debounced URL write for rapid-fire updates (wheel/slider drag); see setBase(). */
 function scheduleUrlUpdate() {
   if (urlTimer) clearTimeout(urlTimer);
@@ -569,7 +656,7 @@ function setTheme(t) {
   document.documentElement.dataset.theme = state.theme;
   store.setPref('theme', state.theme);
   const seg = document.querySelector('#themeSeg');   // keep the settings-menu theme control in sync
-  if (seg) for (const x of seg.children) x.setAttribute('aria-pressed', String(x.dataset.theme === state.theme));
+  if (seg) for (const x of seg.children) x.setAttribute('aria-pressed', String(x.dataset.setTheme === state.theme));
 }
 function syncLocaleSeg() {                            // reflect the active locale in the settings-menu control
   const cur = i18n.getLocale(), seg = $('#localeSeg');
@@ -726,28 +813,42 @@ function seedFromHex(hex) {
 /** Photo eyedropper (#v2): pick a colour from a local image — drawn to a canvas, sampled (3×3 average),
  *  never uploaded. Single-pick → seeds the scheme. Uses a native <dialog> (focus-trap + Esc). */
 function setupEyedropper() {
-  const dlg = $('#eyedropper'), cv = $('#edCanvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+  const dlg = $('#eyedropper'), stage = $('#edStage'), cv = $('#edCanvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loupe = $('#edLoupe'), lctx = loupe.getContext('2d'), chip = $('#edChip'), hexEl = $('#edHex'), useBtn = $('#edUse');
-  let pick = null;
+  let pick = null;                                     // the COMMITTED colour — only a click/tap (or drag) sets it
   const avg = (x, y) => {                              // 3×3 average around (x,y), clamped to the canvas
     const x0 = Math.max(0, Math.min(cv.width - 3, x - 1)), y0 = Math.max(0, Math.min(cv.height - 3, y - 1));
     const d = ctx.getImageData(x0, y0, 3, 3).data; let r = 0, g = 0, b = 0;
     for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
     const n = d.length / 4; return rgbToHex([Math.round(r / n), Math.round(g / n), Math.round(b / n)]);
   };
-  const drawLoupe = (x, y) => {                        // zoomed crop with a centre-pixel marker
+  const drawLoupe = (x, y, e) => {                     // zoomed crop with a centre-pixel marker, floated just above the cursor
     lctx.imageSmoothingEnabled = false; lctx.clearRect(0, 0, 72, 72);
     lctx.drawImage(cv, x - 4.5, y - 4.5, 9, 9, 0, 0, 72, 72);
     lctx.strokeStyle = '#fff'; lctx.lineWidth = 1; lctx.strokeRect(28, 28, 8, 8);
+    const sr = stage.getBoundingClientRect(), L = 72, gap = 16;     // position relative to the (position:relative) stage
+    const cxs = e.clientX - sr.left, cys = e.clientY - sr.top;
+    loupe.style.left = Math.max(0, Math.min(sr.width - L, cxs - L / 2)) + 'px';   // centre on the cursor, clamped in-stage
+    loupe.style.top = (cys - L - gap >= 0 ? cys - L - gap : cys + gap) + 'px';    // above the cursor, or below if no room
     loupe.style.display = 'block';
   };
   const at = e => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * (cv.width / r.width)), Math.round((e.clientY - r.top) * (cv.height / r.height))]; };
-  const sample = e => {
-    const [x, y] = at(e); if (x < 0 || y < 0 || x >= cv.width || y >= cv.height) return;
-    pick = avg(x, y); chip.style.background = pick; hexEl.textContent = pick; useBtn.disabled = false; drawLoupe(x, y);
+  const inBounds = (x, y) => x >= 0 && y >= 0 && x < cv.width && y < cv.height;
+  const commit = (x, y) => {                           // lock the sampled colour in (what "Use as base colour" applies)
+    pick = avg(x, y); chip.style.background = pick; hexEl.textContent = pick; useBtn.disabled = false;
   };
-  cv.addEventListener('pointermove', sample);          // desktop hover-sample + touch drag-sample
-  cv.addEventListener('pointerdown', sample);          // touch tap / click
+  const onMove = e => {                                // hover previews the loupe only — it never changes the locked colour
+    const [x, y] = at(e); if (!inBounds(x, y)) return;
+    drawLoupe(x, y, e);
+    if (e.buttons & 1) commit(x, y);                   // …unless a press is held: mouse-drag / touch-drag selects live
+  };
+  const onDown = e => {                                // click / tap locks the colour so moving to the button keeps it
+    const [x, y] = at(e); if (!inBounds(x, y)) return;
+    commit(x, y); drawLoupe(x, y, e);
+  };
+  cv.addEventListener('pointermove', onMove);
+  cv.addEventListener('pointerdown', onDown);
+  cv.addEventListener('pointerleave', () => { loupe.style.display = 'none'; });   // hide the loupe on exit; the locked colour stays
   $('#fromPhoto').addEventListener('click', () => $('#photoFile').click());
   $('#photoFile').addEventListener('change', e => {
     const f = e.target.files && e.target.files[0]; e.target.value = '';
@@ -781,6 +882,11 @@ function wire() {
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
     const col = e.target.closest('[data-collection]'); if (col) { setCollection(col.dataset.collection); return; }
+    const mv = e.target.closest('[data-move]'); if (mv) { e.stopPropagation(); const [i, dir] = mv.dataset.move.split(':').map(Number); moveFreeNode(i, i + dir); return; }  // reorder (keyboard/touch path)
+    const lk = e.target.closest('[data-lock]'); if (lk) { e.stopPropagation(); lockSwatch(lk.dataset.lock); return; }              // lock / unlock a swatch
+    const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openSwatchEditor(ed.dataset.edit); return; }        // edit a swatch's hex
+    const sb = e.target.closest('[data-setbase]'); if (sb) { e.stopPropagation(); seedFromHex(sb.dataset.setbase); return; }   // promote a swatch to the base colour
+    const dn = e.target.closest('[data-delnode]'); if (dn) { e.stopPropagation(); removeFreeNode(+dn.dataset.delnode); return; }  // delete an added swatch
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
     if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
@@ -793,6 +899,7 @@ function wire() {
   $('#seg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.harmony = b.dataset.h;
+    state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
     for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
     refreshStudio(); renderActive(); announce(); updateUrl();
   });
@@ -804,6 +911,21 @@ function wire() {
   });
   $('#addnode').addEventListener('click', addFreeNode);
   $('#delnode').addEventListener('click', () => removeFreeNode());
+  $('#undo').addEventListener('click', undo);
+  $('#redo').addEventListener('click', redo);
+  $('#swEdit').addEventListener('change', e => { if (swEditTarget) { editSwatch(swEditTarget, e.target.value.toUpperCase()); swEditTarget = null; } });
+  // drag-reorder the added swatches (delegated on #livepal so it survives re-renders)
+  const lp = $('#livepal');
+  lp.addEventListener('dragstart', e => { const col = e.target.closest('[data-dragidx]'); if (!col) return; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', col.dataset.dragidx); col.classList.add('dragging'); });
+  lp.addEventListener('dragover', e => { if (e.target.closest('[data-dragidx]')) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; } });
+  lp.addEventListener('drop', e => { const tgt = e.target.closest('[data-dragidx]'); if (!tgt) return; e.preventDefault(); moveFreeNode(+e.dataTransfer.getData('text/plain'), +tgt.dataset.dragidx); });
+  lp.addEventListener('dragend', () => lp.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging')));
+  document.addEventListener('keydown', e => {                                  // ⌘/Ctrl+Z undo · ⇧ or Ctrl+Y redo
+    if (!(e.metaKey || e.ctrlKey) || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    const k = e.key.toLowerCase();
+    if (k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+    else if (k === 'y') { e.preventDefault(); redo(); }
+  });
   $('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
   $('#tabs').addEventListener('keydown', e => {
     const tabs = [...$('#tabs').children];
@@ -839,7 +961,7 @@ function wire() {
   };
   const closeSettings = () => { sMenu.hidden = true; sBtn.setAttribute('aria-expanded', 'false'); };
   sBtn.addEventListener('click', e => { e.stopPropagation(); sMenu.hidden ? openSettings() : closeSettings(); });
-  $('#themeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.theme); wheelDraw(); updateUrl(); });
+  $('#themeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.setTheme); wheelDraw(); updateUrl(); });
   $('#localeSeg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
@@ -904,7 +1026,14 @@ async function init() {
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;
   if (url.get('f') === '1') state.showReal = true;
   const xp = url.get('x');
-  if (xp) state.extraNodes = xp.split('-').map(s => { const [hh, sa] = s.split('.'); const H = +hh, S = +sa / 100; return (Number.isFinite(H) && Number.isFinite(S)) ? { h: ((H % 360) + 360) % 360, s: Math.min(1, Math.max(0, S)) } : null; }).filter(Boolean).slice(0, MAX_FREE);
+  if (xp) state.extraNodes = xp.split('-').map(tok => {
+    const locked = tok.endsWith('!'); const t = locked ? tok.slice(0, -1) : tok;
+    const [hh, sa, la] = t.split('.'); const H = +hh, S = +sa / 100, L = +la / 100;
+    if (!(Number.isFinite(H) && Number.isFinite(S))) return null;
+    return { h: ((H % 360) + 360) % 360, s: Math.min(1, Math.max(0, S)),
+      ...(Number.isFinite(L) ? { l: Math.min(1, Math.max(0, L)) } : {}), ...(locked ? { locked: true } : {}) };
+  }).filter(Boolean).slice(0, MAX_FREE);
+  const dp = url.get('d'); if (dp) state.dropOffsets = dp.split('.').map(Number).filter(Number.isFinite);
   if (url.get('r') === 'accent') { state.seedRole = 'accent'; for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'accent')); }
   const c = url.get('c');
   if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();

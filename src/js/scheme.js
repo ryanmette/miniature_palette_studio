@@ -45,12 +45,14 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     if (d > amax) { amax = d; accent = p; }
   }
   const secondary = partners.find(p => p !== accent);
+  // A rule-less harmony (custom) has no partners — fall back to sensible rotations so the role plan still reads.
+  const accentHex = accent ? accent.hex : rotateHue(baseHex, 210);
   const secondaryHex = secondary ? secondary.hex : rotateHue(baseHex, 30);
 
   const defs = [
     { role: 'Primary', weight: '~60%', idealHex: baseHex },
     { role: 'Secondary', weight: '~30%', idealHex: secondaryHex },
-    { role: 'Accent', weight: '~10%', idealHex: accent.hex },
+    { role: 'Accent', weight: '~10%', idealHex: accentHex },
     { role: 'Metal', weight: 'spot', idealHex: metalIdeal(baseHex), metal: true },
   ];
   const styles = LADDER_STYLES[opts.ladder] || LADDER_STYLES.wash;

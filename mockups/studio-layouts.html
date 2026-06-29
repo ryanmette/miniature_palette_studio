@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palette Studio — layout explorations</title>
+<style>
+/* tokens.css — canonical design tokens (CLAUDE.md §3). Nothing else lives here.
+   One component system; only the colour set changes between the two themes. */
+:root {
+  /* shared, theme-independent */
+  --r-card: 14px; --r-ctrl: 10px; --r-pill: 999px;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  --tap: 38px;                      /* control height; 44px on touch (≤520px) */
+  --focus: 0 0 0 3px var(--accent-weak);
+  /* type scale */
+  --fs-display: 28px; --fs-h1: 22px; --fs-h2: 16px; --fs-body: 14px; --fs-small: 12.5px; --fs-micro: 11.5px;
+}
+
+/* LIGHT — "Playful Bright" (default) */
+:root, [data-theme="light"] {
+  --bg: #FBFBFE; --surface: #FFFFFF; --surface-2: #F1F2FF;
+  --border: #E6E7F8; --border-strong: #D3D5F0;
+  --text: #20223A; --text-muted: #6E7293; --text-faint: #A2A6C4;
+  --accent: #7C3AED; --accent-weak: #F0EAFE; --on-accent: #FFFFFF;
+  --buy: #2563EB; --buy-weak: #DBEAFE; --on-buy: #FFFFFF;   /* "to-buy" — single-meaning, app-wide; never the selection colour */
+  --success: #16A34A; --success-weak: #DCFCE7;
+  --warning: #C2740B; --warning-weak: #FBEBD3;
+  --danger: #DC2647;  --danger-weak: #FCE4EA;
+  --shadow: 0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+}
+
+/* DARK — "Grimdark Tabletop" */
+[data-theme="dark"] {
+  --bg: #141110; --surface: #1C1815; --surface-2: #251F1A;
+  --border: #3A302A; --border-strong: #4D4138;
+  --text: #ECE3D8; --text-muted: #A8998A; --text-faint: #7C6F62;
+  --accent: #C2912F; --accent-weak: #2C2113; --on-accent: #15100A;
+  --buy: #5E93C9; --buy-weak: #16242F; --on-buy: #0E1620;   /* cold steel-blue cart, distinct from the brass accent */
+  --success: #86A559; --success-weak: #232A16;
+  --warning: #C9923A; --warning-weak: #2E2412;
+  --danger: #D2563F;  --danger-weak: #2E1A14;
+  --shadow: 0 1px 2px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--ui,"Inter",system-ui,sans-serif);margin:0;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 20px 64px}
+h1,h2,h3{font-family:var(--display,"Space Grotesk",system-ui,sans-serif);font-weight:600}
+h1{font-size:28px;margin:0 0 8px}
+.lead{color:var(--text-muted);max-width:70ch;margin:0 0 8px}
+.note{font-size:12.5px;color:var(--text-faint)}
+.banner{margin:24px 0;padding:16px 18px;border:1px solid var(--accent);background:var(--accent-weak);border-radius:var(--r-card)}
+.banner b{color:var(--accent)}
+table{border-collapse:collapse;width:100%;margin:16px 0 8px;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+th{color:var(--text-muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+td:first-child,th:first-child{color:var(--text-faint);width:32px}
+tr.win{background:var(--success-weak)}
+.lay{margin:40px 0;padding:24px;border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow)}
+.layhead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.layhead h2{font-size:20px;margin:0}
+.tag{color:var(--text-muted);margin:4px 0 0}
+.rec{font-size:11px;font-weight:600;color:var(--on-accent);background:var(--accent);padding:2px 8px;border-radius:var(--r-pill);vertical-align:middle}
+.score{text-align:right;flex:none}
+.score .big{font-family:var(--display);font-size:28px;font-weight:600}
+.score .o{color:var(--text-faint)}
+.per{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+.pl{font-size:11.5px;color:var(--text-muted);background:var(--surface-2);border-radius:var(--r-pill);padding:3px 10px}
+.pl b{color:var(--text);font-family:var(--mono)}
+.frameWrap{position:relative;width:100%;height:430px;border:1px solid var(--border);border-radius:var(--r-ctrl);overflow:hidden;background:var(--surface-2)}
+.frameWrap iframe{position:absolute;top:0;left:0;width:1280px;height:843px;border:0;transform:scale(.652);transform-origin:top left}
+.open{display:inline-block;margin:10px 0 0;font-size:13px;color:var(--accent);font-weight:500;text-decoration:none}
+.open:hover{text-decoration:underline}
+.fix{margin:14px 0 0;font-size:13.5px}
+.wire{background:var(--surface-2);border-radius:var(--r-ctrl);padding:12px;font-family:var(--mono);font-size:11px;line-height:1.35;overflow:auto;color:var(--text-muted);margin:14px 0}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px}
+.cols h3,.judgenotes h3{font-size:13px;margin:0 0 6px}
+.cols ul,.judgenotes ul{margin:0;padding-left:18px;font-size:13px;color:var(--text)}
+.cols li,.judgenotes li{margin:4px 0}
+.con li::marker{color:var(--warning)}
+.mob{margin:16px 0 0;font-size:13px;color:var(--text-muted)}
+.judgenotes{margin-top:16px;padding-top:14px;border-top:1px dashed var(--border)}
+.judgenotes .lens{font-size:10.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.03em;margin-right:6px}
+@media (max-width:640px){.cols{grid-template-columns:1fr}.frameWrap{height:300px}.frameWrap iframe{transform:scale(.45)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Studio layout explorations</h1>
+  <p class="lead">Five alternative arrangements of the existing Studio modules, all aimed at the same complaint: the role-plan output (Plan / Equivalents / Accessibility) sits too far below the fold, so you have to scroll — and it isn't obvious it's there. Each mock is a static, on-token rendering of the real modules. Ranking below is the average of a three-lens design review.</p>
+  <p class="note">Design references only — not shipped (CLAUDE.md §4). Generated as an exploration; nothing here is wired up.</p>
+
+  <div class="banner">
+    <b>Recommendation:</b> lead with <b>Split workspace + sticky studio</b> — it scored highest and most consistently across all three lenses (it keeps the picker and the harmony instrument visible while the role plan sits right beside them). <b>Cockpit</b> is the strongest desktop-maximal alternative when you want literally everything on one screen. The <b>Instrument band</b> wins on raw scroll-reduction but the judges flagged it as the least discoverable / weakest on mobile because it hides the picker.
+  </div>
+
+  <table>
+    <thead><tr><th>#</th><th>Layout</th><th>Scroll</th><th>Intuitive</th><th>Mobile/a11y</th><th>Avg</th></tr></thead>
+    <tbody><tr class="win"><td>1</td><td>Split workspace + sticky studio</td><td>8.5</td><td>7.5</td><td>8.5</td><td><b>8.2</b></td></tr><tr><td>2</td><td>Cockpit</td><td>8</td><td>7</td><td>7</td><td><b>7.3</b></td></tr><tr><td>3</td><td>Instrument Band</td><td>9</td><td>5.5</td><td>4.5</td><td><b>6.3</b></td></tr><tr><td>4</td><td>Bento dashboard</td><td>6.5</td><td>6</td><td>6</td><td><b>6.2</b></td></tr><tr><td>5</td><td>Sticky studio + section rail</td><td>4.5</td><td>8</td><td>5.5</td><td><b>6.0</b></td></tr></tbody>
+  </table>
+
+  <section class="lay">
+  <div class="layhead">
+    <div><h2>1. Split workspace + sticky studio <span class="rec">Recommended</span></h2><p class="tag">The harmony wheel stays pinned on the left while the role plan scrolls beside it.</p></div>
+    <div class="score" title="average judge score across 3 lenses"><span class="big">8.2</span><span class="o">/10</span></div>
+  </div>
+  <div class="per"><span class="pl"><b>8.5</b> Scroll reduction</span><span class="pl"><b>7.5</b> Intuitiveness</span><span class="pl"><b>8.5</b> Mobile & a11y</span></div>
+  <div class="frameWrap"><iframe loading="lazy" src="layouts/split-sticky-studio.html" title="Split workspace + sticky studio mockup"></iframe></div>
+  <a class="open" href="layouts/split-sticky-studio.html" target="_blank" rel="noopener">Open full size &#8599;</a>
+  <p class="fix"><b>Why it scrolls less:</b> The right workspace is two side-by-side columns instead of a vertical stack: the wheel+palette studio is position:sticky so it never leaves the screen, and the Plan/Equivalents/Accessibility output sits immediately to its right at the same vertical level. The role slots are visible at 1280x800 with no scroll, and any reading happens inside the output pane only, not the whole page.</p>
+  <pre class="wire">+------------------------------------------------------------------+
+| P  Palette Studio   [Studio|Shelf]                        [...]  |
++----------+-------------------------------------------------------+
+| PICKER   | #F9DF1C [Main|Accent] [Photo][Compare]  HERO swatch   |
+| search   +--------------------------+----------------------------+
+| filters  | STUDIO (sticky)          | OUTPUT (scrolls in pane)   |
+| ------   |  [ wheel 280 ]           | [Plan][Equiv][A11y]        |
+| o row    |  Light --o-- Shuffle     | Primary 60%  ideal-&gt;actual |
+| o row    |  ------------------------ |   wash.base.highlight      |
+| o row    |  LIVE PALETTE row         | Secondary 30% ...          |
+| o row    |  [][][][][][][]           | Accent 10% ...             |
+| o row    |  Ideal|Real  - +          | Metal spot ...             |
+| 2508 .77 |                          | [Export list] [Share]      |
++----------+--------------------------+----------------------------+</pre>
+  <div class="cols">
+    <div><h3>Pros</h3><ul><li>Harmony wheel and live palette are always on screen (sticky) while you read the role plan, so cause and effect sit side by side.</li><li>Role-slot output is visible at 1280x800 with essentially no page scroll - it lives in its own column, not below the fold.</li><li>Scrolling is confined to the output pane, so the page itself never moves and the instrument never jumps.</li><li>Seed+hero as a slim top bar reclaims vertical space for the two working columns.</li></ul></div>
+    <div><h3>Cons</h3><ul class="con"><li>Three live columns (picker + studio + output) is tight below ~1100px and forces an early collapse to stacked layout.</li><li>A sticky studio column can feel cramped vertically on short laptop screens (e.g. 720px) where the wheel plus palette nearly fill the viewport.</li><li>The output pane's internal scrollbar is a second scroll surface users must discover.</li></ul></div>
+  </div>
+  <p class="mob"><b>On phones:</b> At &lt;=860px the three columns collapse to a single column: picker first (collapsed/scrollable), then the slim seed bar, then the studio (wheel over palette), then the tabbed output, then the finish bar - position:sticky is dropped so nothing pins. At &lt;=520px paddings compress to 12/8px, all buttons and the segmented controls grow to 44px tap height, the hex field goes full-width and palette columns scroll horizontally inside their row. No horizontal page scroll at any width.</p>
+  <div class="judgenotes"><h3>Judge improvement notes</h3><ul><li><span class="lens">Scroll reduction</span> Raise the three-column collapse threshold gracefully: between ~1100 and 1280px, narrow the picker to an icon-rail (search + filter chips) rather than a full column, preserving the studio+output peer pairing — the part that actually solves the complaint — down to smaller laptops instead of collapsing to a stack at 860px.</li><li><span class="lens">Intuitiveness</span> Make the output pane's scrollability obvious: add a subtle bottom fade/gradient and a persistent tab bar pinned at the pane top so the second scroll surface is discoverable. Raise the collapse breakpoint handling so the three-column form survives down to ~1100px gracefully rather than dropping the intended layout for many laptops.</li><li><span class="lens">Mobile & a11y</span> Make the output pane's internal scrollbar a first-class affordance: a persistent thin scroll indicator plus a top fade-edge so users discover the second scroll surface, and ensure the pane is a focusable region with an aria-label so keyboard/SR users can reach and scroll it independently of the page.</li></ul></div>
+</section>
+<section class="lay">
+  <div class="layhead">
+    <div><h2>2. Cockpit </h2><p class="tag">Three columns, zero scroll: picker, live studio, and role output all on one screen.</p></div>
+    <div class="score" title="average judge score across 3 lenses"><span class="big">7.3</span><span class="o">/10</span></div>
+  </div>
+  <div class="per"><span class="pl"><b>8</b> Scroll reduction</span><span class="pl"><b>7</b> Intuitiveness</span><span class="pl"><b>7</b> Mobile & a11y</span></div>
+  <div class="frameWrap"><iframe loading="lazy" src="layouts/cockpit-3col.html" title="Cockpit mockup"></iframe></div>
+  <a class="open" href="layouts/cockpit-3col.html" target="_blank" rel="noopener">Open full size &#8599;</a>
+  <p class="fix"><b>Why it scrolls less:</b> The Plan/Equivalents/Accessibility output becomes a third peer column on the right instead of a section stacked far below the wheel, so the role slots are visible immediately at 1280x800. Each column scrolls internally if its content overflows, so the page itself never scrolls.</p>
+  <pre class="wire">+----------------------------------------------------------------------+
+| P  Palette Studio   [Studio|Shelf]                            [...]  |
++------------+----------------------------+--------------------------+
+| PICKER     | STUDIO                      | OUTPUT RAIL              |
+| [search]   | #F9DF1C [Main|Accent] photo | [Plan|Equiv|Access]      |
+| brand/type | +--------+  Custom #F9DF1C  | Primary ~60%             |
+| .........  | | HERO   |  typed hex tag   |  ideal-&gt;actual + dE     |
+| o paint 1  | +--------+                  |  wash.base.highlight     |
+| o paint 2  |    ( wheel )  Light ---o    | Secondary ~30% ...       |
+| o paint 3  |    (  280  )  [Shuffle]     | Accent ~10% ...          |
+| o paint 4  | [Comp|Anal|Tri|Split|Tetr]  | Metal spot ...           |
+| o ...8     | palette: 7 cols + dE badges | [tone ladder][my collec] |
+| 2508 . 77  | [Ideal|Real] [-][+]         | [Export list][Share]     |
++------------+----------------------------+--------------------------+</pre>
+  <div class="cols">
+    <div><h3>Pros</h3><ul><li>Role output is a peer column on the right, visible at 1280x800 with no page scroll - directly solves the buried-output complaint.</li><li>Everything-at-once cockpit feel suits live exploration (Sam persona): drag a node, watch wheel + palette + role slots all update in view.</li><li>Independent internal column scroll keeps each region's overflow local; the page frame stays fixed so context never jumps.</li><li>Clear left-to-right reading order (pick -&gt; explore -&gt; plan output) matches the actual workflow.</li></ul></div>
+    <div><h3>Cons</h3><ul class="con"><li>Three dense columns demand width; below 1024px one column must drop, so the cockpit advantage is desktop-only.</li><li>The middle studio column is the busiest region and can feel cramped if the wheel, palette and harmony controls all compete for height.</li><li>Internal scrollbars in columns are less discoverable than a single page scroll for some users.</li></ul></div>
+  </div>
+  <p class="mob"><b>On phones:</b> At &lt;=1024px it collapses to 2 columns (picker + a merged studio/output stack), and at &lt;=640px to a single column in workflow order: picker, then seed+hero, wheel, harmony type, live palette, then the tabbed output, then the finish bar. Tap targets grow to 44px and paddings tighten at &lt;=520px; the page scrolls normally on phones since columns no longer fit side by side.</p>
+  <div class="judgenotes"><h3>Judge improvement notes</h3><ul><li><span class="lens">Scroll reduction</span> Widen the output rail at the expense of the picker: make the left picker a collapsible icon-rail by default so the OUTPUT column gets enough width to show ideal-vs-actual plus the wash/base/highlight ladder per slot without truncation, since that column is the whole point of the redesign.</li><li><span class="lens">Intuitiveness</span> Add a thin always-visible affordance (fade edge + scroll cue) on the right output column and ensure the three tabs are a visible segmented control at its top, so a first-timer immediately sees Plan/Equiv/Access are switchable - internal column scroll is otherwise easy to miss. Consider a default 2-column (picker collapsible) at 1024-1180px so mid-laptops still get output-beside-wheel.</li><li><span class="lens">Mobile & a11y</span> Adopt the constitution's ≤860px single-column breakpoint instead of ≤1024px (drop the undefined 2-column intermediate), and give each internally-scrolling column a roving-tabindex / labelled landmark so the three scroll surfaces have a clear keyboard focus order.</li></ul></div>
+</section>
+<section class="lay">
+  <div class="layhead">
+    <div><h2>3. Instrument Band </h2><p class="tag">All controls collapse into one shallow top row so role output sits above the fold.</p></div>
+    <div class="score" title="average judge score across 3 lenses"><span class="big">6.3</span><span class="o">/10</span></div>
+  </div>
+  <div class="per"><span class="pl"><b>9</b> Scroll reduction</span><span class="pl"><b>5.5</b> Intuitiveness</span><span class="pl"><b>4.5</b> Mobile & a11y</span></div>
+  <div class="frameWrap"><iframe loading="lazy" src="layouts/instrument-band.html" title="Instrument Band mockup"></iframe></div>
+  <a class="open" href="layouts/instrument-band.html" target="_blank" rel="noopener">Open full size &#8599;</a>
+  <p class="fix"><b>Why it scrolls less:</b> Hero, wheel, harmony control and live palette are compressed into a single ~190px band, so the full-width Plan/Equivalents/Accessibility output starts near y=240px and shows all four role slots inside an 800px-tall viewport with no scrolling. The picker moves to an off-canvas drawer so it never pushes output down.</p>
+  <pre class="wire">+----------------------------------------------------------+
+| P Palette Studio   [Studio|Shelf]              [...]     |
++----------------------------------------------------------+
+| [≡Pick] #F9DF1C [Main|Acc] [Photo][Cmp] |  INSTRUMENT    |
+|  HERO   |  (o) wheel  | Harmony seg | live palette x7     |
+|  84sw   |  Light--Shfl| C A T S Tet | ▢▢▢▢▢▢▢ ΔE badges   |
++----------------------------------------------------------+
+| [Plan·roles][Equivalents][Accessibility]   Ideal/Real ⊙ |
++----------------------------------------------------------+
+| Primary 60% | Secondary 30% | Accent 10% | Metal spot    |
+|  ideal→real |  ideal→real   | ideal→real | ideal→real    |
+|  wash·base·hi| wash·base·hi | wash·base·hi| wash·base·hi  |
++----------------------------------------------------------+
+| Export list (primary)              Share link            |
++----------------------------------------------------------+
+(left drawer slides over when [≡Pick] pressed)</pre>
+  <div class="cols">
+    <div><h3>Pros</h3><ul><li>Role-slot output is visible on a 1280x800 screen with essentially no scrolling - the north-star goal is met by construction.</li><li>One shallow instrument band keeps every live control (hero, wheel, harmony, palette) in peripheral view while you read the plan, so tweaking and evaluating happen together.</li><li>Full-width Plan grid gives all four role slots equal, generous horizontal room - ideal-vs-actual + ladders read clearly side by side.</li><li>Picker-as-drawer removes a permanent 300px column, reclaiming width for the output and matching the 'almost no vertical chrome' goal.</li></ul></div>
+    <div><h3>Cons</h3><ul class="con"><li>The instrument band is dense; the wheel shrinks to ~150px, which is tighter for precise drag-the-node exploration (Sam persona) than a full 280px wheel.</li><li>Hiding the picker behind a drawer adds one click for painters who browse paints constantly while planning.</li><li>Cramming five control groups into one row needs care at mid widths (860-1100px) to avoid the band wrapping awkwardly.</li></ul></div>
+  </div>
+  <p class="mob"><b>On phones:</b> Below 860px the instrument band stops being one row: it stacks hero+wheel, then harmony control, then the live palette scrolls horizontally; the Plan grid drops to a single column of stacked role slots. The picker drawer becomes a full-width overlay. Below 520px paddings tighten to 8-12px, tap targets grow to 44px, the seed bar wraps with the hex field full-width, and tabs scroll horizontally. No horizontal page scroll at any width.</p>
+  <div class="judgenotes"><h3>Judge improvement notes</h3><ul><li><span class="lens">Scroll reduction</span> Make the wheel size adaptive: keep the ~150px wheel in the compressed band as the default, but let the band expand the wheel to ~240px when the user grabs a node (drag/focus), so Sam's precise exploration isn't sacrificed to win the scroll battle. Reclaim the height by collapsing the live-palette row during active drag.</li><li><span class="lens">Intuitiveness</span> Don't hide the picker behind a drawer by default - leave it open (or a slim always-visible search) on first load so the obvious 'start here, pick a paint' entry point is present, and keep the wheel at a usable size (&gt;=200px) even if it means the band is two shallow rows; the drag-the-wheel exploration must not be sacrificed to the band height.</li><li><span class="lens">Mobile & a11y</span> Keep the picker as a persistent compact in-context column per §3.6 rather than a drawer, and restore a full ~280px wheel (let the band be ~240px) so live drag-the-node exploration stays precise; only collapse the picker to a drawer below 860px.</li></ul></div>
+</section>
+<section class="lay">
+  <div class="layhead">
+    <div><h2>4. Bento dashboard </h2><p class="tag">A glanceable bento grid where every module is a tile and the role output sits beside the wheel, not below the fold.</p></div>
+    <div class="score" title="average judge score across 3 lenses"><span class="big">6.2</span><span class="o">/10</span></div>
+  </div>
+  <div class="per"><span class="pl"><b>6.5</b> Scroll reduction</span><span class="pl"><b>6</b> Intuitiveness</span><span class="pl"><b>6</b> Mobile & a11y</span></div>
+  <div class="frameWrap"><iframe loading="lazy" src="layouts/bento-dashboard.html" title="Bento dashboard mockup"></iframe></div>
+  <a class="open" href="layouts/bento-dashboard.html" target="_blank" rel="noopener">Open full size &#8599;</a>
+  <p class="fix"><b>Why it scrolls less:</b> Instead of a vertical stack of full-width cards, modules become a fixed-height bento grid: the wheel, live palette, and Plan-roles tile all share the same viewport row, so the role output that was previously far below the fold is now visible at once on a 1280x800 screen with no scroll.</p>
+  <pre class="wire">+----------------------------------------------------------+
+| P  Palette Studio   [Studio|Shelf]              [...]    |
++--------+-------------------------------+-----------------+
+| PICKER | SEED  #F9DF1C [Main|Acc] photo | PLAN . roles    |
+| search | +-----------+  +------------+  | Primary 60% i&gt;a |
+| selects| | BASE HERO | |  LIVE PAL  |  | Second  30% i&gt;a |
+| rows x8| |  swatch   | | 7 columns  |  | Accent  10% i&gt;a |
+| count  | +-----------+ +------------+  | Metal spot i&gt;a  |
+|        | +--WHEEL--+ [harmony type ]  | [tabs] ladder   |
+|        | | (.) o   | Light --o Shuffle| Equiv | A11y peek|
++--------+-------------------------------+-----------------+
+|              Export list (primary)   Share link          |
++----------------------------------------------------------+</pre>
+  <div class="cols">
+    <div><h3>Pros</h3><ul><li>Plan-roles output is visible in the same viewport as the wheel and palette - the core scroll complaint is solved by spatial layout, not by hiding things.</li><li>Every module is a discrete tile, so the dashboard reads at a glance and each area can expand/focus for detail without disturbing neighbours.</li><li>Tiles reflow predictably to single column on mobile, preserving the same module order and content.</li><li>Compact picker tile keeps paint selection in-context without consuming a fixed 300px sidebar height.</li></ul></div>
+    <div><h3>Cons</h3><ul class="con"><li>Dense at 1280px - tiles are necessarily compact, so long paint names and deep ladders truncate and rely on a focus/expand interaction.</li><li>More grid-template-areas complexity than a linear stack; reflow rules must be carefully tuned per breakpoint.</li><li>Live palette of 7+ columns is tight inside a tile and may need horizontal scroll within the tile on smaller desktops.</li></ul></div>
+  </div>
+  <p class="mob"><b>On phones:</b> At max-width:860px the grid collapses to a single column in reading order: picker, seed bar, base hero, wheel, live palette, Plan-roles, then Equivalents/Accessibility peeks, then the finish bar - each tile full-width. At max-width:520px paddings compress to 8/12px, tap targets grow to 44px, the seed bar wraps with the hex field full-width, role slots stack their ideal-vs-actual vertically, and the live palette scrolls horizontally inside its tile. No horizontal page scroll at any width.</p>
+  <div class="judgenotes"><h3>Judge improvement notes</h3><ul><li><span class="lens">Scroll reduction</span> Stop demoting Equivalents/Accessibility to 'peeks' inside one tile — give the Plan tile a fixed height that fits all four role slots with their ideal-vs-actual fully, and move Equiv/A11y to a tabbed swap within the same tile footprint, so nothing critical truncates and the grid still holds one viewport.</li><li><span class="lens">Intuitiveness</span> Promote Equivalents/Accessibility out of the 'peek' corner into the same tab control as Plan so all three outputs have equal discoverability, and add a numbered/visual flow cue (1 pick, 2 wheel, 3 palette, 4 plan) so the glanceable grid still reads as a guided sequence for first-timers rather than an undifferentiated dashboard.</li><li><span class="lens">Mobile & a11y</span> Replace truncation-by-default with a min readable tile height that always shows ΔE + label + the first ladder step uncut; reserve fixed space for the expand control so opening a tile never reflows neighbours (satisfies §3.4 no-jiggle).</li></ul></div>
+</section>
+<section class="lay">
+  <div class="layhead">
+    <div><h2>5. Sticky studio + section rail </h2><p class="tag">The instrument stays pinned; the output is one dot-jump away.</p></div>
+    <div class="score" title="average judge score across 3 lenses"><span class="big">6.0</span><span class="o">/10</span></div>
+  </div>
+  <div class="per"><span class="pl"><b>4.5</b> Scroll reduction</span><span class="pl"><b>8</b> Intuitiveness</span><span class="pl"><b>5.5</b> Mobile & a11y</span></div>
+  <div class="frameWrap"><iframe loading="lazy" src="layouts/sticky-studio-rail.html" title="Sticky studio + section rail mockup"></iframe></div>
+  <a class="open" href="layouts/sticky-studio-rail.html" target="_blank" rel="noopener">Open full size &#8599;</a>
+  <p class="fix"><b>Why it scrolls less:</b> The wheel + live palette live in a position:sticky band under the header, so they never scroll off — you tweak the scheme and watch the Plan/Equivalents/Accessibility sections update in place. A right-edge dot rail jumps straight to any section, so the role output is always one click away instead of a long scroll down.</p>
+  <pre class="wire">+--------------------------------------------------+
+| [P] Palette Studio   [Studio|Shelf]        [...] |
++--------------------------------------------------+
+| STICKY BAND (pinned)                          .  |
+| #F9DF1C [Main|Accent] [Photo][Compare]        :  |
+| (wheel 280) | LIVE PALETTE 7 cols [Ideal/Real]   |
++--------------------------------------------------+ Plan
+| Plan . roles            [tabs] [collection]   .  |Equiv
+|  Primary 60  ideal-&gt;actual  wash.base.high    :  |A11y
+|  Second. 30  ideal-&gt;actual  wash.base.high       |
+|  Accent 10   ideal-&gt;actual  ...                  |
+|  Metal spot  ideal-&gt;actual  ...                  |
++--------------------------------------------------+
+| Equivalents (inline section)                  .  |
++--------------------------------------------------+
+| Accessibility (inline section)                :  |
++--------------------------------------------------+
+| [Export list]  [Share link]                      |
++--------------------------------------------------+
+(picker = collapsible drawer left of band)</pre>
+  <div class="cols">
+    <div><h3>Pros</h3><ul><li>The studio (wheel + live palette) is always visible while you read the role output — true 'instrument never leaves screen' behaviour</li><li>Right-edge dot rail makes Plan / Equivalents / Accessibility instantly reachable; the role output is discoverable, not buried</li><li>Keeps the familiar simple single-column stack, so it scales down to tablet/phone with almost no rethinking</li><li>On a 1280x800 desktop the first Plan role slots sit directly under the sticky band, visible with little scrolling</li></ul></div>
+    <div><h3>Cons</h3><ul class="con"><li>A tall sticky band eats vertical space, leaving a smaller scroll viewport for the sections below it</li><li>On very short laptop screens the band + first section can still feel cramped</li><li>The dot rail is a small target and needs care to stay WCAG-AA tappable and labelled on touch</li></ul></div>
+  </div>
+  <p class="mob"><b>On phones:</b> At &lt;=860px the picker becomes a collapsible drawer above the band and the sticky band stacks the wheel over the live palette (palette scrolls horizontally). The right-edge dot rail moves to a slim sticky section-chip row under the band. At &lt;=520px paddings compress, tap targets grow to 44px, role slots stack their ideal-&gt;actual and ladder vertically, and the live-palette columns scroll horizontally with no page-level horizontal scroll.</p>
+  <div class="judgenotes"><h3>Judge improvement notes</h3><ul><li><span class="lens">Scroll reduction</span> Shrink the sticky band drastically: lay the wheel and live palette side-by-side at reduced height (target ~150-170px total) so the first Plan role slots clear the fold without scrolling. The dot-rail should be a fallback for jumping to Equiv/A11y, not the primary mechanism for reaching the Plan output.</li><li><span class="lens">Intuitiveness</span> Replace the bare dot rail with labelled section chips (text 'Plan / Equivalents / Accessibility', not just dots) that are visible by default and 44px tappable - dots alone are an obscure affordance a first-timer won't read as navigation. Also cap the sticky band height so at least one-and-a-half Plan role slots always peek under it, signalling 'scroll for more.'</li><li><span class="lens">Mobile & a11y</span> Convert the inline Plan/Equiv/A11y sections back into the canonical tab set so output is one tab-switch away with no scroll, and enlarge the dot rail to ≥44px labelled buttons with visible focus (or replace it with the scrolling tab strip) to meet §3.5 on touch.</li></ul></div>
+</section>
+</div>
+</body>
+</html>

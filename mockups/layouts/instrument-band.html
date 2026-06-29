@@ -1,0 +1,366 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Palette Studio — Instrument Band</title><style>
+:root{
+--bg:#FBFBFE;--surface:#FFFFFF;--surface-2:#F1F2FF;--border:#E6E7F8;--border-strong:#D3D5F0;
+--text:#20223A;--text-muted:#6E7293;--text-faint:#A2A6C4;
+--accent:#7C3AED;--accent-weak:#F0EAFE;--on-accent:#FFFFFF;--buy:#2563EB;--buy-weak:#DBEAFE;--on-buy:#FFFFFF;
+--success:#16A34A;--success-weak:#DCFCE7;--warning:#C2740B;--warning-weak:#FBEBD3;--danger:#DC2647;--danger-weak:#FCE4EA;
+--shadow:0 1px 2px rgba(60,50,120,.06),0 6px 18px rgba(60,50,120,.05);
+--r-card:14px;--r-ctrl:10px;--r-pill:999px;--tap:38px;
+--display:"Space Grotesk","Inter",system-ui,sans-serif;--ui:"Inter",system-ui,sans-serif;--mono:ui-monospace,Menlo,monospace;}
+[data-theme="dark"]{--bg:#141110;--surface:#1C1815;--surface-2:#251F1A;--border:#3A302A;--border-strong:#4D4138;
+--text:#ECE3D8;--text-muted:#A8998A;--text-faint:#7C6F62;--accent:#C2912F;--accent-weak:#2C2113;--on-accent:#15100A;
+--buy:#5E93C9;--buy-weak:#16242F;--on-buy:#0E1620;--success:#86A559;--success-weak:#232A16;--warning:#C9923A;--warning-weak:#2E2412;--danger:#D2563F;--danger-weak:#2E1A14;--shadow:0 1px 2px rgba(0,0,0,.45);}
+*{box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:var(--ui);margin:0;font-size:14px}
+
+a{color:inherit}
+button{font-family:var(--ui);cursor:pointer}
+:focus-visible{outline:3px solid var(--accent-weak);outline-offset:1px}
+h1,h2,h3,h4{margin:0;font-family:var(--display);font-weight:600}
+.mono{font-family:var(--mono)}
+.muted{color:var(--text-muted)}
+.faint{color:var(--text-faint)}
+
+/* ---- shared atoms ---- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);box-shadow:var(--shadow)}
+.sw{width:44px;height:44px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);flex:none}
+.badge{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:5px;background:var(--surface-2);color:var(--text-muted);white-space:nowrap}
+.badge.ok{background:var(--success-weak);color:var(--success)}
+.badge.warn{background:var(--warning-weak);color:var(--warning)}
+.badge.bad{background:var(--danger-weak);color:var(--danger)}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:var(--r-ctrl);padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--text-muted);font-size:12.5px;font-weight:500;padding:5px 10px;border-radius:7px;min-height:var(--tap);line-height:1}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(60,50,120,.08)}
+.btn{display:inline-flex;align-items:center;gap:6px;min-height:var(--tap);padding:0 12px;border-radius:var(--r-ctrl);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12.5px;font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--text-muted)}
+.field{display:inline-flex;align-items:center;height:var(--tap);padding:0 10px;border:1px solid var(--border);border-radius:var(--r-ctrl);background:var(--surface);font-family:var(--mono);font-size:13px;color:var(--text)}
+.sel{height:var(--tap);padding:0 8px;border:1px solid var(--border);border-radius:var(--r-ctrl);background:var(--surface);color:var(--text);font-size:12.5px}
+.tag{font-size:11px;padding:1px 7px;border-radius:var(--r-pill);background:var(--accent-weak);color:var(--accent);font-weight:600}
+
+/* ---- header ---- */
+header.app{display:flex;align-items:center;gap:16px;padding:8px 24px;border-bottom:1px solid var(--border);background:var(--surface)}
+.logo{width:28px;height:28px;border-radius:8px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:16px;flex:none}
+.word{font-family:var(--display);font-weight:600;font-size:16px}
+.spacer{flex:1}
+.icon-btn{width:var(--tap);height:var(--tap);border-radius:var(--r-ctrl);border:1px solid var(--border);background:var(--surface);color:var(--text-muted);display:grid;place-items:center;font-size:16px}
+
+/* ---- INSTRUMENT BAND ---- */
+.band{margin:12px 24px 0;display:grid;grid-template-columns:auto 168px 1fr;gap:0;align-items:stretch;padding:12px 16px}
+.band .col{display:flex;flex-direction:column;gap:8px;justify-content:center}
+.band .div{width:1px;background:var(--border);margin:0 16px}
+/* seed strip sits across the very top of the band */
+.seedrow{grid-column:1 / -1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.seedrow .drawerbtn{margin-right:4px}
+
+/* hero col */
+.hero{display:flex;align-items:center;gap:12px}
+.hero .big{width:84px;height:84px;border-radius:var(--r-ctrl);box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);flex:none}
+.hero h2{font-size:16px;line-height:1.2}
+.hero .meta{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
+
+/* wheel col */
+.wheel{width:150px;height:150px;border-radius:50%;background:conic-gradient(from 90deg,#ff0000,#ff00ff,#0000ff,#00ffff,#00ff00,#ffff00,#ff0000);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);position:relative;margin:0 auto}
+.node{position:absolute;width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.4);transform:translate(-50%,-50%)}
+.wheelctl{display:flex;align-items:center;gap:8px;justify-content:center}
+.wheelctl input[type=range]{width:78px;accent-color:var(--accent)}
+
+/* palette col */
+.palhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.palette{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.pcol{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pcol .block{height:48px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.pcol .ang{font-family:var(--mono);font-size:10.5px;color:var(--text-muted)}
+.pcol .hx{font-family:var(--mono);font-size:11px;color:var(--text)}
+.pcol .nm{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcol .badge{font-size:10px;padding:1px 4px;text-align:center}
+.collabel{font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+
+/* ---- OUTPUT (full width) ---- */
+.output{margin:12px 24px 0}
+.tabbar{display:flex;align-items:center;gap:8px;padding:0 4px;margin-bottom:8px;flex-wrap:wrap}
+.tabs{display:inline-flex;gap:2px;background:var(--surface-2);border-radius:var(--r-ctrl);padding:3px}
+.tabs button{border:0;background:transparent;color:var(--text-muted);font-size:13px;font-weight:600;padding:7px 12px;border-radius:7px;min-height:var(--tap)}
+.tabs button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(60,50,120,.08)}
+.tabtools{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.plan{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px}
+.slot{border:1px solid var(--border);border-radius:var(--r-card);padding:12px;background:var(--surface)}
+.slot .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.slot .role{font-family:var(--display);font-weight:600;font-size:14px}
+.slot .pct{font-size:11px;color:var(--text-muted);font-family:var(--mono)}
+.iva{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.iva .arrow{color:var(--text-faint);font-size:14px}
+.iva .ideal{width:36px;height:36px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);flex:none}
+.iva .info{min-width:0}
+.iva .pname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iva .brand{font-size:11px;color:var(--text-muted)}
+.ladder{display:flex;gap:6px;align-items:flex-end}
+.ladder .step{flex:1;text-align:center}
+.ladder .lb{height:26px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);margin-bottom:3px}
+.ladder .ll{font-size:10px;color:var(--text-faint)}
+.laddertitle{font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin:0 0 4px}
+
+/* tab stubs */
+.stub{padding:24px;color:var(--text-muted);font-size:13px}
+.stub h3{font-size:16px;margin-bottom:8px;color:var(--text)}
+.eqrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.cvdgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+.cvdcard{border:1px solid var(--border);border-radius:var(--r-ctrl);padding:10px}
+.cvdcard .row{display:flex;gap:4px;margin-top:8px}
+.cvdcard .row span{flex:1;height:24px;border-radius:5px}
+
+/* ---- finish bar ---- */
+.finish{margin:12px 24px 24px;display:flex;align-items:center;gap:8px;padding:12px 16px}
+.finish .spacer{flex:1}
+
+/* ---- picker drawer ---- */
+.drawer{position:fixed;top:0;left:0;bottom:0;width:320px;max-width:88vw;background:var(--surface);border-right:1px solid var(--border);box-shadow:var(--shadow);transform:translateX(0);z-index:30;display:flex;flex-direction:column;padding:16px;gap:12px}
+.drawer h3{font-size:16px}
+.drawer .controls{display:flex;flex-direction:column;gap:8px}
+.drawer .selrow{display:flex;gap:8px}
+.drawer .selrow .sel{flex:1}
+.search{display:flex;align-items:center;height:var(--tap);border:1px solid var(--border);border-radius:var(--r-ctrl);padding:0 10px;gap:8px;background:var(--surface)}
+.search input{border:0;background:transparent;color:var(--text);font-size:13px;width:100%;outline:none}
+.plist{flex:1;overflow:auto;border:1px solid var(--border);border-radius:var(--r-ctrl);padding:4px}
+.prow{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px}
+.prow:hover{background:var(--surface-2)}
+.prow.sel{background:var(--accent-weak)}
+.prow .sw{width:28px;height:28px}
+.prow .pn{font-size:13px;font-weight:500;line-height:1.2}
+.prow .pb{font-size:11px;color:var(--text-muted)}
+.count{font-size:11.5px;color:var(--text-muted);font-family:var(--mono)}
+.drawer .closebtn{position:absolute;top:12px;right:12px}
+.scrim{position:fixed;inset:0;background:rgba(20,18,16,.18);z-index:20}
+.drawerbtn{display:inline-flex}
+
+@media (max-width:860px){
+  .band{grid-template-columns:1fr;gap:16px;margin:12px 16px 0}
+  .band .div{display:none}
+  .hero{justify-content:flex-start}
+  .wheel{margin:0 auto}
+  .palette{grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:120px;overflow-x:auto;padding-bottom:4px}
+  .plan{grid-template-columns:1fr}
+  .cvdgrid{grid-template-columns:1fr 1fr}
+  .output,.finish{margin-left:16px;margin-right:16px}
+  header.app{padding:8px 16px}
+  .drawer{width:100%;max-width:100vw}
+}
+@media (max-width:520px){
+  body{font-size:13px}
+  :root{--tap:44px}
+  header.app{gap:8px;padding:8px 12px}
+  .word{font-size:14px}
+  .band{margin:8px 12px 0;padding:12px}
+  .seedrow .field{flex:1 1 100%;justify-content:center}
+  .output,.finish{margin-left:12px;margin-right:12px}
+  .plan{padding:12px}
+  .cvdgrid{grid-template-columns:1fr}
+  .finish{flex-wrap:wrap}
+  .finish .btn{flex:1 1 auto;justify-content:center}
+}
+</style></head>
+<body>
+
+<!-- PICKER DRAWER (shown open in this static mock) -->
+<div class="scrim" aria-hidden="true"></div>
+<aside class="drawer" aria-label="Paint picker">
+  <button class="icon-btn closebtn" aria-label="Close picker">✕</button>
+  <h3>Pick a paint</h3>
+  <div class="controls">
+    <label class="search">🔎<input type="text" placeholder="Search 2508 paints…" value=""></label>
+    <div class="selrow">
+      <select class="sel" aria-label="Brand"><option>All brands</option><option>Citadel</option><option>Vallejo</option><option>Army Painter</option></select>
+      <select class="sel" aria-label="Type"><option>All types</option><option>Base</option><option>Layer</option><option>Metal</option></select>
+    </div>
+    <div class="selrow">
+      <select class="sel" aria-label="Sort"><option>Sort: name A–Z</option><option>Sort: by hue</option><option>Sort: brand</option></select>
+      <select class="sel" aria-label="Owned filter"><option>Show all</option><option>Owned only</option></select>
+    </div>
+  </div>
+  <div class="plist" role="listbox" aria-label="Paint results">
+    <div class="prow sel" role="option" aria-selected="true"><span class="sw" style="background:#F9DF1C"></span><div><div class="pn">Averland Sunset</div><div class="pb">Citadel · Layer</div></div></div>
+    <div class="prow" role="option"><span class="sw" style="background:#9A1115"></span><div><div class="pn">Mephiston Red</div><div class="pb">Citadel · Base</div></div></div>
+    <div class="prow" role="option"><span class="sw" style="background:#C8102E"></span><div><div class="pn">Evil Sunz Scarlet</div><div class="pb">Citadel · Layer</div></div></div>
+    <div class="prow" role="option"><span class="sw" style="background:#13315C"></span><div><div class="pn">Macragge Blue</div><div class="pb">Citadel · Base</div></div></div>
+    <div class="prow" role="option"><span class="sw" style="background:#2E7D4F"></span><div><div class="pn">Sotek Green</div><div class="pb">Citadel · Layer</div></div></div>
+    <div class="prow" role="option"><span class="sw" style="background:#B8860B"></span><div><div class="pn">Auric Armour Gold</div><div class="pb">Army Painter · D&amp;D</div></div></div>
+    <div class="prow" role="option"><span class="sw" style="background:#9FA6AD"></span><div><div class="pn">Runefang Steel</div><div class="pb">Citadel · Layer</div></div></div>
+    <div class="prow" role="option"><span class="sw" style="background:#5C3A21"></span><div><div class="pn">Mournfang Brown</div><div class="pb">Citadel · Base</div></div></div>
+  </div>
+  <div class="count">2508 of 2508 paints · 77 owned</div>
+</aside>
+
+<!-- HEADER -->
+<header class="app">
+  <div class="logo">P</div>
+  <span class="word">Palette Studio <span class="faint">for miniatures</span></span>
+  <div class="spacer"></div>
+  <div class="seg" role="tablist" aria-label="Mode">
+    <button class="on">Studio</button>
+    <button>Shelf</button>
+  </div>
+  <button class="icon-btn" aria-label="Settings">⋯</button>
+</header>
+
+<!-- INSTRUMENT BAND -->
+<section class="band card" aria-label="Instrument band">
+  <!-- seed strip -->
+  <div class="seedrow">
+    <button class="btn drawerbtn" aria-haspopup="dialog">☰ Pick paint</button>
+    <span class="field">#F9DF1C</span>
+    <div class="seg" aria-label="Seed mode"><button class="on">Main</button><button>Accent</button></div>
+    <button class="btn">▣ From photo</button>
+    <button class="btn">⇄ Compare</button>
+  </div>
+
+  <!-- hero -->
+  <div class="col">
+    <span class="collabel">Base</span>
+    <div class="hero">
+      <span class="big" style="background:#F9DF1C"></span>
+      <div>
+        <h2>Custom #F9DF1C</h2>
+        <div class="meta"><span class="muted">typed hex</span><span class="tag">custom</span></div>
+        <div class="mono muted" style="margin-top:4px;font-size:12px">#F9DF1C</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="div" aria-hidden="true"></div>
+
+  <!-- wheel -->
+  <div class="col">
+    <span class="collabel">Wheel</span>
+    <div class="wheel" role="img" aria-label="Harmony wheel, tetradic">
+      <span class="node" style="left:50%;top:6%;background:#F9DF1C"></span>
+      <span class="node" style="left:90%;top:34%;background:#82C8B0"></span>
+      <span class="node" style="left:50%;top:94%;background:#1C2FA8"></span>
+      <span class="node" style="left:10%;top:34%;background:#A81C8C"></span>
+    </div>
+    <div class="wheelctl">
+      <span class="faint" style="font-size:11px">Light</span>
+      <input type="range" min="0" max="100" value="62" aria-label="Lightness">
+      <button class="btn ghost" aria-label="Shuffle">⤮ Shuffle</button>
+    </div>
+  </div>
+
+  <div class="col" style="grid-column:auto"></div>
+
+  <!-- palette -->
+  <div class="col" style="grid-column:3;justify-content:flex-start">
+    <div class="palhead">
+      <div class="seg" aria-label="Harmony type">
+        <button>Comp.</button><button>Analog.</button><button>Triadic</button><button>Split</button><button class="on">Tetradic</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="seg" aria-label="Ideal or real"><button class="on">Ideal</button><button>Real</button></div>
+        <button class="icon-btn" aria-label="Remove colour" style="width:32px;height:32px">−</button>
+        <button class="icon-btn" aria-label="Add colour" style="width:32px;height:32px">+</button>
+      </div>
+    </div>
+    <div class="palette" aria-label="Live palette">
+      <div class="pcol"><div class="block" style="background:#F9DF1C"></div><div class="ang">base</div><div class="hx">#F9DF1C</div><div class="nm">Averland Sunset</div><span class="badge ok">ΔE 1.4</span></div>
+      <div class="pcol"><div class="block" style="background:#F2A91C"></div><div class="ang">+60</div><div class="hx">#F2A91C</div><div class="nm">Auric Armour Gold</div><span class="badge ok">ΔE 2.1</span></div>
+      <div class="pcol"><div class="block" style="background:#1C2FA8"></div><div class="ang">+180</div><div class="hx">#1C2FA8</div><div class="nm">Macragge Blue</div><span class="badge warn">ΔE 4.6</span></div>
+      <div class="pcol"><div class="block" style="background:#1C9CA8"></div><div class="ang">+240</div><div class="hx">#1C9CA8</div><div class="nm">Sotek Green</div><span class="badge ok">ΔE 3.2</span></div>
+      <div class="pcol"><div class="block" style="background:#A81C8C"></div><div class="ang">+300</div><div class="hx">#A81C8C</div><div class="nm">Screamer Pink</div><span class="badge bad">ΔE 11.2</span></div>
+      <div class="pcol"><div class="block" style="background:#C8102E"></div><div class="ang">+340</div><div class="hx">#C8102E</div><div class="nm">Evil Sunz Scarlet</div><span class="badge ok">ΔE 2.8</span></div>
+      <div class="pcol"><div class="block" style="background:#9FA6AD"></div><div class="ang">spot</div><div class="hx">#9FA6AD</div><div class="nm">Runefang Steel</div><span class="badge warn">ΔE 4.9</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTPUT (FULL WIDTH, near top) -->
+<section class="output">
+  <div class="tabbar">
+    <div class="tabs" role="tablist" aria-label="Output">
+      <button class="on" role="tab" aria-selected="true">Plan · roles</button>
+      <button role="tab" aria-selected="false">Equivalents</button>
+      <button role="tab" aria-selected="false">Accessibility</button>
+    </div>
+    <div class="tabtools">
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)"><input type="checkbox" checked> Tone ladder</label>
+      <div class="seg" aria-label="Use my collection"><button>Off</button><button class="on">Prefer</button><button>Only</button></div>
+    </div>
+  </div>
+
+  <div class="card plan" role="tabpanel" aria-label="Plan roles">
+    <!-- PRIMARY -->
+    <div class="slot">
+      <div class="top"><span class="role">Primary</span><span class="pct">~60%</span></div>
+      <div class="iva">
+        <span class="ideal" style="background:#F9DF1C"></span><span class="arrow">→</span>
+        <span class="sw" style="background:#EFD41A;width:36px;height:36px"></span>
+        <div class="info"><div class="pname">Averland Sunset</div><div class="brand">Citadel · Layer</div></div>
+      </div>
+      <span class="badge ok" style="margin-bottom:10px;display:inline-block">ΔE 1.4 · Excellent</span>
+      <p class="laddertitle">Wash · base · highlight</p>
+      <div class="ladder">
+        <div class="step"><div class="lb" style="background:#7A6A12"></div><div class="ll">Agrax wash</div></div>
+        <div class="step"><div class="lb" style="background:#EFD41A"></div><div class="ll">Averland</div></div>
+        <div class="step"><div class="lb" style="background:#FBEE8E"></div><div class="ll">Yriel hi</div></div>
+      </div>
+    </div>
+
+    <!-- SECONDARY -->
+    <div class="slot">
+      <div class="top"><span class="role">Secondary</span><span class="pct">~30%</span></div>
+      <div class="iva">
+        <span class="ideal" style="background:#1C2FA8"></span><span class="arrow">→</span>
+        <span class="sw" style="background:#13315C;width:36px;height:36px"></span>
+        <div class="info"><div class="pname">Macragge Blue</div><div class="brand">Citadel · Base</div></div>
+      </div>
+      <span class="badge warn" style="margin-bottom:10px;display:inline-block">ΔE 4.6 · Fair</span>
+      <p class="laddertitle">Wash · base · highlight</p>
+      <div class="ladder">
+        <div class="step"><div class="lb" style="background:#0C1838"></div><div class="ll">Nuln wash</div></div>
+        <div class="step"><div class="lb" style="background:#13315C"></div><div class="ll">Macragge</div></div>
+        <div class="step"><div class="lb" style="background:#3E6BB0"></div><div class="ll">Calgar hi</div></div>
+      </div>
+    </div>
+
+    <!-- ACCENT -->
+    <div class="slot">
+      <div class="top"><span class="role">Accent</span><span class="pct">~10%</span></div>
+      <div class="iva">
+        <span class="ideal" style="background:#C8102E"></span><span class="arrow">→</span>
+        <span class="sw" style="background:#C8102E;width:36px;height:36px"></span>
+        <div class="info"><div class="pname">Evil Sunz Scarlet</div><div class="brand">Citadel · Layer</div></div>
+      </div>
+      <span class="badge ok" style="margin-bottom:10px;display:inline-block">ΔE 2.8 · Good</span>
+      <p class="laddertitle">Wash · base · highlight</p>
+      <div class="ladder">
+        <div class="step"><div class="lb" style="background:#6B0A18"></div><div class="ll">Carroburg</div></div>
+        <div class="step"><div class="lb" style="background:#C8102E"></div><div class="ll">Evil Sunz</div></div>
+        <div class="step"><div class="lb" style="background:#F2516A"></div><div class="ll">Wild Rider</div></div>
+      </div>
+    </div>
+
+    <!-- METAL -->
+    <div class="slot">
+      <div class="top"><span class="role">Metal</span><span class="pct">spot</span></div>
+      <div class="iva">
+        <span class="ideal" style="background:#B8860B"></span><span class="arrow">→</span>
+        <span class="sw" style="background:#B8860B;width:36px;height:36px"></span>
+        <div class="info"><div class="pname">Auric Armour Gold</div><div class="brand">Army Painter · D&amp;D</div></div>
+      </div>
+      <span class="badge ok" style="margin-bottom:10px;display:inline-block">ΔE 2.1 · Good</span>
+      <p class="laddertitle">Wash · base · highlight</p>
+      <div class="ladder">
+        <div class="step"><div class="lb" style="background:#6E5008"></div><div class="ll">Reikland</div></div>
+        <div class="step"><div class="lb" style="background:#B8860B"></div><div class="ll">Auric Gold</div></div>
+        <div class="step"><div class="lb" style="background:#9FA6AD"></div><div class="ll">Runefang</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINISH BAR -->
+<section class="finish card">
+  <span class="muted" style="font-size:12.5px">7 colours · 4 roles · 3 to buy</span>
+  <div class="spacer"></div>
+  <button class="btn">🔗 Share link</button>
+  <button class="btn primary">⤓ Export list</button>
+</section>
+
+</body></html>

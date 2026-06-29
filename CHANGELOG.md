@@ -6,6 +6,82 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-06-29
+The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),
+the full 10-harmony set (incl. Square · Compound · Custom · Shades · Monochromatic), a sticky-split Studio
+layout, plus accessibility, photo-eyedropper and theme fixes — and the first unit tests for `store.js` /
+`adjustDirection`.
+### Changed
+- **Studio relaid out as a sticky split (the "Split + sticky studio" exploration).** A full-width seed
+  toolbar tops the workspace; below it, on wide screens (>1024px) the studio (base hero + wheel + live
+  palette) becomes a **sticky left column** beside a **scrolling tabbed output** column (Plan·roles /
+  Equivalents / Accessibility) — so the role plan reads next to the wheel without scrolling past it.
+  The base hero now heads the studio column (above the wheel), and the top toolbar uses the full width
+  (From photo / Compare pushed to the right edge). Collapses to a single workspace column ≤1024px and a
+  single page column ≤860px. Amends CLAUDE.md §3.6. No JS/behaviour change — markup + CSS only.
+
+### Fixed
+- **Reorder added swatches by keyboard & touch.** The drag-reorder added this cycle was mouse-only —
+  HTML5 drag-and-drop doesn't fire on touch and has no keyboard path, which broke the "every interaction
+  has a keyboard + screen-reader path" rule (§3.5) and silently didn't work on phones. Each added swatch
+  now has **◂/▸ move buttons** (focusable + tappable, disabled at the ends); native drag stays as a
+  mouse-only enhancement.
+- **Photo eyedropper now locks the colour on click.** Previously the sampled colour kept tracking the
+  cursor on hover, so by the time you moved to "Use as base colour" the committed colour had drifted to
+  wherever the pointer left the canvas. A click/tap (or a held drag) now *commits* the colour; plain
+  hover only drives the zoom preview, so the locked colour stays put while you reach the button.
+- **Photo-eyedropper loupe follows the cursor.** The zoom loupe was pinned to the stage's top-right
+  corner; it now floats just above the cursor (dropping below when there's no room above) so you can see
+  the magnified pixels you're sampling.
+- **Settings popover spacing.** The Theme and Language rows were cramped and mis-aligned; the popover is
+  now a small grid so both segmented controls line up and the rows have room to breathe.
+- **Settings theme toggle painted itself in the wrong palette.** The Theme control's buttons used a
+  `data-theme="light"`/`"dark"` attribute, which collided with the global `[data-theme="…"]` token
+  selectors (tokens.css) — each button re-scoped the *entire* colour palette to its own theme, so in
+  dark mode the "Light" button rendered with light-theme tokens (lavender text / white selected pill)
+  regardless of the active theme. Renamed the attribute to `data-set-theme` so the buttons follow the
+  active theme like every other control (CLAUDE.md §3: never style a component differently per theme).
+
+### Added
+- **Value harmonies + "add along the line": Shades · Monochromatic.** The harmony set reaches the full
+  Adobe list (10). **Shades** (same hue, stepped lightness) and **Monochromatic** (same hue, stepped
+  saturation) are produced by a generalised `{dh,ds,dl}` step model in `harmony.js` — a clean
+  highlight/shadow ladder for minis. The wheel shows just the base for these (a value ramp has no ring
+  partners), and their swatches are display-only there (they can't be uniquely hue-keyed for lock/edit).
+  The live palette's **`+` now extends the base's value ramp** (alternating tints/shades stepping
+  outward) instead of inventing a new hue. Amends CLAUDE.md §7; every ramp swatch still resolves to its
+  nearest real paint + ΔE.
+- **Three more harmonies: Square · Compound · Custom.** The harmony control grows from 5 to 8 — Square
+  (`+90/+180/+270`), Compound (`+30/+180/+210`), and **Custom** (no rule: build the palette by hand with
+  the per-swatch lock/edit/add controls). Amends CLAUDE.md §7. The role engine now guards against a
+  rule-less harmony so Custom's Plan still derives a Secondary/Accent from base rotations. Shades +
+  Monochromatic (single-hue value/saturation ramps, not hue rotations) need a generalised generator and
+  are tracked in §7 for a later change.
+- **Per-swatch editing: lock · edit-hex · drag-reorder.** Each live-palette swatch can now be **locked**
+  (it survives Generate and harmony changes — the rule stops regenerating that hue via a `dropOffsets`
+  detach, and the swatch becomes an independent pinned colour), **edited** to any hex through a native
+  colour picker, and **drag-reordered** among the added swatches. With copy / use-as-base / delete from
+  the previous slice that's the full per-swatch action set, and every swatch still resolves to its nearest
+  real paint + ΔE. The wheel, harmony engine and role plan are untouched — locking just detaches a swatch
+  from the rule. URL share + undo/redo carry the new per-swatch lightness, lock and detach state. Next: the
+  expanded harmony set (Custom · Square · Compound · Shades · Monochromatic, a §7 update).
+- **Adobe-style live-palette editing (first slice).** The live palette gains **undo/redo** (↶/↷ buttons +
+  Ctrl/⌘+Z, Shift for redo), **per-swatch hover actions** (copy · use-as-base · delete an added colour), and
+  the wheel's **Generate** button re-rolls a random base. Every swatch still resolves to its nearest real
+  paint + ΔE — the thing that sets us apart from a generic generator. Lock / edit-hex / drag-reorder and the
+  expanded harmony set (Custom · Square · Compound · Shades · Monochromatic, a §7 update) come next.
+- **Studio layout explorations (mockups, not shipped).** `mockups/studio-layouts.html` — a 5-way
+  exploration of scroll-reducing Studio arrangements (split + sticky studio · 3-column cockpit ·
+  instrument band · bento dashboard · sticky studio + section rail), each a standalone on-token mock
+  under `mockups/layouts/`, with a 3-lens design-review ranking and a recommendation. Aimed at the
+  "have to scroll to reach the role plan" complaint; nothing here is wired up yet.
+- **Tests for `store.js` (the persistence chokepoint).** Covers owned/to-buy mutual exclusivity,
+  `localStorage` persistence + read-back, defensive coercion of corrupt data, pre-v1 legacy migration
+  (`ps-owned`/`ps-theme`), and the JSON export/import round-trip — closing a previously untested module.
+- **Tests for `adjustDirection` (colour nudge hints).** Pins the user-facing guidance strings
+  (lighten/darken/mute/saturate/shift hue, the "slightly" suffix, and the no-change `null`) and the
+  lightness > saturation > hue axis priority.
+
 ## [1.6.0] - 2026-06-29
 The **v2-backlog release** (web): photo eyedropper, locale picker, mobile multi-select, manual group curation.
 ### Added

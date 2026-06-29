@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palette Studio — Cockpit</title>
+<style>
+:root{
+--bg:#FBFBFE;--surface:#FFFFFF;--surface-2:#F1F2FF;--border:#E6E7F8;--border-strong:#D3D5F0;
+--text:#20223A;--text-muted:#6E7293;--text-faint:#A2A6C4;
+--accent:#7C3AED;--accent-weak:#F0EAFE;--on-accent:#FFFFFF;--buy:#2563EB;--buy-weak:#DBEAFE;--on-buy:#FFFFFF;
+--success:#16A34A;--success-weak:#DCFCE7;--warning:#C2740B;--warning-weak:#FBEBD3;--danger:#DC2647;--danger-weak:#FCE4EA;
+--shadow:0 1px 2px rgba(60,50,120,.06),0 6px 18px rgba(60,50,120,.05);
+--r-card:14px;--r-ctrl:10px;--r-pill:999px;--tap:38px;
+--display:"Space Grotesk","Inter",system-ui,sans-serif;--ui:"Inter",system-ui,sans-serif;--mono:ui-monospace,Menlo,monospace;}
+[data-theme="dark"]{--bg:#141110;--surface:#1C1815;--surface-2:#251F1A;--border:#3A302A;--border-strong:#4D4138;
+--text:#ECE3D8;--text-muted:#A8998A;--text-faint:#7C6F62;--accent:#C2912F;--accent-weak:#2C2113;--on-accent:#15100A;
+--buy:#5E93C9;--buy-weak:#16242F;--on-buy:#0E1620;--success:#86A559;--success-weak:#232A16;--warning:#C9923A;--warning-weak:#2E2412;--danger:#D2563F;--danger-weak:#2E1A14;--shadow:0 1px 2px rgba(0,0,0,.45);}
+*{box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:var(--ui);margin:0;font-size:14px}
+
+h1,h2,h3{font-family:var(--display);margin:0;font-weight:600}
+button{font-family:var(--ui);cursor:pointer;color:var(--text)}
+select,input{font-family:var(--ui);color:var(--text)}
+.mono{font-family:var(--mono)}
+:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-weak);border-radius:var(--r-ctrl)}
+
+/* shell: header + 3-col cockpit, page itself does not scroll */
+html,body{height:100%}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+header{display:flex;align-items:center;gap:16px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex:none}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:16px}
+.logo .mark{width:28px;height:28px;border-radius:var(--r-ctrl);background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-weight:700}
+.logo .wordmark{white-space:nowrap}
+header .spacer{flex:1}
+
+.seg{display:inline-flex;background:var(--surface-2);border-radius:var(--r-ctrl);padding:3px;gap:2px}
+.seg button{border:none;background:transparent;padding:6px 12px;border-radius:8px;font-size:13px;color:var(--text-muted);min-height:var(--tap)}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.iconbtn{width:var(--tap);height:var(--tap);border-radius:var(--r-ctrl);border:1px solid var(--border);background:var(--surface);font-size:18px;line-height:1}
+
+.cockpit{flex:1;display:grid;grid-template-columns:288px minmax(0,1fr) 360px;gap:12px;padding:12px;min-height:0;overflow:hidden}
+.col{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.col .scroll{overflow:auto;min-height:0;padding:16px}
+.col-head{padding:12px 16px;border-bottom:1px solid var(--border);flex:none;display:flex;align-items:center;gap:8px}
+.col-head h2{font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+.col-foot{padding:12px 16px;border-top:1px solid var(--border);flex:none}
+
+/* picker */
+.field{width:100%;height:var(--tap);border:1px solid var(--border);border-radius:var(--r-ctrl);padding:0 12px;background:var(--surface);font-size:13px}
+.picker-controls{display:flex;gap:8px;margin:12px 0}
+.picker-controls select{flex:1;min-width:0;height:var(--tap);border:1px solid var(--border);border-radius:var(--r-ctrl);background:var(--surface);padding:0 8px;font-size:12.5px}
+.plist{display:flex;flex-direction:column;gap:4px}
+.prow{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--r-ctrl);border:1px solid transparent}
+.prow:hover{background:var(--surface-2)}
+.prow.sel{box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-weak)}
+.prow .meta{min-width:0}
+.prow .nm{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .sub{font-size:11.5px;color:var(--text-muted)}
+.sw{width:44px;height:44px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);flex:none}
+.sw.s{width:30px;height:30px}
+.sw.lg{width:84px;height:84px;border-radius:var(--r-ctrl)}
+.count{font-size:12px;color:var(--text-muted)}
+
+/* studio middle */
+.seedbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px}
+.hexfield{display:flex;align-items:center;gap:6px;border:1px solid var(--border-strong);border-radius:var(--r-ctrl);height:var(--tap);padding:0 10px;font-family:var(--mono);font-size:13px}
+.hexfield b{color:var(--text-faint);font-weight:400}
+.btn{height:var(--tap);border-radius:var(--r-ctrl);border:1px solid var(--border);background:var(--surface);padding:0 14px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.buy{background:var(--buy);color:var(--on-buy);border-color:var(--buy)}
+
+.hero{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.hero .htxt h1{font-size:22px}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:var(--r-pill);background:var(--surface-2);color:var(--text-muted);margin-right:6px}
+.tag.accent{background:var(--accent-weak);color:var(--accent)}
+
+.studio-mid{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px}
+.wheelwrap{flex:none;display:flex;flex-direction:column;align-items:center;gap:12px}
+.wheel{width:240px;height:240px;border-radius:50%;background:conic-gradient(from 90deg,#ff0000,#ff00ff,#0000ff,#00ffff,#00ff00,#ffff00,#ff0000);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);position:relative}
+.node{position:absolute;width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 3px #fff,0 1px 3px rgba(0,0,0,.4);transform:translate(-50%,-50%)}
+.wheel-ctrls{display:flex;align-items:center;gap:10px;width:100%}
+.slider{flex:1;height:6px;border-radius:var(--r-pill);background:linear-gradient(90deg,#222,#F9DF1C,#fff)}
+.studio-right{flex:1;min-width:240px}
+
+.htype{display:flex;flex-wrap:wrap;gap:4px;background:var(--surface-2);border-radius:var(--r-ctrl);padding:3px;margin-bottom:16px}
+.htype button{border:none;background:transparent;padding:7px 10px;border-radius:8px;font-size:12px;color:var(--text-muted)}
+.htype button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+.palhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.palhead h3{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)}
+.palhead .ctrls{display:flex;gap:8px;align-items:center}
+.stepbtn{width:var(--tap);height:var(--tap);border-radius:var(--r-ctrl);border:1px solid var(--border);background:var(--surface);font-size:16px}
+.palette{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.pcol{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pblock{height:72px;border-radius:var(--r-ctrl);box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);position:relative}
+.angle{position:absolute;top:4px;left:4px;font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.85);color:#222;padding:0 4px;border-radius:5px}
+.pcol .hx{font-family:var(--mono);font-size:11px;color:var(--text)}
+.pcol .np{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-family:var(--mono);font-size:10.5px;padding:1px 5px;border-radius:5px;background:var(--surface-2);color:var(--text-muted);display:inline-block}
+.badge.ok{background:var(--success-weak);color:var(--success)}
+.badge.warn{background:var(--warning-weak);color:var(--warning)}
+.badge.bad{background:var(--danger-weak);color:var(--danger)}
+
+/* output rail */
+.tabs{display:flex;gap:2px;background:var(--surface-2);border-radius:var(--r-ctrl);padding:3px}
+.tabs button{flex:1;border:none;background:transparent;padding:8px 6px;border-radius:8px;font-size:12.5px;color:var(--text-muted);min-height:var(--tap)}
+.tabs button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.outctrls{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+
+.slot{border:1px solid var(--border);border-radius:var(--r-card);padding:12px;margin-bottom:12px}
+.slot-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.slot-head .role{font-family:var(--display);font-weight:600;font-size:14px}
+.slot-head .pct{font-size:11.5px;color:var(--text-muted)}
+.iva{display:flex;align-items:center;gap:8px}
+.iva .arrow{color:var(--text-faint);font-size:14px}
+.iva .pinfo{min-width:0}
+.iva .pinfo .nm{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iva .pinfo .br{font-size:11px;color:var(--text-muted)}
+.ladder{display:flex;gap:6px;margin-top:8px}
+.lstep{flex:1;text-align:center}
+.lstep .ls{height:22px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+.lstep .ll{font-size:10px;color:var(--text-muted);margin-top:3px;display:block}
+
+.stub{padding:16px;border:1px dashed var(--border-strong);border-radius:var(--r-card);color:var(--text-muted);font-size:13px}
+.stub h3{font-size:14px;margin-bottom:6px;color:var(--text)}
+.hidden{display:none}
+
+@media (max-width:1024px){
+  .cockpit{grid-template-columns:264px minmax(0,1fr)}
+  .rail{grid-column:1 / -1}
+  .palette{grid-template-columns:repeat(4,1fr)}
+}
+@media (max-width:860px){
+  .app{height:auto;overflow:visible}
+  .cockpit{display:flex;flex-direction:column;overflow:visible;height:auto}
+  .col{overflow:visible}
+  .col .scroll{overflow:visible}
+  .palette{grid-template-columns:repeat(4,1fr)}
+  .logo .wordmark{display:none}
+}
+@media (max-width:520px){
+  :root{--tap:44px}
+  .cockpit{padding:8px;gap:8px}
+  .col .scroll{padding:12px}
+  .palette{grid-template-columns:repeat(2,1fr)}
+  .studio-mid{gap:16px}
+  .wheel{width:200px;height:200px}
+  .hero .sw.lg{width:64px;height:64px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><span class="mark">P</span><span class="wordmark">Palette Studio for miniatures</span></div>
+    <div class="spacer"></div>
+    <div class="seg" role="tablist" aria-label="Mode">
+      <button class="on" aria-selected="true">Studio</button>
+      <button aria-selected="false">Shelf</button>
+    </div>
+    <button class="iconbtn" aria-label="Settings">⋯</button>
+  </header>
+
+  <main class="cockpit">
+
+    <!-- COL 1: PICKER -->
+    <section class="col" aria-label="Paint picker">
+      <div class="col-head"><h2>Picker</h2></div>
+      <div class="scroll">
+        <input class="field" type="search" placeholder="Search paints…" aria-label="Search paints">
+        <div class="picker-controls">
+          <select aria-label="Brand"><option>All brands</option><option>Citadel</option><option>Vallejo</option><option>Army Painter</option></select>
+          <select aria-label="Type"><option>All types</option><option>Base</option><option>Layer</option><option>Metal</option></select>
+          <select aria-label="Sort"><option>Name</option><option>Hue</option><option>ΔE</option></select>
+        </div>
+        <div class="plist">
+          <div class="prow sel"><span class="sw s" style="background:#9A1115"></span><div class="meta"><div class="nm">Mephiston Red</div><div class="sub">Citadel · Base</div></div></div>
+          <div class="prow"><span class="sw s" style="background:#C8102E"></span><div class="meta"><div class="nm">Evil Sunz Scarlet</div><div class="sub">Citadel · Layer</div></div></div>
+          <div class="prow"><span class="sw s" style="background:#244B8F"></span><div class="meta"><div class="nm">Macragge Blue</div><div class="sub">Citadel · Base</div></div></div>
+          <div class="prow"><span class="sw s" style="background:#1E7A4E"></span><div class="meta"><div class="nm">Sotek Green</div><div class="sub">Citadel · Layer</div></div></div>
+          <div class="prow"><span class="sw s" style="background:#B58A2E"></span><div class="meta"><div class="nm">Auric Armour Gold</div><div class="sub">Army Painter · D&D</div></div></div>
+          <div class="prow"><span class="sw s" style="background:#9BA0A6"></span><div class="meta"><div class="nm">Runefang Steel</div><div class="sub">Citadel · Layer</div></div></div>
+          <div class="prow"><span class="sw s" style="background:#F2C14E"></span><div class="meta"><div class="nm">Averland Sunset</div><div class="sub">Citadel · Base</div></div></div>
+          <div class="prow"><span class="sw s" style="background:#5A2E82"></span><div class="meta"><div class="nm">Xereus Purple</div><div class="sub">Citadel · Base</div></div></div>
+        </div>
+      </div>
+      <div class="col-foot"><span class="count">2508 of 2508 paints · 77 owned</span></div>
+    </section>
+
+    <!-- COL 2: STUDIO -->
+    <section class="col" aria-label="Studio">
+      <div class="col-head"><h2>Studio</h2></div>
+      <div class="scroll">
+        <!-- seed bar -->
+        <div class="seedbar">
+          <span class="hexfield"><b>#</b>F9DF1C</span>
+          <div class="seg" aria-label="Seed role">
+            <button class="on">Main</button><button>Accent</button>
+          </div>
+          <button class="btn">📷 From photo</button>
+          <button class="btn">⤢ Compare</button>
+        </div>
+
+        <!-- base hero -->
+        <div class="hero">
+          <span class="sw lg" style="background:#F9DF1C"></span>
+          <div class="htxt">
+            <h1>Custom #F9DF1C</h1>
+            <div style="margin:4px 0"><span class="tag">typed hex</span><span class="tag accent">custom</span></div>
+            <span class="mono" style="color:var(--text-muted)">#F9DF1C · hsl(52° 95% 54%)</span>
+          </div>
+        </div>
+
+        <!-- wheel + light/shuffle -->
+        <div class="studio-mid">
+          <div class="wheelwrap">
+            <div class="wheel" role="img" aria-label="Harmony wheel, tetradic">
+              <span class="node" style="left:50%;top:8%;background:#F9DF1C"></span>
+              <span class="node" style="left:92%;top:62%;background:#F91C42"></span>
+              <span class="node" style="left:50%;top:92%;background:#1C3CF9"></span>
+              <span class="node" style="left:8%;top:38%;background:#1CF9D5"></span>
+            </div>
+            <div class="wheel-ctrls">
+              <span style="font-size:12px;color:var(--text-muted)">Light</span>
+              <span class="slider" role="slider" aria-label="Lightness" aria-valuenow="54"></span>
+              <button class="btn">🔀 Shuffle</button>
+            </div>
+          </div>
+          <div class="studio-right">
+            <div class="htype" role="tablist" aria-label="Harmony type">
+              <button>Complementary</button>
+              <button>Analogous</button>
+              <button>Triadic</button>
+              <button>Split-complementary</button>
+              <button class="on">Tetradic</button>
+            </div>
+            <p style="font-size:12.5px;color:var(--text-muted);margin:0">Drag any node to explore — the palette and role slots on the right update live. Tetradic gives two complementary pairs around #F9DF1C.</p>
+          </div>
+        </div>
+
+        <!-- live palette -->
+        <div class="palhead">
+          <h3>Live palette</h3>
+          <div class="ctrls">
+            <div class="seg" aria-label="Swatch source"><button class="on">Ideal</button><button>Real</button></div>
+            <button class="stepbtn" aria-label="Remove colour">−</button>
+            <button class="stepbtn" aria-label="Add colour">+</button>
+          </div>
+        </div>
+        <div class="palette">
+          <div class="pcol"><div class="pblock" style="background:#F9DF1C"><span class="angle">0°</span></div><span class="hx">#F9DF1C</span><span class="np">Averland Sunset</span><span class="badge ok">ΔE 1.8 · Excellent</span></div>
+          <div class="pcol"><div class="pblock" style="background:#C9A82E"><span class="angle">+60</span></div><span class="hx">#C9A82E</span><span class="np">Auric Armour Gold</span><span class="badge ok">ΔE 3.1 · Good</span></div>
+          <div class="pcol"><div class="pblock" style="background:#F91C42"><span class="angle">+120</span></div><span class="hx">#F91C42</span><span class="np">Evil Sunz Scarlet</span><span class="badge warn">ΔE 4.6 · Fair</span></div>
+          <div class="pcol"><div class="pblock" style="background:#9A1115"><span class="angle">+180</span></div><span class="hx">#9A1115</span><span class="np">Mephiston Red</span><span class="badge ok">ΔE 2.1 · Good</span></div>
+          <div class="pcol"><div class="pblock" style="background:#1C3CF9"><span class="angle">+240</span></div><span class="hx">#1C3CF9</span><span class="np">Macragge Blue</span><span class="badge warn">ΔE 6.2 · Loose</span></div>
+          <div class="pcol"><div class="pblock" style="background:#1CF9D5"><span class="angle">+300</span></div><span class="hx">#1CF9D5</span><span class="np">Sotek Green</span><span class="badge bad">ΔE 11.4 · Poor</span></div>
+          <div class="pcol"><div class="pblock" style="background:#9BA0A6"><span class="angle">spot</span></div><span class="hx">#9BA0A6</span><span class="np">Runefang Steel</span><span class="badge ok">ΔE 2.7 · Good</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COL 3: OUTPUT RAIL -->
+    <section class="col rail" aria-label="Output">
+      <div class="col-head"><h2>Output</h2></div>
+      <div class="scroll">
+        <div class="tabs" role="tablist" aria-label="Output view">
+          <button class="on" aria-selected="true">Plan · roles</button>
+          <button aria-selected="false">Equivalents</button>
+          <button aria-selected="false">Accessibility</button>
+        </div>
+        <div class="outctrls">
+          <div class="seg" aria-label="Tone ladder"><button class="on">Tone ladder on</button></div>
+          <div class="seg" aria-label="Use my collection"><button class="on">Off</button><button>Prefer</button><button>Only</button></div>
+        </div>
+
+        <!-- Plan tab -->
+        <div id="plan">
+          <div class="slot">
+            <div class="slot-head"><span class="role">Primary</span><span class="pct">~60%</span></div>
+            <div class="iva">
+              <span class="sw" style="background:#F9DF1C"></span>
+              <span class="arrow">→</span>
+              <span class="sw" style="background:#F2C14E"></span>
+              <div class="pinfo"><div class="nm">Averland Sunset</div><div class="br">Citadel · Base · <span class="badge ok">ΔE 1.8</span></div></div>
+            </div>
+            <div class="ladder">
+              <div class="lstep"><div class="ls" style="background:#7A5A12"></div><span class="ll">Wash</span></div>
+              <div class="lstep"><div class="ls" style="background:#F2C14E"></div><span class="ll">Base</span></div>
+              <div class="lstep"><div class="ls" style="background:#FDE9A0"></div><span class="ll">Highlight</span></div>
+            </div>
+          </div>
+
+          <div class="slot">
+            <div class="slot-head"><span class="role">Secondary</span><span class="pct">~30%</span></div>
+            <div class="iva">
+              <span class="sw" style="background:#9A1115"></span>
+              <span class="arrow">→</span>
+              <span class="sw" style="background:#9A1115"></span>
+              <div class="pinfo"><div class="nm">Mephiston Red</div><div class="br">Citadel · Base · <span class="badge ok">ΔE 2.1</span></div></div>
+            </div>
+            <div class="ladder">
+              <div class="lstep"><div class="ls" style="background:#5A0A0C"></div><span class="ll">Wash</span></div>
+              <div class="lstep"><div class="ls" style="background:#9A1115"></div><span class="ll">Base</span></div>
+              <div class="lstep"><div class="ls" style="background:#D84B3E"></div><span class="ll">Highlight</span></div>
+            </div>
+          </div>
+
+          <div class="slot">
+            <div class="slot-head"><span class="role">Accent</span><span class="pct">~10%</span></div>
+            <div class="iva">
+              <span class="sw" style="background:#1C3CF9"></span>
+              <span class="arrow">→</span>
+              <span class="sw" style="background:#244B8F"></span>
+              <div class="pinfo"><div class="nm">Macragge Blue</div><div class="br">Citadel · Base · <span class="badge warn">ΔE 6.2</span></div></div>
+            </div>
+            <div class="ladder">
+              <div class="lstep"><div class="ls" style="background:#13264C"></div><span class="ll">Wash</span></div>
+              <div class="lstep"><div class="ls" style="background:#244B8F"></div><span class="ll">Base</span></div>
+              <div class="lstep"><div class="ls" style="background:#5A82C4"></div><span class="ll">Highlight</span></div>
+            </div>
+          </div>
+
+          <div class="slot">
+            <div class="slot-head"><span class="role">Metal · spot</span><span class="pct">spot</span></div>
+            <div class="iva">
+              <span class="sw" style="background:#9BA0A6"></span>
+              <span class="arrow">→</span>
+              <span class="sw" style="background:#9BA0A6"></span>
+              <div class="pinfo"><div class="nm">Runefang Steel</div><div class="br">Citadel · Layer · <span class="badge ok">ΔE 2.7</span></div></div>
+            </div>
+            <div class="ladder">
+              <div class="lstep"><div class="ls" style="background:#4A4E54"></div><span class="ll">Wash</span></div>
+              <div class="lstep"><div class="ls" style="background:#9BA0A6"></div><span class="ll">Base</span></div>
+              <div class="lstep"><div class="ls" style="background:#E2E5E8"></div><span class="ll">Highlight</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Equivalents stub -->
+        <div id="equiv" class="hidden">
+          <div class="stub"><h3>Cross-brand equivalents</h3>Mephiston Red ↔ Vallejo Gory Red (ΔE 1.2) ↔ P3 Khador Red Base (ΔE 2.9). Same-colour group of 4 paints.</div>
+        </div>
+
+        <!-- Accessibility stub -->
+        <div id="access" class="hidden">
+          <div class="stub"><h3>Accessibility</h3>Deutan/protan/tritan simulation + WCAG contrast across the palette. 2 pairs collide under deuteranopia.</div>
+        </div>
+      </div>
+      <div class="col-foot" style="display:flex;gap:8px">
+        <button class="btn buy" style="flex:1;justify-content:center">Export list</button>
+        <button class="btn" style="flex:1;justify-content:center">Share link</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

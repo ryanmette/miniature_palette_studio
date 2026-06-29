@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   hexToRgb, rgbToHex, rgbToLab, deltaE2000, deltaE2000Hex,
-  rgbToHsl, hslToRgb, rotateHue, relativeLuminance, contrastRatio, textOn,
+  rgbToHsl, hslToRgb, rotateHue, relativeLuminance, contrastRatio, textOn, adjustDirection,
 } from '../src/js/color.js';
 
 const approx = (a, b, eps = 1e-2) => assert.ok(Math.abs(a - b) <= eps, `${a} ≈ ${b} (±${eps})`);
@@ -56,4 +56,26 @@ test('textOn picks legible colour', () => {
   assert.equal(textOn('#FFD900'), '#15150F');
   assert.equal(textOn('#000000'), '#FFFFFF');
   assert.equal(textOn('#08085A'), '#FFFFFF');
+});
+
+test('adjustDirection: null when the colours are effectively the same', () => {
+  assert.equal(adjustDirection('#808080', '#808080'), null);
+  assert.equal(adjustDirection('#808080', '#818181'), null);   // below the 0.03 threshold
+});
+
+test('adjustDirection: names the lightness axis (the highest-priority axis)', () => {
+  assert.equal(adjustDirection('#FFFFFF', '#000000'), 'lighten');   // ideal far lighter
+  assert.equal(adjustDirection('#000000', '#FFFFFF'), 'darken');    // ideal far darker
+  assert.equal(adjustDirection('#8F8F8F', '#808080'), 'lighten slightly'); // small gap → "slightly"
+});
+
+test('adjustDirection: names the saturation axis when it dominates', () => {
+  // same hue/lightness, big saturation gap → mute / saturate (sat is weighted 0.8, still wins here)
+  assert.equal(adjustDirection('#808080', '#FF0000'), 'mute');      // ideal greyer than paint
+  assert.equal(adjustDirection('#FF0000', '#808080'), 'saturate');  // ideal more saturated than paint
+});
+
+test('adjustDirection: falls back to hue when only hue differs', () => {
+  // equal S and L, hue 120° apart → hue is the only non-trivial axis
+  assert.equal(adjustDirection('#00FF00', '#FF0000'), 'shift hue');
 });
