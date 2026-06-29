@@ -5,6 +5,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.7.0] - 2026-06-29
+The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),
+the full 10-harmony set (incl. Square · Compound · Custom · Shades · Monochromatic), a sticky-split Studio
+layout, plus accessibility, photo-eyedropper and theme fixes — and the first unit tests for `store.js` /
+`adjustDirection`.
 ### Changed
 - **Studio relaid out as a sticky split (the "Split + sticky studio" exploration).** A full-width seed
   toolbar tops the workspace; below it, on wide screens (>1024px) the studio (base hero + wheel + live
