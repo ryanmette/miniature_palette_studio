@@ -284,6 +284,10 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   border-radius: var(--r-ctrl); box-shadow: var(--shadow); padding: 12px 14px; }
 .setrow { display: flex; align-items: center; gap: 12px; }
 .setlbl { font-size: 13px; color: var(--text-muted); }
+/* settings popover — align the two control groups in a grid and give them room to breathe */
+.popover.settings { display: grid; grid-template-columns: auto auto; justify-content: start;
+  align-items: center; gap: 12px 18px; padding: 16px; }
+.popover.settings .setrow { display: contents; }
 
 /* footer + About & data modal */
 .appfoot { max-width: 1180px; margin: 0 auto; padding: 24px 20px 40px; display: flex; align-items: center;
@@ -316,7 +320,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .edstage { position: relative; display: flex; justify-content: center; }
 .edcanvas { display: block; max-width: 100%; height: auto; border-radius: 10px; cursor: crosshair; touch-action: none;
   box-shadow: inset 0 0 0 1px var(--border); background: var(--surface-2); }
-.edloupe { position: absolute; top: 8px; right: 8px; border-radius: 50%; display: none; pointer-events: none;
+.edloupe { position: absolute; left: 0; top: 0; border-radius: 50%; display: none; pointer-events: none;
   box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.4), 0 3px 10px rgba(0,0,0,.35); }
 .edpickrow { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
 

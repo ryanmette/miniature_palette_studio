@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Fixed
+- **Photo eyedropper now locks the colour on click.** Previously the sampled colour kept tracking the
+  cursor on hover, so by the time you moved to "Use as base colour" the committed colour had drifted to
+  wherever the pointer left the canvas. A click/tap (or a held drag) now *commits* the colour; plain
+  hover only drives the zoom preview, so the locked colour stays put while you reach the button.
+- **Photo-eyedropper loupe follows the cursor.** The zoom loupe was pinned to the stage's top-right
+  corner; it now floats just above the cursor (dropping below when there's no room above) so you can see
+  the magnified pixels you're sampling.
+- **Settings popover spacing.** The Theme and Language rows were cramped and mis-aligned; the popover is
+  now a small grid so both segmented controls line up and the rows have room to breathe.
 - **Settings theme toggle painted itself in the wrong palette.** The Theme control's buttons used a
   `data-theme="light"`/`"dark"` attribute, which collided with the global `[data-theme="…"]` token
   selectors (tokens.css) — each button re-scoped the *entire* colour palette to its own theme, so in

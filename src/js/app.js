@@ -726,28 +726,42 @@ function seedFromHex(hex) {
 /** Photo eyedropper (#v2): pick a colour from a local image — drawn to a canvas, sampled (3×3 average),
  *  never uploaded. Single-pick → seeds the scheme. Uses a native <dialog> (focus-trap + Esc). */
 function setupEyedropper() {
-  const dlg = $('#eyedropper'), cv = $('#edCanvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+  const dlg = $('#eyedropper'), stage = $('#edStage'), cv = $('#edCanvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loupe = $('#edLoupe'), lctx = loupe.getContext('2d'), chip = $('#edChip'), hexEl = $('#edHex'), useBtn = $('#edUse');
-  let pick = null;
+  let pick = null;                                     // the COMMITTED colour — only a click/tap (or drag) sets it
   const avg = (x, y) => {                              // 3×3 average around (x,y), clamped to the canvas
     const x0 = Math.max(0, Math.min(cv.width - 3, x - 1)), y0 = Math.max(0, Math.min(cv.height - 3, y - 1));
     const d = ctx.getImageData(x0, y0, 3, 3).data; let r = 0, g = 0, b = 0;
     for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
     const n = d.length / 4; return rgbToHex([Math.round(r / n), Math.round(g / n), Math.round(b / n)]);
   };
-  const drawLoupe = (x, y) => {                        // zoomed crop with a centre-pixel marker
+  const drawLoupe = (x, y, e) => {                     // zoomed crop with a centre-pixel marker, floated just above the cursor
     lctx.imageSmoothingEnabled = false; lctx.clearRect(0, 0, 72, 72);
     lctx.drawImage(cv, x - 4.5, y - 4.5, 9, 9, 0, 0, 72, 72);
     lctx.strokeStyle = '#fff'; lctx.lineWidth = 1; lctx.strokeRect(28, 28, 8, 8);
+    const sr = stage.getBoundingClientRect(), L = 72, gap = 16;     // position relative to the (position:relative) stage
+    const cxs = e.clientX - sr.left, cys = e.clientY - sr.top;
+    loupe.style.left = Math.max(0, Math.min(sr.width - L, cxs - L / 2)) + 'px';   // centre on the cursor, clamped in-stage
+    loupe.style.top = (cys - L - gap >= 0 ? cys - L - gap : cys + gap) + 'px';    // above the cursor, or below if no room
     loupe.style.display = 'block';
   };
   const at = e => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * (cv.width / r.width)), Math.round((e.clientY - r.top) * (cv.height / r.height))]; };
-  const sample = e => {
-    const [x, y] = at(e); if (x < 0 || y < 0 || x >= cv.width || y >= cv.height) return;
-    pick = avg(x, y); chip.style.background = pick; hexEl.textContent = pick; useBtn.disabled = false; drawLoupe(x, y);
+  const inBounds = (x, y) => x >= 0 && y >= 0 && x < cv.width && y < cv.height;
+  const commit = (x, y) => {                           // lock the sampled colour in (what "Use as base colour" applies)
+    pick = avg(x, y); chip.style.background = pick; hexEl.textContent = pick; useBtn.disabled = false;
   };
-  cv.addEventListener('pointermove', sample);          // desktop hover-sample + touch drag-sample
-  cv.addEventListener('pointerdown', sample);          // touch tap / click
+  const onMove = e => {                                // hover previews the loupe only — it never changes the locked colour
+    const [x, y] = at(e); if (!inBounds(x, y)) return;
+    drawLoupe(x, y, e);
+    if (e.buttons & 1) commit(x, y);                   // …unless a press is held: mouse-drag / touch-drag selects live
+  };
+  const onDown = e => {                                // click / tap locks the colour so moving to the button keeps it
+    const [x, y] = at(e); if (!inBounds(x, y)) return;
+    commit(x, y); drawLoupe(x, y, e);
+  };
+  cv.addEventListener('pointermove', onMove);
+  cv.addEventListener('pointerdown', onDown);
+  cv.addEventListener('pointerleave', () => { loupe.style.display = 'none'; });   // hide the loupe on exit; the locked colour stays
   $('#fromPhoto').addEventListener('click', () => $('#photoFile').click());
   $('#photoFile').addEventListener('change', e => {
     const f = e.target.files && e.target.files[0]; e.target.value = '';
