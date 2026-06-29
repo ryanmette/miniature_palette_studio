@@ -1,7 +1,7 @@
 // app.js — application state, dataset loading, entry modes, tabs, conveniences, theme, URL sharing.
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
-import { HARMONY_TYPES, isHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
+import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000 } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
@@ -90,8 +90,9 @@ let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony c
 function paletteNodes() {
   const base = schemeBase();
   const drop = new Set(state.dropOffsets);
+  const hueH = isHueHarmony(state.harmony);   // value harmonies (shades/mono) can't be uniquely detached by hue
   const rule = harmonize(base, state.harmony)
-    .map((n, i) => ({ id: 'p' + i, kind: i ? 'partner' : 'base', hex: n.hex, deg: n.deg }))
+    .map((n, i) => ({ id: 'p' + i, kind: i ? 'partner' : 'base', hex: n.hex, deg: n.deg, detachable: i > 0 && hueH }))
     .filter(n => n.kind === 'base' || !drop.has(n.deg));   // a detached (locked/edited) partner is now a free swatch
   const free = state.extraNodes.map((o, i) => ({ id: 'x' + i, kind: 'free', deg: null, locked: !!o.locked,
     hex: rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])) }));
@@ -110,17 +111,14 @@ function refreshStudio() {
   wheelDraw(); renderLive();
 }
 const MAX_FREE = 6;   // bounds URL length + per-frame nearest-paint scans (S5 micro-decision)
-/** Add a free/draggable colour node at the widest hue gap (free nodes share the lightness slider). */
+/** Add a colour "along the line": extend the base's value ramp (alternating lighter/darker tints &
+ *  shades, stepping outward) rather than inventing a new hue. New swatches are draggable + editable. */
 function addFreeNode() {
   if (state.extraNodes.length >= MAX_FREE) return;
-  const [bh] = rgbToHsl(hexToRgb(baseHex()));
-  const hues = [bh, ...HARMONY_OFFSETS[state.harmony].map(o => ((bh + o) % 360 + 360) % 360), ...state.extraNodes.map(n => n.h)].sort((a, b) => a - b);
-  let bestGap = -1, at = (bh + 90) % 360;
-  for (let i = 0; i < hues.length; i++) {
-    const lo = hues[i], hi = i + 1 < hues.length ? hues[i + 1] : hues[0] + 360, g = hi - lo;
-    if (g > bestGap) { bestGap = g; at = ((lo + g / 2) % 360 + 360) % 360; }
-  }
-  state.extraNodes.push({ h: at, s: 0.6 });
+  const [bh, bs, bl] = rgbToHsl(hexToRgb(baseHex()));
+  const k = state.extraNodes.length, dir = k % 2 === 0 ? 1 : -1, mag = 0.12 + 0.10 * Math.floor(k / 2);
+  const l = Math.min(0.94, Math.max(0.06, bl + dir * mag));
+  state.extraNodes.push({ h: bh, s: bs, l });
   syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
 }
 /** Remove a free node (by index, or the last when omitted). */
@@ -217,12 +215,13 @@ function setupWheel() {
     ctx.clearRect(0, 0, W, H);
     buildDisc(); ctx.drawImage(disc, 0, 0, W, H);   // filled HSV colour field (replaces the dotted hue ring)
     const offs = HARMONY_OFFSETS[state.harmony];
+    const hueH = isHueHarmony(state.harmony);   // value harmonies (shades/mono) have no ring partners to draw
     ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
     const spokeTo = (hh, ss) => { const [x, y] = pos(hh, ss); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); };
     spokeTo(h, s);                                          // base — a spoke to every colour (Adobe-style)
-    for (const o of offs) if (!state.dropOffsets.includes(o)) spokeTo(h + o, s);   // partners (skip detached)
+    if (hueH) for (const o of offs) if (!state.dropOffsets.includes(o)) spokeTo(h + o, s);   // hue partners (skip detached)
     for (const o of state.extraNodes) spokeTo(o.h, o.s);   // free/added
-    for (const o of offs) { if (state.dropOffsets.includes(o)) continue; const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
+    if (hueH) for (const o of offs) { if (state.dropOffsets.includes(o)) continue; const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
     const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
     for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = o.locked ? 3.5 : 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
@@ -251,7 +250,7 @@ function setupWheel() {
   function hitNodes() {                  // every grabbable node: kind, its hue/sat, and screen position
     const [h, s] = rgbToHsl(hexToRgb(baseHex())), [bx, by] = pos(h, s);
     const ns = [{ kind: 'base', h, s, x: bx, y: by }];
-    HARMONY_OFFSETS[state.harmony].forEach(o => { if (state.dropOffsets.includes(o)) return; const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
+    if (isHueHarmony(state.harmony)) HARMONY_OFFSETS[state.harmony].forEach(o => { if (state.dropOffsets.includes(o)) return; const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
     state.extraNodes.forEach((o, i) => { const [x, y] = pos(o.h, o.s); ns.push({ kind: 'free', idx: i, h: o.h, s: o.s, x, y }); });
     return ns;
   }

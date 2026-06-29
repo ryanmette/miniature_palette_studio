@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { HARMONY_OFFSETS, HARMONY_TYPES, harmonize, harmonyPartners, isHarmony } from '../src/js/harmony.js';
-import { rotateHue } from '../src/js/color.js';
+import { HARMONY_OFFSETS, HARMONY_TYPES, harmonize, harmonyPartners, isHarmony, isHueHarmony } from '../src/js/harmony.js';
+import { rotateHue, rgbToHsl, hexToRgb } from '../src/js/color.js';
 
 test('harmony offsets are locked (CLAUDE.md §7)', () => {
   assert.deepEqual(HARMONY_OFFSETS.complementary, [180]);
@@ -11,8 +11,22 @@ test('harmony offsets are locked (CLAUDE.md §7)', () => {
   assert.deepEqual(HARMONY_OFFSETS.tetradic, [60, 180, 240]);
   assert.deepEqual(HARMONY_OFFSETS.square, [90, 180, 270]);
   assert.deepEqual(HARMONY_OFFSETS.compound, [30, 180, 210]);
+  assert.deepEqual(HARMONY_OFFSETS.shades, [0, 0, 0, 0]);       // value ramps project to 0° hue
+  assert.deepEqual(HARMONY_OFFSETS.monochromatic, [0, 0, 0]);
   assert.deepEqual(HARMONY_OFFSETS.custom, []);
-  assert.equal(HARMONY_TYPES.length, 8);
+  assert.equal(HARMONY_TYPES.length, 10);
+});
+
+test('value harmonies keep the base hue but vary value/saturation (and aren\'t hue-harmonies)', () => {
+  assert.equal(isHueHarmony('triadic'), true);
+  assert.equal(isHueHarmony('custom'), true);     // no partners → trivially a hue harmony
+  assert.equal(isHueHarmony('shades'), false);
+  assert.equal(isHueHarmony('monochromatic'), false);
+  const baseHue = rgbToHsl(hexToRgb('#3366CC'))[0];
+  const sh = harmonyPartners('#3366CC', 'shades');
+  assert.equal(sh.length, 4);
+  assert.equal(new Set(sh.map(p => p.hex)).size, 4);            // four distinct shades
+  for (const p of sh) assert.ok(Math.abs(rgbToHsl(hexToRgb(p.hex))[0] - baseHue) < 1);   // same hue
 });
 
 test('custom harmony has no partners; harmonize returns just the base', () => {

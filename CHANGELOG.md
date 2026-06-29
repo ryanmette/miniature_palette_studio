@@ -32,6 +32,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   active theme like every other control (CLAUDE.md §3: never style a component differently per theme).
 
 ### Added
+- **Value harmonies + "add along the line": Shades · Monochromatic.** The harmony set reaches the full
+  Adobe list (10). **Shades** (same hue, stepped lightness) and **Monochromatic** (same hue, stepped
+  saturation) are produced by a generalised `{dh,ds,dl}` step model in `harmony.js` — a clean
+  highlight/shadow ladder for minis. The wheel shows just the base for these (a value ramp has no ring
+  partners), and their swatches are display-only there (they can't be uniquely hue-keyed for lock/edit).
+  The live palette's **`+` now extends the base's value ramp** (alternating tints/shades stepping
+  outward) instead of inventing a new hue. Amends CLAUDE.md §7; every ramp swatch still resolves to its
+  nearest real paint + ΔE.
 - **Three more harmonies: Square · Compound · Custom.** The harmony control grows from 5 to 8 — Square
   (`+90/+180/+270`), Compound (`+30/+180/+210`), and **Custom** (no rule: build the palette by hand with
   the per-swatch lock/edit/add controls). Amends CLAUDE.md §7. The role engine now guards against a
