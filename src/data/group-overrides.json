@@ -1,0 +1,8 @@
+{
+  "_doc": "Manual corrections to the auto-seeded equivalence groups, applied by build-dataset.mjs AFTER ΔE clustering (see src/data/SOURCES.md). Anchored by stable paint ids (group ids are regenerated each build). relabel: rename the group containing `member`. split: dissolve the group containing each id (→ singletons). excludeMembers: drop these paints from their group (a group dropping below 2 members dissolves).",
+  "relabel": [
+    { "member": "army-painter-nolzurs-lawfull-white", "label": "Pure white" }
+  ],
+  "split": [],
+  "excludeMembers": []
+}

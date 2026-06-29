@@ -312,6 +312,13 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 @media (prefers-reduced-motion: no-preference) {
   .about[open] { animation: mh-rise .2s cubic-bezier(.2,.7,.2,1); }
 }
+/* photo eyedropper */
+.edstage { position: relative; display: flex; justify-content: center; }
+.edcanvas { display: block; max-width: 100%; height: auto; border-radius: 10px; cursor: crosshair; touch-action: none;
+  box-shadow: inset 0 0 0 1px var(--border); background: var(--surface-2); }
+.edloupe { position: absolute; top: 8px; right: 8px; border-radius: 50%; display: none; pointer-events: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.4), 0 3px 10px rgba(0,0,0,.35); }
+.edpickrow { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
 
 /* responsive */
 @media (max-width: 860px) {
@@ -341,8 +348,11 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .shelfgrid { grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); }   /* fit more swatches per row on phones */
   .modenav { order: 2; }
 }
+.shelf-select { display: none; }                              /* multi-select toggle is a touch affordance only */
+.shelf-select[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 /* coarse pointers (touch): bigger cells + an always-visible name (no hover) make tap-to-cycle comfortable */
 @media (pointer: coarse) {
+  .shelf-select { display: inline-flex; }
   .shelfgrid { gap: 10px; }
   .cell { aspect-ratio: 1; }
   .celltip { opacity: 0; }   /* tap shows the bar; long-press path is tabled — keep the wall scannable */

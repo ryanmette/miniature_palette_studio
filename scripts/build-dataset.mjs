@@ -203,6 +203,26 @@ for (const idxs of members.values()) {
 groups.sort((a, b) => a.id.localeCompare(b.id));
 console.log(`equivalence groups: ${groups.length} (max group diameter ΔE ${maxDiameter.toFixed(2)})`);
 
+// ---- manual curation overrides (src/data/group-overrides.json), applied after auto-seeding ----
+try {
+  const ov = JSON.parse(readFileSync(join(ROOT, 'src', 'data', 'group-overrides.json'), 'utf8'));
+  const pById = new Map(paints.map(p => [p.id, p]));
+  const gById = new Map(groups.map(g => [g.id, g]));
+  const rm = new Set();   // group ids to dissolve
+  const tally = { relabel: 0, split: 0, exclude: 0, dissolved: 0 };
+  for (const { member, label } of (ov.relabel || [])) {
+    const g = gById.get(pById.get(member)?.groupId); if (g && label) { g.label = label; tally.relabel++; }
+  }
+  for (const member of (ov.split || [])) { const gid = pById.get(member)?.groupId; if (gid) { rm.add(gid); tally.split++; } }
+  for (const id of (ov.excludeMembers || [])) { const p = pById.get(id); if (p?.groupId) { delete p.groupId; tally.exclude++; } }
+  for (const p of paints) if (p.groupId && rm.has(p.groupId)) delete p.groupId;
+  const count = {};
+  for (const p of paints) if (p.groupId) count[p.groupId] = (count[p.groupId] || 0) + 1;
+  for (const g of groups) if (!rm.has(g.id) && (count[g.id] || 0) < 2) { rm.add(g.id); tally.dissolved++; for (const p of paints) if (p.groupId === g.id) delete p.groupId; }
+  if (rm.size) { const kept = groups.filter(g => !rm.has(g.id)); groups.length = 0; groups.push(...kept); }
+  console.log(`group-overrides: relabel ${tally.relabel}, split ${tally.split}, exclude ${tally.exclude}, auto-dissolved ${tally.dissolved} → ${groups.length} groups`);
+} catch (e) { console.log(`group-overrides: skipped (${e.message})`); }
+
 const dataset = {
   version: '1.4.0',
   generated: CAPTURED,

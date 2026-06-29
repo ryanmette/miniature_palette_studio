@@ -38,9 +38,15 @@ gets a **derived wash + highlight** paint in v1; deeper multi-step ladders are a
 **v1 conveniences (confirmed):** arbitrary **hex input**, a **'paints I own'** filter,
 **compare two schemes**, and **export** to a shopping list.
 
+### Added in v2
+- **Colour-from-photo (photo eyedropper).** Pick a colour from a local image to seed a scheme — drawn to
+  a canvas and sampled (3×3 average) **entirely on-device; the image is never uploaded** (consistent with
+  the local-only, no-backend posture). Single-pick → seed; a dominant-colour "palette from photo" is a
+  later enhancement. *(A live-camera eyedropper is a native-app feature — see `docs/IOS_APP_PLAN.md`.)*
+
 ### Out of scope (v1) — do not build without updating this file
 User accounts, server/database, payments, paint inventory sync, a "buy" checkout,
-native mobile apps, AI color suggestions, image upload / color-from-photo.
+native mobile apps, AI color suggestions.
 These are parked in [`docs/PLAN.md`](docs/PLAN.md) §Future; a native iPhone app is explored
 separately in [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) (v2 only).
 

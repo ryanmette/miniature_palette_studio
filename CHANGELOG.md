@@ -6,6 +6,23 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-06-29
+The **v2-backlog release** (web): photo eyedropper, locale picker, mobile multi-select, manual group curation.
+### Added
+- **Photo eyedropper (colour-from-photo).** A "From photo" button in the Studio seed bar opens a local
+  image in a modal; move/tap to sample a colour (3×3 average, with a zoom loupe) → **Use as base colour**
+  seeds the scheme. Processed entirely on-device — the image is never uploaded. Amends CLAUDE.md §1
+  (colour-from-photo moves from out-of-scope to a v2 feature). A live-camera version stays native-track.
+- **Language picker.** The ⋯ settings menu gains a Language control (English (UK) / English (US)),
+  wiring the existing i18n scaffold; persists via `store` and re-applies strings live.
+- **Mobile Shelf multi-select.** On touch, a **Select** mode (tap to multi-select) + **long-press** →
+  the mark menu, mirroring the desktop marquee/right-click. Tap-to-cycle remains the default.
+- **Manual equivalence-group curation.** `src/data/group-overrides.json` lets you relabel / split /
+  exclude members of the auto-seeded groups by hand (anchored by stable paint ids); applied + logged at
+  build. Seeded with one correction (the cross-brand whites group relabelled "Pure white").
+- **v2 native scaffolds (not built from this repo).** `capacitor.config.json` (stage-1 native-wrap
+  starting point) + `src/assets/icons` · `src/assets/art` designer asset-library folders, both documented.
+
 ## [1.5.1] - 2026-06-26
 ### Changed
 - **Shared-paint "buy" is now a clickable `+ buy`.** When a limited collection forces a role to reuse

@@ -33,6 +33,13 @@
       <button data-theme="dark" aria-pressed="false">Dark</button>
     </div>
   </div>
+  <div class="setrow">
+    <span class="setlbl">Language</span>
+    <div class="seg" id="localeSeg" role="group" aria-label="Language">
+      <button data-locale="en-GB" aria-pressed="true">English (UK)</button>
+      <button data-locale="en-US" aria-pressed="false">English (US)</button>
+    </div>
+  </div>
 </div>
 
 <main>
@@ -67,6 +74,8 @@
           <button data-role="main" aria-pressed="true">Main</button>
           <button data-role="accent" aria-pressed="false">Accent</button>
         </div>
+        <button class="btn" id="fromPhoto" title="Pick a colour from a photo (processed on your device)">From photo</button>
+        <input id="photoFile" type="file" accept="image/*" hidden />
         <button class="btn" id="compare" aria-pressed="false" title="Pin this scheme, then compare">Compare</button>
       </div>
       <div class="micro" id="baseLabel" style="margin-bottom:12px">Base colour · main</div>
@@ -117,6 +126,7 @@
       <div class="shelftop">
         <h2 data-i18n="myShelf">My paint shelf</h2>
         <div class="shelftools">
+          <button class="btn sm shelf-select" id="shelfSelect" aria-pressed="false" title="Select multiple swatches to mark at once">Select</button>
           <button class="btn sm" id="importColl" title="Import a paintRack CSV or a Palette Studio JSON backup">Import…</button>
           <button class="btn sm" id="exportColl" title="Download your collection as CSV">Export CSV</button>
           <input id="importFile" type="file" accept=".csv,.json,text/csv,application/json" hidden />
@@ -173,6 +183,26 @@
 
     <p class="aboutfine">Paint names and brands are trademarks of their respective owners and are used
       for identification only.</p>
+  </div>
+</dialog>
+
+<dialog id="eyedropper" class="about eyedrop" aria-labelledby="edTitle">
+  <div class="abouthead">
+    <h2 id="edTitle">Pick a colour from a photo</h2>
+    <button class="iconbtn" id="edClose" aria-label="Close">✕</button>
+  </div>
+  <div class="aboutbody">
+    <div class="edstage" id="edStage">
+      <canvas id="edCanvas" class="edcanvas" aria-label="Photo — move or tap to sample a colour"></canvas>
+      <canvas id="edLoupe" class="edloupe" width="72" height="72" aria-hidden="true"></canvas>
+    </div>
+    <div class="edpickrow">
+      <span class="sw" id="edChip" style="width:46px;height:46px"></span>
+      <div style="min-width:0"><div class="micro">Sampled colour</div><div class="mono" id="edHex" style="font-size:15px">—</div></div>
+      <span style="flex:1"></span>
+      <button class="btn primary" id="edUse" disabled>Use as base colour</button>
+    </div>
+    <p class="aboutfine">Move or tap on the photo to sample (3×3 average). The image is processed on your device and never uploaded.</p>
   </div>
 </dialog>
 

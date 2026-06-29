@@ -323,15 +323,16 @@ function renderActive() { renderers[state.tab](); }
 /* ---- shelf (collection) — Finder-style bulk stocking, wired to store.setMark ---- */
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
-const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null };   // ids; selection is transient (not persisted)
+const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false };   // ids; selection is transient (not persisted)
 const shelfPaints = () => state.idx.paints.filter(p => !state.shelfBrand || p.brand === state.shelfBrand);
 const cellEl = id => document.getElementById('sc-' + id);
 const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length); };
 
 function shelfHint() {
-  return COARSE
-    ? 'Tap a swatch to cycle owned → to buy → clear.'
-    : 'Click to select · ⇧ or ⌘ for many · drag a box · then P (owned) · U (to buy) · X (clear). Right-click for options.';
+  if (COARSE) return shelf.selectMode
+    ? 'Select mode: tap swatches, then Owned / To buy / Clear below. Long-press a swatch for the menu.'
+    : 'Tap a swatch to cycle owned → to buy → clear · “Select” for multi · long-press for the menu.';
+  return 'Click to select · ⇧ or ⌘ for many · drag a box · then P (owned) · U (to buy) · X (clear). Right-click for options.';
 }
 function renderShelfStats() {
   const c = store.counts(), total = state.idx.paints.length;
@@ -401,13 +402,33 @@ function setupShelf() {
   grid.addEventListener('pointerover', e => { const c = e.target.closest('.cell'); shelf.hover = c ? c.dataset.id : null; });
   grid.addEventListener('pointerout', e => { if (!e.relatedTarget || !grid.contains(e.relatedTarget)) shelf.hover = null; });
 
-  if (COARSE) {                                  // touch: tap cycles a single swatch's mark (approach C)
+  if (COARSE) {                                  // touch: tap-to-cycle, or Select-mode multi-select; long-press → menu
+    let lpTimer = null, sx = 0, sy = 0, suppressTap = false;
+    const cancelLP = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } };
+    grid.addEventListener('pointerdown', e => {
+      const c = e.target.closest('.cell'); if (!c) return;
+      sx = e.clientX; sy = e.clientY; suppressTap = false;
+      lpTimer = setTimeout(() => {               // long-press → context menu for this cell (any mode)
+        lpTimer = null; suppressTap = true;
+        if (!shelf.sel.has(c.dataset.id)) setSelection([c.dataset.id], { anchor: c.dataset.id, cursor: c.dataset.id });
+        openMenu(e.clientX, e.clientY);
+      }, 500);
+    });
+    grid.addEventListener('pointermove', e => { if (lpTimer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancelLP(); });
+    grid.addEventListener('pointerup', cancelLP);
+    grid.addEventListener('pointercancel', cancelLP);
     grid.addEventListener('click', e => {
       const c = e.target.closest('.cell'); if (!c) return;
-      const next = { none: 'owned', owned: 'want', want: 'none' }[c.dataset.mark || 'none'];
-      store.setMark(c.dataset.id, next); updateCell(c, next);
-      c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
-      renderShelfStats();
+      if (suppressTap) { suppressTap = false; return; }   // long-press already handled this tap
+      if (shelf.selectMode) {                    // tap toggles selection (bulk-mark via the action bar)
+        const s = new Set(shelf.sel); s.has(c.dataset.id) ? s.delete(c.dataset.id) : s.add(c.dataset.id);
+        setSelection(s, { anchor: c.dataset.id, cursor: c.dataset.id });
+      } else {                                    // tap cycles this swatch's mark (approach C)
+        const next = { none: 'owned', owned: 'want', want: 'none' }[c.dataset.mark || 'none'];
+        store.setMark(c.dataset.id, next); updateCell(c, next);
+        c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
+        renderShelfStats();
+      }
     });
     return;
   }
@@ -550,6 +571,10 @@ function setTheme(t) {
   const seg = document.querySelector('#themeSeg');   // keep the settings-menu theme control in sync
   if (seg) for (const x of seg.children) x.setAttribute('aria-pressed', String(x.dataset.theme === state.theme));
 }
+function syncLocaleSeg() {                            // reflect the active locale in the settings-menu control
+  const cur = i18n.getLocale(), seg = $('#localeSeg');
+  if (seg) for (const x of seg.children) x.setAttribute('aria-pressed', String(x.dataset.locale === cur));
+}
 function setMode(mode) {
   state.mode = mode === 'shelf' ? 'shelf' : 'studio';
   const on = state.mode === 'shelf';
@@ -691,6 +716,58 @@ function applyCsv(text) {
   return res;
 }
 
+/** Seed the scheme from an arbitrary hex (shared by the hex field + the photo eyedropper). */
+function seedFromHex(hex) {
+  state.customHex = hex.toUpperCase();
+  $('#hex').value = state.customHex.replace('#', '');
+  renderHero(); refreshStudio(); renderActive(); renderList(); announce(); updateUrl();
+}
+
+/** Photo eyedropper (#v2): pick a colour from a local image — drawn to a canvas, sampled (3×3 average),
+ *  never uploaded. Single-pick → seeds the scheme. Uses a native <dialog> (focus-trap + Esc). */
+function setupEyedropper() {
+  const dlg = $('#eyedropper'), cv = $('#edCanvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+  const loupe = $('#edLoupe'), lctx = loupe.getContext('2d'), chip = $('#edChip'), hexEl = $('#edHex'), useBtn = $('#edUse');
+  let pick = null;
+  const avg = (x, y) => {                              // 3×3 average around (x,y), clamped to the canvas
+    const x0 = Math.max(0, Math.min(cv.width - 3, x - 1)), y0 = Math.max(0, Math.min(cv.height - 3, y - 1));
+    const d = ctx.getImageData(x0, y0, 3, 3).data; let r = 0, g = 0, b = 0;
+    for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+    const n = d.length / 4; return rgbToHex([Math.round(r / n), Math.round(g / n), Math.round(b / n)]);
+  };
+  const drawLoupe = (x, y) => {                        // zoomed crop with a centre-pixel marker
+    lctx.imageSmoothingEnabled = false; lctx.clearRect(0, 0, 72, 72);
+    lctx.drawImage(cv, x - 4.5, y - 4.5, 9, 9, 0, 0, 72, 72);
+    lctx.strokeStyle = '#fff'; lctx.lineWidth = 1; lctx.strokeRect(28, 28, 8, 8);
+    loupe.style.display = 'block';
+  };
+  const at = e => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * (cv.width / r.width)), Math.round((e.clientY - r.top) * (cv.height / r.height))]; };
+  const sample = e => {
+    const [x, y] = at(e); if (x < 0 || y < 0 || x >= cv.width || y >= cv.height) return;
+    pick = avg(x, y); chip.style.background = pick; hexEl.textContent = pick; useBtn.disabled = false; drawLoupe(x, y);
+  };
+  cv.addEventListener('pointermove', sample);          // desktop hover-sample + touch drag-sample
+  cv.addEventListener('pointerdown', sample);          // touch tap / click
+  $('#fromPhoto').addEventListener('click', () => $('#photoFile').click());
+  $('#photoFile').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(560 / img.width, 360 / img.height, 1);   // fit, never upscale
+      cv.width = Math.max(1, Math.round(img.width * s)); cv.height = Math.max(1, Math.round(img.height * s));
+      ctx.drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(img.src);
+      pick = null; useBtn.disabled = true; hexEl.textContent = '—'; chip.style.background = 'transparent'; loupe.style.display = 'none';
+      if (!dlg.open) dlg.showModal();
+    };
+    img.onerror = () => toast("Couldn't read that image");
+    img.src = URL.createObjectURL(f);
+  });
+  useBtn.addEventListener('click', () => { if (pick) { dlg.close(); seedFromHex(pick); toast(`Seeded from photo ${pick}`); } });
+  $('#edClose').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });   // backdrop click
+}
+
 function wire() {
   $('#q').addEventListener('input', e => { state.q = e.target.value; renderList(); });
   $('#brand').addEventListener('change', e => { state.brand = e.target.value; renderList(); });
@@ -711,7 +788,7 @@ function wire() {
   $('#hex').addEventListener('input', e => {
     const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6).toUpperCase();
     e.target.value = v;
-    if (v.length === 6) { state.customHex = '#' + v; renderHero(); refreshStudio(); renderActive(); renderList(); announce(); updateUrl(); }
+    if (v.length === 6) seedFromHex('#' + v);
   });
   $('#seg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
@@ -763,6 +840,12 @@ function wire() {
   const closeSettings = () => { sMenu.hidden = true; sBtn.setAttribute('aria-expanded', 'false'); };
   sBtn.addEventListener('click', e => { e.stopPropagation(); sMenu.hidden ? openSettings() : closeSettings(); });
   $('#themeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; setTheme(b.dataset.theme); wheelDraw(); updateUrl(); });
+  $('#localeSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
+    syncLocaleSeg();
+    renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
+  });
   document.addEventListener('pointerdown', e => { if (!sMenu.hidden && !e.target.closest('#settingsMenu') && !e.target.closest('#settingsBtn')) closeSettings(); }, true);
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sMenu.hidden) { closeSettings(); sBtn.focus(); } });
 
@@ -780,6 +863,12 @@ function wire() {
     else applyMark(b.dataset.act);
   });
   $('#shelfMenu').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b) { applyMark(b.dataset.act); closeMenu(); } });
+  $('#shelfSelect').addEventListener('click', () => {       // touch: toggle multi-select mode
+    shelf.selectMode = !shelf.selectMode;
+    $('#shelfSelect').setAttribute('aria-pressed', String(shelf.selectMode));
+    if (!shelf.selectMode) setSelection([], { anchor: null });   // leaving select mode clears the selection
+    $('#shelfHint').textContent = shelfHint();
+  });
   $('#exportColl').addEventListener('click', exportCollectionCsv);
   $('#importColl').addEventListener('click', () => $('#importFile').click());
   $('#importFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importCollectionFile(f); e.target.value = ''; });
@@ -828,7 +917,9 @@ async function init() {
   syncTabs();
   wire();
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
+  syncLocaleSeg();
   setupWheel();   // wheel is now always-visible static markup; bind it once
+  setupEyedropper();
   renderAll();
   if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf
 }
