@@ -1,0 +1,26 @@
+name: Tests
+
+# Run the unit suite (Node's built-in runner, zero dependencies — see CLAUDE.md §6) on every
+# push to main and every pull request. Enable this "test" check as a required status check on
+# the main ruleset so a red test blocks merging.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run unit tests
+        run: node --test
