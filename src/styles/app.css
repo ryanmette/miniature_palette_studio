@@ -334,7 +334,6 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .setrow { display: flex; align-items: center; gap: 12px; }
 .setlbl { font-size: 13px; color: var(--text-muted); }
 .setlinks { display: flex; gap: 8px; flex-wrap: wrap; }
-a.btn { text-decoration: none; }
 /* settings popover — align the two control groups in a grid and give them room to breathe */
 .popover.settings { display: grid; grid-template-columns: auto auto; justify-content: start;
   align-items: center; gap: 12px 18px; padding: 16px; }

@@ -24,8 +24,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   To buy), a **type filter** (base/layer/shade/metal/…), and a **sort** (name · brand · hue · lightness),
   alongside the existing brand chips. Marking a paint out of the active status filter drops it from view;
   filters clear the selection (membership changed), sort keeps it.
-- **⋯ settings menu: a second path to About & data, plus Send feedback.** The menu now has an **About &
-  data** shortcut (same dialog as the footer link) and a **Send feedback** mailto for feature requests.
+- **⋯ settings menu: a second path to About & data.** The menu now has an **About & data** shortcut
+  (same dialog as the footer link).
 
 ### Changed
 - **About & data no longer links to the source repo.** The three links to the (proprietary) GitHub repo
@@ -38,7 +38,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Paint picker is now sticky too.** In the split layout the left paint list stays pinned below the
   header (alongside the sticky studio) instead of scrolling away, so you can keep picking while reading
   the role plan. Both columns now clear the 63px sticky header; the picker un-sticks where it stacks (≤860px).
-- Service-worker cache bumped to `ps-v7` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
+- Service-worker cache bumped to `ps-v8` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
 
 ## [1.7.0] - 2026-06-29
 The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),

@@ -1065,7 +1065,6 @@ function wire() {
   const about = $('#about');
   $('#aboutOpen').addEventListener('click', () => about.showModal());
   $('#aboutOpenMenu').addEventListener('click', () => { closeSettings(); about.showModal(); });   // second path from the ⋯ menu
-  $('#feedbackLink').addEventListener('click', () => closeSettings());                             // let the mailto proceed
   $('#aboutClose').addEventListener('click', () => about.close());
   about.addEventListener('click', e => { if (e.target === about) about.close(); });   // click outside the panel
 }
