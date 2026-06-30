@@ -5,6 +5,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- **Seed toolbar overlapped the sticky header on scroll.** Its `z-index` (30) outranked the header (20);
+  dropped to 10 — still above the sticky studio (so the Paints drawer isn't hidden behind the wheel) but
+  below the header. **Header + footer now match the content width.** `.bar` and `.appfoot` were capped at
+  1180px while the workspace is 1440px, so they read narrower than the studio; both bumped to 1440. Added
+  breathing room below the tab strip (`[data-panel]` padding-top). SW `ps-v12`.
+
 ### Changed
 - **Export list / Share link moved into the ⋯ settings menu.** They're whole-scheme output actions, so they
   now live in the header popover (a new "Scheme" row) instead of a "Finish" cluster at the bottom of the

@@ -24,7 +24,7 @@ button { font-family: var(--font); cursor: pointer; }
 
 /* header */
 header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--border); }
-.bar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; flex-wrap: wrap; max-width: 1180px; margin: 0 auto; }
+.bar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; flex-wrap: wrap; max-width: 1440px; margin: 0 auto; }
 .logo { display: flex; align-items: center; gap: 9px; margin-right: 4px; }
 .logo .mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent); display: grid; place-items: center;
   color: var(--on-accent); font-family: var(--display); font-weight: 700; font-size: 15px; }
@@ -94,9 +94,10 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 /* paint drawer (header, §3.6) — the picker is a horizontal tray that drops from the seed toolbar as an
    OVERLAY (absolute → no reflow, §3.4); reveals with a clip-path unroll (disabled under reduced motion). */
 .paints-btn .caret { opacity: .6; font-size: 11px; margin-left: 2px; }
-/* z-index lifts the whole toolbar (and its drawer) above the sticky .studio, which forms its own
-   stacking context — without this the drawer would render behind the wheel canvas. */
-.seedtoolbar { position: relative; z-index: 30; }
+/* z-index lifts the whole toolbar (and its drawer) above the sticky .studio (its own stacking context) so
+   the drawer isn't hidden behind the wheel canvas — but it must stay BELOW the sticky header (z-index:20)
+   so the header isn't overlapped as the toolbar scrolls up past it. */
+.seedtoolbar { position: relative; z-index: 10; }
 .pdrawer { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 60;
   background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-card);
   box-shadow: 0 18px 50px rgba(0,0,0,.35); padding: 14px 16px;
@@ -149,7 +150,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .tabs button { border: none; background: transparent; padding: 11px 2px; color: var(--text-muted); font-weight: 500; font-size: 13.5px; border-bottom: 2px solid transparent; white-space: nowrap; }
 .tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
 .tabs button:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
-[data-panel] { animation: mh-fade .22s ease both; }
+[data-panel] { animation: mh-fade .22s ease both; padding-top: 14px; }   /* breathing room below the tab strip */
 @keyframes mh-fade { from { opacity: 0; } to { opacity: 1; } }
 .palette { display: flex; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); min-height: clamp(104px, 17vh, 168px); margin: 14px 0 0; }
 .palette > .pblock { flex: 1; border: none; padding: 10px 12px; cursor: pointer; display: flex; align-items: flex-end; text-align: left; }
@@ -364,7 +365,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .popover.settings .setrow { display: contents; }
 
 /* footer + About & data modal */
-.appfoot { max-width: 1180px; margin: 0 auto; padding: 24px 20px 40px; display: flex; align-items: center;
+.appfoot { max-width: 1440px; margin: 0 auto; padding: 24px 20px 40px; display: flex; align-items: center;
   gap: 14px; flex-wrap: wrap; border-top: 1px solid var(--border); }
 .footlink { background: none; border: none; padding: 0; color: var(--accent); font: inherit; font-weight: 500;
   font-size: 13px; cursor: pointer; border-radius: 4px; }
