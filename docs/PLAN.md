@@ -100,9 +100,11 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.5.x** — finish overlays (metallic sheen · wash/contrast translucency · gloss/slime/texture via `fx`), distinct role assignment + shared-paint guidance, role **Body→Primary**.
 - **v1.6.0** — v2 backlog (web): **photo eyedropper** (on-device), language picker, mobile Shelf multi-select, manual group curation (`group-overrides.json`); Capacitor + asset-library scaffolds.
 
-### Current status (2026-06-29)
-Web app is **comprehensively feature-complete**. Open: **the add/remove-colours wheel bug** (the only
-pending feature — awaiting the exact "differs from Adobe Color how?" detail). Needs tooling/people outside
+### Current status (2026-06-30)
+Web app is **comprehensively feature-complete**. The add/remove-colours wheel item is **resolved** (closed
+per Ryan). **Monetization direction chosen: A (affiliate links) + B (audience funnel)** — see
+[`MONETIZATION.md`](MONETIZATION.md); A's implementation is pending the specific retailer/affiliate
+programs (still v1-compatible: outbound links + disclosure, no backend). Needs tooling/people outside
 this repo: the **native app** build (Capacitor → Xcode, the reserved `v2.0`), a **designer** to fill the
 asset library, and an optional **palette-from-photo** enhancement to the eyedropper.
 
@@ -151,6 +153,8 @@ scaffold + picker. Still future:*
 - **Designer asset library** — fill the `src/assets/{icons,art}` scaffold (needs a designer).
 - Printable/PDF scheme cards · community-submitted palettes · paint inventory sync (still out of scope —
   needs a constitution update first).
+- **Monetization** — speculative survey in [`MONETIZATION.md`](MONETIZATION.md) (affiliate links + funnel
+  fit v1; payments/accounts still need a §1 scope change first). Exploration only; nothing committed.
 
 ---
 

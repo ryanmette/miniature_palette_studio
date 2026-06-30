@@ -5,10 +5,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **The wheel and the plan are now one instrument — a colour link.** Hovering (or keyboard-focusing) a
+  role block in the Plan (right) now rings that *same colour* wherever it lives on the left — the matching
+  **wheel node** and **live-palette column** — and the reverse: hovering a live column lights up its Plan
+  role block. This binds the two columns that previously read as separate panels. The highlight is an
+  **outline ring** (interaction, §3.5) so nothing reflows (§3.4); each surface is matched by `data-hex`.
+- **Main/Accent now reads on the swatch.** The hero (your picked paint) carries a small **main / accent
+  badge** mirroring the Main/Accent control — a swatch-level cue for which role your seed plays. (It sits
+  on the hero because the hero always shows *your pick*; the live-palette "Base" column is always the
+  scheme's main, so the badge would mislead there in accent mode.)
+- **Monetization survey + direction (docs only).** `docs/MONETIZATION.md` — a high-level survey of ways
+  the tool could earn. **Direction chosen: A (affiliate links) + B (audience funnel)** — both v1-compatible
+  (outbound links + disclosure, no backend); A's implementation is pending the specific retailer programs.
+  Payments/accounts still need a §1 scope change first. Linked from `PLAN.md` + the `CLAUDE.md` file tree.
+  No runtime code yet.
+- **Shelf filters & sort.** The paint Shelf gains a **search box**, a **status filter** (All · Owned ·
+  To buy), a **type filter** (base/layer/shade/metal/…), and a **sort** (name · brand · hue · lightness),
+  alongside the existing brand chips. Marking a paint out of the active status filter drops it from view;
+  filters clear the selection (membership changed), sort keeps it.
+- **⋯ settings menu: a second path to About & data.** The menu now has an **About & data** shortcut
+  (same dialog as the footer link).
+
 ### Changed
+- **About & data no longer links to the source repo.** The three links to the (proprietary) GitHub repo
+  (sourcing/provenance/security) are removed; the *required* external attribution to the community dataset
+  `Arcturus5404/miniature-paints` (MIT) and the DakkaDakka credit remain (§5).
+- **Harmony comparisons are now one scrollable strip.** The 10 schemes (complementary · analogous · …)
+  no longer wrap into a multi-row block that pushes the studio down — they read as a single horizontally
+  scrollable list (swipe/scroll, edge fades, active chip auto-centred). One row on every width, phones
+  included. Amends `CLAUDE.md §3.6`.
 - **Paint picker is now sticky too.** In the split layout the left paint list stays pinned below the
   header (alongside the sticky studio) instead of scrolling away, so you can keep picking while reading
   the role plan. Both columns now clear the 63px sticky header; the picker un-sticks where it stacks (≤860px).
+- Service-worker cache bumped to `ps-v8` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
 
 ## [1.7.0] - 2026-06-29
 The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),

@@ -15,6 +15,10 @@ const LOCALES = {
     studio: 'Studio',
     shelf: 'Shelf',
     myShelf: 'My paint shelf',
+    searchShelf: 'Search your shelf…',
+    filterAll: 'All',
+    filterOwned: 'Owned',
+    filterToBuy: 'To buy',
   },
   'en-US': {
     baseColour: 'Base color',

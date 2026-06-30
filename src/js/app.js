@@ -17,10 +17,11 @@ const state = {
   baseId: null, customHex: null,
   harmony: 'complementary',
   q: '', brand: '', ptype: '', psort: '', seedRole: 'main', tab: 'plan', theme: 'light',
-  compareA: null, wheelL: null,   // owned/to-buy live in store.js, not here
+  compareA: null, wheelL: null, hiHex: null,   // hiHex = the colour link-highlighted across wheel/plan/live palette
+
   extraNodes: [], showReal: false,   // editable swatches [{h,s,l?,locked?}] (S5); live-palette ideal↔real fill
   dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
-  mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
+  mode: 'studio', shelfBrand: '', shelfMark: '', shelfQ: '', shelfType: '', shelfSort: '', brands: [],   // Studio/Shelf mode; shelf brand · status · search · type · sort
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
   includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
 };
@@ -58,10 +59,11 @@ function filteredPaints() {
     (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)));
   return sortPaints(list);
 }
-/** Sort the picker list per state.psort (stable copy; '' keeps dataset order). */
-function sortPaints(list) {
+/** Sort a paint list by `key` (stable copy; '' keeps dataset order). Shared by the picker (state.psort)
+ *  and the shelf (state.shelfSort). */
+function sortPaints(list, key = state.psort) {
   const hsl = p => rgbToHsl(hexToRgb(p.hex));
-  switch (state.psort) {
+  switch (key) {
     case 'name': return list.slice().sort((a, b) => a.name.localeCompare(b.name));
     case 'brand': return list.slice().sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
     case 'hue': return list.slice().sort((a, b) => hsl(a)[0] - hsl(b)[0]);
@@ -103,6 +105,23 @@ function renderLive() {
   const el = $('#livepal'); if (!el) return;
   const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, matchOpts()) }));
   el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal');
+  applyLinkHighlight();   // re-assert any active hover-link after the columns are rebuilt
+}
+/** Cross-surface colour link (§3 "one instrument"): hovering/focusing a role block (Plan, right) or a
+ *  live-palette column (left) rings the *same colour* wherever it appears — both DOM surfaces + the wheel
+ *  node — so the wheel and the plan read as one tool. Transient interaction → outline ring (§3.5), never a
+ *  border-width change (no reflow, §3.4). hex=null clears. */
+function applyLinkHighlight() {
+  const h = state.hiHex;
+  for (const el of document.querySelectorAll('[data-hex]'))
+    el.classList.toggle('linkhi', h != null && el.dataset.hex.toUpperCase() === h);
+}
+function linkHighlight(hex) {
+  const h = hex && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex.toUpperCase() : null;
+  if (state.hiHex === h) return;
+  state.hiHex = h;
+  applyLinkHighlight();
+  wheelDraw();   // redraw so the matching wheel node gains/loses its ring
 }
 /** Redraw the always-visible studio (wheel + live palette) after a discrete base/harmony change. */
 function refreshStudio() {
@@ -226,6 +245,13 @@ function setupWheel() {
     for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = o.locked ? 3.5 : 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
     if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
+    // Colour link (hover a role/column elsewhere): ring whichever node is that same colour — recomputing
+    // each node's drawn hex the way it's filled, so the match is exact (no wheelL/rounding drift).
+    if (state.hiHex) for (const n of hitNodes()) {
+      const nh = n.kind === 'base' ? b : n.kind === 'partner' ? rotateHue(b, n.deg)
+        : rgbToHex(hslToRgb([n.h, n.s, state.extraNodes[n.idx]?.l ?? state.wheelL]));
+      if (nh.toUpperCase() === state.hiHex) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 5, 0, 7); ctx.lineWidth = 3; ctx.strokeStyle = accent; ctx.stroke(); }
+    }
   }
   wheelDraw = draw;          // expose the redraw for discrete base/harmony changes (picker, hex, harmony)
   let raf = 0;
@@ -368,7 +394,16 @@ function renderActive() { renderers[state.tab](); }
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
 const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false };   // ids; selection is transient (not persisted)
-const shelfPaints = () => state.idx.paints.filter(p => !state.shelfBrand || p.brand === state.shelfBrand);
+const shelfPaints = () => {
+  const q = state.shelfQ.trim().toLowerCase();
+  const list = state.idx.paints.filter(p =>
+    (!state.shelfBrand || p.brand === state.shelfBrand) &&
+    (!state.shelfMark || store.markOf(p.id) === state.shelfMark) &&   // status filter: '' (all) | owned | want
+    (!state.shelfType || p.type === state.shelfType) &&               // type filter (base/layer/shade/metal/…)
+    (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
+       || (p.line && p.line !== '—' && p.line.toLowerCase().includes(q))));
+  return sortPaints(list, state.shelfSort);
+};
 const cellEl = id => document.getElementById('sc-' + id);
 const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length); };
 
@@ -387,12 +422,16 @@ function renderShelfBar() {
 }
 function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
+  for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
   $('#brandChips').innerHTML = ui.brandChips(state.brands, state.shelfBrand);
   $('#shelfGrid').innerHTML = ui.shelfGrid(shelfPaints(), store.markOf, shelf.sel);
   // tag each cell with a DOM id for aria-activedescendant (keyboard cursor)
   for (const c of $('#shelfGrid').children) c.id = 'sc-' + c.dataset.id;
   renderShelfStats(); renderShelfBar();
 }
+/** A shelf filter (brand/status/type/search) changed → membership changes, so drop the selection
+ *  (its ids may no longer be visible) and re-render. Sorting uses renderShelf directly (keeps selection). */
+function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null }); renderShelf(); }
 function announceShelf(msg) { $('#status').textContent = msg; }
 
 /* selection primitives — outline only (CSS), so no reflow (§3.4) */
@@ -430,6 +469,8 @@ function applyMark(mark) {
   renderShelfStats();
   const verb = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'cleared';
   announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} marked ${verb}.`);
+  // If a status filter is active and these paints no longer match it, drop them from view.
+  if (state.shelfMark && state.shelfMark !== mark) { setSelection([], { anchor: null, cursor: null }); renderShelf(); }
 }
 function updateCell(c, mark) {
   c.dataset.mark = mark;
@@ -472,6 +513,7 @@ function setupShelf() {
         store.setMark(c.dataset.id, next); updateCell(c, next);
         c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
         renderShelfStats();
+        if (state.shelfMark && state.shelfMark !== next) renderShelf();   // dropped out of the active status filter
       }
     });
     return;
@@ -575,7 +617,7 @@ function renderList() {
   $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${store.counts().owned ? ` · ${store.counts().owned} owned` : ''}`;
 }
 function renderHero(animate = true) {
-  $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf);   // animate=false during a live drag (no pop spam)
+  $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole);   // animate=false during a live drag (no pop spam)
   $('#baseLabel').textContent = `${i18n.t('baseColour')} · ${state.seedRole}`;
 }
 let urlTimer = null, announceTimer = null;
@@ -629,6 +671,7 @@ function applySnap(json) {
   state.dropOffsets = [...(o.dropOffsets || [])];
   state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
   $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
+  scrollHarmonyActive();
   for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   const hx = $('#hex'); if (hx) hx.value = baseHex().replace('#', '');
@@ -675,6 +718,11 @@ function setMode(mode) {
   updateUrl();
 }
 function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
+/** Centre the active harmony chip in the scrollable strip — horizontal only (no page jump). */
+function scrollHarmonyActive() {
+  const seg = $('#seg'), el = seg && seg.querySelector('button[aria-pressed="true"]');
+  if (el) seg.scrollLeft = el.offsetLeft - (seg.clientWidth - el.offsetWidth) / 2;
+}
 function syncTabs(focusActive = false) {
   const tabs = $('#tabs');
   for (const b of tabs.children) {
@@ -901,8 +949,15 @@ function wire() {
     state.harmony = b.dataset.h;
     state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
     for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
+    scrollHarmonyActive();
     refreshStudio(); renderActive(); announce(); updateUrl();
   });
+  // Cross-surface colour link: hover/focus a role block (Plan) or a live column → ring that colour everywhere.
+  const ws = document.querySelector('.workspace');
+  ws.addEventListener('mouseover', e => { const el = e.target.closest('[data-hex]'); linkHighlight(el ? el.dataset.hex : null); });
+  ws.addEventListener('mouseleave', () => linkHighlight(null));
+  ws.addEventListener('focusin', e => { const el = e.target.closest('[data-hex]'); linkHighlight(el ? el.dataset.hex : null); });
+  ws.addEventListener('focusout', e => { if (!e.relatedTarget || !e.relatedTarget.closest('[data-hex]')) linkHighlight(null); });
   $('#realtoggle').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.showReal = b.dataset.fill === 'real';
@@ -976,9 +1031,17 @@ function wire() {
   $('#brandChips').addEventListener('click', e => {
     const b = e.target.closest('.chip'); if (!b) return;
     state.shelfBrand = b.dataset.brand;
-    setSelection([], { anchor: null, cursor: null });   // selection ids may no longer be visible
-    renderShelf();
+    shelfFilterChanged();
   });
+  $('#shelfQ').addEventListener('input', e => { state.shelfQ = e.target.value; shelfFilterChanged(); });
+  $('#shelfMarkSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.shelfMark = b.dataset.mark;
+    shelfFilterChanged();
+  });
+  $('#shelfType').addEventListener('change', e => { state.shelfType = e.target.value; shelfFilterChanged(); });
+  // Sorting doesn't change which paints are shown, so keep the selection — just re-render in the new order.
+  $('#shelfSort').addEventListener('change', e => { state.shelfSort = e.target.value; renderShelf(); });
   $('#shelfBar').addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
     if (b.dataset.act === 'deselect') setSelection([], { anchor: null });
@@ -1001,6 +1064,7 @@ function wire() {
   // About & data modal — native <dialog> handles Esc + focus trap; close on backdrop click.
   const about = $('#about');
   $('#aboutOpen').addEventListener('click', () => about.showModal());
+  $('#aboutOpenMenu').addEventListener('click', () => { closeSettings(); about.showModal(); });   // second path from the ⋯ menu
   $('#aboutClose').addEventListener('click', () => about.close());
   about.addEventListener('click', e => { if (e.target === about) about.close(); });   // click outside the panel
 }
@@ -1016,7 +1080,9 @@ async function init() {
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
-  $('#ptype').insertAdjacentHTML('beforeend', types.map(t => `<option value="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}</option>`).join(''));
+  const typeOpts = types.map(t => `<option value="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}</option>`).join('');
+  $('#ptype').insertAdjacentHTML('beforeend', typeOpts);
+  $('#shelfType').insertAdjacentHTML('beforeend', typeOpts);
 
   const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
   const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
@@ -1040,6 +1106,7 @@ async function init() {
   else state.baseId = state.idx.paints[0].id;
 
   $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
+  scrollHarmonyActive();
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   syncNodeBtns();
   $('#hex').value = baseHex().replace('#', '');
