@@ -67,6 +67,11 @@ costs nothing and suits a hobby-community tool.
 
 ## 2. Recommendation
 
+> **Decided (2026-06-30):** go with **A (affiliate links) + B (audience funnel)** for now. Both are
+> v1-compatible (outbound links + disclosure, no backend, match ranking stays pure). **A is not yet
+> implemented** — it needs the specific retailer/affiliate programs to wire (see §3 Q1); until those are
+> chosen there are no links to add. C (native app as the paid product) remains the later revenue engine.
+
 1. **Now (v1-compatible):** ship **A (affiliate links)** + lean on **B (funnel)**. Both are honest,
    need no backend, and monetize the behaviour the tool already drives. Add **F (tip jar)** as a
    no-cost extra.
@@ -87,7 +92,9 @@ Accounts, server/database, in-app payments/checkout, paint-inventory sync — al
 ---
 
 ## 3. Open questions for Ryan
-1. Which retailers/programs are you already affiliated with (or want to be)? That sets path A's links.
-2. Is the native app (path C) the intended commercial product, or should the web tool itself earn?
-3. Comfort level with affiliate links inside an otherwise-neutral tool — subtle (`+ buy` only) or
+*(Direction is set to A + B — these now just scope A's implementation.)*
+1. **Which retailers/programs** are you already affiliated with (or want to be)? That sets path A's links
+   — nothing can be wired until this is decided. (Amazon Associates · Element Games/Wayland · Noble Knight
+   · manufacturer storefronts · …)
+2. Comfort level with affiliate links inside an otherwise-neutral tool — subtle (`+ buy` only) or
    also in the exported list?

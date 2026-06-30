@@ -15,10 +15,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   badge** mirroring the Main/Accent control — a swatch-level cue for which role your seed plays. (It sits
   on the hero because the hero always shows *your pick*; the live-palette "Base" column is always the
   scheme's main, so the badge would mislead there in accent mode.)
-- **Monetization survey (docs only).** `docs/MONETIZATION.md` — a high-level, *speculative* survey of
-  ways the tool could earn (affiliate links on the existing shopping list + the native app as the paid
-  product fit v1's no-backend posture; payments/accounts still need a §1 scope change first). Linked
-  from `PLAN.md` §8 and the `CLAUDE.md` file tree. Nothing is built or committed to — exploration only.
+- **Monetization survey + direction (docs only).** `docs/MONETIZATION.md` — a high-level survey of ways
+  the tool could earn. **Direction chosen: A (affiliate links) + B (audience funnel)** — both v1-compatible
+  (outbound links + disclosure, no backend); A's implementation is pending the specific retailer programs.
+  Payments/accounts still need a §1 scope change first. Linked from `PLAN.md` + the `CLAUDE.md` file tree.
+  No runtime code yet.
+- **Closed the add/remove-colours wheel item** in `PLAN.md` §5 (resolved per Ryan).
 
 ### Changed
 - **Harmony comparisons are now one scrollable strip.** The 10 schemes (complementary · analogous · …)
