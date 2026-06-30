@@ -43,6 +43,22 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
   border-radius: 8px; font-weight: 500; font-size: 12.5px; }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 .seg button:focus-visible { outline: none; box-shadow: var(--focus); }
+/* Theme switch — the one sanctioned slide-over toggle (§3.1 "◐ control"), distinct from the segmented
+   controls. A thumb slides between sun (light) and moon (dark) and the icon cross-fades. Reduced motion
+   disables the slide via the global rule; the state still flips. */
+.themesw { position: relative; width: 52px; height: 30px; padding: 0; border-radius: var(--r-pill);
+  background: var(--surface-2); border: 1px solid var(--border); transition: border-color .12s, background .12s; }
+.themesw:hover { border-color: var(--border-strong); }
+.themesw:focus-visible { outline: none; box-shadow: var(--focus); }
+.themesw-thumb { position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--surface); box-shadow: var(--shadow); display: grid; place-items: center; color: var(--text);
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
+.themesw[aria-checked="true"] .themesw-thumb { transform: translateX(22px); }
+.themesw .ts-i { grid-area: 1 / 1; transition: opacity .16s ease; }
+.themesw .ts-moon { opacity: 0; }
+.themesw[aria-checked="true"] .ts-sun { opacity: 0; }
+.themesw[aria-checked="true"] .ts-moon { opacity: 1; }
+.themesw:active .themesw-thumb { width: 27px; }   /* slight squish on press (confirm, not decorate) */
 #seg button { display: inline-flex; align-items: center; gap: 6px; }
 /* Harmony comparisons as a single scrollable strip (one row, swipe/scroll) instead of a wrapped block,
    so the 10 schemes read as one list and never push the studio down. Fades hint at more off either edge. */

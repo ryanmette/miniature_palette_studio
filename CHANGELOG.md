@@ -5,6 +5,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Theme control is now a slide-over switch.** The Light/Dark segmented pair in the ⋯ menu becomes a
+  single animated toggle (`role="switch"`, the §3.1 `◐` control): a thumb slides between a sun and a moon
+  and the icon cross-fades. Honours `prefers-reduced-motion` (the state flips without the slide). It's the
+  one sanctioned toggle-switch in the system — every other either/or picker stays a segmented control.
+  Amends `CLAUDE.md` §3.5. SW `ps-v14`.
+
 ### Added
 - **Brass gets dimension (dark theme).** Solid-accent surfaces — primary buttons, the logo plaque, the
   wheel role-legend badges — now read as *polished brass* instead of a flat orange slab: a light→dark
