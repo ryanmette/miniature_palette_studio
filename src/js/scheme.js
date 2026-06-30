@@ -32,11 +32,12 @@ export function metalIdeal(baseHex) {
 }
 
 /**
- * Build the role-mapped scheme. `opts` is forwarded to nearestPaint (e.g. {ownedIds, brands, boostIds});
- * `opts.ladder` ∈ {'wash'(default),'tone','both'} picks the tone-ladder style (#7).
- * @returns {{ base, harmony, ladder, roles: Array<{role, weight, idealHex, match, ladders}> }}
+ * The four role *ideal colours* for a base+harmony — Primary/Secondary/Accent/Metal — WITHOUT any paint
+ * matching. Pure + cheap (a few ΔE calls, no dataset scan), so callers that only need the colours (e.g.
+ * the live palette, to label each swatch with its role) can use it per frame. buildScheme builds on it.
+ * @returns {Array<{role, weight, idealHex, metal?}>}
  */
-export function buildScheme(idx, baseHex, harmony, opts = {}) {
+export function roleIdeals(baseHex, harmony) {
   const partners = harmonyPartners(baseHex, harmony);
   const baseLab = hexToLab(baseHex);
   let accent = partners[0], amax = -1;
@@ -48,13 +49,21 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
   // A rule-less harmony (custom) has no partners — fall back to sensible rotations so the role plan still reads.
   const accentHex = accent ? accent.hex : rotateHue(baseHex, 210);
   const secondaryHex = secondary ? secondary.hex : rotateHue(baseHex, 30);
-
-  const defs = [
+  return [
     { role: 'Primary', weight: '~60%', idealHex: baseHex },
     { role: 'Secondary', weight: '~30%', idealHex: secondaryHex },
     { role: 'Accent', weight: '~10%', idealHex: accentHex },
     { role: 'Metal', weight: 'spot', idealHex: metalIdeal(baseHex), metal: true },
   ];
+}
+
+/**
+ * Build the role-mapped scheme. `opts` is forwarded to nearestPaint (e.g. {ownedIds, brands, boostIds});
+ * `opts.ladder` ∈ {'wash'(default),'tone','both'} picks the tone-ladder style (#7).
+ * @returns {{ base, harmony, ladder, roles: Array<{role, weight, idealHex, match, ladders}> }}
+ */
+export function buildScheme(idx, baseHex, harmony, opts = {}) {
+  const defs = roleIdeals(baseHex, harmony);
   const styles = LADDER_STYLES[opts.ladder] || LADDER_STYLES.wash;
   // Distinct role assignment: a small (owned-only) pool can map two close-hued roles to the SAME paint.
   // Assign roles in order, preferring a paint no earlier role used; if none is left, reuse it but flag the

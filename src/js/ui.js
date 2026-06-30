@@ -184,16 +184,9 @@ export function planControls(ladder, collection, includeContrast, gapCount) {
     + `</div>`;
 }
 
-/** Small overview bar of the scheme's role ideal colours. `data-hex` links each role block to the
- *  matching wheel node + live-palette column on the left (hover/focus highlight — app.js linkHighlight). */
-export const paletteOverview = scheme =>
-  `<div class="palette">${scheme.roles.map(r => {
-    const hex = safeColor(r.idealHex);
-    return `<button type="button" class="pblock" data-copy="${hex}" data-hex="${hex}" title="Copy ${hex} · hover to find it on the wheel" aria-label="Copy ${esc(r.role)} colour ${hex}" style="background:${hex};color:${textOn(hex)}">`
-      + `<span class="pbl"><span class="pbr">${esc(r.role)}</span><span class="pbh">${hex}</span></span></button>`;
-  }).join('')}</div>`;
-
-/** Role slots: each role's ideal → nearest real paint, plus the selected tone ladder(s) (#7). */
+/** Role slots: each role's ideal → nearest real paint, plus the selected tone ladder(s) (#7). Each slot
+ *  carries `data-hex` so hovering/focusing it rings the same colour's wheel node + live-palette column —
+ *  the colour link that ties this detail tab to the wheel (app.js linkHighlight; §3.5). */
 export function roleSlots(scheme, markOf) {
   const step = s => `<div class="step">${swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div><div class="pn">${s.match ? esc(s.match.paint.name) : '—'}</div></div>`;
   // When a limited collection forces two roles onto the same paint, say so + how to separate / what to buy.
@@ -201,7 +194,7 @@ export function roleSlots(scheme, markOf) {
     ? `<div class="sharednote"><span class="warnpill">shared paint</span> reused for another role — ${esc(r.differentiate)} to separate`
       + (r.buy ? `, or buy <strong>${esc(r.buy.paint.name)}</strong> <span class="br">(${esc(r.buy.paint.brand)} · ΔE ${r.buy.deltaE.toFixed(1)})</span> ${buyBtn(r.buy.paint.id, markOf ? markOf(r.buy.paint.id) : 'none')}` : '') + `.</div>`
     : '';
-  return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}">`
+  return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}" data-hex="${safeColor(r.idealHex)}">`
     + `<div class="shead"><span class="role">${esc(r.role)}</span><span class="wt">${esc(r.weight)}</span></div>`
     + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match, markOf)}</div>`
     + sharedNote(r)
@@ -239,41 +232,48 @@ export function equivalentsPanel(name, equivs, markOf) {
     }).join('')}</div>`;
 }
 
-/** Variable live palette beside the wheel: one column per harmony/free colour → its nearest real paint.
- *  vm: [{ id, kind:'base'|'partner'|'free', deg, hex, match }]. `fill`: 'ideal' | 'real' (column fill).
- *  The nearest paint + ΔE + quality label stay visible in BOTH fill modes (honesty, §2/§3.2). */
-export function livePalette(vm, fill) {
+/** Variable live palette beside the wheel: ONE row that doubles as the scheme summary — each column is a
+ *  scheme colour → its nearest real paint, labelled by its **role** (Primary/Secondary/Accent/Metal) where
+ *  it maps to one (via `roleByHex`), so it reads in the same language as the Plan. The Metal role has no
+ *  wheel node, so it rides along as a **display-only** column (no edit/lock/drag). Added/free colours and
+ *  unmatched value-ramp steps keep a node tag. `fill`: 'ideal' | 'real'; nearest paint + ΔE stay in both (§2). */
+export function livePalette(vm, fill, roleByHex = {}) {
   if (!vm.length) return '';
   const real = fill === 'real';
   const freeCount = vm.filter(c => c.kind === 'free').length;   // added swatches are the reorderable ones
   return `<div class="livepal">${vm.map(c => {
     const bg = safeColor(real && c.match ? c.match.paint.hex : c.hex);   // hex label + copy follow the fill
     const t = textOn(bg), m = c.match;
-    const tag = c.kind === 'base' ? 'Base' : c.kind === 'free' ? 'Added' : `${c.deg > 0 ? '+' : ''}${c.deg}°`;
-    const fx = real && m ? fxCls(m.paint).trim() : '';   // finish overlay only when the column shows a real paint
+    const isBase = c.kind === 'base', isFree = c.kind === 'free', isMetal = c.kind === 'metal';
+    const cHex = safeColor(c.hex);                         // the swatch's own (ideal) colour — what "use as base"/edit start from
+    const role = roleByHex[cHex.toUpperCase()];            // unify with the Plan: show the role this colour plays
+    const tag = role || (isBase ? 'Base' : isFree ? 'Added' : isMetal ? 'Metal' : `${c.deg > 0 ? '+' : ''}${c.deg}°`);
+    // Finish overlay: a real-fill column wears its matched paint's finish; the ideal Metal column wears the
+    // metallic sheen (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
+    const fx = real && m ? fxCls(m.paint).trim() : (isMetal ? 'metal' : '');
     const foot = m
       ? `<span class="lcname">${esc(m.paint.name)}${m.owned ? ' <span class="ownmini">✓ owned</span>' : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
         + `<span style="color:${tier(m.quality.tier)}">${esc(m.quality.label)}</span>`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
-    const isBase = c.kind === 'base', isFree = c.kind === 'free';
     const fi = isFree ? +c.id.slice(1) : -1;                                     // index among the added swatches
     const sw = isBase ? 'base' : isFree ? 'x:' + c.id.slice(1) : 'p:' + c.deg;   // addressable swatch key
     const canDetach = isFree || (c.kind === 'partner' && c.detachable);          // value-harmony partners can't be pinned uniquely
-    const cHex = safeColor(c.hex);                         // the swatch's own (ideal) colour — what "use as base"/edit start from
     const lockOn = !!c.locked;
-    return `<div class="lcol${lockOn ? ' locked' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
-      + `<button type="button" class="lctop${fx ? ' ' + fx : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}" style="background-color:${bg};color:${t}">`
-      +   `<span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></button>`
-      + `<div class="lcact">`
+    // Metal is display-only (no wheel node to drive); every other column keeps its edit/lock/add controls.
+    const acts = isMetal ? '' : `<div class="lcact">`
       +   ((isBase || canDetach) ? `<button type="button" class="lcbtn" data-edit="${sw}" title="Edit colour" aria-label="Edit ${esc(tag)} colour">✎</button>` : '')
       +   (canDetach ? `<button type="button" class="lcbtn${lockOn ? ' on' : ''}" data-lock="${sw}" title="${lockOn ? 'Unlock' : 'Lock'} colour" aria-label="${lockOn ? 'Unlock' : 'Lock'} ${esc(tag)}" aria-pressed="${lockOn}">${lockOn ? '🔒' : '🔓'}</button>` : '')
       +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:-1"${fi === 0 ? ' disabled' : ''} title="Move earlier" aria-label="Move ${esc(tag)} earlier">◂</button>` : '')
       +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:1"${fi === freeCount - 1 ? ' disabled' : ''} title="Move later" aria-label="Move ${esc(tag)} later">▸</button>` : '')
       +   `<button type="button" class="lcbtn" data-setbase="${cHex}" title="Use as base colour" aria-label="Use ${esc(tag)} as the base colour">◎</button>`
       +   (isFree ? `<button type="button" class="lcbtn" data-delnode="${c.id.slice(1)}" title="Remove this colour" aria-label="Remove ${esc(tag)}">✕</button>` : '')
-      + `</div>`
+      + `</div>`;
+    return `<div class="lcol${lockOn ? ' locked' : ''}${isMetal ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
+      + `<button type="button" class="lctop${fx ? ' ' + fx : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}" style="background-color:${bg};color:${t}">`
+      +   `<span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></button>`
+      + acts
       + `<span class="lcfoot">${foot}</span></div>`;
   }).join('')}</div>`;
 }

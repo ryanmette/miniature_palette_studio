@@ -227,9 +227,11 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .lchex { font-family: var(--mono); font-size: 11.5px; opacity: .9; }
 .lcfoot { padding: 7px 9px 9px; min-width: 0; }
 /* Colour link highlight (interaction, §3.5): outline so neighbours never reflow (§3.4 no-jiggle). Drawn on
-   both the live-palette column (left) and the matching Plan role block (right) when either is hovered/focused. */
+   the live-palette column (left) and the matching Plan role card (right) when either is hovered/focused. */
 .lcol.linkhi { outline: 2px solid var(--accent); outline-offset: -2px; }
-.palette > .pblock.linkhi { outline: 3px solid var(--accent); outline-offset: -3px; }
+.slot.linkhi { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* Metal rides the live palette as a display-only summary column (no wheel node to edit). */
+.lcol.display .lctop { cursor: copy; }
 .lcname { display: block; font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lcfoot .br { font-size: 11px; color: var(--text-muted); }
 
