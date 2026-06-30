@@ -270,6 +270,11 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfstats .s-owned { color: var(--success); }
 .shelfstats .s-want { color: var(--buy); }
 .shelfhint { margin: 0; font-size: 12.5px; color: var(--text-faint); }
+/* Shelf filter bar: search + status + type + sort on one wrapping row (search grows, controls size to content). */
+.shelffilters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.shelffilters input[type="search"] { flex: 1 1 220px; width: auto; min-width: 150px; }
+.shelffilters select { flex: 0 1 auto; width: auto; min-width: 120px; }
+.shelffilters .seg { flex: none; }
 .brandchips { display: flex; flex-wrap: wrap; gap: 7px; }
 .chip { height: 30px; padding: 0 13px; border-radius: var(--r-pill); border: 1px solid var(--border);
   background: var(--surface); color: var(--text-muted); font-weight: 500; font-size: 12.5px; box-sizing: border-box; }
@@ -328,6 +333,8 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   border-radius: var(--r-ctrl); box-shadow: var(--shadow); padding: 12px 14px; }
 .setrow { display: flex; align-items: center; gap: 12px; }
 .setlbl { font-size: 13px; color: var(--text-muted); }
+.setlinks { display: flex; gap: 8px; flex-wrap: wrap; }
+a.btn { text-decoration: none; }
 /* settings popover — align the two control groups in a grid and give them room to breathe */
 .popover.settings { display: grid; grid-template-columns: auto auto; justify-content: start;
   align-items: center; gap: 12px 18px; padding: 16px; }

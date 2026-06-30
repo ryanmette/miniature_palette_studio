@@ -40,6 +40,13 @@
       <button data-locale="en-US" aria-pressed="false">English (US)</button>
     </div>
   </div>
+  <div class="setrow">
+    <span class="setlbl">More</span>
+    <div class="setlinks">
+      <button class="btn sm" type="button" id="aboutOpenMenu">About &amp; data</button>
+      <a class="btn sm" id="feedbackLink" href="mailto:feedback@ryanmette.com?subject=Palette%20Studio%20%E2%80%94%20feedback%20%2F%20feature%20request">Send feedback</a>
+    </div>
+  </div>
 </div>
 
 <main>
@@ -137,6 +144,25 @@
       </div>
       <div class="shelfstats micro" id="shelfStats" aria-live="polite"></div>
       <p class="shelfhint" id="shelfHint"></p>
+      <div class="shelffilters">
+        <label class="sr-only" for="shelfQ">Search the shelf</label>
+        <input id="shelfQ" type="search" placeholder="Search your shelf…" data-i18n-ph="searchShelf" aria-label="Search the shelf" autocomplete="off" />
+        <div class="seg" id="shelfMarkSeg" role="group" aria-label="Filter by status">
+          <button data-mark="" aria-pressed="true" data-i18n="filterAll">All</button>
+          <button data-mark="owned" aria-pressed="false" data-i18n="filterOwned">Owned</button>
+          <button data-mark="want" aria-pressed="false" data-i18n="filterToBuy">To buy</button>
+        </div>
+        <label class="sr-only" for="shelfType">Filter by type</label>
+        <select id="shelfType"><option value="">All types</option></select>
+        <label class="sr-only" for="shelfSort">Sort the shelf</label>
+        <select id="shelfSort">
+          <option value="">Default order</option>
+          <option value="name">Sort: name</option>
+          <option value="brand">Sort: brand</option>
+          <option value="hue">Sort: hue</option>
+          <option value="light">Sort: lightness</option>
+        </select>
+      </div>
       <div class="brandchips" id="brandChips" role="group" aria-label="Filter the shelf by brand"></div>
     </div>
     <div class="shelfgrid" id="shelfGrid" role="listbox" aria-multiselectable="true"
@@ -165,24 +191,18 @@
       harmonies rotate hue in HSL. That maths is exact and unit-tested. But paint hex values are
       <strong>approximate</strong> (most are community-sourced and tagged “approx”), so every match
       shows its <strong>ΔE and a plain-language quality label</strong> — “ideal vs actual” always
-      surfaces the gap and never implies a perfect match.
-      <a href="https://github.com/ryanmette/miniature_palette_studio/blob/main/docs/DATA_SOURCING.md"
-         target="_blank" rel="noopener">Sourcing &amp; methodology →</a></p>
+      surfaces the gap and never implies a perfect match.</p>
 
     <h3>Data &amp; credits</h3>
     <p>The dataset (2,508 paints across eight brands — Citadel, Vallejo, The Army Painter, Two Thin Coats,
       Reaper, Scale75, P3 and Pro Acryl) is a curated compilation from the community dataset
       <a href="https://github.com/Arcturus5404/miniature-paints" target="_blank" rel="noopener">Arcturus5404/miniature-paints</a>,
       used under the <strong>MIT License, © 2022 Rick Fleuren</strong>. <strong>DakkaDakka</strong> is
-      credited for the cross-reference concept; its chart was not copied.
-      <a href="https://github.com/ryanmette/miniature_palette_studio/blob/main/src/data/SOURCES.md"
-         target="_blank" rel="noopener">Full provenance →</a></p>
+      credited for the cross-reference concept; its chart was not copied.</p>
 
     <h3>Privacy</h3>
     <p>Runs entirely in your browser — no accounts, no server, no tracking, and no external requests.
-      Your collection (owned / to-buy paints) and preferences are stored locally on your device only.
-      <a href="https://github.com/ryanmette/miniature_palette_studio/blob/main/SECURITY.md"
-         target="_blank" rel="noopener">Security policy →</a></p>
+      Your collection (owned / to-buy paints) and preferences are stored locally on your device only.</p>
 
     <p class="aboutfine">Paint names and brands are trademarks of their respective owners and are used
       for identification only.</p>

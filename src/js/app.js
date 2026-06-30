@@ -21,7 +21,7 @@ const state = {
 
   extraNodes: [], showReal: false,   // editable swatches [{h,s,l?,locked?}] (S5); live-palette ideal↔real fill
   dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
-  mode: 'studio', shelfBrand: '', brands: [],   // top-level Studio/Shelf mode; shelf's own brand filter
+  mode: 'studio', shelfBrand: '', shelfMark: '', shelfQ: '', shelfType: '', shelfSort: '', brands: [],   // Studio/Shelf mode; shelf brand · status · search · type · sort
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
   includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
 };
@@ -59,10 +59,11 @@ function filteredPaints() {
     (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)));
   return sortPaints(list);
 }
-/** Sort the picker list per state.psort (stable copy; '' keeps dataset order). */
-function sortPaints(list) {
+/** Sort a paint list by `key` (stable copy; '' keeps dataset order). Shared by the picker (state.psort)
+ *  and the shelf (state.shelfSort). */
+function sortPaints(list, key = state.psort) {
   const hsl = p => rgbToHsl(hexToRgb(p.hex));
-  switch (state.psort) {
+  switch (key) {
     case 'name': return list.slice().sort((a, b) => a.name.localeCompare(b.name));
     case 'brand': return list.slice().sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
     case 'hue': return list.slice().sort((a, b) => hsl(a)[0] - hsl(b)[0]);
@@ -393,7 +394,16 @@ function renderActive() { renderers[state.tab](); }
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
 const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false };   // ids; selection is transient (not persisted)
-const shelfPaints = () => state.idx.paints.filter(p => !state.shelfBrand || p.brand === state.shelfBrand);
+const shelfPaints = () => {
+  const q = state.shelfQ.trim().toLowerCase();
+  const list = state.idx.paints.filter(p =>
+    (!state.shelfBrand || p.brand === state.shelfBrand) &&
+    (!state.shelfMark || store.markOf(p.id) === state.shelfMark) &&   // status filter: '' (all) | owned | want
+    (!state.shelfType || p.type === state.shelfType) &&               // type filter (base/layer/shade/metal/…)
+    (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
+       || (p.line && p.line !== '—' && p.line.toLowerCase().includes(q))));
+  return sortPaints(list, state.shelfSort);
+};
 const cellEl = id => document.getElementById('sc-' + id);
 const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length); };
 
@@ -412,12 +422,16 @@ function renderShelfBar() {
 }
 function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
+  for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
   $('#brandChips').innerHTML = ui.brandChips(state.brands, state.shelfBrand);
   $('#shelfGrid').innerHTML = ui.shelfGrid(shelfPaints(), store.markOf, shelf.sel);
   // tag each cell with a DOM id for aria-activedescendant (keyboard cursor)
   for (const c of $('#shelfGrid').children) c.id = 'sc-' + c.dataset.id;
   renderShelfStats(); renderShelfBar();
 }
+/** A shelf filter (brand/status/type/search) changed → membership changes, so drop the selection
+ *  (its ids may no longer be visible) and re-render. Sorting uses renderShelf directly (keeps selection). */
+function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null }); renderShelf(); }
 function announceShelf(msg) { $('#status').textContent = msg; }
 
 /* selection primitives — outline only (CSS), so no reflow (§3.4) */
@@ -455,6 +469,8 @@ function applyMark(mark) {
   renderShelfStats();
   const verb = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'cleared';
   announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} marked ${verb}.`);
+  // If a status filter is active and these paints no longer match it, drop them from view.
+  if (state.shelfMark && state.shelfMark !== mark) { setSelection([], { anchor: null, cursor: null }); renderShelf(); }
 }
 function updateCell(c, mark) {
   c.dataset.mark = mark;
@@ -497,6 +513,7 @@ function setupShelf() {
         store.setMark(c.dataset.id, next); updateCell(c, next);
         c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
         renderShelfStats();
+        if (state.shelfMark && state.shelfMark !== next) renderShelf();   // dropped out of the active status filter
       }
     });
     return;
@@ -1014,9 +1031,17 @@ function wire() {
   $('#brandChips').addEventListener('click', e => {
     const b = e.target.closest('.chip'); if (!b) return;
     state.shelfBrand = b.dataset.brand;
-    setSelection([], { anchor: null, cursor: null });   // selection ids may no longer be visible
-    renderShelf();
+    shelfFilterChanged();
   });
+  $('#shelfQ').addEventListener('input', e => { state.shelfQ = e.target.value; shelfFilterChanged(); });
+  $('#shelfMarkSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    state.shelfMark = b.dataset.mark;
+    shelfFilterChanged();
+  });
+  $('#shelfType').addEventListener('change', e => { state.shelfType = e.target.value; shelfFilterChanged(); });
+  // Sorting doesn't change which paints are shown, so keep the selection — just re-render in the new order.
+  $('#shelfSort').addEventListener('change', e => { state.shelfSort = e.target.value; renderShelf(); });
   $('#shelfBar').addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
     if (b.dataset.act === 'deselect') setSelection([], { anchor: null });
@@ -1039,6 +1064,8 @@ function wire() {
   // About & data modal — native <dialog> handles Esc + focus trap; close on backdrop click.
   const about = $('#about');
   $('#aboutOpen').addEventListener('click', () => about.showModal());
+  $('#aboutOpenMenu').addEventListener('click', () => { closeSettings(); about.showModal(); });   // second path from the ⋯ menu
+  $('#feedbackLink').addEventListener('click', () => closeSettings());                             // let the mailto proceed
   $('#aboutClose').addEventListener('click', () => about.close());
   about.addEventListener('click', e => { if (e.target === about) about.close(); });   // click outside the panel
 }
@@ -1054,7 +1081,9 @@ async function init() {
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
-  $('#ptype').insertAdjacentHTML('beforeend', types.map(t => `<option value="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}</option>`).join(''));
+  const typeOpts = types.map(t => `<option value="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}</option>`).join('');
+  $('#ptype').insertAdjacentHTML('beforeend', typeOpts);
+  $('#shelfType').insertAdjacentHTML('beforeend', typeOpts);
 
   const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
   const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;

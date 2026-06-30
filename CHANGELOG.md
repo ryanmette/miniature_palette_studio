@@ -20,9 +20,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (outbound links + disclosure, no backend); A's implementation is pending the specific retailer programs.
   Payments/accounts still need a §1 scope change first. Linked from `PLAN.md` + the `CLAUDE.md` file tree.
   No runtime code yet.
-- **Closed the add/remove-colours wheel item** in `PLAN.md` §5 (resolved per Ryan).
+- **Shelf filters & sort.** The paint Shelf gains a **search box**, a **status filter** (All · Owned ·
+  To buy), a **type filter** (base/layer/shade/metal/…), and a **sort** (name · brand · hue · lightness),
+  alongside the existing brand chips. Marking a paint out of the active status filter drops it from view;
+  filters clear the selection (membership changed), sort keeps it.
+- **⋯ settings menu: a second path to About & data, plus Send feedback.** The menu now has an **About &
+  data** shortcut (same dialog as the footer link) and a **Send feedback** mailto for feature requests.
 
 ### Changed
+- **About & data no longer links to the source repo.** The three links to the (proprietary) GitHub repo
+  (sourcing/provenance/security) are removed; the *required* external attribution to the community dataset
+  `Arcturus5404/miniature-paints` (MIT) and the DakkaDakka credit remain (§5).
 - **Harmony comparisons are now one scrollable strip.** The 10 schemes (complementary · analogous · …)
   no longer wrap into a multi-row block that pushes the studio down — they read as a single horizontally
   scrollable list (swipe/scroll, edge fades, active chip auto-centred). One row on every width, phones
@@ -30,7 +38,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Paint picker is now sticky too.** In the split layout the left paint list stays pinned below the
   header (alongside the sticky studio) instead of scrolling away, so you can keep picking while reading
   the role plan. Both columns now clear the 63px sticky header; the picker un-sticks where it stacks (≤860px).
-- Service-worker cache bumped to `ps-v6` (shell changed: app.js/ui.js/app.css/index.html).
+- Service-worker cache bumped to `ps-v7` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
 
 ## [1.7.0] - 2026-06-29
 The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),
