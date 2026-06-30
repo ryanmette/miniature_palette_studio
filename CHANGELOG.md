@@ -6,6 +6,21 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Changed
+- **Studio redesign — more room for the wheel + plan.** A cohesive layout pass:
+  - **Paint picker is now a header drawer.** The left picker column is gone; a **`☰ Paints`** button in the
+    seed toolbar opens a full-width tray that drops from the header as an **overlay** (no reflow; animated
+    clip-path reveal, instant under reduced motion). It keeps the *full* picker — search · brand · type ·
+    sort, Import/Export, a **horizontal** swatch strip (edge-masked, no bleed), owned/to-buy badges,
+    **right-click / P·U·X** to mark, full keyboard nav. The workspace is now a **single full-width column**
+    at a **bumped ~1440px** max-width, so the **wheel is larger** and the **Plan role cards go 2-up**.
+  - **Condensed hero.** The tall hero block becomes a one-line identity strip (swatch · name · hex · seed
+    pill · meta · buy), reclaiming the space above the wheel.
+  - **Wheel role badges + legend.** Each node that plays a role wears a **P/A/2** badge (keyed off
+    `schemeBase()`, so correct in accent mode) with a legend; `announceActive()` names the role for SRs.
+  - **Lightness is a vertical slider** in the wheel gutter + a compact ↻ Generate icon (horizontal fallback
+    ≤520px), reclaiming the old control row.
+  - Amends `CLAUDE.md` §3.5/§3.6. New `ui.paintStrip()`, `wheelRoleGlyphs()`; removed the dead picker
+    list/star markup, CSS and `pickerList`/`toggleOwned`.
 - **Live palette and Plan unified — one colour bar, not two.** The live palette and the Plan used to show
   the same scheme as *two* redundant colour bars with different groupings (wheel-position vs role). Now the
   **live palette is the single scheme summary**: each column is labelled by its **role**
@@ -49,7 +64,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Paint picker is now sticky too.** In the split layout the left paint list stays pinned below the
   header (alongside the sticky studio) instead of scrolling away, so you can keep picking while reading
   the role plan. Both columns now clear the 63px sticky header; the picker un-sticks where it stacks (≤860px).
-- Service-worker cache bumped to `ps-v9` (shell changed: app.js/ui.js/app.css/scheme.js/index.html/i18n.js).
+- Service-worker cache bumped to `ps-v10` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
 
 ## [1.7.0] - 2026-06-29
 The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),

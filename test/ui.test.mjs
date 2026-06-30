@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, segmented, hero } from '../src/js/ui.js';
+import { livePalette, roleSlots, segmented, hero, paintStrip } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -46,6 +46,19 @@ test('hero badges the picked paint with its seed role (main/accent)', () => {
   assert.match(hero(base, false, () => 'none', 'main'), /class="seedbadge seed-main">main</);
   assert.match(hero(base, false, () => 'none', 'accent'), /class="seedbadge seed-accent">accent</);
   assert.doesNotMatch(hero(base, false, () => 'none'), /seedbadge/);
+});
+
+test('paintStrip renders chips with id, selection, and owned/to-buy badges', () => {
+  const paints = [
+    { id: 'a', hex: '#9A1115', name: 'Red', brand: 'Citadel', line: 'Base', type: 'base' },
+    { id: 'b', hex: '#11979A', name: 'Teal', brand: 'Vallejo', line: '—', type: 'layer' },
+  ];
+  const html = paintStrip(paints, 'a', id => (id === 'a' ? 'owned' : id === 'b' ? 'want' : 'none'));
+  assert.match(html, /class="pchip"[^>]*data-id="a"[^>]*aria-selected="true"/);
+  assert.match(html, /data-id="b"[^>]*aria-selected="false"/);
+  assert.match(html, /cbadge owned/);    // owned state badge on a
+  assert.match(html, /cbadge want/);     // to-buy state badge on b
+  assert.match(html, /class="pchip-nm">Red</);
 });
 
 test('segmented marks exactly one harmony active', () => {
