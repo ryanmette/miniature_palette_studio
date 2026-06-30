@@ -5,7 +5,7 @@ import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize } fr
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000 } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
-import { buildScheme, shoppingList, schemeGaps } from './scheme.js';
+import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
@@ -82,8 +82,9 @@ function renderPlan() {
   // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5).
   const gaps = schemeGaps(state.scheme, store.ownedIds());
   const addable = gaps.filter(g => store.markOf(g.paint.id) !== 'want').length;
+  // No overview colour bar here — the role-labelled live palette (beside the wheel) is now the single
+  // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.collection, state.includeContrast, addable)
-    + ui.paletteOverview(state.scheme)
     + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus the selected tone ladder</div>'
     + ui.roleSlots(state.scheme, store.markOf);
 }
@@ -103,8 +104,17 @@ function paletteNodes() {
 /** Render the variable live palette: one column per harmony/free colour → nearest paint (ideal/real fill). */
 function renderLive() {
   const el = $('#livepal'); if (!el) return;
-  const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, matchOpts()) }));
-  el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal');
+  const opts = matchOpts();
+  // Role map (Primary/Secondary/Accent/Metal) so each column reads in the Plan's language — see livePalette.
+  const ideals = roleIdeals(schemeBase(), state.harmony);
+  const roleByHex = {};
+  for (const d of ideals) roleByHex[d.idealHex.toUpperCase()] = d.role;
+  const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, opts) }));
+  // Metal has no wheel node, so it rides along as a display-only column → the live palette is the complete
+  // scheme summary (one bar, all four roles), letting the Plan drop its duplicate overview strip.
+  const metal = ideals.find(d => d.metal);
+  vm.push({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: nearestPaint(state.idx, metal.idealHex, { ...opts, types: new Set(['metal']) }) });
+  el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal', roleByHex);
   applyLinkHighlight();   // re-assert any active hover-link after the columns are rebuilt
 }
 /** Cross-surface colour link (§3 "one instrument"): hovering/focusing a role block (Plan, right) or a

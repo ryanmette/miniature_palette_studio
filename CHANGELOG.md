@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Live palette and Plan unified — one colour bar, not two.** The live palette and the Plan used to show
+  the same scheme as *two* redundant colour bars with different groupings (wheel-position vs role). Now the
+  **live palette is the single scheme summary**: each column is labelled by its **role**
+  (Primary/Secondary/Accent/Metal) instead of a degree tag, so it reads in the Plan's language. **Metal**
+  (which has no wheel node) rides along as a **display-only** column, making the bar complete — so the
+  **Plan tab drops its duplicate overview bar** and is now purely the detail (ideal→nearest paint + tone
+  ladders). The colour link now ties the **Plan role cards** (each `data-hex`) to the wheel + live palette.
+  New pure export `roleIdeals()` in `scheme.js` (shared by `buildScheme` + the live palette). Amends
+  `CLAUDE.md` §3.5/§3.6.
+
 ### Added
 - **The wheel and the plan are now one instrument — a colour link.** Hovering (or keyboard-focusing) a
   role block in the Plan (right) now rings that *same colour* wherever it lives on the left — the matching
@@ -38,7 +49,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Paint picker is now sticky too.** In the split layout the left paint list stays pinned below the
   header (alongside the sticky studio) instead of scrolling away, so you can keep picking while reading
   the role plan. Both columns now clear the 63px sticky header; the picker un-sticks where it stacks (≤860px).
-- Service-worker cache bumped to `ps-v8` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
+- Service-worker cache bumped to `ps-v9` (shell changed: app.js/ui.js/app.css/scheme.js/index.html/i18n.js).
 
 ## [1.7.0] - 2026-06-29
 The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),
