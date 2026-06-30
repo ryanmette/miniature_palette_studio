@@ -8,7 +8,6 @@ import * as store from './store.js';
 const LOCALES = {
   'en-GB': {
     tagline: 'for miniatures',
-    baseColour: 'Base colour',
     colourScheme: 'Colour scheme',
     searchPaints: 'Search paints…',
     allBrands: 'All brands',
@@ -24,7 +23,6 @@ const LOCALES = {
     roleSecondary: 'Secondary',
   },
   'en-US': {
-    baseColour: 'Base color',
     colourScheme: 'Color scheme',
   },
 };

@@ -93,6 +93,10 @@ let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony c
  *  correct in accent-seed mode (the base node is then the Accent); Metal has no wheel node. */
 function wheelRoleGlyphs() {
   const m = {};
+  // The wheel draws its nodes off baseHex(); the scheme's roles are off schemeBase(). In accent-seed mode
+  // those frames are 180° apart, so the wheel nodes don't map to the scheme roles (they'd mislabel/vanish).
+  // Only badge roles when the two frames coincide (main mode); the live palette + Plan still carry roles.
+  if (state.seedRole === 'accent') return m;
   for (const d of roleIdeals(schemeBase(), state.harmony)) {
     if (d.metal) continue;
     m[d.idealHex.toUpperCase()] = d.role === 'Primary' ? 'P' : d.role === 'Accent' ? 'A' : '2';
@@ -691,6 +695,8 @@ function markPaint(id, mark) {
   store.setMark(id, mark);
   renderList(); renderLive(); renderActive();
   if (state.mode === 'shelf') renderShelf();
+  const p = state.idx.byId.get(id);                  // announce the state change for screen readers (§3.5)
+  if (p) $('#status').textContent = `${p.name}, ${mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned'}.`;
 }
 function paintListKeydown(e) {
   const chips = [...$('#list').querySelectorAll('.pchip')]; if (!chips.length) return;
@@ -712,6 +718,7 @@ function paintListKeydown(e) {
 }
 function renderHero(animate = true) {
   $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole);   // animate=false during a live drag (no pop spam)
+  const wk = document.querySelector('.wkey'); if (wk) wk.hidden = state.seedRole === 'accent';   // no role badges in accent mode → hide their legend
 }
 let urlTimer = null, announceTimer = null;
 function announce() {
@@ -1011,7 +1018,9 @@ function wire() {
   $('#psort').addEventListener('change', e => { state.psort = e.target.value; renderList(); });
   // Paint-list chips: click picks the paint (and closes the drawer); right-click / P·U·X mark it.
   $('#list').addEventListener('click', e => {
-    const c = e.target.closest('.pchip'); if (c) { selectPaint(c.dataset.id); closePaints(); }
+    const c = e.target.closest('.pchip'); if (!c) return;
+    selectPaint(c.dataset.id); closePaints();
+    if (e.detail === 0) $('#paintsBtn').focus();   // keyboard activation (Enter/Space) → return focus to the trigger
   });
   $('#list').addEventListener('contextmenu', e => {
     const c = e.target.closest('.pchip'); if (!c) return;
@@ -1019,7 +1028,10 @@ function wire() {
   });
   $('#list').addEventListener('keydown', paintListKeydown);
   $('#paintMenu').addEventListener('click', e => {
-    const b = e.target.closest('[data-act]'); if (b && paintMenuId) { markPaint(paintMenuId, b.dataset.act); closePaintMenu(); }
+    const b = e.target.closest('[data-act]'); if (!b || !paintMenuId) return;
+    const id = paintMenuId;
+    markPaint(id, b.dataset.act); closePaintMenu();
+    $('#list').querySelector(`.pchip[data-id="${CSS.escape(id)}"]`)?.focus();   // return focus to the marked chip
   });
   $('#paintsBtn').addEventListener('click', e => { e.stopPropagation(); togglePaints(); });
   $('#importPaints').addEventListener('click', () => $('#importFile').click());

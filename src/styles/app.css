@@ -107,9 +107,11 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .pdrawer-controls input[type="search"] { flex: 1 1 220px; width: auto; min-width: 150px; }
 .pdrawer-controls select { flex: 0 1 auto; width: auto; min-width: 118px; }
 .list { padding: 4px 2px; scrollbar-width: thin; scrollbar-color: var(--text-muted) transparent; }
-.pstrip { display: flex; gap: 12px; overflow-x: auto; overflow-y: hidden; padding: 4px 2px 10px;
+.pstrip { display: flex; gap: 12px; overflow-x: auto; overflow-y: hidden; padding: 4px 2px 10px; scroll-padding: 22px;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent);
   mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
+/* drop the edge fade while a chip is keyboard-focused so the focus ring is never clipped by the mask (§3.5) */
+.pstrip:focus-within { -webkit-mask-image: none; mask-image: none; }
 .list::-webkit-scrollbar { width: 11px; height: 9px; }
 .list::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 999px; border: 2px solid var(--surface); background-clip: padding-box; }
 .list::-webkit-scrollbar-thumb:hover { background: var(--text); }
@@ -125,7 +127,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 /* base hero */
 /* Condensed hero: one compact identity line (swatch chip · name · hex · seed pill · meta · buy). */
 .hero { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; position: relative; }
-.hero .chip { width: 28px; height: 28px; border-radius: 8px; flex: none; }
+.hero .herochip { width: 28px; height: 28px; border-radius: 8px; flex: none; }
 .heroname { font-size: 16px; }
 .herometa { color: var(--text-muted); font-size: 12.5px; min-width: 0; }
 .herometa .approx { color: var(--warning); }
@@ -414,7 +416,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .hexin input { width: 100%; }
   main { padding: 14px; }
   .pad { padding: 14px; }
-  .hero .chip { width: 26px; height: 26px; }
+  .hero .herochip { width: 26px; height: 26px; }
   .seg { width: 100%; }
   .seg button { flex: 1; text-align: center; }
   #seg button { justify-content: center; }
@@ -445,6 +447,6 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 @keyframes mh-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes mh-pop { 0% { transform: scale(.82); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .card { animation: mh-rise .32s cubic-bezier(.2,.7,.2,1) both; }
-.hero .chip.pop { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }   /* pop only on discrete base changes, not per drag frame */
+.hero .herochip.pop { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }   /* pop only on discrete base changes, not per drag frame */
 .btn:active, .seg button:active { transform: scale(.96); }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

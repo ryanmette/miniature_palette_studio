@@ -114,7 +114,7 @@ export function hero(base, animate = true, markOf, seedRole = '') {
       + (base.approx ? ' · <span class="approx">approx</span>' : '');
   const seed = seedRole ? `<span class="seedbadge seed-${esc(seedRole)}">${esc(seedRole)}</span>` : '';
   const own = (!base.custom && base.id && markOf) ? `<span class="herobuy">${ownOrBuy(base.id, markOf(base.id))}</span>` : '';
-  return swatch(base.hex, 'chip' + (animate ? ' pop' : '') + fxCls(base))
+  return swatch(base.hex, 'herochip' + (animate ? ' pop' : '') + fxCls(base))
     + `<h2 class="heroname">${esc(base.name)}</h2>`
     + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button>`
     + seed
