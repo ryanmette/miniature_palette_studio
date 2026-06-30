@@ -659,8 +659,56 @@ function moveCursor(key, extend) {
 /* ---- chrome ---- */
 function renderList() {
   const items = filteredPaints();
-  $('#list').innerHTML = ui.pickerList(items, state.customHex ? null : state.baseId, store.ownedIds());
+  $('#list').innerHTML = ui.paintStrip(items, state.customHex ? null : state.baseId, store.markOf);
   $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${store.counts().owned ? ` · ${store.counts().owned} owned` : ''}`;
+}
+/* ---- paint drawer: the picker as a tray that drops from the seed toolbar (overlay → no reflow, §3.4) ---- */
+let paintsOpen = false, paintMenuOpen = false, paintMenuId = null;
+function openPaints() {
+  paintsOpen = true;
+  const d = $('#paintsDrawer'); d.hidden = false; void d.offsetWidth; d.classList.add('open');   // reflow → the CSS reveal runs
+  $('#paintsBtn').setAttribute('aria-expanded', 'true');
+  $('#q').focus();
+}
+function closePaints() {
+  if (!paintsOpen) return;
+  paintsOpen = false; closePaintMenu();
+  const d = $('#paintsDrawer'); d.classList.remove('open'); d.hidden = true;   // exit is instant; the drop animates on open
+  $('#paintsBtn').setAttribute('aria-expanded', 'false');
+}
+function togglePaints() { paintsOpen ? closePaints() : openPaints(); }
+function openPaintMenu(x, y) {
+  const m = $('#paintMenu'); m.hidden = false; paintMenuOpen = true;
+  const w = m.offsetWidth, h = m.offsetHeight;
+  m.style.left = Math.min(x, innerWidth - w - 8) + 'px';
+  m.style.top = Math.min(y, innerHeight - h - 8) + 'px';
+  m.querySelector('button')?.focus();
+}
+function closePaintMenu() { if (paintMenuOpen) { $('#paintMenu').hidden = true; paintMenuOpen = false; } }
+/** Mark a paint (owned/want/none) from the drawer's right-click menu or P/U/X; matches depend on the owned set. */
+function markPaint(id, mark) {
+  if (!['owned', 'want', 'none'].includes(mark)) return;
+  store.setMark(id, mark);
+  renderList(); renderLive(); renderActive();
+  if (state.mode === 'shelf') renderShelf();
+}
+function paintListKeydown(e) {
+  const chips = [...$('#list').querySelectorAll('.pchip')]; if (!chips.length) return;
+  const cur = document.activeElement.closest ? document.activeElement.closest('.pchip') : null;
+  let i = cur ? chips.indexOf(cur) : -1;
+  const move = j => { j = Math.max(0, Math.min(chips.length - 1, j)); chips[j].focus(); chips[j].scrollIntoView({ inline: 'nearest', block: 'nearest' }); };
+  const k = e.key.toLowerCase();
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { move(i < 0 ? 0 : i + 1); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { move(i < 0 ? 0 : i - 1); e.preventDefault(); }
+  else if (e.key === 'Home') { move(0); e.preventDefault(); }
+  else if (e.key === 'End') { move(chips.length - 1); e.preventDefault(); }
+  else if (e.key === 'Escape') { closePaints(); $('#paintsBtn').focus(); e.preventDefault(); }
+  else if (cur && (k === 'p' || k === 'u' || k === 'x')) {
+    const id = cur.dataset.id;
+    markPaint(id, k === 'p' ? 'owned' : k === 'u' ? 'want' : 'none');
+    $('#list').querySelector(`.pchip[data-id="${CSS.escape(id)}"]`)?.focus();   // keep keyboard place after re-render
+    e.preventDefault();
+  }
 }
 function renderHero(animate = true) {
   $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole);   // animate=false during a live drag (no pop spam)
@@ -753,13 +801,13 @@ function syncLocaleSeg() {                            // reflect the active loca
 function setMode(mode) {
   state.mode = mode === 'shelf' ? 'shelf' : 'studio';
   const on = state.mode === 'shelf';
+  closePaints();   // the paint drawer is a Studio control; never leave it open across a mode switch
   document.querySelector('main').dataset.mode = state.mode;
-  document.querySelector('.picker').hidden = on;
   document.querySelector('.workspace').hidden = on;
   $('#shelf').hidden = !on;
   for (const b of $('#modeNav').children) b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
   if (on) { renderShelf(); $('#shelfGrid').focus(); }
-  else { renderList(); }   // refresh the picker's owned stars in case the shelf changed them
+  else { renderList(); }   // refresh the drawer's owned state in case the shelf changed it
   updateUrl();
 }
 function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
@@ -784,12 +832,6 @@ function setTab(tab, focusActive = false) {
   state.tab = tab;
   syncTabs(focusActive);
   renderActive(); announce(); updateUrl();
-}
-function toggleOwned(id) {
-  store.setMark(id, store.isOwned(id) ? 'none' : 'owned');
-  renderList();
-  document.querySelector(`[data-own="${CSS.escape(id)}"]`)?.focus(); // keep keyboard place after re-render
-  if (state.collection !== 'off') { renderLive(); renderActive(); }   // matches depend on the owned set
 }
 /** Toggle a paint on/off the to-buy list (#5). Owned paints have no buy control, but guard anyway. */
 function toggleBuy(id) {
@@ -967,10 +1009,31 @@ function wire() {
   $('#brand').addEventListener('change', e => { state.brand = e.target.value; renderList(); });
   $('#ptype').addEventListener('change', e => { state.ptype = e.target.value; renderList(); });
   $('#psort').addEventListener('change', e => { state.psort = e.target.value; renderList(); });
+  // Paint-list chips: click picks the paint (and closes the drawer); right-click / P·U·X mark it.
   $('#list').addEventListener('click', e => {
-    const own = e.target.closest('.own'); if (own) { e.stopPropagation(); toggleOwned(own.dataset.own); return; }
-    const b = e.target.closest('.paint'); if (b) selectPaint(b.dataset.id);
+    const c = e.target.closest('.pchip'); if (c) { selectPaint(c.dataset.id); closePaints(); }
   });
+  $('#list').addEventListener('contextmenu', e => {
+    const c = e.target.closest('.pchip'); if (!c) return;
+    e.preventDefault(); paintMenuId = c.dataset.id; openPaintMenu(e.clientX, e.clientY);
+  });
+  $('#list').addEventListener('keydown', paintListKeydown);
+  $('#paintMenu').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (b && paintMenuId) { markPaint(paintMenuId, b.dataset.act); closePaintMenu(); }
+  });
+  $('#paintsBtn').addEventListener('click', e => { e.stopPropagation(); togglePaints(); });
+  $('#importPaints').addEventListener('click', () => $('#importFile').click());
+  $('#exportPaints').addEventListener('click', exportCollectionCsv);
+  document.addEventListener('keydown', e => {                            // Esc closes the menu, then the drawer
+    if (e.key !== 'Escape') return;
+    if (paintMenuOpen) { closePaintMenu(); $('#list').focus(); }
+    else if (paintsOpen) { closePaints(); $('#paintsBtn').focus(); }
+  });
+  document.addEventListener('pointerdown', e => {                        // click-outside closes the drawer / its menu
+    if (paintMenuOpen && !e.target.closest('#paintMenu')) closePaintMenu();
+    // the drawer's right-click menu lives outside #paintsDrawer — don't let interacting with it close the drawer
+    if (paintsOpen && !e.target.closest('#paintsDrawer') && !e.target.closest('#paintsBtn') && !e.target.closest('#paintMenu')) closePaints();
+  }, true);
   $('main').addEventListener('click', e => {
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
