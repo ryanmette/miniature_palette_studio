@@ -664,7 +664,6 @@ function renderList() {
 }
 function renderHero(animate = true) {
   $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole);   // animate=false during a live drag (no pop spam)
-  $('#baseLabel').textContent = `${i18n.t('baseColour')} · ${state.seedRole}`;
 }
 let urlTimer = null, announceTimer = null;
 function announce() {

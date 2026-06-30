@@ -105,22 +105,22 @@ const ownOrBuy = (id, mark) => mark === 'owned'
   ? '<span class="owntag">✓ owned</span>'
   : buyBtn(id, mark);
 
-/** Base-paint hero. `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy.
- *  `seedRole` ('main'|'accent') badges the hero swatch with the role the *picked paint* plays — the swatch-level
- *  reflection of the Main/Accent control (the hero always shows your pick, so this reads true in both modes). */
+/** Base-paint hero — a single compact identity line: swatch chip · name · hex · seed-role pill · meta · buy.
+ *  `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy.
+ *  `seedRole` ('main'|'accent') shows the role the *picked paint* plays (the hero always shows your pick,
+ *  so this reads true in both seed modes). Condensed from the old tall block to reclaim space above the wheel. */
 export function hero(base, animate = true, markOf, seedRole = '') {
-  const meta = base.custom ? 'typed hex' : `${esc(base.brand || '')}${base.line ? ' · ' + esc(base.line) : ''}`;
-  const tags = base.custom
-    ? '<span class="tag">custom</span>'
-    : `<span class="tag">${esc(base.type || 'paint')}</span>${base.approx ? '<span class="tag approx">approx hex</span>' : ''}`;
-  const own = (!base.custom && base.id && markOf) ? `<div class="ownline" style="margin-top:8px">${ownOrBuy(base.id, markOf(base.id))}</div>` : '';
+  const meta = base.custom ? 'typed hex'
+    : `${esc(base.brand || '')}${base.line && base.line !== '—' ? ' · ' + esc(base.line) : ''}${base.type ? ' · ' + esc(base.type) : ''}`
+      + (base.approx ? ' · <span class="approx">approx</span>' : '');
   const seed = seedRole ? `<span class="seedbadge seed-${esc(seedRole)}">${esc(seedRole)}</span>` : '';
-  return swatch(base.hex, (animate ? 'big pop' : 'big') + fxCls(base)) + seed
-    + `<div><h2>${esc(base.name)}</h2>`
-    + `<div style="color:var(--text-muted);font-size:13px;margin-top:2px">${meta}</div>`
-    + `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${tags}</div>`
+  const own = (!base.custom && base.id && markOf) ? `<span class="herobuy">${ownOrBuy(base.id, markOf(base.id))}</span>` : '';
+  return swatch(base.hex, 'chip' + (animate ? ' pop' : '') + fxCls(base))
+    + `<h2 class="heroname">${esc(base.name)}</h2>`
     + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button>`
-    + own + `</div>`;
+    + seed
+    + `<span class="herometa">${meta}</span>`
+    + own;
 }
 
 /** Tiny line-art glyph of a harmony's geometry, generated from HARMONY_OFFSETS so it can't drift. */

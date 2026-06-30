@@ -104,19 +104,20 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .count { padding: 8px 14px 14px; font-size: 12px; color: var(--text-faint); }
 
 /* base hero */
-.hero { display: flex; gap: 16px; align-items: center; position: relative; }
-.hero .big { width: 84px; height: 84px; }
-/* Seed-role badge on the hero swatch (state, §3.5): the picked paint's Main/Accent role, in sync with the
-   Main/Accent control. The hero always shows your pick, so this reads true in both seed modes. Anchored to
-   the hero's top-left = the swatch's corner (the swatch is the hero's first, leftmost child). */
-.seedbadge { position: absolute; top: -7px; left: -7px; font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
-  padding: 2px 7px; border-radius: var(--r-pill); background: var(--accent-weak); color: var(--accent);
-  box-shadow: 0 0 0 2px var(--surface); }
-.hero h2 { font-size: var(--fs-h1); }
+/* Condensed hero: one compact identity line (swatch chip · name · hex · seed pill · meta · buy). */
+.hero { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; position: relative; }
+.hero .chip { width: 28px; height: 28px; border-radius: 8px; flex: none; }
+.heroname { font-size: 16px; }
+.herometa { color: var(--text-muted); font-size: 12.5px; min-width: 0; }
+.herometa .approx { color: var(--warning); }
+.herobuy { margin-left: auto; }
+/* Seed-role pill (state, §3.5): the picked paint's Main/Accent role, inline in the hero line. */
+.seedbadge { font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
+  padding: 2px 7px; border-radius: var(--r-pill); background: var(--accent-weak); color: var(--accent); }
 .tag { font-size: 11.5px; font-weight: 500; padding: 3px 9px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); }
 .tag.role { background: var(--accent-weak); color: var(--accent); }
 .tag.approx { background: var(--warning-weak); color: var(--warning); }
-.hexline { margin-top: 9px; margin-left: -5px; display: inline-block; font-family: var(--mono); font-size: 13px; color: var(--text-muted); border: none; background: none; padding: 2px 5px; border-radius: 6px; cursor: pointer; }
+.hexline { display: inline-block; font-family: var(--mono); font-size: 13px; color: var(--text-muted); border: none; background: none; padding: 2px 5px; border-radius: 6px; cursor: pointer; }
 .hexline:hover { color: var(--text); background: var(--surface-2); }
 .hexline:focus-visible { outline: none; box-shadow: var(--focus); }
 
@@ -404,7 +405,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .hexin input { width: 100%; }
   main { padding: 14px; }
   .pad { padding: 14px; }
-  .hero .big { width: 64px; height: 64px; }
+  .hero .chip { width: 26px; height: 26px; }
   .seg { width: 100%; }
   .seg button { flex: 1; text-align: center; }
   #seg button { justify-content: center; }
@@ -435,6 +436,6 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 @keyframes mh-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes mh-pop { 0% { transform: scale(.82); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .card { animation: mh-rise .32s cubic-bezier(.2,.7,.2,1) both; }
-.hero .big.pop { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }   /* pop only on discrete base changes, not per drag frame */
+.hero .chip.pop { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }   /* pop only on discrete base changes, not per drag frame */
 .btn:active, .seg button:active { transform: scale(.96); }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
