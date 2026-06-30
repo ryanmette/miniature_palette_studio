@@ -353,8 +353,6 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 
 /* header IA (#4): seed bar atop the studio · finish bar at the bottom · settings popover (theme) */
 .seedbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-.finishbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 2px; }
-.finishlbl { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); }
 .popover { position: fixed; z-index: 60; background: var(--surface); border: 1px solid var(--border-strong);
   border-radius: var(--r-ctrl); box-shadow: var(--shadow); padding: 12px 14px; }
 .setrow { display: flex; align-items: center; gap: 12px; }

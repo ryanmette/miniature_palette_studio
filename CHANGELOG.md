@@ -6,6 +6,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Changed
+- **Export list / Share link moved into the ⋯ settings menu.** They're whole-scheme output actions, so they
+  now live in the header popover (a new "Scheme" row) instead of a "Finish" cluster at the bottom of the
+  Studio — declutters the studio. The popover closes after either action. Amends `CLAUDE.md` §3.6. SW `ps-v11`.
 - **Studio redesign — more room for the wheel + plan.** A cohesive layout pass:
   - **Paint picker is now a header drawer.** The left picker column is gone; a **`☰ Paints`** button in the
     seed toolbar opens a full-width tray that drops from the header as an **overlay** (no reflow; animated

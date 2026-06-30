@@ -1123,8 +1123,8 @@ function wire() {
     else { const s = currentScheme(); state.compareA = { base: schemeBase(), harmony: state.harmony, colors: s.roles.map(r => r.idealHex) }; $('#compare').setAttribute('aria-pressed', 'true'); setTab('plan'); toast('Pinned A — change the scheme to compare'); }
     if (state.tab === 'plan') renderPlan();
   });
-  $('#export').addEventListener('click', doExport);
-  $('#share').addEventListener('click', doShare);
+  $('#export').addEventListener('click', () => { doExport(); closeSettings(); });   // Export/Share live in the ⋯ menu now
+  $('#share').addEventListener('click', () => { doShare(); closeSettings(); });
 
   // settings menu (theme lives here now) — toggle, theme control, click-outside / Esc close
   const sMenu = $('#settingsMenu'), sBtn = $('#settingsBtn');
