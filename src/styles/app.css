@@ -19,14 +19,16 @@ button { font-family: var(--font); cursor: pointer; }
   display: inline-flex; align-items: center; gap: 7px; transition: background .12s, border-color .12s; }
 .btn:hover { border-color: var(--border-strong); background: var(--surface-2); }
 .btn:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--accent); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary { background: var(--accent-fill); border-color: var(--accent-edge); color: var(--on-accent); box-shadow: var(--accent-bevel); }
+.btn.primary:focus-visible { box-shadow: var(--focus), var(--accent-bevel); }   /* keep the focus ring; don't let the bevel override it */
 .btn.icon { padding: 0; width: var(--tap); justify-content: center; font-size: 15px; }
 
 /* header */
 header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--border); }
 .bar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; flex-wrap: wrap; max-width: 1440px; margin: 0 auto; }
 .logo { display: flex; align-items: center; gap: 9px; margin-right: 4px; }
-.logo .mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent); display: grid; place-items: center;
+.logo .mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-fill); border: 1px solid var(--accent-edge);
+  box-shadow: var(--accent-bevel); display: grid; place-items: center;
   color: var(--on-accent); font-family: var(--display); font-weight: 700; font-size: 15px; }
 .logo .t { font-family: var(--display); font-weight: 600; font-size: 17px; }
 .logo .t small { color: var(--text-faint); font-weight: 500; font-size: 12px; margin-left: 5px; font-family: var(--font); }
@@ -147,7 +149,10 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 
 /* tabs + panels */
 .tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--border); margin-top: 8px; overflow-x: auto; }
-.tabs button { border: none; background: transparent; padding: 11px 2px; color: var(--text-muted); font-weight: 500; font-size: 13.5px; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tabs button { border: none; background: transparent; padding: 11px 2px; color: var(--text-muted); font-weight: 500; font-size: 13.5px;
+  border-bottom: 2px solid transparent; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
+.tabs button .tglyph { display: block; flex: none; }
+#tab-equiv { margin-left: auto; }   /* push Equivalents + Accessibility to the right of the strip; collapses to 0 when the strip scrolls */
 .tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
 .tabs button:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
 [data-panel] { animation: mh-fade .22s ease both; padding-top: 14px; }   /* breathing room below the tab strip */
@@ -229,7 +234,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
   font-family: var(--font); font-weight: 500; font-size: 11.5px; line-height: 1; color: var(--text-muted); letter-spacing: .04em; }
 .wkey-i { display: inline-flex; align-items: center; gap: 6px; }
 .wk-badge { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: var(--r-pill);
-  background: var(--accent); color: var(--on-accent); font-family: var(--font); font-weight: 700; font-size: 10px; box-shadow: 0 0 0 1.5px var(--surface); font-style: normal; }
+  background: var(--accent-fill); color: var(--on-accent); font-family: var(--font); font-weight: 700; font-size: 10px; box-shadow: 0 0 0 1.5px var(--surface); font-style: normal; }
 .palcol { min-width: 0; }
 .palhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .palctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

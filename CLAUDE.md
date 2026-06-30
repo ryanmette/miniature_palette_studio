@@ -90,6 +90,7 @@ sets below change between themes.
 --border:#E6E7F8; --border-strong:#D3D5F0;
 --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
 --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+--accent-fill:var(--accent); --accent-edge:var(--accent); --accent-bevel:0 0 0 rgba(0,0,0,0);  /* solid-accent surfaces stay flat in light; dimension is dark-only */
 --buy:#2563EB; --buy-weak:#DBEAFE; --on-buy:#FFFFFF;   /* "to-buy" state — single-meaning, never the selection colour (§3.5) */
 --success:#16A34A; --success-weak:#DCFCE7;
 --warning:#C2740B; --warning-weak:#FBEBD3;
@@ -101,6 +102,11 @@ sets below change between themes.
 --border:#3A302A; --border-strong:#4D4138;
 --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
 --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+/* Polished brass: solid-accent surfaces (buttons, logo plaque, role badges) get metallic dimension —
+   light→dark gradient + diagonal sheen, a cast edge, and an inset bevel — WITHOUT shifting the brass hue.
+   This is the sanctioned way to add depth to chrome; only the colour value differs per theme (§3 unify rule). */
+--accent-fill:linear-gradient(118deg,rgba(255,255,255,0) 30%,rgba(255,250,235,.28) 47%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#D6A646,#A8781D);
+--accent-edge:#8C6516; --accent-bevel:inset 0 1px 0 rgba(255,245,220,.4), inset 0 -1px 1px rgba(0,0,0,.3);
 --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;   /* cold steel-blue cart, distinct from the brass accent */
 --success:#86A559; --success-weak:#232A16;
 --warning:#C9923A; --warning-weak:#2E2412;
