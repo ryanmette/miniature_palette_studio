@@ -92,8 +92,19 @@
           <div class="hero" id="hero"></div>
         </div>
         <div class="wheelcol">
-          <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
-          <div class="wctrl"><span class="micro">Light</span><input id="wl" type="range" min="6" max="94" step="1" aria-label="Lightness" style="flex:1" /><button class="btn" id="wrand" style="height:32px;padding:0 12px" title="Generate a random base colour">↻ Generate</button></div>
+          <div class="wheelrow">
+            <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
+            <div class="wlcol">
+              <label class="sr-only" for="wl">Lightness</label>
+              <input id="wl" class="wl-vert" type="range" min="6" max="94" step="1" aria-label="Lightness" aria-orientation="vertical" />
+              <button class="btn icon" id="wrand" title="Generate a random base colour" aria-label="Generate a random base colour">↻</button>
+            </div>
+          </div>
+          <div class="wkey">
+            <span class="wkey-i"><i class="wk-badge">P</i><span data-i18n="rolePrimary">Primary</span></span>
+            <span class="wkey-i"><i class="wk-badge">A</i><span data-i18n="roleAccent">Accent</span></span>
+            <span class="wkey-i"><i class="wk-badge">2</i><span data-i18n="roleSecondary">Secondary</span></span>
+          </div>
         </div>
         <div class="seg harmscroll" id="seg" role="group" aria-label="Harmony type"></div>
         <div class="palhead">

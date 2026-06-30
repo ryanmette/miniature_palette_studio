@@ -196,10 +196,20 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .picker { position: sticky; top: 79px; align-self: start; max-height: calc(100vh - 95px); display: flex; flex-direction: column; }
 .picker .list { flex: 1; max-height: none; }   /* the list fills the picker's remaining height and scrolls within it */
 .wheelcol { display: flex; flex-direction: column; align-items: center; }
-.wcanvas { touch-action: none; cursor: grab; display: block; width: min(90vw, 300px); aspect-ratio: 1; height: auto; border-radius: 50%; }
+.wcanvas { touch-action: none; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.wctrl { display: flex; align-items: center; gap: 10px; margin-top: 12px; width: 280px; max-width: 100%; }
-.wctrl input[type="range"] { accent-color: var(--accent); }
+/* Lightness lives in the gutter beside the wheel (a vertical slider) + a compact ↻ Generate icon — reclaims
+   the old control row's height. Falls back to a horizontal slider on phones (≤520px, below) so it doesn't
+   crush the wheel. The range stays a native, labelled, arrow-key-operable input (a11y unchanged). */
+.wheelrow { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 14px; }
+.wlcol { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.wl-vert { writing-mode: vertical-lr; direction: rtl; width: 26px; height: min(58vw, 220px); accent-color: var(--accent); }
+.wl-vert:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-pill); }
+.wkey { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px;
+  font-family: var(--font); font-weight: 500; font-size: 11.5px; line-height: 1; color: var(--text-muted); letter-spacing: .04em; }
+.wkey-i { display: inline-flex; align-items: center; gap: 6px; }
+.wk-badge { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: var(--r-pill);
+  background: var(--accent); color: var(--on-accent); font-family: var(--font); font-weight: 700; font-size: 10px; box-shadow: 0 0 0 1.5px var(--surface); font-style: normal; }
 .palcol { min-width: 0; }
 .palhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .palctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -399,6 +409,10 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .seg button { flex: 1; text-align: center; }
   #seg button { justify-content: center; }
   .hglyph { display: none; }          /* text-only harmony control on phones (no room for glyphs) */
+  /* lightness goes back to a horizontal slider below the wheel on phones (a vertical one would crush it) */
+  .wheelrow { flex-direction: column; }
+  .wlcol { flex-direction: row; width: min(82vw, 340px); gap: 10px; }
+  .wl-vert { writing-mode: horizontal-tb; direction: ltr; width: auto; height: auto; flex: 1; }
   .pblock .pbr { display: none; }     /* palette band keeps just the hex on narrow blocks */
   .livepal { flex-direction: column; }            /* live palette stacks to readable rows on phones */
   .lcol { flex-direction: row; }

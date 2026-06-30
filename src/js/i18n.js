@@ -19,6 +19,9 @@ const LOCALES = {
     filterAll: 'All',
     filterOwned: 'Owned',
     filterToBuy: 'To buy',
+    rolePrimary: 'Primary',
+    roleAccent: 'Accent',
+    roleSecondary: 'Secondary',
   },
   'en-US': {
     baseColour: 'Base color',

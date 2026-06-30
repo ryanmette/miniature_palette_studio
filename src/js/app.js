@@ -89,6 +89,16 @@ function renderPlan() {
     + ui.roleSlots(state.scheme, store.markOf);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
+/** node ideal-hex (UPPER) → role glyph (P/A/2) for the current scheme. Keyed off schemeBase() so it's
+ *  correct in accent-seed mode (the base node is then the Accent); Metal has no wheel node. */
+function wheelRoleGlyphs() {
+  const m = {};
+  for (const d of roleIdeals(schemeBase(), state.harmony)) {
+    if (d.metal) continue;
+    m[d.idealHex.toUpperCase()] = d.role === 'Primary' ? 'P' : d.role === 'Accent' ? 'A' : '2';
+  }
+  return m;
+}
 /** Derived palette: harmony-rule colours (never stored) + any free/added nodes. Feeds wheel + live palette. */
 function paletteNodes() {
   const base = schemeBase();
@@ -255,6 +265,28 @@ function setupWheel() {
     for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = o.locked ? 3.5 : 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
     if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
+    // Role badges: stamp P / A / 2 on the node that plays each role, so the wheel says which is the
+    // Primary/Accent/Secondary (legend below decodes it). Token pair (--accent / --on-accent + --surface
+    // ring) → legible on any node colour in both themes; clamped inside the disc so a rim node's badge
+    // can't fall off the edge. The map is keyed by drawn hex, so it's correct in accent-seed mode too.
+    const rg = wheelRoleGlyphs();
+    if (Object.keys(rg).length) {
+      const surf = cs.getPropertyValue('--surface').trim() || '#fff';
+      const onAcc = cs.getPropertyValue('--on-accent').trim() || '#fff';
+      const r = COARSE ? 10 : 8.5;
+      for (const n of hitNodes()) {
+        const nh = (n.kind === 'base' ? b : n.kind === 'partner' ? rotateHue(b, n.deg) : rgbToHex(hslToRgb([n.h, n.s, state.extraNodes[n.idx]?.l ?? state.wheelL]))).toUpperCase();
+        const g = rg[nh]; if (!g) continue;
+        let bxr = n.x + 12, byr = n.y - 12;
+        const vx = bxr - cx, vy = byr - cy, dd = Math.hypot(vx, vy), lim = R - r - 1;
+        if (dd > lim) { bxr = cx + vx / dd * lim; byr = cy + vy / dd * lim; }
+        ctx.beginPath(); ctx.arc(bxr, byr, r, 0, 7); ctx.fillStyle = accent; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = surf; ctx.stroke();
+        ctx.fillStyle = onAcc; ctx.font = '700 ' + (COARSE ? 12 : 10) + 'px Inter, system-ui, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(g, bxr, byr);
+        ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';   // reset so later canvas text is unaffected
+      }
+    }
     // Colour link (hover a role/column elsewhere): ring whichever node is that same colour — recomputing
     // each node's drawn hex the way it's filled, so the match is exact (no wheelL/rounding drift).
     if (state.hiHex) for (const n of hitNodes()) {
@@ -316,8 +348,12 @@ function setupWheel() {
     const n = ns[Math.min(activeIdx, ns.length - 1)];
     const label = n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added colour' : `Partner ${Math.round(n.deg)} degrees`;
     const hex = rgbToHex(hslToRgb([n.h, n.s, state.wheelL]));
+    const b = baseHex();
+    const dhex = (n.kind === 'base' ? b : n.kind === 'partner' ? rotateHue(b, n.deg) : hex).toUpperCase();
+    const rgl = wheelRoleGlyphs()[dhex];                         // name the role for non-visual users
+    const role = rgl === 'P' ? 'Primary, ' : rgl === 'A' ? 'Accent, ' : rgl === '2' ? 'Secondary, ' : '';
     const m = nearestPaint(state.idx, hex, matchOpts());
-    $('#status').textContent = m ? `${label}, ${hex}, nearest ${m.paint.name}, ΔE ${m.deltaE.toFixed(1)}.` : `${label}, ${hex}, no close paint.`;
+    $('#status').textContent = m ? `${role}${label}, ${hex}, nearest ${m.paint.name}, ΔE ${m.deltaE.toFixed(1)}.` : `${role}${label}, ${hex}, no close paint.`;
   }
   function nudgeActive(dh, ds) {
     const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1);
