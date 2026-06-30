@@ -89,6 +89,20 @@ function renderPlan() {
     + ui.roleSlots(state.scheme, store.markOf);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
+/** node ideal-hex (UPPER) → role glyph (P/A/2) for the current scheme. Keyed off schemeBase() so it's
+ *  correct in accent-seed mode (the base node is then the Accent); Metal has no wheel node. */
+function wheelRoleGlyphs() {
+  const m = {};
+  // The wheel draws its nodes off baseHex(); the scheme's roles are off schemeBase(). In accent-seed mode
+  // those frames are 180° apart, so the wheel nodes don't map to the scheme roles (they'd mislabel/vanish).
+  // Only badge roles when the two frames coincide (main mode); the live palette + Plan still carry roles.
+  if (state.seedRole === 'accent') return m;
+  for (const d of roleIdeals(schemeBase(), state.harmony)) {
+    if (d.metal) continue;
+    m[d.idealHex.toUpperCase()] = d.role === 'Primary' ? 'P' : d.role === 'Accent' ? 'A' : '2';
+  }
+  return m;
+}
 /** Derived palette: harmony-rule colours (never stored) + any free/added nodes. Feeds wheel + live palette. */
 function paletteNodes() {
   const base = schemeBase();
@@ -255,6 +269,28 @@ function setupWheel() {
     for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = o.locked ? 3.5 : 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
     if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
+    // Role badges: stamp P / A / 2 on the node that plays each role, so the wheel says which is the
+    // Primary/Accent/Secondary (legend below decodes it). Token pair (--accent / --on-accent + --surface
+    // ring) → legible on any node colour in both themes; clamped inside the disc so a rim node's badge
+    // can't fall off the edge. The map is keyed by drawn hex, so it's correct in accent-seed mode too.
+    const rg = wheelRoleGlyphs();
+    if (Object.keys(rg).length) {
+      const surf = cs.getPropertyValue('--surface').trim() || '#fff';
+      const onAcc = cs.getPropertyValue('--on-accent').trim() || '#fff';
+      const r = COARSE ? 10 : 8.5;
+      for (const n of hitNodes()) {
+        const nh = (n.kind === 'base' ? b : n.kind === 'partner' ? rotateHue(b, n.deg) : rgbToHex(hslToRgb([n.h, n.s, state.extraNodes[n.idx]?.l ?? state.wheelL]))).toUpperCase();
+        const g = rg[nh]; if (!g) continue;
+        let bxr = n.x + 12, byr = n.y - 12;
+        const vx = bxr - cx, vy = byr - cy, dd = Math.hypot(vx, vy), lim = R - r - 1;
+        if (dd > lim) { bxr = cx + vx / dd * lim; byr = cy + vy / dd * lim; }
+        ctx.beginPath(); ctx.arc(bxr, byr, r, 0, 7); ctx.fillStyle = accent; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = surf; ctx.stroke();
+        ctx.fillStyle = onAcc; ctx.font = '700 ' + (COARSE ? 12 : 10) + 'px Inter, system-ui, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(g, bxr, byr);
+        ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';   // reset so later canvas text is unaffected
+      }
+    }
     // Colour link (hover a role/column elsewhere): ring whichever node is that same colour — recomputing
     // each node's drawn hex the way it's filled, so the match is exact (no wheelL/rounding drift).
     if (state.hiHex) for (const n of hitNodes()) {
@@ -316,8 +352,12 @@ function setupWheel() {
     const n = ns[Math.min(activeIdx, ns.length - 1)];
     const label = n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added colour' : `Partner ${Math.round(n.deg)} degrees`;
     const hex = rgbToHex(hslToRgb([n.h, n.s, state.wheelL]));
+    const b = baseHex();
+    const dhex = (n.kind === 'base' ? b : n.kind === 'partner' ? rotateHue(b, n.deg) : hex).toUpperCase();
+    const rgl = wheelRoleGlyphs()[dhex];                         // name the role for non-visual users
+    const role = rgl === 'P' ? 'Primary, ' : rgl === 'A' ? 'Accent, ' : rgl === '2' ? 'Secondary, ' : '';
     const m = nearestPaint(state.idx, hex, matchOpts());
-    $('#status').textContent = m ? `${label}, ${hex}, nearest ${m.paint.name}, ΔE ${m.deltaE.toFixed(1)}.` : `${label}, ${hex}, no close paint.`;
+    $('#status').textContent = m ? `${role}${label}, ${hex}, nearest ${m.paint.name}, ΔE ${m.deltaE.toFixed(1)}.` : `${role}${label}, ${hex}, no close paint.`;
   }
   function nudgeActive(dh, ds) {
     const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1);
@@ -623,12 +663,62 @@ function moveCursor(key, extend) {
 /* ---- chrome ---- */
 function renderList() {
   const items = filteredPaints();
-  $('#list').innerHTML = ui.pickerList(items, state.customHex ? null : state.baseId, store.ownedIds());
+  $('#list').innerHTML = ui.paintStrip(items, state.customHex ? null : state.baseId, store.markOf);
   $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${store.counts().owned ? ` · ${store.counts().owned} owned` : ''}`;
+}
+/* ---- paint drawer: the picker as a tray that drops from the seed toolbar (overlay → no reflow, §3.4) ---- */
+let paintsOpen = false, paintMenuOpen = false, paintMenuId = null;
+function openPaints() {
+  paintsOpen = true;
+  const d = $('#paintsDrawer'); d.hidden = false; void d.offsetWidth; d.classList.add('open');   // reflow → the CSS reveal runs
+  $('#paintsBtn').setAttribute('aria-expanded', 'true');
+  $('#q').focus();
+}
+function closePaints() {
+  if (!paintsOpen) return;
+  paintsOpen = false; closePaintMenu();
+  const d = $('#paintsDrawer'); d.classList.remove('open'); d.hidden = true;   // exit is instant; the drop animates on open
+  $('#paintsBtn').setAttribute('aria-expanded', 'false');
+}
+function togglePaints() { paintsOpen ? closePaints() : openPaints(); }
+function openPaintMenu(x, y) {
+  const m = $('#paintMenu'); m.hidden = false; paintMenuOpen = true;
+  const w = m.offsetWidth, h = m.offsetHeight;
+  m.style.left = Math.min(x, innerWidth - w - 8) + 'px';
+  m.style.top = Math.min(y, innerHeight - h - 8) + 'px';
+  m.querySelector('button')?.focus();
+}
+function closePaintMenu() { if (paintMenuOpen) { $('#paintMenu').hidden = true; paintMenuOpen = false; } }
+/** Mark a paint (owned/want/none) from the drawer's right-click menu or P/U/X; matches depend on the owned set. */
+function markPaint(id, mark) {
+  if (!['owned', 'want', 'none'].includes(mark)) return;
+  store.setMark(id, mark);
+  renderList(); renderLive(); renderActive();
+  if (state.mode === 'shelf') renderShelf();
+  const p = state.idx.byId.get(id);                  // announce the state change for screen readers (§3.5)
+  if (p) $('#status').textContent = `${p.name}, ${mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned'}.`;
+}
+function paintListKeydown(e) {
+  const chips = [...$('#list').querySelectorAll('.pchip')]; if (!chips.length) return;
+  const cur = document.activeElement.closest ? document.activeElement.closest('.pchip') : null;
+  let i = cur ? chips.indexOf(cur) : -1;
+  const move = j => { j = Math.max(0, Math.min(chips.length - 1, j)); chips[j].focus(); chips[j].scrollIntoView({ inline: 'nearest', block: 'nearest' }); };
+  const k = e.key.toLowerCase();
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { move(i < 0 ? 0 : i + 1); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { move(i < 0 ? 0 : i - 1); e.preventDefault(); }
+  else if (e.key === 'Home') { move(0); e.preventDefault(); }
+  else if (e.key === 'End') { move(chips.length - 1); e.preventDefault(); }
+  else if (e.key === 'Escape') { closePaints(); $('#paintsBtn').focus(); e.preventDefault(); }
+  else if (cur && (k === 'p' || k === 'u' || k === 'x')) {
+    const id = cur.dataset.id;
+    markPaint(id, k === 'p' ? 'owned' : k === 'u' ? 'want' : 'none');
+    $('#list').querySelector(`.pchip[data-id="${CSS.escape(id)}"]`)?.focus();   // keep keyboard place after re-render
+    e.preventDefault();
+  }
 }
 function renderHero(animate = true) {
   $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole);   // animate=false during a live drag (no pop spam)
-  $('#baseLabel').textContent = `${i18n.t('baseColour')} · ${state.seedRole}`;
+  const wk = document.querySelector('.wkey'); if (wk) wk.hidden = state.seedRole === 'accent';   // no role badges in accent mode → hide their legend
 }
 let urlTimer = null, announceTimer = null;
 function announce() {
@@ -718,13 +808,13 @@ function syncLocaleSeg() {                            // reflect the active loca
 function setMode(mode) {
   state.mode = mode === 'shelf' ? 'shelf' : 'studio';
   const on = state.mode === 'shelf';
+  closePaints();   // the paint drawer is a Studio control; never leave it open across a mode switch
   document.querySelector('main').dataset.mode = state.mode;
-  document.querySelector('.picker').hidden = on;
   document.querySelector('.workspace').hidden = on;
   $('#shelf').hidden = !on;
   for (const b of $('#modeNav').children) b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
   if (on) { renderShelf(); $('#shelfGrid').focus(); }
-  else { renderList(); }   // refresh the picker's owned stars in case the shelf changed them
+  else { renderList(); }   // refresh the drawer's owned state in case the shelf changed it
   updateUrl();
 }
 function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
@@ -749,12 +839,6 @@ function setTab(tab, focusActive = false) {
   state.tab = tab;
   syncTabs(focusActive);
   renderActive(); announce(); updateUrl();
-}
-function toggleOwned(id) {
-  store.setMark(id, store.isOwned(id) ? 'none' : 'owned');
-  renderList();
-  document.querySelector(`[data-own="${CSS.escape(id)}"]`)?.focus(); // keep keyboard place after re-render
-  if (state.collection !== 'off') { renderLive(); renderActive(); }   // matches depend on the owned set
 }
 /** Toggle a paint on/off the to-buy list (#5). Owned paints have no buy control, but guard anyway. */
 function toggleBuy(id) {
@@ -932,10 +1016,36 @@ function wire() {
   $('#brand').addEventListener('change', e => { state.brand = e.target.value; renderList(); });
   $('#ptype').addEventListener('change', e => { state.ptype = e.target.value; renderList(); });
   $('#psort').addEventListener('change', e => { state.psort = e.target.value; renderList(); });
+  // Paint-list chips: click picks the paint (and closes the drawer); right-click / P·U·X mark it.
   $('#list').addEventListener('click', e => {
-    const own = e.target.closest('.own'); if (own) { e.stopPropagation(); toggleOwned(own.dataset.own); return; }
-    const b = e.target.closest('.paint'); if (b) selectPaint(b.dataset.id);
+    const c = e.target.closest('.pchip'); if (!c) return;
+    selectPaint(c.dataset.id); closePaints();
+    if (e.detail === 0) $('#paintsBtn').focus();   // keyboard activation (Enter/Space) → return focus to the trigger
   });
+  $('#list').addEventListener('contextmenu', e => {
+    const c = e.target.closest('.pchip'); if (!c) return;
+    e.preventDefault(); paintMenuId = c.dataset.id; openPaintMenu(e.clientX, e.clientY);
+  });
+  $('#list').addEventListener('keydown', paintListKeydown);
+  $('#paintMenu').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (!b || !paintMenuId) return;
+    const id = paintMenuId;
+    markPaint(id, b.dataset.act); closePaintMenu();
+    $('#list').querySelector(`.pchip[data-id="${CSS.escape(id)}"]`)?.focus();   // return focus to the marked chip
+  });
+  $('#paintsBtn').addEventListener('click', e => { e.stopPropagation(); togglePaints(); });
+  $('#importPaints').addEventListener('click', () => $('#importFile').click());
+  $('#exportPaints').addEventListener('click', exportCollectionCsv);
+  document.addEventListener('keydown', e => {                            // Esc closes the menu, then the drawer
+    if (e.key !== 'Escape') return;
+    if (paintMenuOpen) { closePaintMenu(); $('#list').focus(); }
+    else if (paintsOpen) { closePaints(); $('#paintsBtn').focus(); }
+  });
+  document.addEventListener('pointerdown', e => {                        // click-outside closes the drawer / its menu
+    if (paintMenuOpen && !e.target.closest('#paintMenu')) closePaintMenu();
+    // the drawer's right-click menu lives outside #paintsDrawer — don't let interacting with it close the drawer
+    if (paintsOpen && !e.target.closest('#paintsDrawer') && !e.target.closest('#paintsBtn') && !e.target.closest('#paintMenu')) closePaints();
+  }, true);
   $('main').addEventListener('click', e => {
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }

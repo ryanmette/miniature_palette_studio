@@ -29,20 +29,19 @@ const FINISHES = { metal: ['metallic', GEM], contrast: ['contrast', DROP], wash:
 /** Small finish pill (icon + label) flagging non-flat paints (metallic/contrast/wash/…); '' for flat paints. */
 export const finishTag = type => { const f = FINISHES[type]; return f ? `<span class="finish finish-${type}">${f[1]}${f[0]}</span>` : ''; };
 
-/** Picker list: each row pairs a focusable select button with a separate owned-toggle button.
- *  (Keeping the toggle a sibling — not nested in the option — makes it keyboard-operable.) */
-export function pickerList(paints, selectedId, owned = new Set()) {
-  if (!paints.length) return `<div style="padding:18px;color:var(--text-faint);font-size:13px">No paints match.</div>`;
+/** Horizontal paint strip for the header drawer (§3.6): each paint is a chip — swatch (with finish overlay
+ *  + owned/to-buy state badge) over its name. Click to pick; right-click or P/U/X to mark (app.js). The
+ *  swatch is a real `.sw` so it carries the finish overlays; `markBadge` shows owned ✓ / to-buy cart. */
+export function paintStrip(paints, selectedId, markOf = () => 'none') {
+  if (!paints.length) return `<div class="placeholder">No paints match.</div>`;
   return paints.map(p => {
-    const own = owned.has(p.id);
-    return `<div class="paintrow" role="listitem">`
-      + `<button class="paint" data-id="${esc(p.id)}" aria-current="${p.id === selectedId}">`
-      + swatch(p.hex, fxCls(p).trim(), 'width:30px;height:30px')
-      + `<span style="min-width:0;flex:1"><span class="nm">${esc(p.name)}</span><br>`
-      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</span></span>`
-      + `</button>`
-      + `<button class="own${own ? ' on' : ''}" data-own="${esc(p.id)}" aria-pressed="${own}" aria-label="Mark ${esc(p.name)} as owned" title="Mark as owned">${own ? '★' : '☆'}</button>`
-      + `</div>`;
+    const mark = markOf(p.id);
+    const state = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
+    return `<button class="pchip" role="option" data-id="${esc(p.id)}" data-mark="${mark}" aria-selected="${p.id === selectedId}"`
+      + ` aria-label="${esc(p.name)}, ${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} — ${state}">`
+      + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}">${markBadge(mark)}</span>`
+      + `<span class="pchip-nm">${esc(p.name)}</span>`
+      + `</button>`;
   }).join('');
 }
 
@@ -105,22 +104,22 @@ const ownOrBuy = (id, mark) => mark === 'owned'
   ? '<span class="owntag">✓ owned</span>'
   : buyBtn(id, mark);
 
-/** Base-paint hero. `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy.
- *  `seedRole` ('main'|'accent') badges the hero swatch with the role the *picked paint* plays — the swatch-level
- *  reflection of the Main/Accent control (the hero always shows your pick, so this reads true in both modes). */
+/** Base-paint hero — a single compact identity line: swatch chip · name · hex · seed-role pill · meta · buy.
+ *  `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy.
+ *  `seedRole` ('main'|'accent') shows the role the *picked paint* plays (the hero always shows your pick,
+ *  so this reads true in both seed modes). Condensed from the old tall block to reclaim space above the wheel. */
 export function hero(base, animate = true, markOf, seedRole = '') {
-  const meta = base.custom ? 'typed hex' : `${esc(base.brand || '')}${base.line ? ' · ' + esc(base.line) : ''}`;
-  const tags = base.custom
-    ? '<span class="tag">custom</span>'
-    : `<span class="tag">${esc(base.type || 'paint')}</span>${base.approx ? '<span class="tag approx">approx hex</span>' : ''}`;
-  const own = (!base.custom && base.id && markOf) ? `<div class="ownline" style="margin-top:8px">${ownOrBuy(base.id, markOf(base.id))}</div>` : '';
+  const meta = base.custom ? 'typed hex'
+    : `${esc(base.brand || '')}${base.line && base.line !== '—' ? ' · ' + esc(base.line) : ''}${base.type ? ' · ' + esc(base.type) : ''}`
+      + (base.approx ? ' · <span class="approx">approx</span>' : '');
   const seed = seedRole ? `<span class="seedbadge seed-${esc(seedRole)}">${esc(seedRole)}</span>` : '';
-  return swatch(base.hex, (animate ? 'big pop' : 'big') + fxCls(base)) + seed
-    + `<div><h2>${esc(base.name)}</h2>`
-    + `<div style="color:var(--text-muted);font-size:13px;margin-top:2px">${meta}</div>`
-    + `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${tags}</div>`
+  const own = (!base.custom && base.id && markOf) ? `<span class="herobuy">${ownOrBuy(base.id, markOf(base.id))}</span>` : '';
+  return swatch(base.hex, 'herochip' + (animate ? ' pop' : '') + fxCls(base))
+    + `<h2 class="heroname">${esc(base.name)}</h2>`
     + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button>`
-    + own + `</div>`;
+    + seed
+    + `<span class="herometa">${meta}</span>`
+    + own;
 }
 
 /** Tiny line-art glyph of a harmony's geometry, generated from HARMONY_OFFSETS so it can't drift. */

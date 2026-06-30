@@ -56,7 +56,9 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 .hglyph circle { fill: currentColor; }
 
 /* layout */
-main { max-width: 1180px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+/* Single column: the paint picker is now a drawer in the seed toolbar, so the workspace spans the full
+   (bumped) width — more room for the wheel + the 2-up plan. */
+main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); box-shadow: var(--shadow); }
 .pad { padding: 18px; }
 .workspace { display: grid; gap: 16px; }
@@ -86,37 +88,57 @@ main { max-width: 1180px; margin: 0 auto; padding: 20px; display: grid; grid-tem
   color: var(--warning); background: var(--surface); border: 1px solid var(--warning); border-radius: var(--r-pill); padding: 0 7px; margin-right: 5px; }
 .sharednote .br { color: var(--text-faint); }
 
-/* picker */
-.picker .head { padding: 14px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
 input[type="search"], select { height: var(--tap); border: 1px solid var(--border); border-radius: var(--r-ctrl);
   background: var(--surface); color: var(--text); padding: 0 10px; font-family: inherit; font-size: 13px; width: 100%; }
 input:focus, select:focus, .hexin:focus-within { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
-.list { max-height: 60vh; overflow: auto; padding: 6px; scrollbar-width: thin; scrollbar-color: var(--text-muted) transparent; }
-.list::-webkit-scrollbar { width: 11px; }
+/* paint drawer (header, §3.6) — the picker is a horizontal tray that drops from the seed toolbar as an
+   OVERLAY (absolute → no reflow, §3.4); reveals with a clip-path unroll (disabled under reduced motion). */
+.paints-btn .caret { opacity: .6; font-size: 11px; margin-left: 2px; }
+/* z-index lifts the whole toolbar (and its drawer) above the sticky .studio, which forms its own
+   stacking context — without this the drawer would render behind the wheel canvas. */
+.seedtoolbar { position: relative; z-index: 30; }
+.pdrawer { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 60;
+  background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-card);
+  box-shadow: 0 18px 50px rgba(0,0,0,.35); padding: 14px 16px;
+  clip-path: inset(0 0 100% 0 round 14px); opacity: 0; transform: translateY(-8px);
+  transition: clip-path .22s cubic-bezier(.2,.7,.2,1), opacity .18s ease, transform .22s cubic-bezier(.2,.7,.2,1); }
+.pdrawer.open { clip-path: inset(0 0 0 0 round 14px); opacity: 1; transform: translateY(0); }
+.pdrawer-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.pdrawer-controls input[type="search"] { flex: 1 1 220px; width: auto; min-width: 150px; }
+.pdrawer-controls select { flex: 0 1 auto; width: auto; min-width: 118px; }
+.list { padding: 4px 2px; scrollbar-width: thin; scrollbar-color: var(--text-muted) transparent; }
+.pstrip { display: flex; gap: 12px; overflow-x: auto; overflow-y: hidden; padding: 4px 2px 10px; scroll-padding: 22px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
+/* drop the edge fade while a chip is keyboard-focused so the focus ring is never clipped by the mask (§3.5) */
+.pstrip:focus-within { -webkit-mask-image: none; mask-image: none; }
+.list::-webkit-scrollbar { width: 11px; height: 9px; }
 .list::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 999px; border: 2px solid var(--surface); background-clip: padding-box; }
 .list::-webkit-scrollbar-thumb:hover { background: var(--text); }
-.paintrow { display: flex; align-items: center; gap: 2px; }
-.paint { display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: var(--r-ctrl); cursor: pointer; border: 1px solid transparent; flex: 1; min-width: 0; text-align: left; background: transparent; color: var(--text); }
-.paint:hover { background: var(--surface-2); }
-.paint[aria-current="true"] { background: var(--accent-weak); border-color: var(--accent); }
-.paint .nm { font-size: 13px; font-weight: 500; }
-.paint .br { font-size: 11px; color: var(--text-muted); }
-.count { padding: 8px 14px 14px; font-size: 12px; color: var(--text-faint); }
+.pchip { flex: 0 0 auto; width: 80px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: none; border: none; padding: 4px 2px; border-radius: var(--r-ctrl); cursor: pointer; color: var(--text); }
+.pchip:hover { background: var(--surface-2); }
+.pchip:focus-visible { outline: none; box-shadow: var(--focus); }
+.pchip .sw { position: relative; width: 62px; height: 62px; border-radius: 10px; }
+.pchip[aria-selected="true"] .sw { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pchip-nm { font-size: 11px; color: var(--text-muted); line-height: 1.2; text-align: center; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.count { padding: 2px; font-size: 12px; color: var(--text-faint); }
 
 /* base hero */
-.hero { display: flex; gap: 16px; align-items: center; position: relative; }
-.hero .big { width: 84px; height: 84px; }
-/* Seed-role badge on the hero swatch (state, §3.5): the picked paint's Main/Accent role, in sync with the
-   Main/Accent control. The hero always shows your pick, so this reads true in both seed modes. Anchored to
-   the hero's top-left = the swatch's corner (the swatch is the hero's first, leftmost child). */
-.seedbadge { position: absolute; top: -7px; left: -7px; font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
-  padding: 2px 7px; border-radius: var(--r-pill); background: var(--accent-weak); color: var(--accent);
-  box-shadow: 0 0 0 2px var(--surface); }
-.hero h2 { font-size: var(--fs-h1); }
+/* Condensed hero: one compact identity line (swatch chip · name · hex · seed pill · meta · buy). */
+.hero { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; position: relative; }
+.hero .herochip { width: 28px; height: 28px; border-radius: 8px; flex: none; }
+.heroname { font-size: 16px; }
+.herometa { color: var(--text-muted); font-size: 12.5px; min-width: 0; }
+.herometa .approx { color: var(--warning); }
+.herobuy { margin-left: auto; }
+/* Seed-role pill (state, §3.5): the picked paint's Main/Accent role, inline in the hero line. */
+.seedbadge { font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
+  padding: 2px 7px; border-radius: var(--r-pill); background: var(--accent-weak); color: var(--accent); }
 .tag { font-size: 11.5px; font-weight: 500; padding: 3px 9px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); }
 .tag.role { background: var(--accent-weak); color: var(--accent); }
 .tag.approx { background: var(--warning-weak); color: var(--warning); }
-.hexline { margin-top: 9px; margin-left: -5px; display: inline-block; font-family: var(--mono); font-size: 13px; color: var(--text-muted); border: none; background: none; padding: 2px 5px; border-radius: 6px; cursor: pointer; }
+.hexline { display: inline-block; font-family: var(--mono); font-size: 13px; color: var(--text-muted); border: none; background: none; padding: 2px 5px; border-radius: 6px; cursor: pointer; }
 .hexline:hover { color: var(--text); background: var(--surface-2); }
 .hexline:focus-visible { outline: none; box-shadow: var(--focus); }
 
@@ -192,14 +214,21 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .wsplit { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
 .studio { position: sticky; top: 79px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }  /* 79 = 63px sticky header + 16 */
 .output { min-width: 0; }
-/* keep the paint picker in view too (it sticks below the header like the studio) */
-.picker { position: sticky; top: 79px; align-self: start; max-height: calc(100vh - 95px); display: flex; flex-direction: column; }
-.picker .list { flex: 1; max-height: none; }   /* the list fills the picker's remaining height and scrolls within it */
 .wheelcol { display: flex; flex-direction: column; align-items: center; }
-.wcanvas { touch-action: none; cursor: grab; display: block; width: min(90vw, 300px); aspect-ratio: 1; height: auto; border-radius: 50%; }
+.wcanvas { touch-action: none; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.wctrl { display: flex; align-items: center; gap: 10px; margin-top: 12px; width: 280px; max-width: 100%; }
-.wctrl input[type="range"] { accent-color: var(--accent); }
+/* Lightness lives in the gutter beside the wheel (a vertical slider) + a compact ↻ Generate icon — reclaims
+   the old control row's height. Falls back to a horizontal slider on phones (≤520px, below) so it doesn't
+   crush the wheel. The range stays a native, labelled, arrow-key-operable input (a11y unchanged). */
+.wheelrow { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 14px; }
+.wlcol { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.wl-vert { writing-mode: vertical-lr; direction: rtl; width: 26px; height: min(58vw, 220px); accent-color: var(--accent); }
+.wl-vert:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-pill); }
+.wkey { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px;
+  font-family: var(--font); font-weight: 500; font-size: 11.5px; line-height: 1; color: var(--text-muted); letter-spacing: .04em; }
+.wkey-i { display: inline-flex; align-items: center; gap: 6px; }
+.wk-badge { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: var(--r-pill);
+  background: var(--accent); color: var(--on-accent); font-family: var(--font); font-weight: 700; font-size: 10px; box-shadow: 0 0 0 1.5px var(--surface); font-style: normal; }
 .palcol { min-width: 0; }
 .palhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .palctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -246,12 +275,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .collide { margin-top: 16px; font-size: 12.5px; background: var(--warning-weak); color: var(--warning); border-radius: var(--r-ctrl); padding: 10px 12px; }
 .collide.ok { background: var(--success-weak); color: var(--success); }
 
-/* owned star + compare + toast (M8) */
-.own { flex: none; font-size: 16px; line-height: 1; color: var(--text-faint); cursor: pointer; padding: 4px 6px;
-  background: transparent; border: none; border-radius: var(--r-ctrl); }
-.own:hover { color: var(--text-muted); }
-.own:focus-visible { outline: none; box-shadow: var(--focus); }
-.own.on, .own.on:hover { color: var(--accent); }
+/* compare + toast (M8) */
 .compare { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 10px 12px; margin: 4px 0 10px; background: var(--surface-2); }
 .cmphead { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
 .cmprow { display: flex; align-items: center; gap: 10px; margin: 5px 0; flex-wrap: wrap; }
@@ -382,9 +406,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .studio { position: static; }
 }
 @media (max-width: 860px) {
-  main { grid-template-columns: 1fr; gap: 16px; }
-  .picker { order: -1; position: static; max-height: none; display: block; }   /* picker stacks on top; no longer sticky */
-  .picker .list { max-height: 230px; flex: none; }
+  main { gap: 16px; }
 }
 @media (max-width: 520px) {
   :root { --tap: 44px; }
@@ -394,11 +416,15 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .hexin input { width: 100%; }
   main { padding: 14px; }
   .pad { padding: 14px; }
-  .hero .big { width: 64px; height: 64px; }
+  .hero .herochip { width: 26px; height: 26px; }
   .seg { width: 100%; }
   .seg button { flex: 1; text-align: center; }
   #seg button { justify-content: center; }
   .hglyph { display: none; }          /* text-only harmony control on phones (no room for glyphs) */
+  /* lightness goes back to a horizontal slider below the wheel on phones (a vertical one would crush it) */
+  .wheelrow { flex-direction: column; }
+  .wlcol { flex-direction: row; width: min(82vw, 340px); gap: 10px; }
+  .wl-vert { writing-mode: horizontal-tb; direction: ltr; width: auto; height: auto; flex: 1; }
   .pblock .pbr { display: none; }     /* palette band keeps just the hex on narrow blocks */
   .livepal { flex-direction: column; }            /* live palette stacks to readable rows on phones */
   .lcol { flex-direction: row; }
@@ -421,6 +447,6 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 @keyframes mh-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes mh-pop { 0% { transform: scale(.82); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .card { animation: mh-rise .32s cubic-bezier(.2,.7,.2,1) both; }
-.hero .big.pop { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }   /* pop only on discrete base changes, not per drag frame */
+.hero .herochip.pop { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }   /* pop only on discrete base changes, not per drag frame */
 .btn:active, .seg button:active { transform: scale(.96); }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

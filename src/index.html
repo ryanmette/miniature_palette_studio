@@ -49,32 +49,10 @@
 </div>
 
 <main>
-  <aside class="card picker" aria-label="Paint picker">
-    <div class="head">
-      <label class="sr-only" for="q">Search paints</label>
-      <input id="q" type="search" placeholder="Search paints…" data-i18n-ph="searchPaints" autocomplete="off" />
-      <label class="sr-only" for="brand">Filter by brand</label>
-      <select id="brand"><option value="" data-i18n="allBrands">All brands</option></select>
-      <label class="sr-only" for="ptype">Filter by type</label>
-      <select id="ptype"><option value="">All types</option></select>
-      <label class="sr-only" for="psort">Sort paints</label>
-      <select id="psort">
-        <option value="">Default order</option>
-        <option value="name">Sort: name</option>
-        <option value="brand">Sort: brand</option>
-        <option value="hue">Sort: hue</option>
-        <option value="light">Sort: lightness</option>
-        <option value="de">Sort: closest to base</option>
-        <option value="owned">Sort: owned first</option>
-      </select>
-    </div>
-    <div class="list" id="list" role="list" aria-label="Paints"></div>
-    <div class="count" id="count"></div>
-  </aside>
-
   <section class="workspace">
     <div class="card pad seedtoolbar">
       <div class="seedbar">
+        <button class="btn paints-btn" id="paintsBtn" aria-haspopup="true" aria-expanded="false" aria-controls="paintsDrawer" title="Browse and pick a paint">☰&nbsp;Paints <span class="caret" aria-hidden="true">▾</span></button>
         <div class="hexin" title="Type any hex to seed a scheme"><span>#</span><input id="hex" maxlength="6" inputmode="text" aria-label="Hex colour" /></div>
         <div class="seg" id="seedRole" role="group" aria-label="Seed role">
           <button data-role="main" aria-pressed="true">Main</button>
@@ -84,16 +62,52 @@
         <input id="photoFile" type="file" accept="image/*" hidden />
         <button class="btn" id="compare" aria-pressed="false" title="Pin this scheme, then compare">Compare</button>
       </div>
+      <!-- Paint picker as a drawer that drops from the header bar (overlay → no reflow). Horizontal list,
+           full filters/sort + import/export; right-click a swatch to mark owned/to-buy (P/U/X by keyboard). -->
+      <div class="pdrawer" id="paintsDrawer" role="group" aria-label="Paint picker" hidden>
+        <div class="pdrawer-controls">
+          <label class="sr-only" for="q">Search paints</label>
+          <input id="q" type="search" placeholder="Search paints…" data-i18n-ph="searchPaints" autocomplete="off" />
+          <label class="sr-only" for="brand">Filter by brand</label>
+          <select id="brand"><option value="" data-i18n="allBrands">All brands</option></select>
+          <label class="sr-only" for="ptype">Filter by type</label>
+          <select id="ptype"><option value="">All types</option></select>
+          <label class="sr-only" for="psort">Sort paints</label>
+          <select id="psort">
+            <option value="">Default order</option>
+            <option value="name">Sort: name</option>
+            <option value="brand">Sort: brand</option>
+            <option value="hue">Sort: hue</option>
+            <option value="light">Sort: lightness</option>
+            <option value="de">Sort: closest to base</option>
+            <option value="owned">Sort: owned first</option>
+          </select>
+          <button class="btn sm" id="importPaints" title="Import a paintRack CSV or a Palette Studio JSON backup">Import…</button>
+          <button class="btn sm" id="exportPaints" title="Download your collection as CSV">Export CSV</button>
+        </div>
+        <div class="list pstrip" id="list" role="listbox" aria-label="Paints — click to pick; right-click or P/U/X to mark owned/to-buy" tabindex="0"></div>
+        <div class="count" id="count"></div>
+      </div>
     </div>
     <div class="wsplit">
       <div class="card pad studio">
         <div class="herowrap">
-          <div class="micro" id="baseLabel" style="margin-bottom:6px">Base colour · main</div>
           <div class="hero" id="hero"></div>
         </div>
         <div class="wheelcol">
-          <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
-          <div class="wctrl"><span class="micro">Light</span><input id="wl" type="range" min="6" max="94" step="1" aria-label="Lightness" style="flex:1" /><button class="btn" id="wrand" style="height:32px;padding:0 12px" title="Generate a random base colour">↻ Generate</button></div>
+          <div class="wheelrow">
+            <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
+            <div class="wlcol">
+              <label class="sr-only" for="wl">Lightness</label>
+              <input id="wl" class="wl-vert" type="range" min="6" max="94" step="1" aria-label="Lightness" />
+              <button class="btn icon" id="wrand" title="Generate a random base colour" aria-label="Generate a random base colour">↻</button>
+            </div>
+          </div>
+          <div class="wkey">
+            <span class="wkey-i"><i class="wk-badge">P</i><span data-i18n="rolePrimary">Primary</span></span>
+            <span class="wkey-i"><i class="wk-badge">A</i><span data-i18n="roleAccent">Accent</span></span>
+            <span class="wkey-i"><i class="wk-badge">2</i><span data-i18n="roleSecondary">Secondary</span></span>
+          </div>
         </div>
         <div class="seg harmscroll" id="seg" role="group" aria-label="Harmony type"></div>
         <div class="palhead">
@@ -229,6 +243,11 @@
 </dialog>
 
 <div id="shelfMenu" class="menu" role="menu" aria-label="Mark selection" hidden>
+  <button role="menuitem" data-act="owned">Mark owned</button>
+  <button role="menuitem" data-act="want">Mark to buy</button>
+  <button role="menuitem" data-act="none">Clear mark</button>
+</div>
+<div id="paintMenu" class="menu" role="menu" aria-label="Mark paint" hidden>
   <button role="menuitem" data-act="owned">Mark owned</button>
   <button role="menuitem" data-act="want">Mark to buy</button>
   <button role="menuitem" data-act="none">Clear mark</button>
