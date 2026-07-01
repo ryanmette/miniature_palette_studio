@@ -43,6 +43,9 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
   border-radius: 8px; font-weight: 500; font-size: 12.5px; }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 .seg button:focus-visible { outline: none; box-shadow: var(--focus); }
+/* Disabled-in-place chips (neutral mode greys the hue rotations): visible with the why in the title —
+   never removed, so the strip doesn't reflow (§3.4). */
+.seg button[aria-disabled="true"] { opacity: .38; cursor: not-allowed; text-decoration: line-through; }
 /* Theme switch — the one sanctioned slide-over toggle (§3.1 "◐ control"), distinct from the segmented
    controls. A thumb slides between sun (light) and moon (dark) and the icon cross-fades. Reduced motion
    disables the slide via the global rule; the state still flips. */
@@ -155,6 +158,24 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 /* Seed-role pill (state, §3.5): the picked paint's Main/Accent role, inline in the hero line. */
 .seedbadge { font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
   padding: 2px 7px; border-radius: var(--r-pill); background: var(--accent-weak); color: var(--accent); }
+/* Neutral-seed pill (state, §3.5) — flags that the scheme engine is in neutral mode. */
+.ntag { font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
+  padding: 2px 7px; border-radius: var(--r-pill); background: var(--accent-weak); color: var(--accent); border: 1px solid var(--accent); }
+
+/* Neutral-mode banner — the ONE explainer (§3.5 note): appears when the seed has no usable hue. */
+.nbanner { display: flex; align-items: flex-start; gap: 9px; background: var(--accent-weak); border: 1px solid var(--accent);
+  border-radius: var(--r-ctrl); padding: 8px 12px; font-size: 12.5px; color: var(--text); line-height: 1.45; margin-bottom: 12px; }
+.nbanner .nb-ic { color: var(--accent); }
+.nbanner strong { color: var(--accent); }
+
+/* Quick pops (neutral mode): shortcuts that move the wheel's pop node. */
+.pops { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+.pops .pop { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); border-radius: var(--r-pill);
+  padding: 4px 10px 4px 5px; font-size: 11.5px; color: var(--text); background: var(--surface-2); }
+.pops .pop .sw { width: 16px; height: 16px; border-radius: var(--r-pill); }
+.pops .pop:hover { border-color: var(--border-strong); }
+.pops .pop:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--accent); }
+.pops .pop.on { border-color: var(--accent); color: var(--accent); background: var(--accent-weak); }
 .tag { font-size: 11.5px; font-weight: 500; padding: 3px 9px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); }
 .tag.role { background: var(--accent-weak); color: var(--accent); }
 .tag.approx { background: var(--warning-weak); color: var(--warning); }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   hexToRgb, rgbToHex, rgbToLab, deltaE2000, deltaE2000Hex,
   rgbToHsl, hslToRgb, rotateHue, relativeLuminance, contrastRatio, textOn, adjustDirection,
-} from '../src/js/color.js';
+  labChroma, isNeutral } from '../src/js/color.js';
 
 const approx = (a, b, eps = 1e-2) => assert.ok(Math.abs(a - b) <= eps, `${a} ≈ ${b} (±${eps})`);
 
@@ -78,4 +78,18 @@ test('adjustDirection: names the saturation axis when it dominates', () => {
 test('adjustDirection: falls back to hue when only hue differs', () => {
   // equal S and L, hue 120° apart → hue is the only non-trivial axis
   assert.equal(adjustDirection('#00FF00', '#FF0000'), 'shift hue');
+});
+
+test('labChroma: achromatic hexes ≈ 0; saturated hexes are high', () => {
+  assert.ok(labChroma('#000000') < 0.5);
+  assert.ok(labChroma('#FFFFFF') < 0.5);
+  assert.ok(labChroma('#808080') < 0.5);
+  assert.ok(labChroma('#FF0000') > 60);
+});
+
+test('isNeutral (CLAUDE.md §7, Lab C* < 10): blacks/whites/greys yes, colours no', () => {
+  for (const hex of ['#000000', '#FFFFFF', '#808080', '#1B1B1F', '#E8E8E4']) assert.equal(isNeutral(hex), true, hex);
+  // the case HSL saturation gets wrong: visually-black but HSL S = 1.0
+  assert.equal(isNeutral('#100000'), true);
+  for (const hex of ['#9A1115', '#86D562', '#2D567C', '#C2912F']) assert.equal(isNeutral(hex), false, hex);
 });

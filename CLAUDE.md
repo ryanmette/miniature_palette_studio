@@ -331,6 +331,20 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 - The wheel can only place **hue** partners on the ring, so for the value harmonies (shades/monochromatic)
   it shows just the base + any added/free nodes; the value ramp itself is read in the live-palette strip,
   and those partners are display-only there (no per-swatch lock/edit, since they can't be keyed by hue).
+- **Neutral seeds (v1.8).** A seed with Lab chroma **C\* < 10** (`isNeutral`; perceptual, so visually-black
+  "saturated" hexes like `#100000` classify correctly) has no usable hue: the studio enters **neutral
+  mode** automatically (and reversibly — saturate the seed and it exits, restoring the parked harmony).
+  Hue-rotation harmonies grey out in place (visible + tooltip'd); the neutral-native schemes are
+  (`harmony.js neutralPartners`, recipes locked; partners are ordered **[secondary, accent]** by
+  construction — no ΔE-furthest rule, the pop *is* the accent):
+  - **neutral-pop** (default) — bridge `hsl(popH, .07, L±.20)` + the **pop** (a chosen accent colour,
+    default `#9C1626`, min S `.15`; wheel-draggable, URL param `pp`)
+  - **duotone** — pop-family mid `hsl(popH, .30, L±.24)` + the pop
+  - **warm-cool** — cool `hsl(222, .14, L±.16)` + warm `hsl(32, .16, L±.24)` tints of the seed (no pop)
+  - plus **shades** and **custom**, which survive unchanged (value steps don't need a hue).
+  `L±` steps *away* from the seed's end of the value range. A neutral seed always holds **Primary**
+  (the Main|Accent seed toggle disables — a neutral accent has no complement) and its Metal ideal is
+  always gunmetal `#6E7177` (no hue to read a temperature from).
 - **Color-blindness simulation**: Machado et al. (2009) severity-1.0 matrices applied in linear RGB, for protanopia / deuteranopia / tritanopia.
 - **Contrast**: WCAG 2.1 relative-luminance ratio; AA thresholds 4.5:1 (text) / 3:1 (large/UI).
 - **Text-on-swatch** legibility: choose black/white by relative luminance threshold 0.5 (with the standard sRGB→linear step).

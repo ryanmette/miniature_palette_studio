@@ -94,6 +94,13 @@ Modes B and C are the "I have a main colour" / "I have an accent" cases you rais
 the **same** as A/E mechanically — the only difference is which slot the seed lands in and
 which slots we generate. See §3.
 
+**Neutral seeds (any mode, ✅ v1.8):** a black / white / grey seed (Lab C\* < 10) can't drive hue
+rotations, so the studio switches to **neutral mode** automatically — the neutral holds Primary, a
+wheel-draggable **pop accent** drives the hue math, and the harmony strip offers neutral-native
+schemes (Neutral + pop · Duotone · Warm / cool · Shades) with hue rotations greyed in place. Covers
+the very common black-armour / white-robes / bone / stone primaries (CLAUDE.md §7; PLAN §5 v1.8).
+Mode C is unavailable for a neutral seed (a neutral accent has no complement to build around).
+
 ---
 
 ## 3. Scheme roles — what makes this a *miniatures* tool, not a generic colour wheel

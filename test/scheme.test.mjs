@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { indexDataset } from '../src/js/data.js';
-import { buildScheme, metalIdeal, shoppingList, schemeGaps } from '../src/js/scheme.js';
+import { buildScheme, metalIdeal, shoppingList, schemeGaps, roleIdeals } from '../src/js/scheme.js';
 
 const fx = indexDataset({
   version: 'test',
@@ -106,4 +106,26 @@ test('schemeGaps lists distinct unowned paints; excludes owned', () => {
   const fewer = schemeGaps(s, new Set([ownedOne]));
   assert.ok(fewer.length < all.length);
   assert.ok(!fewer.some(g => g.paint.id === ownedOne));
+});
+
+test('roleIdeals: neutral seed + neutral-pop → Primary = seed, Accent = pop, gunmetal Metal', () => {
+  const defs = roleIdeals('#1B1B1F', 'neutral-pop', '#9C1626');
+  const by = Object.fromEntries(defs.map(d => [d.role, d.idealHex]));
+  assert.equal(by.Primary, '#1B1B1F');       // the neutral holds Primary
+  assert.equal(by.Accent, '#9C1626');        // the pop is the ΔE-furthest partner → Accent
+  assert.notEqual(by.Secondary, by.Accent);  // bridge grey is distinct
+  assert.equal(by.Metal, '#6E7177');         // a neutral has no hue temperature → always gunmetal
+});
+
+test('roleIdeals: pop default + hue path unchanged for a saturated seed', () => {
+  const defs = roleIdeals('#1B1B1F', 'neutral-pop');            // no pop given → DEFAULT_POP
+  assert.equal(defs.find(d => d.role === 'Accent').idealHex, '#9C1626');
+  const hue = roleIdeals('#9A1115', 'complementary');           // saturated seed: existing behaviour intact
+  assert.equal(hue.find(d => d.role === 'Primary').idealHex, '#9A1115');
+  assert.notEqual(hue.find(d => d.role === 'Metal').idealHex, '#6E7177');  // warm seed → gold, not gunmetal
+});
+
+test('buildScheme threads opts.pop through to the roles', () => {
+  const s = buildScheme(fx, '#1B1B1F', 'duotone', { pop: '#0F6B6E' });
+  assert.equal(s.roles.find(r => r.role === 'Accent').idealHex, '#0F6B6E');
 });

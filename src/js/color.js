@@ -51,6 +51,14 @@ export function xyzToLab([x, y, z]) {
 export const rgbToLab = rgb => xyzToLab(rgbToXyz(rgb));
 export const hexToLab = hex => rgbToLab(hexToRgb(hex));
 
+/** Lab chroma C* = √(a*² + b*²) — perceptual colourfulness (0 = a pure neutral). */
+export const labChroma = hex => { const [, a, b] = hexToLab(hex); return Math.hypot(a, b); };
+/** Neutral-seed detection threshold (locked, CLAUDE.md §7). Lab chroma is used rather than HSL
+ *  saturation because visually-black "saturated" hexes (e.g. #100000, HSL S=1) must classify as
+ *  neutral. Seeds in the borderline band just above the threshold stay in normal hue mode. */
+export const NEUTRAL_CHROMA = 10;
+export const isNeutral = hex => labChroma(hex) < NEUTRAL_CHROMA;
+
 /** CIEDE2000 colour difference between two CIELAB values (kL=kC=kH=1). */
 export function deltaE2000(lab1, lab2) {
   const [L1, a1, b1] = lab1, [L2, a2, b2] = lab2;

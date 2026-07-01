@@ -6,6 +6,22 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Neutral mode (v1.8 PR 1)** — a black / white / grey seed now gets a real scheme engine instead of
+  meaningless hue rotations. Detection is automatic and reversible (`isNeutral`: Lab chroma C\* < 10 —
+  perceptual, so visually-black "saturated" hexes like `#100000` classify correctly): a banner explains
+  the switch once; the harmony strip re-orders to the neutral-native schemes (**Neutral + pop** default ·
+  **Duotone** · **Warm / cool** · Shades · Custom) with the hue rotations greyed **in place** (visible,
+  tooltip'd, no reflow); the wheel keeps working — the seed pins to the hueless centre and a draggable
+  **pop node** picks the accent that drives the hue math (arrow-key operable, announced, min S .15);
+  **quick-pop chips** (Crimson/Teal/Ember/Gold/Purple/Moss) just move that node. The neutral always
+  holds Primary (Main|Accent disables with the why), its Metal ideal is always gunmetal, and the pop
+  round-trips through share URLs (`pp`) and undo/redo. Neutral recipes are ordered [secondary, accent]
+  by construction — the ΔE-furthest rule would hand the Accent slot to a light mid-tint over a dark
+  chosen pop. New pure exports: `labChroma`/`isNeutral` (color.js), `neutralPartners`/
+  `NEUTRAL_HARMONY_TYPES`/`DEFAULT_POP` (harmony.js). Also fixes `isHueHarmony` returning true for
+  unknown types. Amends `CLAUDE.md` §7; PLAN v1.8 PR 1 of 2 (temperature ladder follows). SW `ps-v17`.
+
+### Added
 - **Equivalents tab is now a per-swatch drill-down.** Instead of being locked to the seed, the Equivalents
   view follows the live-palette column you pick: on that tab, clicking any column (Primary / Secondary /
   Accent / Metal / added) makes its colour the source and recomputes the cross-brand matches, while the
