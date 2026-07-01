@@ -6,6 +6,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Changed
+- **Paints drawer caret + dark-theme glyph polish.** The `☰ Paints` caret is larger (11px → 15px) and
+  **rotates 180°** while the drawer is open (bounce easing; snaps under reduced-motion), so the trigger
+  reads as open/closed. The theme switch's **dark glyph is now a skull** instead of a moon — on-brand for
+  the grimdark theme; the light sun is unchanged. Amends `CLAUDE.md` §3.5. SW `ps-v15`.
 - **Theme control is now a slide-over switch.** The Light/Dark segmented pair in the ⋯ menu becomes a
   single animated toggle (`role="switch"`, the §3.1 `◐` control): a thumb slides between a sun and a moon
   and the icon cross-fades. Honours `prefers-reduced-motion` (the state flips without the slide). It's the

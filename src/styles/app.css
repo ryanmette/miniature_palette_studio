@@ -55,9 +55,9 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
   transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
 .themesw[aria-checked="true"] .themesw-thumb { transform: translateX(22px); }
 .themesw .ts-i { grid-area: 1 / 1; transition: opacity .16s ease; }
-.themesw .ts-moon { opacity: 0; }
+.themesw .ts-skull { opacity: 0; }
 .themesw[aria-checked="true"] .ts-sun { opacity: 0; }
-.themesw[aria-checked="true"] .ts-moon { opacity: 1; }
+.themesw[aria-checked="true"] .ts-skull { opacity: 1; }
 .themesw:active .themesw-thumb { width: 27px; }   /* slight squish on press (confirm, not decorate) */
 #seg button { display: inline-flex; align-items: center; gap: 6px; }
 /* Harmony comparisons as a single scrollable strip (one row, swipe/scroll) instead of a wrapped block,
@@ -111,7 +111,8 @@ input[type="search"], select { height: var(--tap); border: 1px solid var(--borde
 input:focus, select:focus, .hexin:focus-within { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
 /* paint drawer (header, §3.6) — the picker is a horizontal tray that drops from the seed toolbar as an
    OVERLAY (absolute → no reflow, §3.4); reveals with a clip-path unroll (disabled under reduced motion). */
-.paints-btn .caret { opacity: .6; font-size: 11px; margin-left: 2px; }
+.paints-btn .caret { opacity: .6; font-size: 15px; margin-left: 3px; display: inline-block; transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
+#paintsBtn[aria-expanded="true"] .caret { transform: rotate(180deg); }   /* flip the arrow up while the drawer is open */
 /* z-index lifts the whole toolbar (and its drawer) above the sticky .studio (its own stacking context) so
    the drawer isn't hidden behind the wheel canvas — but it must stay BELOW the sticky header (z-index:20)
    so the header isn't overlapped as the toolbar scrolls up past it. */
