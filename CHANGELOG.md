@@ -14,6 +14,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   tab (clears on Plan/Accessibility). Selection is keyboard-operable (the columns are buttons) and announced
   via the shared `aria-live` status; it's session-only (not encoded in the share URL) and falls back to the
   seed if the scheme changes. Amends `CLAUDE.md` §3.5. SW `ps-v16`.
+- **Dedicated copy button on each live-palette swatch.** Copying a column's hex moves from the whole-swatch
+  click to a small copy button beside the hex (currentColor icon on a faint chip tinted for the swatch's
+  ink; keyboard-focusable, `aria-label`led). This frees the swatch-click to be the Equivalents drill-down
+  without stealing copy — copy now works on **every** tab. On the Equivalents tab the swatch becomes a
+  `role="button"` "show equivalents" control (mouse + Enter/Space); elsewhere it's a plain swatch.
 
 ### Changed
 - **Paints drawer caret + dark-theme glyph polish.** The `☰ Paints` caret is larger (11px → 15px) and

@@ -163,9 +163,16 @@ function equivSourceHex() {
   return def;
 }
 function applyEquivSelect() {
-  const src = state.tab === 'equiv' ? equivSourceHex() : null;   // the ring only reads on the Equivalents tab
-  for (const el of document.querySelectorAll('.lcol[data-hex]'))
+  const on = state.tab === 'equiv';
+  const src = on ? equivSourceHex() : null;   // the ring + swatch drill-down only read on the Equivalents tab
+  for (const el of document.querySelectorAll('.lcol[data-hex]')) {
     el.classList.toggle('eqsel', src != null && el.dataset.hex.toUpperCase() === src);
+    const top = el.querySelector('.lctop'); if (!top) continue;
+    if (on) {   // the swatch becomes a keyboard-operable "show equivalents" button — only on this tab
+      top.setAttribute('role', 'button'); top.setAttribute('tabindex', '0');
+      top.setAttribute('aria-label', `Show equivalents for ${(top.querySelector('.lctag')?.textContent || el.dataset.hex).trim()}`);
+    } else { top.removeAttribute('role'); top.removeAttribute('tabindex'); top.removeAttribute('aria-label'); }
+  }
 }
 function setEquivSource(hex) {
   const h = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex.toUpperCase() : null;
@@ -1089,7 +1096,8 @@ function wire() {
     const sb = e.target.closest('[data-setbase]'); if (sb) { e.stopPropagation(); seedFromHex(sb.dataset.setbase); return; }   // promote a swatch to the base colour
     const dn = e.target.closest('[data-delnode]'); if (dn) { e.stopPropagation(); removeFreeNode(+dn.dataset.delnode); return; }  // delete an added swatch
     if (state.tab === 'equiv') {   // on the Equivalents tab, clicking a palette column drills into that colour's matches
-      const lc = e.target.closest('.lcol[data-hex]'); if (lc) { e.stopPropagation(); setEquivSource(lc.dataset.hex); return; }
+      const lc = e.target.closest('.lcol[data-hex]');   // …but not when the click is the column's copy button (handled below)
+      if (lc && !e.target.closest('.lccopy')) { e.stopPropagation(); setEquivSource(lc.dataset.hex); return; }
     }
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
     if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
@@ -1114,6 +1122,13 @@ function wire() {
   ws.addEventListener('mouseleave', () => linkHighlight(null));
   ws.addEventListener('focusin', e => { const el = e.target.closest('[data-hex]'); linkHighlight(el ? el.dataset.hex : null); });
   ws.addEventListener('focusout', e => { if (!e.relatedTarget || !e.relatedTarget.closest('[data-hex]')) linkHighlight(null); });
+  ws.addEventListener('keydown', e => {   // keyboard path for the Equivalents drill-down (the swatch is role="button" there)
+    if (state.tab !== 'equiv' || (e.key !== 'Enter' && e.key !== ' ')) return;
+    if (e.target.closest('.lccopy')) return;                       // the copy button activates itself
+    const top = e.target.closest('.lctop[role="button"]'); if (!top) return;
+    const lc = top.closest('.lcol[data-hex]'); if (!lc) return;
+    e.preventDefault(); setEquivSource(lc.dataset.hex);
+  });
   $('#realtoggle').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.showReal = b.dataset.fill === 'real';

@@ -260,8 +260,18 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .livepal { display: flex; gap: 8px; }
 .lcol { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); background: var(--surface-2); text-align: left; }
-.lctop { flex: 1; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 8px 9px; border: none; width: 100%; cursor: pointer; text-align: left; font: inherit; }
+.lctop { flex: 1; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 8px 9px; border: none; width: 100%; cursor: default; text-align: left; font: inherit; }
+.lctop[role="button"] { cursor: pointer; }   /* only the Equivalents tab makes the swatch a drill-down button */
 .lctop:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+/* Copy button beside the hex: currentColor icon (inherits the swatch's legible ink) on a faint tinted chip. */
+.lchexrow { display: flex; align-items: center; gap: 6px; }
+.lccopy { display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border: none; border-radius: 6px;
+  color: inherit; opacity: .72; cursor: pointer; background: rgba(0,0,0,.16); transition: opacity .12s, background .12s, transform .12s; }
+.lccopy:hover { opacity: 1; background: rgba(0,0,0,.28); }
+.lccopy:active { transform: scale(.9); }
+.lccopy.light { background: rgba(255,255,255,.18); }
+.lccopy.light:hover { background: rgba(255,255,255,.32); }
+.lccopy:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
 /* per-swatch hover actions (Adobe-style) — overlay so revealing them never reflows the palette (§3.4) */
 .lcact { position: absolute; top: 6px; right: 6px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px;
   max-width: calc(100% - 12px); opacity: 0; transition: opacity .12s ease; pointer-events: none; }
@@ -286,7 +296,6 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .lcol.eqsel { outline: 3px solid var(--accent); outline-offset: -3px; }
 .slot.linkhi { outline: 2px solid var(--accent); outline-offset: 1px; }
 /* Metal rides the live palette as a display-only summary column (no wheel node to edit). */
-.lcol.display .lctop { cursor: copy; }
 .lcname { display: block; font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lcfoot .br { font-size: 11px; color: var(--text-muted); }
 
