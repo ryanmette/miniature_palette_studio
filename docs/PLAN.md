@@ -100,13 +100,64 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.5.x** — finish overlays (metallic sheen · wash/contrast translucency · gloss/slime/texture via `fx`), distinct role assignment + shared-paint guidance, role **Body→Primary**.
 - **v1.6.0** — v2 backlog (web): **photo eyedropper** (on-device), language picker, mobile Shelf multi-select, manual group curation (`group-overrides.json`); Capacitor + asset-library scaffolds.
 
-### Current status (2026-06-30)
+### Current status (2026-07-01)
 Web app is **comprehensively feature-complete**. The add/remove-colours wheel item is **resolved** (closed
 per Ryan). **Monetization direction chosen: A (affiliate links) + B (audience funnel)** — see
 [`MONETIZATION.md`](MONETIZATION.md); A's implementation is pending the specific retailer/affiliate
 programs (still v1-compatible: outbound links + disclosure, no backend). Needs tooling/people outside
 this repo: the **native app** build (Capacitor → Xcode, the reserved `v2.0`), a **designer** to fill the
 asset library, and an optional **palette-from-photo** enhancement to the eyedropper.
+**Next planned work: Neutral mode (v1.8)** — plan below, locked with Ryan 2026-07-01.
+
+### Planned next — Neutral mode (v1.8): neutral seeds get a real scheme engine
+
+**Problem.** Hue rotation does nothing to a neutral seed (black/white/grey): with S≈0 every "harmony"
+is the same grey and the wheel node sits at the centre where hue is undefined — yet neutral-primary
+miniatures (black armour, white robes, bone, stone) are one of the most common real cases.
+
+**Design (mockup-reviewed).** One automatic **neutral mode**, keyed off a single detection; three
+adaptations, no new panels, no mode toggle:
+1. **One banner** explains the switch (aria-live announced).
+2. **The wheel becomes the pop picker** — the seed pins to the centre as a fixed marker (that *is*
+   where S≈0 lives; the geometry is honest) and the single draggable node picks the **pop** hue that
+   drives all hue math. *Quick pops* chips (crimson/teal/ember/gold/purple/moss — classic
+   neutral pairings) are shortcuts that move the wheel node, not a second system.
+3. **The harmony strip adapts** — neutral-native schemes surface (**Neutral + pop** default ·
+   **Value ramp** = existing shades · **Duotone** · **Warm/cool split**); hue-rotation chips stay
+   visible but disabled with the reason in their tooltip ("identical for a neutral seed") — no
+   layout jiggle (§3.4), and the painter learns why.
+4. **The Plan's tone ladder swaps recipe for neutral roles only** — **Cool · Base · Warm**
+   (shade cool / warm the edges, the classic painter's move) instead of Shadow · Mid · Highlight;
+   same ideal→nearest-paint plumbing, with a segmented control to opt back into the value ladder.
+
+**Detection (locked).** `isNeutral(hex)` = Lab chroma C\* = √(a\*² + b\*²) **< 10** — perceptual, so
+visually-black "saturated" hexes (e.g. `#100000`, HSL S=1.0) classify correctly where an HSL-S
+threshold would not. Borderline band C\* 10–15 stays in normal hue mode (no behaviour cliff).
+Reversible by construction: saturate the seed and the studio returns to hue mode. Threshold and all
+new recipe constants get locked in `CLAUDE.md` §7 in the same PR that introduces them.
+
+**Decisions locked at mockup review:** no mode toggle (detection is automatic + reversible) · one
+banner only · wheel = pop picker (no separate picker widget) · greyed chips stay visible ·
+temperature folds into the existing tone ladder (no new surface) · default pop = crimson (hue ~355)
+· a neutral seed always holds **Primary** — the Main | Accent seed toggle disables for neutral seeds
+with an explanatory tooltip (a neutral accent has no complement to build from).
+
+**Ship plan — two PRs, `main` deployable between them:**
+
+| PR | Scope | Key changes |
+|----|-------|-------------|
+| 1 | **Engine: detection + neutral schemes + pop-driven harmonies** | `color.js`: `labChroma` + `isNeutral` (pure). `harmony.js`: neutral recipes as data (`neutral-pop` · `duotone` · `warm-cool`; *Value ramp* reuses `shades`), partners rotate the **pop** hue. `scheme.js`: neutral path in `roleIdeals` (Primary = seed + value ramp · Secondary = bridge grey · Accent = pop · Metal unchanged). `app.js`/`ui.js`: `state.pop` (URL-encoded `pp` → share links §4), banner, adapted strip (aria-disabled + title), wheel centre-pin + pop node (existing keyboard nav drives it), quick-pop chips, auto-switch off a hue-rotation harmony on entry (announced). Tests: detection edge cases, recipes, neutral `roleIdeals`, URL round-trip. Docs: `CLAUDE.md` §7 + §3.5, `USE_CASES.md`, CHANGELOG, SW bump. |
+| 2 | **Temperature ladder** (small follow-up) | `scheme.js`: Cool·Base·Warm ideals for neutral roles via locked Lab offsets (cool → b\* down; warm → a\*/b\* up; §7). `ui.js` role cards: segmented *Cool·base·warm | Shadow·mid·highlight* on neutral roles only. Tests + CHANGELOG + SW bump. |
+
+Interactions checked at plan time: equivalents drill-down, export, compare, and owned-matching are
+hex-based and unaffected; value-ramp columns are display-only in the live palette exactly like the
+existing shades/monochromatic partners; entering/leaving neutral mode re-runs the same
+`refreshStudio()` path as a harmony change (no new render machinery).
+
+**Open questions for Ryan (defaults chosen, easy to change):** ① default pop for *white* seeds —
+keep crimson, or lean blue (classic white+blue)? ② warm/cool ladder default direction — shade-cool /
+highlight-warm is the plan; the segmented control already lets painters flip per-role. ③ borderline
+hint (C\* 10–15 "your seed is nearly neutral…") — deferred; ship without it?
 
 ---
 
