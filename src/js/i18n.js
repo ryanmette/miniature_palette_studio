@@ -21,9 +21,12 @@ const LOCALES = {
     rolePrimary: 'Primary',
     roleAccent: 'Accent',
     roleSecondary: 'Secondary',
+    neutralHead: 'Neutral seed',
+    neutralBody: 'hue harmonies can’t move a colour with no hue, so these schemes are built for neutrals. Your colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.',
   },
   'en-US': {
     colourScheme: 'Color scheme',
+    neutralBody: 'hue harmonies can’t move a color with no hue, so these schemes are built for neutrals. Your color holds Primary; drag the wheel node to pick the pop accent that drives the rest.',
   },
 };
 

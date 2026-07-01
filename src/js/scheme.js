@@ -1,8 +1,8 @@
 // scheme.js — turn a base colour + harmony into a role-mapped, paint-matched scheme.
 // Pure (takes an indexed dataset); the heart of "ideal vs actual" (CLAUDE.md §1, USE_CASES §3).
 
-import { rotateHue, adjustHsl, adjustDirection, rgbToHsl, hexToRgb, hexToLab, deltaE2000 } from './color.js';
-import { harmonyPartners } from './harmony.js';
+import { rotateHue, adjustHsl, adjustDirection, rgbToHsl, hexToRgb, hexToLab, deltaE2000, isNeutral } from './color.js';
+import { harmonyPartners, neutralPartners, isNeutralHarmony, DEFAULT_POP } from './harmony.js';
 import { nearestPaint } from './data.js';
 
 // Tone ladders (#7). Two ways painters think about a role's value steps:
@@ -23,8 +23,10 @@ const LADDERS = {
 };
 const LADDER_STYLES = { wash: ['wash'], tone: ['tone'], both: ['wash', 'tone'] };
 
-/** Heuristic ideal metal for a base colour (warm→gold, cool→silver, else gunmetal). */
+/** Heuristic ideal metal for a base colour (warm→gold, cool→silver, else gunmetal). A neutral base
+ *  has no meaningful hue to read a temperature from, so it always gets gunmetal. */
 export function metalIdeal(baseHex) {
+  if (isNeutral(baseHex)) return '#6E7177';
   const [h] = rgbToHsl(hexToRgb(baseHex));
   if (h < 70 || h > 300) return '#C8A13A';
   if (h > 150 && h < 280) return '#B5B5BD';
@@ -37,11 +39,19 @@ export function metalIdeal(baseHex) {
  * the live palette, to label each swatch with its role) can use it per frame. buildScheme builds on it.
  * @returns {Array<{role, weight, idealHex, metal?}>}
  */
-export function roleIdeals(baseHex, harmony) {
-  const partners = harmonyPartners(baseHex, harmony);
+export function roleIdeals(baseHex, harmony, popHex = DEFAULT_POP) {
+  // Neutral harmonies build their hue-bearing partners from the pop colour (harmony.js
+  // neutralPartners) — total for any seed, so a mid-transition mismatch can never throw. Their
+  // recipes are ordered [secondary, accent] BY CONSTRUCTION (the pop/warm tint is the accent), so
+  // they skip the ΔE-furthest rule — on a dark seed a light mid-tint out-distances a dark pop and
+  // would steal the Accent slot from the colour the painter explicitly chose.
+  const neutral = isNeutralHarmony(harmony);
+  const partners = neutral
+    ? neutralPartners(baseHex, popHex, harmony)
+    : harmonyPartners(baseHex, harmony);
   const baseLab = hexToLab(baseHex);
-  let accent = partners[0], amax = -1;
-  for (const p of partners) {
+  let accent = neutral ? partners[partners.length - 1] : partners[0], amax = -1;
+  if (!neutral) for (const p of partners) {
     const d = deltaE2000(baseLab, hexToLab(p.hex));
     if (d > amax) { amax = d; accent = p; }
   }
@@ -63,7 +73,7 @@ export function roleIdeals(baseHex, harmony) {
  * @returns {{ base, harmony, ladder, roles: Array<{role, weight, idealHex, match, ladders}> }}
  */
 export function buildScheme(idx, baseHex, harmony, opts = {}) {
-  const defs = roleIdeals(baseHex, harmony);
+  const defs = roleIdeals(baseHex, harmony, opts.pop);
   const styles = LADDER_STYLES[opts.ladder] || LADDER_STYLES.wash;
   // Distinct role assignment: a small (owned-only) pool can map two close-hued roles to the SAME paint.
   // Assign roles in order, preferring a paint no earlier role used; if none is left, reuse it but flag the

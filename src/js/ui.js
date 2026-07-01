@@ -5,7 +5,8 @@ import { textOn } from './color.js';
 import { HARMONY_OFFSETS } from './harmony.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const label = t => t.charAt(0).toUpperCase() + t.slice(1); // sentence case (§3.3)
+const LABELS = { 'neutral-pop': 'Neutral + pop', 'warm-cool': 'Warm / cool' };   // neutral harmonies read as phrases
+const label = t => LABELS[t] || t.charAt(0).toUpperCase() + t.slice(1); // sentence case (§3.3)
 
 // Defence-in-depth: any colour interpolated into an inline style must be a literal #hex.
 // Inputs are already validated upstream (rgbToHex output, URL/-input regex, dataset QA), but we
@@ -108,23 +109,28 @@ const ownOrBuy = (id, mark) => mark === 'owned'
  *  `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy.
  *  `seedRole` ('main'|'accent') shows the role the *picked paint* plays (the hero always shows your pick,
  *  so this reads true in both seed modes). Condensed from the old tall block to reclaim space above the wheel. */
-export function hero(base, animate = true, markOf, seedRole = '') {
+export function hero(base, animate = true, markOf, seedRole = '', neutral = false) {
   const meta = base.custom ? 'typed hex'
     : `${esc(base.brand || '')}${base.line && base.line !== '—' ? ' · ' + esc(base.line) : ''}${base.type ? ' · ' + esc(base.type) : ''}`
       + (base.approx ? ' · <span class="approx">approx</span>' : '');
   const seed = seedRole ? `<span class="seedbadge seed-${esc(seedRole)}">${esc(seedRole)}</span>` : '';
+  const ntag = neutral ? '<span class="ntag" title="No usable hue — the scheme is built for neutrals">neutral</span>' : '';
   const own = (!base.custom && base.id && markOf) ? `<span class="herobuy">${ownOrBuy(base.id, markOf(base.id))}</span>` : '';
   return swatch(base.hex, 'herochip' + (animate ? ' pop' : '') + fxCls(base))
     + `<h2 class="heroname">${esc(base.name)}</h2>`
     + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button>`
-    + seed
+    + seed + ntag
     + `<span class="herometa">${meta}</span>`
     + own;
 }
 
+/** Suggestive glyph angles for the neutral harmonies (they have no HARMONY_OFFSETS — the pop/tints
+ *  aren't base rotations). Purely decorative (aria-hidden), so a hint is enough. */
+const NEUTRAL_GLYPH_ANGLES = { 'neutral-pop': [180], duotone: [150, 210], 'warm-cool': [90, 270] };
+
 /** Tiny line-art glyph of a harmony's geometry, generated from HARMONY_OFFSETS so it can't drift. */
 const harmonyGlyph = type => {
-  const angles = [0, ...(HARMONY_OFFSETS[type] || [])];
+  const angles = [0, ...(HARMONY_OFFSETS[type] || NEUTRAL_GLYPH_ANGLES[type] || [])];
   const cx = 11, cy = 11, r = 7;
   const pt = a => [cx + Math.sin(a * Math.PI / 180) * r, cy - Math.cos(a * Math.PI / 180) * r];
   const lines = angles.map(a => { const [x, y] = pt(a); return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; }).join('');
@@ -132,12 +138,29 @@ const harmonyGlyph = type => {
   return `<svg class="hglyph" viewBox="0 0 22 22" aria-hidden="true">${lines}${dots}</svg>`;
 };
 
-/** Segmented control for harmony types — each option shows a glyph of its geometry + label. */
-export const segmented = (types, active) =>
-  types.map(t => `<button data-h="${esc(t)}" aria-pressed="${t === active}">${harmonyGlyph(t)}<span class="hlbl">${esc(label(t))}</span></button>`).join('');
+/** Segmented control for harmony types — each option shows a glyph of its geometry + label.
+ *  `opts.disabled` (Set) greys chips out in place — visible with the why in their tooltip, never
+ *  removed (no reflow, §3.4); `opts.disabledReason` is that tooltip. */
+export const segmented = (types, active, opts = {}) => {
+  const dis = opts.disabled || new Set();
+  return types.map(t => {
+    const d = dis.has(t);
+    return `<button data-h="${esc(t)}" aria-pressed="${t === active}"`
+      + (d ? ` aria-disabled="true" title="${esc(opts.disabledReason || '')}"` : '')
+      + `>${harmonyGlyph(t)}<span class="hlbl">${esc(label(t))}</span></button>`;
+  }).join('');
+};
 
 /** <option> list for the brand filter. */
 export const brandOptions = brands => brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+
+/** Quick-pop chips for neutral mode — shortcuts that move the wheel's pop node (not a second system).
+ *  `pops`: [{hex, name}]; `active` = the current pop hex (a chip is "on" when it IS the pop). */
+export const popChips = (pops, active) =>
+  '<span class="micro">Quick pops</span>' + pops.map(p =>
+    `<button type="button" class="pop${p.hex.toUpperCase() === (active || '').toUpperCase() ? ' on' : ''}"`
+    + ` data-pop="${esc(p.hex)}" aria-pressed="${p.hex.toUpperCase() === (active || '').toUpperCase()}"`
+    + ` title="Use ${esc(p.name)} as the pop accent"><span class="sw" style="background:${esc(p.hex)}"></span>${esc(p.name)}</button>`).join('');
 
 const tier = t => `var(--${t})`;
 

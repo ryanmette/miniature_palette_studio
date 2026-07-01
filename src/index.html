@@ -103,6 +103,8 @@
         <div class="herowrap">
           <div class="hero" id="hero"></div>
         </div>
+        <div class="nbanner" id="neutralBanner" hidden><span class="nb-ic" aria-hidden="true">◐</span>
+          <span><strong data-i18n="neutralHead">Neutral seed</strong> — <span data-i18n="neutralBody">hue harmonies can't move a colour with no hue, so these schemes are built for neutrals. Your colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.</span></span></div>
         <div class="wheelcol">
           <div class="wheelrow">
             <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
@@ -133,6 +135,7 @@
           </div>
         </div>
         <div id="livepal" aria-live="off"></div>
+        <div id="pops" class="pops" role="group" aria-label="Quick pop accents" hidden></div>
         <input type="color" id="swEdit" hidden aria-hidden="true" tabindex="-1" />
       </div>
       <div class="card pad output">

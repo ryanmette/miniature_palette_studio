@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { HARMONY_OFFSETS, HARMONY_TYPES, harmonize, harmonyPartners, isHarmony, isHueHarmony } from '../src/js/harmony.js';
+import { HARMONY_OFFSETS, HARMONY_TYPES, harmonize, harmonyPartners, isHarmony, isHueHarmony,
+  NEUTRAL_HARMONY_TYPES, isNeutralHarmony, neutralPartners, DEFAULT_POP } from '../src/js/harmony.js';
 import { rotateHue, rgbToHsl, hexToRgb } from '../src/js/color.js';
 
 test('harmony offsets are locked (CLAUDE.md §7)', () => {
@@ -61,4 +62,46 @@ test('unknown harmony throws; isHarmony guards', () => {
   assert.throws(() => harmonize('#000000', 'nope'));
   assert.equal(isHarmony('triadic'), true);
   assert.equal(isHarmony('nope'), false);
+});
+
+test('isHueHarmony: false for unknown/neutral types, true for custom (regression)', () => {
+  assert.equal(isHueHarmony('custom'), true);
+  assert.equal(isHueHarmony('complementary'), true);
+  assert.equal(isHueHarmony('shades'), false);
+  assert.equal(isHueHarmony('neutral-pop'), false);
+  assert.equal(isHueHarmony('no-such-harmony'), false);
+});
+
+test('neutral harmonies: registry + guards (CLAUDE.md §7)', () => {
+  assert.deepEqual([...NEUTRAL_HARMONY_TYPES], ['neutral-pop', 'duotone', 'warm-cool', 'shades', 'custom']);
+  assert.equal(isNeutralHarmony('neutral-pop'), true);
+  assert.equal(isNeutralHarmony('shades'), false);     // shades is shared with the hue engine, not pop-era
+  assert.equal(isHarmony('neutral-pop'), false);       // not in HARMONY_STEPS — the app's validHarmony unions both
+});
+
+test('neutralPartners: pop-bearing recipes end on the pop; warm-cool ignores it', () => {
+  const seed = '#1B1B1F', pop = '#9C1626';
+  const np = neutralPartners(seed, pop, 'neutral-pop');
+  assert.equal(np.length, 2);
+  assert.equal(np[1].hex, pop);                        // the pop itself is always a partner
+  assert.equal(np[0].deg, null);                       // off-ring partners (not base rotations)
+  const duo = neutralPartners(seed, pop, 'duotone');
+  assert.equal(duo[1].hex, pop);
+  assert.notEqual(duo[0].hex, np[0].hex);              // duotone's mid is more strongly tinted than the bridge
+  const wc = neutralPartners(seed, pop, 'warm-cool');
+  assert.equal(wc.length, 2);
+  assert.ok(wc.every(p => p.hex !== pop));             // temperature split — no pop in the recipe
+});
+
+test('neutralPartners: a light seed steps DOWN the value range (away from its end)', () => {
+  const darkBridge = neutralPartners('#101010', '#9C1626', 'neutral-pop')[0].hex;
+  const lightBridge = neutralPartners('#F0F0F0', '#9C1626', 'neutral-pop')[0].hex;
+  const L = hex => rgbToHsl([parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)])[2];
+  assert.ok(L(darkBridge) > 0.06 + 0.15, 'dark seed climbs');
+  assert.ok(L(lightBridge) < 0.94 - 0.15, 'light seed descends');
+});
+
+test('neutralPartners is deterministic (locked recipe constants)', () => {
+  assert.deepEqual(neutralPartners('#1B1B1F', '#9C1626', 'neutral-pop'), neutralPartners('#1B1B1F', '#9C1626', 'neutral-pop'));
+  assert.equal(DEFAULT_POP, '#9C1626');
 });

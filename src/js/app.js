@@ -1,8 +1,9 @@
 // app.js — application state, dataset loading, entry modes, tabs, conveniences, theme, URL sharing.
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
-import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize } from './harmony.js';
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000 } from './color.js';
+import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
+  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S } from './harmony.js';
+import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000, isNeutral } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
@@ -24,12 +25,28 @@ const state = {
   mode: 'studio', shelfBrand: '', shelfMark: '', shelfQ: '', shelfType: '', shelfSort: '', brands: [],   // Studio/Shelf mode; shelf brand · status · search · type · sort
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
   includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
+  popHex: null,                        // neutral mode's pop accent (null = DEFAULT_POP); drives the hue math when the seed is neutral
 };
 const OWNED_BOOST = 6;   // ΔE the soft owned-boost is "worth" — owned paints up to ~6 ΔE worse can still win (#6)
 
 const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
 /** Entry mode C: when the seed is the *accent*, build the scheme around its complement. */
 const schemeBase = () => (state.seedRole === 'accent' ? rotateHue(baseHex(), 180) : baseHex());
+
+/* ---- neutral mode (CLAUDE.md §7 / PLAN v1.8): a neutral seed swaps the scheme engine ---- */
+const neutralSeed = () => isNeutral(schemeBase());
+const activePop = () => state.popHex || DEFAULT_POP;
+const validHarmony = t => isHarmony(t) || isNeutralHarmony(t);
+/** Strip order in neutral mode: the neutral-native schemes first, then the disabled hue rotations. */
+const NEUTRAL_OK = new Set(NEUTRAL_HARMONY_TYPES);
+const NEUTRAL_STRIP = [...NEUTRAL_HARMONY_TYPES, ...HARMONY_TYPES.filter(t => !NEUTRAL_OK.has(t))];
+const NEUTRAL_DISABLED = new Set(HARMONY_TYPES.filter(t => !NEUTRAL_OK.has(t)));
+const NEUTRAL_DISABLED_WHY = 'Needs a hue to rotate — unavailable for a neutral seed';
+/** Suggested pops — classic neutral pairings (locked ideal hexes, not paint hexes). */
+const POPS = [
+  { hex: '#9C1626', name: 'Crimson' }, { hex: '#0F6B6E', name: 'Teal' }, { hex: '#C4581A', name: 'Ember' },
+  { hex: '#C2912F', name: 'Gold' }, { hex: '#5B3B8C', name: 'Purple' }, { hex: '#3E6B2F', name: 'Moss' },
+];
 /** Match/scheme options from the single "use my collection" control: off · prefer (boost) · only (filter). */
 function matchOpts() {
   const o = { ladder: state.ladder };
@@ -49,7 +66,7 @@ function baseInfo() {
   return { id: p.id, hex: p.hex, name: p.name, brand: p.brand, line: p.line, type: p.type, approx: p.approx };
 }
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
-function currentScheme() { return buildScheme(state.idx, schemeBase(), state.harmony, matchOpts()); }
+function currentScheme() { return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop() }); }
 
 function filteredPaints() {
   const q = state.q.toLowerCase();
@@ -97,7 +114,7 @@ function wheelRoleGlyphs() {
   // those frames are 180° apart, so the wheel nodes don't map to the scheme roles (they'd mislabel/vanish).
   // Only badge roles when the two frames coincide (main mode); the live palette + Plan still carry roles.
   if (state.seedRole === 'accent') return m;
-  for (const d of roleIdeals(schemeBase(), state.harmony)) {
+  for (const d of roleIdeals(schemeBase(), state.harmony, activePop())) {
     if (d.metal) continue;
     m[d.idealHex.toUpperCase()] = d.role === 'Primary' ? 'P' : d.role === 'Accent' ? 'A' : '2';
   }
@@ -108,7 +125,12 @@ function paletteNodes() {
   const base = schemeBase();
   const drop = new Set(state.dropOffsets);
   const hueH = isHueHarmony(state.harmony);   // value harmonies (shades/mono) can't be uniquely detached by hue
-  const rule = harmonize(base, state.harmony)
+  // Neutral harmonies: partners derive from the pop, not from base rotations — display-only columns
+  // (deg null, not detachable), exactly like the value-harmony partners.
+  const ruleColours = isNeutralHarmony(state.harmony)
+    ? [{ hex: base, deg: 0 }, ...neutralPartners(base, activePop(), state.harmony)]
+    : harmonize(base, state.harmony);
+  const rule = ruleColours
     .map((n, i) => ({ id: 'p' + i, kind: i ? 'partner' : 'base', hex: n.hex, deg: n.deg, detachable: i > 0 && hueH }))
     .filter(n => n.kind === 'base' || !drop.has(n.deg));   // a detached (locked/edited) partner is now a free swatch
   const free = state.extraNodes.map((o, i) => ({ id: 'x' + i, kind: 'free', deg: null, locked: !!o.locked,
@@ -120,7 +142,7 @@ function renderLive() {
   const el = $('#livepal'); if (!el) return;
   const opts = matchOpts();
   // Role map (Primary/Secondary/Accent/Metal) so each column reads in the Plan's language — see livePalette.
-  const ideals = roleIdeals(schemeBase(), state.harmony);
+  const ideals = roleIdeals(schemeBase(), state.harmony, activePop());
   const roleByHex = {};
   for (const d of ideals) roleByHex[d.idealHex.toUpperCase()] = d.role;
   state.roleByHex = roleByHex;   // the Equivalents drill-down reads this for its source label
@@ -182,11 +204,61 @@ function setEquivSource(hex) {
   applyEquivSelect();
   const st = $('#status'); if (st) st.textContent = `Showing equivalents for ${(state.roleByHex || {})[h] ? (state.roleByHex[h] + ' ') : ''}${h}`;
 }
+/** Re-render the harmony strip for the current mode: neutral seeds get the neutral-native schemes
+ *  first with the hue rotations greyed in place (visible + tooltip'd, never removed — §3.4). */
+function syncSeg() {
+  $('#seg').innerHTML = neutralSeed()
+    ? ui.segmented(NEUTRAL_STRIP, state.harmony, { disabled: NEUTRAL_DISABLED, disabledReason: NEUTRAL_DISABLED_WHY })
+    : ui.segmented(HARMONY_TYPES, state.harmony);
+  scrollHarmonyActive();
+}
+function renderPops() {
+  const el = $('#pops'); if (!el) return;
+  const on = neutralSeed() && isNeutralHarmony(state.harmony) && state.harmony !== 'warm-cool';   // pop-bearing schemes only
+  el.hidden = !on;
+  if (on) el.innerHTML = ui.popChips(POPS, activePop());
+}
+/** Discrete pop change (quick-pop chip / restored URL); wheel drags go through the wheel's commit(). */
+function setPopHex(hex) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  state.popHex = hex.toUpperCase();
+  refreshStudio(); renderActive(); renderPops(); scheduleAnnounce(); updateUrl();
+}
+/** The neutral-mode chokepoint — call whenever the seed may have changed class. Keeps the harmony
+ *  legal for the seed (parking/restoring the painter's hue harmony across the boundary), forces the
+ *  seed to Primary (a neutral accent has no complement to build around), and syncs the banner, strip,
+ *  and pop chips. Cheap when nothing changed, so the wheel's per-frame commit() can call it. */
+let lastNeutral = null, preNeutralHarmony = null;
+function ensureHarmonyMode() {
+  const n = neutralSeed();
+  const legal = n ? NEUTRAL_OK.has(state.harmony) : !isNeutralHarmony(state.harmony);
+  if (n === lastNeutral && legal) return;
+  lastNeutral = n;
+  if (!legal) {
+    state.dropOffsets = [];
+    if (n) { preNeutralHarmony = state.harmony; state.harmony = 'neutral-pop'; }
+    else { state.harmony = validHarmony(preNeutralHarmony) && !isNeutralHarmony(preNeutralHarmony) ? preNeutralHarmony : 'complementary'; preNeutralHarmony = null; }
+    $('#status').textContent = n
+      ? 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.'
+      : `Seed has a hue again — back to the ${state.harmony} scheme.`;
+  }
+  if (n && state.seedRole === 'accent') {   // neutral always holds Primary; drop out of accent-seed mode
+    state.seedRole = 'main';
+    for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'main'));
+  }
+  for (const x of $('#seedRole').children) {   // honest disable: visible, with the why (§3.5)
+    if (n) { x.setAttribute('aria-disabled', 'true'); x.title = 'A neutral seed always holds Primary — pick a pop accent on the wheel instead'; }
+    else { x.removeAttribute('aria-disabled'); x.removeAttribute('title'); }
+  }
+  const nb = $('#neutralBanner'); if (nb) nb.hidden = !n;
+  syncSeg(); renderPops();
+}
 /** Redraw the always-visible studio (wheel + live palette) after a discrete base/harmony change. */
 function refreshStudio() {
+  ensureHarmonyMode();   // the seed may have crossed the neutral boundary (picker, hex, drag, undo)
   state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
-  wheelDraw(); renderLive();
+  wheelDraw(); renderLive(); renderPops();
 }
 const MAX_FREE = 6;   // bounds URL length + per-frame nearest-paint scans (S5 micro-decision)
 /** Add a colour "along the line": extend the base's value ramp (alternating lighter/darker tints &
@@ -301,6 +373,12 @@ function setupWheel() {
     for (const o of state.extraNodes) spokeTo(o.h, o.s);   // free/added
     if (hueH) for (const o of offs) { if (state.dropOffsets.includes(o)) continue; const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
     const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
+    if (popNodeOn()) {   // neutral mode: the pop node is the wheel's draggable accent (the seed sits at the hueless centre)
+      const pop = activePop(), [ph, psat] = rgbToHsl(hexToRgb(pop)), [px, py] = pos(ph, psat);
+      spokeTo(ph, psat);
+      ctx.fillStyle = pop; ctx.beginPath(); ctx.arc(px, py, NODE.base, 0, 7); ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = accent; ctx.stroke();
+    }
     for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = o.locked ? 3.5 : 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
     const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
     if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
@@ -314,7 +392,7 @@ function setupWheel() {
       const onAcc = cs.getPropertyValue('--on-accent').trim() || '#fff';
       const r = COARSE ? 10 : 8.5;
       for (const n of hitNodes()) {
-        const nh = (n.kind === 'base' ? b : n.kind === 'partner' ? rotateHue(b, n.deg) : rgbToHex(hslToRgb([n.h, n.s, state.extraNodes[n.idx]?.l ?? state.wheelL]))).toUpperCase();
+        const nh = nodeHex(n).toUpperCase();
         const g = rg[nh]; if (!g) continue;
         let bxr = n.x + 12, byr = n.y - 12;
         const vx = bxr - cx, vy = byr - cy, dd = Math.hypot(vx, vy), lim = R - r - 1;
@@ -329,19 +407,31 @@ function setupWheel() {
     // Colour link (hover a role/column elsewhere): ring whichever node is that same colour — recomputing
     // each node's drawn hex the way it's filled, so the match is exact (no wheelL/rounding drift).
     if (state.hiHex) for (const n of hitNodes()) {
-      const nh = n.kind === 'base' ? b : n.kind === 'partner' ? rotateHue(b, n.deg)
-        : rgbToHex(hslToRgb([n.h, n.s, state.extraNodes[n.idx]?.l ?? state.wheelL]));
-      if (nh.toUpperCase() === state.hiHex) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 5, 0, 7); ctx.lineWidth = 3; ctx.strokeStyle = accent; ctx.stroke(); }
+      if (nodeHex(n).toUpperCase() === state.hiHex) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 5, 0, 7); ctx.lineWidth = 3; ctx.strokeStyle = accent; ctx.stroke(); }
     }
   }
+  /** A node's drawn hex, matching how it's filled — the single mapping for badges/link rings/announce. */
+  const nodeHex = n => n.kind === 'base' ? baseHex() : n.kind === 'pop' ? activePop()
+    : n.kind === 'partner' ? rotateHue(baseHex(), n.deg)
+    : rgbToHex(hslToRgb([n.h, n.s, state.extraNodes[n.idx]?.l ?? state.wheelL]));
   wheelDraw = draw;          // expose the redraw for discrete base/harmony changes (picker, hex, harmony)
   let raf = 0;
   function commit() {
+    ensureHarmonyMode();   // cheap no-op unless the drag just crossed the neutral boundary (strip/banner swap)
     // Coalesce the heavy redraw (≈nearest-paint scans + canvas) to one per frame, and debounce the
     // history write + aria-live — a drag fires pointermove far faster than WebKit's ~100-calls-per-30s
     // replaceState limit (which would throw mid-drag) and faster than a screen reader can speak.
     if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderLive(); renderHero(false); });   // no pop during a live drag
     scheduleUrlUpdate(); scheduleAnnounce();
+  }
+  /** True when the wheel's draggable accent node is the neutral-mode pop (pop-bearing schemes only). */
+  const popNodeOn = () => isNeutralHarmony(state.harmony) && state.harmony !== 'warm-cool';
+  /** Drag/nudge the pop: hue + saturation from the wheel, lightness preserved (POP_MIN_S keeps it a pop). */
+  function setPop(h, s) {
+    const l = rgbToHsl(hexToRgb(activePop()))[2];
+    state.popHex = rgbToHex(hslToRgb([((h % 360) + 360) % 360, Math.max(POP_MIN_S, Math.min(1, s)), l]));
+    renderPops();
+    commit();
   }
   function setBase(h, s) {
     // Adobe-style: moving the base moves everything. Partners are derived (they already follow);
@@ -358,6 +448,7 @@ function setupWheel() {
     const [h, s] = rgbToHsl(hexToRgb(baseHex())), [bx, by] = pos(h, s);
     const ns = [{ kind: 'base', h, s, x: bx, y: by }];
     if (isHueHarmony(state.harmony)) HARMONY_OFFSETS[state.harmony].forEach(o => { if (state.dropOffsets.includes(o)) return; const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
+    if (popNodeOn()) { const [ph, psat] = rgbToHsl(hexToRgb(activePop())), [x, y] = pos(ph, psat); ns.push({ kind: 'pop', h: ph, s: psat, x, y }); }
     state.extraNodes.forEach((o, i) => { const [x, y] = pos(o.h, o.s); ns.push({ kind: 'free', idx: i, h: o.h, s: o.s, x, y }); });
     return ns;
   }
@@ -366,7 +457,7 @@ function setupWheel() {
     let best = null;
     hitNodes().forEach((n, i) => {
       const d = Math.hypot(n.x - px, n.y - py); if (d > NODE.hit) return;
-      const pri = n.kind === 'free' ? 0 : n.kind === 'partner' ? 1 : 2;
+      const pri = n.kind === 'free' || n.kind === 'pop' ? 0 : n.kind === 'partner' ? 1 : 2;
       if (!best || d < best.d - 4 || (d < best.d + 4 && pri < best.pri)) best = { ...n, d, pri, index: i };
     });
     return best;
@@ -376,6 +467,7 @@ function setupWheel() {
     const [ph, ps] = pointerPolar(e);
     if (active && active.kind === 'partner') setBase((ph - active.deg + 360) % 360, ps);   // rotate the whole harmony rigidly
     else if (active && active.kind === 'free') { state.extraNodes[active.idx] = { h: ph, s: ps }; commit(); }
+    else if (active && active.kind === 'pop') setPop(ph, ps);   // neutral mode: the pop is the draggable accent
     else setBase(ph, ps);               // base node, or empty space → move the base
   }
   cv.addEventListener('pointerdown', e => { dragging = true; active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });
@@ -385,10 +477,9 @@ function setupWheel() {
   function announceActive() {
     const ns = hitNodes(); if (!ns.length) return;
     const n = ns[Math.min(activeIdx, ns.length - 1)];
-    const label = n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added colour' : `Partner ${Math.round(n.deg)} degrees`;
-    const hex = rgbToHex(hslToRgb([n.h, n.s, state.wheelL]));
-    const b = baseHex();
-    const dhex = (n.kind === 'base' ? b : n.kind === 'partner' ? rotateHue(b, n.deg) : hex).toUpperCase();
+    const label = n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added colour' : n.kind === 'pop' ? 'Pop accent' : `Partner ${Math.round(n.deg)} degrees`;
+    const hex = n.kind === 'pop' ? activePop() : rgbToHex(hslToRgb([n.h, n.s, state.wheelL]));
+    const dhex = nodeHex(n).toUpperCase();
     const rgl = wheelRoleGlyphs()[dhex];                         // name the role for non-visual users
     const role = rgl === 'P' ? 'Primary, ' : rgl === 'A' ? 'Accent, ' : rgl === '2' ? 'Secondary, ' : '';
     const m = nearestPaint(state.idx, hex, matchOpts());
@@ -399,6 +490,7 @@ function setupWheel() {
     const n = ns[activeIdx];
     const nh = ((n.h + dh) % 360 + 360) % 360, nsv = Math.max(0, Math.min(1, n.s + ds));
     if (n.kind === 'free') { state.extraNodes[n.idx] = { h: nh, s: nsv }; commit(); }
+    else if (n.kind === 'pop') setPop(nh, nsv);
     else setBase(n.kind === 'partner' ? ((nh - n.deg) % 360 + 360) % 360 : nh, nsv);
   }
   cv.addEventListener('focus', () => { focused = true; const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1); announceActive(); draw(); });
@@ -757,7 +849,7 @@ function paintListKeydown(e) {
   }
 }
 function renderHero(animate = true) {
-  $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole);   // animate=false during a live drag (no pop spam)
+  $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole, neutralSeed());   // animate=false during a live drag (no pop spam)
   const wk = document.querySelector('.wkey'); if (wk) wk.hidden = state.seedRole === 'accent';   // no role badges in accent mode → hide their legend
 }
 let urlTimer = null, announceTimer = null;
@@ -777,6 +869,7 @@ function updateUrl() {
   if (state.showReal) p.set('f', '1');
   if (state.extraNodes.length) p.set('x', state.extraNodes.map(n => `${Math.round(n.h)}.${Math.round(n.s * 100)}.${Math.round((n.l ?? state.wheelL) * 100)}${n.locked ? '!' : ''}`).join('-'));
   if (state.dropOffsets.length) p.set('d', state.dropOffsets.join('.'));
+  if (state.popHex) p.set('pp', state.popHex.replace('#', ''));   // neutral mode's pop accent — share links must reproduce the scheme
   history.replaceState(null, '', '?' + p.toString());
   pushHistory();
 }
@@ -787,7 +880,7 @@ function paletteSnap() {
   return JSON.stringify({
     customHex: state.customHex || null,
     baseId: state.customHex ? null : state.baseId,
-    harmony: state.harmony, seedRole: state.seedRole, showReal: state.showReal,
+    harmony: state.harmony, seedRole: state.seedRole, showReal: state.showReal, popHex: state.popHex || null,
     extraNodes: state.extraNodes.map(n => ({ h: Math.round(n.h * 10) / 10, s: Math.round(n.s * 1000) / 1000, l: n.l ?? null, locked: !!n.locked })),
     dropOffsets: [...state.dropOffsets],
   });
@@ -804,14 +897,15 @@ function pushHistory() {
 function applySnap(json) {
   const o = JSON.parse(json);
   state.customHex = o.customHex; state.baseId = o.baseId;
-  state.harmony = isHarmony(o.harmony) ? o.harmony : state.harmony;
+  state.harmony = validHarmony(o.harmony) ? o.harmony : state.harmony;
   state.seedRole = o.seedRole === 'accent' ? 'accent' : 'main';
   state.showReal = !!o.showReal;
+  state.popHex = o.popHex || null;
   state.extraNodes = (o.extraNodes || []).map(n => ({ h: n.h, s: n.s, ...(n.l != null ? { l: n.l } : {}), ...(n.locked ? { locked: true } : {}) }));
   state.dropOffsets = [...(o.dropOffsets || [])];
   state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
-  $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
-  scrollHarmonyActive();
+  lastNeutral = null;   // force ensureHarmonyMode (via refreshStudio) to re-sync banner/strip/pops for the restored seed
+  syncSeg();
   for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   const hx = $('#hex'); if (hx) hx.value = baseHex().replace('#', '');
@@ -1110,11 +1204,16 @@ function wire() {
   });
   $('#seg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
+    if (b.getAttribute('aria-disabled') === 'true') { $('#status').textContent = b.title; return; }   // announce the why, change nothing
     state.harmony = b.dataset.h;
     state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
     for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
     scrollHarmonyActive();
     refreshStudio(); renderActive(); announce(); updateUrl();
+  });
+  // Quick pops (neutral mode): each chip just moves the wheel's pop node — not a second system.
+  $('#pops').addEventListener('click', e => {
+    const b = e.target.closest('[data-pop]'); if (b) setPopHex(b.dataset.pop);
   });
   // Cross-surface colour link: hover/focus a role block (Plan) or a live column → ring that colour everywhere.
   const ws = document.querySelector('.workspace');
@@ -1165,6 +1264,7 @@ function wire() {
   });
   $('#seedRole').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
+    if (b.getAttribute('aria-disabled') === 'true') { $('#status').textContent = b.title; return; }   // neutral seed → Primary only
     state.seedRole = b.dataset.role;
     for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
     renderHero(); refreshStudio(); renderActive(); announce(); updateUrl();
@@ -1259,7 +1359,8 @@ async function init() {
   const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
   state.includeContrast = !!store.getPref('contrast');
 
-  const h = url.get('h'); if (h && isHarmony(h)) state.harmony = h;
+  const h = url.get('h'); if (h && validHarmony(h)) state.harmony = h;
+  const pp = url.get('pp'); if (pp && /^[0-9a-fA-F]{6}$/.test(pp)) state.popHex = '#' + pp.toUpperCase();
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;
   if (url.get('f') === '1') state.showReal = true;
   const xp = url.get('x');
@@ -1276,8 +1377,7 @@ async function init() {
   if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();
   else state.baseId = state.idx.paints[0].id;
 
-  $('#seg').innerHTML = ui.segmented(HARMONY_TYPES, state.harmony);
-  scrollHarmonyActive();
+  ensureHarmonyMode();   // seed is now known: sync the strip (incl. neutral mode) + banner + pops
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   syncNodeBtns();
   $('#hex').value = baseHex().replace('#', '');
