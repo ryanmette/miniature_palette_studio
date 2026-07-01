@@ -1,8 +1,9 @@
 name: Tests
 
-# Run the unit suite (Node's built-in runner, zero dependencies — see CLAUDE.md §6) on every
+# Run the unit suite (Node's built-in runner, zero dependencies — see CLAUDE.md §6) plus the
+# data validator (DATA_SOURCING §7) and the doc-freshness validator (CLAUDE.md §8/§9) on every
 # push to main and every pull request. Enable this "test" check as a required status check on
-# the main ruleset so a red test blocks merging.
+# the main ruleset so a red test — or a stale doc — blocks merging.
 
 on:
   push:
@@ -24,3 +25,7 @@ jobs:
           node-version: 22
       - name: Run unit tests
         run: node --test
+      - name: Validate dataset (hard checks)
+        run: node scripts/validate-data.mjs
+      - name: Validate doc freshness
+        run: node scripts/check-docs.mjs

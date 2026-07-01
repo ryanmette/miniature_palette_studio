@@ -4,7 +4,9 @@ How to put **Palette Studio** online and surface it from your Squarespace site. 
 self-contained static page (no backend, no build), so hosting is just "serve the `src/` folder."
 
 Repo: `https://github.com/ryanmette/miniature_palette_studio`
-Live URL (after step 2): **`https://ryanmette.github.io/miniature_palette_studio/`**
+Live URL (canonical): **`https://palette.ryanmette.com`** — the custom domain of §3b, committed as
+`src/CNAME`. (`https://ryanmette.github.io/miniature_palette_studio/` remains as the underlying
+GitHub Pages address / fallback.)
 
 > **Squarespace note:** embedding arbitrary HTML/iframes needs a **Business plan or higher**
 > (Code Block / Code Injection). Since you're not on Business, the supported path is to **host the
@@ -38,21 +40,21 @@ To update the app later: commit and `git push` — it redeploys automatically.
 
 ### 3a. Link or button (recommended — any plan)
 - Edit the page → add a **Button** (or text **Link**).
-- Set the link to `https://ryanmette.github.io/miniature_palette_studio/`.
+- Set the link to `https://palette.ryanmette.com`.
 - Set it to **open in a new tab**. Done — visitors launch the tool from your site.
 
-### 3b. Custom subdomain so it feels native (any plan + DNS)
-Serve the app at e.g. `palette.yourdomain.com`:
-1. In your DNS (Squarespace Domains or your registrar) add a **CNAME**: `palette` → `ryanmette.github.io`.
-2. Repo → **Settings → Pages → Custom domain** → enter `palette.yourdomain.com` → Save
-   (this commits a `CNAME` file; keep "Enforce HTTPS" on once the cert issues).
-3. Link/button from Squarespace to `https://palette.yourdomain.com`.
+### 3b. Custom subdomain so it feels native (✅ done — this is the live setup)
+The app is served at **`palette.ryanmette.com`**:
+1. DNS **CNAME**: `palette` → `ryanmette.github.io` (done).
+2. Repo → **Settings → Pages → Custom domain** = `palette.ryanmette.com` (done — the committed
+   `src/CNAME` keeps it across deploys; "Enforce HTTPS" on).
+3. Squarespace links/buttons point at `https://palette.ryanmette.com`.
 
 ### 3c. Inline iframe (only if you upgrade to Business)
 With a Business plan you can add a **Code Block** containing a responsive iframe:
 ```html
 <div style="position:relative;width:100%;min-height:820px">
-  <iframe src="https://ryanmette.github.io/miniature_palette_studio/"
+  <iframe src="https://palette.ryanmette.com/"
           style="position:absolute;inset:0;width:100%;height:100%;border:0"
           title="Palette Studio for Miniatures" loading="lazy"></iframe>
 </div>

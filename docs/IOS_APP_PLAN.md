@@ -138,7 +138,7 @@ update in place. No personal data leaves the device → trivial privacy posture.
 ## 7. App Store considerations
 
 - An **Apple Developer Program** membership is required (annual fee — check current pricing).
-- Apple rejects "just a website in a wrapper." Approaches B–D clear this by adding genuine native
+- Apple rejects "just a website in a wrapper." Stages 1–3 clear this by adding genuine native
   value (camera, offline, haptics, inventory) — design the v2.0 wrapper around those, not around a
   bare iframe.
 - Privacy "nutrition label": we collect nothing, store locally only → simplest possible.
@@ -148,9 +148,9 @@ update in place. No personal data leaves the device → trivial privacy posture.
 
 ## 8. Rough effort & triggers
 
-- **B (Capacitor v2.0):** small–medium once v1 is solid; the camera-match + inventory are the main
+- **Stage 1 (Capacitor wrap, v2.0):** small–medium once v1 is solid; the camera-match + inventory are the main
   net-new work.
-- **D (SwiftUI):** a real project — only greenlight on clear demand.
+- **Stage 3 (full SwiftUI):** a real project — only greenlight on clear demand.
 - **Decision triggers:** sustained web usage, repeated "is there an app?" requests, or a concrete
   use (e.g. people wanting to match paints in-store) that needs the camera/offline.
 
