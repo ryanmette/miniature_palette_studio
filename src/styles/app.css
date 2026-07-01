@@ -281,6 +281,9 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 /* Colour link highlight (interaction, §3.5): outline so neighbours never reflow (§3.4 no-jiggle). Drawn on
    the live-palette column (left) and the matching Plan role card (right) when either is hovered/focused. */
 .lcol.linkhi { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* Equivalents-source selection — the column whose cross-brand matches the Equivalents tab is showing. A
+   persistent, bolder ring than the transient hover link; inset so it never clips (§3.4). */
+.lcol.eqsel { outline: 3px solid var(--accent); outline-offset: -3px; }
 .slot.linkhi { outline: 2px solid var(--accent); outline-offset: 1px; }
 /* Metal rides the live palette as a display-only summary column (no wheel node to edit). */
 .lcol.display .lctop { cursor: copy; }

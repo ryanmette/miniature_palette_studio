@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Equivalents tab is now a per-swatch drill-down.** Instead of being locked to the seed, the Equivalents
+  view follows the live-palette column you pick: on that tab, clicking any column (Primary / Secondary /
+  Accent / Metal / added) makes its colour the source and recomputes the cross-brand matches, while the
+  chosen column keeps a persistent selection ring so the left palette and the right list read as tied —
+  an extension of the §3.5 colour link. It defaults to the seed, and the ring only shows on the Equivalents
+  tab (clears on Plan/Accessibility). Selection is keyboard-operable (the columns are buttons) and announced
+  via the shared `aria-live` status; it's session-only (not encoded in the share URL) and falls back to the
+  seed if the scheme changes. Amends `CLAUDE.md` §3.5. SW `ps-v16`.
+
 ### Changed
 - **Paints drawer caret + dark-theme glyph polish.** The `☰ Paints` caret is larger (11px → 15px) and
   **rotates 180°** while the drawer is open (bounce easing; snaps under reduced-motion), so the trigger
