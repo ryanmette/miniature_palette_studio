@@ -84,8 +84,14 @@ else {
 }
 if (!changelog.includes(`## [${pkg.version}]`))
   fail(`CHANGELOG.md: no heading for the current version ${pkg.version} — cut the release section (§8 checklist).`);
-if (changelog.includes('example.com'))
-  fail('CHANGELOG.md: placeholder example.com link(s) present — point at the real repo.');
+// Placeholder-link check: parse the footer link definitions and compare the real hostname (not a
+// substring — this is a freshness check, but do it the URL-correct way).
+for (const [, label, href] of changelog.matchAll(/^\[([^\]]+)\]:\s+(\S+)/gm)) {
+  let host = null;
+  try { host = new URL(href).hostname; } catch { /* not a URL */ }
+  if (host === null || host === 'example.com' || host.endsWith('.example.com'))
+    fail(`CHANGELOG.md: link definition [${label}] points at a placeholder or invalid URL (${href}) — point at the real repo.`);
+}
 
 /* verdict */
 if (problems.length) {
