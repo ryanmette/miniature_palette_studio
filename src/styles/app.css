@@ -19,14 +19,16 @@ button { font-family: var(--font); cursor: pointer; }
   display: inline-flex; align-items: center; gap: 7px; transition: background .12s, border-color .12s; }
 .btn:hover { border-color: var(--border-strong); background: var(--surface-2); }
 .btn:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--accent); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary { background: var(--accent-fill); border-color: var(--accent-edge); color: var(--on-accent); box-shadow: var(--accent-bevel); }
+.btn.primary:focus-visible { box-shadow: var(--focus), var(--accent-bevel); }   /* keep the focus ring; don't let the bevel override it */
 .btn.icon { padding: 0; width: var(--tap); justify-content: center; font-size: 15px; }
 
 /* header */
 header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--border); }
 .bar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; flex-wrap: wrap; max-width: 1440px; margin: 0 auto; }
 .logo { display: flex; align-items: center; gap: 9px; margin-right: 4px; }
-.logo .mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent); display: grid; place-items: center;
+.logo .mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-fill); border: 1px solid var(--accent-edge);
+  box-shadow: var(--accent-bevel); display: grid; place-items: center;
   color: var(--on-accent); font-family: var(--display); font-weight: 700; font-size: 15px; }
 .logo .t { font-family: var(--display); font-weight: 600; font-size: 17px; }
 .logo .t small { color: var(--text-faint); font-weight: 500; font-size: 12px; margin-left: 5px; font-family: var(--font); }
@@ -41,6 +43,22 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
   border-radius: 8px; font-weight: 500; font-size: 12.5px; }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 .seg button:focus-visible { outline: none; box-shadow: var(--focus); }
+/* Theme switch — the one sanctioned slide-over toggle (§3.1 "◐ control"), distinct from the segmented
+   controls. A thumb slides between sun (light) and moon (dark) and the icon cross-fades. Reduced motion
+   disables the slide via the global rule; the state still flips. */
+.themesw { position: relative; width: 52px; height: 30px; padding: 0; border-radius: var(--r-pill);
+  background: var(--surface-2); border: 1px solid var(--border); transition: border-color .12s, background .12s; }
+.themesw:hover { border-color: var(--border-strong); }
+.themesw:focus-visible { outline: none; box-shadow: var(--focus); }
+.themesw-thumb { position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--surface); box-shadow: var(--shadow); display: grid; place-items: center; color: var(--text);
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
+.themesw[aria-checked="true"] .themesw-thumb { transform: translateX(22px); }
+.themesw .ts-i { grid-area: 1 / 1; transition: opacity .16s ease; }
+.themesw .ts-skull { opacity: 0; }
+.themesw[aria-checked="true"] .ts-sun { opacity: 0; }
+.themesw[aria-checked="true"] .ts-skull { opacity: 1; }
+.themesw:active .themesw-thumb { width: 27px; }   /* slight squish on press (confirm, not decorate) */
 #seg button { display: inline-flex; align-items: center; gap: 6px; }
 /* Harmony comparisons as a single scrollable strip (one row, swipe/scroll) instead of a wrapped block,
    so the 10 schemes read as one list and never push the studio down. Fades hint at more off either edge. */
@@ -93,7 +111,8 @@ input[type="search"], select { height: var(--tap); border: 1px solid var(--borde
 input:focus, select:focus, .hexin:focus-within { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
 /* paint drawer (header, §3.6) — the picker is a horizontal tray that drops from the seed toolbar as an
    OVERLAY (absolute → no reflow, §3.4); reveals with a clip-path unroll (disabled under reduced motion). */
-.paints-btn .caret { opacity: .6; font-size: 11px; margin-left: 2px; }
+.paints-btn .caret { opacity: .6; font-size: 15px; margin-left: 3px; display: inline-block; transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
+#paintsBtn[aria-expanded="true"] .caret { transform: rotate(180deg); }   /* flip the arrow up while the drawer is open */
 /* z-index lifts the whole toolbar (and its drawer) above the sticky .studio (its own stacking context) so
    the drawer isn't hidden behind the wheel canvas — but it must stay BELOW the sticky header (z-index:20)
    so the header isn't overlapped as the toolbar scrolls up past it. */
@@ -147,7 +166,10 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 
 /* tabs + panels */
 .tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--border); margin-top: 8px; overflow-x: auto; }
-.tabs button { border: none; background: transparent; padding: 11px 2px; color: var(--text-muted); font-weight: 500; font-size: 13.5px; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tabs button { border: none; background: transparent; padding: 11px 2px; color: var(--text-muted); font-weight: 500; font-size: 13.5px;
+  border-bottom: 2px solid transparent; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
+.tabs button .tglyph { display: block; flex: none; }
+#tab-equiv { margin-left: auto; }   /* push Equivalents + Accessibility to the right of the strip; collapses to 0 when the strip scrolls */
 .tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
 .tabs button:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
 [data-panel] { animation: mh-fade .22s ease both; padding-top: 14px; }   /* breathing room below the tab strip */
@@ -229,7 +251,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
   font-family: var(--font); font-weight: 500; font-size: 11.5px; line-height: 1; color: var(--text-muted); letter-spacing: .04em; }
 .wkey-i { display: inline-flex; align-items: center; gap: 6px; }
 .wk-badge { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: var(--r-pill);
-  background: var(--accent); color: var(--on-accent); font-family: var(--font); font-weight: 700; font-size: 10px; box-shadow: 0 0 0 1.5px var(--surface); font-style: normal; }
+  background: var(--accent-fill); color: var(--on-accent); font-family: var(--font); font-weight: 700; font-size: 10px; box-shadow: 0 0 0 1.5px var(--surface); font-style: normal; }
 .palcol { min-width: 0; }
 .palhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .palctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

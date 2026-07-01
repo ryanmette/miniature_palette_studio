@@ -5,6 +5,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Paints drawer caret + dark-theme glyph polish.** The `☰ Paints` caret is larger (11px → 15px) and
+  **rotates 180°** while the drawer is open (bounce easing; snaps under reduced-motion), so the trigger
+  reads as open/closed. The theme switch's **dark glyph is now a skull** instead of a moon — on-brand for
+  the grimdark theme; the light sun is unchanged. Amends `CLAUDE.md` §3.5. SW `ps-v15`.
+- **Theme control is now a slide-over switch.** The Light/Dark segmented pair in the ⋯ menu becomes a
+  single animated toggle (`role="switch"`, the §3.1 `◐` control): a thumb slides between a sun and a moon
+  and the icon cross-fades. Honours `prefers-reduced-motion` (the state flips without the slide). It's the
+  one sanctioned toggle-switch in the system — every other either/or picker stays a segmented control.
+  Amends `CLAUDE.md` §3.5. SW `ps-v14`.
+
+### Added
+- **Brass gets dimension (dark theme).** Solid-accent surfaces — primary buttons, the logo plaque, the
+  wheel role-legend badges — now read as *polished brass* instead of a flat orange slab: a light→dark
+  gradient (struck metal) + a diagonal specular sheen, a cast 1px edge, and an inset bevel (bright top lip,
+  shadowed bottom). The brass **hue is unchanged** — only depth is added, curing the harsh "black + orange"
+  feel. Implemented via new `--accent-fill` / `--accent-edge` / `--accent-bevel` tokens so components keep
+  one rule and only the *colour* differs per theme; light keeps its flat purple (no dimension). The primary
+  button reasserts its focus ring above the bevel. Amends `CLAUDE.md` §3.1.
+- **Glyphs on the output tabs.** *Equivalents* (⇄ swap-arrows) and *Accessibility* (universal-access person)
+  carry a small leading icon and are **pushed to the right** of the tab strip, set apart from *Plan · roles*
+  on the left. Icons are decorative (`aria-hidden`); labels and the tablist semantics are unchanged. The
+  `margin-left:auto` collapses cleanly when the strip scrolls on narrow screens. SW `ps-v13`.
+
 ### Fixed
 - **Seed toolbar overlapped the sticky header on scroll.** Its `z-index` (30) outranked the header (20);
   dropped to 10 — still above the sticky studio (so the Paints drawer isn't hidden behind the wheel) but

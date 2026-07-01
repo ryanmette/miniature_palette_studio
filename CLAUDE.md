@@ -90,6 +90,7 @@ sets below change between themes.
 --border:#E6E7F8; --border-strong:#D3D5F0;
 --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
 --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+--accent-fill:var(--accent); --accent-edge:var(--accent); --accent-bevel:0 0 0 rgba(0,0,0,0);  /* solid-accent surfaces stay flat in light; dimension is dark-only */
 --buy:#2563EB; --buy-weak:#DBEAFE; --on-buy:#FFFFFF;   /* "to-buy" state — single-meaning, never the selection colour (§3.5) */
 --success:#16A34A; --success-weak:#DCFCE7;
 --warning:#C2740B; --warning-weak:#FBEBD3;
@@ -101,6 +102,11 @@ sets below change between themes.
 --border:#3A302A; --border-strong:#4D4138;
 --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
 --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+/* Polished brass: solid-accent surfaces (buttons, logo plaque, role badges) get metallic dimension —
+   light→dark gradient + diagonal sheen, a cast edge, and an inset bevel — WITHOUT shifting the brass hue.
+   This is the sanctioned way to add depth to chrome; only the colour value differs per theme (§3 unify rule). */
+--accent-fill:linear-gradient(118deg,rgba(255,255,255,0) 30%,rgba(255,250,235,.28) 47%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#D6A646,#A8781D);
+--accent-edge:#8C6516; --accent-bevel:inset 0 1px 0 rgba(255,245,220,.4), inset 0 -1px 1px rgba(0,0,0,.3);
 --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;   /* cold steel-blue cart, distinct from the brass accent */
 --success:#86A559; --success-weak:#232A16;
 --warning:#C9923A; --warning-weak:#2E2412;
@@ -146,6 +152,7 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 - **Swatch**: square, `--r-md`, 1px inset border `rgba(0,0,0,.12)` so white-ish paints stay visible. Text on a swatch is auto black/white by relative luminance — never a fixed color. Non-flat paints carry a **finish overlay** (`fxCls` → `.metal` sheen · `.fx-wash`/`.fx-contrast` translucency · curated `.fx-gloss`/`.fx-slime`/`.fx-texture`) — the only sanctioned swatch overlays (§2) — plus a **finish icon** (`finishTag`) flagging metallic/contrast/wash/shade/ink/effect.
 - **Roles** are **Primary · Secondary · Accent · Metal** (~60-30-10 + spot). With a limited collection two close-hued roles can't both get a distinct owned paint; the engine assigns distinctly where it can, and flags any forced reuse as a **shared paint** with how to differentiate (adjust direction) + the nearest distinct paint to buy.
 - **Buttons (one style, both themes)**: primary = accent fill + `--on-accent` text; secondary = surface + 1px `--border`; ghost = text only. Radius `--r-ctrl`. Height `--tap` = 38px desktop, **44px on touch / ≤520px**. Identical shape in light and dark — only colour differs.
+- **Theme switch (`#themeToggle`)**: the one sanctioned **slide-over toggle** — the §3.1 `◐` control — `role="switch"` with `aria-checked` = dark. A thumb slides between a sun (light) and skull (dark, on-brand grimdark) with the icon cross-fading; the slide honours `prefers-reduced-motion` (state flips without animating). This is the *only* toggle-switch in the system; every other either/or picker (theme had been one too, language, harmony, shelf filters) stays a **segmented control** (`.seg`). Don't add more switch-style toggles without a line here.
 - **Cards/panels**: `--surface`, 1px `--border`, `--r-lg`, `--shadow-card`, padding 16–24px.
 - **Badges/pills**: weak semantic fill + strong semantic text from the same family.
 - Focus: always visible `--focus` ring. Never remove outlines without a replacement.
