@@ -231,6 +231,9 @@ export function equivalentsPanel(name, equivs, markOf) {
     }).join('')}</div>`;
 }
 
+/** Copy icon for the live-palette swatches (currentColor → inherits the swatch's legible ink). */
+const COPY_ICON = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg>';
+
 /** Variable live palette beside the wheel: ONE row that doubles as the scheme summary — each column is a
  *  scheme colour → its nearest real paint, labelled by its **role** (Primary/Secondary/Accent/Metal) where
  *  it maps to one (via `roleByHex`), so it reads in the same language as the Plan. The Metal role has no
@@ -269,9 +272,15 @@ export function livePalette(vm, fill, roleByHex = {}) {
       +   `<button type="button" class="lcbtn" data-setbase="${cHex}" title="Use as base colour" aria-label="Use ${esc(tag)} as the base colour">◎</button>`
       +   (isFree ? `<button type="button" class="lcbtn" data-delnode="${c.id.slice(1)}" title="Remove this colour" aria-label="Remove ${esc(tag)}">✕</button>` : '')
       + `</div>`;
+    // Swatch is a plain div now; copying moved to its own button beside the hex (so the swatch-click stays
+    // free for the Equivalents drill-down). The drill-down makes the swatch a role="button" only on that tab
+    // (app.js applyEquivSelect). The copy button's chip is tinted for the swatch's ink (light/dark).
     return `<div class="lcol${lockOn ? ' locked' : ''}${isMetal ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
-      + `<button type="button" class="lctop${fx ? ' ' + fx : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}" style="background-color:${bg};color:${t}">`
-      +   `<span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span><span class="lchex">${bg}</span></button>`
+      + `<div class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}">`
+      +   `<span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span>`
+      +   `<span class="lchexrow"><span class="lchex">${bg}</span>`
+      +     `<button type="button" class="lccopy${t === '#FFFFFF' ? ' light' : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}">${COPY_ICON}</button>`
+      +   `</span></div>`
       + acts
       + `<span class="lcfoot">${foot}</span></div>`;
   }).join('')}</div>`;

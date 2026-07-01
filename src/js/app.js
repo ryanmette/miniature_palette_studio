@@ -123,6 +123,7 @@ function renderLive() {
   const ideals = roleIdeals(schemeBase(), state.harmony);
   const roleByHex = {};
   for (const d of ideals) roleByHex[d.idealHex.toUpperCase()] = d.role;
+  state.roleByHex = roleByHex;   // the Equivalents drill-down reads this for its source label
   const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, opts) }));
   // Metal has no wheel node, so it rides along as a display-only column → the live palette is the complete
   // scheme summary (one bar, all four roles), letting the Plan drop its duplicate overview strip.
@@ -130,6 +131,7 @@ function renderLive() {
   vm.push({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: nearestPaint(state.idx, metal.idealHex, { ...opts, types: new Set(['metal']) }) });
   el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal', roleByHex);
   applyLinkHighlight();   // re-assert any active hover-link after the columns are rebuilt
+  applyEquivSelect();     // re-assert the Equivalents-source ring after the columns are rebuilt
 }
 /** Cross-surface colour link (§3 "one instrument"): hovering/focusing a role block (Plan, right) or a
  *  live-palette column (left) rings the *same colour* wherever it appears — both DOM surfaces + the wheel
@@ -146,6 +148,39 @@ function linkHighlight(hex) {
   state.hiHex = h;
   applyLinkHighlight();
   wheelDraw();   // redraw so the matching wheel node gains/loses its ring
+}
+/** Equivalents-source drill-down: on the Equivalents tab, clicking a live-palette column makes that colour
+ *  the source whose cross-brand matches are listed, and the column keeps a persistent selection ring so the
+ *  left palette and the right list read as tied (an extension of the §3.5 colour link). The source defaults
+ *  to the seed; it's session-only (not encoded in the URL) and falls back to the seed if the scheme changes. */
+function equivSourceHex() {
+  const def = (baseHex() || '#000000').toUpperCase();
+  if (state.equivSource) {
+    for (const el of document.querySelectorAll('.lcol[data-hex]'))
+      if (el.dataset.hex.toUpperCase() === state.equivSource) return state.equivSource;   // still a live column
+    state.equivSource = null;   // stale (the scheme changed it away) → fall back to the seed
+  }
+  return def;
+}
+function applyEquivSelect() {
+  const on = state.tab === 'equiv';
+  const src = on ? equivSourceHex() : null;   // the ring + swatch drill-down only read on the Equivalents tab
+  for (const el of document.querySelectorAll('.lcol[data-hex]')) {
+    el.classList.toggle('eqsel', src != null && el.dataset.hex.toUpperCase() === src);
+    const top = el.querySelector('.lctop'); if (!top) continue;
+    if (on) {   // the swatch becomes a keyboard-operable "show equivalents" button — only on this tab
+      top.setAttribute('role', 'button'); top.setAttribute('tabindex', '0');
+      top.setAttribute('aria-label', `Show equivalents for ${(top.querySelector('.lctag')?.textContent || el.dataset.hex).trim()}`);
+    } else { top.removeAttribute('role'); top.removeAttribute('tabindex'); top.removeAttribute('aria-label'); }
+  }
+}
+function setEquivSource(hex) {
+  const h = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex.toUpperCase() : null;
+  if (!h || h === equivSourceHex()) return;   // ignore junk / re-selecting the current source
+  state.equivSource = h;
+  renderEquiv();
+  applyEquivSelect();
+  const st = $('#status'); if (st) st.textContent = `Showing equivalents for ${(state.roleByHex || {})[h] ? (state.roleByHex[h] + ' ') : ''}${h}`;
 }
 /** Redraw the always-visible studio (wheel + live palette) after a discrete base/harmony change. */
 function refreshStudio() {
@@ -392,8 +427,11 @@ function setupWheel() {
   window.addEventListener('resize', () => { clearTimeout(rtimer); rtimer = setTimeout(() => { measure(); draw(); }, 150); });
 }
 function renderEquiv() {
+  const srcHex = equivSourceHex();
   const p = basePaint();
-  if (p) {
+  // When the source is the seed AND the seed is a real paint, keep the richer view (curated interchangeable
+  // group + that paint's cross-brand equivalents). Any other selected column resolves to its ideal colour.
+  if (p && srcHex === (baseHex() || '').toUpperCase()) {
     const self = state.idx.byId.get(p.id);
     const members = groupMembers(state.idx, self);                 // curated equivalents (ΔE ≤ 1)
     const memberIds = new Set(members.map(m => m.id));
@@ -402,7 +440,9 @@ function renderEquiv() {
     $('#panel-equiv').innerHTML = ui.equivGroup(label, members, store.markOf)
       + ui.equivalentsPanel(`${p.name} (${p.brand})`, eq, store.markOf);
   } else {
-    $('#panel-equiv').innerHTML = ui.equivalentsPanel(`your colour ${baseHex()}`, nearestPaints(state.idx, baseHex(), 8), store.markOf);
+    const role = (state.roleByHex || {})[srcHex];
+    const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
+    $('#panel-equiv').innerHTML = ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8), store.markOf);
   }
 }
 function renderA11y() {
@@ -838,7 +878,7 @@ function syncTabs(focusActive = false) {
 function setTab(tab, focusActive = false) {
   state.tab = tab;
   syncTabs(focusActive);
-  renderActive(); announce(); updateUrl();
+  renderActive(); applyEquivSelect(); announce(); updateUrl();   // show/clear the Equivalents-source ring with the tab
 }
 /** Toggle a paint on/off the to-buy list (#5). Owned paints have no buy control, but guard anyway. */
 function toggleBuy(id) {
@@ -1055,6 +1095,10 @@ function wire() {
     const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openSwatchEditor(ed.dataset.edit); return; }        // edit a swatch's hex
     const sb = e.target.closest('[data-setbase]'); if (sb) { e.stopPropagation(); seedFromHex(sb.dataset.setbase); return; }   // promote a swatch to the base colour
     const dn = e.target.closest('[data-delnode]'); if (dn) { e.stopPropagation(); removeFreeNode(+dn.dataset.delnode); return; }  // delete an added swatch
+    if (state.tab === 'equiv') {   // on the Equivalents tab, clicking a palette column drills into that colour's matches
+      const lc = e.target.closest('.lcol[data-hex]');   // …but not when the click is the column's copy button (handled below)
+      if (lc && !e.target.closest('.lccopy')) { e.stopPropagation(); setEquivSource(lc.dataset.hex); return; }
+    }
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
     if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
@@ -1078,6 +1122,13 @@ function wire() {
   ws.addEventListener('mouseleave', () => linkHighlight(null));
   ws.addEventListener('focusin', e => { const el = e.target.closest('[data-hex]'); linkHighlight(el ? el.dataset.hex : null); });
   ws.addEventListener('focusout', e => { if (!e.relatedTarget || !e.relatedTarget.closest('[data-hex]')) linkHighlight(null); });
+  ws.addEventListener('keydown', e => {   // keyboard path for the Equivalents drill-down (the swatch is role="button" there)
+    if (state.tab !== 'equiv' || (e.key !== 'Enter' && e.key !== ' ')) return;
+    if (e.target.closest('.lccopy')) return;                       // the copy button activates itself
+    const top = e.target.closest('.lctop[role="button"]'); if (!top) return;
+    const lc = top.closest('.lcol[data-hex]'); if (!lc) return;
+    e.preventDefault(); setEquivSource(lc.dataset.hex);
+  });
   $('#realtoggle').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.showReal = b.dataset.fill === 'real';
