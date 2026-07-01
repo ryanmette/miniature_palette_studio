@@ -45,9 +45,10 @@ Beyond the `paints.json` schema (`CLAUDE.md` §5.1), each paint carries an audit
   "approx": true,
   "source": "manufacturer",          // manufacturer | community | sampled
   "sourceUrl": "https://…",          // where it came from
-  "captured": "2026-06-24",          // values change between reformulations
-  "corroboration": 2,                 // # of independent sources that agree (≤ΔE3)
-  "confidence": "high"                // high | medium | low (derived, see §5)
+  "captured": "2026-06-24"           // values change between reformulations
+  // ASPIRATIONAL (not yet recorded in paints.json): "corroboration" (# agreeing sources ≤ΔE3)
+  // and "confidence" (high|medium|low, §5.6). Today the shipped fields are source/sourceUrl/
+  // captured/approx; corroboration happens during curation but isn't persisted per paint.
 }
 ```
 
@@ -83,8 +84,9 @@ Run as a Node script in CI and before every dataset release. Output is a **repor
    gets flagged; near-duplicate hexes within a brand get flagged.
 5. **Manual spot-check.** Each release, a human reviews a random sample per brand (and every
    flagged item) against the official swatch/reference; records reviewer + date in `SOURCES.md`.
-6. **Confidence assignment.** `high` = Tier-1 and/or corroborated ≤ΔE3; `medium` = single decent
-   source; `low` = sampled/uncorroborated. Surfaced in-app as the "approx" tag and match labels.
+6. **Confidence assignment (aspirational).** `high` = Tier-1 and/or corroborated ≤ΔE3; `medium` =
+   single decent source; `low` = sampled/uncorroborated. Not yet persisted per paint — today the
+   in-app signal is the `approx` tag (+ ΔE match labels); a per-paint confidence field is future work.
 
 ---
 
@@ -98,12 +100,14 @@ Run as a Node script in CI and before every dataset release. Output is a **repor
 
 ---
 
-## 7. Tooling (planned, M1)
+## 7. Tooling (actual state)
 
-- `scripts/validate-data.mjs` — runs §5.1–5.4, exits non-zero on hard failures, prints a flag report.
-- `scripts/derive-lab.mjs` — sanity tool to preview Lab/ΔE locally (runtime still derives Lab).
-- A short `src/data/SOURCES.md` table: source → license → date captured → reviewer.
-- CI gate: PRs touching `src/data/` must pass the validator and update `src/data/SOURCES.md`.
+- `scripts/validate-data.mjs` — **built**: runs §5.1–5.4, exits non-zero on hard failures, prints a
+  flag report. **Runs in CI** on every push/PR (`.github/workflows/test.yml`), alongside
+  `scripts/check-docs.mjs` (doc-freshness QA, CLAUDE.md §8/§9).
+- `src/data/SOURCES.md` — **built**: source → license → date captured (+ per-brand credits).
+- `scripts/derive-lab.mjs` — **never built**; runtime derives Lab, and validate-data covers the ΔE
+  sanity checks, so it's dropped unless a need appears.
 
 ---
 

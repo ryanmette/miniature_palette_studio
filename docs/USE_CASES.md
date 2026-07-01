@@ -48,9 +48,9 @@ we need to power shelf-first planning.
 |-------|--------------------|---------|--------|
 | **STOCK** | Bulk-mark paints **owned** / **to-buy** | **Shelf** (Finder grid) | ✅ shipped (collection build) |
 | **PLAN** | Seed + harmony → role-mapped scheme | Studio | ✅ v1 |
-| **RESOLVE** | Ideal → nearest real paint; **prefer owned**, show the ΔE gap + how to adjust | Plan tab / Studio | ⏳ owned-boost ranking = next (#6) |
-| **SHOP** | Collect the scheme's gaps into a **to-buy / shopping list**; export/share | Shelf + Export | ⏳ want-list ↔ Export wiring = next (#5) |
-| **PAINT** | Per role: base · derived wash · highlight (or a value tone ladder) | Plan tab | ✅ base ladder · ⏳ tone-ladder toggle (#7) |
+| **RESOLVE** | Ideal → nearest real paint; **prefer owned**, show the ΔE gap + how to adjust | Plan tab / Studio | ✅ shipped v1.1 (owned-boost, #6) |
+| **SHOP** | Collect the scheme's gaps into a **to-buy / shopping list**; export/share | Shelf + Export | ✅ shipped v1.1 (want-list ↔ Export, #5) |
+| **PAINT** | Per role: base · derived wash · highlight (or a value tone ladder) | Plan tab | ✅ shipped v1.1 (base + tone ladders, #7) |
 
 > **Honesty rule carries through (CLAUDE.md §2).** Owned paints rank **higher but never silently** —
 > we always show the ΔE gap and an adjust direction, e.g. *"your Averland Sunset · ΔE 6 — lighten
@@ -87,7 +87,7 @@ each just produces one or more seed colours for the same engine.
 | **B · Main / body colour** | A paint or hex you want as the *dominant* colour → derive accents | P1 | ✅ |
 | **C · Accent colour** | A paint or hex you want as the *spot* colour → derive a body that complements it | P1 | ✅ |
 | **D · Explore from scratch** | The interactive wheel; drag / randomise | P2 | ✅ (the "play" mode) |
-| **E · Arbitrary target colour** | Type a hex (later: eyedropper / from-photo) → nearest paint + scheme | P1, P3 | hex ✅ · eyedropper/photo → Future |
+| **E · Arbitrary target colour** | Type a hex, or pick from a photo (on-device eyedropper) → nearest paint + scheme | P1, P3 | hex ✅ · photo ✅ v1.6.0 |
 | **F · Shared palette** | Open someone's URL and tweak it | all | ✅ |
 
 Modes B and C are the "I have a main colour" / "I have an accent" cases you raised. They're
@@ -162,13 +162,13 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 
 ### Collection / Shelf — STOCK + SHOP (the collection build)
 - **UC-23 — Stock my shelf (bulk).** *Trigger:* "Let me tell the tool what I own." *Flow:* open the **Shelf** (full-width Finder grid of all paints) → select swatches (click · ⇧-range · ⌘-toggle · marquee · right-click) → mark **owned / to-buy / clear**; keyboard P/U/X + arrows; touch tap-to-cycle. *Out:* a persistent collection (`store.js`). *Feat:* shelf grid, bulk multi-select, symmetric owned/to-buy badges. **✅ shipped.**
-- **UC-24 — Auto-suggested want-to-buy from scheme gaps.** *Trigger:* "What does this scheme need that I don't own?" *Flow:* a planned scheme's roles whose nearest *owned* paint is poor → suggested **to-buy**; also manual add/remove. *Out:* a want list that feeds **Export** (the shopping list). *Feat:* owned model + scheme gaps + export. ⏳ next (#5).
-- **UC-25 — Use what I own (owned-boost ranking).** *Trigger:* "I'd rather adjust a paint I have than buy a new one." *Flow:* matching **prefers owned** paints (soft ΔE weight, not a hard filter) and surfaces the gap + an **adjust direction** (lighten / darken / mix). *Out:* a buildable-now scheme + honest deltas. *Feat:* ownership-weighted ΔE, adjust hints. ⏳ next (#6). Contrast with UC-4 (owned-only *filter*, already shipped).
-- **UC-26 — Choose a tone ladder.** *Trigger:* "I think in value structure, not wash/base/highlight." *Flow:* pick the ladder style per scheme/role — **Wash·Base·Highlight** / **Shadow·Mid·Highlight** / **Both** (onboarding step and/or in-UI toggle). *Out:* a recipe ladder in the painter's preferred mental model. *Feat:* selectable ladder (`scheme.js`). ⏳ next (#7).
-- **UC-27 — Import / export my collection.** *Trigger:* "I already track my paints elsewhere." *Flow:* import **paintRack-format CSV** (`brand, name, owned/level`; the community de-facto standard) or the app's JSON; export the same. *Out:* portable collection (survives web→app moves + cache clears). *Feat:* `store.exportJSON`/`importJSON` (built) + CSV adapter (⏳, last priority).
+- **UC-24 — Auto-suggested want-to-buy from scheme gaps.** *Trigger:* "What does this scheme need that I don't own?" *Flow:* a planned scheme's roles whose nearest *owned* paint is poor → suggested **to-buy**; also manual add/remove. *Out:* a want list that feeds **Export** (the shopping list). *Feat:* owned model + scheme gaps + export. **✅ shipped v1.1 (#5).**
+- **UC-25 — Use what I own (owned-boost ranking).** *Trigger:* "I'd rather adjust a paint I have than buy a new one." *Flow:* matching **prefers owned** paints (soft ΔE weight, not a hard filter) and surfaces the gap + an **adjust direction** (lighten / darken / mix). *Out:* a buildable-now scheme + honest deltas. *Feat:* ownership-weighted ΔE, adjust hints. **✅ shipped v1.1 (#6).** Contrast with UC-4 (owned-only *filter*, already shipped).
+- **UC-26 — Choose a tone ladder.** *Trigger:* "I think in value structure, not wash/base/highlight." *Flow:* pick the ladder style per scheme/role — **Wash·Base·Highlight** / **Shadow·Mid·Highlight** / **Both** (onboarding step and/or in-UI toggle). *Out:* a recipe ladder in the painter's preferred mental model. *Feat:* selectable ladder (`scheme.js`). **✅ shipped v1.1 (#7).**
+- **UC-27 — Import / export my collection.** *Trigger:* "I already track my paints elsewhere." *Flow:* import **paintRack-format CSV** (`brand, name, owned/level`; the community de-facto standard) or the app's JSON; export the same. *Out:* portable collection (survives web→app moves + cache clears). *Feat:* `store.exportJSON`/`importJSON` + paintRack-CSV adapter (`collection-io.js`). **✅ shipped v1.1 (#27).**
 
 ### Cross-cutting
-- **UC-20 — Open & tweak a shared palette** (mode F). **UC-21 — Manage "paints I own."** Two surfaces, one `store.js` model: the per-row **owned star** in the picker (in-context, while planning) and the full **Shelf** for bulk stocking (UC-23). Persistent collection lives in `store.js` (versioned, portable — `localStorage` today, swappable to IndexedDB / native / sync).
+- **UC-20 — Open & tweak a shared palette** (mode F). **UC-21 — Manage "paints I own."** Two surfaces, one `store.js` model: in-context marking in the **Paints drawer** (right-click or **P/U/X** on a focused chip → owned/to-buy badges, while planning) and the full **Shelf** for bulk stocking (UC-23). Persistent collection lives in `store.js` (versioned, portable — `localStorage` today, swappable to IndexedDB / native / sync).
 
 ---
 
@@ -192,7 +192,7 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 
 ## 6. States & edge cases (design must handle)
 
-- **Near-white / near-black / greys:** hue is meaningless at low chroma → harmonies degenerate. Detect and nudge: "this colour is nearly neutral — try varying *value/finish* instead," or rotate on the nearest meaningful hue.
+- **Near-white / near-black / greys:** hue is meaningless at low chroma → harmonies degenerate. Answered by **neutral mode** (PLAN §5 v1.8): detect via Lab chroma, let a pop accent drive the hue math, grey out the rotations honestly.
 - **Metals & washes:** hue rotation is less meaningful; label suggestions and lean on value/role rather than pure harmony.
 - **Poor matches:** when the nearest paint is ΔE > 10, say so honestly ("Poor — no close paint; consider mixing") rather than implying a match.
 - **CVD-unsafe schemes:** flag, and offer UC-19 swaps.
@@ -229,8 +229,8 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 - **M6** cross-brand equivalents → UC-14, UC-15.
 - **M7** accessibility → UC-17, UC-18, UC-19.
 - **M8** share URLs, owned-paints, compare, export, polish → UC-3, UC-4, UC-6, UC-13, UC-20, UC-21.
-- **Collection build** (post-M8, `feat/collection`): PWA + `store.js` + i18n scaffold, then the **Shelf** → UC-23 (✅), UC-21 (extended). **Next in this build:** UC-24 want-list↔Export (#5), UC-25 owned-boost (#6), UC-26 tone-ladder (#7), UC-27 CSV import (last).
-- **v1.1** deeper shade/highlight *ladders* (UC-7 depth), eyedropper/from-photo (mode E+).
+- **Collection build** (post-M8, `feat/collection`): PWA + `store.js` + i18n scaffold, then the **Shelf** → UC-23 (✅), UC-21 (extended). **All shipped in v1.1:** UC-24 want-list↔Export (#5), UC-25 owned-boost (#6), UC-26 tone-ladder (#7), UC-27 CSV import.
+- **Shipped since:** tone ladders (#7, v1.1) and the photo eyedropper (mode E+, v1.6.0). Deeper multi-step ladders remain a later enhancement.
 
 ---
 
@@ -239,7 +239,7 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 1. **Interactive drag wheel — IN v1** (milestone M5).
 2. **Role-aware output — FULL in v1:** primary / secondary / accent / metal slots **plus** a
    derived wash + highlight per slot. Deeper multi-step ladders → v1.1.
-3. **Arbitrary hex input — IN v1.** Eyedropper / from-photo remain Future (per CLAUDE.md §1).
+3. **Arbitrary hex input — IN v1.** The photo eyedropper shipped in v1.6.0 (CLAUDE.md §1 "Added in v2"); a live-camera eyedropper stays native-app-only.
 4. **'Paints I own' filter — IN v1** (localStorage).
 5. **Also IN v1:** compare two schemes; export shopping list.
 

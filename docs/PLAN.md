@@ -28,7 +28,7 @@ whole scheme shift). Full persona/use-case breakdown in [`USE_CASES.md`](USE_CAS
         ▼                   ▼                                     ▼
   [Harmonies]        [Cross-brand equivs]                 [Accessibility]
   rotate hue in      look up the paint's                  simulate protan/
-  HSL → 5 schemes    equivalence group →                  deutan/tritan +
+  HSL → 10 schemes   equivalence group →                  deutan/tritan +
         │            matches in other brands              WCAG contrast on
         ▼                                                  the built palette
   For each ideal color:
@@ -48,7 +48,7 @@ All of it is pure functions over one static `paints.json`. No network calls afte
 - **Runtime**: HTML + CSS + ES modules. No framework, no build step. (See `CLAUDE.md` §4 for the file tree.)
 - **Data**: one `data/paints.json`, loaded once; Lab values precomputed in memory.
 - **Color engine** (`color.js`, `harmony.js`, `a11y.js`): pure, unit-tested, DOM-free.
-- **State** (`app.js`): single state object → URL query for sharing; `localStorage` only for an optional "paints I own" filter.
+- **State** (`app.js`): single state object → URL query for sharing; persistent personal data (owned/to-buy collection, prefs) goes through the versioned `store.js` model (CLAUDE.md §4) — `localStorage` today, swappable without touching callers.
 - **Entry modes & exploration** (see [`USE_CASES.md`](USE_CASES.md)): owned paint · main colour · accent colour · arbitrary hex · interactive **drag-wheel** · shared URL — all produce seed colours for the same engine. The wheel is a view that maps drag → seed and recomputes the scheme + nearest paints live (<16ms budget).
 - **Deploy**: static files on GitHub Pages / Netlify → embedded in Squarespace via iframe.
 
@@ -99,6 +99,8 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.3.0 / v1.4.x** — data release: **8 brands / 2,508 paints**, finish-aware suggestions + Include-Contrast, faster matcher, curated equivalence groups, **service-worker fix** (network-first + `cache:reload`).
 - **v1.5.x** — finish overlays (metallic sheen · wash/contrast translucency · gloss/slime/texture via `fx`), distinct role assignment + shared-paint guidance, role **Body→Primary**.
 - **v1.6.0** — v2 backlog (web): **photo eyedropper** (on-device), language picker, mobile Shelf multi-select, manual group curation (`group-overrides.json`); Capacitor + asset-library scaffolds.
+- **v1.7.0** — Adobe-style palette release: editable live palette (lock/edit/add/reorder, drag, undo/redo), 10 harmony schemes + scrollable harmony strip, palette↔URL fidelity.
+- **Unreleased (post-1.7)** — studio redesign (header Paints drawer, condensed hero, wheel role badges, vertical lightness), unified live-palette/Plan colour bar + colour link, Equivalents per-swatch drill-down + copy buttons, animated theme switch, dark-theme brass dimension — see CHANGELOG `[Unreleased]`.
 
 ### Current status (2026-07-01)
 Web app is **comprehensively feature-complete**. The add/remove-colours wheel item is **resolved** (closed
@@ -161,26 +163,13 @@ hint (C\* 10–15 "your seed is nearly neutral…") — deferred; ship without i
 
 ---
 
-## 6. Squarespace embedding (M8 preview)
+## 6. Squarespace embedding — superseded by docs/EMBED.md
 
-Squarespace doesn't run custom builds, so we host the static app externally and embed it:
-
-1. Push `src/` to a GitHub repo; enable **GitHub Pages** → get `https://<user>.github.io/<repo>/`.
-2. In Squarespace, add a **Code block** (or Embed block) on the target page with a responsive iframe:
-   ```html
-   <div style="position:relative;width:100%;min-height:760px">
-     <iframe src="https://<user>.github.io/<repo>/"
-             style="position:absolute;inset:0;width:100%;height:100%;border:0"
-             title="Palette Studio for Miniatures" loading="lazy"></iframe>
-   </div>
-   ```
-3. The app posts its content height to the parent (`postMessage`) so the iframe can auto-size —
-   avoids the classic "scrollbar in a box" problem.
-
-> Note: Squarespace **Code blocks require a Business plan or higher**. If that's a blocker, the
-> fallback is a full-page embed or hosting the tool on a subdomain and linking to it. Confirmed at M8.
-
----
+The shipped decision (M9): the app is live at **palette.ryanmette.com** (GitHub Pages + committed
+`CNAME`), and Squarespace **links** to it — an inline iframe Code block needs the Business plan, so
+linking/subdomain is the default. Full, current guide: [`EMBED.md`](EMBED.md).
+The original iframe + `postMessage` auto-height sketch that lived here was **never built** — revisit
+only if an inline embed becomes worth the plan upgrade.
 
 ## 7. Risks & mitigations
 
@@ -188,7 +177,7 @@ Squarespace doesn't run custom builds, so we host the static app externally and 
 |------|-----------|
 | Paint hex values are approximate / inconsistent across sources | Show ΔE + "approx" tags; pick a primary source per brand; never claim exactness. |
 | Data licensing for a *published* app | Curated + attributed dataset; `SOURCES.md`; no wholesale copy. |
-| iframe sizing on Squarespace | `postMessage` auto-height + sensible `min-height`. |
+| iframe sizing on Squarespace (if ever embedded inline) | Link/subdomain shipped instead (EMBED.md); revisit `postMessage` auto-height only if inline embedding returns. |
 | Scope creep (all 4 features is a lot) | Milestone gating; each feature is independently shippable. |
 | Color math correctness | Unit tests against known ΔE / Lab reference values (M2). |
 
@@ -211,11 +200,10 @@ scaffold + picker. Still future:*
 
 ## 9. Open questions for Ryan
 
-> Scope decisions from the expanded use-cases live in [`USE_CASES.md`](USE_CASES.md) §9
-> (interactive wheel in v1? role-aware output v1 vs v1.1? owned-paints in v1?). My
-> recommendations are noted there. Plus:
+> Historical scope questions are all settled (USE_CASES §9/§10; the app is live at
+> palette.ryanmette.com under this repo). Genuinely open:
 
-1. **Product name** — keep "Palette Studio for Miniatures", or something punchier? (One-line change.)
-2. **GitHub account** — which account/repo should host it for GitHub Pages?
-3. **Brand fit** — should the accent color match your Squarespace site's palette? (Send the hex and I'll align the tokens.)
-4. **Priority order** — if you want value fastest, I'd suggest M1→M2→M4 (picker + ideal-vs-actual) before equivalents/accessibility. Agree?
+1. **Brand fit** — should the light theme's accent align with your Squarespace site palette? (Token-only change, §3.1.)
+2. **Neutral mode (v1.8) defaults** — the three small questions in §5's plan: white-seed default pop,
+   temperature-ladder default direction, and whether to ship without the borderline hint.
+3. **Affiliate programs** — which retailer(s) to apply to for MONETIZATION direction A (blocks its implementation).

@@ -6,6 +6,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Doc-freshness gate in CI + docs truth-sync.** A 2026-07 review found 19 places where the docs had
+  frozen at earlier releases (README stuck at v1.0.0/374 paints/"license TBD"; USE_CASES marking shipped
+  features "next"; PLAN describing the pre-1.1 architecture and a never-built postMessage embed;
+  DATA_SOURCING documenting unimplemented provenance fields; phantom `--r-md`/`--r-lg`/`--shadow-sm`
+  tokens in CLAUDE.md §3.4/§3.5; stale statuses in EMBED/IOS_APP_PLAN; CHANGELOG placeholder links +
+  duplicated Unreleased headings). All fixed, and — so it can't recur silently — a new dev-only
+  `scripts/check-docs.mjs` now **fails CI** when README's version/dataset claims, the CLAUDE.md §4
+  tree (both directions), or CHANGELOG hygiene drift from reality; `scripts/validate-data.mjs` also
+  now runs in CI (the gate DATA_SOURCING §7 promised). New §8 release checklist + §9 done-item 7 in
+  the constitution make the prose side explicit. No runtime change (docs + dev tooling only).
 - **Neutral mode (v1.8 PR 1)** — a black / white / grey seed now gets a real scheme engine instead of
   meaningless hue rotations. Detection is automatic and reversible (`isNeutral`: Lab chroma C\* < 10 —
   perceptual, so visually-black "saturated" hexes like `#100000` classify correctly): a banner explains
@@ -20,8 +30,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   chosen pop. New pure exports: `labChroma`/`isNeutral` (color.js), `neutralPartners`/
   `NEUTRAL_HARMONY_TYPES`/`DEFAULT_POP` (harmony.js). Also fixes `isHueHarmony` returning true for
   unknown types. Amends `CLAUDE.md` §7; PLAN v1.8 PR 1 of 2 (temperature ladder follows). SW `ps-v17`.
-
-### Added
 - **Equivalents tab is now a per-swatch drill-down.** Instead of being locked to the seed, the Equivalents
   view follows the live-palette column you pick: on that tab, clicking any column (Primary / Secondary /
   Accent / Metal / added) makes its colour the source and recomputes the cross-brand matches, while the
@@ -35,19 +43,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   ink; keyboard-focusable, `aria-label`led). This frees the swatch-click to be the Equivalents drill-down
   without stealing copy — copy now works on **every** tab. On the Equivalents tab the swatch becomes a
   `role="button"` "show equivalents" control (mouse + Enter/Space); elsewhere it's a plain swatch.
-
-### Changed
-- **Paints drawer caret + dark-theme glyph polish.** The `☰ Paints` caret is larger (11px → 15px) and
-  **rotates 180°** while the drawer is open (bounce easing; snaps under reduced-motion), so the trigger
-  reads as open/closed. The theme switch's **dark glyph is now a skull** instead of a moon — on-brand for
-  the grimdark theme; the light sun is unchanged. Amends `CLAUDE.md` §3.5. SW `ps-v15`.
-- **Theme control is now a slide-over switch.** The Light/Dark segmented pair in the ⋯ menu becomes a
-  single animated toggle (`role="switch"`, the §3.1 `◐` control): a thumb slides between a sun and a moon
-  and the icon cross-fades. Honours `prefers-reduced-motion` (the state flips without the slide). It's the
-  one sanctioned toggle-switch in the system — every other either/or picker stays a segmented control.
-  Amends `CLAUDE.md` §3.5. SW `ps-v14`.
-
-### Added
 - **Brass gets dimension (dark theme).** Solid-accent surfaces — primary buttons, the logo plaque, the
   wheel role-legend badges — now read as *polished brass* instead of a flat orange slab: a light→dark
   gradient (struck metal) + a diagonal specular sheen, a cast 1px edge, and an inset bevel (bright top lip,
@@ -59,15 +54,37 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   carry a small leading icon and are **pushed to the right** of the tab strip, set apart from *Plan · roles*
   on the left. Icons are decorative (`aria-hidden`); labels and the tablist semantics are unchanged. The
   `margin-left:auto` collapses cleanly when the strip scrolls on narrow screens. SW `ps-v13`.
-
-### Fixed
-- **Seed toolbar overlapped the sticky header on scroll.** Its `z-index` (30) outranked the header (20);
-  dropped to 10 — still above the sticky studio (so the Paints drawer isn't hidden behind the wheel) but
-  below the header. **Header + footer now match the content width.** `.bar` and `.appfoot` were capped at
-  1180px while the workspace is 1440px, so they read narrower than the studio; both bumped to 1440. Added
-  breathing room below the tab strip (`[data-panel]` padding-top). SW `ps-v12`.
+- **The wheel and the plan are now one instrument — a colour link.** Hovering (or keyboard-focusing) a
+  role block in the Plan (right) now rings that *same colour* wherever it lives on the left — the matching
+  **wheel node** and **live-palette column** — and the reverse: hovering a live column lights up its Plan
+  role block. This binds the two columns that previously read as separate panels. The highlight is an
+  **outline ring** (interaction, §3.5) so nothing reflows (§3.4); each surface is matched by `data-hex`.
+- **Main/Accent now reads on the swatch.** The hero (your picked paint) carries a small **main / accent
+  badge** mirroring the Main/Accent control — a swatch-level cue for which role your seed plays. (It sits
+  on the hero because the hero always shows *your pick*; the live-palette "Base" column is always the
+  scheme's main, so the badge would mislead there in accent mode.)
+- **Monetization survey + direction (docs only).** `docs/MONETIZATION.md` — a high-level survey of ways
+  the tool could earn. **Direction chosen: A (affiliate links) + B (audience funnel)** — both v1-compatible
+  (outbound links + disclosure, no backend); A's implementation is pending the specific retailer programs.
+  Payments/accounts still need a §1 scope change first. Linked from `PLAN.md` + the `CLAUDE.md` file tree.
+  No runtime code yet.
+- **Shelf filters & sort.** The paint Shelf gains a **search box**, a **status filter** (All · Owned ·
+  To buy), a **type filter** (base/layer/shade/metal/…), and a **sort** (name · brand · hue · lightness),
+  alongside the existing brand chips. Marking a paint out of the active status filter drops it from view;
+  filters clear the selection (membership changed), sort keeps it.
+- **⋯ settings menu: a second path to About & data.** The menu now has an **About & data** shortcut
+  (same dialog as the footer link).
 
 ### Changed
+- **Paints drawer caret + dark-theme glyph polish.** The `☰ Paints` caret is larger (11px → 15px) and
+  **rotates 180°** while the drawer is open (bounce easing; snaps under reduced-motion), so the trigger
+  reads as open/closed. The theme switch's **dark glyph is now a skull** instead of a moon — on-brand for
+  the grimdark theme; the light sun is unchanged. Amends `CLAUDE.md` §3.5. SW `ps-v15`.
+- **Theme control is now a slide-over switch.** The Light/Dark segmented pair in the ⋯ menu becomes a
+  single animated toggle (`role="switch"`, the §3.1 `◐` control): a thumb slides between a sun and a moon
+  and the icon cross-fades. Honours `prefers-reduced-motion` (the state flips without the slide). It's the
+  one sanctioned toggle-switch in the system — every other either/or picker stays a segmented control.
+  Amends `CLAUDE.md` §3.5. SW `ps-v14`.
 - **Export list / Share link moved into the ⋯ settings menu.** They're whole-scheme output actions, so they
   now live in the header popover (a new "Scheme" row) instead of a "Finish" cluster at the bottom of the
   Studio — declutters the studio. The popover closes after either action. Amends `CLAUDE.md` §3.6. SW `ps-v11`.
@@ -95,30 +112,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   ladders). The colour link now ties the **Plan role cards** (each `data-hex`) to the wheel + live palette.
   New pure export `roleIdeals()` in `scheme.js` (shared by `buildScheme` + the live palette). Amends
   `CLAUDE.md` §3.5/§3.6.
-
-### Added
-- **The wheel and the plan are now one instrument — a colour link.** Hovering (or keyboard-focusing) a
-  role block in the Plan (right) now rings that *same colour* wherever it lives on the left — the matching
-  **wheel node** and **live-palette column** — and the reverse: hovering a live column lights up its Plan
-  role block. This binds the two columns that previously read as separate panels. The highlight is an
-  **outline ring** (interaction, §3.5) so nothing reflows (§3.4); each surface is matched by `data-hex`.
-- **Main/Accent now reads on the swatch.** The hero (your picked paint) carries a small **main / accent
-  badge** mirroring the Main/Accent control — a swatch-level cue for which role your seed plays. (It sits
-  on the hero because the hero always shows *your pick*; the live-palette "Base" column is always the
-  scheme's main, so the badge would mislead there in accent mode.)
-- **Monetization survey + direction (docs only).** `docs/MONETIZATION.md` — a high-level survey of ways
-  the tool could earn. **Direction chosen: A (affiliate links) + B (audience funnel)** — both v1-compatible
-  (outbound links + disclosure, no backend); A's implementation is pending the specific retailer programs.
-  Payments/accounts still need a §1 scope change first. Linked from `PLAN.md` + the `CLAUDE.md` file tree.
-  No runtime code yet.
-- **Shelf filters & sort.** The paint Shelf gains a **search box**, a **status filter** (All · Owned ·
-  To buy), a **type filter** (base/layer/shade/metal/…), and a **sort** (name · brand · hue · lightness),
-  alongside the existing brand chips. Marking a paint out of the active status filter drops it from view;
-  filters clear the selection (membership changed), sort keeps it.
-- **⋯ settings menu: a second path to About & data.** The menu now has an **About & data** shortcut
-  (same dialog as the footer link).
-
-### Changed
 - **About & data no longer links to the source repo.** The three links to the (proprietary) GitHub repo
   (sourcing/provenance/security) are removed; the *required* external attribution to the community dataset
   `Arcturus5404/miniature-paints` (MIT) and the DakkaDakka credit remain (§5).
@@ -130,6 +123,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   header (alongside the sticky studio) instead of scrolling away, so you can keep picking while reading
   the role plan. Both columns now clear the 63px sticky header; the picker un-sticks where it stacks (≤860px).
 - Service-worker cache bumped to `ps-v10` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
+
+### Fixed
+- **Seed toolbar overlapped the sticky header on scroll.** Its `z-index` (30) outranked the header (20);
+  dropped to 10 — still above the sticky studio (so the Paints drawer isn't hidden behind the wheel) but
+  below the header. **Header + footer now match the content width.** `.bar` and `.appfoot` were capped at
+  1180px while the workspace is 1440px, so they read narrower than the studio; both bumped to 1440. Added
+  breathing room below the tab strip (`[data-panel]` padding-top). SW `ps-v12`.
 
 ## [1.7.0] - 2026-06-29
 The **Adobe-style palette release**: an editable live palette (lock · edit · reorder · undo/redo · generate),
@@ -627,5 +627,7 @@ The **collection release**: a paint shelf, collection-aware planning, portabilit
 ### Verified
 - CIEDE2000 implementation validated against 9 Sharma et al. reference pairs (exact to 4 dp).
 
-[Unreleased]: https://example.com/compare/v0.1.0...HEAD
-[0.1.0]: https://example.com/releases/tag/v0.1.0
+[Unreleased]: https://github.com/ryanmette/miniature_palette_studio/commits/main
+[0.1.0]: https://github.com/ryanmette/miniature_palette_studio
+<!-- Release headings above aren't linked: no git tags have been pushed yet. When tags land
+     (see CLAUDE.md §8 release checklist), add per-version definitions here. -->

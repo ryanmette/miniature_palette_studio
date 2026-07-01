@@ -140,7 +140,7 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 ### 3.4 Space, radius, elevation, motion
 - Spacing scale (px): **4, 8, 12, 16, 24, 32, 48**. Nothing off-scale.
 - Radius (unified, both themes): cards `--r-card:14` · controls & buttons `--r-ctrl:10` · pills/badges `--r-pill:999`. One radius vocabulary everywhere — never per-theme radii.
-- Elevation (use sparingly): `--shadow-sm: 0 1px 2px rgba(0,0,0,.05)` · `--shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04)`.
+- Elevation (use sparingly): the single `--shadow` token (per-theme values in §3.1) — no separate sm/card tiers.
 - Motion (shared, both themes) — **fades + gentle bounce, to confirm not decorate**:
   - Durations: 120ms hover · 180–220ms enter/exit & panel cross-fade · ~320ms card reveal. Standard ease `cubic-bezier(.2,.7,.2,1)`; **bounce/overshoot** `cubic-bezier(.34,1.56,.64,1)` for swatch & hero reveals.
   - Patterns: panels **cross-fade**; cards/role-slots **fade-rise** with a small stagger; swatches and the hero swatch **pop** (scale-bounce) when they appear or the scheme changes; buttons press to `scale(.96)`.
@@ -149,11 +149,11 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 - **Layout stability — no jiggle.** Selecting, marking, hovering, or revealing controls must **never reflow** surrounding content. Express state with non-layout properties (`outline` / inset / overlay — not `border-width`; use `box-sizing: border-box` when a border width must change), **reserve space** for transient controls (fixed-height action rows; swap a hover tooltip for selection options in the *same* reserved slot), and float per-item affordances (tooltips, option popovers) as overlays. If a reflow is genuinely unavoidable, content shifts in **one consistent direction** — never a two-way jiggle. Especially the collection grid: marking owned/to-buy must not nudge neighbouring swatches.
 
 ### 3.5 Component rules
-- **Swatch**: square, `--r-md`, 1px inset border `rgba(0,0,0,.12)` so white-ish paints stay visible. Text on a swatch is auto black/white by relative luminance — never a fixed color. Non-flat paints carry a **finish overlay** (`fxCls` → `.metal` sheen · `.fx-wash`/`.fx-contrast` translucency · curated `.fx-gloss`/`.fx-slime`/`.fx-texture`) — the only sanctioned swatch overlays (§2) — plus a **finish icon** (`finishTag`) flagging metallic/contrast/wash/shade/ink/effect.
+- **Swatch**: square, `--r-ctrl`, 1px inset border `rgba(0,0,0,.12)` so white-ish paints stay visible. Text on a swatch is auto black/white by relative luminance — never a fixed color. Non-flat paints carry a **finish overlay** (`fxCls` → `.metal` sheen · `.fx-wash`/`.fx-contrast` translucency · curated `.fx-gloss`/`.fx-slime`/`.fx-texture`) — the only sanctioned swatch overlays (§2) — plus a **finish icon** (`finishTag`) flagging metallic/contrast/wash/shade/ink/effect.
 - **Roles** are **Primary · Secondary · Accent · Metal** (~60-30-10 + spot). With a limited collection two close-hued roles can't both get a distinct owned paint; the engine assigns distinctly where it can, and flags any forced reuse as a **shared paint** with how to differentiate (adjust direction) + the nearest distinct paint to buy.
 - **Buttons (one style, both themes)**: primary = accent fill + `--on-accent` text; secondary = surface + 1px `--border`; ghost = text only. Radius `--r-ctrl`. Height `--tap` = 38px desktop, **44px on touch / ≤520px**. Identical shape in light and dark — only colour differs.
 - **Theme switch (`#themeToggle`)**: the one sanctioned **slide-over toggle** — the §3.1 `◐` control — `role="switch"` with `aria-checked` = dark. A thumb slides between a sun (light) and skull (dark, on-brand grimdark) with the icon cross-fading; the slide honours `prefers-reduced-motion` (state flips without animating). This is the *only* toggle-switch in the system; every other either/or picker (theme had been one too, language, harmony, shelf filters) stays a **segmented control** (`.seg`). Don't add more switch-style toggles without a line here.
-- **Cards/panels**: `--surface`, 1px `--border`, `--r-lg`, `--shadow-card`, padding 16–24px.
+- **Cards/panels**: `--surface`, 1px `--border`, `--r-card`, `--shadow`, padding 16–24px.
 - **Badges/pills**: weak semantic fill + strong semantic text from the same family.
 - Focus: always visible `--focus` ring. Never remove outlines without a replacement.
 - **State vs interaction — two separate visual languages.** Express what a thing *is* (owned, to-buy, ΔE quality) with persistent **badges / fills**; express what you're *doing* to it (hover, selected, focused) with **rings / outlines / elevation**. Never conflate the two (e.g. a coloured border that means both "to-buy" and "selected"). *Examples in code:* the **hero seed badge** (a `main`/`accent` pill on the picked-paint swatch) is *state* → a badge; the **colour link** (hover/focus a Plan role card → ring the same colour's wheel node + live-palette column, and vice-versa, keyed by `data-hex`) is *interaction* → an outline ring (no reflow, §3.4). The seed badge lives on the **hero** (which always shows *your pick*), not the live-palette Primary column — that column is always the scheme's main, so a seed badge there would mislead in accent mode. The same interaction language extends to the **Equivalents drill-down**: on the Equivalents tab, clicking a live-palette column makes its colour the source whose cross-brand matches are listed, and that column keeps a *persistent* selection **ring** (a bolder ring than the transient hover link, and only on that tab) — interaction, not state, so it's an outline/ring, never a fill.
@@ -195,7 +195,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── DATA_SOURCING.md       ← data sourcing + verification methodology (§5)
 │   ├── IOS_APP_PLAN.md        ← iPhone app (v2) exploration — future, not v1
 │   ├── MONETIZATION.md        ← speculative monetization survey (affiliate/funnel fit v1; payments need a §1 change) — exploration only
-│   └── EMBED.md               ← Squarespace embedding guide (added at M8)
+│   └── EMBED.md               ← Squarespace embedding guide (added at M9)
 ├── mockups/                   ← design references, NOT shipped (no runtime role)
 │   ├── index.html             ← canonical app mockup (unified light/dark)
 │   ├── style-directions.html  ← 5-way visual-direction exploration
@@ -210,11 +210,12 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │       └── loader.html        ← determinate loader (drop → wheel → wells)
 ├── scripts/                   ← dev tooling, NOT shipped (never required at runtime)
 │   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
-│   └── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5)
+│   ├── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5) — runs in CI (test.yml)
+│   └── check-docs.mjs         ← doc-freshness QA (§8/§9) — README/tree/CHANGELOG claims vs reality; runs in CI
 ├── .github/
-│   ├── workflows/             ← deploy.yml (publish src/ to GitHub Pages, M9) · test.yml (node --test on push/PR)
+│   ├── workflows/             ← deploy.yml (publish src/ to GitHub Pages, M9) · test.yml (node --test + data/docs validators on push/PR)
 │   └── dependabot.yml         ← keep workflow actions current (github-actions ecosystem only; no npm)
-├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/a11y/data)
+├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/scheme/a11y/data/store/ui/collection-io)
 └── src/                       ← the app (✓ M1–M8: data, engine, shell, all feature UI)
     ├── index.html             ← (M3)
     ├── CNAME · .nojekyll       ← GitHub Pages: custom domain (palette.ryanmette.com) + disable Jekyll (M9)
@@ -236,7 +237,8 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── js/i18n.js             ← lightweight UI-string localization (chrome only; auto-detect locale + en-GB/en-US)
     └── data/
         ├── paints.json        ← curated dataset (see §5) — shipped ✓ M1
-        └── SOURCES.md         ← provenance + licensing (see §5) — shipped ✓ M1
+        ├── SOURCES.md         ← provenance + licensing (see §5) — shipped ✓ M1
+        └── group-overrides.json ← hand-curation of the auto-seeded equivalence groups (see §5.2)
 ```
 
 > This tree is the authoritative file index. When you add a file, add it here in the same commit.
@@ -360,6 +362,10 @@ If any constant or formula changes, bump dataset/app version and note it in CHAN
 - **Semantic Versioning** for the app and the dataset (independent versions). The **web app stays on `1.x`**; **`v2.0` is reserved for the native app** (`docs/IOS_APP_PLAN.md`) — ship web features as minor bumps, not a 2.0.
 - **CHANGELOG.md** in Keep a Changelog format; update it in the same PR as the change.
 - **Tags** mark releases (`v0.1.0` = approved plan + mockup baseline).
+- **Release checklist (cutting a version):** bump `package.json` → turn CHANGELOG `[Unreleased]` into the
+  release heading → refresh README's Status paragraph → add the release line to PLAN.md §5 (+ its "Current
+  status" stamp) → tag. `scripts/check-docs.mjs` (CI) enforces the mechanical parts — version, dataset
+  counts, the §4 tree — so a stale README fails the build instead of shipping.
 - **One concern per commit.** If a change touches design tokens, it updates §3 here too.
 - Deploy = push `src/` to GitHub Pages via `.github/workflows/deploy.yml`; Squarespace **links** to it (an inline iframe needs the Business plan). See `docs/EMBED.md`.
 - **Service-worker discipline (learned the hard way — broke the live site twice).** GitHub Pages serves assets with `cache-control: max-age=600`, so a plain network-first SW can still hand a browser a *stale* `app.js` against a fresh `index.html`. Rules: (1) **bump `CACHE` in `src/sw.js` on every shell/asset change**; (2) the SW is **network-first for the app shell** (navigations + same-origin JS/CSS) and fetches it with **`{cache:'reload'}`** to bypass the HTTP cache (fonts/dataset stay cache-first); (3) `index.html` **auto-reloads once on `controllerchange`** so a new SW can't leave a mismatched shell. After deploying, hard-refresh and confirm `palette.ryanmette.com/sw.js` shows the new `CACHE`.
@@ -375,6 +381,8 @@ A change is done only when:
 4. UI meets WCAG AA (keyboard + contrast + focus checked).
 5. No new runtime dependency unless added to §6.
 6. The tool still runs as a plain static file with no server.
+7. Docs still tell the truth: user-visible behaviour changed → README / USE_CASES / PLAN checked in the
+   same PR (or explicitly untouched for a reason). `scripts/check-docs.mjs` gates the mechanical claims.
 
 ## 10. Anti-drift guardrails — do NOT
 - Add a framework/build tool to the *runtime* path.
