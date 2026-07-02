@@ -342,6 +342,9 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 - **Neutral seeds (v1.8).** A seed with Lab chroma **C\* < 10** (`isNeutral`; perceptual, so visually-black
   "saturated" hexes like `#100000` classify correctly) has no usable hue: the studio enters **neutral
   mode** automatically (and reversibly — saturate the seed and it exits, restoring the parked harmony).
+  Mode switching uses **hysteresis** (enter < 10, exit > `NEUTRAL_EXIT` = 14): a drag hovering on the
+  boundary can't flip the mode per frame. The one neutral explainer is a wheel **overlay** (never
+  reflows, §3.4) that auto-collapses to a ◐ pill; the pill re-expands it.
   Hue-rotation harmonies grey out in place (visible + tooltip'd); the neutral-native schemes are
   (`harmony.js neutralPartners`, recipes locked; partners are ordered **[secondary, accent]** by
   construction — no ΔE-furthest rule, the pop *is* the accent):
@@ -354,6 +357,9 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   (the Main|Accent seed toggle disables — a neutral accent has no complement) and its Metal ideal is
   always gunmetal `#6E7177` (no hue to read a temperature from).
 - **Color-blindness simulation**: Machado et al. (2009) severity-1.0 matrices applied in linear RGB, for protanopia / deuteranopia / tritanopia.
+- **NMM (non-metallic metal) ladder (v1.8):** the Metal role also offers a flat-paint recipe for the
+  metal illusion — locked steps off the metal ideal: shadow `{dl:−.26, ds:+.04}` · mid (the ideal) ·
+  highlight `{dl:+.30, ds:−.18}`, matched with metallics AND finishes excluded.
 - **Contrast**: WCAG 2.1 relative-luminance ratio; AA thresholds 4.5:1 (text) / 3:1 (large/UI).
 - **Text-on-swatch** legibility: choose black/white by relative luminance threshold 0.5 (with the standard sRGB→linear step).
 

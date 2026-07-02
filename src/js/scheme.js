@@ -23,6 +23,15 @@ const LADDERS = {
 };
 const LADDER_STYLES = { wash: ['wash'], tone: ['tone'], both: ['wash', 'tone'] };
 
+// NMM — Non-Metallic Metal (§7, locked): paint the metal ILLUSION with flat paints via a hard
+// value structure (deep shadow → mid → near-white ping). Steps derive from the Metal role's ideal;
+// matching excludes metallics AND finishes so every rung is a flat paint you can layer.
+const NMM_STEPS = [
+  { key: 'shadow', adj: { dl: -0.26, ds: 0.04 } },
+  { key: 'mid', adj: null },
+  { key: 'highlight', adj: { dl: 0.30, ds: -0.18 } },
+];
+
 /** Heuristic ideal metal for a base colour (warm→gold, cool→silver, else gunmetal). A neutral base
  *  has no meaningful hue to read a temperature from, so it always gets gunmetal. */
 export function metalIdeal(baseHex) {
@@ -82,10 +91,12 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
 
   const roles = defs.map(d => {
     // A metal role keeps its type filter across the whole ladder (match + every step), so its
-    // derived shades resolve to real metallics rather than flat colours. Primary prefers the paint
-    // the user actually picked on exact ΔE ties (Layer vs Dry twins share a hex — the pick wins).
+    // derived shades resolve to real metallics rather than flat colours. The slot whose ideal IS the
+    // picked paint's own hex (Primary in main mode; Accent in accent mode) prefers the pick on exact
+    // ΔE ties (Layer vs Dry twins share a hex — dataset order must not override the pick).
+    const seedTarget = !!(opts.seed && opts.seed.hex && d.idealHex.toUpperCase() === opts.seed.hex.toUpperCase());
     let roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
-    if (d.role === 'Primary' && opts.seed) roleOpts = { ...roleOpts, preferIds: new Set([opts.seed.id]) };
+    if (seedTarget) roleOpts = { ...roleOpts, preferIds: new Set([opts.seed.id]) };
     const step = ideal => ({ idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) });
 
     let match = nearestPaint(idx, d.idealHex, { ...roleOpts, excludeIds: usedIds });
@@ -103,15 +114,16 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     }
     if (match) usedIds.add(match.paint.id);
 
-    // Honesty (§2): you picked a real paint but filters put a DIFFERENT paint in the Primary slot —
-    // say so, with why, instead of silently substituting (e.g. "only owned" + an unowned pick, or a
-    // wash/contrast pick that the finish exclusion keeps out of suggestions).
+    // Honesty (§2): you picked a real paint but filters put a DIFFERENT paint in its slot — say so,
+    // with why, instead of silently substituting (e.g. "only owned" + an unowned pick, or a wash /
+    // contrast pick that the finish exclusion keeps out of suggestions). Applies to whichever slot
+    // carries the pick's own colour, in both seed modes.
     let substituted = null;
-    if (d.role === 'Primary' && opts.seed && match && match.paint.id !== opts.seed.id) {
+    if (seedTarget && match && match.paint.id !== opts.seed.id) {
       const sp = idx.byId.get(opts.seed.id);
       const why = opts.ownedIds && !opts.ownedIds.has(opts.seed.id) ? 'not owned'
-        : sp && opts.excludeTypes && opts.excludeTypes.has(sp.type) ? `${sp.type} — excluded from suggestions`
-        : 'outside the current match pool';
+        : sp && opts.excludeTypes && opts.excludeTypes.has(sp.type) ? `a ${sp.type} — excluded from suggestions`
+        : 'not eligible under the current filters';
       substituted = { name: opts.seed.name, why };
     }
 
@@ -120,7 +132,17 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
       label: LADDERS[st].label,
       steps: LADDERS[st].steps.map(s => ({ key: s.key, ...step(s.adj ? adjustHsl(d.idealHex, s.adj) : d.idealHex) })),
     }));
-    return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, substituted, ladders };
+    // Metal also gets the NMM alternative: the true metallic is what most painters expect, but the
+    // non-metallic-metal technique needs FLAT paints — offer both, honestly labelled.
+    let nmm = null;
+    if (d.metal) {
+      const nmmOpts = { ...opts, excludeTypes: new Set([...(opts.excludeTypes || []), 'metal']) };
+      nmm = NMM_STEPS.map(s => {
+        const ideal = s.adj ? adjustHsl(d.idealHex, s.adj) : d.idealHex;
+        return { key: s.key, idealHex: ideal, match: nearestPaint(idx, ideal, nmmOpts) };
+      });
+    }
+    return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, substituted, nmm, ladders };
   });
   return { base: baseHex, harmony, ladder: opts.ladder || 'wash', roles };
 }

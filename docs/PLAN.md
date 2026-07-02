@@ -165,7 +165,7 @@ hint (C\* 10–15 "your seed is nearly neutral…") — deferred; ship without i
 
 Raised by Ryan after the neutral-mode merge; parked here so they survive. In rough priority:
 
-1. **Neutral-boundary drag thrash (bug).** Dragging the wheel through grey makes the neutral-seed
+1. ✅ **DONE (banner/NMM PR).** ~~Neutral-boundary drag thrash (bug).~~ Fixed with detection hysteresis (enter C\* < 10, exit > 14) **and** the banner became a wheel overlay with an auto-collapse ◐ pill — it can no longer reflow the studio at all. Dragging the wheel through grey makes the neutral-seed
    banner / harmony-strip flicker and "get messed up." Cause: `ensureHarmonyMode()` runs every
    `commit()` frame with a single hard threshold (C\* < 10), so tiny movements right at the boundary
    flip neutral mode on/off repeatedly — re-rendering the strip (and parking/restoring

@@ -43,7 +43,7 @@ export function paintStrip(paints, selectedId, markOf = () => 'none') {
     const mark = markOf(p.id);
     const state = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
     return `<button class="pchip" role="option" data-id="${esc(p.id)}" data-mark="${mark}" aria-selected="${p.id === selectedId}"`
-      + ` aria-label="${esc(p.name)}, ${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} — ${state}">`
+      + ` aria-label="${esc(pname(p))}, ${esc(p.brand)}${p.line && p.line !== '—' && pname(p) === p.name ? ' · ' + esc(p.line) : ''} — ${state}">`
       + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}">${markBadge(mark)}</span>`
       + `<span class="pchip-nm">${esc(pname(p))}</span>`
       + `</button>`;
@@ -222,7 +222,7 @@ export function roleSlots(scheme, markOf) {
     : '';
   // Honesty (§2): your picked paint was filtered out of this slot — name it and say why.
   const subNote = r => r.substituted
-    ? `<div class="sharednote"><span class="warnpill">your pick</span> <strong>${esc(r.substituted.name)}</strong> is ${esc(r.substituted.why)} — nearest eligible paint shown.</div>`
+    ? `<div class="sharednote"><span class="warnpill">pick replaced</span> <strong>${esc(r.substituted.name)}</strong> is ${esc(r.substituted.why)} — nearest eligible paint shown.</div>`
     : '';
   return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}" data-hex="${safeColor(r.idealHex)}">`
     + `<div class="shead"><span class="role">${esc(r.role)}</span><span class="wt">${esc(r.weight)}</span></div>`
@@ -231,6 +231,10 @@ export function roleSlots(scheme, markOf) {
     + sharedNote(r)
     + r.ladders.map(lad => (r.ladders.length > 1 ? `<div class="ladcap">${esc(lad.label)}</div>` : '')
       + `<div class="ladder">${lad.steps.map(step).join('')}</div>`).join('')
+    // Metal's second voice: the true metallic above is what most painters expect, but NMM (non-
+    // metallic metal) paints the metal ILLUSION with flat paints — offer both, honestly labelled.
+    + (r.nmm ? `<div class="ladcap nmmcap" title="Non-metallic metal: paint the metal illusion with flat paints — deep shadow, mid tone, near-white ping">NMM · non-metallic metal (flats)</div>`
+      + `<div class="ladder">${r.nmm.map(step).join('')}</div>` : '')
     + `</div>`).join('')}</div>`;
 }
 

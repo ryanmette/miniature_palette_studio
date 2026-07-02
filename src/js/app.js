@@ -3,7 +3,7 @@
 
 import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
   isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S } from './harmony.js';
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000, isNeutral } from './color.js';
+import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
@@ -36,7 +36,10 @@ const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
 const schemeBase = () => (state.seedRole === 'accent' ? rotateHue(baseHex(), 180) : baseHex());
 
 /* ---- neutral mode (CLAUDE.md §7 / PLAN v1.8): a neutral seed swaps the scheme engine ---- */
-const neutralSeed = () => isNeutral(schemeBase());
+// Hysteresis (enter < NEUTRAL_CHROMA, exit > NEUTRAL_EXIT): a drag hovering on the boundary can't
+// flip the mode per frame. ensureHarmonyMode is the only writer; everyone else reads the held mode.
+let neutralMode = null;
+const neutralSeed = () => neutralMode ?? isNeutral(schemeBase());
 const activePop = () => state.popHex || DEFAULT_POP;
 const validHarmony = t => isHarmony(t) || isNeutralHarmony(t);
 /** Strip order in neutral mode: the neutral-native schemes first, then the disabled hue rotations. */
@@ -67,13 +70,16 @@ function matchOpts() {
 function baseInfo() {
   if (state.customHex) return { hex: state.customHex, name: 'Custom ' + state.customHex, custom: true };
   const p = state.idx.byId.get(state.baseId);
-  return { id: p.id, hex: p.hex, name: p.dname || p.name, brand: p.brand, line: p.line, type: p.type, approx: p.approx };
+  // dname already carries the line for ambiguous names — suppress the meta's line so the hero doesn't read it twice
+  const lined = p.dname && p.dname !== p.name;
+  return { id: p.id, hex: p.hex, name: p.dname || p.name, brand: p.brand, line: lined ? '—' : p.line, type: p.type, approx: p.approx };
 }
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
 function currentScheme() {
-  // seed identity → buildScheme can flag honestly when filters substitute a different paint for your pick
+  // seed identity → buildScheme prefers the pick on exact ties and flags honest substitutions, in
+  // BOTH seed modes (the slot whose ideal is the pick's hex gets it — Primary or Accent).
   const p = basePaint();
-  const seed = p && state.seedRole === 'main' ? { id: p.id, name: p.dname || p.name } : null;
+  const seed = p ? { id: p.id, name: p.dname || p.name, hex: p.hex } : null;
   return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop(), seed });
 }
 
@@ -82,7 +88,9 @@ function filteredPaints() {
   const list = state.idx.paints.filter(p =>
     (!state.brand || p.brand === state.brand) &&
     (!state.ptype || p.type === state.ptype) &&
-    (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)));
+    (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
+       || (p.dname && p.dname.toLowerCase().includes(q))
+       || (p.dname && p.dname.toLowerCase().includes(q))));   // the displayed "(Line)" name is searchable too
   return sortPaints(list);
 }
 /** Sort a paint list by `key` (stable copy; '' keeps dataset order). Shared by the picker (state.psort)
@@ -155,7 +163,11 @@ function renderLive() {
   const roleByHex = {};
   for (const d of ideals) roleByHex[d.idealHex.toUpperCase()] = d.role;
   state.roleByHex = roleByHex;   // the Equivalents drill-down reads this for its source label
-  const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, opts) }));
+  // The pick wins exact ties HERE too — the live palette is the single scheme summary (§3.6) and must
+  // agree with the Plan tab about which twin fills the pick's slot.
+  const sp = basePaint();
+  const optsFor = hex => sp && hex.toUpperCase() === sp.hex.toUpperCase() ? { ...opts, preferIds: new Set([sp.id]) } : opts;
+  const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, optsFor(n.hex)) }));
   // Metal has no wheel node, so it rides along as a display-only column → the live palette is the complete
   // scheme summary (one bar, all four roles), letting the Plan drop its duplicate overview strip.
   const metal = ideals.find(d => d.metal);
@@ -239,7 +251,9 @@ function setPopHex(hex) {
  *  and pop chips. Cheap when nothing changed, so the wheel's per-frame commit() can call it. */
 let lastNeutral = null, preNeutralHarmony = null;
 function ensureHarmonyMode() {
-  const n = neutralSeed();
+  const C = labChroma(schemeBase());
+  const n = neutralMode ? C < NEUTRAL_EXIT : C < NEUTRAL_CHROMA;   // hysteresis deadband 10–14
+  neutralMode = n;
   const legal = n ? NEUTRAL_OK.has(state.harmony) : !isNeutralHarmony(state.harmony);
   if (n === lastNeutral && legal) return;
   lastNeutral = n;
@@ -259,8 +273,30 @@ function ensureHarmonyMode() {
     if (n) { x.setAttribute('aria-disabled', 'true'); x.title = 'A neutral seed always holds Primary — pick a pop accent on the wheel instead'; }
     else { x.removeAttribute('aria-disabled'); x.removeAttribute('title'); }
   }
-  const nb = $('#neutralBanner'); if (nb) nb.hidden = !n;
+  setNeutralUi(n);
   syncSeg(); renderPops();
+}
+/* The ONE neutral explainer (§3.5), as a wheel OVERLAY so it never reflows the studio (§3.4): it
+ * animates in on mode entry, auto-collapses to a compact ◐ pill after a beat, and the pill re-expands
+ * it on demand. Timer only re-arms on mode ENTRY or pill click — never per drag frame. */
+let bannerTimer = 0;
+const BANNER_HOLD_MS = 7000;
+function setNeutralUi(n) {
+  const ov = $('#neutralOverlay'); if (!ov) return;
+  clearTimeout(bannerTimer);
+  ov.hidden = !n;
+  if (n) expandBanner();          // ensureHarmonyMode only calls on a mode CHANGE (early-return guard)
+}
+function expandBanner() {
+  const nb = $('#neutralBanner'), np = $('#neutralPill');
+  nb.hidden = false; np.hidden = true; np.setAttribute('aria-expanded', 'true');
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(collapseBanner, BANNER_HOLD_MS);
+}
+function collapseBanner() {
+  const nb = $('#neutralBanner'), np = $('#neutralPill');
+  clearTimeout(bannerTimer);
+  nb.hidden = true; np.hidden = false; np.setAttribute('aria-expanded', 'false');
 }
 /** Redraw the always-visible studio (wheel + live palette) after a discrete base/harmony change. */
 function refreshStudio() {
@@ -491,7 +527,9 @@ function setupWheel() {
     const dhex = nodeHex(n).toUpperCase();
     const rgl = wheelRoleGlyphs()[dhex];                         // name the role for non-visual users
     const role = rgl === 'P' ? 'Primary, ' : rgl === 'A' ? 'Accent, ' : rgl === '2' ? 'Secondary, ' : '';
-    const m = nearestPaint(state.idx, hex, matchOpts());
+    const sp = basePaint();   // the pick wins exact ties in the announcement too (must agree with the Plan)
+    const aOpts = sp && hex.toUpperCase() === sp.hex.toUpperCase() ? { ...matchOpts(), preferIds: new Set([sp.id]) } : matchOpts();
+    const m = nearestPaint(state.idx, hex, aOpts);
     $('#status').textContent = m ? `${role}${label}, ${hex}, nearest ${m.paint.dname || m.paint.name}, ΔE ${m.deltaE.toFixed(1)}.` : `${role}${label}, ${hex}, no close paint.`;
   }
   function nudgeActive(dh, ds) {
@@ -574,7 +612,11 @@ function renderA11y() {
       const m = minPairDelta(trial, 'deuteranopia').delta;
       if (m > bestMin + 1) { bestMin = m; best = trial[shiftIdx]; }
     }
-    if (best) collision.suggestion = { role: names[shiftIdx], hex: best, match: nearestPaint(state.idx, best, matchOpts()) };
+    if (best) {
+      // a Metal-role swap must suggest a real metallic (all-metal pool also neutralises the colour-role demote)
+      const swapOpts = names[shiftIdx] === 'Metal' ? { ...matchOpts(), types: new Set(['metal']) } : matchOpts();
+      collision.suggestion = { role: names[shiftIdx], hex: best, match: nearestPaint(state.idx, best, swapOpts) };
+    }
   }
   $('#panel-a11y').innerHTML = ui.a11yPanel({ names, sims, contrasts, collision });
 }
@@ -592,7 +634,8 @@ const shelfPaints = () => {
     (!state.shelfMark || store.markOf(p.id) === state.shelfMark) &&   // status filter: '' (all) | owned | want
     (!state.shelfType || p.type === state.shelfType) &&               // type filter (base/layer/shade/metal/…)
     (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
-       || (p.line && p.line !== '—' && p.line.toLowerCase().includes(q))));
+       || (p.line && p.line !== '—' && p.line.toLowerCase().includes(q))
+       || (p.dname && p.dname.toLowerCase().includes(q))));   // the displayed "(Line)" name is searchable too
   return sortPaints(list, state.shelfSort);
 };
 const cellEl = id => document.getElementById('sc-' + id);
@@ -864,7 +907,10 @@ function renderHero(animate = true) {
 let urlTimer = null, announceTimer = null;
 function announce() {
   if (announceTimer) { clearTimeout(announceTimer); announceTimer = null; }
-  $('#status').textContent = `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.`;
+  // The substituted-pick honesty note must reach assistive tech too, not just sighted users (§2/§3.5).
+  const sub = state.tab === 'plan' && state.scheme && state.scheme.roles.find(r => r.substituted);
+  const subTxt = sub ? ` Note: your pick ${sub.substituted.name} is ${sub.substituted.why}; nearest eligible paint shown.` : '';
+  $('#status').textContent = `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.` + subTxt;
 }
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
@@ -1224,6 +1270,9 @@ function wire() {
   $('#pops').addEventListener('click', e => {
     const b = e.target.closest('[data-pop]'); if (b) setPopHex(b.dataset.pop);
   });
+  // Neutral banner overlay: the banner collapses on click (and on its own after a beat); the pill re-expands it.
+  $('#neutralBanner').addEventListener('click', collapseBanner);
+  $('#neutralPill').addEventListener('click', expandBanner);
   // Cross-surface colour link: hover/focus a role block (Plan) or a live column → ring that colour everywhere.
   const ws = document.querySelector('.workspace');
   ws.addEventListener('mouseover', e => { const el = e.target.closest('[data-hex]'); linkHighlight(el ? el.dataset.hex : null); });

@@ -6,6 +6,23 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Neutral banner is now an animated wheel overlay + NMM suggestions on the Metal card.** ① The
+  neutral-seed explainer floats **over the wheel** (it can never reflow or bounce the studio — §3.4),
+  animates in on mode entry, **auto-collapses after ~7s into a ◐ "neutral seed" pill**, and the pill
+  re-expands it (both keyboard-operable; reduced-motion just flips states). The underlying bounce bug is
+  also fixed at the source: neutral detection now has **hysteresis** (enter C\* < 10, exit > 14), so
+  dragging through grey can't flip the mode — a 7-step boundary sweep now re-renders the strip 0 times.
+  ② The Metal role keeps its true metallic (what most painters expect) and adds an **NMM · non-metallic
+  metal** ladder — the flat-paint shadow/mid/highlight recipe that paints the metal illusion (locked §7
+  steps; metallics + finishes excluded from its matches). ③ Adversarial review of the pick-fidelity work
+  confirmed and fixed 10 defects before ship: a picked **metallic** no longer loses its own slot to the
+  colour-role demote (the pick is exempt); the pick tie-break now also reaches the **live palette** and
+  **wheel announcements** (the "one instrument" surfaces agree with the Plan again); **accent-seed mode**
+  gets the tie-break + honesty note too (the slot whose ideal is the pick's hex, either mode); drawer/
+  Shelf **search finds the displayed "(Line)" names**; the hero no longer reads the line twice; drawer
+  chips satisfy label-in-name; the substitution note is **announced to assistive tech**; the a11y
+  safe-swap for a Metal role suggests real metallics; the note's pill reads "pick replaced" and its
+  fallback reason is truthful. SW `ps-v19`.
 - **Pick fidelity + name disambiguation** (follow-ups 3+4 from the neutral-mode review). Selecting
   "Dawnstone" no longer surprises: ① names that a brand reuses across lines (118 groups — Citadel
   Layer vs Dry "Dawnstone", Vallejo "Black" ×4 …) now render with the line — **"Dawnstone (Layer)"** —

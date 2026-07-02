@@ -57,6 +57,10 @@ export const labChroma = hex => { const [, a, b] = hexToLab(hex); return Math.hy
  *  saturation because visually-black "saturated" hexes (e.g. #100000, HSL S=1) must classify as
  *  neutral. Seeds in the borderline band just above the threshold stay in normal hue mode. */
 export const NEUTRAL_CHROMA = 10;
+/** Hysteresis exit threshold (locked, §7): the studio ENTERS neutral mode below NEUTRAL_CHROMA but
+ *  only EXITS above NEUTRAL_EXIT, so a drag hovering on the boundary can't flip the mode per frame
+ *  (banner/strip thrash). Seeds in the 10–14 deadband keep whichever mode they arrived in. */
+export const NEUTRAL_EXIT = 14;
 export const isNeutral = hex => labChroma(hex) < NEUTRAL_CHROMA;
 
 /** CIEDE2000 colour difference between two CIELAB values (kL=kC=kH=1). */

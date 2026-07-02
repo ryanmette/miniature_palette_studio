@@ -133,12 +133,49 @@ test('buildScheme threads opts.pop through to the roles', () => {
 test('Primary flags an honest substitution when filters replace the picked paint', () => {
   // "only owned" pool that does NOT include the picked paint
   const owned = new Set(['c-teal']);
-  const s = buildScheme(fx, '#9A1115', 'complementary', { ownedIds: owned, seed: { id: 'c-red', name: 'Mephiston Red' } });
+  const s = buildScheme(fx, '#9A1115', 'complementary', { ownedIds: owned, seed: { id: 'c-red', name: 'Mephiston Red', hex: '#9A1115' } });
   const primary = s.roles.find(r => r.role === 'Primary');
   assert.ok(primary.substituted, 'substitution flagged');
   assert.equal(primary.substituted.name, 'Mephiston Red');
   assert.equal(primary.substituted.why, 'not owned');
   // no filters → the pick matches itself → no flag
-  const clean = buildScheme(fx, '#9A1115', 'complementary', { seed: { id: 'c-red', name: 'Mephiston Red' } });
+  const clean = buildScheme(fx, '#9A1115', 'complementary', { seed: { id: 'c-red', name: 'Mephiston Red', hex: '#9A1115' } });
   assert.equal(clean.roles.find(r => r.role === 'Primary').substituted, null);
+});
+
+test('a picked metallic is exempt from the colour-role demote (keeps its own slot)', () => {
+  const midx = indexDataset({ version: 't', paints: [
+    { id: 'pick-metal', brand: 'T', line: 'L', name: 'Elven Armour', hex: '#2D567C', type: 'metal' },
+    { id: 'near-flat', brand: 'T', line: 'L', name: 'Blue', hex: '#2E577D', type: 'layer' },
+  ] });
+  const s = buildScheme(midx, '#2D567C', 'complementary',
+    { demoteTypes: new Set(['metal']), demoteAmount: 4, seed: { id: 'pick-metal', name: 'Elven Armour', hex: '#2D567C' } });
+  const primary = s.roles.find(r => r.role === 'Primary');
+  assert.equal(primary.match.paint.id, 'pick-metal');   // the pick wins despite the demote
+  assert.equal(primary.substituted, null);
+});
+
+test('accent-seed mode: the Accent slot gets the tie-break + honesty note too', () => {
+  // base = complement of the pick → the Accent ideal IS the pick hex
+  const twins = indexDataset({ version: 't', paints: [
+    { id: 'dry-twin', brand: 'C', line: 'Dry', name: 'Hoeth Blue', hex: '#4C78AF', type: 'dry' },
+    { id: 'layer-pick', brand: 'C', line: 'Layer', name: 'Hoeth Blue', hex: '#4C78AF', type: 'layer' },
+    { id: 'far', brand: 'C', line: 'Base', name: 'Far Red', hex: '#9A1115', type: 'base' },
+  ] });
+  const base = '#AF834C';   // rotateHue('#4C78AF', 180)
+  const tie = buildScheme(twins, base, 'complementary', { seed: { id: 'layer-pick', name: 'Hoeth Blue (Layer)', hex: '#4C78AF' } });
+  assert.equal(tie.roles.find(r => r.role === 'Accent').match.paint.id, 'layer-pick');   // pick wins the twin tie
+  const only = buildScheme(twins, base, 'complementary',
+    { ownedIds: new Set(['far']), seed: { id: 'layer-pick', name: 'Hoeth Blue (Layer)', hex: '#4C78AF' } });
+  const acc = only.roles.find(r => r.role === 'Accent');
+  assert.ok(acc.substituted && acc.substituted.why === 'not owned');   // honest note on the accent path
+});
+
+test('Metal role carries an NMM ladder of flat paints (no metallics, no finishes)', () => {
+  const s = buildScheme(fx, '#9A1115', 'complementary');
+  const metal = s.roles.find(r => r.role === 'Metal');
+  assert.ok(Array.isArray(metal.nmm) && metal.nmm.length === 3);
+  assert.deepEqual(metal.nmm.map(x => x.key), ['shadow', 'mid', 'highlight']);
+  for (const st of metal.nmm) if (st.match) assert.notEqual(st.match.paint.type, 'metal');
+  assert.equal(s.roles.find(r => r.role === 'Primary').nmm, null);   // NMM is metal-only
 });
