@@ -161,6 +161,48 @@ keep crimson, or lean blue (classic white+blue)? ② warm/cool ladder default di
 highlight-warm is the plan; the segmented control already lets painters flip per-role. ③ borderline
 hint (C\* 10–15 "your seed is nearly neutral…") — deferred; ship without it?
 
+### Follow-ups queued (noted 2026-07-01, not yet scheduled)
+
+Raised by Ryan after the neutral-mode merge; parked here so they survive. In rough priority:
+
+1. **Neutral-boundary drag thrash (bug).** Dragging the wheel through grey makes the neutral-seed
+   banner / harmony-strip flicker and "get messed up." Cause: `ensureHarmonyMode()` runs every
+   `commit()` frame with a single hard threshold (C\* < 10), so tiny movements right at the boundary
+   flip neutral mode on/off repeatedly — re-rendering the strip (and parking/restoring
+   `preNeutralHarmony`) each flip, which also steals focus and spams `#status`. **Fix direction:**
+   add **hysteresis** — enter neutral at C\* < 10 but only exit at C\* > ~14 (a deadband), so a seed
+   hovering on the line can't oscillate; and/or debounce the mode swap so it fires on drag-settle,
+   not per frame. Keep the parked-harmony restore keyed to a *committed* mode change, not a
+   transient one. (Touches `app.js ensureHarmonyMode`/`commit`; add a boundary-oscillation test.)
+
+2. **Tone-ladder "wash" step should prefer real wash media (enhancement).** Today the ladder's
+   **wash** step is just the base stepped darker + slightly saturated, then nearest *any-type* paint
+   — so it can resolve to a flat base/layer paint, not an actual wash. **Wanted:** for the wash step,
+   **prefer `shade` / `wash` / `ink` paints** (the finishes currently excluded from suggestions —
+   re-include them *for this step only*, via a per-step type filter in `scheme.js LADDERS`/
+   `buildScheme`). When no suitable shade/wash/ink is close enough (ΔE gate), **fall back** to the
+   current darkened-base match but **label it "watered down"** (or "thin your base") so the painter
+   knows it's a mix, not a bottled wash. UI: the ladder step gains a small qualifier tag. (Touches
+   `scheme.js` ladder recipe + `ui.js` role-card ladder rendering; CLAUDE.md §7 note.)
+
+3. **Picking a paint resolves to a *different* paint, surprisingly (bug/UX).** Selecting **Dawnstone**
+   from the Paints drawer showed **Iron Warriors** as Primary's nearest paint. Two compounding
+   causes: (a) **"Only owned"** was active, so the pool is filtered to owned paints and Dawnstone
+   (unowned) is replaced by the nearest owned — *correct but unexpected right after you picked it*;
+   consider surfacing "you don't own Dawnstone — nearest owned shown" or seeding Primary with the
+   picked paint itself even under only-owned. (b) A **metallic** (Iron Warriors) out-ranking flat
+   greys for a flat-grey ideal — metals are eligible for colour roles (only `FINISH_TYPES` are
+   excluded, and metal isn't one); worth deciding whether metallics should be down-weighted for
+   non-Metal roles. **Fix direction:** when the seed is itself a real paint, Primary's "nearest"
+   should prefer/label the seed paint; and reconsider metal eligibility for colour roles.
+
+4. **Duplicate "Dawnstone" in the dataset (data).** The Paints list shows **two Dawnstones**, which
+   is confusing. **Fix direction:** de-dupe in `scripts/build-dataset.mjs` (or flag via
+   `validate-data.mjs` — add a same-brand same-name duplicate check) and, if they're genuinely the
+   same paint from two sources, collapse to one with the better-sourced hex; if they're distinct
+   (e.g. a reformulation), disambiguate the name/line. Likely a handful of other dupes exist — the
+   validator check will surface them all.
+
 ---
 
 ## 6. Squarespace embedding — superseded by docs/EMBED.md
