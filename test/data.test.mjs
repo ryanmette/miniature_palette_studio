@@ -104,3 +104,40 @@ test('matchQuality boundary labels (CLAUDE.md §3.2)', () => {
   assert.equal(matchQuality(8).label, 'Loose');
   assert.equal(matchQuality(15).label, 'Poor');
 });
+
+test('dname disambiguates same-brand name collisions with the line (derived at load)', () => {
+  const dup = indexDataset({ version: 't', paints: [
+    { id: 'c-layer-dawnstone', brand: 'Citadel', line: 'Layer', name: 'Dawnstone', hex: '#697068', type: 'layer' },
+    { id: 'c-dry-dawnstone', brand: 'Citadel', line: 'Dry', name: 'Dawnstone', hex: '#697068', type: 'dry' },
+    { id: 'c-blue', brand: 'Citadel', line: 'Base', name: 'Macragge Blue', hex: '#2D567C', type: 'base' },
+  ] });
+  assert.equal(dup.byId.get('c-layer-dawnstone').dname, 'Dawnstone (Layer)');
+  assert.equal(dup.byId.get('c-dry-dawnstone').dname, 'Dawnstone (Dry)');
+  assert.equal(dup.byId.get('c-blue').dname, 'Macragge Blue');   // unambiguous names stay bare
+});
+
+test('demoteTypes ranks metals as further for colour roles, but reported ΔE stays true (§2)', () => {
+  const mIdx = indexDataset({ version: 't', paints: [
+    { id: 'metal-grey', brand: 'T', line: 'L', name: 'Iron', hex: '#6E7177', type: 'metal' },
+    { id: 'flat-grey', brand: 'T', line: 'L', name: 'Stone', hex: '#6D7076', type: 'layer' },   // ~ΔE 1 from the target
+  ] });
+  const target = '#6E7177';                            // exactly the metal's hex
+  assert.equal(nearestPaint(mIdx, target).paint.id, 'metal-grey');   // no demote → metal wins at ΔE 0
+  const demoted = nearestPaint(mIdx, target, { demoteTypes: new Set(['metal']), demoteAmount: 4 });
+  assert.equal(demoted.paint.id, 'flat-grey');         // demoted → the close flat grey wins the slot
+  const still = nearestPaint(mIdx, target, { demoteTypes: new Set(['metal']), demoteAmount: 4, types: new Set(['metal']) });
+  assert.equal(still.paint.id, 'metal-grey');          // all-metal pool (Metal role) → demote is a no-op
+  assert.equal(still.deltaE, 0);                       // reported distance is never inflated
+});
+
+test('preferIds breaks exact ΔE ties toward the picked paint (Layer vs Dry twins)', () => {
+  const twins = indexDataset({ version: 't', paints: [
+    { id: 'c-dry-dawnstone', brand: 'Citadel', line: 'Dry', name: 'Dawnstone', hex: '#697068', type: 'dry' },
+    { id: 'c-layer-dawnstone', brand: 'Citadel', line: 'Layer', name: 'Dawnstone', hex: '#697068', type: 'layer' },
+  ] });
+  // dataset order would hand the tie to the Dry twin; the pick must win it instead
+  assert.equal(nearestPaint(twins, '#697068').paint.id, 'c-dry-dawnstone');
+  const preferred = nearestPaint(twins, '#697068', { preferIds: new Set(['c-layer-dawnstone']) });
+  assert.equal(preferred.paint.id, 'c-layer-dawnstone');
+  assert.equal(preferred.deltaE, 0);   // reported distance untouched
+});

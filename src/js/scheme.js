@@ -82,8 +82,10 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
 
   const roles = defs.map(d => {
     // A metal role keeps its type filter across the whole ladder (match + every step), so its
-    // derived shades resolve to real metallics rather than flat colours.
-    const roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
+    // derived shades resolve to real metallics rather than flat colours. Primary prefers the paint
+    // the user actually picked on exact ΔE ties (Layer vs Dry twins share a hex — the pick wins).
+    let roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
+    if (d.role === 'Primary' && opts.seed) roleOpts = { ...roleOpts, preferIds: new Set([opts.seed.id]) };
     const step = ideal => ({ idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) });
 
     let match = nearestPaint(idx, d.idealHex, { ...roleOpts, excludeIds: usedIds });
@@ -101,12 +103,24 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     }
     if (match) usedIds.add(match.paint.id);
 
+    // Honesty (§2): you picked a real paint but filters put a DIFFERENT paint in the Primary slot —
+    // say so, with why, instead of silently substituting (e.g. "only owned" + an unowned pick, or a
+    // wash/contrast pick that the finish exclusion keeps out of suggestions).
+    let substituted = null;
+    if (d.role === 'Primary' && opts.seed && match && match.paint.id !== opts.seed.id) {
+      const sp = idx.byId.get(opts.seed.id);
+      const why = opts.ownedIds && !opts.ownedIds.has(opts.seed.id) ? 'not owned'
+        : sp && opts.excludeTypes && opts.excludeTypes.has(sp.type) ? `${sp.type} — excluded from suggestions`
+        : 'outside the current match pool';
+      substituted = { name: opts.seed.name, why };
+    }
+
     const ladders = styles.map(st => ({
       style: st,
       label: LADDERS[st].label,
       steps: LADDERS[st].steps.map(s => ({ key: s.key, ...step(s.adj ? adjustHsl(d.idealHex, s.adj) : d.idealHex) })),
     }));
-    return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, ladders };
+    return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, substituted, ladders };
   });
   return { base: baseHex, harmony, ladder: opts.ladder || 'wash', roles };
 }

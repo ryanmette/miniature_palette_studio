@@ -28,6 +28,8 @@ const state = {
   popHex: null,                        // neutral mode's pop accent (null = DEFAULT_POP); drives the hue math when the seed is neutral
 };
 const OWNED_BOOST = 6;   // ΔE the soft owned-boost is "worth" — owned paints up to ~6 ΔE worse can still win (#6)
+const METAL_DEMOTE = 4;  // ΔE handicap on metallics for COLOUR roles (they read differently on the model); the
+                         // Metal role's all-metal pool demotes every candidate equally, so it's unaffected (§7)
 
 const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
 /** Entry mode C: when the seed is the *accent*, build the scheme around its complement. */
@@ -57,16 +59,23 @@ function matchOpts() {
   const ex = new Set(FINISH_TYPES);
   if (state.includeContrast) ex.delete('contrast');
   o.excludeTypes = ex;
+  // Metals rank as if METAL_DEMOTE ΔE further for colour roles (reported ΔE stays true — §2 honesty).
+  o.demoteTypes = new Set(['metal']); o.demoteAmount = METAL_DEMOTE;
   return o;
 }
 
 function baseInfo() {
   if (state.customHex) return { hex: state.customHex, name: 'Custom ' + state.customHex, custom: true };
   const p = state.idx.byId.get(state.baseId);
-  return { id: p.id, hex: p.hex, name: p.name, brand: p.brand, line: p.line, type: p.type, approx: p.approx };
+  return { id: p.id, hex: p.hex, name: p.dname || p.name, brand: p.brand, line: p.line, type: p.type, approx: p.approx };
 }
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
-function currentScheme() { return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop() }); }
+function currentScheme() {
+  // seed identity → buildScheme can flag honestly when filters substitute a different paint for your pick
+  const p = basePaint();
+  const seed = p && state.seedRole === 'main' ? { id: p.id, name: p.dname || p.name } : null;
+  return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop(), seed });
+}
 
 function filteredPaints() {
   const q = state.q.toLowerCase();
@@ -483,7 +492,7 @@ function setupWheel() {
     const rgl = wheelRoleGlyphs()[dhex];                         // name the role for non-visual users
     const role = rgl === 'P' ? 'Primary, ' : rgl === 'A' ? 'Accent, ' : rgl === '2' ? 'Secondary, ' : '';
     const m = nearestPaint(state.idx, hex, matchOpts());
-    $('#status').textContent = m ? `${role}${label}, ${hex}, nearest ${m.paint.name}, ΔE ${m.deltaE.toFixed(1)}.` : `${role}${label}, ${hex}, no close paint.`;
+    $('#status').textContent = m ? `${role}${label}, ${hex}, nearest ${m.paint.dname || m.paint.name}, ΔE ${m.deltaE.toFixed(1)}.` : `${role}${label}, ${hex}, no close paint.`;
   }
   function nudgeActive(dh, ds) {
     const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1);
@@ -530,7 +539,7 @@ function renderEquiv() {
     const label = groupOf(state.idx, self)?.label || 'this colour';
     const eq = equivalents(state.idx, self, { n: 8 }).filter(e => !memberIds.has(e.paint.id));   // avoid dupes
     $('#panel-equiv').innerHTML = ui.equivGroup(label, members, store.markOf)
-      + ui.equivalentsPanel(`${p.name} (${p.brand})`, eq, store.markOf);
+      + ui.equivalentsPanel(`${p.dname || p.name} (${p.brand})`, eq, store.markOf);
   } else {
     const role = (state.roleByHex || {})[srcHex];
     const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
@@ -789,7 +798,7 @@ function moveCursor(key, extend) {
   else setSelection([id], { anchor: id, cursor: id });
   cellEl(id)?.scrollIntoView({ block: 'nearest' });
   const p = state.idx.byId.get(id);
-  announceShelf(`${p.name}, ${p.brand}, ${store.markOf(id) === 'owned' ? 'owned' : store.markOf(id) === 'want' ? 'to buy' : 'not owned'}.`);
+  announceShelf(`${p.dname || p.name}, ${p.brand}, ${store.markOf(id) === 'owned' ? 'owned' : store.markOf(id) === 'want' ? 'to buy' : 'not owned'}.`);
 }
 
 /* ---- chrome ---- */
@@ -828,7 +837,7 @@ function markPaint(id, mark) {
   renderList(); renderLive(); renderActive();
   if (state.mode === 'shelf') renderShelf();
   const p = state.idx.byId.get(id);                  // announce the state change for screen readers (§3.5)
-  if (p) $('#status').textContent = `${p.name}, ${mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned'}.`;
+  if (p) $('#status').textContent = `${p.dname || p.name}, ${mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned'}.`;
 }
 function paintListKeydown(e) {
   const chips = [...$('#list').querySelectorAll('.pchip')]; if (!chips.length) return;

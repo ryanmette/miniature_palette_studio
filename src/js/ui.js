@@ -30,6 +30,10 @@ const FINISHES = { metal: ['metallic', GEM], contrast: ['contrast', DROP], wash:
 /** Small finish pill (icon + label) flagging non-flat paints (metallic/contrast/wash/…); '' for flat paints. */
 export const finishTag = type => { const f = FINISHES[type]; return f ? `<span class="finish finish-${type}">${f[1]}${f[0]}</span>` : ''; };
 
+/** Display name for a dataset paint — dname carries the line when (brand, name) is ambiguous
+ *  ("Dawnstone (Layer)" vs "Dawnstone (Dry)"). Use wherever the line isn't otherwise visible. */
+const pname = p => p.dname || p.name;
+
 /** Horizontal paint strip for the header drawer (§3.6): each paint is a chip — swatch (with finish overlay
  *  + owned/to-buy state badge) over its name. Click to pick; right-click or P/U/X to mark (app.js). The
  *  swatch is a real `.sw` so it carries the finish overlays; `markBadge` shows owned ✓ / to-buy cart. */
@@ -41,7 +45,7 @@ export function paintStrip(paints, selectedId, markOf = () => 'none') {
     return `<button class="pchip" role="option" data-id="${esc(p.id)}" data-mark="${mark}" aria-selected="${p.id === selectedId}"`
       + ` aria-label="${esc(p.name)}, ${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} — ${state}">`
       + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}">${markBadge(mark)}</span>`
-      + `<span class="pchip-nm">${esc(p.name)}</span>`
+      + `<span class="pchip-nm">${esc(pname(p))}</span>`
       + `</button>`;
   }).join('');
 }
@@ -57,9 +61,9 @@ export function shelfGrid(paints, markOf, selected = new Set()) {
     const badge = markBadge(mark);
     const state = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
     return `<div class="cell${fxCls(p)}" role="option" data-id="${esc(p.id)}" data-mark="${mark}"`
-      + ` aria-selected="${sel}" aria-label="${esc(p.name)}, ${esc(p.brand)} — ${state}"`
+      + ` aria-selected="${sel}" aria-label="${esc(pname(p))}, ${esc(p.brand)} — ${state}"`
       + ` style="--cell:${safeColor(p.hex)}">`
-      + `${badge}<span class="celltip">${esc(p.name)} · ${esc(p.brand)}</span>`
+      + `${badge}<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>`
       + `</div>`;
   }).join('');
 }
@@ -210,15 +214,20 @@ export function planControls(ladder, collection, includeContrast, gapCount) {
  *  carries `data-hex` so hovering/focusing it rings the same colour's wheel node + live-palette column —
  *  the colour link that ties this detail tab to the wheel (app.js linkHighlight; §3.5). */
 export function roleSlots(scheme, markOf) {
-  const step = s => `<div class="step">${swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div><div class="pn">${s.match ? esc(s.match.paint.name) : '—'}</div></div>`;
+  const step = s => `<div class="step">${swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div><div class="pn">${s.match ? esc(pname(s.match.paint)) : '—'}</div></div>`;
   // When a limited collection forces two roles onto the same paint, say so + how to separate / what to buy.
   const sharedNote = r => r.shared
     ? `<div class="sharednote"><span class="warnpill">shared paint</span> reused for another role — ${esc(r.differentiate)} to separate`
-      + (r.buy ? `, or buy <strong>${esc(r.buy.paint.name)}</strong> <span class="br">(${esc(r.buy.paint.brand)} · ΔE ${r.buy.deltaE.toFixed(1)})</span> ${buyBtn(r.buy.paint.id, markOf ? markOf(r.buy.paint.id) : 'none')}` : '') + `.</div>`
+      + (r.buy ? `, or buy <strong>${esc(pname(r.buy.paint))}</strong> <span class="br">(${esc(r.buy.paint.brand)} · ΔE ${r.buy.deltaE.toFixed(1)})</span> ${buyBtn(r.buy.paint.id, markOf ? markOf(r.buy.paint.id) : 'none')}` : '') + `.</div>`
+    : '';
+  // Honesty (§2): your picked paint was filtered out of this slot — name it and say why.
+  const subNote = r => r.substituted
+    ? `<div class="sharednote"><span class="warnpill">your pick</span> <strong>${esc(r.substituted.name)}</strong> is ${esc(r.substituted.why)} — nearest eligible paint shown.</div>`
     : '';
   return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}" data-hex="${safeColor(r.idealHex)}">`
     + `<div class="shead"><span class="role">${esc(r.role)}</span><span class="wt">${esc(r.weight)}</span></div>`
     + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match, markOf)}</div>`
+    + subNote(r)
     + sharedNote(r)
     + r.ladders.map(lad => (r.ladders.length > 1 ? `<div class="ladcap">${esc(lad.label)}</div>` : '')
       + `<div class="ladder">${lad.steps.map(step).join('')}</div>`).join('')
@@ -277,7 +286,7 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // metallic sheen (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
     const fx = real && m ? fxCls(m.paint).trim() : (isMetal ? 'metal' : '');
     const foot = m
-      ? `<span class="lcname">${esc(m.paint.name)}${m.owned ? ' <span class="ownmini">✓ owned</span>' : ''}</span>`
+      ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ' <span class="ownmini">✓ owned</span>' : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
         + `<span style="color:${tier(m.quality.tier)}">${esc(m.quality.label)}</span>`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
@@ -325,7 +334,7 @@ export function a11yPanel(model) {
   if (model.collision) {
     const s = model.collision.suggestion;
     coll = `<div class="collide"><strong>Heads-up:</strong> ${esc(model.collision.roles[0])} and ${esc(model.collision.roles[1])} look similar under deuteranopia (ΔE ${model.collision.delta.toFixed(1)}).`
-      + (s ? ` Try a shifted ${esc(s.role.toLowerCase())} ${swatch(s.hex, '', 'width:16px;height:16px;display:inline-block;vertical-align:-2px')}${s.match ? ' — nearest paint ' + esc(s.match.paint.name) + ' (' + esc(s.match.paint.brand) + ')' : ''}.` : '')
+      + (s ? ` Try a shifted ${esc(s.role.toLowerCase())} ${swatch(s.hex, '', 'width:16px;height:16px;display:inline-block;vertical-align:-2px')}${s.match ? ' — nearest paint ' + esc(pname(s.match.paint)) + ' (' + esc(s.match.paint.brand) + ')' : ''}.` : '')
       + '</div>';
   } else {
     coll = '<div class="collide ok">No major colour-blindness collisions in this scheme.</div>';

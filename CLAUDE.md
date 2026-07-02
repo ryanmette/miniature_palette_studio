@@ -280,7 +280,8 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
       "captured": "2026-06-24",               // date the value was recorded — provenance record, not shown in the UI
       "fx": "texture"                          // optional, effect-type only: gloss|slime|texture — drives the bespoke swatch finish (build-seeded by keyword)
       // "groupId" links a paint to its equivalence group in groups[] (auto-seeded ΔE≤1; see §5.2)
-      // lab[] is derived at load time, never stored. Manufacturer *release* dates
+      // lab[] and dname (display name — carries the line when a brand reuses a name across lines,
+      // e.g. "Dawnstone (Layer)" vs "Dawnstone (Dry)") are derived at load time, never stored. Manufacturer *release* dates
       // are not available from our sources; "captured" is the record date.
     }
   ],
@@ -314,6 +315,11 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 
 - **Conversions**: sRGB ↔ linear ↔ XYZ ↔ **CIELAB (D65)**. Matching is done in Lab.
 - **Distance**: **CIEDE2000 (ΔE 2000)** with kL=kC=kH=1. This is the single matching metric.
+- **Match ranking (v1.8)** may adjust the *ranking* — never the reported ΔE (§2 honesty): the owned-boost
+  (−6), a **metal demotion for colour roles** (+4 — metallics read differently on the model; the Metal
+  role's all-metal pool demotes all candidates equally so it's unaffected), and a **picked-paint
+  tie-break** (−0.001 — the paint the user explicitly picked wins exact ΔE ties, e.g. Layer vs Dry
+  twins that share a hex). Constants live in `app.js`/`data.js`; change them only with a CHANGELOG note.
 - **Harmonies** are computed from the base in HSL. Most rotate **hue** (keeping S/L); the two *value*
   harmonies instead vary **lightness/saturation** at the base hue. Each partner is a locked `{dh,ds,dl}`
   step from the base (`harmony.js` `HARMONY_STEPS`):

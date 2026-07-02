@@ -185,7 +185,7 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    knows it's a mix, not a bottled wash. UI: the ladder step gains a small qualifier tag. (Touches
    `scheme.js` ladder recipe + `ui.js` role-card ladder rendering; CLAUDE.md §7 note.)
 
-3. **Picking a paint resolves to a *different* paint, surprisingly (bug/UX).** Selecting **Dawnstone**
+3. ✅ **DONE (pick-fidelity PR).** ~~Picking a paint resolves to a *different* paint, surprisingly (bug/UX).~~ Selecting **Dawnstone**
    from the Paints drawer showed **Iron Warriors** as Primary's nearest paint. Two compounding
    causes: (a) **"Only owned"** was active, so the pool is filtered to owned paints and Dawnstone
    (unowned) is replaced by the nearest owned — *correct but unexpected right after you picked it*;
@@ -196,7 +196,11 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    non-Metal roles. **Fix direction:** when the seed is itself a real paint, Primary's "nearest"
    should prefer/label the seed paint; and reconsider metal eligibility for colour roles.
 
-4. **Duplicate "Dawnstone" in the dataset (data).** The Paints list shows **two Dawnstones**, which
+4. ✅ **DONE (pick-fidelity PR) — reframed.** Investigation showed the two Dawnstones are *legitimate
+   distinct products* (Citadel sells it as both a Layer and a Dry paint; 118 such cross-line name
+   groups exist, zero true duplicates) — so the fix is **UI disambiguation** (`dname`: "Dawnstone
+   (Layer)") + a validator guard against true same-brand+line+name dupes, not dataset deletion.
+   ~~Duplicate "Dawnstone" in the dataset (data).~~ The Paints list shows **two Dawnstones**, which
    is confusing. **Fix direction:** de-dupe in `scripts/build-dataset.mjs` (or flag via
    `validate-data.mjs` — add a same-brand same-name duplicate check) and, if they're genuinely the
    same paint from two sources, collapse to one with the better-sourced hex; if they're distinct

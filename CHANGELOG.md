@@ -6,6 +6,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Pick fidelity + name disambiguation** (follow-ups 3+4 from the neutral-mode review). Selecting
+  "Dawnstone" no longer surprises: ① names that a brand reuses across lines (118 groups — Citadel
+  Layer vs Dry "Dawnstone", Vallejo "Black" ×4 …) now render with the line — **"Dawnstone (Layer)"** —
+  in the drawer, Shelf, hero, live palette, ladders and announcements (`dname`, derived at load like
+  `lab`; the stored data is untouched, they are genuinely distinct products, not duplicates);
+  ② the paint you picked **wins exact ΔE ties** (Layer/Dry twins share a hex — dataset order no longer
+  decides); ③ when filters *do* replace your pick (e.g. "only owned" and you don't own it), the Primary
+  card now **says so honestly** — "your pick Dawnstone (Layer) is not owned — nearest eligible paint
+  shown"; ④ **metallics rank +4 ΔE further for colour roles** (they read differently on the model) while
+  the Metal role's all-metal pool is unaffected — reported ΔE always stays true (§2).
+  `validate-data.mjs` gains a hard duplicate-product check (same brand+line+name). Amends `CLAUDE.md`
+  §5/§7. SW `ps-v18`.
 - **Doc-freshness gate in CI + docs truth-sync.** A 2026-07 review found 19 places where the docs had
   frozen at earlier releases (README stuck at v1.0.0/374 paints/"license TBD"; USE_CASES marking shipped
   features "next"; PLAN describing the pre-1.1 architecture and a never-built postMessage embed;

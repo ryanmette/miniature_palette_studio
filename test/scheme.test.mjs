@@ -129,3 +129,16 @@ test('buildScheme threads opts.pop through to the roles', () => {
   const s = buildScheme(fx, '#1B1B1F', 'duotone', { pop: '#0F6B6E' });
   assert.equal(s.roles.find(r => r.role === 'Accent').idealHex, '#0F6B6E');
 });
+
+test('Primary flags an honest substitution when filters replace the picked paint', () => {
+  // "only owned" pool that does NOT include the picked paint
+  const owned = new Set(['c-teal']);
+  const s = buildScheme(fx, '#9A1115', 'complementary', { ownedIds: owned, seed: { id: 'c-red', name: 'Mephiston Red' } });
+  const primary = s.roles.find(r => r.role === 'Primary');
+  assert.ok(primary.substituted, 'substitution flagged');
+  assert.equal(primary.substituted.name, 'Mephiston Red');
+  assert.equal(primary.substituted.why, 'not owned');
+  // no filters → the pick matches itself → no flag
+  const clean = buildScheme(fx, '#9A1115', 'complementary', { seed: { id: 'c-red', name: 'Mephiston Red' } });
+  assert.equal(clean.roles.find(r => r.role === 'Primary').substituted, null);
+});
