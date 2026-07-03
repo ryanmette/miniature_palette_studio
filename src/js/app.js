@@ -522,7 +522,11 @@ function setupWheel() {
   }
   cv.addEventListener('pointerdown', e => { collapseBanner(); dragging = true; active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });   // interacting with the wheel dismisses the explainer — it must never block a drag
   cv.addEventListener('pointermove', e => { if (dragging) applyDrag(e); });
-  cv.addEventListener('pointerup', () => { dragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); });
+  // pointercancel too: a touch drag the OS takes over (gesture/scroll) never fires pointerup, and
+  // without this the wheel stays in dragging mode, chasing every later no-button pointermove.
+  const endDrag = () => { if (!dragging) return; dragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); };
+  cv.addEventListener('pointerup', endDrag);
+  cv.addEventListener('pointercancel', endDrag);
   // --- keyboard operability (WCAG): focus the wheel, then arrows adjust the active node, [ ] cycle, +/- add/remove ---
   function announceActive() {
     const ns = hitNodes(); if (!ns.length) return;
@@ -601,11 +605,19 @@ function renderA11y() {
   ];
   const mk = (a, b, la, lb) => { const w = wcag(a, b); return { a, b, labelA: la, labelB: lb, ratio: w.ratio, passAAText: w.passAAText, passAALarge: w.passAALarge }; };
   const contrasts = [mk(colors[0], colors[2], 'Primary', 'Accent'), mk(colors[0], '#FFFFFF', 'Primary', 'white'), mk(colors[0], '#000000', 'Primary', 'black')];
-  const col = minPairDelta(colors, 'deuteranopia');
+  // Check ALL simulated deficiencies, not just deuteranopia — a scheme can collide only under
+  // tritanopia (blue/purple) or protanopia while staying distinct for deutan viewers. Warn on the
+  // worst collision and search the fix against the worst-case across every type.
+  const CVD_TYPES = ['deuteranopia', 'protanopia', 'tritanopia'];
+  const worstPair = cols => CVD_TYPES.reduce((w, t) => {
+    const c = minPairDelta(cols, t);
+    return !w || c.delta < w.delta ? { ...c, type: t } : w;
+  }, null);
+  const col = worstPair(colors);
   let collision = null;
   if (col.delta < 10) {
     const [i, j] = col.pair;
-    collision = { roles: [names[i], names[j]], delta: col.delta };
+    collision = { roles: [names[i], names[j]], delta: col.delta, type: col.type };
     // Shift whichever of the *colliding* roles is least disruptive to move — the old code
     // always rotated the Accent, so it couldn't fix e.g. a Primary/Secondary collision.
     const freedom = { Accent: 0, Secondary: 1, Metal: 2, Primary: 3 };
@@ -614,7 +626,7 @@ function renderA11y() {
     for (const d of [25, -25, 40, -40, 55, -55]) {
       const trial = colors.slice();
       trial[shiftIdx] = rotateHue(colors[shiftIdx], d);
-      const m = minPairDelta(trial, 'deuteranopia').delta;
+      const m = worstPair(trial).delta;
       if (m > bestMin + 1) { bestMin = m; best = trial[shiftIdx]; }
     }
     if (best) {
@@ -935,6 +947,10 @@ function announce() {
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
   const p = new URLSearchParams();
+  // A paint seed shares its ID, not just its hex — the recipient must get the same paint (brand,
+  // group, buy state, exact-tie preference), not an anonymous "Custom #…". The hex rides along as a
+  // fallback so an old link (or a paint dropped from a future dataset) still reproduces the colours.
+  if (!state.customHex && state.baseId) p.set('p', state.baseId);
   p.set('c', baseHex().replace('#', ''));
   p.set('h', state.harmony);
   if (state.mode === 'shelf') p.set('m', 'shelf');
@@ -1451,8 +1467,9 @@ async function init() {
   }).filter(Boolean).slice(0, MAX_FREE);
   const dp = url.get('d'); if (dp) state.dropOffsets = dp.split('.').map(Number).filter(Number.isFinite);
   if (url.get('r') === 'accent') { state.seedRole = 'accent'; for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'accent')); }
-  const c = url.get('c');
-  if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();
+  const pid = url.get('p'), c = url.get('c');
+  if (pid && state.idx.byId.has(pid)) state.baseId = pid;   // paint seed round-trips as the paint itself
+  else if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();
   else state.baseId = state.idx.paints[0].id;
 
   ensureHarmonyMode();   // seed is now known: sync the strip (incl. neutral mode) + banner + pops
