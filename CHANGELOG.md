@@ -163,6 +163,25 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Service-worker cache bumped to `ps-v10` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
 
 ### Fixed
+- **Mobile: the neutral explainer no longer blocks colour-picking.** On phones there's no spare space
+  above the wheel, so the expanded banner overlay sat ON the disc and swallowed the touches meant for
+  the wheel. Touch / narrow (≤700px) screens now enter neutral mode **pill-first** — the compact ◐ pill
+  barely covers the rim and the explainer expands only when tapped — and **any wheel interaction
+  dismisses the banner** (it can never block a drag, on any device). The banner is also more compact on
+  small screens. Verified at 390×844 with touch: pill-first entry, wheel interactive immediately,
+  pill-tap expands, wheel-touch dismisses AND the pick still lands. SW `ps-v21`.
+- **Mobile: the Plan tab's controls no longer scrunch.** On phones the "Tone ladder" / "Use my
+  collection" labels sat *beside* their segmented controls, crushing the long chips ("Wash · base ·
+  highlight") into three-line text that spilled out of the fixed-height pills. At ≤520px the label now
+  stacks **above** a full-width control, and segment pills grow to fit wrapped text instead of
+  overflowing. Verified 390–900px: no pill overflow, no horizontal scroll, ladder columns intact.
+- **Mobile: Shelf names no longer clip at the screen edges — and the Shelf no longer scrolls sideways.**
+  A cell's name tip is centred on its swatch, so edge-column names ran off the viewport; a tip is now
+  clamped on-screen (`clampTip` sets a transform offset on hover / focus / keyboard-cursor). Root cause
+  of a second bug too: all ~2,500 tips were merely `opacity: 0`, so the invisible nowrap labels on every
+  right-edge cell silently widened the page ~50px sideways on phones — tips are now `display: none`
+  until shown (fade-in kept via animation). A full-app overspill audit (Studio tabs, drawer, neutral
+  mode, Shelf at 360/390px) now reports zero out-of-viewport elements and zero horizontal scroll.
 - **Seed toolbar overlapped the sticky header on scroll.** Its `z-index` (30) outranked the header (20);
   dropped to 10 — still above the sticky studio (so the Paints drawer isn't hidden behind the wheel) but
   below the header. **Header + footer now match the content width.** `.bar` and `.appfoot` were capped at

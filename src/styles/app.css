@@ -388,7 +388,6 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   outline: 2px solid transparent; outline-offset: 2px; transition: outline-color .12s; }
 .cell[aria-selected="true"] { outline-color: var(--accent); }
 .cell.cursor { outline-color: var(--accent); }                 /* keyboard cursor cell (aria-activedescendant) */
-.cell.cursor .celltip { opacity: 1; }
 .cell:hover { box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 1px var(--border-strong); }
 .cell.flash { animation: mh-pop .32s cubic-bezier(.34,1.56,.64,1); }   /* confirm a mark change */
 /* corner state badge — what the paint IS (persistent fill, §3.5). Same corner for both states. */
@@ -396,12 +395,17 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   display: grid; place-items: center; font-size: 11px; line-height: 1; box-shadow: 0 1px 2px rgba(0,0,0,.35); }
 .cbadge.owned { background: var(--success); color: #fff; }
 .cbadge.want { background: var(--buy); color: var(--on-buy); }
-/* name tooltip — overlay, never affects layout (§3.4); shown on hover/focus */
-.celltip { position: absolute; left: 50%; bottom: calc(100% + 5px); transform: translateX(-50%);
+/* name tooltip — overlay, never affects layout (§3.4); shown on hover/focus/keyboard-cursor.
+   display:none until shown — thousands of laid-out nowrap tips would silently widen the page
+   (edge-column tips stick past the viewport → phantom horizontal scroll on phones). When shown,
+   app.js clampTip() sets --tipdx so an edge cell's name shifts back inside the screen instead of
+   clipping; the .12s fade-in keeps the §3.4 hover timing (animation, since display can't transition). */
+.celltip { position: absolute; left: 50%; bottom: calc(100% + 5px); transform: translateX(calc(-50% + var(--tipdx, 0px)));
   background: var(--text); color: var(--bg); font-size: 11.5px; font-weight: 500; white-space: nowrap;
-  padding: 4px 8px; border-radius: 7px; pointer-events: none; opacity: 0; transition: opacity .12s;
+  padding: 4px 8px; border-radius: 7px; pointer-events: none; display: none;
   z-index: 5; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-.cell:hover .celltip, .cell:focus-visible .celltip { opacity: 1; }
+.cell:hover .celltip, .cell:focus-visible .celltip, .cell.cursor .celltip { display: block; animation: tipfade .12s ease; }
+@keyframes tipfade { from { opacity: 0; } }
 .cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* marquee rubber-band */
 .marquee { position: absolute; border: 1px solid var(--accent); background: var(--accent-weak);
@@ -486,9 +490,13 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .pad { padding: 14px; }
   .hero .herochip { width: 26px; height: 26px; }
   .seg { width: 100%; }
-  .seg button { flex: 1; text-align: center; }
+  /* long labels ("Wash · base · highlight") may wrap on phones: pills grow instead of overflowing */
+  .seg button { flex: 1; text-align: center; height: auto; min-height: 34px; padding: 5px 8px; line-height: 1.25; }
   #seg button { justify-content: center; }
+  /* Plan controls: label above a full-width control — beside it, the segments get crushed to 3-line pills */
+  .ctlgrp { flex-direction: column; align-items: flex-start; gap: 5px; width: 100%; }
   .hglyph { display: none; }          /* text-only harmony control on phones (no room for glyphs) */
+  .nbanner { font-size: 11.5px; padding: 7px 10px; gap: 7px; }   /* compact explainer when tapped open on phones */
   /* lightness goes back to a horizontal slider below the wheel on phones (a vertical one would crush it) */
   .wheelrow { flex-direction: column; }
   .wlcol { flex-direction: row; width: min(82vw, 340px); gap: 10px; }
@@ -508,7 +516,8 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .shelf-select { display: inline-flex; }
   .shelfgrid { gap: 10px; }
   .cell { aspect-ratio: 1; }
-  .celltip { opacity: 0; }   /* tap shows the bar; long-press path is tabled — keep the wall scannable */
+  /* tap names the cell via sticky :hover (clamped on-screen by clampTip) — the wall stays scannable
+     because only the touched cell ever hovers */
 }
 
 /* motion — fades + gentle bounce (§3.4) */
