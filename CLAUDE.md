@@ -280,7 +280,8 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
       "captured": "2026-06-24",               // date the value was recorded — provenance record, not shown in the UI
       "fx": "texture"                          // optional, effect-type only: gloss|slime|texture — drives the bespoke swatch finish (build-seeded by keyword)
       // "groupId" links a paint to its equivalence group in groups[] (auto-seeded ΔE≤1; see §5.2)
-      // lab[] is derived at load time, never stored. Manufacturer *release* dates
+      // lab[] and dname (display name — carries the line when a brand reuses a name across lines,
+      // e.g. "Dawnstone (Layer)" vs "Dawnstone (Dry)") are derived at load time, never stored. Manufacturer *release* dates
       // are not available from our sources; "captured" is the record date.
     }
   ],
@@ -314,6 +315,11 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 
 - **Conversions**: sRGB ↔ linear ↔ XYZ ↔ **CIELAB (D65)**. Matching is done in Lab.
 - **Distance**: **CIEDE2000 (ΔE 2000)** with kL=kC=kH=1. This is the single matching metric.
+- **Match ranking (v1.8)** may adjust the *ranking* — never the reported ΔE (§2 honesty): the owned-boost
+  (−6), a **metal demotion for colour roles** (+4 — metallics read differently on the model; the Metal
+  role's all-metal pool demotes all candidates equally so it's unaffected), and a **picked-paint
+  tie-break** (−0.001 — the paint the user explicitly picked wins exact ΔE ties, e.g. Layer vs Dry
+  twins that share a hex). Constants live in `app.js`/`data.js`; change them only with a CHANGELOG note.
 - **Harmonies** are computed from the base in HSL. Most rotate **hue** (keeping S/L); the two *value*
   harmonies instead vary **lightness/saturation** at the base hue. Each partner is a locked `{dh,ds,dl}`
   step from the base (`harmony.js` `HARMONY_STEPS`):
@@ -336,6 +342,9 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 - **Neutral seeds (v1.8).** A seed with Lab chroma **C\* < 10** (`isNeutral`; perceptual, so visually-black
   "saturated" hexes like `#100000` classify correctly) has no usable hue: the studio enters **neutral
   mode** automatically (and reversibly — saturate the seed and it exits, restoring the parked harmony).
+  Mode switching uses **hysteresis** (enter < 10, exit > `NEUTRAL_EXIT` = 14): a drag hovering on the
+  boundary can't flip the mode per frame. The one neutral explainer is a wheel **overlay** (never
+  reflows, §3.4) that auto-collapses to a ◐ pill; the pill re-expands it.
   Hue-rotation harmonies grey out in place (visible + tooltip'd); the neutral-native schemes are
   (`harmony.js neutralPartners`, recipes locked; partners are ordered **[secondary, accent]** by
   construction — no ΔE-furthest rule, the pop *is* the accent):
@@ -348,6 +357,17 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   (the Main|Accent seed toggle disables — a neutral accent has no complement) and its Metal ideal is
   always gunmetal `#6E7177` (no hue to read a temperature from).
 - **Color-blindness simulation**: Machado et al. (2009) severity-1.0 matrices applied in linear RGB, for protanopia / deuteranopia / tritanopia.
+- **Temperature ladder (v1.8):** a NEUTRAL colour role's card leads with **Cool · base · warm** — its
+  value steps have no hue to walk, so the ladder walks temperature instead (locked absolute tints:
+  cool `hsl(222,.12, L−.14)` · the ideal · warm `hsl(32,.14, L+.16)`); the selected value ladder(s)
+  still follow. Saturated roles are unchanged.
+- **Wash-step media (v1.8):** the Wash·base·highlight ladder's *wash* step prefers REAL shading media
+  (`wash`/`shade`/`ink` types, the finish exclusion lifted for that step only). If none lands within
+  ΔE ≤ 10, it falls back to the darkened-base match flagged **"watered down"** (thin the base) — never
+  a silent substitution (§2).
+- **NMM (non-metallic metal) ladder (v1.8):** the Metal role also offers a flat-paint recipe for the
+  metal illusion — locked steps off the metal ideal: shadow `{dl:−.26, ds:+.04}` · mid (the ideal) ·
+  highlight `{dl:+.30, ds:−.18}`, matched with metallics AND finishes excluded.
 - **Contrast**: WCAG 2.1 relative-luminance ratio; AA thresholds 4.5:1 (text) / 3:1 (large/UI).
 - **Text-on-swatch** legibility: choose black/white by relative luminance threshold 0.5 (with the standard sRGB→linear step).
 

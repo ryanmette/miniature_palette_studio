@@ -30,6 +30,8 @@ const hue = h => { let [r,g,b]=hx(h).map(v=>v/255);const mx=Math.max(r,g,b),mn=M
 /* ---- HARD checks ---- */
 const errors = [];
 const ids = new Set();
+const productKeys = new Set();   // (brand, line, name) — same name across LINES is legitimate (Layer vs Dry
+                                 // Dawnstone); the same name within one line is a true duplicate product.
 const HEX = /^#[0-9A-F]{6}$/;
 for (const p of P){
   for (const f of ['id','brand','line','name','hex','type','source','captured'])
@@ -37,6 +39,8 @@ for (const p of P){
   if (!HEX.test(p.hex)) errors.push(`bad hex ${p.hex} on ${p.id}`);
   if (!ALLOWED_TYPES.has(p.type)) errors.push(`bad type "${p.type}" on ${p.id}`);
   if (ids.has(p.id)) errors.push(`duplicate id ${p.id}`); else ids.add(p.id);
+  const pk = `${p.brand}|${p.line}|${(p.name||'').toLowerCase()}`;
+  if (productKeys.has(pk)) errors.push(`duplicate product ${p.brand} ${p.line} "${p.name}" (${p.id})`); else productKeys.add(pk);
 }
 
 /* ---- SOFT flags ---- */

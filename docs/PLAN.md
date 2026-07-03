@@ -149,7 +149,7 @@ with an explanatory tooltip (a neutral accent has no complement to build from).
 | PR | Scope | Key changes |
 |----|-------|-------------|
 | 1 | **Engine: detection + neutral schemes + pop-driven harmonies** | `color.js`: `labChroma` + `isNeutral` (pure). `harmony.js`: neutral recipes as data (`neutral-pop` · `duotone` · `warm-cool`; *Value ramp* reuses `shades`), partners rotate the **pop** hue. `scheme.js`: neutral path in `roleIdeals` (Primary = seed + value ramp · Secondary = bridge grey · Accent = pop · Metal unchanged). `app.js`/`ui.js`: `state.pop` (URL-encoded `pp` → share links §4), banner, adapted strip (aria-disabled + title), wheel centre-pin + pop node (existing keyboard nav drives it), quick-pop chips, auto-switch off a hue-rotation harmony on entry (announced). Tests: detection edge cases, recipes, neutral `roleIdeals`, URL round-trip. Docs: `CLAUDE.md` §7 + §3.5, `USE_CASES.md`, CHANGELOG, SW bump. |
-| 2 | **Temperature ladder** (small follow-up) | `scheme.js`: Cool·Base·Warm ideals for neutral roles via locked Lab offsets (cool → b\* down; warm → a\*/b\* up; §7). `ui.js` role cards: segmented *Cool·base·warm | Shadow·mid·highlight* on neutral roles only. Tests + CHANGELOG + SW bump. |
+| 2 ✅ | **Temperature ladder** — DONE (ladders PR; recipe locked in HSL tints rather than Lab offsets, same intent) | `scheme.js`: Cool·Base·Warm ideals for neutral roles via locked Lab offsets (cool → b\* down; warm → a\*/b\* up; §7). `ui.js` role cards: segmented *Cool·base·warm | Shadow·mid·highlight* on neutral roles only. Tests + CHANGELOG + SW bump. |
 
 Interactions checked at plan time: equivalents drill-down, export, compare, and owned-matching are
 hex-based and unaffected; value-ramp columns are display-only in the live palette exactly like the
@@ -165,7 +165,7 @@ hint (C\* 10–15 "your seed is nearly neutral…") — deferred; ship without i
 
 Raised by Ryan after the neutral-mode merge; parked here so they survive. In rough priority:
 
-1. **Neutral-boundary drag thrash (bug).** Dragging the wheel through grey makes the neutral-seed
+1. ✅ **DONE (banner/NMM PR).** ~~Neutral-boundary drag thrash (bug).~~ Fixed with detection hysteresis (enter C\* < 10, exit > 14) **and** the banner became a wheel overlay with an auto-collapse ◐ pill — it can no longer reflow the studio at all. Dragging the wheel through grey makes the neutral-seed
    banner / harmony-strip flicker and "get messed up." Cause: `ensureHarmonyMode()` runs every
    `commit()` frame with a single hard threshold (C\* < 10), so tiny movements right at the boundary
    flip neutral mode on/off repeatedly — re-rendering the strip (and parking/restoring
@@ -175,7 +175,7 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    not per frame. Keep the parked-harmony restore keyed to a *committed* mode change, not a
    transient one. (Touches `app.js ensureHarmonyMode`/`commit`; add a boundary-oscillation test.)
 
-2. **Tone-ladder "wash" step should prefer real wash media (enhancement).** Today the ladder's
+2. ✅ **DONE (ladders PR).** ~~Tone-ladder "wash" step should prefer real wash media (enhancement).~~ Wash rungs now match real wash/shade/ink paints (ΔE ≤ 10 gate) with an honest "watered down" fallback label. Today the ladder's
    **wash** step is just the base stepped darker + slightly saturated, then nearest *any-type* paint
    — so it can resolve to a flat base/layer paint, not an actual wash. **Wanted:** for the wash step,
    **prefer `shade` / `wash` / `ink` paints** (the finishes currently excluded from suggestions —
@@ -185,7 +185,7 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    knows it's a mix, not a bottled wash. UI: the ladder step gains a small qualifier tag. (Touches
    `scheme.js` ladder recipe + `ui.js` role-card ladder rendering; CLAUDE.md §7 note.)
 
-3. **Picking a paint resolves to a *different* paint, surprisingly (bug/UX).** Selecting **Dawnstone**
+3. ✅ **DONE (pick-fidelity PR).** ~~Picking a paint resolves to a *different* paint, surprisingly (bug/UX).~~ Selecting **Dawnstone**
    from the Paints drawer showed **Iron Warriors** as Primary's nearest paint. Two compounding
    causes: (a) **"Only owned"** was active, so the pool is filtered to owned paints and Dawnstone
    (unowned) is replaced by the nearest owned — *correct but unexpected right after you picked it*;
@@ -196,7 +196,11 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    non-Metal roles. **Fix direction:** when the seed is itself a real paint, Primary's "nearest"
    should prefer/label the seed paint; and reconsider metal eligibility for colour roles.
 
-4. **Duplicate "Dawnstone" in the dataset (data).** The Paints list shows **two Dawnstones**, which
+4. ✅ **DONE (pick-fidelity PR) — reframed.** Investigation showed the two Dawnstones are *legitimate
+   distinct products* (Citadel sells it as both a Layer and a Dry paint; 118 such cross-line name
+   groups exist, zero true duplicates) — so the fix is **UI disambiguation** (`dname`: "Dawnstone
+   (Layer)") + a validator guard against true same-brand+line+name dupes, not dataset deletion.
+   ~~Duplicate "Dawnstone" in the dataset (data).~~ The Paints list shows **two Dawnstones**, which
    is confusing. **Fix direction:** de-dupe in `scripts/build-dataset.mjs` (or flag via
    `validate-data.mjs` — add a same-brand same-name duplicate check) and, if they're genuinely the
    same paint from two sources, collapse to one with the better-sourced hex; if they're distinct

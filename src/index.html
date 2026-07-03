@@ -103,9 +103,12 @@
         <div class="herowrap">
           <div class="hero" id="hero"></div>
         </div>
-        <div class="nbanner" id="neutralBanner" hidden><span class="nb-ic" aria-hidden="true">◐</span>
-          <span><strong data-i18n="neutralHead">Neutral seed</strong> — <span data-i18n="neutralBody">hue harmonies can't move a colour with no hue, so these schemes are built for neutrals. Your colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.</span></span></div>
         <div class="wheelcol">
+          <div class="noverlay" id="neutralOverlay" hidden>
+            <button type="button" class="nbanner" id="neutralBanner" aria-controls="neutralPill" title="Collapse this note"><span class="nb-ic" aria-hidden="true">◐</span>
+              <span><strong data-i18n="neutralHead">Neutral seed</strong> — <span data-i18n="neutralBody">hue harmonies can't move a colour with no hue, so these schemes are built for neutrals. Your colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.</span></span></button>
+            <button type="button" class="npill" id="neutralPill" aria-expanded="false" aria-controls="neutralBanner" title="Neutral seed — schemes adapted. Click for details." hidden><span aria-hidden="true">◐</span> <span data-i18n="neutralPill">neutral seed</span></button>
+          </div>
           <div class="wheelrow">
             <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
             <div class="wlcol">

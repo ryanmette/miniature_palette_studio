@@ -1,7 +1,7 @@
 // scheme.js — turn a base colour + harmony into a role-mapped, paint-matched scheme.
 // Pure (takes an indexed dataset); the heart of "ideal vs actual" (CLAUDE.md §1, USE_CASES §3).
 
-import { rotateHue, adjustHsl, adjustDirection, rgbToHsl, hexToRgb, hexToLab, deltaE2000, isNeutral } from './color.js';
+import { rotateHue, adjustHsl, adjustDirection, rgbToHsl, hexToRgb, hslToRgb, rgbToHex, hexToLab, deltaE2000, isNeutral, clamp01 } from './color.js';
 import { harmonyPartners, neutralPartners, isNeutralHarmony, DEFAULT_POP } from './harmony.js';
 import { nearestPaint } from './data.js';
 
@@ -22,6 +22,31 @@ const LADDERS = {
   ] },
 };
 const LADDER_STYLES = { wash: ['wash'], tone: ['tone'], both: ['wash', 'tone'] };
+
+// Temperature ladder (v1.8 PR 2, §7 locked): a NEUTRAL role's value steps carry no hue to shade or
+// highlight with — the painter's move is a temperature axis instead: shade it COOL (blue-grey into the
+// recesses) and WARM the light (ivory/bone at the edges). Absolute hue/sat tints (the neutral has no
+// hue of its own to adjust), lightness stepped off the role's ideal.
+const TEMP_STEPS = [
+  { key: 'cool', h: 222, s: 0.12, dl: -0.14 },
+  { key: 'base', h: null, s: 0, dl: 0 },
+  { key: 'warm', h: 32, s: 0.14, dl: 0.16 },
+];
+
+// The 'wash' ladder step prefers REAL shading media — a bottled wash/shade/ink flows into recesses in
+// a way a darkened base coat can't. When no medium lands within WASH_GATE ΔE, fall back to the darkened
+// base match and say so honestly: the step is flagged `dilute` ("watered down" in the UI).
+const WASH_MEDIA = new Set(['wash', 'shade', 'ink']);
+const WASH_GATE = 10;   // beyond "Loose" there's no honest bottled wash — thin your base instead
+
+// NMM — Non-Metallic Metal (§7, locked): paint the metal ILLUSION with flat paints via a hard
+// value structure (deep shadow → mid → near-white ping). Steps derive from the Metal role's ideal;
+// matching excludes metallics AND finishes so every rung is a flat paint you can layer.
+const NMM_STEPS = [
+  { key: 'shadow', adj: { dl: -0.26, ds: 0.04 } },
+  { key: 'mid', adj: null },
+  { key: 'highlight', adj: { dl: 0.30, ds: -0.18 } },
+];
 
 /** Heuristic ideal metal for a base colour (warm→gold, cool→silver, else gunmetal). A neutral base
  *  has no meaningful hue to read a temperature from, so it always gets gunmetal. */
@@ -82,9 +107,20 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
 
   const roles = defs.map(d => {
     // A metal role keeps its type filter across the whole ladder (match + every step), so its
-    // derived shades resolve to real metallics rather than flat colours.
-    const roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
-    const step = ideal => ({ idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) });
+    // derived shades resolve to real metallics rather than flat colours. The slot whose ideal IS the
+    // picked paint's own hex (Primary in main mode; Accent in accent mode) prefers the pick on exact
+    // ΔE ties (Layer vs Dry twins share a hex — dataset order must not override the pick).
+    const seedTarget = !!(opts.seed && opts.seed.hex && d.idealHex.toUpperCase() === opts.seed.hex.toUpperCase());
+    let roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
+    if (seedTarget) roleOpts = { ...roleOpts, preferIds: new Set([opts.seed.id]) };
+    const step = (ideal, media) => {
+      if (media === 'wash') {   // prefer a real wash/shade/ink; fall back to "watered down" base honestly
+        const real = nearestPaint(idx, ideal, { ...roleOpts, types: WASH_MEDIA, excludeTypes: undefined });
+        if (real && real.deltaE <= WASH_GATE) return { idealHex: ideal, match: real, media: 'wash' };
+        return { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts), dilute: true };
+      }
+      return { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) };
+    };
 
     let match = nearestPaint(idx, d.idealHex, { ...roleOpts, excludeIds: usedIds });
     let shared = false, differentiate = null, buy = null;
@@ -101,12 +137,43 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     }
     if (match) usedIds.add(match.paint.id);
 
-    const ladders = styles.map(st => ({
+    // Honesty (§2): you picked a real paint but filters put a DIFFERENT paint in its slot — say so,
+    // with why, instead of silently substituting (e.g. "only owned" + an unowned pick, or a wash /
+    // contrast pick that the finish exclusion keeps out of suggestions). Applies to whichever slot
+    // carries the pick's own colour, in both seed modes.
+    let substituted = null;
+    if (seedTarget && match && match.paint.id !== opts.seed.id) {
+      const sp = idx.byId.get(opts.seed.id);
+      const why = opts.ownedIds && !opts.ownedIds.has(opts.seed.id) ? 'not owned'
+        : sp && opts.excludeTypes && opts.excludeTypes.has(sp.type) ? `a ${sp.type} — excluded from suggestions`
+        : 'not eligible under the current filters';
+      substituted = { name: opts.seed.name, why };
+    }
+
+    // A neutral colour role leads with the temperature ladder (its value steps have no hue to walk);
+    // the selected value ladder(s) still follow, so nothing is taken away — only reordered by relevance.
+    const roleL = rgbToHsl(hexToRgb(d.idealHex))[2];
+    const tempLadder = !d.metal && isNeutral(d.idealHex) ? [{
+      style: 'temp',
+      label: 'Cool · base · warm',
+      steps: TEMP_STEPS.map(t => ({ key: t.key, ...step(t.h == null ? d.idealHex : rgbToHex(hslToRgb([t.h, t.s, clamp01(roleL + t.dl)]))) })),
+    }] : [];
+    const ladders = [...tempLadder, ...styles.map(st => ({
       style: st,
       label: LADDERS[st].label,
-      steps: LADDERS[st].steps.map(s => ({ key: s.key, ...step(s.adj ? adjustHsl(d.idealHex, s.adj) : d.idealHex) })),
-    }));
-    return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, ladders };
+      steps: LADDERS[st].steps.map(s => ({ key: s.key, ...step(s.adj ? adjustHsl(d.idealHex, s.adj) : d.idealHex, s.key === 'wash' ? 'wash' : null) })),
+    }))];
+    // Metal also gets the NMM alternative: the true metallic is what most painters expect, but the
+    // non-metallic-metal technique needs FLAT paints — offer both, honestly labelled.
+    let nmm = null;
+    if (d.metal) {
+      const nmmOpts = { ...opts, excludeTypes: new Set([...(opts.excludeTypes || []), 'metal']) };
+      nmm = NMM_STEPS.map(s => {
+        const ideal = s.adj ? adjustHsl(d.idealHex, s.adj) : d.idealHex;
+        return { key: s.key, idealHex: ideal, match: nearestPaint(idx, ideal, nmmOpts) };
+      });
+    }
+    return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, substituted, nmm, ladders };
   });
   return { base: baseHex, harmony, ladder: opts.ladder || 'wash', roles };
 }

@@ -162,11 +162,22 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .ntag { font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
   padding: 2px 7px; border-radius: var(--r-pill); background: var(--accent-weak); color: var(--accent); border: 1px solid var(--accent); }
 
-/* Neutral-mode banner — the ONE explainer (§3.5 note): appears when the seed has no usable hue. */
-.nbanner { display: flex; align-items: flex-start; gap: 9px; background: var(--accent-weak); border: 1px solid var(--accent);
-  border-radius: var(--r-ctrl); padding: 8px 12px; font-size: 12.5px; color: var(--text); line-height: 1.45; margin-bottom: 12px; }
+/* Neutral-mode banner — the ONE explainer (§3.5), floated OVER the wheel as an overlay so it can
+   never reflow/bounce the studio (§3.4). It animates in on mode entry, auto-collapses to the ◐ pill,
+   and the pill re-expands it. Both are buttons (keyboard collapse/expand). */
+.noverlay { position: absolute; top: 0; left: 0; right: 0; z-index: 5; display: flex; justify-content: center; pointer-events: none; }
+.nbanner { pointer-events: auto; display: flex; align-items: flex-start; gap: 9px; text-align: left; cursor: pointer;
+  background: var(--accent-weak); border: 1px solid var(--accent); box-shadow: var(--shadow);
+  border-radius: var(--r-ctrl); padding: 8px 12px; font-size: 12.5px; color: var(--text); line-height: 1.45;
+  font-family: var(--font); max-width: 520px; animation: mh-rise .32s cubic-bezier(.2,.7,.2,1) both; }
+.nbanner:focus-visible, .npill:focus-visible { outline: none; box-shadow: var(--focus); }
 .nbanner .nb-ic { color: var(--accent); }
 .nbanner strong { color: var(--accent); }
+.npill { pointer-events: auto; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  margin-right: auto;   /* collapsed state parks at the LEFT of the wheel area (banner stays centred) */
+  background: var(--accent-weak); border: 1px solid var(--accent); color: var(--accent); box-shadow: var(--shadow);
+  border-radius: var(--r-pill); padding: 4px 12px; font-size: 11.5px; font-weight: 600; font-family: var(--font);
+  animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }
 
 /* Quick pops (neutral mode): shortcuts that move the wheel's pop node. */
 .pops { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
@@ -222,6 +233,9 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .ladder .step .sw { width: 100%; height: 30px; }
 .ladder .step .cap { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 .ladder .step .pn { font-size: 10.5px; font-weight: 500; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.steptag { font-size: 9.5px; line-height: 1.3; }
+.steptag.dilute { color: var(--warning); font-weight: 600; }
+.nmmcap { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 12px; }
 .ladcap { font-size: 10px; font-weight: 600; letter-spacing: .03em; color: var(--text-faint); margin-top: 12px; text-transform: capitalize; }
 
 /* plan controls — tone ladder · prefer-owned · add-to-buy (#5/#6/#7) */
@@ -258,7 +272,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .wsplit { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
 .studio { position: sticky; top: 79px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }  /* 79 = 63px sticky header + 16 */
 .output { min-width: 0; }
-.wheelcol { display: flex; flex-direction: column; align-items: center; }
+.wheelcol { position: relative; display: flex; flex-direction: column; align-items: center; }   /* anchors the neutral overlay */
 .wcanvas { touch-action: none; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 /* Lightness lives in the gutter beside the wheel (a vertical slider) + a compact ↻ Generate icon — reclaims
