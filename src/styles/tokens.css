@@ -1,39 +1,59 @@
 /* tokens.css — canonical design tokens (CLAUDE.md §3). Nothing else lives here.
    One component system; only the colour set changes between the two themes. */
+/* "Tokens" here are CSS custom properties (--name), read elsewhere via var(--name).
+   Defining every colour/size/font once means a component is styled once and only the
+   colour VALUES change per theme — the shape (radii, fonts, spacing) never forks. */
 :root {
-  /* shared, theme-independent */
+  /* Shared across BOTH themes — these never change when the theme flips. */
+  /* Corner radii: cards, controls/buttons, and fully-round pills/badges. */
   --r-card: 14px; --r-ctrl: 10px; --r-pill: 999px;
+  /* Font stacks: body/UI, display (headings/wordmark), and monospace (hex/ΔE). Named fonts first, then system fallbacks. */
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --display: "Space Grotesk", "Inter", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  /* --tap = the standard height of interactive controls (the finger "tap target"); grows to 44px on phones (see app.css ≤520px). */
   --tap: 38px;                      /* control height; 44px on touch (≤520px) */
+  /* --focus = the keyboard focus ring, reused on every focusable element for a consistent, visible outline. */
   --focus: 0 0 0 3px var(--accent-weak);
-  /* type scale */
+  /* Type scale — the only font sizes allowed (display down to the 11.5px micro-label). */
   --fs-display: 28px; --fs-h1: 22px; --fs-h2: 16px; --fs-body: 14px; --fs-small: 12.5px; --fs-micro: 11.5px;
 }
 
-/* LIGHT — "Playful Bright" (default) */
+/* LIGHT — "Playful Bright": the default theme (bright, rounded, friendly). This colour set
+   applies with no data-theme, or an explicit data-theme="light" on <html>. */
 :root, [data-theme="light"] {
+  /* Surfaces from back to front: page bg → card surface → a slightly tinted inset surface. */
   --bg: #FBFBFE; --surface: #FFFFFF; --surface-2: #F1F2FF;
+  /* Hairline borders: normal + a stronger one for hover/emphasis. */
   --border: #E6E7F8; --border-strong: #D3D5F0;
+  /* Text ramp from most to least prominent. */
   --text: #20223A; --text-muted: #6E7293; --text-faint: #A2A6C4;
+  /* Accent family: the brand colour, a faint tint for weak fills, and legible text ON the accent. */
   --accent: #7C3AED; --accent-weak: #F0EAFE; --on-accent: #FFFFFF;
   /* Accent-fill = the painted surface of solid accent elements (buttons, logo plaque, role badges).
      Light keeps the flat accent (purple reads fine flat); only dark gets metallic dimension. The
      bevel is a no-op shadow here so accent box-shadow lists stay valid. */
   --accent-fill: var(--accent); --accent-edge: var(--accent); --accent-bevel: 0 0 0 rgba(0,0,0,0);
   --buy: #2563EB; --buy-weak: #DBEAFE; --on-buy: #FFFFFF;   /* "to-buy" — single-meaning, app-wide; never the selection colour */
+  /* Semantic status colours, each paired with a faint tint for weak backgrounds.
+     These drive the ΔE match-quality badges (§3.2) and owned/warning/error states. */
   --success: #16A34A; --success-weak: #DCFCE7;
   --warning: #C2740B; --warning-weak: #FBEBD3;
   --danger: #DC2647;  --danger-weak: #FCE4EA;
+  /* Elevation: the single soft drop-shadow token used sparingly on cards/popovers. */
   --shadow: 0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
 }
 
-/* DARK — "Grimdark Tabletop" */
+/* DARK — "Grimdark Tabletop": forge-dark with a brass accent, on-theme for wargamers.
+   Applies when <html> carries data-theme="dark". Note it REDEFINES the SAME token names
+   as the light set above — components never change, only these values do. */
 [data-theme="dark"] {
+  /* Same three surface layers, forge-dark. */
   --bg: #141110; --surface: #1C1815; --surface-2: #251F1A;
   --border: #3A302A; --border-strong: #4D4138;
+  /* Warm parchment text ramp instead of cool ink. */
   --text: #ECE3D8; --text-muted: #A8998A; --text-faint: #7C6F62;
+  /* Brass accent replaces the light theme's purple. */
   --accent: #C2912F; --accent-weak: #2C2113; --on-accent: #15100A;
   /* Polished brass: a vertical light→dark gradient (struck metal) + a diagonal specular sheen, a 1px
      darker cast edge, and an inset bevel (bright top lip, shadowed bottom). Adds dimension without
@@ -44,8 +64,10 @@
   --accent-edge: #8C6516;
   --accent-bevel: inset 0 1px 0 rgba(255,245,220,.4), inset 0 -1px 1px rgba(0,0,0,.3);
   --buy: #5E93C9; --buy-weak: #16242F; --on-buy: #0E1620;   /* cold steel-blue cart, distinct from the brass accent */
+  /* Same semantic-status roles as light, re-tuned to read on the dark surfaces. */
   --success: #86A559; --success-weak: #232A16;
   --warning: #C9923A; --warning-weak: #2E2412;
   --danger: #D2563F;  --danger-weak: #2E1A14;
+  /* Deeper single shadow — light theme's tinted glow would be invisible on near-black. */
   --shadow: 0 1px 2px rgba(0,0,0,.45);
 }

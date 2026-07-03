@@ -1,6 +1,10 @@
 /* app.css — components for Palette Studio. Authored entirely with §3 tokens. */
+/* Every colour/size below is a var(--token) from tokens.css so the two themes share one component
+   system. box-sizing: border-box everywhere = padding/border count INSIDE a set width (no surprise growth). */
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }   /* author display rules (grid/flex) must not defeat the hidden attribute */
+/* Base document + typography. Colours/fonts come from tokens; the .2s transition cross-fades the whole
+   page when the theme flips. */
 html, body { margin: 0; }
 body {
   background: var(--bg); color: var(--text);
@@ -10,10 +14,15 @@ body {
 h1, h2, h3 { margin: 0; font-weight: 600; font-family: var(--display); letter-spacing: -.01em; }
 button { font-family: var(--font); cursor: pointer; }
 .mono { font-family: var(--mono); }
+/* .sr-only = visually hidden but still read by screen readers (the standard clip trick) — for labels
+   that would clutter the compact UI but are needed for accessibility. */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* .micro = the tiny uppercase caps-label style (smallest step on the type scale). */
 .micro { font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); }
 
-/* buttons (one style, both themes) */
+/* BUTTONS — one shape for both themes; only the token values differ. Default = quiet surface button;
+   .primary = accent-filled (with the dark theme's brass bevel); .icon = square, for single-glyph buttons.
+   Height is --tap so every button is a consistent, finger-friendly target. Focus always shows the ring. */
 .btn { height: var(--tap); padding: 0 14px; border-radius: var(--r-ctrl); border: 1px solid var(--border);
   background: var(--surface); color: var(--text); font-weight: 500; font-size: 13.5px;
   display: inline-flex; align-items: center; gap: 7px; transition: background .12s, border-color .12s; }
@@ -23,21 +32,27 @@ button { font-family: var(--font); cursor: pointer; }
 .btn.primary:focus-visible { box-shadow: var(--focus), var(--accent-bevel); }   /* keep the focus ring; don't let the bevel override it */
 .btn.icon { padding: 0; width: var(--tap); justify-content: center; font-size: 15px; }
 
-/* header */
+/* HEADER — sticky masthead pinned to the top (z-index:20 keeps it above the scrolling body). .bar is the
+   flex row of logo + mode switch + spacer + settings, centred within the 1440px max width. */
 header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--border); }
 .bar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; flex-wrap: wrap; max-width: 1440px; margin: 0 auto; }
+/* Logo: the accent-filled "P" plaque (same brass bevel as buttons in dark) + the wordmark and tagline. */
 .logo { display: flex; align-items: center; gap: 9px; margin-right: 4px; }
 .logo .mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-fill); border: 1px solid var(--accent-edge);
   box-shadow: var(--accent-bevel); display: grid; place-items: center;
   color: var(--on-accent); font-family: var(--display); font-weight: 700; font-size: 15px; }
 .logo .t { font-family: var(--display); font-weight: 600; font-size: 17px; }
 .logo .t small { color: var(--text-faint); font-weight: 500; font-size: 12px; margin-left: 5px; font-family: var(--font); }
-.spacer { flex: 1; }
+.spacer { flex: 1; }   /* elastic gap that pushes the settings button to the right edge */
+/* Hex input field: a bordered box with a leading "#" and a monospace, uppercased entry (72px wide). */
 .hexin { display: flex; align-items: center; gap: 5px; background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r-ctrl); padding: 0 10px; height: var(--tap); }
 .hexin span { color: var(--text-faint); font-size: 13px; }
 .hexin input { border: none; background: transparent; color: var(--text); font-family: var(--mono); font-size: 13px;
   width: 72px; outline: none; text-transform: uppercase; }
+/* SEGMENTED CONTROL (.seg) — the system's standard either/or picker: a pill-track holding buttons where
+   the active one (aria-pressed="true") lifts to the surface colour. Used for Studio/Shelf, Main/Accent,
+   Ideal/Real, locale, shelf status, etc. (The theme toggle is the ONE exception — a slide switch instead.) */
 .seg { display: inline-flex; background: var(--surface-2); border-radius: var(--r-ctrl); padding: 3px; gap: 2px; flex-wrap: wrap; }
 .seg button { border: none; background: transparent; color: var(--text-muted); height: 30px; padding: 0 12px;
   border-radius: 8px; font-weight: 500; font-size: 12.5px; }
@@ -49,20 +64,24 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 /* Theme switch — the one sanctioned slide-over toggle (§3.1 "◐ control"), distinct from the segmented
    controls. A thumb slides between sun (light) and moon (dark) and the icon cross-fades. Reduced motion
    disables the slide via the global rule; the state still flips. */
+/* The pill-shaped track. When aria-checked (dark on), the thumb slides right and the icons cross-fade. */
 .themesw { position: relative; width: 52px; height: 30px; padding: 0; border-radius: var(--r-pill);
   background: var(--surface-2); border: 1px solid var(--border); transition: border-color .12s, background .12s; }
 .themesw:hover { border-color: var(--border-strong); }
 .themesw:focus-visible { outline: none; box-shadow: var(--focus); }
+/* The sliding thumb. Its bouncy transition is the "gentle bounce" motion from §3.4; disabled under reduced motion. */
 .themesw-thumb { position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
   background: var(--surface); box-shadow: var(--shadow); display: grid; place-items: center; color: var(--text);
   transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
 .themesw[aria-checked="true"] .themesw-thumb { transform: translateX(22px); }
+/* Both icons occupy the same grid cell (1/1) and stack; opacity cross-fades sun↔skull as the state flips.
+   (NOTE: the group comment above calls the dark icon a "moon"; the actual dark icon is the skull, .ts-skull.) */
 .themesw .ts-i { grid-area: 1 / 1; transition: opacity .16s ease; }
 .themesw .ts-skull { opacity: 0; }
 .themesw[aria-checked="true"] .ts-sun { opacity: 0; }
 .themesw[aria-checked="true"] .ts-skull { opacity: 1; }
 .themesw:active .themesw-thumb { width: 27px; }   /* slight squish on press (confirm, not decorate) */
-#seg button { display: inline-flex; align-items: center; gap: 6px; }
+#seg button { display: inline-flex; align-items: center; gap: 6px; }   /* harmony chips: icon glyph beside the label */
 /* Harmony comparisons as a single scrollable strip (one row, swipe/scroll) instead of a wrapped block,
    so the 10 schemes read as one list and never push the studio down. Fades hint at more off either edge. */
 #seg.harmscroll { display: flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scroll-snap-type: x proximity;
@@ -72,6 +91,7 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 #seg.harmscroll button { flex: 0 0 auto; scroll-snap-align: center; }
 #seg.harmscroll::-webkit-scrollbar { height: 6px; }
 #seg.harmscroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+/* .hglyph = the little diagram drawn inside each harmony chip; currentColor makes it follow the text colour. */
 .hglyph { width: 15px; height: 15px; flex: none; opacity: .85; }
 .hglyph line { stroke: currentColor; stroke-width: 1.3; }
 .hglyph circle { fill: currentColor; }
@@ -79,11 +99,19 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 /* layout */
 /* Single column: the paint picker is now a drawer in the seed toolbar, so the workspace spans the full
    (bumped) width — more room for the wheel + the 2-up plan. */
+/* <main> is a centred grid capped at 1440px. .card = the standard panel (surface + border + radius + shadow);
+   .pad = its inner padding; .workspace stacks the seed toolbar above the split. */
 main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); box-shadow: var(--shadow); }
 .pad { padding: 18px; }
 .workspace { display: grid; gap: 16px; }
+/* .sw = a generic swatch. The inset 1px shadow is a faint dark rim so near-white paints stay visible.
+   The colour itself is set inline as paint DATA — never a token (the paint is the hero, §2). */
 .sw { border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); flex: none; }
+/* FINISH OVERLAYS (§2/§3.5) — the ONLY sanctioned way a swatch is altered. A flat hex misrepresents a
+   non-flat paint, so each finish class layers a gradient/pattern ON TOP of the inline base colour to
+   *convey* the finish (metallic sheen, satin wash, wet gloss, grainy texture) WITHOUT tinting the colour.
+   Each rule targets the three swatch surfaces: .sw (chips), .cell (shelf grid), .lctop (live-palette column). */
 /* metallic sheen — a non-tinting specular overlay so metallics don't read as flat colour (§3.5).
    The base colour is inline background-color; this only adds a curved highlight→shadow on top. */
 :root { --metal-sheen: linear-gradient(158deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.26) 100%); }
@@ -95,13 +123,15 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-tem
 .sw.fx-gloss, .cell.fx-gloss, .lctop.fx-gloss { background-image: radial-gradient(ellipse 58% 42% at 34% 26%, rgba(255,255,255,.82), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 52%, rgba(0,0,0,.34)); }
 .sw.fx-slime, .cell.fx-slime, .lctop.fx-slime { background-image: radial-gradient(ellipse 34% 26% at 30% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 60%), radial-gradient(ellipse 22% 18% at 66% 62%, rgba(255,255,255,.5), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 55%, rgba(0,0,0,.30)); }
 .sw.fx-texture, .cell.fx-texture, .lctop.fx-texture { background-image: radial-gradient(rgba(255,255,255,.12) .5px, transparent 1.2px), radial-gradient(rgba(0,0,0,.34) .5px, transparent 1.2px), linear-gradient(160deg, rgba(255,255,255,.05), rgba(0,0,0,.12)); background-size: 4px 4px, 5px 5px, 100% 100%; background-position: 0 0, 2px 2px, 0 0; }
-/* finish pill — flags non-flat paints (metallic/contrast/wash/…) so a suggestion isn't mistaken for flat */
+/* finish pill — a small text tag beside a swatch flagging non-flat paints (metallic/contrast/wash/…),
+   the label counterpart to the overlay above, so a suggestion isn't mistaken for flat paint. */
 .finish { display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; padding: 1px 6px;
   border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); white-space: nowrap; vertical-align: 1px; }
 .finish svg { width: 10px; height: 10px; }
 .finish-metal { background: var(--warning-weak); color: var(--warning); }
 .finish-contrast { background: var(--accent-weak); color: var(--accent); }
-/* shared-paint note — when a limited collection reuses one paint across roles (scheme.js distinct assignment) */
+/* shared-paint note — when a limited collection reuses one paint across roles (scheme.js distinct assignment).
+   The role card gets a warning border and an explanatory note with a "shared" pill + how to differentiate. */
 .slot.is-shared { border-color: var(--warning); }
 .sharednote { margin-top: 10px; font-size: 11.5px; color: var(--text-muted); background: var(--warning-weak);
   border-radius: var(--r-ctrl); padding: 7px 10px; line-height: 1.45; }
@@ -109,6 +139,8 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-tem
   color: var(--warning); background: var(--surface); border: 1px solid var(--warning); border-radius: var(--r-pill); padding: 0 7px; margin-right: 5px; }
 .sharednote .br { color: var(--text-faint); }
 
+/* Text search boxes + native selects share the button height and token styling; full-width by default
+   (flex rules override where they sit in a row). Focus draws the accent border + focus ring. */
 input[type="search"], select { height: var(--tap); border: 1px solid var(--border); border-radius: var(--r-ctrl);
   background: var(--surface); color: var(--text); padding: 0 10px; font-family: inherit; font-size: 13px; width: 100%; }
 input:focus, select:focus, .hexin:focus-within { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
@@ -138,6 +170,8 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .list::-webkit-scrollbar { width: 11px; height: 9px; }
 .list::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 999px; border: 2px solid var(--surface); background-clip: padding-box; }
 .list::-webkit-scrollbar-thumb:hover { background: var(--text); }
+/* .pchip = one paint in the drawer strip: a fixed-width column of swatch-above-name. Selected chip
+   (the currently picked paint) rings its swatch in accent. Long names ellipsize rather than wrap. */
 .pchip { flex: 0 0 auto; width: 80px; display: flex; flex-direction: column; align-items: center; gap: 6px;
   background: none; border: none; padding: 4px 2px; border-radius: var(--r-ctrl); cursor: pointer; color: var(--text); }
 .pchip:hover { background: var(--surface-2); }
@@ -145,15 +179,16 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .pchip .sw { position: relative; width: 62px; height: 62px; border-radius: 10px; }
 .pchip[aria-selected="true"] .sw { outline: 2px solid var(--accent); outline-offset: 2px; }
 .pchip-nm { font-size: 11px; color: var(--text-muted); line-height: 1.2; text-align: center; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.count { padding: 2px; font-size: 12px; color: var(--text-faint); }
+.count { padding: 2px; font-size: 12px; color: var(--text-faint); }   /* "showing N paints" line */
 
 /* base hero */
-/* Condensed hero: one compact identity line (swatch chip · name · hex · seed pill · meta · buy). */
+/* Condensed hero: one compact identity line (swatch chip · name · hex · seed pill · meta · buy).
+   flex-wrap lets it fold onto a second line on narrow screens; herobuy is pushed to the far right. */
 .hero { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; position: relative; }
 .hero .herochip { width: 28px; height: 28px; border-radius: 8px; flex: none; }
 .heroname { font-size: 16px; }
 .herometa { color: var(--text-muted); font-size: 12.5px; min-width: 0; }
-.herometa .approx { color: var(--warning); }
+.herometa .approx { color: var(--warning); }   /* "approx" flag warns the hex is not manufacturer-exact */
 .herobuy { margin-left: auto; }
 /* Seed-role pill (state, §3.5): the picked paint's Main/Accent role, inline in the hero line. */
 .seedbadge { font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
@@ -179,7 +214,8 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
   border-radius: var(--r-pill); padding: 4px 12px; font-size: 11.5px; font-weight: 600; font-family: var(--font);
   animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }
 
-/* Quick pops (neutral mode): shortcuts that move the wheel's pop node. */
+/* Quick pops (neutral mode): shortcut chips that jump the wheel's pop-accent node to a preset colour.
+   .on marks the active pop; a mini swatch sits inside each chip. */
 .pops { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
 .pops .pop { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); border-radius: var(--r-pill);
   padding: 4px 10px 4px 5px; font-size: 11.5px; color: var(--text); background: var(--surface-2); }
@@ -187,16 +223,19 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .pops .pop:hover { border-color: var(--border-strong); }
 .pops .pop:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--accent); }
 .pops .pop.on { border-color: var(--accent); color: var(--accent); background: var(--accent-weak); }
+/* .tag = a small rounded label; .role tints it accent, .approx tints it warning (the "approximate hex" flag). */
 .tag { font-size: 11.5px; font-weight: 500; padding: 3px 9px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); }
 .tag.role { background: var(--accent-weak); color: var(--accent); }
 .tag.approx { background: var(--warning-weak); color: var(--warning); }
+/* .hexline = a click-to-copy hex value rendered in monospace; highlights on hover to hint it's interactive. */
 .hexline { display: inline-block; font-family: var(--mono); font-size: 13px; color: var(--text-muted); border: none; background: none; padding: 2px 5px; border-radius: 6px; cursor: pointer; }
 .hexline:hover { color: var(--text); background: var(--surface-2); }
 .hexline:focus-visible { outline: none; box-shadow: var(--focus); }
 
-.hint { color: var(--text-faint); font-size: 12px; margin: 6px 0 0; }
+.hint { color: var(--text-faint); font-size: 12px; margin: 6px 0 0; }   /* small faint helper text */
 
-/* tabs + panels */
+/* TABS + PANELS — the output column's tab strip: an underline-style tablist (active tab underlined in
+   accent). overflow-x lets the strip scroll horizontally on phones instead of wrapping. */
 .tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--border); margin-top: 8px; overflow-x: auto; }
 .tabs button { border: none; background: transparent; padding: 11px 2px; color: var(--text-muted); font-weight: 500; font-size: 13.5px;
   border-bottom: 2px solid transparent; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
@@ -206,57 +245,68 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .tabs button:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
 [data-panel] { animation: mh-fade .22s ease both; padding-top: 14px; }   /* breathing room below the tab strip */
 @keyframes mh-fade { from { opacity: 0; } to { opacity: 1; } }
+/* .palette = a solid colour bar of equal-flex blocks (used in the About/compare contexts). min-height uses
+   clamp(min, preferred, max) so the bar scales with viewport height but never gets tiny or huge. */
 .palette { display: flex; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); min-height: clamp(104px, 17vh, 168px); margin: 14px 0 0; }
 .palette > .pblock { flex: 1; border: none; padding: 10px 12px; cursor: pointer; display: flex; align-items: flex-end; text-align: left; }
 .palette > .pblock:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
-.pblock .pbl { display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
-.pblock .pbr { font-size: 11.5px; font-weight: 600; opacity: .92; }
-.pblock .pbh { font-family: var(--mono); font-size: 12px; opacity: .85; }
+.pblock .pbl { display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }   /* label stack in the block corner */
+.pblock .pbr { font-size: 11.5px; font-weight: 600; opacity: .92; }   /* role name */
+.pblock .pbh { font-family: var(--mono); font-size: 12px; opacity: .85; }   /* hex value */
 
-/* role slots (ideal vs actual) */
+/* ROLE SLOTS (ideal vs actual) — the Plan tab's cards. A responsive auto-fit grid: as many ~250px columns
+   as fit, each stretching to share the row (goes 2-up on wide screens). Each .slot is one paint role. */
 .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 14px; }
 .slot { border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px; background: var(--surface); }
 .slot .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .slot .role { font-family: var(--display); font-weight: 600; font-size: 14px; }
 .slot .wt { font-size: 11px; color: var(--text-faint); }
+/* .ivsa = the "ideal → actual" row inside a slot: the theoretical ideal swatch, an arrow, the nearest real paint. */
 .ivsa { display: flex; align-items: center; gap: 10px; }
 .ivsa .ideal, .ivsa .act { width: 44px; height: 44px; flex: none; }
 .ivsa .arr { color: var(--text-faint); }
 .ivsa .nm { font-size: 12.5px; font-weight: 500; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ivsa .br { font-size: 11px; color: var(--text-muted); }
 .ttl { font-size: 11px; color: var(--text-faint); font-weight: 500; margin-bottom: 2px; }
+/* .de = the ΔE match-quality line: a coloured dot (success/warning/danger per §3.2) + the number + label. */
 .de { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; font-weight: 500; }
 .de .dot { width: 7px; height: 7px; border-radius: 50%; }
 .badge { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px; border-radius: 5px; background: var(--surface-2); color: var(--text-muted); white-space: nowrap; }
+/* .ladder = the derived wash·base·highlight (or NMM/temperature) tone steps below a slot; dashed divider on top. */
 .ladder { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
 .ladder .step { flex: 1; text-align: center; }
 .ladder .step .sw { width: 100%; height: 30px; }
 .ladder .step .cap { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 .ladder .step .pn { font-size: 10.5px; font-weight: 500; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .steptag { font-size: 9.5px; line-height: 1.3; }
-.steptag.dilute { color: var(--warning); font-weight: 600; }
-.nmmcap { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 12px; }
+.steptag.dilute { color: var(--warning); font-weight: 600; }   /* "watered down" flag when no real shading media matched */
+.nmmcap { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 12px; }   /* non-metallic-metal recipe caption */
 .ladcap { font-size: 10px; font-weight: 600; letter-spacing: .03em; color: var(--text-faint); margin-top: 12px; text-transform: capitalize; }
 
-/* plan controls — tone ladder · prefer-owned · add-to-buy (#5/#6/#7) */
+/* PLAN CONTROLS — the Plan tab's toolbar: tone-ladder selector, prefer-owned toggle, add-to-buy (#5/#6/#7).
+   .ctlgrp groups a label with its control; on phones these stack vertically (see ≤520px). */
 .planctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
 .ctlgrp { display: flex; align-items: center; gap: 8px; }
 .ladsel button { font-size: 12px; }
 .btn.incl-contrast[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
-.nogaps { color: var(--text-faint); align-self: center; }
+.nogaps { color: var(--text-faint); align-self: center; }   /* shown when there are no gaps to buy */
 
-/* owned / adjust / buy affordances on match chips (#5/#6) */
+/* OWNED / ADJUST / BUY affordances on the match chips (#5/#6): an "owned" tag (success), an italic
+   "adjust direction" hint, and a to-buy toggle button. */
 .ownline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; }
 .owntag { font-size: 11px; font-weight: 600; color: var(--success); }
 .adjust { font-size: 11px; color: var(--text-muted); font-style: italic; }
 .ownmini { font-size: 10px; font-weight: 600; color: var(--success); }
+/* .buybtn = the "add to shopping list" toggle; uses the single-meaning --buy colour (never the selection colour).
+   .on = active/added state (filled). */
 .buybtn { margin-top: 6px; height: 26px; padding: 0 11px; border-radius: var(--r-pill); border: 1px solid var(--border-strong);
   background: var(--surface); color: var(--buy); font-weight: 600; font-size: 11.5px; cursor: pointer; }
 .buybtn:hover { background: var(--buy-weak); border-color: var(--buy); }
 .buybtn.on { background: var(--buy); border-color: var(--buy); color: var(--on-buy); }
 .buybtn:focus-visible { outline: none; box-shadow: var(--focus); }
 
-/* generic chips/rows reused by equivalents + a11y */
+/* EQUIVALENTS + A11Y chips — a responsive auto-fill grid of little swatch+label cards, reused by the
+   Equivalents (cross-brand matches) and Accessibility panels. .placeholder = empty-state text. */
 .eq { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 14px; }
 .eqc { display: flex; gap: 9px; align-items: center; border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 9px; }
 .eqc .sw { width: 38px; height: 38px; }
@@ -267,32 +317,43 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 /* seed toolbar spans the workspace width: hex on the left, photo/compare pushed to the right edge */
 .seedtoolbar .seedbar { margin-bottom: 0; }
 .seedtoolbar .hexin { flex: 0 1 280px; min-width: 140px; }
-.seedtoolbar #fromPhoto { margin-left: auto; }
-.herowrap { min-width: 0; }
+.seedtoolbar #fromPhoto { margin-left: auto; }   /* photo + compare float to the right edge of the toolbar */
+.herowrap { min-width: 0; }   /* min-width:0 lets a flex child shrink so long text can ellipsize instead of overflowing */
+/* .wsplit = the two-column grid: ~0.9fr sticky studio (min 320px) + ~1.1fr output. minmax(0,…) lets the
+   columns shrink below their content width so nothing overflows. Collapses to one column ≤1024px. */
 .wsplit { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
 .studio { position: sticky; top: 79px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }  /* 79 = 63px sticky header + 16 */
 .output { min-width: 0; }
 .wheelcol { position: relative; display: flex; flex-direction: column; align-items: center; }   /* anchors the neutral overlay */
+/* The wheel canvas: a round, fluidly-sized square (min(82vw,340px) so it fits any phone). touch-action:none
+   lets it handle drag gestures itself; cursor: grab signals it's draggable. */
 .wcanvas { touch-action: none; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 /* Lightness lives in the gutter beside the wheel (a vertical slider) + a compact ↻ Generate icon — reclaims
    the old control row's height. Falls back to a horizontal slider on phones (≤520px, below) so it doesn't
    crush the wheel. The range stays a native, labelled, arrow-key-operable input (a11y unchanged). */
+/* The wheel sits in a row beside its lightness gutter (.wlcol). writing-mode: vertical-lr turns the native
+   range slider on its side so it reads bottom→top; it becomes horizontal again on phones (≤520px). */
 .wheelrow { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 14px; }
 .wlcol { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .wl-vert { writing-mode: vertical-lr; direction: rtl; width: 26px; height: min(58vw, 220px); accent-color: var(--accent); }
 .wl-vert:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-pill); }
+/* .wkey = the P/A/2 legend below the wheel; .wk-badge is the round accent-filled badge matching the
+   markers drawn on the wheel nodes (ringed in the surface colour so it reads on any background). */
 .wkey { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px;
   font-family: var(--font); font-weight: 500; font-size: 11.5px; line-height: 1; color: var(--text-muted); letter-spacing: .04em; }
 .wkey-i { display: inline-flex; align-items: center; gap: 6px; }
 .wk-badge { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: var(--r-pill);
   background: var(--accent-fill); color: var(--on-accent); font-family: var(--font); font-weight: 700; font-size: 10px; box-shadow: 0 0 0 1.5px var(--surface); font-style: normal; }
 .palcol { min-width: 0; }
+/* Live-palette header row: the "→ nearest paint" label on the left, the palette controls on the right. */
 .palhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .palctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 #addnode, #delnode, #undo, #redo { width: 30px; height: 30px; padding: 0; justify-content: center; font-size: 17px; line-height: 1; }
 #undo, #redo { font-size: 15px; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
+/* LIVE PALETTE — the single scheme summary bar: a row of columns, one per colour/role. Each .lcol is a
+   column with a coloured top (.lctop = the swatch, carrying any finish overlay) and a footer (.lcfoot). */
 .livepal { display: flex; gap: 8px; }
 .lcol { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); background: var(--surface-2); text-align: left; }
 .lctop { flex: 1; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 8px 9px; border: none; width: 100%; cursor: default; text-align: left; font: inherit; }
@@ -307,7 +368,8 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .lccopy.light { background: rgba(255,255,255,.18); }
 .lccopy.light:hover { background: rgba(255,255,255,.32); }
 .lccopy:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
-/* per-swatch hover actions (Adobe-style) — overlay so revealing them never reflows the palette (§3.4) */
+/* per-swatch hover actions (Adobe-style) — lock/edit/add icons that fade in on hover/focus. Absolutely
+   positioned as an overlay (opacity + pointer-events toggle) so revealing them never reflows the palette (§3.4). */
 .lcact { position: absolute; top: 6px; right: 6px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px;
   max-width: calc(100% - 12px); opacity: 0; transition: opacity .12s ease; pointer-events: none; }
 .lcol:hover .lcact, .lcol:focus-within .lcact { opacity: 1; pointer-events: auto; }
@@ -318,11 +380,11 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .lcbtn:disabled { opacity: .35; cursor: default; }
 .lcbtn.on { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 .lcol.locked { box-shadow: inset 0 0 0 2px var(--accent); }   /* a locked swatch survives Generate + harmony changes */
-.lcol[draggable="true"] .lctop { cursor: grab; }
+.lcol[draggable="true"] .lctop { cursor: grab; }   /* columns can be reordered by drag */
 .lcol.dragging { opacity: .5; }
-.lctag { font-size: 11px; font-weight: 600; opacity: .92; }
-.lchex { font-family: var(--mono); font-size: 11.5px; opacity: .9; }
-.lcfoot { padding: 7px 9px 9px; min-width: 0; }
+.lctag { font-size: 11px; font-weight: 600; opacity: .92; }   /* role label on the swatch */
+.lchex { font-family: var(--mono); font-size: 11.5px; opacity: .9; }   /* hex on the swatch */
+.lcfoot { padding: 7px 9px 9px; min-width: 0; }   /* the column's footer beneath the swatch (nearest-paint name/brand) */
 /* Colour link highlight (interaction, §3.5): outline so neighbours never reflow (§3.4 no-jiggle). Drawn on
    the live-palette column (left) and the matching Plan role card (right) when either is hovered/focused. */
 .lcol.linkhi { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -334,7 +396,10 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .lcname { display: block; font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lcfoot .br { font-size: 11px; color: var(--text-muted); }
 
-/* accessibility (M7) */
+/* ACCESSIBILITY panel (M7) — colour-blindness simulation strips + WCAG contrast boxes.
+   .crow = a labelled row (label + a .cstrip of simulated swatches); .ctr = an auto-fit grid of contrast
+   boxes each showing a text/background .pair and its .ratio; .collide flags a CVD colour collision
+   (warning) or confirms none (.ok = success). */
 .crow { display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center; margin: 7px 0; }
 .crow .clab { font-size: 12px; font-weight: 500; }
 .cstrip { display: flex; gap: 5px; }
@@ -345,7 +410,8 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .collide { margin-top: 16px; font-size: 12.5px; background: var(--warning-weak); color: var(--warning); border-radius: var(--r-ctrl); padding: 10px 12px; }
 .collide.ok { background: var(--success-weak); color: var(--success); }
 
-/* compare + toast (M8) */
+/* COMPARE + TOAST (M8) — the two-scheme comparison block (a pinned scheme vs the current one) and the
+   transient toast notification (fixed, centred at the bottom; inverted text/bg for contrast). */
 .compare { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 10px 12px; margin: 4px 0 10px; background: var(--surface-2); }
 .cmphead { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
 .cmprow { display: flex; align-items: center; gap: 10px; margin: 5px 0; flex-wrap: wrap; }
@@ -354,7 +420,8 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .cmppal span { flex: 1; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 16px; border-radius: var(--r-pill); font-size: 13px; font-weight: 500; box-shadow: var(--shadow); z-index: 50; }
 
-/* shelf (collection) — top-level mode beside Studio */
+/* SHELF (collection) — the full-width grid mode beside Studio. When shelf mode is active, <main> is a
+   single column and the shelf spans it (the Studio workspace is hidden). */
 .modenav { margin-right: 4px; }
 main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelf { grid-column: 1 / -1; }     /* full-width when shown (picker + workspace are hidden in shelf mode) */
@@ -371,6 +438,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelffilters input[type="search"] { flex: 1 1 220px; width: auto; min-width: 150px; }
 .shelffilters select { flex: 0 1 auto; width: auto; min-width: 120px; }
 .shelffilters .seg { flex: none; }
+/* .brandchips = round toggle chips to filter the shelf by brand; active chip (aria-pressed) tints accent. */
 .brandchips { display: flex; flex-wrap: wrap; gap: 7px; }
 .chip { height: 30px; padding: 0 13px; border-radius: var(--r-pill); border: 1px solid var(--border);
   background: var(--surface); color: var(--text-muted); font-weight: 500; font-size: 12.5px; box-sizing: border-box; }
@@ -378,6 +446,8 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .chip:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--accent); }
 .chip[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 
+/* The swatch wall: an auto-fill grid of ~64px cells. user-select:none + touch-action:pan-y support the
+   marquee drag-select without the browser selecting text or fighting vertical scroll. */
 .shelfgrid { position: relative; display: grid; gap: 8px; -webkit-user-select: none; user-select: none; touch-action: pan-y;
   grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
 .shelfgrid:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-ctrl); }
@@ -393,8 +463,8 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 /* corner state badge — what the paint IS (persistent fill, §3.5). Same corner for both states. */
 .cbadge { position: absolute; top: 4px; right: 4px; width: 17px; height: 17px; border-radius: 50%;
   display: grid; place-items: center; font-size: 11px; line-height: 1; box-shadow: 0 1px 2px rgba(0,0,0,.35); }
-.cbadge.owned { background: var(--success); color: #fff; }
-.cbadge.want { background: var(--buy); color: var(--on-buy); }
+.cbadge.owned { background: var(--success); color: #fff; }   /* owned = success colour, app-wide */
+.cbadge.want { background: var(--buy); color: var(--on-buy); }   /* to-buy = the --buy colour, app-wide */
 /* name tooltip — overlay, never affects layout (§3.4); shown on hover/focus/keyboard-cursor.
    display:none until shown — thousands of laid-out nowrap tips would silently widen the page
    (edge-column tips stick past the viewport → phantom horizontal scroll on phones). When shown,
@@ -407,7 +477,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .cell:hover .celltip, .cell:focus-visible .celltip, .cell.cursor .celltip { display: block; animation: tipfade .12s ease; }
 @keyframes tipfade { from { opacity: 0; } }
 .cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-/* marquee rubber-band */
+/* marquee rubber-band — the translucent accent rectangle drawn while drag-selecting cells. */
 .marquee { position: absolute; border: 1px solid var(--accent); background: var(--accent-weak);
   opacity: .5; pointer-events: none; z-index: 4; border-radius: 3px; }
 /* action bar — fixed height so the hint↔actions swap never reflows the grid (§3.4) */
@@ -415,10 +485,10 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .barhint { font-size: 12.5px; color: var(--text-faint); }
 .barcount { font-weight: 600; font-size: 13px; }
 .baracts { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn.sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
-.btn.sm.ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
+.btn.sm { height: 32px; padding: 0 12px; font-size: 12.5px; }   /* small button variant for toolbars */
+.btn.sm.ghost { background: transparent; border-color: transparent; color: var(--text-muted); }   /* borderless text-only button */
 .btn.sm.ghost:hover { background: var(--surface-2); }
-/* right-click context menu */
+/* right-click context menu — floating list (position set by app.js) shared by the shelf + paint-chip menus. */
 .menu { position: fixed; z-index: 60; background: var(--surface); border: 1px solid var(--border-strong);
   border-radius: var(--r-ctrl); box-shadow: var(--shadow); padding: 5px; min-width: 150px; }
 .menu button { display: block; width: 100%; text-align: left; border: none; background: transparent; color: var(--text);
@@ -426,6 +496,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .menu button:hover, .menu button:focus-visible { background: var(--surface-2); outline: none; }
 
 /* header IA (#4): seed bar atop the studio · finish bar at the bottom · settings popover (theme) */
+/* .seedbar = the flex row of seed controls; .popover = a floating panel (settings/menus), positioned by JS. */
 .seedbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .popover { position: fixed; z-index: 60; background: var(--surface); border: 1px solid var(--border-strong);
   border-radius: var(--r-ctrl); box-shadow: var(--shadow); padding: 12px 14px; }
@@ -437,7 +508,8 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   align-items: center; gap: 12px 18px; padding: 16px; }
 .popover.settings .setrow { display: contents; }
 
-/* footer + About & data modal */
+/* FOOTER + ABOUT/DATA MODAL. .about is the native <dialog>: width clamps to min(620px, 92vw) so it fits
+   any screen; ::backdrop dims the page behind it. Shared by the eyedropper dialog too. */
 .appfoot { max-width: 1440px; margin: 0 auto; padding: 24px 20px 40px; display: flex; align-items: center;
   gap: 14px; flex-wrap: wrap; border-top: 1px solid var(--border); }
 .footlink { background: none; border: none; padding: 0; color: var(--accent); font: inherit; font-weight: 500;
@@ -464,7 +536,8 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 @media (prefers-reduced-motion: no-preference) {
   .about[open] { animation: mh-rise .2s cubic-bezier(.2,.7,.2,1); }
 }
-/* photo eyedropper */
+/* PHOTO EYEDROPPER — the photo canvas (crosshair cursor, on-device sampling) and the round magnifier
+   "loupe" that follows the pointer (hidden until active). */
 .edstage { position: relative; display: flex; justify-content: center; }
 .edcanvas { display: block; max-width: 100%; height: auto; border-radius: 10px; cursor: crosshair; touch-action: none;
   box-shadow: inset 0 0 0 1px var(--border); background: var(--surface-2); }
@@ -472,14 +545,19 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.4), 0 3px 10px rgba(0,0,0,.35); }
 .edpickrow { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
 
-/* responsive */
+/* RESPONSIVE — the layout adapts at three breakpoints (§3.6). Each @media block below applies only at or
+   under its max-width, progressively simplifying the layout for narrower screens. */
+/* ≤1024px: the two-column split collapses to one column; the studio stops being sticky and stacks above the output. */
 @media (max-width: 1024px) {
   .wsplit { grid-template-columns: 1fr; }   /* studio stacks above the output; both span the full width */
   .studio { position: static; }
 }
+/* ≤860px: tighten the gap between the stacked cards. */
 @media (max-width: 860px) {
   main { gap: 16px; }
 }
+/* ≤520px (phones): bump tap targets to 44px, wrap the seed toolbar, flip the wheel's lightness slider back
+   to horizontal, stack the live palette into rows, and shrink shelf cells — the compact phone layout. */
 @media (max-width: 520px) {
   :root { --tap: 44px; }
   .bar { padding: 10px 14px; gap: 8px; }
@@ -511,7 +589,8 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 }
 .shelf-select { display: none; }                              /* multi-select toggle is a touch affordance only */
 .shelf-select[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
-/* coarse pointers (touch): bigger cells + an always-visible name (no hover) make tap-to-cycle comfortable */
+/* coarse pointers (touch, regardless of width): reveal the multi-select toggle and roomier cells, since
+   there's no hover to reveal names — tap-to-cycle needs the affordances visible. */
 @media (pointer: coarse) {
   .shelf-select { display: inline-flex; }
   .shelfgrid { gap: 10px; }
@@ -520,10 +599,12 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
      because only the touched cell ever hovers */
 }
 
-/* motion — fades + gentle bounce (§3.4) */
+/* MOTION — fades + gentle bounce that confirm rather than decorate (§3.4). mh-rise = fade up (panels/cards);
+   mh-pop = scale-bounce/overshoot (swatches appearing). Buttons press down to 96% on :active. */
 @keyframes mh-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes mh-pop { 0% { transform: scale(.82); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .card { animation: mh-rise .32s cubic-bezier(.2,.7,.2,1) both; }
 .hero .herochip.pop { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }   /* pop only on discrete base changes, not per drag frame */
 .btn:active, .seg button:active { transform: scale(.96); }
+/* Accessibility: honour the OS "reduce motion" setting — kill ALL animation/transition (§3.4). */
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

@@ -2,6 +2,9 @@
    Inter (body/UI) 400/500/600 + Space Grotesk (display) 500/600/700, latin subset, woff2.
    font-display: swap keeps the system-font fallback visible until the file loads. */
 
+/* Inter — the body/UI typeface. Three weights, each its own local woff2 file
+   (regular 400, medium 500, semibold 600). font-display: swap on every face means
+   text renders in a system fallback immediately, then swaps in once the file loads. */
 @font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap;
   src: url("../assets/fonts/inter-400.woff2") format("woff2"); }
 @font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap;
@@ -9,6 +12,8 @@
 @font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap;
   src: url("../assets/fonts/inter-600.woff2") format("woff2"); }
 
+/* Space Grotesk — the display typeface for headings and the wordmark. Three weights
+   (medium 500, semibold 600, bold 700), same self-hosted + swap approach as Inter. */
 @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: swap;
   src: url("../assets/fonts/space-grotesk-500.woff2") format("woff2"); }
 @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 600; font-display: swap;
