@@ -486,8 +486,11 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .pad { padding: 14px; }
   .hero .herochip { width: 26px; height: 26px; }
   .seg { width: 100%; }
-  .seg button { flex: 1; text-align: center; }
+  /* long labels ("Wash · base · highlight") may wrap on phones: pills grow instead of overflowing */
+  .seg button { flex: 1; text-align: center; height: auto; min-height: 34px; padding: 5px 8px; line-height: 1.25; }
   #seg button { justify-content: center; }
+  /* Plan controls: label above a full-width control — beside it, the segments get crushed to 3-line pills */
+  .ctlgrp { flex-direction: column; align-items: flex-start; gap: 5px; width: 100%; }
   .hglyph { display: none; }          /* text-only harmony control on phones (no room for glyphs) */
   .nbanner { font-size: 11.5px; padding: 7px 10px; gap: 7px; }   /* compact explainer when tapped open on phones */
   /* lightness goes back to a horizontal slider below the wheel on phones (a vertical one would crush it) */

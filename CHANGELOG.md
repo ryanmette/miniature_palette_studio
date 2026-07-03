@@ -5,15 +5,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Fixed
-- **Mobile: the neutral explainer no longer blocks colour-picking.** On phones there's no spare space
-  above the wheel, so the expanded banner overlay sat ON the disc and swallowed the touches meant for
-  the wheel. Touch / narrow (≤700px) screens now enter neutral mode **pill-first** — the compact ◐ pill
-  barely covers the rim and the explainer expands only when tapped — and **any wheel interaction
-  dismisses the banner** (it can never block a drag, on any device). The banner is also more compact on
-  small screens. Verified at 390×844 with touch: pill-first entry, wheel interactive immediately,
-  pill-tap expands, wheel-touch dismisses AND the pick still lands. SW `ps-v21`.
-
 ### Added
 - **The rest of the ladders (v1.8 PR 2 + follow-up 2).** ① **Temperature ladder** — a neutral colour
   role's card now leads with **Cool · base · warm** (locked tints: cool `hsl(222,.12,L−.14)` · ideal ·
@@ -172,6 +163,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Service-worker cache bumped to `ps-v10` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
 
 ### Fixed
+- **Mobile: the neutral explainer no longer blocks colour-picking.** On phones there's no spare space
+  above the wheel, so the expanded banner overlay sat ON the disc and swallowed the touches meant for
+  the wheel. Touch / narrow (≤700px) screens now enter neutral mode **pill-first** — the compact ◐ pill
+  barely covers the rim and the explainer expands only when tapped — and **any wheel interaction
+  dismisses the banner** (it can never block a drag, on any device). The banner is also more compact on
+  small screens. Verified at 390×844 with touch: pill-first entry, wheel interactive immediately,
+  pill-tap expands, wheel-touch dismisses AND the pick still lands. SW `ps-v21`.
+- **Mobile: the Plan tab's controls no longer scrunch.** On phones the "Tone ladder" / "Use my
+  collection" labels sat *beside* their segmented controls, crushing the long chips ("Wash · base ·
+  highlight") into three-line text that spilled out of the fixed-height pills. At ≤520px the label now
+  stacks **above** a full-width control, and segment pills grow to fit wrapped text instead of
+  overflowing. Verified 390–900px: no pill overflow, no horizontal scroll, ladder columns intact.
 - **Seed toolbar overlapped the sticky header on scroll.** Its `z-index` (30) outranked the header (20);
   dropped to 10 — still above the sticky studio (so the Paints drawer isn't hidden behind the wheel) but
   below the header. **Header + footer now match the content width.** `.bar` and `.appfoot` were capped at
