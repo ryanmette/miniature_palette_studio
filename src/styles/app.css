@@ -489,6 +489,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .seg button { flex: 1; text-align: center; }
   #seg button { justify-content: center; }
   .hglyph { display: none; }          /* text-only harmony control on phones (no room for glyphs) */
+  .nbanner { font-size: 11.5px; padding: 7px 10px; gap: 7px; }   /* compact explainer when tapped open on phones */
   /* lightness goes back to a horizontal slider below the wheel on phones (a vertical one would crush it) */
   .wheelrow { flex-direction: column; }
   .wlcol { flex-direction: row; width: min(82vw, 340px); gap: 10px; }

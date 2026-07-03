@@ -281,11 +281,16 @@ function ensureHarmonyMode() {
  * it on demand. Timer only re-arms on mode ENTRY or pill click — never per drag frame. */
 let bannerTimer = 0;
 const BANNER_HOLD_MS = 7000;
+/** Touch / narrow screens have no spare space: the expanded banner would sit ON the wheel disc and
+ *  swallow the touches meant for colour-picking. There, neutral mode enters PILL-FIRST — the ◐ pill
+ *  barely covers the rim, and the explainer expands only on request (evaluated per call so rotation/
+ *  resize is honoured). */
+const compactBanner = () => matchMedia('(pointer: coarse), (max-width: 700px)').matches;
 function setNeutralUi(n) {
   const ov = $('#neutralOverlay'); if (!ov) return;
   clearTimeout(bannerTimer);
   ov.hidden = !n;
-  if (n) expandBanner();          // ensureHarmonyMode only calls on a mode CHANGE (early-return guard)
+  if (n) (compactBanner() ? collapseBanner : expandBanner)();   // ensureHarmonyMode only calls on a mode CHANGE
 }
 function expandBanner() {
   const nb = $('#neutralBanner'), np = $('#neutralPill');
@@ -515,7 +520,7 @@ function setupWheel() {
     else if (active && active.kind === 'pop') setPop(ph, ps);   // neutral mode: the pop is the draggable accent
     else setBase(ph, ps);               // base node, or empty space → move the base
   }
-  cv.addEventListener('pointerdown', e => { dragging = true; active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });
+  cv.addEventListener('pointerdown', e => { collapseBanner(); dragging = true; active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });   // interacting with the wheel dismisses the explainer — it must never block a drag
   cv.addEventListener('pointermove', e => { if (dragging) applyDrag(e); });
   cv.addEventListener('pointerup', () => { dragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); });
   // --- keyboard operability (WCAG): focus the wheel, then arrows adjust the active node, [ ] cycle, +/- add/remove ---

@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- **Mobile: the neutral explainer no longer blocks colour-picking.** On phones there's no spare space
+  above the wheel, so the expanded banner overlay sat ON the disc and swallowed the touches meant for
+  the wheel. Touch / narrow (≤700px) screens now enter neutral mode **pill-first** — the compact ◐ pill
+  barely covers the rim and the explainer expands only when tapped — and **any wheel interaction
+  dismisses the banner** (it can never block a drag, on any device). The banner is also more compact on
+  small screens. Verified at 390×844 with touch: pill-first entry, wheel interactive immediately,
+  pill-tap expands, wheel-touch dismisses AND the pick still lands. SW `ps-v21`.
+
 ### Added
 - **The rest of the ladders (v1.8 PR 2 + follow-up 2).** ① **Temperature ladder** — a neutral colour
   role's card now leads with **Cool · base · warm** (locked tints: cool `hsl(222,.12,L−.14)` · ideal ·
