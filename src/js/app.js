@@ -687,7 +687,21 @@ function setCursor(id) {
   shelf.cursor = id;
   const g = $('#shelfGrid');
   for (const c of g.children) c.classList.toggle('cursor', c.dataset.id === id);
-  if (id) g.setAttribute('aria-activedescendant', 'sc-' + id); else g.removeAttribute('aria-activedescendant');
+  if (id) { g.setAttribute('aria-activedescendant', 'sc-' + id); const c = cellEl(id); if (c) clampTip(c); }
+  else g.removeAttribute('aria-activedescendant');
+}
+/** Keep a cell's name tip on-screen: a tip is centred on its cell, so edge-column names would clip at
+ *  the viewport (the Shelf bug on phones). Measured invisibly (the tip is display:none until shown —
+ *  no paint between the style writes), then shifted via --tipdx in the tip's transform. */
+function clampTip(c) {
+  const tip = c.querySelector('.celltip'); if (!tip) return;
+  tip.style.cssText = 'display:block;visibility:hidden';
+  const w = tip.offsetWidth;
+  tip.style.cssText = '';
+  const r = c.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+  const ideal = r.left + r.width / 2 - w / 2;             // where the centred tip's left edge would land
+  const dx = ideal < 8 ? 8 - ideal : ideal + w > vw - 8 ? vw - 8 - (ideal + w) : 0;
+  if (dx) tip.style.setProperty('--tipdx', dx.toFixed(1) + 'px');
 }
 function rangeIds(aId, bId) {
   const list = shelfPaints().map(p => p.id);
@@ -723,8 +737,9 @@ function updateCell(c, mark) {
 /* mouse: click-select + marquee drag (mouse only; touch uses tap-to-cycle) */
 function setupShelf() {
   const grid = $('#shelfGrid');
-  grid.addEventListener('pointerover', e => { const c = e.target.closest('.cell'); shelf.hover = c ? c.dataset.id : null; });
+  grid.addEventListener('pointerover', e => { const c = e.target.closest('.cell'); shelf.hover = c ? c.dataset.id : null; if (c) clampTip(c); });
   grid.addEventListener('pointerout', e => { if (!e.relatedTarget || !grid.contains(e.relatedTarget)) shelf.hover = null; });
+  grid.addEventListener('focusin', e => { const c = e.target.closest('.cell'); if (c) clampTip(c); });
 
   if (COARSE) {                                  // touch: tap-to-cycle, or Select-mode multi-select; long-press → menu
     let lpTimer = null, sx = 0, sy = 0, suppressTap = false;
