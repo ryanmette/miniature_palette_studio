@@ -357,6 +357,14 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   (the Main|Accent seed toggle disables — a neutral accent has no complement) and its Metal ideal is
   always gunmetal `#6E7177` (no hue to read a temperature from).
 - **Color-blindness simulation**: Machado et al. (2009) severity-1.0 matrices applied in linear RGB, for protanopia / deuteranopia / tritanopia.
+- **Temperature ladder (v1.8):** a NEUTRAL colour role's card leads with **Cool · base · warm** — its
+  value steps have no hue to walk, so the ladder walks temperature instead (locked absolute tints:
+  cool `hsl(222,.12, L−.14)` · the ideal · warm `hsl(32,.14, L+.16)`); the selected value ladder(s)
+  still follow. Saturated roles are unchanged.
+- **Wash-step media (v1.8):** the Wash·base·highlight ladder's *wash* step prefers REAL shading media
+  (`wash`/`shade`/`ink` types, the finish exclusion lifted for that step only). If none lands within
+  ΔE ≤ 10, it falls back to the darkened-base match flagged **"watered down"** (thin the base) — never
+  a silent substitution (§2).
 - **NMM (non-metallic metal) ladder (v1.8):** the Metal role also offers a flat-paint recipe for the
   metal illusion — locked steps off the metal ideal: shadow `{dl:−.26, ds:+.04}` · mid (the ideal) ·
   highlight `{dl:+.30, ds:−.18}`, matched with metallics AND finishes excluded.

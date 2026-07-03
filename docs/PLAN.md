@@ -149,7 +149,7 @@ with an explanatory tooltip (a neutral accent has no complement to build from).
 | PR | Scope | Key changes |
 |----|-------|-------------|
 | 1 | **Engine: detection + neutral schemes + pop-driven harmonies** | `color.js`: `labChroma` + `isNeutral` (pure). `harmony.js`: neutral recipes as data (`neutral-pop` · `duotone` · `warm-cool`; *Value ramp* reuses `shades`), partners rotate the **pop** hue. `scheme.js`: neutral path in `roleIdeals` (Primary = seed + value ramp · Secondary = bridge grey · Accent = pop · Metal unchanged). `app.js`/`ui.js`: `state.pop` (URL-encoded `pp` → share links §4), banner, adapted strip (aria-disabled + title), wheel centre-pin + pop node (existing keyboard nav drives it), quick-pop chips, auto-switch off a hue-rotation harmony on entry (announced). Tests: detection edge cases, recipes, neutral `roleIdeals`, URL round-trip. Docs: `CLAUDE.md` §7 + §3.5, `USE_CASES.md`, CHANGELOG, SW bump. |
-| 2 | **Temperature ladder** (small follow-up) | `scheme.js`: Cool·Base·Warm ideals for neutral roles via locked Lab offsets (cool → b\* down; warm → a\*/b\* up; §7). `ui.js` role cards: segmented *Cool·base·warm | Shadow·mid·highlight* on neutral roles only. Tests + CHANGELOG + SW bump. |
+| 2 ✅ | **Temperature ladder** — DONE (ladders PR; recipe locked in HSL tints rather than Lab offsets, same intent) | `scheme.js`: Cool·Base·Warm ideals for neutral roles via locked Lab offsets (cool → b\* down; warm → a\*/b\* up; §7). `ui.js` role cards: segmented *Cool·base·warm | Shadow·mid·highlight* on neutral roles only. Tests + CHANGELOG + SW bump. |
 
 Interactions checked at plan time: equivalents drill-down, export, compare, and owned-matching are
 hex-based and unaffected; value-ramp columns are display-only in the live palette exactly like the
@@ -175,7 +175,7 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    not per frame. Keep the parked-harmony restore keyed to a *committed* mode change, not a
    transient one. (Touches `app.js ensureHarmonyMode`/`commit`; add a boundary-oscillation test.)
 
-2. **Tone-ladder "wash" step should prefer real wash media (enhancement).** Today the ladder's
+2. ✅ **DONE (ladders PR).** ~~Tone-ladder "wash" step should prefer real wash media (enhancement).~~ Wash rungs now match real wash/shade/ink paints (ΔE ≤ 10 gate) with an honest "watered down" fallback label. Today the ladder's
    **wash** step is just the base stepped darker + slightly saturated, then nearest *any-type* paint
    — so it can resolve to a flat base/layer paint, not an actual wash. **Wanted:** for the wash step,
    **prefer `shade` / `wash` / `ink` paints** (the finishes currently excluded from suggestions —

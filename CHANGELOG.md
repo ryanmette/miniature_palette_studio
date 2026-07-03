@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **The rest of the ladders (v1.8 PR 2 + follow-up 2).** ① **Temperature ladder** — a neutral colour
+  role's card now leads with **Cool · base · warm** (locked tints: cool `hsl(222,.12,L−.14)` · ideal ·
+  warm `hsl(32,.14,L+.16)`) — the painter's real move for neutrals (shade cool, warm the light); the
+  selected value ladder(s) still follow, and saturated roles are untouched. ② **Wash steps prefer real
+  media** — the wash rung now matches actual `wash`/`shade`/`ink` paints (finish exclusion lifted for
+  that step only; e.g. a red Primary's wash is now *Flesh Wash* rather than a flat dark red, shown with
+  its finish pill). When no medium lands within ΔE ≤ 10 the step falls back to the darkened base flagged
+  **"watered down"** (tooltip: thin it into the recesses) — honest, never silent. Also: the collapsed
+  neutral pill parks at the **left** of the wheel area (per Ryan). SW `ps-v20`.
 - **Neutral banner is now an animated wheel overlay + NMM suggestions on the Metal card.** ① The
   neutral-seed explainer floats **over the wheel** (it can never reflow or bounce the studio — §3.4),
   animates in on mode entry, **auto-collapses after ~7s into a ◐ "neutral seed" pill**, and the pill
