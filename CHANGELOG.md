@@ -114,6 +114,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (same dialog as the footer link).
 
 ### Changed
+- **Codebase-wide plain-English comment pass.** Every commentable source file (the `src/js/` modules,
+  `sw.js`, `index.html`, the `styles/` CSS, the `scripts/` dev tooling, and the `test/` suites) gained
+  inline comments explaining in plain English *what* each line does and *why* — no logic changed. To keep
+  code and constitution in sync (anti-drift, §8/§10), `CLAUDE.md` §6 was reworded: it now welcomes an
+  explanatory *what* alongside the *why*, provided comments never drift from the code they describe.
 - **Paints drawer caret + dark-theme glyph polish.** The `☰ Paints` caret is larger (11px → 15px) and
   **rotates 180°** while the drawer is open (bounce easing; snaps under reduced-motion), so the trigger
   reads as open/closed. The theme switch's **dark glyph is now a skull** instead of a moon — on-brand for
