@@ -92,7 +92,7 @@ sets below change between themes.
 --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
 --accent-fill:var(--accent); --accent-edge:var(--accent); --accent-bevel:0 0 0 rgba(0,0,0,0);  /* solid-accent surfaces stay flat in light; dimension is dark-only */
 --buy:#2563EB; --buy-weak:#DBEAFE; --on-buy:#FFFFFF;   /* "to-buy" state — single-meaning, never the selection colour (§3.5) */
---success:#16A34A; --success-weak:#DCFCE7;
+--success:#16A34A; --success-weak:#DCFCE7; --on-success:#FFFFFF;
 --warning:#C2740B; --warning-weak:#FBEBD3;
 --danger:#DC2647;  --danger-weak:#FCE4EA;
 --shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
@@ -108,7 +108,7 @@ sets below change between themes.
 --accent-fill:linear-gradient(118deg,rgba(255,255,255,0) 30%,rgba(255,250,235,.28) 47%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#D6A646,#A8781D);
 --accent-edge:#8C6516; --accent-bevel:inset 0 1px 0 rgba(255,245,220,.4), inset 0 -1px 1px rgba(0,0,0,.3);
 --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;   /* cold steel-blue cart, distinct from the brass accent */
---success:#86A559; --success-weak:#232A16;
+--success:#86A559; --success-weak:#232A16; --on-success:#14190A;  /* white fails 3:1 on the moss green */
 --warning:#C9923A; --warning-weak:#2E2412;
 --danger:#D2563F;  --danger-weak:#2E1A14;
 --shadow:0 1px 2px rgba(0,0,0,.45);

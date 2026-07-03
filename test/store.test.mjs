@@ -130,3 +130,22 @@ test('importJSON replaces the prior collection (clears old marks)', async () => 
   assert.equal(store.isOwned('old'), false);        // cleared
   assert.equal(store.isOwned('new'), true);
 });
+
+test('importJSON rejects JSON that is not a collection backup (no silent wipe)', async () => {
+  const { store } = await freshStore();
+  store.setMark('a', 'owned');
+  assert.equal(store.importJSON('[]'), false);                 // an array is not a backup
+  assert.equal(store.importJSON('42'), false);
+  assert.equal(store.importJSON(JSON.stringify({ version: '1.0', paints: [], groups: [] })), false);   // paints.json picked by mistake
+  assert.equal(store.markOf('a'), 'owned');                    // collection untouched by the rejects
+});
+
+test('importJSON merges only the prefs the backup carries', async () => {
+  const { store } = await freshStore();
+  store.setPref('ladder', 'both');
+  store.setPref('theme', 'dark');
+  assert.equal(store.importJSON(JSON.stringify({ owned: ['x'], prefs: { theme: 'light' } })), true);
+  assert.equal(store.getPref('theme'), 'light');   // carried by the backup → applied
+  assert.equal(store.getPref('ladder'), 'both');   // absent from the backup → kept, not reset to default
+  assert.equal(store.markOf('x'), 'owned');
+});

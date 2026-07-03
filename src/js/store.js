@@ -74,10 +74,21 @@ export function setPref(k, v) { state.prefs[k] = v; persist(); }
 export function exportJSON() { persist(); return JSON.stringify(state, null, 2); }
 export function importJSON(str) {
   try {
-    const s = normalise(JSON.parse(str));
+    const o = JSON.parse(str);
+    // Only a blob that LOOKS like our backup may replace the collection. Anything else parseable
+    // (an exported scheme, paints.json picked by mistake, '[]') must be rejected — normalise()
+    // would happily coerce it to an empty state and silently wipe the shelf under a success toast.
+    const shaped = o && typeof o === 'object' && !Array.isArray(o)
+      && (Array.isArray(o.owned) || Array.isArray(o.want) || (o.prefs && typeof o.prefs === 'object'));
+    if (!shaped) return false;
+    const s = normalise(o);
     owned.clear(); s.owned.forEach(x => owned.add(x));
     want.clear(); s.want.forEach(x => want.add(x));
-    Object.assign(state.prefs, s.prefs);
+    // Merge only the prefs the backup actually carries — an older backup that predates a pref key
+    // must not reset that pref to its default.
+    if (o.prefs && typeof o.prefs === 'object') {
+      for (const k of Object.keys(PREF_DEFAULTS)) if (k in o.prefs) state.prefs[k] = o.prefs[k];
+    }
     persist();
     return true;
   } catch { return false; }

@@ -342,7 +342,7 @@ export function a11yPanel(model) {
   let coll;
   if (model.collision) {
     const s = model.collision.suggestion;
-    coll = `<div class="collide"><strong>Heads-up:</strong> ${esc(model.collision.roles[0])} and ${esc(model.collision.roles[1])} look similar under deuteranopia (ΔE ${model.collision.delta.toFixed(1)}).`
+    coll = `<div class="collide"><strong>Heads-up:</strong> ${esc(model.collision.roles[0])} and ${esc(model.collision.roles[1])} look similar under ${esc(model.collision.type || 'deuteranopia')} (ΔE ${model.collision.delta.toFixed(1)}).`
       + (s ? ` Try a shifted ${esc(s.role.toLowerCase())} ${swatch(s.hex, '', 'width:16px;height:16px;display:inline-block;vertical-align:-2px')}${s.match ? ' — nearest paint ' + esc(pname(s.match.paint)) + ' (' + esc(s.match.paint.brand) + ')' : ''}.` : '')
       + '</div>';
   } else {
