@@ -202,6 +202,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── style-directions.html  ← 5-way visual-direction exploration
 │   ├── quick-complement.html  ← P5 "quick complement" mode mock
 │   ├── persona-flows.html     ← end-to-end experience-flow storyboard
+│   ├── seed-role-unify.html   ← 3-way exploration: folding the Main|Accent toggle into the palette
 │   ├── studio-layouts.html    ← 5-way Studio layout exploration (scroll-reduction) + judge ranking
 │   ├── layouts/               ← the 5 standalone layout mocks embedded by studio-layouts.html
 │   │   ├── split-sticky-studio.html · cockpit-3col.html · instrument-band.html
