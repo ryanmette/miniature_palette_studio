@@ -264,3 +264,34 @@ test('a wash step with NO eligible fallback renders as no-paint, never "watered 
   assert.equal(wash.match, null);
   assert.ok(!wash.dilute, 'no dilute tag without a paint to dilute');
 });
+
+test('accent-seed pinning: the Accent role ideal is the pick verbatim in EVERY harmony', () => {
+  const pick = '#3D7ACC';
+  for (const h of ['split-complementary', 'analogous', 'shades', 'monochromatic', 'custom', 'complementary']) {
+    const defs = roleIdeals('#CC8F3D', h, undefined, { accentHex: pick });   // base = the pick's complement-ish
+    assert.equal(defs.find(d => d.role === 'Accent').idealHex, pick, h);
+    assert.equal(defs.find(d => d.role === 'Primary').idealHex, '#CC8F3D', h + ' primary untouched');
+  }
+  // without the pin, split-comp's accent is a rotation — NOT the pick (the pre-pin behaviour)
+  const un = roleIdeals('#CC8F3D', 'split-complementary');
+  assert.notEqual(un.find(d => d.role === 'Accent').idealHex, pick);
+});
+
+test('accent-seed pinning: the substituted honesty note now fires in non-180 harmonies', () => {
+  // The pick is a wash (excluded from suggestions): with the Accent pinned to its hex, the slot
+  // must carry the honest "pick replaced" flag — pre-pin, split-comp had no slot at the pick's hex.
+  const pool = indexDataset({ version: 't', paints: [
+    { id: 'my-wash', brand: 'A', line: '—', name: 'Blue Wash', hex: '#3D7ACC', type: 'wash' },
+    { id: 'flat-blue', brand: 'A', line: '—', name: 'Flat Blue', hex: '#3F7CC8', type: 'layer' },
+    { id: 'flat-orange', brand: 'A', line: '—', name: 'Flat Orange', hex: '#CC8F3D', type: 'layer' },
+  ] });
+  const s = buildScheme(pool, '#CC8F3D', 'split-complementary', {
+    accentHex: '#3D7ACC', seed: { id: 'my-wash', name: 'Blue Wash', hex: '#3D7ACC' },
+    excludeTypes: new Set(['wash']),
+  });
+  const acc = s.roles.find(r => r.role === 'Accent');
+  assert.equal(acc.idealHex, '#3D7ACC');
+  assert.equal(acc.match.paint.id, 'flat-blue');            // the wash is excluded → nearest flat
+  assert.ok(acc.substituted, 'honesty note fires');
+  assert.equal(acc.substituted.name, 'Blue Wash');
+});

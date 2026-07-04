@@ -357,6 +357,10 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   `L±` steps *away* from the seed's end of the value range. A neutral seed always holds **Primary**
   (the Main|Accent seed toggle disables — a neutral accent has no complement) and its Metal ideal is
   always gunmetal `#6E7177` (no hue to read a temperature from).
+- **Accent-seed pinning:** in accent-seed mode the **Accent role's ideal is the picked colour
+  verbatim, in every harmony** (the rest of the scheme derives from the pick's complement). The
+  180°-step harmonies land there by construction; without the pin, split-comp/analogous/value
+  harmonies dropped the picked colour from the plan entirely.
 - **Color-blindness simulation**: Machado et al. (2009) severity-1.0 matrices applied in linear RGB, for protanopia / deuteranopia / tritanopia.
 - **Temperature ladder (v1.8):** a NEUTRAL colour role's card leads with **Cool · base · warm** — its
   value steps have no hue to walk, so the ladder walks temperature instead (locked absolute tints:

@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Accent-seed pinning + the PLAN §9 decisions.** In accent-seed mode the **Accent role now carries
+  your picked colour verbatim in every harmony** — split-complementary/analogous/value harmonies used
+  to drop the picked colour from the role plan entirely (only 180°-step harmonies landed on it). The
+  scheme still derives from the pick's complement; the live palette gains a display-only **Accent**
+  column when no rule column carries the pick, and the exact-tie preference + "pick replaced" honesty
+  note now work under every harmony (§7 amended). Also resolved with Ryan: neutral-mode defaults stay
+  as shipped (crimson pop incl. white seeds · shade-cool→highlight-warm · no borderline hint), the
+  affiliate direction stays deliberately parked, and the light theme keeps its violet accent
+  (a brand-hex retune remains a one-token change). SW `ps-v24`.
 - **The rest of the ladders (v1.8 PR 2 + follow-up 2).** ① **Temperature ladder** — a neutral colour
   role's card now leads with **Cool · base · warm** (locked tints: cool `hsl(222,.12,L−.14)` · ideal ·
   warm `hsl(32,.14,L+.16)`) — the painter's real move for neutrals (shade cool, warm the light); the
@@ -175,6 +184,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Service-worker cache bumped to `ps-v10` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
 
 ### Fixed
+- **Mobile: long paint names can no longer shove the Plan's ladder rows off the card.** The
+  three-column tone/temperature/NMM rows now hard-cap at the card width (`min-width: 0` — names
+  ellipsize instead of pushing the UI), and rows show the SHORT paint name; the full identity
+  ("Dawnstone (Layer) · Citadel") lives in the same clamped tooltip the Shelf uses — hover/keyboard
+  focus on desktop, tap on touch — and in each step's aria-label, so screen readers always get it.
+  Verified at 390px with the worst offenders (Warpaints Fanatic / Model Color names): zero horizontal
+  push, edge-step tips clamp on-screen.
 - **The remaining 18 correctness fixes from the full-codebase review.** Value harmonies (Shades/
   Monochromatic) now compress their locked steps into the head-room that exists instead of clamping to
   duplicate partners (a near-white base got two identical `#FFFFFF` shades; §7 amended); the pop-chroma

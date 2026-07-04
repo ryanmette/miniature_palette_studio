@@ -64,7 +64,7 @@ export function metalIdeal(baseHex) {
  * the live palette, to label each swatch with its role) can use it per frame. buildScheme builds on it.
  * @returns {Array<{role, weight, idealHex, metal?}>}
  */
-export function roleIdeals(baseHex, harmony, popHex = DEFAULT_POP) {
+export function roleIdeals(baseHex, harmony, popHex = DEFAULT_POP, { accentHex = null } = {}) {
   // Neutral harmonies build their hue-bearing partners from the pop colour (harmony.js
   // neutralPartners) — total for any seed, so a mid-transition mismatch can never throw. Their
   // recipes are ordered [secondary, accent] BY CONSTRUCTION (the pop/warm tint is the accent), so
@@ -82,12 +82,17 @@ export function roleIdeals(baseHex, harmony, popHex = DEFAULT_POP) {
   }
   const secondary = partners.find(p => p !== accent);
   // A rule-less harmony (custom) has no partners — fall back to sensible rotations so the role plan still reads.
-  const accentHex = accent ? accent.hex : rotateHue(baseHex, 210);
+  // Accent-seed pinning (§7): when the painter seeded the scheme AS the accent, the Accent role's
+  // ideal is their picked colour verbatim in EVERY harmony — under the 180°-step harmonies the
+  // geometry already lands there, but split-comp/analogous/value harmonies used to drop the picked
+  // colour from the plan entirely (it appeared on no slot, so the pick tie-break and the honesty
+  // note could never fire). The rest of the scheme still derives from the complement.
+  const accentIdeal = accentHex || (accent ? accent.hex : rotateHue(baseHex, 210));
   const secondaryHex = secondary ? secondary.hex : rotateHue(baseHex, 30);
   return [
     { role: 'Primary', weight: '~60%', idealHex: baseHex },
     { role: 'Secondary', weight: '~30%', idealHex: secondaryHex },
-    { role: 'Accent', weight: '~10%', idealHex: accentHex },
+    { role: 'Accent', weight: '~10%', idealHex: accentIdeal },
     { role: 'Metal', weight: 'spot', idealHex: metalIdeal(baseHex), metal: true },
   ];
 }
@@ -98,7 +103,7 @@ export function roleIdeals(baseHex, harmony, popHex = DEFAULT_POP) {
  * @returns {{ base, harmony, ladder, roles: Array<{role, weight, idealHex, match, ladders}> }}
  */
 export function buildScheme(idx, baseHex, harmony, opts = {}) {
-  const defs = roleIdeals(baseHex, harmony, opts.pop);
+  const defs = roleIdeals(baseHex, harmony, opts.pop, { accentHex: opts.accentHex });
   const styles = LADDER_STYLES[opts.ladder] || LADDER_STYLES.wash;
   // Distinct role assignment: a small (owned-only) pool can map two close-hued roles to the SAME paint.
   // Assign roles in order, preferring a paint no earlier role used; if none is left, reuse it but flag the
@@ -110,9 +115,9 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     // resolve to real metallics rather than flat colours; the WASH rung deliberately searches real
     // shading media for every role including Metal (§7 wash-media rule — washing a metallic with a
     // bottled shade is standard practice). The slot whose ideal IS the picked paint's own hex
-    // (Primary in main mode; in accent mode only the harmonies with a 180° step put the pick's hex
-    // on a slot — see PLAN §9 for the open non-complementary gap) prefers the pick on exact ΔE
-    // ties (Layer vs Dry twins share a hex — dataset order must not override the pick).
+    // (Primary in main mode; the pinned Accent in accent mode — every harmony, via roleIdeals'
+    // accentHex) prefers the pick on exact ΔE ties (Layer vs Dry twins share a hex — dataset order
+    // must not override the pick).
     const seedTarget = !!(opts.seed && opts.seed.hex && d.idealHex.toUpperCase() === opts.seed.hex.toUpperCase());
     let roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
     if (seedTarget) roleOpts = { ...roleOpts, preferIds: new Set([opts.seed.id]) };
