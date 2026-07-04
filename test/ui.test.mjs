@@ -66,3 +66,20 @@ test('segmented marks exactly one harmony active', () => {
   assert.equal((html.match(/aria-pressed="true"/g) || []).length, 1);
   assert.match(html, /data-h="analogous"[^>]*aria-pressed="true"/);
 });
+
+test('ladder steps: short visible name; full identity in the tip + aria-label', async () => {
+  const { indexDataset } = await import('../src/js/data.js');
+  const { buildScheme } = await import('../src/js/scheme.js');
+  const { roleSlots } = await import('../src/js/ui.js');
+  const idx = indexDataset({ version: 't', paints: [
+    { id: 'c-layer-dawnstone', brand: 'Citadel', line: 'Layer', name: 'Dawnstone', hex: '#70746D', type: 'layer' },
+    { id: 'c-dry-dawnstone', brand: 'Citadel', line: 'Dry', name: 'Dawnstone', hex: '#70746D', type: 'dry' },
+  ] });
+  const html = roleSlots(buildScheme(idx, '#70746D', 'shades', { ladder: 'wash' }), () => 'none');
+  // visible row label = the SHORT name (no "(Layer)") — long qualifiers used to shove the row off-card
+  assert.ok(html.includes('<div class="pn">Dawnstone</div>'), 'short name shown');
+  // the full disambiguated identity is one tap/hover/focus away, and always spoken
+  assert.ok(html.includes('<span class="celltip">Dawnstone (Layer) · Citadel</span>'), 'tip carries dname + brand');
+  assert.ok(/aria-label="[^"]*Dawnstone \(Layer\), Citadel"/.test(html), 'aria-label carries the full identity');
+  assert.ok(html.includes('tabindex="0"'), 'steps are keyboard-reachable');
+});

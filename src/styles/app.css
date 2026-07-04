@@ -219,7 +219,8 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .de .dot { width: 7px; height: 7px; border-radius: 50%; }
 .badge { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px; border-radius: 5px; background: var(--surface-2); color: var(--text-muted); white-space: nowrap; }
 .ladder { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
-.ladder .step { flex: 1; text-align: center; }
+.ladder .step { flex: 1; min-width: 0; text-align: center; position: relative; }   /* min-width:0 → names ellipsize instead of shoving the row past the card */
+.ladder .step:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-ctrl); }
 .ladder .step .sw { width: 100%; height: 30px; }
 .ladder .step .cap { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 .ladder .step .pn { font-size: 10.5px; font-weight: 500; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -394,7 +395,8 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   background: var(--text); color: var(--bg); font-size: 11.5px; font-weight: 500; white-space: nowrap;
   padding: 4px 8px; border-radius: 7px; pointer-events: none; display: none;
   z-index: 5; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-.cell:hover .celltip, .cell:focus-visible .celltip, .cell.cursor .celltip { display: block; animation: tipfade .12s ease; }
+.cell:hover .celltip, .cell:focus-visible .celltip, .cell.cursor .celltip,
+.step:hover .celltip, .step:focus-visible .celltip { display: block; animation: tipfade .12s ease; }
 @keyframes tipfade { from { opacity: 0; } }
 .cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* marquee rubber-band */

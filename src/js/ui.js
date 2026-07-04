@@ -219,12 +219,20 @@ export function planControls(ladder, collection, includeContrast, gapCount) {
  *  carries `data-hex` so hovering/focusing it rings the same colour's wheel node + live-palette column —
  *  the colour link that ties this detail tab to the wheel (app.js linkHighlight; §3.5). */
 export function roleSlots(scheme, markOf) {
-  const step = s => `<div class="step">${swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
-    + `<div class="pn">${s.match ? esc(pname(s.match.paint)) : '—'}</div>`
-    // wash-step honesty: a real wash/shade/ink shows its finish pill; no close medium → "watered down"
-    + (s.media === 'wash' && s.match ? `<div class="steptag media">${finishTag(s.match.paint.type)}</div>` : '')
-    + (s.dilute ? `<div class="steptag dilute" title="No bottled wash lands close enough — thin (water down) this base paint into the recesses instead">watered down</div>` : '')
-    + `</div>`;
+  // Ladder rows show the SHORT paint name — long display names ("Brainmatter Beige (Warpaints
+  // Fanatic)") used to blow the three-column row past the card edge on phones. The full identity
+  // (disambiguated name · brand) lives in the same clamped tooltip the Shelf uses (hover / focus /
+  // tap via sticky hover) and in the step's aria-label, so nothing is lost — just not always-on.
+  const step = s => {
+    const p = s.match && s.match.paint;
+    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}"` : ''}>${swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
+      + `<div class="pn">${p ? esc(p.name) : '—'}</div>`
+      + (p ? `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>` : '')
+      // wash-step honesty: a real wash/shade/ink shows its finish pill; no close medium → "watered down"
+      + (s.media === 'wash' && p ? `<div class="steptag media">${finishTag(p.type)}</div>` : '')
+      + (s.dilute ? `<div class="steptag dilute" title="No bottled wash lands close enough — thin (water down) this base paint into the recesses instead">watered down</div>` : '')
+      + `</div>`;
+  };
   // When a limited collection forces two roles onto the same paint, say so + how to separate / what to buy.
   const sharedNote = r => r.shared
     ? `<div class="sharednote"><span class="warnpill">shared paint</span> reused for another role — ${esc(r.differentiate)} to separate`

@@ -1361,6 +1361,10 @@ function wire() {
     // the drawer's right-click menu lives outside #paintsDrawer — don't let interacting with it close the drawer
     if (paintsOpen && !e.target.closest('#paintsDrawer') && !e.target.closest('#paintsBtn') && !e.target.closest('#paintMenu')) closePaints();
   }, true);
+  // Plan-ladder step tips reuse the Shelf's clamped tooltip — an edge step's full name must not
+  // clip at the viewport (§3.4); clampTip measures + shifts it on every show path.
+  $('main').addEventListener('mouseover', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
+  $('main').addEventListener('focusin', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('click', e => {
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
