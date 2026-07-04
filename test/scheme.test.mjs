@@ -258,3 +258,40 @@ test('wash step prefers real wash/shade/ink media; falls back flagged "dilute" w
   assert.ok(w2.dilute, 'no close medium → watered-down fallback');
   assert.notEqual(w2.match.paint.type, 'shade');  // fallback is the darkened-base match, not the far medium
 });
+
+test('shared-paint differentiate points the PAINT toward the role ideal (arg order)', async () => {
+  const { adjustDirection } = await import('../src/js/color.js');
+  // One flat paint + one metal, colour roles metal-excluded → every colour role shares the red.
+  const pool = indexDataset({ version: 't', paints: [
+    { id: 'only-red', brand: 'A', line: '—', name: 'Only Red', hex: '#8A1010', type: 'layer' },
+    { id: 'steel', brand: 'A', line: '—', name: 'Steel', hex: '#8A8F94', type: 'metal' },
+  ] });
+  const s = buildScheme(pool, '#8A1010', 'shades', { excludeTypes: new Set(['metal']) });
+  const shared = s.roles.find(r => r.shared && r.differentiate);
+  assert.ok(shared, 'a shared colour role with advice exists');
+  // The hint is the direction to move the REUSED PAINT toward this role's ideal — reversed args
+  // (the old bug) invert it (says darken when the painter should lighten).
+  assert.equal(shared.differentiate, adjustDirection(shared.idealHex, shared.match.paint.hex));
+  assert.notEqual(adjustDirection(shared.idealHex, shared.match.paint.hex),
+    adjustDirection(shared.match.paint.hex, shared.idealHex));   // fixture must distinguish the orders
+});
+
+test('ladder base rung reuses the headline match; shopping list includes it', () => {
+  // Primary takes the nearest red; Secondary's headline is the distinct second-nearest. The ladder's
+  // un-adjusted base rung must show that SAME paint (a re-search without excludeIds used to resolve
+  // back to Primary's paint), and the exported list must include the headline paint.
+  // red1 is strictly nearest to Secondary's ideal too (ΔE 12.5 vs 16.7) — so the old code's
+  // un-excluded base-rung re-search resolved to red1 while the headline showed red2.
+  const pool = indexDataset({ version: 't', paints: [
+    { id: 'red1', brand: 'A', line: '—', name: 'Red One', hex: '#9A1115', type: 'layer' },
+    { id: 'red2', brand: 'A', line: '—', name: 'Red Two', hex: '#B8323B', type: 'layer' },
+  ] });
+  const s = buildScheme(pool, '#9A1115', 'monochromatic', { ladder: 'wash' });
+  const secondary = s.roles.find(r => r.role === 'Secondary');
+  assert.equal(secondary.match.paint.id, 'red2');            // headline: distinct assignment
+  assert.equal(secondary.shared, false);
+  const base = secondary.ladders.at(-1).steps.find(st => st.key === 'base');
+  assert.equal(base.match.paint.id, 'red2');                 // base rung agrees with the card headline
+  assert.ok(shoppingList(s).some(row => row.name === 'Red Two'),
+    'export includes the Secondary card headline paint');
+});

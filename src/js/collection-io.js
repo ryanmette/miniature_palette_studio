@@ -48,8 +48,9 @@ export function parsePaintRackCsv(text) {
   const rows = parseCsvRows(text);                                  // raw rows first
   if (!rows.length) return [];                                      // empty file → nothing to import
   const header = rows[0].map(h => h.trim().toLowerCase());          // treat row 0 as a candidate header
-  // Helper: find the column whose header contains ANY of the given keywords (returns its index, or -1).
-  const find = (...keys) => header.findIndex(h => keys.some(k => h.includes(k)));
+  // Whole-word match, not substring: a headerless file can open with real data whose cells CONTAIN a
+  // header token — 'The Army Painter,Matt Black' must not be sniffed as a header row via 'paint'.
+  const find = (...keys) => header.findIndex(h => keys.some(k => new RegExp(`\\b${k}\\b`).test(h)));
   let bi = find('brand', 'manufacturer'), ni = find('name', 'paint');  // brand + name column indexes
   const si = find('wish', 'want', 'buy', 'status', 'own', 'have', 'qty', 'quantity');  // status/quantity column index
   if (bi < 0 && ni < 0) {   // no header → assume positional: brand, name, [status]
@@ -72,6 +73,10 @@ function nameIndex(idx) {
   const byBrandName = new Map(), byName = new Map();
   for (const p of idx.paints) {
     byBrandName.set(canonBrand(p.brand) + '|' + norm(p.name), p.id);   // one id per brand+name combo
+    // Also key the disambiguated display name ("Dawnstone (Layer)") — our own export writes dname, so
+    // brand+name twins round-trip losslessly instead of last-in-dataset overwriting the Map entry.
+    // A plain twin name in an EXTERNAL file stays ambiguous (first candidate wins — known limitation).
+    if (p.dname && p.dname !== p.name) byBrandName.set(canonBrand(p.brand) + '|' + norm(p.dname), p.id);
     const k = norm(p.name); let arr = byName.get(k); if (!arr) byName.set(k, arr = []); arr.push(p.id);  // group ids sharing a name
   }
   return { byBrandName, byName };
@@ -99,14 +104,17 @@ export function csvToMarks(idx, text) {
   return { marks, matched: marks.length, unmatched };       // caller applies marks + can report matched/unmatched counts
 }
 
-/** Serialise the collection to paintRack-compatible CSV (brand,name,status). Round-trips with csvToMarks. */
+/** Serialise the collection to paintRack-compatible CSV (brand,name,status). Round-trips with csvToMarks.
+ *  Writes the disambiguated dname where one exists — twins like Dawnstone (Layer)/(Dry) would otherwise
+ *  serialise to identical rows and re-import as one paint (the other's mark silently lost). */
 // "Round-trips" = export then re-import yields the same marks. Output columns match what csvToMarks reads.
 export function marksToCsv(idx, ownedIds, wantIds) {
   // Quote a value only if it contains a comma, quote, or newline; escape embedded quotes by doubling them.
   const esc = v => (/[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
   let out = 'brand,name,status\n';                          // header row
-  // Look up each id's paint and append a CSV line; silently skip ids not in the dataset.
-  const add = (id, status) => { const p = idx.byId.get(id); if (p) out += `${esc(p.brand)},${esc(p.name)},${status}\n`; };
+  // Look up each id's paint and append a CSV line; skip ids not in the dataset. Prefer the
+  // disambiguated dname so twins round-trip losslessly.
+  const add = (id, status) => { const p = idx.byId.get(id); if (p) out += `${esc(p.brand)},${esc(p.dname || p.name)},${status}\n`; };
   for (const id of ownedIds) add(id, 'owned');              // owned paints get status "owned"
   for (const id of wantIds) add(id, 'wishlist');            // to-buy paints get "wishlist" (read back as 'want')
   return out;

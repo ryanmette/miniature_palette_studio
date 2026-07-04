@@ -91,10 +91,21 @@ export function exportJSON() { persist(); return JSON.stringify(state, null, 2);
 // Import a previously exported JSON string, REPLACING the current collection + prefs. Returns success flag.
 export function importJSON(str) {
   try {
-    const s = normalise(JSON.parse(str));                 // parse + sanitise the incoming blob (never trust it)
+    const o = JSON.parse(str);                            // parse the incoming blob (never trust its shape yet)
+    // Only a blob that LOOKS like our backup may replace the collection. Anything else parseable
+    // (an exported scheme, paints.json picked by mistake, '[]') must be rejected — normalise()
+    // would happily coerce it to an empty state and silently wipe the shelf under a success toast.
+    const shaped = o && typeof o === 'object' && !Array.isArray(o)
+      && (Array.isArray(o.owned) || Array.isArray(o.want) || (o.prefs && typeof o.prefs === 'object'));
+    if (!shaped) return false;                            // not our backup → refuse, leave state untouched
+    const s = normalise(o);                               // sanitise the trusted blob into clean Sets/prefs
     owned.clear(); s.owned.forEach(x => owned.add(x));    // replace owned Set with the imported ids
     want.clear(); s.want.forEach(x => want.add(x));       // replace to-buy Set with the imported ids
-    Object.assign(state.prefs, s.prefs);                  // merge imported prefs over current ones
+    // Merge only the prefs the backup actually carries — an older backup that predates a pref key
+    // must not reset that pref to its default.
+    if (o.prefs && typeof o.prefs === 'object') {
+      for (const k of Object.keys(PREF_DEFAULTS)) if (k in o.prefs) state.prefs[k] = o.prefs[k];
+    }
     persist();                                            // save the imported state
     return true;                                          // signal success to the caller
   } catch { return false; }                               // malformed JSON → leave state untouched, report failure

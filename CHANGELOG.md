@@ -168,6 +168,30 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Service-worker cache bumped to `ps-v10` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
 
 ### Fixed
+- **Ten fixes from a full-codebase adversarial review** (8 finder angles → 45 candidates → per-candidate
+  verification). ① **JSON import can no longer wipe the shelf**: restoring a backup now rejects any JSON
+  that isn't shaped like our backup (an exported scheme, `paints.json`, `[]` all used to be coerced to an
+  empty collection and toasted "restored"), and an older backup only overwrites the prefs it actually
+  carries. ② **Shared-paint advice was inverted** — `adjustDirection` was called with ideal/paint swapped,
+  so every "shared paint — how to differentiate" hint said *darken* when the painter should lighten (etc.);
+  now points the paint toward the role's ideal. ③ **'The Army Painter' CSV imports work headerless** —
+  header sniffing now matches whole words, so a first data row containing "…Painter" is no longer eaten as
+  a header (it used to mis-map every column and match 0 paints). ④ **CSV export→import round-trips
+  brand+name twins** — the export writes the disambiguated "Dawnstone (Layer)" names and the matcher keys
+  them, so re-importing your own export no longer silently drops one twin's mark. ⑤ **"Prefer owned" picks
+  the truly nearest owned paint** — the boost's score floor collapsed every owned paint within 6 ΔE to a
+  tie decided by dataset order (an owned ΔE 5.8 could beat an owned ΔE 0.3); the floor is gone (§7 ranking
+  note: boost unchanged at −6, no clamp). ⑥ **Share links keep the picked paint** — URLs now carry the
+  paint id (`p=`) with the hex as fallback, so a shared paint seed arrives as the paint (brand, equivalents
+  group, exact-tie preference), not "Custom #9A1115". ⑦ **A cancelled touch drag can't wedge the wheel** —
+  `pointercancel` now ends a drag like `pointerup` (the wheel used to keep dragging with no finger down).
+  ⑧ **Colour-blindness collisions are checked under all three simulated deficiencies** — tritan-/protan-only
+  collisions (e.g. green vs teal) were never flagged because only deuteranopia was tested; the warning now
+  names the colliding type and the suggested shift is validated against all three. ⑨ **Owned badge is
+  readable in dark theme** — new `--on-success` token (white on the moss green was ~2.8:1, failing AA;
+  now 6.4:1); §3.1 amended. ⑩ **The exported shopping list can no longer omit a paint a role card shows** —
+  a ladder's un-adjusted base rung now reuses the card's headline match instead of re-searching without
+  the distinct-assignment exclusions. SW `ps-v22`.
 - **Mobile: the neutral explainer no longer blocks colour-picking.** On phones there's no spare space
   above the wheel, so the expanded banner overlay sat ON the disc and swallowed the touches meant for
   the wheel. Touch / narrow (≤700px) screens now enter neutral mode **pill-first** — the compact ◐ pill

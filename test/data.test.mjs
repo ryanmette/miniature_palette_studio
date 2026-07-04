@@ -173,3 +173,15 @@ test('preferIds breaks exact ΔE ties toward the picked paint (Layer vs Dry twin
   assert.equal(preferred.paint.id, 'c-layer-dawnstone');
   assert.equal(preferred.deltaE, 0);   // reported distance untouched
 });
+
+test('owned-boost keeps true-ΔE order among owned paints (no score floor)', () => {
+  // Both reds owned and both within the 6-ΔE boost of the target: the closer one must win
+  // regardless of dataset order. The old Math.max(0, d - 6) floor collapsed both scores to 0
+  // and let candidate-pool order pick the ΔE-5-ish paint over the near-exact one.
+  const rev = indexDataset({ version: 't', paints: [
+    { id: 'far-red', brand: 'A', line: '—', name: 'Far Red', hex: '#B0201F', type: 'layer' },   // earlier in the dataset, further from target
+    { id: 'near-red', brand: 'B', line: '—', name: 'Near Red', hex: '#9B1216', type: 'layer' },
+  ] });
+  const m = nearestPaint(rev, '#9A1115', { boostIds: new Set(['far-red', 'near-red']), boostAmount: 6 });
+  assert.equal(m.paint.id, 'near-red');
+});

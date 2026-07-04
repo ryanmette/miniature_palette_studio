@@ -19,7 +19,7 @@
 //
 // CACHE names the current cache bucket; BUMP this string on every shell/asset change so the `activate`
 // step below deletes the old bucket and `install` re-precaches fresh copies (see CLAUDE.md §8 discipline).
-const CACHE = 'ps-v21';
+const CACHE = 'ps-v22';
 // Everything to precache at install time so the whole app is available offline in one go.
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './icon.svg',

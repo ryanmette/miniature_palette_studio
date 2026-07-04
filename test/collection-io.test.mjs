@@ -71,3 +71,26 @@ test('quoted fields with commas parse correctly', () => {
   const rows = parsePaintRackCsv('Brand,Name\nCitadel,"Red, Mephiston"\n');
   assert.equal(rows[0].name, 'Red, Mephiston');
 });
+
+test('headerless row containing a header TOKEN is not sniffed as a header', () => {
+  // 'The Army Painter' contains the substring 'paint' — substring sniffing used to treat the first
+  // data row as a header, dropping the paint and misreading every remaining row's columns.
+  const { marks, matched, unmatched } = csvToMarks(idx, 'The Army Painter,Hydra Turquoise\n');
+  assert.equal(matched, 1);
+  assert.equal(unmatched.length, 0);
+  assert.deepEqual(marks[0], { id: 'army-teal', mark: 'owned' });
+});
+
+test('brand+name twins round-trip through export → import (dname keys)', () => {
+  const twins = indexDataset({ version: 't', paints: [
+    { id: 'c-layer-dawnstone', brand: 'Citadel', line: 'Layer', name: 'Dawnstone', hex: '#70746D', type: 'layer' },
+    { id: 'c-dry-dawnstone', brand: 'Citadel', line: 'Dry', name: 'Dawnstone', hex: '#70746D', type: 'dry' },
+  ] });
+  const csv = marksToCsv(twins, ['c-layer-dawnstone'], ['c-dry-dawnstone']);
+  assert.ok(csv.includes('Dawnstone (Layer)') && csv.includes('Dawnstone (Dry)'),
+    'export disambiguates twins');   // identical rows used to collapse to one paint on re-import
+  const { marks, matched } = csvToMarks(twins, csv);
+  assert.equal(matched, 2);
+  assert.deepEqual(marks.find(m => m.id === 'c-layer-dawnstone'), { id: 'c-layer-dawnstone', mark: 'owned' });
+  assert.deepEqual(marks.find(m => m.id === 'c-dry-dawnstone'), { id: 'c-dry-dawnstone', mark: 'want' });
+});

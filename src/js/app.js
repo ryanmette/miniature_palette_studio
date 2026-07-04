@@ -552,7 +552,11 @@ function setupWheel() {
   // Pointer drag lifecycle: down grabs a node + captures the pointer; move drags; up settles (save URL + announce).
   cv.addEventListener('pointerdown', e => { collapseBanner(); dragging = true; active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });   // interacting with the wheel dismisses the explainer — it must never block a drag
   cv.addEventListener('pointermove', e => { if (dragging) applyDrag(e); });
-  cv.addEventListener('pointerup', () => { dragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); });
+  // pointercancel too: a touch drag the OS takes over (gesture/scroll) never fires pointerup, and
+  // without this the wheel stays in dragging mode, chasing every later no-button pointermove.
+  const endDrag = () => { if (!dragging) return; dragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); };
+  cv.addEventListener('pointerup', endDrag);
+  cv.addEventListener('pointercancel', endDrag);
   // --- keyboard operability (WCAG): focus the wheel, then arrows adjust the active node, [ ] cycle, +/- add/remove ---
   function announceActive() {   // speak the keyboard-active node's role/label/hex/nearest-paint via aria-live
     const ns = hitNodes(); if (!ns.length) return;
@@ -635,11 +639,19 @@ function renderA11y() {
   ];
   const mk = (a, b, la, lb) => { const w = wcag(a, b); return { a, b, labelA: la, labelB: lb, ratio: w.ratio, passAAText: w.passAAText, passAALarge: w.passAALarge }; };   // one contrast row
   const contrasts = [mk(colors[0], colors[2], 'Primary', 'Accent'), mk(colors[0], '#FFFFFF', 'Primary', 'white'), mk(colors[0], '#000000', 'Primary', 'black')];   // key pairings to check
-  const col = minPairDelta(colors, 'deuteranopia');   // the two roles that look MOST alike under deuteranopia
+  // Check ALL simulated deficiencies, not just deuteranopia — a scheme can collide only under
+  // tritanopia (blue/purple) or protanopia while staying distinct for deutan viewers. Warn on the
+  // worst collision and search the fix against the worst-case across every type.
+  const CVD_TYPES = ['deuteranopia', 'protanopia', 'tritanopia'];
+  const worstPair = cols => CVD_TYPES.reduce((w, t) => {   // the closest role-pair under each CVD type; keep the worst
+    const c = minPairDelta(cols, t);
+    return !w || c.delta < w.delta ? { ...c, type: t } : w;
+  }, null);
+  const col = worstPair(colors);   // the two roles that look MOST alike across ALL CVD types
   let collision = null;
   if (col.delta < 10) {   // too close to tell apart → suggest a fix
     const [i, j] = col.pair;
-    collision = { roles: [names[i], names[j]], delta: col.delta };
+    collision = { roles: [names[i], names[j]], delta: col.delta, type: col.type };
     // Shift whichever of the *colliding* roles is least disruptive to move — the old code
     // always rotated the Accent, so it couldn't fix e.g. a Primary/Secondary collision.
     const freedom = { Accent: 0, Secondary: 1, Metal: 2, Primary: 3 };   // lower = freer to move
@@ -648,7 +660,7 @@ function renderA11y() {
     for (const d of [25, -25, 40, -40, 55, -55]) {   // try hue rotations, keep the one that separates them most
       const trial = colors.slice();
       trial[shiftIdx] = rotateHue(colors[shiftIdx], d);
-      const m = minPairDelta(trial, 'deuteranopia').delta;   // min separation after this rotation
+      const m = worstPair(trial).delta;   // min separation after this rotation (worst across CVD types)
       if (m > bestMin + 1) { bestMin = m; best = trial[shiftIdx]; }   // meaningfully better → remember it
     }
     if (best) {
@@ -972,11 +984,15 @@ function announce() {   // describe the current scheme in the aria-live status r
   $('#status').textContent = `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.` + subTxt;
 }
 // URL-share encoding: mirror the shareable state into the query string (Adobe-Color style). Each param is
-// a compact key: c=seed hex, h=harmony, m=shelf mode, v=tab, r=accent seed, t=dark, f=show-real,
-// x=added nodes (h.s.l, '!'=locked, '-'-joined), d=detached offsets, pp=neutral pop. init() decodes these.
+// a compact key: p=seed paint id, c=seed hex, h=harmony, m=shelf mode, v=tab, r=accent seed, t=dark,
+// f=show-real, x=added nodes (h.s.l, '!'=locked, '-'-joined), d=detached offsets, pp=neutral pop. init() decodes these.
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }   // cancel any pending debounced write
   const p = new URLSearchParams();
+  // A paint seed shares its ID, not just its hex — the recipient must get the same paint (brand,
+  // group, buy state, exact-tie preference), not an anonymous "Custom #…". The hex rides along as a
+  // fallback so an old link (or a paint dropped from a future dataset) still reproduces the colours.
+  if (!state.customHex && state.baseId) p.set('p', state.baseId);   // p = seed paint ID (present only for a paint seed)
   p.set('c', baseHex().replace('#', ''));   // c = seed colour (always present)
   p.set('h', state.harmony);                // h = harmony rule (always present)
   if (state.mode === 'shelf') p.set('m', 'shelf');   // only encode non-default values to keep URLs short
@@ -1507,8 +1523,9 @@ async function init() {
   }).filter(Boolean).slice(0, MAX_FREE);   // discard nulls, cap at the free-node limit
   const dp = url.get('d'); if (dp) state.dropOffsets = dp.split('.').map(Number).filter(Number.isFinite);   // detached partner offsets
   if (url.get('r') === 'accent') { state.seedRole = 'accent'; for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'accent')); }   // accent-seed mode
-  const c = url.get('c');   // the seed colour
-  if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();   // shared hex seed
+  const pid = url.get('p'), c = url.get('c');   // p = shared paint id, c = seed hex fallback
+  if (pid && state.idx.byId.has(pid)) state.baseId = pid;   // paint seed round-trips as the paint itself
+  else if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();   // else a shared hex seed
   else state.baseId = state.idx.paints[0].id;   // no valid seed → default to the first paint
 
   ensureHarmonyMode();   // seed is now known: sync the strip (incl. neutral mode) + banner + pops

@@ -463,7 +463,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 /* corner state badge — what the paint IS (persistent fill, §3.5). Same corner for both states. */
 .cbadge { position: absolute; top: 4px; right: 4px; width: 17px; height: 17px; border-radius: 50%;
   display: grid; place-items: center; font-size: 11px; line-height: 1; box-shadow: 0 1px 2px rgba(0,0,0,.35); }
-.cbadge.owned { background: var(--success); color: #fff; }   /* owned = success colour, app-wide */
+.cbadge.owned { background: var(--success); color: var(--on-success); }   /* owned = success colour, app-wide; on-success ink stays legible in both themes */
 .cbadge.want { background: var(--buy); color: var(--on-buy); }   /* to-buy = the --buy colour, app-wide */
 /* name tooltip — overlay, never affects layout (§3.4); shown on hover/focus/keyboard-cursor.
    display:none until shown — thousands of laid-out nowrap tips would silently widen the page

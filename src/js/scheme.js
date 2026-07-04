@@ -143,7 +143,8 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
       if (match) {
         shared = true;   // flag this role as sharing a paint with another role
         // Tell the painter which way to shift the shared paint so the two roles still read apart.
-        differentiate = adjustDirection(match.paint.hex, d.idealHex) || 'darken or lighten to separate';
+        // adjustDirection(ideal, paint): the direction to move the PAINT toward this role's ideal.
+        differentiate = adjustDirection(d.idealHex, match.paint.hex) || 'darken or lighten to separate';
         // nearest DISTINCT paint to buy — search the full catalogue (drop owned/boost filters). A metal role
         // keeps its metal-type filter so the buy is a real metallic; colour roles just keep finishes out.
         const buyOpts = d.metal ? { types: new Set(['metal']) } : { excludeTypes: opts.excludeTypes };
@@ -169,20 +170,25 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     // A neutral colour role leads with the temperature ladder (its value steps have no hue to walk);
     // the selected value ladder(s) still follow, so nothing is taken away — only reordered by relevance.
     const roleL = rgbToHsl(hexToRgb(d.idealHex))[2];   // the role ideal's own lightness (0–1), the temp ladder pivots on it
+    // The un-adjusted base/mid rung REUSES the role's headline match (never a fresh search): the
+    // headline was found with excludeIds for distinct assignment, so a re-search could resolve to a
+    // different (already-used) paint — and shoppingList walks ladder steps, so the export would then
+    // omit the very paint the card shows.
+    const baseStep = { idealHex: d.idealHex, match };
     // Only NEUTRAL non-metal roles get a temperature ladder (a grey has no hue to shade/highlight). Empty otherwise.
     const tempLadder = !d.metal && isNeutral(d.idealHex) ? [{
       style: 'temp',
       label: 'Cool · base · warm',
-      // For each temp step: the null-hue middle keeps the ideal; the others build an absolute cool/warm tint at the stepped lightness.
-      steps: TEMP_STEPS.map(t => ({ key: t.key, ...step(t.h == null ? d.idealHex : rgbToHex(hslToRgb([t.h, t.s, clamp01(roleL + t.dl)]))) })),
+      // For each temp step: the null-hue middle reuses the headline match; the others build an absolute cool/warm tint at the stepped lightness.
+      steps: TEMP_STEPS.map(t => ({ key: t.key, ...(t.h == null ? baseStep : step(rgbToHex(hslToRgb([t.h, t.s, clamp01(roleL + t.dl)])))) })),
     }] : [];
     // Full ladder list for this role: the (optional) temperature ladder first, then each selected value ladder.
     const ladders = [...tempLadder, ...styles.map(st => ({
       style: st,
       label: LADDERS[st].label,
-      // Each step: apply its HSL adj to the ideal (or use the ideal for the null middle step), then match a paint.
-      // The 'wash' step passes media='wash' so it prefers a real bottled wash.
-      steps: LADDERS[st].steps.map(s => ({ key: s.key, ...step(s.adj ? adjustHsl(d.idealHex, s.adj) : d.idealHex, s.key === 'wash' ? 'wash' : null) })),
+      // Each step: apply its HSL adj to the ideal then match a paint; the null middle step reuses the
+      // headline match (baseStep) instead of re-searching. The 'wash' step passes media='wash' so it prefers a real bottled wash.
+      steps: LADDERS[st].steps.map(s => ({ key: s.key, ...(s.adj ? step(adjustHsl(d.idealHex, s.adj), s.key === 'wash' ? 'wash' : null) : baseStep) })),
     }))];
     // Metal also gets the NMM alternative: the true metallic is what most painters expect, but the
     // non-metallic-metal technique needs FLAT paints — offer both, honestly labelled.

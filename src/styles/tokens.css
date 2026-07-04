@@ -35,9 +35,10 @@
      bevel is a no-op shadow here so accent box-shadow lists stay valid. */
   --accent-fill: var(--accent); --accent-edge: var(--accent); --accent-bevel: 0 0 0 rgba(0,0,0,0);
   --buy: #2563EB; --buy-weak: #DBEAFE; --on-buy: #FFFFFF;   /* "to-buy" — single-meaning, app-wide; never the selection colour */
-  /* Semantic status colours, each paired with a faint tint for weak backgrounds.
+  /* Semantic status colours, each paired with a faint tint for weak backgrounds, plus an
+     on-success ink for text/glyphs laid on the solid success fill.
      These drive the ΔE match-quality badges (§3.2) and owned/warning/error states. */
-  --success: #16A34A; --success-weak: #DCFCE7;
+  --success: #16A34A; --success-weak: #DCFCE7; --on-success: #FFFFFF;
   --warning: #C2740B; --warning-weak: #FBEBD3;
   --danger: #DC2647;  --danger-weak: #FCE4EA;
   /* Elevation: the single soft drop-shadow token used sparingly on cards/popovers. */
@@ -65,7 +66,7 @@
   --accent-bevel: inset 0 1px 0 rgba(255,245,220,.4), inset 0 -1px 1px rgba(0,0,0,.3);
   --buy: #5E93C9; --buy-weak: #16242F; --on-buy: #0E1620;   /* cold steel-blue cart, distinct from the brass accent */
   /* Same semantic-status roles as light, re-tuned to read on the dark surfaces. */
-  --success: #86A559; --success-weak: #232A16;
+  --success: #86A559; --success-weak: #232A16; --on-success: #14190A;   /* white fails 3:1 on the moss green — glyphs go dark */
   --warning: #C9923A; --warning-weak: #2E2412;
   --danger: #D2563F;  --danger-weak: #2E1A14;
   /* Deeper single shadow — light theme's tinted glow would be invisible on near-black. */
