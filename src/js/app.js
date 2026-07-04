@@ -96,13 +96,15 @@ function filteredPaints() {
 /** Sort a paint list by `key` (stable copy; '' keeps dataset order). Shared by the picker (state.psort)
  *  and the shelf (state.shelfSort). */
 function sortPaints(list, key = state.psort) {
-  const hsl = p => rgbToHsl(hexToRgb(p.hex));
+  // numeric sorts decorate–sort–undecorate: the key computes ONCE per paint, not once per comparison
+  // (hue/light ran ~2·n·log n HSL conversions per sort; 'de' the same in ΔE2000)
+  const by = fn => list.map(p => [fn(p), p]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
   switch (key) {
     case 'name': return list.slice().sort((a, b) => a.name.localeCompare(b.name));
     case 'brand': return list.slice().sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
-    case 'hue': return list.slice().sort((a, b) => hsl(a)[0] - hsl(b)[0]);
-    case 'light': return list.slice().sort((a, b) => hsl(a)[2] - hsl(b)[2]);
-    case 'de': { const bl = hexToLab(baseHex()); return list.slice().sort((a, b) => deltaE2000(bl, a.lab) - deltaE2000(bl, b.lab)); }
+    case 'hue': return by(p => rgbToHsl(hexToRgb(p.hex))[0]);
+    case 'light': return by(p => rgbToHsl(hexToRgb(p.hex))[2]);
+    case 'de': { const bl = hexToLab(baseHex()); return by(p => deltaE2000(bl, p.lab)); }
     case 'owned': return list.slice().sort((a, b) => (store.isOwned(b.id) - store.isOwned(a.id)) || a.name.localeCompare(b.name));
     default: return list;   // dataset order
   }
@@ -180,10 +182,13 @@ function renderLive() {
  *  live-palette column (left) rings the *same colour* wherever it appears — both DOM surfaces + the wheel
  *  node — so the wheel and the plan read as one tool. Transient interaction → outline ring (§3.5), never a
  *  border-width change (no reflow, §3.4). hex=null clears. */
+let linkHiPainted = false;   // whether any .linkhi is (possibly) in the DOM — skips the per-drag-frame sweep
 function applyLinkHighlight() {
   const h = state.hiHex;
+  if (h == null && !linkHiPainted) return;   // nothing shown, nothing to clear — no document-wide pass
   for (const el of document.querySelectorAll('[data-hex]'))
     el.classList.toggle('linkhi', h != null && el.dataset.hex.toUpperCase() === h);
+  linkHiPainted = h != null;
 }
 function linkHighlight(hex) {
   const h = hex ? normHex(hex) : null;
@@ -205,8 +210,11 @@ function equivSourceHex() {
   }
   return def;
 }
+let equivAttrsPainted = false;   // whether the drill-down attributes are (possibly) applied — same skip
 function applyEquivSelect() {
   const on = state.tab === 'equiv';
+  if (!on && !equivAttrsPainted) return;   // off the tab with nothing applied → skip the sweep (drag frames)
+  equivAttrsPainted = on;
   const src = on ? equivSourceHex() : null;   // the ring + swatch drill-down only read on the Equivalents tab
   for (const el of document.querySelectorAll('.lcol[data-hex]')) {
     el.classList.toggle('eqsel', src != null && el.dataset.hex.toUpperCase() === src);
@@ -393,15 +401,21 @@ function setupWheel() {
   function buildDisc() {                            // hue = angle, saturation = radius, lightness = the wheel slider
     const key = W + ':' + Math.round(state.wheelL * 100);   // colour data only → theme-independent; cached
     if (key === discKey) return;
-    discKey = key; disc.width = W; disc.height = H;
-    const dctx = disc.getContext('2d'), img = dctx.createImageData(W, H), data = img.data, L = state.wheelL;
-    for (let j = 0; j < H; j++) {
-      const dy = j - cy;
-      for (let i = 0; i < W; i++) {
-        const dx = i - cx, dist = Math.sqrt(dx * dx + dy * dy), idx = (j * W + i) * 4;
-        if (dist > R + 0.5) { data[idx + 3] = 0; continue; }   // outside the disc → transparent
-        const [r, g, bl] = hslToRgb([(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, dist >= R ? 1 : dist / R, L]);
-        data[idx] = r; data[idx + 1] = g; data[idx + 2] = bl; data[idx + 3] = 255;
+    discKey = key;
+    // Rasterise at HALF resolution and let drawImage upscale: the disc is smooth gradients so the
+    // difference is invisible, and a lightness-slider drag re-rasterises EVERY frame (the cache key
+    // changes per tick) — full-res was ~200k hslToRgb calls per frame, well past the 16ms budget (§6).
+    const DW = Math.ceil(W / 2), DH = Math.ceil(H / 2), dcx = cx / 2, dcy = cy / 2, dR = R / 2;
+    disc.width = DW; disc.height = DH;
+    const dctx = disc.getContext('2d'), img = dctx.createImageData(DW, DH), data = img.data, L = state.wheelL;
+    for (let j = 0; j < DH; j++) {
+      const dy = j - dcy;
+      for (let i = 0; i < DW; i++) {
+        const dx = i - dcx, dist = Math.sqrt(dx * dx + dy * dy), idx = (j * DW + i) * 4;
+        if (dist > dR + 0.5) { data[idx + 3] = 0; continue; }   // outside the disc → transparent
+        const [r, g, bl] = hslToRgb([(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, dist >= dR ? 1 : dist / dR, L]);
+        // feather the rim alpha over the last px — a hard cutoff upscales into a stair-stepped edge
+        data[idx] = r; data[idx + 1] = g; data[idx + 2] = bl; data[idx + 3] = Math.round(255 * Math.max(0, Math.min(1, dR + 0.5 - dist)));
       }
     }
     dctx.putImageData(img, 0, 0);
@@ -648,7 +662,7 @@ function renderActive() { renderers[state.tab](); }
 /* ---- shelf (collection) — Finder-style bulk stocking, wired to store.setMark ---- */
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
-const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false };   // ids; selection is transient (not persisted)
+const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false, viewIds: null };   // ids; selection is transient (not persisted); viewIds = the drawn order (set by renderShelf)
 const shelfPaints = () => {
   const q = state.shelfQ.trim().toLowerCase();
   const list = state.idx.paints.filter(p =>
@@ -680,13 +694,16 @@ function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
   for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
   $('#brandChips').innerHTML = ui.brandChips(state.brands, state.shelfBrand);
-  $('#shelfGrid').innerHTML = ui.shelfGrid(shelfPaints(), store.markOf, shelf.sel);
+  const view = shelfPaints();
+  $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel);
   // tag each cell with a DOM id for aria-activedescendant (keyboard cursor); the empty-state
   // placeholder has no data-id and must not become "sc-undefined"
   for (const c of $('#shelfGrid').children) if (c.dataset.id) c.id = 'sc-' + c.dataset.id;
   // innerHTML wiped the .cursor ring but the grid's aria-activedescendant survived — re-apply the
   // cursor to the fresh cells (or clear it if the cell filtered/sorted away) so ring and AT agree
   setCursor(shelf.cursor && cellEl(shelf.cursor) ? shelf.cursor : null);
+  paintedSel = new Set(shelf.sel);   // the rebuilt grid baked the selection in — resync the diff base
+  shelf.viewIds = view.map(p => p.id);   // cache the visible order: keyboard nav must not re-filter+sort 2,508 paints per keypress
   renderShelfStats(); renderShelfBar();
 }
 /** A shelf filter (brand/status/type/search) changed → membership changes, so drop the selection
@@ -695,8 +712,11 @@ function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null })
 function announceShelf(msg) { $('#status').textContent = msg; }
 
 /* selection primitives — outline only (CSS), so no reflow (§3.4) */
+let paintedSel = new Set();   // what the DOM currently shows — a marquee move must not rewrite 2,508 attributes
 function paintSelected() {
-  for (const c of $('#shelfGrid').children) c.setAttribute('aria-selected', String(shelf.sel.has(c.dataset.id)));
+  for (const id of paintedSel) if (!shelf.sel.has(id)) cellEl(id)?.setAttribute('aria-selected', 'false');
+  for (const id of shelf.sel) if (!paintedSel.has(id)) cellEl(id)?.setAttribute('aria-selected', 'true');
+  paintedSel = new Set(shelf.sel);
 }
 function setSelection(ids, { anchor, cursor } = {}) {
   shelf.sel = new Set(ids);
@@ -725,7 +745,7 @@ function clampTip(c) {
   if (dx) tip.style.setProperty('--tipdx', dx.toFixed(1) + 'px');
 }
 function rangeIds(aId, bId) {
-  const list = shelfPaints().map(p => p.id);
+  const list = shelf.viewIds || shelfPaints().map(p => p.id);   // the order renderShelf last drew
   let i = list.indexOf(aId), j = list.indexOf(bId);
   if (i < 0) i = j; if (i < 0 || j < 0) return bId ? [bId] : [];
   if (i > j) [i, j] = [j, i];
@@ -736,10 +756,14 @@ function applyMark(mark) {
   let ids = [...shelf.sel];
   if (!ids.length) { const f = shelf.cursor || shelf.hover; if (f) ids = [f]; }
   if (!ids.length) return;
+  store.setMarks(ids, mark);   // ONE persist — 500 setMark calls would serialise the whole state 500×
+  const cells = [];
   for (const id of ids) {
-    store.setMark(id, mark);
-    const c = cellEl(id); if (c) { updateCell(c, mark); c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); }
+    const c = cellEl(id); if (c) { updateCell(c, mark); c.classList.remove('flash'); cells.push(c); }
   }
+  // restart the confirm-flash with a SINGLE forced layout — write→read→write per cell was one full
+  // grid layout per selected paint (a 500-cell mark froze the main thread for seconds on mobile)
+  if (cells.length) { void cells[0].offsetWidth; for (const c of cells) c.classList.add('flash'); }
   renderShelfStats();
   const verb = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'cleared';
   announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} marked ${verb}.`);
@@ -806,12 +830,10 @@ function setupShelf() {
     base = (down.shift || down.meta) ? new Set(shelf.sel) : new Set();
     moved = false; dragRects = null; grid.setPointerCapture(e.pointerId);
   });
-  grid.addEventListener('pointermove', e => {
-    if (!down) return;
-    if (!moved && Math.hypot(e.pageX - down.x, e.pageY - down.y) < 5) return;   // movement threshold → drag
-    moved = true;
+  let mqRaf = 0, mqX = 0, mqY = 0;
+  function mqApply() {                            // one marquee update: rect + hit-test + diff-paint (needs `down`)
     const r = grid.getBoundingClientRect();
-    const gx = r.left + scrollX, gy = r.top + scrollY;   // the grid's PAGE origin, re-read per move
+    const gx = r.left + scrollX, gy = r.top + scrollY;   // the grid's PAGE origin, re-read per frame
     if (!marquee) {
       marquee = document.createElement('div'); marquee.className = 'marquee'; grid.appendChild(marquee);
       // snapshot cell rects once (page coords) — cells don't move within the page during a captured
@@ -821,17 +843,30 @@ function setupShelf() {
         return { id: el.dataset.id, b: { left: b.left + scrollX, right: b.right + scrollX, top: b.top + scrollY, bottom: b.bottom + scrollY } };
       });
     }
-    const x0 = Math.min(down.x, e.pageX), y0 = Math.min(down.y, e.pageY), x1 = Math.max(down.x, e.pageX), y1 = Math.max(down.y, e.pageY);
+    const x0 = Math.min(down.x, mqX), y0 = Math.min(down.y, mqY), x1 = Math.max(down.x, mqX), y1 = Math.max(down.y, mqY);
     marquee.style.left = (x0 - gx) + 'px'; marquee.style.top = (y0 - gy) + 'px';
     marquee.style.width = (x1 - x0) + 'px'; marquee.style.height = (y1 - y0) + 'px';
     const hit = new Set(base);
     for (const { id, b } of dragRects) {
       if (id && b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1) hit.add(id);
     }
-    shelf.sel = hit; paintSelected(); renderShelfBar();
+    const sizeChanged = hit.size !== shelf.sel.size;
+    shelf.sel = hit; paintSelected();
+    if (sizeChanged) renderShelfBar();   // the bar only shows the count — rebuilding it per frame is waste
+  }
+  grid.addEventListener('pointermove', e => {
+    if (!down) return;
+    if (!moved && Math.hypot(e.pageX - down.x, e.pageY - down.y) < 5) return;   // movement threshold → drag
+    moved = true;
+    mqX = e.pageX; mqY = e.pageY;
+    if (mqRaf) return;   // coalesce: high-rate mice fire 120–240 moves/s — one hit-test per frame is plenty
+    mqRaf = requestAnimationFrame(() => { mqRaf = 0; if (down) mqApply(); });
   });
   grid.addEventListener('pointerup', e => {
     if (!down) return;
+    // flush the queued frame BEFORE settling — a fast drag whose last pointermove hadn't painted yet
+    // would otherwise lose its tail (the release-point cells silently missing from the selection)
+    if (mqRaf) { cancelAnimationFrame(mqRaf); mqRaf = 0; if (moved) mqApply(); }
     if (marquee) { marquee.remove(); marquee = null; }
     if (!moved) {                                  // a click, not a drag → Finder selection rules
       const id = down.id;
@@ -880,7 +915,7 @@ function shelfKeydown(e) {
   else if (e.key.startsWith('Arrow')) { moveCursor(e.key, e.shiftKey); e.preventDefault(); }
 }
 function moveCursor(key, extend) {
-  const list = shelfPaints().map(p => p.id); if (!list.length) return;
+  const list = shelf.viewIds || shelfPaints().map(p => p.id); if (!list.length) return;   // cached — no re-filter+sort per keypress
   let i = shelf.cursor ? list.indexOf(shelf.cursor) : -1;
   if (i < 0) i = 0;
   else { const cols = gridCols(); i += key === 'ArrowRight' ? 1 : key === 'ArrowLeft' ? -1 : key === 'ArrowDown' ? cols : -cols; }
@@ -1447,7 +1482,11 @@ function wire() {
     state.shelfBrand = b.dataset.brand;
     shelfFilterChanged();
   });
-  $('#shelfQ').addEventListener('input', e => { state.shelfQ = e.target.value; shelfFilterChanged(); });
+  let sqTimer = 0;   // debounce: every keystroke rebuilt the full 2,508-cell grid — type-lag on phones
+  $('#shelfQ').addEventListener('input', e => {
+    clearTimeout(sqTimer);
+    sqTimer = setTimeout(() => { state.shelfQ = e.target.value; shelfFilterChanged(); }, 140);
+  });
   $('#shelfMarkSeg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.shelfMark = b.dataset.mark;
