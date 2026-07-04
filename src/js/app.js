@@ -173,11 +173,34 @@ function renderLive() {
   const sp = basePaint();
   const optsFor = hex => sp && hex.toUpperCase() === sp.hex.toUpperCase() ? { ...opts, preferIds: new Set([sp.id]) } : opts;
   const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, optsFor(n.hex)) }));
+  // Seed docks — the Main|Accent control lives ON the palette now (§3.5): the pick's chip sits in
+  // the column whose role it seeds; the other eligible column offers a "seed here" dock. First
+  // matching column only (a free node can duplicate a role colour). Neutral seeds always hold
+  // Primary, so their Accent dock renders disabled with the why.
+  const seedRoleName = state.seedRole === 'accent' ? 'Accent' : 'Primary';
+  const otherRoleName = state.seedRole === 'accent' ? 'Primary' : 'Accent';
+  const info = baseInfo();
+  let chipPlaced = false, switchPlaced = false;
+  const placeDock = c => {
+    const role = roleByHex[c.hex.toUpperCase()];
+    if (!chipPlaced && role === seedRoleName) { chipPlaced = true; return { type: 'chip', name: info.name, hex: info.hex }; }
+    if (!switchPlaced && role === otherRoleName) {
+      switchPlaced = true;
+      const disabled = otherRoleName === 'Accent' && neutralSeed()
+        ? 'A neutral seed always holds Primary — pick a pop accent on the wheel instead' : null;
+      return { type: 'switch', target: otherRoleName === 'Accent' ? 'accent' : 'main', disabled };
+    }
+    return null;
+  };
+  for (const c of vm) c.dock = placeDock(c);
   // Metal has no wheel node, so it rides along as a display-only column → the live palette is the complete
   // scheme summary (one bar, all four roles), letting the Plan drop its duplicate overview strip.
   const pin = accentPin();
-  if (pin && !vm.some(c => c.hex.toUpperCase() === pin.toUpperCase()))   // non-180° harmonies: no rule column carries the pick
-    vm.push({ id: 'accentpin', kind: 'pin', hex: pin, match: nearestPaint(state.idx, pin, optsFor(pin)) });
+  if (pin && !vm.some(c => c.hex.toUpperCase() === pin.toUpperCase())) {   // non-180° harmonies: no rule column carries the pick
+    const pc = { id: 'accentpin', kind: 'pin', hex: pin, match: nearestPaint(state.idx, pin, optsFor(pin)) };
+    pc.dock = placeDock(pc);
+    vm.push(pc);
+  }
   const metal = ideals.find(d => d.metal);
   vm.push({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: nearestPaint(state.idx, metal.idealHex, { ...opts, types: new Set(['metal']) }) });
   el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal', roleByHex);
@@ -281,14 +304,8 @@ function ensureHarmonyMode() {
       ? 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.'
       : `Seed has a hue again — back to the ${state.harmony} scheme.`;
   }
-  if (n && state.seedRole === 'accent') {   // neutral always holds Primary; drop out of accent-seed mode
-    state.seedRole = 'main';
-    for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'main'));
-  }
-  for (const x of $('#seedRole').children) {   // honest disable: visible, with the why (§3.5)
-    if (n) { x.setAttribute('aria-disabled', 'true'); x.title = 'A neutral seed always holds Primary — pick a pop accent on the wheel instead'; }
-    else { x.removeAttribute('aria-disabled'); x.removeAttribute('title'); }
-  }
+  if (n && state.seedRole === 'accent') state.seedRole = 'main';   // neutral always holds Primary; drop out of accent-seed mode
+  // (the palette's Accent dock renders disabled with the why — renderLive follows this call)
   setNeutralUi(n);
   syncSeg(); renderPops();
 }
@@ -990,6 +1007,12 @@ function paintListKeydown(e) {
     e.preventDefault();
   }
 }
+/** Seed-role switch (docked in the live palette): rebuild the scheme around the pick as `role`. */
+function setSeedRole(role) {
+  if ((role !== 'main' && role !== 'accent') || state.seedRole === role) return;
+  state.seedRole = role;
+  renderHero(); refreshStudio(); renderActive(); announce(); updateUrl();
+}
 function renderHero(animate = true) {
   $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole, neutralSeed());   // animate=false during a live drag (no pop spam)
   const wk = document.querySelector('.wkey'); if (wk) wk.hidden = state.seedRole === 'accent';   // no role badges in accent mode → hide their legend
@@ -1065,7 +1088,6 @@ function applySnap(json) {
   preNeutralHarmony = o.preNeutral ?? null;
   lastNeutral = null;   // force ensureHarmonyMode (via refreshStudio) to re-sync banner/strip/pops for the restored seed
   syncSeg();
-  for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   const hx = $('#hex'); if (hx) hx.value = baseHex().replace('#', '');
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
@@ -1366,6 +1388,13 @@ function wire() {
   $('main').addEventListener('mouseover', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('focusin', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('click', e => {
+    const sd = e.target.closest('[data-seeddock]');
+    if (sd) {   // the palette's seed dock IS the Main|Accent control now
+      e.stopPropagation();
+      if (sd.getAttribute('aria-disabled') === 'true') { $('#status').textContent = sd.title; return; }
+      setSeedRole(sd.dataset.seeddock);
+      return;
+    }
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
     const col = e.target.closest('[data-collection]'); if (col) { setCollection(col.dataset.collection); return; }
@@ -1449,13 +1478,6 @@ function wire() {
     else if (e.key === 'Home') j = 0;
     else if (e.key === 'End') j = tabs.length - 1;
     if (j >= 0) { e.preventDefault(); setTab(tabs[j].dataset.tab, true); }
-  });
-  $('#seedRole').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    if (b.getAttribute('aria-disabled') === 'true') { $('#status').textContent = b.title; return; }   // neutral seed → Primary only
-    state.seedRole = b.dataset.role;
-    for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
-    renderHero(); refreshStudio(); renderActive(); announce(); updateUrl();
   });
   $('#compare').addEventListener('click', () => {
     if (state.compareA) { state.compareA = null; $('#compare').setAttribute('aria-pressed', 'false'); }
@@ -1569,7 +1591,7 @@ async function init() {
       ...(Number.isFinite(L) ? { l: Math.min(1, Math.max(0, L)) } : {}), ...(locked ? { locked: true } : {}) };
   }).filter(Boolean).slice(0, MAX_FREE);
   const dp = url.get('d'); if (dp) state.dropOffsets = dp.split('.').map(Number).filter(Number.isFinite);
-  if (url.get('r') === 'accent') { state.seedRole = 'accent'; for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'accent')); }
+  if (url.get('r') === 'accent') state.seedRole = 'accent';   // the palette's seed docks render the state
   const pid = url.get('p'), c = normHex(url.get('c'));
   if (pid && state.idx.byId.has(pid)) state.baseId = pid;   // paint seed round-trips as the paint itself
   else if (c) state.customHex = c;

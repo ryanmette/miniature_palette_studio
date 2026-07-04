@@ -83,3 +83,19 @@ test('ladder steps: short visible name; full identity in the tip + aria-label', 
   assert.ok(/aria-label="[^"]*Dawnstone \(Layer\), Citadel"/.test(html), 'aria-label carries the full identity');
   assert.ok(html.includes('tabindex="0"'), 'steps are keyboard-reachable');
 });
+
+test('seed docks: chip on the seeded role, switch dock on the other, reserved row everywhere', () => {
+  const dockVm = [
+    { id: 'p0', kind: 'base', deg: 0, hex: '#87146E', match: null, dock: { type: 'chip', name: 'Faerzress Purple', hex: '#87146E' } },
+    { id: 'p1', kind: 'partner', deg: 180, hex: '#146E24', match: null, dock: { type: 'switch', target: 'accent' } },
+    { id: 'metal', kind: 'metal', hex: '#C8A13A', match: null },
+  ];
+  const html = livePalette(dockVm, 'ideal', { '#87146E': 'Primary', '#146E24': 'Accent' });
+  assert.ok(html.includes('class="seedchip"') && html.includes('Faerzress Purple'), 'chip renders with the pick name');
+  assert.ok(html.includes('data-seeddock="accent"'), 'switch dock targets the other role');
+  assert.equal((html.match(/class="lcdock"/g) || []).length, 3, 'every column reserves the dock row (no-jiggle)');
+  // disabled dock (neutral) carries the why and no live target semantics
+  const disabledVm = [{ id: 'p1', kind: 'partner', deg: 180, hex: '#146E24', match: null, dock: { type: 'switch', target: 'accent', disabled: 'A neutral seed always holds Primary' } }];
+  const dhtml = livePalette(disabledVm, 'ideal', { '#146E24': 'Accent' });
+  assert.ok(dhtml.includes('aria-disabled="true"') && dhtml.includes('always holds Primary'), 'neutral dock disabled with the why');
+});

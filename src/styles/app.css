@@ -309,6 +309,21 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .lcbtn:disabled { opacity: .35; cursor: default; }
 .lcbtn.on { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 .lcol.locked { box-shadow: inset 0 0 0 2px var(--accent); }   /* a locked swatch survives Generate + harmony changes */
+/* Seed dock — the Main|Accent control folded into the palette (§3.5): the CHIP is state ("my pick
+   seeds this role"), the dashed dock is the control. Reserved on every column so switching roles
+   never changes the bar's height (§3.4 no-jiggle). */
+.lcdock { min-height: 34px; padding: 5px 7px 0; display: flex; align-items: center; justify-content: center; }
+.seedchip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; background: var(--surface);
+  border: 1px solid var(--accent); border-radius: var(--r-pill); padding: 2px 9px 2px 3px;
+  font-size: 11px; font-weight: 600; box-shadow: var(--shadow); }
+.seedchip .scsw { width: 18px; height: 18px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); flex: none; }
+.seedchip .scnm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seedchip .scanchor { color: var(--accent); font-size: 10px; flex: none; }
+.dockbtn { width: 100%; min-height: 26px; border: 1.5px dashed var(--border-strong); background: transparent;
+  color: var(--text-faint); font-size: 10.5px; font-weight: 600; border-radius: 8px; cursor: pointer; }
+.dockbtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-weak); }
+.dockbtn:focus-visible { outline: none; box-shadow: var(--focus); }
+.dockbtn[aria-disabled="true"] { opacity: .38; cursor: not-allowed; }
 .lcol[draggable="true"] .lctop { cursor: grab; }
 .lcol.dragging { opacity: .5; }
 .lctag { font-size: 11px; font-weight: 600; opacity: .92; }
@@ -493,7 +508,10 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .wlcol { flex-direction: row; width: min(82vw, 340px); gap: 10px; }
   .wl-vert { writing-mode: horizontal-tb; direction: ltr; width: auto; height: auto; flex: 1; }
   .livepal { flex-direction: column; }            /* live palette stacks to readable rows on phones */
-  .lcol { flex-direction: row; }
+  .lcol { flex-direction: row; flex-wrap: wrap; }
+  .lcdock { flex: 1 1 100%; order: 3; min-height: 0; justify-content: flex-start; padding: 4px 8px 7px; }
+  .lcdock:empty { display: none; }                /* stacked rows: an empty dock line is just dead space */
+  .dockbtn { width: auto; padding: 3px 12px; }
   .lctop { flex: 0 0 76px; min-height: 0; justify-content: center; }
   .lcfoot { flex: 1; display: flex; flex-direction: column; justify-content: center; }
   .shelfgrid { grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); }   /* fit more swatches per row on phones */
