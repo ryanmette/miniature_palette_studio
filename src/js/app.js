@@ -34,6 +34,9 @@ const METAL_DEMOTE = 4;  // ΔE handicap on metallics for COLOUR roles (they rea
 const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
 /** Entry mode C: when the seed is the *accent*, build the scheme around its complement. */
 const schemeBase = () => (state.seedRole === 'accent' ? rotateHue(baseHex(), 180) : baseHex());
+/** Accent-seed pinning (§7): in accent mode the Accent role's ideal is the picked colour verbatim,
+ *  in every harmony. Null in main mode — the geometry decides. */
+const accentPin = () => (state.seedRole === 'accent' ? baseHex() : null);
 
 /* ---- neutral mode (CLAUDE.md §7 / PLAN v1.8): a neutral seed swaps the scheme engine ---- */
 // Hysteresis (enter < NEUTRAL_CHROMA, exit > NEUTRAL_EXIT): a drag hovering on the boundary can't
@@ -80,7 +83,7 @@ function currentScheme() {
   // BOTH seed modes (the slot whose ideal is the pick's hex gets it — Primary or Accent).
   const p = basePaint();
   const seed = p ? { id: p.id, name: ui.pname(p), hex: p.hex } : null;
-  return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop(), seed });
+  return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop(), seed, accentHex: accentPin() });
 }
 
 function filteredPaints() {
@@ -161,7 +164,7 @@ function renderLive() {
   const el = $('#livepal'); if (!el) return;
   const opts = matchOpts();
   // Role map (Primary/Secondary/Accent/Metal) so each column reads in the Plan's language — see livePalette.
-  const ideals = roleIdeals(schemeBase(), state.harmony, activePop());
+  const ideals = roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() });
   const roleByHex = {};
   for (const d of ideals) roleByHex[d.idealHex.toUpperCase()] = d.role;
   state.roleByHex = roleByHex;   // the Equivalents drill-down reads this for its source label
@@ -172,6 +175,9 @@ function renderLive() {
   const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, optsFor(n.hex)) }));
   // Metal has no wheel node, so it rides along as a display-only column → the live palette is the complete
   // scheme summary (one bar, all four roles), letting the Plan drop its duplicate overview strip.
+  const pin = accentPin();
+  if (pin && !vm.some(c => c.hex.toUpperCase() === pin.toUpperCase()))   // non-180° harmonies: no rule column carries the pick
+    vm.push({ id: 'accentpin', kind: 'pin', hex: pin, match: nearestPaint(state.idx, pin, optsFor(pin)) });
   const metal = ideals.find(d => d.metal);
   vm.push({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: nearestPaint(state.idx, metal.idealHex, { ...opts, types: new Set(['metal']) }) });
   el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal', roleByHex);

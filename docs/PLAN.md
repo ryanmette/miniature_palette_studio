@@ -249,12 +249,15 @@ scaffold + picker. Still future:*
 > Historical scope questions are all settled (USE_CASES §9/§10; the app is live at
 > palette.ryanmette.com under this repo). Genuinely open:
 
-1. **Brand fit** — should the light theme's accent align with your Squarespace site palette? (Token-only change, §3.1.)
-2. **Neutral mode (v1.8) defaults** — the three small questions in §5's plan: white-seed default pop,
-   temperature-ladder default direction, and whether to ship without the borderline hint.
-3. **Affiliate programs** — which retailer(s) to apply to for MONETIZATION direction A (blocks its implementation).
-4. **Accent-seed + non-complementary harmonies** — in accent mode only the 180°-step harmonies
-   (complementary/tetradic/square/compound) put the picked colour on a slot; under split-comp /
-   analogous / value harmonies the seed's exact colour appears nowhere in the role plan (and so gets
-   no "pick replaced" honesty note — there is no slot carrying it). Should the accent seed *pin* a
-   slot in those harmonies instead? (2026-07 review, scheme.js `seedTarget`.)
+1. **Brand fit** — should the light theme's accent align with your Squarespace site palette?
+   (Token-only change, §3.1.) *2026-07-04: left as the violet for now — Ryan can supply a brand hex
+   any time and it's a one-token retune.*
+2. ✅ **Neutral mode (v1.8) defaults** — *resolved 2026-07-04 (Ryan): keep all three as shipped* —
+   crimson default pop for every seed incl. white, shade-cool → highlight-warm ladder direction
+   (flippable per role), no borderline hint in the C\* 10–14 deadband (hysteresis covers it).
+3. **Affiliate programs** — which retailer(s) to apply to for MONETIZATION direction A. *2026-07-04
+   (Ryan): parked deliberately — nothing built until applications are ready to file.*
+4. ✅ **Accent-seed + non-complementary harmonies** — *resolved 2026-07-04 (Ryan): the accent seed
+   now PINS the Accent slot in every harmony* (roleIdeals `accentHex`, §7): the plan's Accent ideal
+   is the picked colour verbatim, the live palette gains a display-only Accent column when no rule
+   column carries it, and the pick tie-break + "pick replaced" honesty note fire everywhere.

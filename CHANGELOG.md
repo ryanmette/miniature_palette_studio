@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Accent-seed pinning + the PLAN §9 decisions.** In accent-seed mode the **Accent role now carries
+  your picked colour verbatim in every harmony** — split-complementary/analogous/value harmonies used
+  to drop the picked colour from the role plan entirely (only 180°-step harmonies landed on it). The
+  scheme still derives from the pick's complement; the live palette gains a display-only **Accent**
+  column when no rule column carries the pick, and the exact-tie preference + "pick replaced" honesty
+  note now work under every harmony (§7 amended). Also resolved with Ryan: neutral-mode defaults stay
+  as shipped (crimson pop incl. white seeds · shade-cool→highlight-warm · no borderline hint), the
+  affiliate direction stays deliberately parked, and the light theme keeps its violet accent
+  (a brand-hex retune remains a one-token change). SW `ps-v24`.
 - **The rest of the ladders (v1.8 PR 2 + follow-up 2).** ① **Temperature ladder** — a neutral colour
   role's card now leads with **Cool · base · warm** (locked tints: cool `hsl(222,.12,L−.14)` · ideal ·
   warm `hsl(32,.14,L+.16)`) — the painter's real move for neutrals (shade cool, warm the light); the

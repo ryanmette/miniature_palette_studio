@@ -292,10 +292,11 @@ export function livePalette(vm, fill, roleByHex = {}) {
   return `<div class="livepal">${vm.map(c => {
     const bg = safeColor(real && c.match ? c.match.paint.hex : c.hex);   // hex label + copy follow the fill
     const t = textOn(bg), m = c.match;
-    const isBase = c.kind === 'base', isFree = c.kind === 'free', isMetal = c.kind === 'metal';
+    const isBase = c.kind === 'base', isFree = c.kind === 'free';
+    const isMetal = c.kind === 'metal', isPin = c.kind === 'pin';   // pin = the accent-seed colour riding along (display-only, like Metal)
     const cHex = safeColor(c.hex);                         // the swatch's own (ideal) colour — what "use as base"/edit start from
     const role = roleByHex[cHex.toUpperCase()];            // unify with the Plan: show the role this colour plays
-    const tag = role || (isBase ? 'Base' : isFree ? 'Added' : isMetal ? 'Metal' : `${c.deg > 0 ? '+' : ''}${c.deg}°`);
+    const tag = role || (isBase ? 'Base' : isFree ? 'Added' : isMetal ? 'Metal' : isPin ? 'Accent' : `${c.deg > 0 ? '+' : ''}${c.deg}°`);
     // Finish overlay: a real-fill column wears its matched paint's finish; the ideal Metal column wears the
     // metallic sheen (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
     const fx = real && m ? fxCls(m.paint).trim() : (isMetal ? 'metal' : '');
@@ -309,8 +310,9 @@ export function livePalette(vm, fill, roleByHex = {}) {
     const sw = isBase ? 'base' : isFree ? 'x:' + c.id.slice(1) : 'p:' + c.deg;   // addressable swatch key
     const canDetach = isFree || (c.kind === 'partner' && c.detachable);          // value-harmony partners can't be pinned uniquely
     const lockOn = !!c.locked;
-    // Metal is display-only (no wheel node to drive); every other column keeps its edit/lock/add controls.
-    const acts = isMetal ? '' : `<div class="lcact">`
+    // Metal + the pinned accent are display-only (no wheel node of their own to drive); every other
+    // column keeps its edit/lock/add controls.
+    const acts = (isMetal || isPin) ? '' : `<div class="lcact">`
       +   ((isBase || canDetach) ? `<button type="button" class="lcbtn" data-edit="${sw}" title="Edit colour" aria-label="Edit ${esc(tag)} colour">✎</button>` : '')
       +   (canDetach ? `<button type="button" class="lcbtn${lockOn ? ' on' : ''}" data-lock="${sw}" title="${lockOn ? 'Unlock' : 'Lock'} colour" aria-label="${lockOn ? 'Unlock' : 'Lock'} ${esc(tag)}" aria-pressed="${lockOn}">${lockOn ? '🔒' : '🔓'}</button>` : '')
       +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:-1"${fi === 0 ? ' disabled' : ''} title="Move earlier" aria-label="Move ${esc(tag)} earlier">◂</button>` : '')
@@ -321,7 +323,7 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // Swatch is a plain div now; copying moved to its own button beside the hex (so the swatch-click stays
     // free for the Equivalents drill-down). The drill-down makes the swatch a role="button" only on that tab
     // (app.js applyEquivSelect). The copy button's chip is tinted for the swatch's ink (light/dark).
-    return `<div class="lcol${lockOn ? ' locked' : ''}${isMetal ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
+    return `<div class="lcol${lockOn ? ' locked' : ''}${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
       + `<div class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}">`
       +   `<span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span>`
       +   `<span class="lchexrow"><span class="lchex">${bg}</span>`
