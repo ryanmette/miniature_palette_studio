@@ -93,3 +93,13 @@ test('isNeutral (CLAUDE.md §7, Lab C* < 10): blacks/whites/greys yes, colours n
   assert.equal(isNeutral('#100000'), true);
   for (const hex of ['#9A1115', '#86D562', '#2D567C', '#C2912F']) assert.equal(isNeutral(hex), false, hex);
 });
+
+test('normHex normalises 6-digit hex with/without # and rejects everything else', async () => {
+  const { normHex } = await import('../src/js/color.js');
+  assert.equal(normHex('#9a1115'), '#9A1115');
+  assert.equal(normHex('9A1115'), '#9A1115');
+  assert.equal(normHex(' 9a1115 '), '#9A1115');
+  for (const bad of ['#abc', 'abc', '#9A111', '#9A11157', 'red', '', null, undefined, '#9A111G']) {
+    assert.equal(normHex(bad), null, String(bad));
+  }
+});

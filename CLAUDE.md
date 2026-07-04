@@ -369,7 +369,10 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   metal illusion — locked steps off the metal ideal: shadow `{dl:−.26, ds:+.04}` · mid (the ideal) ·
   highlight `{dl:+.30, ds:−.18}`, matched with metallics AND finishes excluded.
 - **Contrast**: WCAG 2.1 relative-luminance ratio; AA thresholds 4.5:1 (text) / 3:1 (large/UI).
-- **Text-on-swatch** legibility: choose black/white by relative luminance threshold 0.5 (with the standard sRGB→linear step).
+- **Text-on-swatch** legibility: pick near-black `#15150F` or white — whichever has the **higher WCAG
+  contrast ratio** with the swatch (crossover ≈ luminance 0.2). *Not* a 0.5-luminance threshold: for
+  mid-greys (luminance 0.2–0.5) dark text is objectively more legible (e.g. `#B0B0B0` → black 9.7:1
+  vs white 2.2:1), and the warm near-black keeps text from vibrating on saturated brights.
 
 If any constant or formula changes, bump dataset/app version and note it in CHANGELOG.
 

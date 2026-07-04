@@ -5,6 +5,11 @@
 export const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
 export const clamp255 = x => (x < 0 ? 0 : x > 255 ? 255 : x);
 
+/** Normalise a user/URL-supplied colour string to '#RRGGBB' (uppercase), or null if it isn't a
+ *  6-digit hex (with or without the leading '#'). The ONE validation guard for colour input —
+ *  seven hand-rolled copies of this regex had already drifted into with-# and without-# variants. */
+export const normHex = s => { const m = /^#?([0-9a-fA-F]{6})$/.exec(String(s ?? '').trim()); return m ? '#' + m[1].toUpperCase() : null; };
+
 /** "#RGB" or "#RRGGBB" → [r,g,b] in 0–255. */
 export function hexToRgb(hex) {
   let h = String(hex).trim().replace(/^#/, '');
@@ -84,7 +89,11 @@ export function deltaE2000(lab1, lab2) {
   const Lbp = (L1 + L2) / 2, Cbp = (C1p + C2p) / 2;
   let hbp;
   if (C1p * C2p === 0) hbp = h1p + h2p;
-  else hbp = Math.abs(h1p - h2p) > Math.PI ? (h1p + h2p + 2 * Math.PI) / 2 : (h1p + h2p) / 2;
+  else if (Math.abs(h1p - h2p) <= Math.PI) hbp = (h1p + h2p) / 2;
+  // Sharma eq. 14: wide hue gaps wrap toward 0° — ADD 2π when the sum is small, SUBTRACT when large.
+  // (The old always-add branch put h̄' a full turn high for sum ≥ 2π; T's cosines are 2π-periodic so
+  // the numeric effect was < 2e-4 ΔE, but the published formula is the locked convention, §7.)
+  else hbp = h1p + h2p < 2 * Math.PI ? (h1p + h2p + 2 * Math.PI) / 2 : (h1p + h2p - 2 * Math.PI) / 2;
   const T = 1 - 0.17 * Math.cos(hbp - 30 * rad) + 0.24 * Math.cos(2 * hbp)
     + 0.32 * Math.cos(3 * hbp + 6 * rad) - 0.20 * Math.cos(4 * hbp - 63 * rad);
   const dTheta = 30 * rad * Math.exp(-Math.pow((hbp * deg - 275) / 25, 2));

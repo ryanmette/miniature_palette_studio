@@ -1,17 +1,17 @@
 // ui.js — pure render-to-string helpers. No DOM access, no globals (import-safe + testable).
 // DOM wiring lives in app.js. Colour decisions come from the engine (color.js).
 
-import { textOn } from './color.js';
+import { textOn, normHex } from './color.js';
 import { HARMONY_OFFSETS } from './harmony.js';
 
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const LABELS = { 'neutral-pop': 'Neutral + pop', 'warm-cool': 'Warm / cool' };   // neutral harmonies read as phrases
 const label = t => LABELS[t] || t.charAt(0).toUpperCase() + t.slice(1); // sentence case (§3.3)
 
 // Defence-in-depth: any colour interpolated into an inline style must be a literal #hex.
 // Inputs are already validated upstream (rgbToHex output, URL/-input regex, dataset QA), but we
 // re-assert here so a future caller can't turn a swatch into a CSS/HTML-injection sink.
-const safeColor = c => (/^#[0-9a-fA-F]{6}$/.test(c) ? c : '#000000');
+const safeColor = c => normHex(c) || '#000000';
 
 // background-color (not the `background` shorthand) so the metallic-sheen background-image can layer on top.
 export const swatch = (hex, cls = '', extra = '') => `<span class="sw ${cls}" style="background-color:${safeColor(hex)};${extra}"></span>`;
@@ -31,8 +31,13 @@ const FINISHES = { metal: ['metallic', GEM], contrast: ['contrast', DROP], wash:
 export const finishTag = type => { const f = FINISHES[type]; return f ? `<span class="finish finish-${type}">${f[1]}${f[0]}</span>` : ''; };
 
 /** Display name for a dataset paint — dname carries the line when (brand, name) is ambiguous
- *  ("Dawnstone (Layer)" vs "Dawnstone (Dry)"). Use wherever the line isn't otherwise visible. */
-const pname = p => p.dname || p.name;
+ *  ("Dawnstone (Layer)" vs "Dawnstone (Dry)"). Use wherever the line isn't otherwise visible —
+ *  a surface that falls back to p.name reintroduces the ambiguous-twin bug dname exists to fix. */
+export const pname = p => p.dname || p.name;
+
+/** The one spoken/labelled vocabulary for a paint's mark — aria-labels and live-region strings must
+ *  not drift between surfaces (drawer vs shelf vs announcements). */
+export const markLabel = mark => (mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned');
 
 /** Horizontal paint strip for the header drawer (§3.6): each paint is a chip — swatch (with finish overlay
  *  + owned/to-buy state badge) over its name. Click to pick; right-click or P/U/X to mark (app.js). The
@@ -41,7 +46,7 @@ export function paintStrip(paints, selectedId, markOf = () => 'none') {
   if (!paints.length) return `<div class="placeholder">No paints match.</div>`;
   return paints.map(p => {
     const mark = markOf(p.id);
-    const state = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
+    const state = markLabel(mark);
     return `<button class="pchip" role="option" data-id="${esc(p.id)}" data-mark="${mark}" aria-selected="${p.id === selectedId}"`
       + ` aria-label="${esc(pname(p))}, ${esc(p.brand)}${p.line && p.line !== '—' && pname(p) === p.name ? ' · ' + esc(p.line) : ''} — ${state}">`
       + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}">${markBadge(mark)}</span>`
@@ -59,7 +64,7 @@ export function shelfGrid(paints, markOf, selected = new Set()) {
   return paints.map(p => {
     const mark = markOf(p.id), sel = selected.has(p.id);
     const badge = markBadge(mark);
-    const state = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
+    const state = markLabel(mark);
     return `<div class="cell${fxCls(p)}" role="option" data-id="${esc(p.id)}" data-mark="${mark}"`
       + ` aria-selected="${sel}" aria-label="${esc(pname(p))}, ${esc(p.brand)} — ${state}"`
       + ` style="--cell:${safeColor(p.hex)}">`

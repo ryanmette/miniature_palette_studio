@@ -249,3 +249,18 @@ test('ladder base rung reuses the headline match; shopping list includes it', ()
   assert.ok(shoppingList(s).some(row => row.name === 'Red Two'),
     'export includes the Secondary card headline paint');
 });
+
+test('a wash step with NO eligible fallback renders as no-paint, never "watered down"', () => {
+  // Owned-only pool containing a single metallic, metals excluded from colour roles: the wash-media
+  // search AND the fallback both come up empty — dilute:true here told the user to thin a paint
+  // that doesn't exist.
+  const pool = indexDataset({ version: 't', paints: [
+    { id: 'steel', brand: 'A', line: '—', name: 'Steel', hex: '#8A8F94', type: 'metal' },
+  ] });
+  const s = buildScheme(pool, '#9A1115', 'complementary',
+    { ladder: 'wash', ownedIds: new Set(['steel']), excludeTypes: new Set(['metal']) });
+  const primary = s.roles.find(r => r.role === 'Primary');
+  const wash = primary.ladders.at(-1).steps.find(st => st.key === 'wash');
+  assert.equal(wash.match, null);
+  assert.ok(!wash.dilute, 'no dilute tag without a paint to dilute');
+});

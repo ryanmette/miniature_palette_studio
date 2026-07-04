@@ -105,3 +105,24 @@ test('neutralPartners is deterministic (locked recipe constants)', () => {
   assert.deepEqual(neutralPartners('#1B1B1F', '#9C1626', 'neutral-pop'), neutralPartners('#1B1B1F', '#9C1626', 'neutral-pop'));
   assert.equal(DEFAULT_POP, '#9C1626');
 });
+
+test('value-harmony steps stay distinct for extreme bases (clamp compression)', async () => {
+  const { harmonize } = await import('../src/js/harmony.js');
+  const uniq = hexes => new Set(hexes).size === hexes.length;
+  for (const base of ['#F2E9E4', '#101010', '#FFFFFF', '#000000']) {
+    const shades = harmonize(base, 'shades').map(p => p.hex);
+    assert.ok(uniq(shades), `${base} shades all distinct: ${shades.join(' ')}`);   // clamp01 used to emit duplicate white/black partners
+  }
+  // a base with full head-room is untouched — the locked ±0.12/±0.24 steps must not drift
+  const normal = harmonize('#9A1115', 'shades').map(p => p.hex);
+  assert.deepEqual(normal, ['#9A1115', '#2C0506', '#630B0D', '#D1171D', '#E93C41']);
+});
+
+test('clampPop enforces the minimum pop chroma on any entry path', async () => {
+  const { clampPop, POP_MIN_S } = await import('../src/js/harmony.js');
+  const { rgbToHsl, hexToRgb } = await import('../src/js/color.js');
+  assert.equal(clampPop('#9C1626'), '#9C1626');                       // saturated → untouched
+  const clamped = clampPop('#888888');                                // grey (URL pp=888888) → gains chroma
+  assert.ok(rgbToHsl(hexToRgb(clamped))[1] >= POP_MIN_S - 0.01, 'clamped pop meets POP_MIN_S');
+  assert.notEqual(clamped, '#888888');
+});
