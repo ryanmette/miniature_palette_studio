@@ -106,10 +106,13 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
   const usedIds = new Set();
 
   const roles = defs.map(d => {
-    // A metal role keeps its type filter across the whole ladder (match + every step), so its
-    // derived shades resolve to real metallics rather than flat colours. The slot whose ideal IS the
-    // picked paint's own hex (Primary in main mode; Accent in accent mode) prefers the pick on exact
-    // ΔE ties (Layer vs Dry twins share a hex — dataset order must not override the pick).
+    // A metal role keeps its type filter for the match and the VALUE steps, so derived shades
+    // resolve to real metallics rather than flat colours; the WASH rung deliberately searches real
+    // shading media for every role including Metal (§7 wash-media rule — washing a metallic with a
+    // bottled shade is standard practice). The slot whose ideal IS the picked paint's own hex
+    // (Primary in main mode; in accent mode only the harmonies with a 180° step put the pick's hex
+    // on a slot — see PLAN §9 for the open non-complementary gap) prefers the pick on exact ΔE
+    // ties (Layer vs Dry twins share a hex — dataset order must not override the pick).
     const seedTarget = !!(opts.seed && opts.seed.hex && d.idealHex.toUpperCase() === opts.seed.hex.toUpperCase());
     let roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
     if (seedTarget) roleOpts = { ...roleOpts, preferIds: new Set([opts.seed.id]) };
@@ -117,7 +120,10 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
       if (media === 'wash') {   // prefer a real wash/shade/ink; fall back to "watered down" base honestly
         const real = nearestPaint(idx, ideal, { ...roleOpts, types: WASH_MEDIA, excludeTypes: undefined });
         if (real && real.deltaE <= WASH_GATE) return { idealHex: ideal, match: real, media: 'wash' };
-        return { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts), dilute: true };
+        // dilute only when there IS a base paint to thin — a null match must render as a plain
+        // "no close paint", not a "watered down" tag pointing at a paint that doesn't exist.
+        const fallback = nearestPaint(idx, ideal, roleOpts);
+        return { idealHex: ideal, match: fallback, ...(fallback ? { dilute: true } : {}) };
       }
       return { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) };
     };

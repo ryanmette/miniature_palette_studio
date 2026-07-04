@@ -83,7 +83,7 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-tem
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); box-shadow: var(--shadow); }
 .pad { padding: 18px; }
 .workspace { display: grid; gap: 16px; }
-.sw { border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); flex: none; }
+.sw { border-radius: var(--r-ctrl); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); flex: none; }   /* the §3.5 swatch spec, verbatim */
 /* metallic sheen — a non-tinting specular overlay so metallics don't read as flat colour (§3.5).
    The base colour is inline background-color; this only adds a curved highlight→shadow on top. */
 :root { --metal-sheen: linear-gradient(158deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.26) 100%); }
@@ -122,7 +122,7 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .seedtoolbar { position: relative; z-index: 10; }
 .pdrawer { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 60;
   background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-card);
-  box-shadow: 0 18px 50px rgba(0,0,0,.35); padding: 14px 16px;
+  box-shadow: var(--shadow-pop); padding: 14px 16px;
   clip-path: inset(0 0 100% 0 round 14px); opacity: 0; transform: translateY(-8px);
   transition: clip-path .22s cubic-bezier(.2,.7,.2,1), opacity .18s ease, transform .22s cubic-bezier(.2,.7,.2,1); }
 .pdrawer.open { clip-path: inset(0 0 0 0 round 14px); opacity: 1; transform: translateY(0); }
@@ -187,9 +187,6 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .pops .pop:hover { border-color: var(--border-strong); }
 .pops .pop:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--accent); }
 .pops .pop.on { border-color: var(--accent); color: var(--accent); background: var(--accent-weak); }
-.tag { font-size: 11.5px; font-weight: 500; padding: 3px 9px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); }
-.tag.role { background: var(--accent-weak); color: var(--accent); }
-.tag.approx { background: var(--warning-weak); color: var(--warning); }
 .hexline { display: inline-block; font-family: var(--mono); font-size: 13px; color: var(--text-muted); border: none; background: none; padding: 2px 5px; border-radius: 6px; cursor: pointer; }
 .hexline:hover { color: var(--text); background: var(--surface-2); }
 .hexline:focus-visible { outline: none; box-shadow: var(--focus); }
@@ -206,13 +203,6 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .tabs button:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 4px; }
 [data-panel] { animation: mh-fade .22s ease both; padding-top: 14px; }   /* breathing room below the tab strip */
 @keyframes mh-fade { from { opacity: 0; } to { opacity: 1; } }
-.palette { display: flex; border-radius: var(--r-ctrl); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); min-height: clamp(104px, 17vh, 168px); margin: 14px 0 0; }
-.palette > .pblock { flex: 1; border: none; padding: 10px 12px; cursor: pointer; display: flex; align-items: flex-end; text-align: left; }
-.palette > .pblock:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
-.pblock .pbl { display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
-.pblock .pbr { font-size: 11.5px; font-weight: 600; opacity: .92; }
-.pblock .pbh { font-family: var(--mono); font-size: 12px; opacity: .85; }
-
 /* role slots (ideal vs actual) */
 .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 14px; }
 .slot { border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px; background: var(--surface); }
@@ -384,15 +374,15 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 /* the cell IS the swatch: colour is paint data; a fixed 1px inset keeps white-ish paints visible.
    Selection = a 2px outline (no layout box change → no jiggle, §3.4). box-sizing guards any future border. */
 .cell { position: relative; aspect-ratio: 1; border-radius: var(--r-ctrl); box-sizing: border-box;
-  background: var(--cell); box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); cursor: pointer;
+  background: var(--cell); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); cursor: pointer;
   outline: 2px solid transparent; outline-offset: 2px; transition: outline-color .12s; }
 .cell[aria-selected="true"] { outline-color: var(--accent); }
 .cell.cursor { outline-color: var(--accent); }                 /* keyboard cursor cell (aria-activedescendant) */
-.cell:hover { box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 1px var(--border-strong); }
+.cell:hover { box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 1px var(--border-strong); }
 .cell.flash { animation: mh-pop .32s cubic-bezier(.34,1.56,.64,1); }   /* confirm a mark change */
 /* corner state badge — what the paint IS (persistent fill, §3.5). Same corner for both states. */
 .cbadge { position: absolute; top: 4px; right: 4px; width: 17px; height: 17px; border-radius: 50%;
-  display: grid; place-items: center; font-size: 11px; line-height: 1; box-shadow: 0 1px 2px rgba(0,0,0,.35); }
+  display: grid; place-items: center; font-size: 11px; line-height: 1; box-shadow: var(--shadow); }
 .cbadge.owned { background: var(--success); color: var(--on-success); }
 .cbadge.want { background: var(--buy); color: var(--on-buy); }
 /* name tooltip — overlay, never affects layout (§3.4); shown on hover/focus/keyboard-cursor.
@@ -412,7 +402,6 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   opacity: .5; pointer-events: none; z-index: 4; border-radius: 3px; }
 /* action bar — fixed height so the hint↔actions swap never reflows the grid (§3.4) */
 .shelfbar { display: flex; align-items: center; gap: 10px; min-height: var(--tap); margin-top: 14px; flex-wrap: wrap; }
-.barhint { font-size: 12.5px; color: var(--text-faint); }
 .barcount { font-weight: 600; font-size: 13px; }
 .baracts { display: flex; gap: 8px; flex-wrap: wrap; }
 .btn.sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
@@ -469,7 +458,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .edcanvas { display: block; max-width: 100%; height: auto; border-radius: 10px; cursor: crosshair; touch-action: none;
   box-shadow: inset 0 0 0 1px var(--border); background: var(--surface-2); }
 .edloupe { position: absolute; left: 0; top: 0; border-radius: 50%; display: none; pointer-events: none;
-  box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.4), 0 3px 10px rgba(0,0,0,.35); }
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px rgba(0,0,0,.4), var(--shadow-pop); }   /* rings are border substitutes; elevation is the token */
 .edpickrow { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
 
 /* responsive */
@@ -501,7 +490,6 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   .wheelrow { flex-direction: column; }
   .wlcol { flex-direction: row; width: min(82vw, 340px); gap: 10px; }
   .wl-vert { writing-mode: horizontal-tb; direction: ltr; width: auto; height: auto; flex: 1; }
-  .pblock .pbr { display: none; }     /* palette band keeps just the hex on narrow blocks */
   .livepal { flex-direction: column; }            /* live palette stacks to readable rows on phones */
   .lcol { flex-direction: row; }
   .lctop { flex: 0 0 76px; min-height: 0; justify-content: center; }

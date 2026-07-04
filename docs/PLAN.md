@@ -253,3 +253,8 @@ scaffold + picker. Still future:*
 2. **Neutral mode (v1.8) defaults** — the three small questions in §5's plan: white-seed default pop,
    temperature-ladder default direction, and whether to ship without the borderline hint.
 3. **Affiliate programs** — which retailer(s) to apply to for MONETIZATION direction A (blocks its implementation).
+4. **Accent-seed + non-complementary harmonies** — in accent mode only the 180°-step harmonies
+   (complementary/tetradic/square/compound) put the picked colour on a slot; under split-comp /
+   analogous / value harmonies the seed's exact colour appears nowhere in the role plan (and so gets
+   no "pick replaced" honesty note — there is no slot carrying it). Should the accent seed *pin* a
+   slot in those harmonies instead? (2026-07 review, scheme.js `seedTarget`.)

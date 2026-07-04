@@ -42,18 +42,48 @@ const applyStep = (hex, { dh = 0, ds = 0, dl = 0 }) => {
 };
 
 /**
+ * Resolve the locked value steps against the base's actual head-room (§7). clamp01 alone collapsed
+ * the ramp for extreme bases (a near-white base turned +0.12 AND +0.24 into the same #FFFFFF twice):
+ * when the largest step in a direction would clamp, all steps in that direction compress
+ * proportionally into the room that exists; a direction with essentially no room (< 0.04) instead
+ * extends the OPPOSITE direction's ramp, so even a pure-white/black base gets distinct steps.
+ * Steps within head-room are byte-identical to the locked values — nothing drifts for normal bases.
+ */
+function resolveValueSteps(hex, steps) {
+  if (!steps.some(st => st.ds || st.dl)) return steps;   // pure hue rotations — nothing to resolve
+  const [, s, l] = rgbToHsl(hexToRgb(hex));
+  const axis = (key, cur) => {
+    const vals = steps.map(st => st[key] || 0);
+    const upMax = Math.max(0, ...vals), downMax = Math.max(0, ...vals.map(v => -v));
+    const up = 1 - cur, down = cur;
+    const fit = (v, avail, max) => (max ? v * Math.min(1, avail / max) : v);
+    return v => {
+      if (!v) return 0;
+      if (v > 0) {
+        if (up < 0.04 && down > 0) return -fit(downMax + v, down, downMax + upMax);   // no room up → extend the down ramp
+        return fit(v, up, upMax);
+      }
+      if (down < 0.04 && up > 0) return fit(upMax - v, up, upMax + downMax);          // no room down → extend the up ramp
+      return -fit(-v, down, downMax);
+    };
+  };
+  const fl = axis('dl', l), fs = axis('ds', s);
+  return steps.map(st => ({ ...st, ...(st.dl ? { dl: fl(st.dl) } : {}), ...(st.ds ? { ds: fs(st.ds) } : {}) }));
+}
+
+/**
  * Full scheme for a base colour: the base (deg 0) followed by its harmony partners.
  * @returns {{hex:string, deg:number}[]}
  */
 export function harmonize(hex, type) {
   if (!isHarmony(type)) throw new Error(`unknown harmony: ${type}`);
-  return [{ hex, deg: 0 }, ...HARMONY_STEPS[type].map(st => ({ hex: applyStep(hex, st), deg: st.dh || 0 }))];
+  return [{ hex, deg: 0 }, ...harmonyPartners(hex, type)];
 }
 
 /** Just the harmony partners (excludes the base). */
 export function harmonyPartners(hex, type) {
   if (!isHarmony(type)) throw new Error(`unknown harmony: ${type}`);
-  return HARMONY_STEPS[type].map(st => ({ hex: applyStep(hex, st), deg: st.dh || 0 }));
+  return resolveValueSteps(hex, HARMONY_STEPS[type]).map(st => ({ hex: applyStep(hex, st), deg: st.dh || 0 }));
 }
 
 /* ---- Neutral-seed harmonies (CLAUDE.md §7) ----
@@ -65,6 +95,13 @@ export function harmonyPartners(hex, type) {
 export const DEFAULT_POP = '#9C1626';
 /** A pop must keep some chroma or the whole scheme collapses back to grey (wheel clamps to this). */
 export const POP_MIN_S = 0.15;
+/** Enforce POP_MIN_S on a pop hex. The wheel drag already clamps; every OTHER entry path (quick
+ *  chips, `pp` URL restore, programmatic set) must run through this too, or a grey pop turns the
+ *  duotone/neutral-pop recipes into hue-0 red tints beside a grey "pop" swatch. */
+export function clampPop(hex) {
+  const [h, s, l] = rgbToHsl(hexToRgb(hex));
+  return s >= POP_MIN_S ? hex : rgbToHex(hslToRgb([h, POP_MIN_S, l]));
+}
 
 const NEUTRAL_TYPES = Object.freeze(['neutral-pop', 'duotone', 'warm-cool']);
 /** True for the pop-era harmonies that only exist for neutral seeds (not in HARMONY_STEPS). */

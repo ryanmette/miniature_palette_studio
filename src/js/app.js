@@ -2,8 +2,8 @@
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
 import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
-  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S } from './harmony.js';
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT } from './color.js';
+  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop } from './harmony.js';
+import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex } from './color.js';
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
@@ -72,14 +72,14 @@ function baseInfo() {
   const p = state.idx.byId.get(state.baseId);
   // dname already carries the line for ambiguous names — suppress the meta's line so the hero doesn't read it twice
   const lined = p.dname && p.dname !== p.name;
-  return { id: p.id, hex: p.hex, name: p.dname || p.name, brand: p.brand, line: lined ? '—' : p.line, type: p.type, approx: p.approx };
+  return { id: p.id, hex: p.hex, name: ui.pname(p), brand: p.brand, line: lined ? '—' : p.line, type: p.type, approx: p.approx };
 }
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
 function currentScheme() {
   // seed identity → buildScheme prefers the pick on exact ties and flags honest substitutions, in
   // BOTH seed modes (the slot whose ideal is the pick's hex gets it — Primary or Accent).
   const p = basePaint();
-  const seed = p ? { id: p.id, name: p.dname || p.name, hex: p.hex } : null;
+  const seed = p ? { id: p.id, name: ui.pname(p), hex: p.hex } : null;
   return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop(), seed });
 }
 
@@ -89,20 +89,22 @@ function filteredPaints() {
     (!state.brand || p.brand === state.brand) &&
     (!state.ptype || p.type === state.ptype) &&
     (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
-       || (p.dname && p.dname.toLowerCase().includes(q))
+       || (p.line && p.line !== '—' && p.line.toLowerCase().includes(q))       // same fields as the Shelf search — the two surfaces must not answer differently
        || (p.dname && p.dname.toLowerCase().includes(q))));   // the displayed "(Line)" name is searchable too
   return sortPaints(list);
 }
 /** Sort a paint list by `key` (stable copy; '' keeps dataset order). Shared by the picker (state.psort)
  *  and the shelf (state.shelfSort). */
 function sortPaints(list, key = state.psort) {
-  const hsl = p => rgbToHsl(hexToRgb(p.hex));
+  // numeric sorts decorate–sort–undecorate: the key computes ONCE per paint, not once per comparison
+  // (hue/light ran ~2·n·log n HSL conversions per sort; 'de' the same in ΔE2000)
+  const by = fn => list.map(p => [fn(p), p]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
   switch (key) {
     case 'name': return list.slice().sort((a, b) => a.name.localeCompare(b.name));
     case 'brand': return list.slice().sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
-    case 'hue': return list.slice().sort((a, b) => hsl(a)[0] - hsl(b)[0]);
-    case 'light': return list.slice().sort((a, b) => hsl(a)[2] - hsl(b)[2]);
-    case 'de': { const bl = hexToLab(baseHex()); return list.slice().sort((a, b) => deltaE2000(bl, a.lab) - deltaE2000(bl, b.lab)); }
+    case 'hue': return by(p => rgbToHsl(hexToRgb(p.hex))[0]);
+    case 'light': return by(p => rgbToHsl(hexToRgb(p.hex))[2]);
+    case 'de': { const bl = hexToLab(baseHex()); return by(p => deltaE2000(bl, p.lab)); }
     case 'owned': return list.slice().sort((a, b) => (store.isOwned(b.id) - store.isOwned(a.id)) || a.name.localeCompare(b.name));
     default: return list;   // dataset order
   }
@@ -180,13 +182,16 @@ function renderLive() {
  *  live-palette column (left) rings the *same colour* wherever it appears — both DOM surfaces + the wheel
  *  node — so the wheel and the plan read as one tool. Transient interaction → outline ring (§3.5), never a
  *  border-width change (no reflow, §3.4). hex=null clears. */
+let linkHiPainted = false;   // whether any .linkhi is (possibly) in the DOM — skips the per-drag-frame sweep
 function applyLinkHighlight() {
   const h = state.hiHex;
+  if (h == null && !linkHiPainted) return;   // nothing shown, nothing to clear — no document-wide pass
   for (const el of document.querySelectorAll('[data-hex]'))
     el.classList.toggle('linkhi', h != null && el.dataset.hex.toUpperCase() === h);
+  linkHiPainted = h != null;
 }
 function linkHighlight(hex) {
-  const h = hex && /^#[0-9a-fA-F]{6}$/.test(hex) ? hex.toUpperCase() : null;
+  const h = hex ? normHex(hex) : null;
   if (state.hiHex === h) return;
   state.hiHex = h;
   applyLinkHighlight();
@@ -205,8 +210,11 @@ function equivSourceHex() {
   }
   return def;
 }
+let equivAttrsPainted = false;   // whether the drill-down attributes are (possibly) applied — same skip
 function applyEquivSelect() {
   const on = state.tab === 'equiv';
+  if (!on && !equivAttrsPainted) return;   // off the tab with nothing applied → skip the sweep (drag frames)
+  equivAttrsPainted = on;
   const src = on ? equivSourceHex() : null;   // the ring + swatch drill-down only read on the Equivalents tab
   for (const el of document.querySelectorAll('.lcol[data-hex]')) {
     el.classList.toggle('eqsel', src != null && el.dataset.hex.toUpperCase() === src);
@@ -218,7 +226,7 @@ function applyEquivSelect() {
   }
 }
 function setEquivSource(hex) {
-  const h = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex.toUpperCase() : null;
+  const h = normHex(hex);
   if (!h || h === equivSourceHex()) return;   // ignore junk / re-selecting the current source
   state.equivSource = h;
   renderEquiv();
@@ -239,10 +247,12 @@ function renderPops() {
   el.hidden = !on;
   if (on) el.innerHTML = ui.popChips(POPS, activePop());
 }
-/** Discrete pop change (quick-pop chip / restored URL); wheel drags go through the wheel's commit(). */
+/** Discrete pop change (quick-pop chip / restored URL); wheel drags go through the wheel's commit().
+ *  clampPop enforces the POP_MIN_S floor on this path too — an achromatic pop (e.g. a grey `pp` URL
+ *  param) would otherwise turn the recipes into hue-0 red tints beside a grey "pop" swatch. */
 function setPopHex(hex) {
-  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
-  state.popHex = hex.toUpperCase();
+  const h = normHex(hex); if (!h) return;
+  state.popHex = clampPop(h);
   refreshStudio(); renderActive(); renderPops(); scheduleAnnounce(); updateUrl();
 }
 /** The neutral-mode chokepoint — call whenever the seed may have changed class. Keeps the harmony
@@ -354,7 +364,7 @@ function lockSwatch(sw) {
 }
 /** Set an arbitrary hex on a swatch (the base re-seeds; any other swatch becomes a pinned free swatch). */
 function editSwatch(sw, hex) {
-  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  hex = normHex(hex); if (!hex) return;
   if (sw === 'base') { seedFromHex(hex); return; }
   const [h, s, l] = rgbToHsl(hexToRgb(hex));
   if (sw.startsWith('p:')) detachPartner(+sw.slice(2), { h, s, l });
@@ -391,15 +401,21 @@ function setupWheel() {
   function buildDisc() {                            // hue = angle, saturation = radius, lightness = the wheel slider
     const key = W + ':' + Math.round(state.wheelL * 100);   // colour data only → theme-independent; cached
     if (key === discKey) return;
-    discKey = key; disc.width = W; disc.height = H;
-    const dctx = disc.getContext('2d'), img = dctx.createImageData(W, H), data = img.data, L = state.wheelL;
-    for (let j = 0; j < H; j++) {
-      const dy = j - cy;
-      for (let i = 0; i < W; i++) {
-        const dx = i - cx, dist = Math.sqrt(dx * dx + dy * dy), idx = (j * W + i) * 4;
-        if (dist > R + 0.5) { data[idx + 3] = 0; continue; }   // outside the disc → transparent
-        const [r, g, bl] = hslToRgb([(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, dist >= R ? 1 : dist / R, L]);
-        data[idx] = r; data[idx + 1] = g; data[idx + 2] = bl; data[idx + 3] = 255;
+    discKey = key;
+    // Rasterise at HALF resolution and let drawImage upscale: the disc is smooth gradients so the
+    // difference is invisible, and a lightness-slider drag re-rasterises EVERY frame (the cache key
+    // changes per tick) — full-res was ~200k hslToRgb calls per frame, well past the 16ms budget (§6).
+    const DW = Math.ceil(W / 2), DH = Math.ceil(H / 2), dcx = cx / 2, dcy = cy / 2, dR = R / 2;
+    disc.width = DW; disc.height = DH;
+    const dctx = disc.getContext('2d'), img = dctx.createImageData(DW, DH), data = img.data, L = state.wheelL;
+    for (let j = 0; j < DH; j++) {
+      const dy = j - dcy;
+      for (let i = 0; i < DW; i++) {
+        const dx = i - dcx, dist = Math.sqrt(dx * dx + dy * dy), idx = (j * DW + i) * 4;
+        if (dist > dR + 0.5) { data[idx + 3] = 0; continue; }   // outside the disc → transparent
+        const [r, g, bl] = hslToRgb([(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, dist >= dR ? 1 : dist / dR, L]);
+        // feather the rim alpha over the last px — a hard cutoff upscales into a stair-stepped edge
+        data[idx] = r; data[idx + 1] = g; data[idx + 2] = bl; data[idx + 3] = Math.round(255 * Math.max(0, Math.min(1, dR + 0.5 - dist)));
       }
     }
     dctx.putImageData(img, 0, 0);
@@ -516,15 +532,17 @@ function setupWheel() {
   function applyDrag(e) {                // route the drag to whichever node was grabbed
     const [ph, ps] = pointerPolar(e);
     if (active && active.kind === 'partner') setBase((ph - active.deg + 360) % 360, ps);   // rotate the whole harmony rigidly
-    else if (active && active.kind === 'free') { state.extraNodes[active.idx] = { h: ph, s: ps }; commit(); }
+    // spread, don't replace: a free node may carry an explicit lightness and a locked flag —
+    // a drag must move its hue/sat WITHOUT unpinning it or snapping its colour to the wheel slider
+    else if (active && active.kind === 'free') { state.extraNodes[active.idx] = { ...state.extraNodes[active.idx], h: ph, s: ps }; commit(); }
     else if (active && active.kind === 'pop') setPop(ph, ps);   // neutral mode: the pop is the draggable accent
     else setBase(ph, ps);               // base node, or empty space → move the base
   }
-  cv.addEventListener('pointerdown', e => { collapseBanner(); dragging = true; active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });   // interacting with the wheel dismisses the explainer — it must never block a drag
+  cv.addEventListener('pointerdown', e => { collapseBanner(); dragging = true; wheelDragging = true; active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });   // interacting with the wheel dismisses the explainer — it must never block a drag
   cv.addEventListener('pointermove', e => { if (dragging) applyDrag(e); });
   // pointercancel too: a touch drag the OS takes over (gesture/scroll) never fires pointerup, and
   // without this the wheel stays in dragging mode, chasing every later no-button pointermove.
-  const endDrag = () => { if (!dragging) return; dragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); };
+  const endDrag = () => { if (!dragging) return; dragging = false; wheelDragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); };
   cv.addEventListener('pointerup', endDrag);
   cv.addEventListener('pointercancel', endDrag);
   // --- keyboard operability (WCAG): focus the wheel, then arrows adjust the active node, [ ] cycle, +/- add/remove ---
@@ -532,20 +550,21 @@ function setupWheel() {
     const ns = hitNodes(); if (!ns.length) return;
     const n = ns[Math.min(activeIdx, ns.length - 1)];
     const label = n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added colour' : n.kind === 'pop' ? 'Pop accent' : `Partner ${Math.round(n.deg)} degrees`;
-    const hex = n.kind === 'pop' ? activePop() : rgbToHex(hslToRgb([n.h, n.s, state.wheelL]));
-    const dhex = nodeHex(n).toUpperCase();
-    const rgl = wheelRoleGlyphs()[dhex];                         // name the role for non-visual users
+    // announce the node's DRAWN colour (nodeHex) — a free node with its own lightness is NOT at
+    // wheelL, and the spoken hex / nearest paint must match what the eye (and live palette) sees
+    const hex = nodeHex(n).toUpperCase();
+    const rgl = wheelRoleGlyphs()[hex];                          // name the role for non-visual users
     const role = rgl === 'P' ? 'Primary, ' : rgl === 'A' ? 'Accent, ' : rgl === '2' ? 'Secondary, ' : '';
     const sp = basePaint();   // the pick wins exact ties in the announcement too (must agree with the Plan)
     const aOpts = sp && hex.toUpperCase() === sp.hex.toUpperCase() ? { ...matchOpts(), preferIds: new Set([sp.id]) } : matchOpts();
     const m = nearestPaint(state.idx, hex, aOpts);
-    $('#status').textContent = m ? `${role}${label}, ${hex}, nearest ${m.paint.dname || m.paint.name}, ΔE ${m.deltaE.toFixed(1)}.` : `${role}${label}, ${hex}, no close paint.`;
+    $('#status').textContent = m ? `${role}${label}, ${hex}, nearest ${ui.pname(m.paint)}, ΔE ${m.deltaE.toFixed(1)}.` : `${role}${label}, ${hex}, no close paint.`;
   }
   function nudgeActive(dh, ds) {
     const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1);
     const n = ns[activeIdx];
     const nh = ((n.h + dh) % 360 + 360) % 360, nsv = Math.max(0, Math.min(1, n.s + ds));
-    if (n.kind === 'free') { state.extraNodes[n.idx] = { h: nh, s: nsv }; commit(); }
+    if (n.kind === 'free') { state.extraNodes[n.idx] = { ...state.extraNodes[n.idx], h: nh, s: nsv }; commit(); }
     else if (n.kind === 'pop') setPop(nh, nsv);
     else setBase(n.kind === 'partner' ? ((nh - n.deg) % 360 + 360) % 360 : nh, nsv);
   }
@@ -586,7 +605,7 @@ function renderEquiv() {
     const label = groupOf(state.idx, self)?.label || 'this colour';
     const eq = equivalents(state.idx, self, { n: 8 }).filter(e => !memberIds.has(e.paint.id));   // avoid dupes
     $('#panel-equiv').innerHTML = ui.equivGroup(label, members, store.markOf)
-      + ui.equivalentsPanel(`${p.dname || p.name} (${p.brand})`, eq, store.markOf);
+      + ui.equivalentsPanel(`${ui.pname(p)} (${p.brand})`, eq, store.markOf);
   } else {
     const role = (state.roleByHex || {})[srcHex];
     const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
@@ -643,7 +662,7 @@ function renderActive() { renderers[state.tab](); }
 /* ---- shelf (collection) — Finder-style bulk stocking, wired to store.setMark ---- */
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
-const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false };   // ids; selection is transient (not persisted)
+const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false, viewIds: null };   // ids; selection is transient (not persisted); viewIds = the drawn order (set by renderShelf)
 const shelfPaints = () => {
   const q = state.shelfQ.trim().toLowerCase();
   const list = state.idx.paints.filter(p =>
@@ -675,9 +694,16 @@ function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
   for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
   $('#brandChips').innerHTML = ui.brandChips(state.brands, state.shelfBrand);
-  $('#shelfGrid').innerHTML = ui.shelfGrid(shelfPaints(), store.markOf, shelf.sel);
-  // tag each cell with a DOM id for aria-activedescendant (keyboard cursor)
-  for (const c of $('#shelfGrid').children) c.id = 'sc-' + c.dataset.id;
+  const view = shelfPaints();
+  $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel);
+  // tag each cell with a DOM id for aria-activedescendant (keyboard cursor); the empty-state
+  // placeholder has no data-id and must not become "sc-undefined"
+  for (const c of $('#shelfGrid').children) if (c.dataset.id) c.id = 'sc-' + c.dataset.id;
+  // innerHTML wiped the .cursor ring but the grid's aria-activedescendant survived — re-apply the
+  // cursor to the fresh cells (or clear it if the cell filtered/sorted away) so ring and AT agree
+  setCursor(shelf.cursor && cellEl(shelf.cursor) ? shelf.cursor : null);
+  paintedSel = new Set(shelf.sel);   // the rebuilt grid baked the selection in — resync the diff base
+  shelf.viewIds = view.map(p => p.id);   // cache the visible order: keyboard nav must not re-filter+sort 2,508 paints per keypress
   renderShelfStats(); renderShelfBar();
 }
 /** A shelf filter (brand/status/type/search) changed → membership changes, so drop the selection
@@ -686,8 +712,11 @@ function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null })
 function announceShelf(msg) { $('#status').textContent = msg; }
 
 /* selection primitives — outline only (CSS), so no reflow (§3.4) */
+let paintedSel = new Set();   // what the DOM currently shows — a marquee move must not rewrite 2,508 attributes
 function paintSelected() {
-  for (const c of $('#shelfGrid').children) c.setAttribute('aria-selected', String(shelf.sel.has(c.dataset.id)));
+  for (const id of paintedSel) if (!shelf.sel.has(id)) cellEl(id)?.setAttribute('aria-selected', 'false');
+  for (const id of shelf.sel) if (!paintedSel.has(id)) cellEl(id)?.setAttribute('aria-selected', 'true');
+  paintedSel = new Set(shelf.sel);
 }
 function setSelection(ids, { anchor, cursor } = {}) {
   shelf.sel = new Set(ids);
@@ -716,7 +745,7 @@ function clampTip(c) {
   if (dx) tip.style.setProperty('--tipdx', dx.toFixed(1) + 'px');
 }
 function rangeIds(aId, bId) {
-  const list = shelfPaints().map(p => p.id);
+  const list = shelf.viewIds || shelfPaints().map(p => p.id);   // the order renderShelf last drew
   let i = list.indexOf(aId), j = list.indexOf(bId);
   if (i < 0) i = j; if (i < 0 || j < 0) return bId ? [bId] : [];
   if (i > j) [i, j] = [j, i];
@@ -727,10 +756,14 @@ function applyMark(mark) {
   let ids = [...shelf.sel];
   if (!ids.length) { const f = shelf.cursor || shelf.hover; if (f) ids = [f]; }
   if (!ids.length) return;
+  store.setMarks(ids, mark);   // ONE persist — 500 setMark calls would serialise the whole state 500×
+  const cells = [];
   for (const id of ids) {
-    store.setMark(id, mark);
-    const c = cellEl(id); if (c) { updateCell(c, mark); c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash'); }
+    const c = cellEl(id); if (c) { updateCell(c, mark); c.classList.remove('flash'); cells.push(c); }
   }
+  // restart the confirm-flash with a SINGLE forced layout — write→read→write per cell was one full
+  // grid layout per selected paint (a 500-cell mark froze the main thread for seconds on mobile)
+  if (cells.length) { void cells[0].offsetWidth; for (const c of cells) c.classList.add('flash'); }
   renderShelfStats();
   const verb = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'cleared';
   announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} marked ${verb}.`);
@@ -742,8 +775,7 @@ function updateCell(c, mark) {
   c.querySelector('.cbadge')?.remove();
   const html = ui.markBadge(mark);
   if (html) c.querySelector('.celltip').insertAdjacentHTML('beforebegin', html);
-  const st = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned';
-  c.setAttribute('aria-label', c.getAttribute('aria-label').replace(/—.*$/, '— ' + st));
+  c.setAttribute('aria-label', c.getAttribute('aria-label').replace(/—.*$/, '— ' + ui.markLabel(mark)));
 }
 
 /* mouse: click-select + marquee drag (mouse only; touch uses tap-to-cycle) */
@@ -792,31 +824,49 @@ function setupShelf() {
     // multi-select toggle there, and Ctrl elsewhere. Avoids a Ctrl+click both toggling AND opening the menu.
     const toggle = IS_MAC ? e.metaKey : e.ctrlKey;
     const c = e.target.closest('.cell');
-    down = { x: e.clientX, y: e.clientY, id: c ? c.dataset.id : null, shift: e.shiftKey, meta: toggle };
+    // PAGE coordinates throughout the drag: pointer capture doesn't block wheel-scroll, and
+    // viewport-frozen coords would desync the drawn marquee AND the hit-test by the scroll delta.
+    down = { x: e.pageX, y: e.pageY, id: c ? c.dataset.id : null, shift: e.shiftKey, meta: toggle };
     base = (down.shift || down.meta) ? new Set(shelf.sel) : new Set();
     moved = false; dragRects = null; grid.setPointerCapture(e.pointerId);
   });
-  grid.addEventListener('pointermove', e => {
-    if (!down) return;
-    if (!moved && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 5) return;   // movement threshold → drag
-    moved = true;
+  let mqRaf = 0, mqX = 0, mqY = 0;
+  function mqApply() {                            // one marquee update: rect + hit-test + diff-paint (needs `down`)
     const r = grid.getBoundingClientRect();
+    const gx = r.left + scrollX, gy = r.top + scrollY;   // the grid's PAGE origin, re-read per frame
     if (!marquee) {
       marquee = document.createElement('div'); marquee.className = 'marquee'; grid.appendChild(marquee);
-      // snapshot cell rects once — they don't move during a captured drag, so we avoid a 554× layout read per move
-      dragRects = [...grid.children].filter(el => el !== marquee).map(el => ({ id: el.dataset.id, b: el.getBoundingClientRect() }));
+      // snapshot cell rects once (page coords) — cells don't move within the page during a captured
+      // drag, so we avoid a 2,500× layout read per move while staying scroll-proof
+      dragRects = [...grid.children].filter(el => el !== marquee).map(el => {
+        const b = el.getBoundingClientRect();
+        return { id: el.dataset.id, b: { left: b.left + scrollX, right: b.right + scrollX, top: b.top + scrollY, bottom: b.bottom + scrollY } };
+      });
     }
-    const x0 = Math.min(down.x, e.clientX), y0 = Math.min(down.y, e.clientY), x1 = Math.max(down.x, e.clientX), y1 = Math.max(down.y, e.clientY);
-    marquee.style.left = (x0 - r.left) + 'px'; marquee.style.top = (y0 - r.top) + 'px';
+    const x0 = Math.min(down.x, mqX), y0 = Math.min(down.y, mqY), x1 = Math.max(down.x, mqX), y1 = Math.max(down.y, mqY);
+    marquee.style.left = (x0 - gx) + 'px'; marquee.style.top = (y0 - gy) + 'px';
     marquee.style.width = (x1 - x0) + 'px'; marquee.style.height = (y1 - y0) + 'px';
     const hit = new Set(base);
     for (const { id, b } of dragRects) {
       if (id && b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1) hit.add(id);
     }
-    shelf.sel = hit; paintSelected(); renderShelfBar();
+    const sizeChanged = hit.size !== shelf.sel.size;
+    shelf.sel = hit; paintSelected();
+    if (sizeChanged) renderShelfBar();   // the bar only shows the count — rebuilding it per frame is waste
+  }
+  grid.addEventListener('pointermove', e => {
+    if (!down) return;
+    if (!moved && Math.hypot(e.pageX - down.x, e.pageY - down.y) < 5) return;   // movement threshold → drag
+    moved = true;
+    mqX = e.pageX; mqY = e.pageY;
+    if (mqRaf) return;   // coalesce: high-rate mice fire 120–240 moves/s — one hit-test per frame is plenty
+    mqRaf = requestAnimationFrame(() => { mqRaf = 0; if (down) mqApply(); });
   });
   grid.addEventListener('pointerup', e => {
     if (!down) return;
+    // flush the queued frame BEFORE settling — a fast drag whose last pointermove hadn't painted yet
+    // would otherwise lose its tail (the release-point cells silently missing from the selection)
+    if (mqRaf) { cancelAnimationFrame(mqRaf); mqRaf = 0; if (moved) mqApply(); }
     if (marquee) { marquee.remove(); marquee = null; }
     if (!moved) {                                  // a click, not a drag → Finder selection rules
       const id = down.id;
@@ -839,9 +889,9 @@ function setupShelf() {
   });
 }
 
-let menuOpen = false;
+let menuOpen = false, menuOpenedAt = 0;
 function openMenu(x, y) {
-  const m = $('#shelfMenu'); m.hidden = false; menuOpen = true;
+  const m = $('#shelfMenu'); m.hidden = false; menuOpen = true; menuOpenedAt = performance.now();
   const w = m.offsetWidth, h = m.offsetHeight;
   m.style.left = Math.min(x, innerWidth - w - 8) + 'px';
   m.style.top = Math.min(y, innerHeight - h - 8) + 'px';
@@ -853,8 +903,10 @@ function closeMenu() { if (menuOpen) { $('#shelfMenu').hidden = true; menuOpen =
 function shelfKeydown(e) {
   if (state.mode !== 'shelf') return;
   const ae = document.activeElement;
-  // act only when the grid (or nothing) has focus — never hijack keys from chips, nav, or a text field
-  if (ae && ae !== document.body && ae.id !== 'shelfGrid' && !ae.closest('#shelfGrid')) return;
+  // act only when the grid (or nothing) has focus — never hijack keys from chips, nav, or a text field.
+  // The context menu counts as "in the grid": openMenu moves focus onto its first button, and without
+  // this Escape (and P/U/X) would dead-end there — no keyboard way back out of the menu.
+  if (ae && ae !== document.body && ae.id !== 'shelfGrid' && !ae.closest('#shelfGrid') && !ae.closest('#shelfMenu')) return;
   const k = e.key.toLowerCase();
   if (k === 'p') { applyMark('owned'); e.preventDefault(); }
   else if (k === 'u') { applyMark('want'); e.preventDefault(); }
@@ -863,7 +915,7 @@ function shelfKeydown(e) {
   else if (e.key.startsWith('Arrow')) { moveCursor(e.key, e.shiftKey); e.preventDefault(); }
 }
 function moveCursor(key, extend) {
-  const list = shelfPaints().map(p => p.id); if (!list.length) return;
+  const list = shelf.viewIds || shelfPaints().map(p => p.id); if (!list.length) return;   // cached — no re-filter+sort per keypress
   let i = shelf.cursor ? list.indexOf(shelf.cursor) : -1;
   if (i < 0) i = 0;
   else { const cols = gridCols(); i += key === 'ArrowRight' ? 1 : key === 'ArrowLeft' ? -1 : key === 'ArrowDown' ? cols : -cols; }
@@ -873,7 +925,7 @@ function moveCursor(key, extend) {
   else setSelection([id], { anchor: id, cursor: id });
   cellEl(id)?.scrollIntoView({ block: 'nearest' });
   const p = state.idx.byId.get(id);
-  announceShelf(`${p.dname || p.name}, ${p.brand}, ${store.markOf(id) === 'owned' ? 'owned' : store.markOf(id) === 'want' ? 'to buy' : 'not owned'}.`);
+  announceShelf(`${ui.pname(p)}, ${p.brand}, ${ui.markLabel(store.markOf(id))}.`);
 }
 
 /* ---- chrome ---- */
@@ -912,7 +964,7 @@ function markPaint(id, mark) {
   renderList(); renderLive(); renderActive();
   if (state.mode === 'shelf') renderShelf();
   const p = state.idx.byId.get(id);                  // announce the state change for screen readers (§3.5)
-  if (p) $('#status').textContent = `${p.dname || p.name}, ${mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned'}.`;
+  if (p) $('#status').textContent = `${ui.pname(p)}, ${ui.markLabel(mark)}.`;
 }
 function paintListKeydown(e) {
   const chips = [...$('#list').querySelectorAll('.pchip')]; if (!chips.length) return;
@@ -936,7 +988,7 @@ function renderHero(animate = true) {
   $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole, neutralSeed());   // animate=false during a live drag (no pop spam)
   const wk = document.querySelector('.wkey'); if (wk) wk.hidden = state.seedRole === 'accent';   // no role badges in accent mode → hide their legend
 }
-let urlTimer = null, announceTimer = null;
+let urlTimer = null, announceTimer = null, wheelDragging = false;   // wheelDragging gates mid-drag history snapshots
 function announce() {
   if (announceTimer) { clearTimeout(announceTimer); announceTimer = null; }
   // The substituted-pick honesty note must reach assistive tech too, not just sighted users (§2/§3.5).
@@ -962,7 +1014,11 @@ function updateUrl() {
   if (state.dropOffsets.length) p.set('d', state.dropOffsets.join('.'));
   if (state.popHex) p.set('pp', state.popHex.replace('#', ''));   // neutral mode's pop accent — share links must reproduce the scheme
   history.replaceState(null, '', '?' + p.toString());
-  pushHistory();
+  // Mid-gesture URL writes (the debounced updates while a wheel drag is still down) must NOT snapshot:
+  // one drag would otherwise litter the undo stack with intermediates, so Ctrl+Z after a drag stepped
+  // back to a mid-drag colour instead of the pre-drag state. The drag's settling updateUrl (pointerup/
+  // pointercancel) runs after the flag clears and takes the one real snapshot.
+  if (!wheelDragging) pushHistory();
 }
 
 /* ---- undo / redo: snapshot the palette at each settled change (updateUrl is the single chokepoint) ---- */
@@ -972,6 +1028,10 @@ function paletteSnap() {
     customHex: state.customHex || null,
     baseId: state.customHex ? null : state.baseId,
     harmony: state.harmony, seedRole: state.seedRole, showReal: state.showReal, popHex: state.popHex || null,
+    // the hysteresis holder + parked harmony are palette state too: without them, undoing to a seed in
+    // the 10–14 chroma deadband is re-classified with the CURRENT mode and the restored harmony is
+    // forced away (and the parked hue harmony is lost when undoing across a neutral entry)
+    neutral: neutralMode, preNeutral: preNeutralHarmony,
     extraNodes: state.extraNodes.map(n => ({ h: Math.round(n.h * 10) / 10, s: Math.round(n.s * 1000) / 1000, l: n.l ?? null, locked: !!n.locked })),
     dropOffsets: [...state.dropOffsets],
   });
@@ -995,6 +1055,8 @@ function applySnap(json) {
   state.extraNodes = (o.extraNodes || []).map(n => ({ h: n.h, s: n.s, ...(n.l != null ? { l: n.l } : {}), ...(n.locked ? { locked: true } : {}) }));
   state.dropOffsets = [...(o.dropOffsets || [])];
   state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
+  neutralMode = typeof o.neutral === 'boolean' ? o.neutral : null;   // restore the hysteresis holder with the snapshot
+  preNeutralHarmony = o.preNeutral ?? null;
   lastNeutral = null;   // force ensureHarmonyMode (via refreshStudio) to re-sync banner/strip/pops for the restored seed
   syncSeg();
   for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === state.seedRole));
@@ -1115,10 +1177,7 @@ function doExport() {
     for (const p of want) t += `  ${p.name} (${p.brand}${p.line && p.line !== '—' ? ' ' + p.line : ''}) ${p.hex}\n`;
   }
   t += '\nHex values are approximate; ΔE = perceptual distance to the ideal colour.\n';
-  const a = document.createElement('a');
-  const href = URL.createObjectURL(new Blob([t], { type: 'text/plain' }));
-  a.href = href; a.download = 'palette-shopping-list.txt'; a.click();
-  setTimeout(() => URL.revokeObjectURL(href), 0); // revoke after the click's download starts
+  download('palette-shopping-list.txt', t);
   toast('Shopping list exported');   // download is the artefact — no silent clipboard write (native-share direction)
 }
 /** Share the current scheme URL. Prefers the native share sheet (Web Share → OS sheet under Capacitor),
@@ -1153,10 +1212,15 @@ function importCollectionFile(file) {
   reader.onload = () => {
     const text = String(reader.result || '');
     if (/\.json$/i.test(file.name) || /^\s*[{[]/.test(text)) {
-      toast(store.importJSON(text) ? 'Collection restored from JSON backup' : 'Could not read that JSON file');
+      const ok = store.importJSON(text);
+      toast(ok ? 'Collection restored from JSON backup' : 'That file is not a Palette Studio backup — nothing was changed');
+      if (ok) applyRestoredPrefs();   // the backup's theme/locale/plan prefs must reach the RUNNING UI, not just storage
     } else {
-      const { matched, unmatched } = applyCsv(text);
-      toast(`Imported ${matched} paint${matched === 1 ? '' : 's'}${unmatched.length ? ` · ${unmatched.length} unmatched` : ''}`);
+      const { matched, added, changed, unmatched } = applyCsv(text);
+      // say what the merge DID — an import that silently rewrites existing marks (owned → to-buy
+      // via a wishlist row) must at least be visible in the toast
+      const bits = [`${added} new`, changed ? `${changed} changed` : '', unmatched.length ? `${unmatched.length} unmatched` : ''].filter(Boolean);
+      toast(`Imported ${matched} paint${matched === 1 ? '' : 's'} · ${bits.join(' · ')}`);
     }
     if (state.mode === 'shelf') renderShelf();
     renderList(); renderLive(); renderActive();
@@ -1166,8 +1230,24 @@ function importCollectionFile(file) {
 }
 function applyCsv(text) {
   const res = csvToMarks(state.idx, text);
-  res.marks.forEach(m => store.setMark(m.id, m.mark));   // merge onto the current shelf
-  return res;
+  let added = 0, changed = 0;   // count what the merge does to EXISTING marks (report, don't hide)
+  for (const m of res.marks) {
+    const prev = store.markOf(m.id);
+    if (prev === m.mark) continue;
+    prev === 'none' ? added++ : changed++;
+    store.setMark(m.id, m.mark);   // merge onto the current shelf (import wins; the toast says so)
+  }
+  return { ...res, added, changed };
+}
+/** After a JSON restore: re-read every pref the backup may have carried into live state/UI —
+ *  without this the restored theme/locale/plan settings only took effect after a full reload. */
+function applyRestoredPrefs() {
+  const th = store.getPref('theme'); if (th === 'light' || th === 'dark') setTheme(th);
+  const lo = store.getPref('locale'); if (lo) { i18n.setLocale(lo); syncLocaleSeg(); }
+  const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
+  const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
+  state.includeContrast = !!store.getPref('contrast');
+  renderHero(); wheelDraw();
 }
 
 /** Seed the scheme from an arbitrary hex (shared by the hex field + the photo eyedropper). */
@@ -1183,11 +1263,14 @@ function setupEyedropper() {
   const dlg = $('#eyedropper'), stage = $('#edStage'), cv = $('#edCanvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
   const loupe = $('#edLoupe'), lctx = loupe.getContext('2d'), chip = $('#edChip'), hexEl = $('#edHex'), useBtn = $('#edUse');
   let pick = null;                                     // the COMMITTED colour — only a click/tap (or drag) sets it
-  const avg = (x, y) => {                              // 3×3 average around (x,y), clamped to the canvas
-    const x0 = Math.max(0, Math.min(cv.width - 3, x - 1)), y0 = Math.max(0, Math.min(cv.height - 3, y - 1));
-    const d = ctx.getImageData(x0, y0, 3, 3).data; let r = 0, g = 0, b = 0;
-    for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
-    const n = d.length / 4; return rgbToHex([Math.round(r / n), Math.round(g / n), Math.round(b / n)]);
+  const avg = (x, y) => {                              // ≤3×3 average around (x,y), clamped INSIDE the canvas
+    // window never exceeds the canvas (a 2px image must not read out-of-bounds transparent black),
+    // and pixels are alpha-weighted — transparent PNG background must not darken the sample
+    const sw = Math.min(3, cv.width), sh = Math.min(3, cv.height);
+    const x0 = Math.max(0, Math.min(cv.width - sw, x - 1)), y0 = Math.max(0, Math.min(cv.height - sh, y - 1));
+    const d = ctx.getImageData(x0, y0, sw, sh).data; let r = 0, g = 0, b = 0, w = 0;
+    for (let i = 0; i < d.length; i += 4) { const a = d[i + 3] / 255; r += d[i] * a; g += d[i + 1] * a; b += d[i + 2] * a; w += a; }
+    return w ? rgbToHex([Math.round(r / w), Math.round(g / w), Math.round(b / w)]) : null;   // fully transparent spot → no pick
   };
   const drawLoupe = (x, y, e) => {                     // zoomed crop with a centre-pixel marker, floated just above the cursor
     lctx.imageSmoothingEnabled = false; lctx.clearRect(0, 0, 72, 72);
@@ -1202,7 +1285,8 @@ function setupEyedropper() {
   const at = e => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * (cv.width / r.width)), Math.round((e.clientY - r.top) * (cv.height / r.height))]; };
   const inBounds = (x, y) => x >= 0 && y >= 0 && x < cv.width && y < cv.height;
   const commit = (x, y) => {                           // lock the sampled colour in (what "Use as base colour" applies)
-    pick = avg(x, y); chip.style.background = pick; hexEl.textContent = pick; useBtn.disabled = false;
+    const c = avg(x, y); if (!c) return;               // a fully-transparent spot has no colour to lock
+    pick = c; chip.style.background = pick; hexEl.textContent = pick; useBtn.disabled = false;
   };
   const onMove = e => {                                // hover previews the loupe only — it never changes the locked colour
     const [x, y] = at(e); if (!inBounds(x, y)) return;
@@ -1398,7 +1482,11 @@ function wire() {
     state.shelfBrand = b.dataset.brand;
     shelfFilterChanged();
   });
-  $('#shelfQ').addEventListener('input', e => { state.shelfQ = e.target.value; shelfFilterChanged(); });
+  let sqTimer = 0;   // debounce: every keystroke rebuilt the full 2,508-cell grid — type-lag on phones
+  $('#shelfQ').addEventListener('input', e => {
+    clearTimeout(sqTimer);
+    sqTimer = setTimeout(() => { state.shelfQ = e.target.value; shelfFilterChanged(); }, 140);
+  });
   $('#shelfMarkSeg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.shelfMark = b.dataset.mark;
@@ -1412,7 +1500,12 @@ function wire() {
     if (b.dataset.act === 'deselect') setSelection([], { anchor: null });
     else applyMark(b.dataset.act);
   });
-  $('#shelfMenu').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b) { applyMark(b.dataset.act); closeMenu(); } });
+  $('#shelfMenu').addEventListener('click', e => {
+    // A long-press opens the menu under the fingertip with a button focused — the click some browsers
+    // synthesize at finger-lift would instantly activate it before the user ever saw the menu.
+    if (performance.now() - menuOpenedAt < 350) return;
+    const b = e.target.closest('[data-act]'); if (b) { applyMark(b.dataset.act); closeMenu(); }
+  });
   $('#shelfSelect').addEventListener('click', () => {       // touch: toggle multi-select mode
     shelf.selectMode = !shelf.selectMode;
     $('#shelfSelect').setAttribute('aria-pressed', String(shelf.selectMode));
@@ -1445,7 +1538,7 @@ async function init() {
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
-  const typeOpts = types.map(t => `<option value="${t}">${t.charAt(0).toUpperCase() + t.slice(1)}</option>`).join('');
+  const typeOpts = types.map(t => `<option value="${ui.esc(t)}">${ui.esc(t.charAt(0).toUpperCase() + t.slice(1))}</option>`).join('');
   $('#ptype').insertAdjacentHTML('beforeend', typeOpts);
   $('#shelfType').insertAdjacentHTML('beforeend', typeOpts);
 
@@ -1454,7 +1547,7 @@ async function init() {
   state.includeContrast = !!store.getPref('contrast');
 
   const h = url.get('h'); if (h && validHarmony(h)) state.harmony = h;
-  const pp = url.get('pp'); if (pp && /^[0-9a-fA-F]{6}$/.test(pp)) state.popHex = '#' + pp.toUpperCase();
+  const pp = normHex(url.get('pp')); if (pp) state.popHex = clampPop(pp);
   const v = url.get('v'); if (v && renderers[v]) state.tab = v;
   if (url.get('f') === '1') state.showReal = true;
   const xp = url.get('x');
@@ -1467,9 +1560,9 @@ async function init() {
   }).filter(Boolean).slice(0, MAX_FREE);
   const dp = url.get('d'); if (dp) state.dropOffsets = dp.split('.').map(Number).filter(Number.isFinite);
   if (url.get('r') === 'accent') { state.seedRole = 'accent'; for (const x of $('#seedRole').children) x.setAttribute('aria-pressed', String(x.dataset.role === 'accent')); }
-  const pid = url.get('p'), c = url.get('c');
+  const pid = url.get('p'), c = normHex(url.get('c'));
   if (pid && state.idx.byId.has(pid)) state.baseId = pid;   // paint seed round-trips as the paint itself
-  else if (c && /^[0-9a-fA-F]{6}$/.test(c)) state.customHex = '#' + c.toUpperCase();
+  else if (c) state.customHex = c;
   else state.baseId = state.idx.paints[0].id;
 
   ensureHarmonyMode();   // seed is now known: sync the strip (incl. neutral mode) + banner + pops
@@ -1487,7 +1580,9 @@ async function init() {
 }
 
 init().catch(err => {
-  $('main').innerHTML = `<p style="padding:24px;color:var(--danger);max-width:60ch">Couldn't load the paint data: ${err.message}.
+  // err.message is not under the app's control (fetch/parse errors can echo response bodies) — the
+  // ONE innerHTML sink that must escape (every other render path goes through ui.js esc()).
+  $('main').innerHTML = `<p style="padding:24px;color:var(--danger);max-width:60ch">Couldn't load the paint data: ${ui.esc(err.message)}.
     Serve the app from a local web server (e.g. <code class="mono">python3 -m http.server</code> in <code class="mono">src/</code>)
     so the browser can fetch <code class="mono">data/paints.json</code>.</p>`;
 });

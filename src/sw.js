@@ -11,7 +11,7 @@
 // fresh index.html (the v1.3.0 bug). 'reload' always hits the origin and refreshes the HTTP cache.
 // Bump CACHE on any shell/asset change. skipWaiting + clients.claim hand control to the new SW promptly.
 
-const CACHE = 'ps-v22';
+const CACHE = 'ps-v23';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './styles/fonts.css', './styles/tokens.css', './styles/app.css',
@@ -43,19 +43,22 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin) return;   // anything cross-origin → straight to network
 
   if (isShell(req, url)) {
-    // network-first, bypassing the HTTP cache: latest code when online, cache (then index.html) when offline
+    // network-first, bypassing the HTTP cache: latest code when online, cache (then index.html for
+    // NAVIGATIONS only) when offline. Only res.ok responses are cached — a deploy-race 404/500 must
+    // never replace a good precached copy — and a missing .js/.css falls through as the network
+    // error rather than index.html (HTML served where a module is expected is a hard load failure).
     e.respondWith(
       fetch(req, { cache: 'reload' }).then(res => {
-        const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy));
+        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
         return res;
-      }).catch(() => caches.match(req).then(hit => hit || caches.match('./index.html')))
+      }).catch(() => caches.match(req).then(hit => hit || (req.mode === 'navigate' ? caches.match('./index.html') : Response.error())))
     );
     return;
   }
-  // cache-first for stable assets (fonts, dataset, icon, manifest)
+  // cache-first for stable assets (fonts, dataset, icon, manifest); same res.ok guard on the fill
   e.respondWith(
     caches.match(req).then(hit => hit || fetch(req).then(res => {
-      const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy));
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
     }))
   );

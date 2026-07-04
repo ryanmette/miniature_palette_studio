@@ -114,6 +114,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (same dialog as the footer link).
 
 ### Changed
+- **Performance + duplication sweep (review batch).** The wheel disc rasterises at half resolution
+  with a feathered rim (a lightness-slider drag re-rasterised ~200k pixels per frame — now 4× cheaper,
+  visually identical); marquee selection diffs only the cells that changed (was 2,508 attribute writes
+  per pointermove) with one hit-test per frame and a flushed final frame; bulk marking batches to one
+  forced layout + one storage write (was one full-grid layout AND one full-state serialisation per
+  selected cell); the Shelf search debounces (140ms) instead of rebuilding the grid per keystroke;
+  keyboard navigation reuses the drawn order and sorts compute each key once, not per comparison; the
+  document-wide colour-link/drill-down sweeps skip when idle. Duplication: `normHex` replaces 7
+  hand-rolled hex regexes, `pname`/`markLabel`/`esc` are shared from ui.js (6+6 re-spellings gone),
+  the drawer search gains the Shelf's line-name clause (the two searches answered differently),
+  `doExport` uses the `download()` helper, ~12 dead CSS selectors are deleted, `.sw` matches the §3.5
+  swatch spec verbatim, and elevation is two sanctioned tokens (`--shadow` + new `--shadow-pop`, §3.4).
 - **Paints drawer caret + dark-theme glyph polish.** The `☰ Paints` caret is larger (11px → 15px) and
   **rotates 180°** while the drawer is open (bounce easing; snaps under reduced-motion), so the trigger
   reads as open/closed. The theme switch's **dark glyph is now a skull** instead of a moon — on-brand for
@@ -163,6 +175,24 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Service-worker cache bumped to `ps-v10` (shell changed: app.js/ui.js/app.css/index.html/i18n.js).
 
 ### Fixed
+- **The remaining 18 correctness fixes from the full-codebase review.** Value harmonies (Shades/
+  Monochromatic) now compress their locked steps into the head-room that exists instead of clamping to
+  duplicate partners (a near-white base got two identical `#FFFFFF` shades; §7 amended); the pop-chroma
+  floor is enforced on every entry path (a grey `pp` share-link no longer collapses duotone to red-tinted
+  greys); ΔE2000's mean-hue branch now matches Sharma exactly; a wash rung with NO fallback paint renders
+  plainly instead of "watered down" (nothing to thin); dragging/nudging an added wheel swatch keeps its
+  lock and its own lightness; undo/redo restores the neutral-mode holder + parked harmony (no more
+  harmony clobber in the 10–14 chroma deadband); wheel announcements speak the node's DRAWN colour; a
+  wheel drag no longer floods undo history with mid-drag snapshots; **Escape closes the Shelf context
+  menu** (keyboard users were trapped) and a long-press can't instantly trigger the menu item under the
+  fingertip; the selection marquee survives mid-drag scrolling (page coordinates); a Shelf re-render
+  re-applies the keyboard cursor ring; the photo eyedropper clamps its sample window and alpha-weights
+  pixels (tiny/transparent images no longer sample dark grey); the two unescaped `innerHTML` sinks are
+  escaped; the service worker only caches `res.ok` responses and serves the HTML fallback to navigations
+  only (a deploy-race 404 can't poison the offline shell); restoring a JSON backup applies its
+  theme/locale/plan prefs to the running UI; a rejected backup file says so instead of failing quietly;
+  and the CSV import toast reports **new · changed · unmatched** so overwrites are visible. `textOn`'s
+  §7 spec now documents the shipped max-contrast rule. SW `ps-v23`.
 - **Ten fixes from a full-codebase adversarial review** (8 finder angles → 45 candidates → per-candidate
   verification). ① **JSON import can no longer wipe the shelf**: restoring a backup now rejects any JSON
   that isn't shaped like our backup (an exported scheme, `paints.json`, `[]` all used to be coerced to an

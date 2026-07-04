@@ -62,6 +62,16 @@ export function setMark(id, mark) {
   else if (mark === 'want') want.add(id);
   persist();
 }
+/** Bulk mark — ONE persist for N ids. A 500-cell shelf selection through setMark would serialise
+ *  the whole state 500 times inside one event handler. */
+export function setMarks(ids, mark) {
+  for (const id of ids) {
+    owned.delete(id); want.delete(id);
+    if (mark === 'owned') owned.add(id);
+    else if (mark === 'want') want.add(id);
+  }
+  persist();
+}
 export const ownedIds = () => owned;   // live Set — treat as read-only
 export const wantIds = () => want;
 export const counts = () => ({ owned: owned.size, want: want.size });
