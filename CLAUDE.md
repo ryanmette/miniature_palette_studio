@@ -96,6 +96,7 @@ sets below change between themes.
 --warning:#C2740B; --warning-weak:#FBEBD3;
 --danger:#DC2647;  --danger-weak:#FCE4EA;
 --shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+--shadow-pop:0 10px 40px rgba(60,50,120,.18);   /* floating overlays (drawer, loupe) — the only other elevation tier (§3.4) */
 
 /* DARK — "Grimdark Tabletop" ([data-theme="dark"]) */
 --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
@@ -111,7 +112,7 @@ sets below change between themes.
 --success:#86A559; --success-weak:#232A16; --on-success:#14190A;  /* white fails 3:1 on the moss green */
 --warning:#C9923A; --warning-weak:#2E2412;
 --danger:#D2563F;  --danger-weak:#2E1A14;
---shadow:0 1px 2px rgba(0,0,0,.45);
+--shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 18px 50px rgba(0,0,0,.5);
 
 --focus: 0 0 0 3px var(--accent-weak);   /* both themes */
 ```
@@ -140,7 +141,7 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 ### 3.4 Space, radius, elevation, motion
 - Spacing scale (px): **4, 8, 12, 16, 24, 32, 48**. Nothing off-scale.
 - Radius (unified, both themes): cards `--r-card:14` · controls & buttons `--r-ctrl:10` · pills/badges `--r-pill:999`. One radius vocabulary everywhere — never per-theme radii.
-- Elevation (use sparingly): the single `--shadow` token (per-theme values in §3.1) — no separate sm/card tiers.
+- Elevation (use sparingly): **two** tokens — `--shadow` for in-flow chrome and `--shadow-pop` for floating overlays (drawer, loupe); per-theme values in §3.1. No other shadow tiers, no bespoke box-shadows.
 - Motion (shared, both themes) — **fades + gentle bounce, to confirm not decorate**:
   - Durations: 120ms hover · 180–220ms enter/exit & panel cross-fade · ~320ms card reveal. Standard ease `cubic-bezier(.2,.7,.2,1)`; **bounce/overshoot** `cubic-bezier(.34,1.56,.64,1)` for swatch & hero reveals.
   - Patterns: panels **cross-fade**; cards/role-slots **fade-rise** with a small stagger; swatches and the hero swatch **pop** (scale-bounce) when they appear or the scheme changes; buttons press to `scale(.96)`.
