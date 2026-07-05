@@ -149,3 +149,30 @@ test('importJSON merges only the prefs the backup carries', async () => {
   assert.equal(store.getPref('ladder'), 'both');   // absent from the backup → kept, not reset to default
   assert.equal(store.markOf('x'), 'owned');
 });
+
+test('hydrate: no-op on the web, restores from the native mirror after eviction', async () => {
+  // web (no Capacitor global) → instant false
+  delete globalThis.Capacitor;
+  const { store } = await freshStore();
+  assert.equal(await store.hydrate(), false);
+
+  // native, localStorage EVICTED, mirror holds the collection → restored + re-persisted
+  const mirror = new Map([['ps-state', JSON.stringify({ v: 1, owned: ['a'], want: ['b'], prefs: { theme: 'dark' } })]]);
+  globalThis.Capacitor = { isNativePlatform: () => true, Plugins: { Preferences: {
+    get: async ({ key }) => ({ value: mirror.get(key) ?? null }),
+    set: async ({ key, value }) => { mirror.set(key, value); },
+  } } };
+  const { store: s2, ls } = await freshStore();          // fresh empty localStorage = the eviction
+  assert.equal(await s2.hydrate(), true);
+  assert.equal(s2.markOf('a'), 'owned');
+  assert.equal(s2.markOf('b'), 'want');
+  assert.equal(s2.getPref('theme'), 'dark');
+  assert.ok(ls.getItem('ps-state').includes('"a"'), 'restored state re-persisted to localStorage');
+
+  // native, localStorage INTACT → localStorage wins; the mirror is refreshed from it
+  const { store: s3 } = await freshStore({ 'ps-state': JSON.stringify({ v: 1, owned: ['web'], want: [], prefs: {} }) });
+  assert.equal(await s3.hydrate(), false);
+  assert.equal(s3.markOf('web'), 'owned');
+  assert.ok(mirror.get('ps-state').includes('"web"'), 'mirror refreshed from the authoritative localStorage');
+  delete globalThis.Capacitor;
+});

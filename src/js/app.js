@@ -1567,6 +1567,7 @@ async function init() {
   setTheme(theme);
 
   state.idx = await loadDataset('./data/paints.json');
+  await store.hydrate();   // native shell: recover the collection if WKWebView evicted localStorage (no-op on the web)
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
@@ -1574,6 +1575,7 @@ async function init() {
   $('#ptype').insertAdjacentHTML('beforeend', typeOpts);
   $('#shelfType').insertAdjacentHTML('beforeend', typeOpts);
 
+  await store.hydrate();   // native shell: recover the collection if WKWebView evicted localStorage (no-op on the web)
   const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
   const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
   state.includeContrast = !!store.getPref('contrast');

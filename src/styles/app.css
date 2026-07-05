@@ -535,3 +535,9 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .hero .herochip.pop { animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }   /* pop only on discrete base changes, not per drag frame */
 .btn:active, .seg button:active { transform: scale(.96); }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* Native shell / notched devices (IOS_APP_PLAN §4b): chrome respects the safe areas. env() resolves
+   to 0 on ordinary browsers, so these are no-ops on the web — no per-platform styling (§3). */
+body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+header { padding-top: env(safe-area-inset-top, 0px); }

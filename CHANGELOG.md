@@ -6,6 +6,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Stage-1 groundwork for the native app (IOS_APP_PLAN §4b, repo-side items).** ① The shell is
+  notch-ready: `viewport-fit=cover` + safe-area insets on body/header (env() = 0 on ordinary
+  browsers — zero web impact). ② The service worker skips registration inside the Capacitor shell
+  (bundled assets — a SW there only adds staleness risk). ③ **`store.js` writes through to the
+  native Preferences plugin** when running under Capacitor and `hydrate()` (awaited at init) recovers
+  the collection if WKWebView evicts localStorage — the plugin object is shell-injected, never an
+  import, so §6's no-dependency rule holds and the web pays nothing. ④ `native/assets/` ships the
+  1024² brass app icon + 2732² light/dark splashes for `capacitor-assets`. SW `ps-v26`.
 - **The Main|Accent toggle became the palette's seed docks.** The seed-toolbar segmented control is
   gone: your pick now shows as a **chip docked in the live-palette column whose role it seeds**, and
   the other eligible column (Primary ↔ Accent) offers a dashed **"⚓ seed here"** dock — click/tap it

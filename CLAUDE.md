@@ -197,6 +197,9 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── IOS_APP_PLAN.md        ← iPhone app (v2) exploration — future, not v1
 │   ├── MONETIZATION.md        ← speculative monetization survey (affiliate/funnel fit v1; payments need a §1 change) — exploration only
 │   └── EMBED.md               ← Squarespace embedding guide (added at M9)
+├── native/                    ← Capacitor app assets (v2, IOS_APP_PLAN §4b), NOT shipped to the web
+│   ├── README.md              ← how to generate platform icon/splash sets from these
+│   └── assets/                ← icon-only.png (1024²) · splash.png / splash-dark.png (2732²)
 ├── mockups/                   ← design references, NOT shipped (no runtime role)
 │   ├── index.html             ← canonical app mockup (unified light/dark)
 │   ├── style-directions.html  ← 5-way visual-direction exploration

@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Palette Studio for Miniatures</title>
 <meta name="description" content="Pick a miniature paint and get colour harmonies matched to the real paints you can buy." />
 <link rel="stylesheet" href="styles/fonts.css" />
@@ -262,7 +262,8 @@
 <div id="status" class="sr-only" aria-live="polite"></div>
 <script type="module" src="js/app.js"></script>
 <script>
-if ('serviceWorker' in navigator) {
+// Inside the Capacitor shell the assets are bundled — a SW adds nothing but staleness risk there.
+if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) {
   // If a SW already controls this page, reload once when a NEW SW takes over so the page can't keep
   // running an old shell against fresh assets (the v1.3.0 stale-cache bug). No reload on first install.
   const hadController = !!navigator.serviceWorker.controller;
