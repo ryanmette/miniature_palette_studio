@@ -6,6 +6,17 @@ It exists so v1 is built in a way that makes a future app cheap (it already is �
 > v1 stays a static web app embedded in Squarespace. Everything below is optional, future, and
 > would get its own constitution before any code.
 
+> **Update (2026-07-05 — v2 kickoff review).** The plan below survives review with one big correction
+> and one shrink: **colour-from-photo is no longer a native-only draw** — the on-device photo
+> eyedropper shipped on the web (v1.6), so the native deltas are the **LIVE camera eyedropper**
+> (continuous viewfinder sampling — point at a model, watch the nearest paint update) and **barcode
+> add**. Net-new Stage-1 work shrinks again: the web app is now aggressively mobile-first (2026-07
+> pass: no-overspill audit, touch docks, clamped tips), the PWA shell is deploy-race-hardened, and
+> `store.js` survived an adversarial review with backup validation added. **Barcode add gets a
+> reality flag:** the dataset carries no EAN/UPC codes and no open source reliably provides them —
+> it needs its own data-collection effort, so it is Stage-1-*stretch*, not Stage-1. Kickoff
+> checklist: §4b.
+>
 > **Update (2026-06-25 — collection build).** Two big "make v2 cheap" decisions are now **shipped on
 > the web**: (1) the **PWA** (approach A — manifest + service worker + installable/offline) is done,
 > which *is* the Capacitor-wrap foundation; and (2) the **collection / Shelf** — the app's killer
@@ -18,9 +29,10 @@ It exists so v1 is built in a way that makes a future app cheap (it already is �
 ## 1. Why a native app could be worth it
 
 A phone unlocks things the web version can't do as well:
-- **Colour-from-photo / camera eyedropper** — point at a model, a box-art, a real object, get the
-  nearest paints. (This is the single most compelling mobile feature; it's parked as out-of-scope
-  for the web v1 precisely because it shines on a phone.)
+- **LIVE camera eyedropper** — a continuous viewfinder that tracks the nearest paints in real time as
+  you point at a model / box art / real object. *(The single-photo version shipped on the web (v1.6,
+  on-device); the live viewfinder is the part only a native shell does well — camera-preview streams
+  inside a web page are fragile and permission-hostile.)*
 - **Paint inventory in your pocket** — "my paints" with optional **barcode scan** at the store.
   *(Foundation already built on the web: the **Shelf** collection — owned + to-buy, bulk-stocked,
   persisted via `store.js`. v2 adds the native edges — camera match, barcode add — on top of it,
@@ -109,17 +121,48 @@ npx cap add ios          # reads capacitor.config.json → creates ios/ native p
 npx cap sync             # copies src/ into the native shell
 npx cap open ios         # opens Xcode to build/run/submit
 ```
-Add native plugins as features land — `@capacitor/camera` (eyedropper from a live photo),
+Add native plugins as features land — `@capacitor/camera` (capture → feed the EXISTING eyedropper
+dialog: `setupEyedropper` already takes any image, so this is intake plumbing, not a new feature),
+`@capacitor-community/camera-preview` (the live viewfinder, the real Stage-1 headline),
 `@capacitor/share` (the Web Share API already used falls through to the native sheet),
-`@capacitor/haptics`. The pure engine + `store.js` + dataset carry over unchanged (§3). Keep the npm
-Capacitor deps **dev-only** — they never enter the web runtime, so §6's no-runtime-dependency rule holds.
+`@capacitor/haptics` (wheel detents), `@capacitor/preferences` (move `store.js` off evictable
+WKWebView localStorage — it's the storage chokepoint, so this touches one file). The pure engine +
+dataset carry over unchanged (§3). Keep the npm Capacitor deps **dev-only** — they never enter the
+web runtime, so §6's no-runtime-dependency rule holds.
+
+### 4b. Stage-1 kickoff checklist (v2.0) — in order
+
+**Ryan, off-repo (lead-time items — start these first):**
+1. **Apple Developer Program** enrolment ($99/yr; approval can take a couple of days).
+2. A Mac with **Xcode** + Node. (All native builds happen there — never from this repo's CI.)
+3. Decide the two §9 openers that gate setup: **Android too?** (Capacitor makes it nearly free —
+   recommend yes, later) and **free at launch** (recommend: free, no IAP in v2.0 — simplest review).
+
+**Repo work (can be done in this repo, before/parallel):**
+4. **App icon + splash set** rendered from `icon.svg` (Capacitor assets tooling wants PNGs).
+5. **In-shell tweaks behind a `Capacitor.isNativePlatform()` check:** hide the PWA install prompt,
+   swap the ⋯ menu's "About & data" wording, wire safe-area insets (`viewport-fit=cover` + CSS
+   `env(safe-area-inset-*)`) — the only UI work the wrap itself needs.
+6. **`store.js` → Preferences adapter** (one file, per §3's chokepoint design).
+
+**On the Mac (the §4a commands), then:**
+7. `npx cap add ios && npx cap sync && npx cap open ios` → run on a device — the whole Studio/Shelf
+   should just work; fix what doesn't (expect: file pickers, share sheet, status-bar overlap).
+8. **Feature 1 — camera intake:** `@capacitor/camera` photo → existing eyedropper dialog (small).
+9. **Feature 2 — live eyedropper:** camera-preview stream → per-frame `nearestPaint` (the engine
+   already does this in <16ms) → the v2.0 App-Store headline and the "genuine native value" for §7.
+10. **TestFlight** with a handful of painters → App Store review → **v2.0** (the reserved tag, §8).
+Commit the `ios/` platform folder to the repo when it exists (CLAUDE.md §4 tree updated same commit).
 
 ---
 
 ## 5. Mobile-specific scope (new vs. web)
 
-In: camera colour pick, barcode paint-add, offline dataset, haptic wheel, native share/export,
-push for "back in stock" (much later). Out (still): accounts, server, payments, social feed.
+In: **live** camera colour pick (the photo version is already web-shipped), offline dataset, haptic
+wheel, native share/export; **barcode paint-add as stretch** — the dataset has no EAN/UPC column and
+no open dataset reliably supplies one, so scanning needs its own barcode→paint data effort first
+(start by capturing codes for the paints Ryan physically owns; crowd-sourcing comes later, if ever).
+Push for "back in stock" much later. Out (still): accounts, server, payments, social feed.
 
 Net-new for mobile is now **smaller**: the inventory/collection UI + persistence already exist on the
 web (the Shelf + `store.js`), and offline is handled by the PWA service worker. The genuinely native
