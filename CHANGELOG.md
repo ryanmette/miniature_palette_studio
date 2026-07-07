@@ -5,6 +5,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+_Nothing yet._
+
+## [1.8.0] - 2026-07-07
 ### Added
 - **Stage-1 groundwork for the native app (IOS_APP_PLAN §4b, repo-side items).** ① The shell is
   notch-ready: `viewport-fit=cover` + safe-area insets on body/header (env() = 0 on ordinary
@@ -773,6 +776,7 @@ The **collection release**: a paint shelf, collection-aware planning, portabilit
 - CIEDE2000 implementation validated against 9 Sharma et al. reference pairs (exact to 4 dp).
 
 [Unreleased]: https://github.com/ryanmette/miniature_palette_studio/commits/main
+[1.8.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.8.0
 [0.1.0]: https://github.com/ryanmette/miniature_palette_studio
 <!-- Release headings above aren't linked: no git tags have been pushed yet. When tags land
      (see CLAUDE.md §8 release checklist), add per-version definitions here. -->

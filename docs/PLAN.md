@@ -100,18 +100,18 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.5.x** — finish overlays (metallic sheen · wash/contrast translucency · gloss/slime/texture via `fx`), distinct role assignment + shared-paint guidance, role **Body→Primary**.
 - **v1.6.0** — v2 backlog (web): **photo eyedropper** (on-device), language picker, mobile Shelf multi-select, manual group curation (`group-overrides.json`); Capacitor + asset-library scaffolds.
 - **v1.7.0** — Adobe-style palette release: editable live palette (lock/edit/add/reorder, drag, undo/redo), 10 harmony schemes + scrollable harmony strip, palette↔URL fidelity.
-- **Unreleased (post-1.7)** — studio redesign (header Paints drawer, condensed hero, wheel role badges, vertical lightness), unified live-palette/Plan colour bar + colour link, Equivalents per-swatch drill-down + copy buttons, animated theme switch, dark-theme brass dimension — see CHANGELOG `[Unreleased]`.
+- **v1.8.0** — the neutral + polish release: neutral-seed scheme engine (pop harmonies, hysteresis, wheel-overlay explainer), studio redesign (Paints drawer, condensed hero, role badges, seed **docks** replacing the Main|Accent toggle), temperature/NMM/wash-media ladders, pick fidelity + `dname` disambiguation, accent-seed pinning, Equivalents drill-down, dark-theme brass + animated theme switch, doc-freshness CI gate, a 38-finding adversarial-review hardening pass, mobile no-overspill pass, and Stage-1 native groundwork (safe areas, Preferences persistence, icon/splash set).
 
-### Current status (2026-07-01)
-Web app is **comprehensively feature-complete**. The add/remove-colours wheel item is **resolved** (closed
-per Ryan). **Monetization direction chosen: A (affiliate links) + B (audience funnel)** — see
-[`MONETIZATION.md`](MONETIZATION.md); A's implementation is pending the specific retailer/affiliate
-programs (still v1-compatible: outbound links + disclosure, no backend). Needs tooling/people outside
-this repo: the **native app** build (Capacitor → Xcode, the reserved `v2.0`), a **designer** to fill the
-asset library, and an optional **palette-from-photo** enhancement to the eyedropper.
-**Next planned work: Neutral mode (v1.8)** — plan below, locked with Ryan 2026-07-01.
+### Current status (2026-07-07)
+**v1.8.0 released** — the web app is comprehensively feature-complete and hardened (full-codebase
+adversarial review: 38 verified findings fixed). **Monetization direction chosen: A (affiliate
+links) + B (audience funnel)** — see [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan
+files retailer applications (§9). **Next planned work: the native app, Stage 1 (v2.0)** — the
+kickoff checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork already shipped in v1.8.
+Still outside this repo: the Mac/Xcode build, a designer for the asset library, and the optional
+palette-from-photo enhancement.
 
-### Planned next — Neutral mode (v1.8): neutral seeds get a real scheme engine
+### Shipped in v1.8 — Neutral mode: neutral seeds get a real scheme engine
 
 **Problem.** Hue rotation does nothing to a neutral seed (black/white/grey): with S≈0 every "harmony"
 is the same grey and the wheel node sits at the centre where hue is undefined — yet neutral-primary

@@ -10,12 +10,15 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
-**v1.7.0** — the web app is feature-complete and live. Everything through the v1 milestones
-(engine, wheel, ideal-vs-actual roles, equivalents, accessibility, share/export) plus the
-post-1.0 releases: the collection Shelf + portable owned/to-buy store, PWA/offline, tone
-ladders, finish-aware matching with finish overlays, photo eyedropper, dark theme, i18n
-scaffold, and the Adobe-style editable live palette. See [`CHANGELOG.md`](CHANGELOG.md) for
-the full history and [`docs/PLAN.md`](docs/PLAN.md) §5 for what's next.
+**v1.8.0** — the neutral-mode + polish release, live. Everything through v1.7 (engine, wheel,
+ideal-vs-actual roles, equivalents, accessibility, Shelf/PWA, photo eyedropper, editable live
+palette) plus: **neutral seeds get a real scheme engine** (pop-driven harmonies, hysteresis,
+wheel overlay explainer), the full ladder set (temperature · NMM · wash-media-aware), pick
+fidelity + cross-line name disambiguation, **accent-seed pinning**, the **seed docks** (the
+Main|Accent control lives on the palette), a 38-finding adversarial-review hardening pass
+(correctness, performance, tokens), and the Stage-1 native-app groundwork. See
+[`CHANGELOG.md`](CHANGELOG.md) for the full history and [`docs/PLAN.md`](docs/PLAN.md) §5 for
+what's next.
 
 > Doc freshness is CI-checked: `scripts/check-docs.mjs` fails the build if this file's version
 > or dataset claims drift from `package.json` / `src/data/paints.json`.
