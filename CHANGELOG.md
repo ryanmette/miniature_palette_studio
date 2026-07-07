@@ -5,7 +5,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-_Nothing yet._
+### Added
+- **Pick WHICH colour's equivalents you see — from anywhere.** The Equivalents tab now opens with a
+  **source chip strip** (one swatch chip per scheme colour, labelled by role — Primary/Secondary/
+  Accent/Metal plus any added swatches): tap a chip and the cross-brand list re-sources. Every Plan
+  role card also gains a small **"⇄ equivalents"** jump that lands on the tab with that colour
+  pre-selected. The existing desktop column-click drill-down still works and stays in sync with the
+  chips — it was just invisible on phones, where the live palette scrolls away above the tabs
+  (mockups/equiv-source-picker.html directions A+B, per Ryan). SW `ps-v27`.
 
 ## [1.8.0] - 2026-07-07
 ### Added
