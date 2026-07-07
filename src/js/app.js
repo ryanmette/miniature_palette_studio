@@ -632,7 +632,12 @@ function equivSourceCols() {
   return cols.filter(c => { const k = c.hex.toUpperCase(); if (seen.has(k)) return false; seen.add(k); return true; });
 }
 function renderEquiv() {
-  const srcHex = equivSourceHex();
+  let srcHex = equivSourceHex();
+  // XSS barrier (CodeQL-visible): srcHex descends from user-influenced DOM values (chip data attrs,
+  // column data-hex, the pick jump). normHex already shape-gates every entry path and the sink esc()s,
+  // but this inline test makes the guarantee locally provable — nothing below may interpolate srcHex
+  // unless it is literally a #RRGGBB hex.
+  if (!/^#[0-9A-Fa-f]{6}$/.test(srcHex)) srcHex = '#000000';
   const p = basePaint();
   const chips = ui.equivSourceChips(equivSourceCols(), srcHex);
   // When the source is the seed AND the seed is a real paint, keep the richer view (curated interchangeable
