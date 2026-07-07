@@ -6,6 +6,24 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Stage-1 groundwork for the native app (IOS_APP_PLAN §4b, repo-side items).** ① The shell is
+  notch-ready: `viewport-fit=cover` + safe-area insets on body/header (env() = 0 on ordinary
+  browsers — zero web impact). ② The service worker skips registration inside the Capacitor shell
+  (bundled assets — a SW there only adds staleness risk). ③ **`store.js` writes through to the
+  native Preferences plugin** when running under Capacitor and `hydrate()` (awaited at init) recovers
+  the collection if WKWebView evicts localStorage — the plugin object is shell-injected, never an
+  import, so §6's no-dependency rule holds and the web pays nothing. ④ `native/assets/` ships the
+  1024² brass app icon + 2732² light/dark splashes for `capacitor-assets`. SW `ps-v26`.
+- **The Main|Accent toggle became the palette's seed docks.** The seed-toolbar segmented control is
+  gone: your pick now shows as a **chip docked in the live-palette column whose role it seeds**, and
+  the other eligible column (Primary ↔ Accent) offers a dashed **"⚓ seed here"** dock — click/tap it
+  and the scheme rebuilds around the new role. Where the chip sits *is* the mode: state and control
+  are the same object, in the place its effect lands (mockups/seed-role-unify.html direction 1, per
+  Ryan). Every column reserves the dock row so switching never changes the bar's height (§3.4); the
+  docks are real buttons (keyboard + focus ring); a neutral seed's Accent dock disables in place with
+  the why; the hero's main/accent pill stays as pure state. The toolbar loses a widget on phones.
+  Known edge: main-mode **Custom** harmony has no Accent-role column, so no accent dock appears there
+  (reach accent mode from any rule harmony first). §3.5/§3.6 amended. SW `ps-v25`.
 - **Accent-seed pinning + the PLAN §9 decisions.** In accent-seed mode the **Accent role now carries
   your picked colour verbatim in every harmony** — split-complementary/analogous/value harmonies used
   to drop the picked colour from the role plan entirely (only 180°-step harmonies landed on it). The

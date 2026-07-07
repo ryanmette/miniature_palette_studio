@@ -331,12 +331,21 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // Swatch is a plain div now; copying moved to its own button beside the hex (so the swatch-click stays
     // free for the Equivalents drill-down). The drill-down makes the swatch a role="button" only on that tab
     // (app.js applyEquivSelect). The copy button's chip is tinted for the swatch's ink (light/dark).
+    // Seed dock (§3.5): the Main|Accent control folded into the palette. The chip IS the state
+    // ("my pick seeds this role"); the dashed dock on the other eligible column is the control.
+    // Every column reserves the row so switching never changes the bar's height (§3.4).
+    const dock = c.dock && c.dock.type === 'chip'
+      ? `<span class="seedchip" title="Your pick — it seeds the ${esc(tag)} role"><span class="scsw" style="background-color:${safeColor(c.dock.hex)}"></span><span class="scnm">${esc(c.dock.name)}</span><span class="scanchor" aria-hidden="true">⚓</span></span>`
+      : c.dock && c.dock.type === 'switch'
+        ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with your pick as the ${esc(tag)}"`} aria-label="Seed as ${esc(tag)}">⚓ seed here</button>`
+        : '';
     return `<div class="lcol${lockOn ? ' locked' : ''}${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
       + `<div class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}">`
       +   `<span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span>`
       +   `<span class="lchexrow"><span class="lchex">${bg}</span>`
       +     `<button type="button" class="lccopy${t === '#FFFFFF' ? ' light' : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}">${COPY_ICON}</button>`
       +   `</span></div>`
+      + `<div class="lcdock">${dock}</div>`
       + acts
       + `<span class="lcfoot">${foot}</span></div>`;
   }).join('')}</div>`;

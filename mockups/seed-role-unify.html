@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seed-role × live palette — 3 unification directions</title>
+<style>
+  /* Grimdark tokens (subset) — matches src/styles/tokens.css */
+  :root {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px;
+    --font:"Inter",system-ui,sans-serif; --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+    --shadow:0 1px 2px rgba(0,0,0,.45);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:28px; }
+  h1 { font-family:var(--display); font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--text-muted); max-width:74ch; margin:0 0 26px; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow); padding:20px; margin-bottom:26px; max-width:860px; }
+  h2 { font-family:var(--display); font-size:16px; margin:0 0 2px; }
+  .why { color:var(--text-muted); font-size:12.5px; margin:0 0 16px; max-width:72ch; }
+  .verdict { font-size:12.5px; margin:14px 0 0; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:10px; }
+  .verdict b { color:var(--text); }
+  .micro { font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); }
+
+  /* live-palette look-alike */
+  .livepal { display:flex; gap:10px; margin-top:10px; }
+  .lcol { position:relative; flex:1; border-radius:var(--r-ctrl); overflow:hidden; box-shadow:inset 0 0 0 1px rgba(0,0,0,.1); background:var(--surface-2); }
+  .lctop { height:86px; padding:8px 10px; display:flex; flex-direction:column; justify-content:space-between; }
+  .lctag { font-size:11px; font-weight:600; letter-spacing:.03em; }
+  .lchex { font-family:var(--mono); font-size:11.5px; opacity:.9; }
+  .lcfoot { padding:7px 10px 9px; font-size:11px; color:var(--text-muted); }
+  .lcfoot b { color:var(--text); display:block; font-size:11.5px; }
+
+  /* Direction 1 — docked seed chip */
+  .dock { margin:6px 8px 0; min-height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .dock.empty { border:1.5px dashed var(--border-strong); color:var(--text-faint); font-size:10.5px; cursor:pointer; background:transparent; width:calc(100% - 16px); }
+  .dock.empty:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-weak); }
+  .seedchip { display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--accent); border-radius:var(--r-pill); padding:3px 10px 3px 4px; font-size:11.5px; font-weight:600; box-shadow:var(--shadow); cursor:grab; }
+  .seedchip .sw { width:20px; height:20px; border-radius:6px; background:#87146E; box-shadow:inset 0 0 0 1px rgba(0,0,0,.3); }
+  .seedchip small { color:var(--text-muted); font-weight:500; }
+  .dock .pin { color:var(--accent); font-size:10px; margin-left:2px; }
+
+  /* Direction 2 — hero badge flip */
+  .hero { display:flex; align-items:center; gap:10px; padding:10px 0 2px; }
+  .hero .hsw { width:30px; height:30px; border-radius:8px; background:#87146E; box-shadow:inset 0 0 0 1px rgba(0,0,0,.3); }
+  .hero .hname { font-family:var(--display); font-weight:600; font-size:17px; }
+  .hero .hhex { font-family:var(--mono); color:var(--text-muted); font-size:13px; }
+  .roleflip { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--accent); background:var(--accent-weak); color:var(--accent); border-radius:var(--r-pill); padding:3px 11px; font-size:11.5px; font-weight:700; cursor:pointer; }
+  .roleflip .arr { font-size:10px; opacity:.8; }
+  .roleflip:hover { background:var(--accent); color:var(--on-accent); }
+  .hmeta { color:var(--text-muted); font-size:12.5px; }
+
+  /* Direction 3 — anchor radios in the column headers */
+  .anchor { position:absolute; top:7px; right:8px; width:20px; height:20px; border-radius:50%; border:1.5px solid rgba(255,255,255,.55); background:rgba(0,0,0,.25); display:grid; place-items:center; cursor:pointer; padding:0; }
+  .anchor svg { width:11px; height:11px; }
+  .anchor.on { border-color:#fff; background:var(--accent); }
+  .anchor:not(.on):hover { border-color:#fff; }
+  .keyline { margin-top:8px; font-size:11px; color:var(--text-faint); }
+</style>
+</head>
+<body>
+<h1>Seed role × live palette — three ways to unify</h1>
+<p class="sub">Today "Main | Accent" is a toolbar segmented control, far from the palette bar where its
+effect lands. All three directions below delete that control and express the seed's role <em>on the
+scheme itself</em>. Seed: <b>Faerzress Purple #87146E</b>, complementary, accent mode.</p>
+
+<section id="d1">
+  <h2>1 · Docked seed chip — your paint physically sits in its role's column</h2>
+  <p class="why">The pick is a chip (swatch + name) docked under the column it seeds. The other eligible
+  column shows a dashed “seed here” dock — tap it (or drag the chip) and the whole scheme rebuilds around
+  the new role. State and control are the same object: where the chip sits IS the mode.</p>
+  <div class="micro">Live palette → nearest paint</div>
+  <div class="livepal">
+    <div class="lcol"><div class="lctop" style="background:#1E7A32;color:#fff"><span class="lctag">Primary</span><span class="lchex">#146E24</span></div>
+      <button class="dock empty" onclick="d1move(this)">⚓ seed here</button>
+      <div class="lcfoot"><b>Warpstone Glow</b>ΔE 2.1 · Citadel</div></div>
+    <div class="lcol"><div class="lctop" style="background:#87146E;color:#fff"><span class="lctag">Accent</span><span class="lchex">#87146E</span></div>
+      <div class="dock" id="d1home"><span class="seedchip"><span class="sw"></span>Faerzress Purple <small>· your pick</small><span class="pin">⚓</span></span></div>
+      <div class="lcfoot"><b>Faerzress Purple</b>ΔE 0.0 · Army Painter</div></div>
+    <div class="lcol"><div class="lctop" style="background:linear-gradient(158deg,#c9c9d2,#6E7177);color:#15100A"><span class="lctag">Metal</span><span class="lchex">#B5B5BD</span></div>
+      <div class="dock" style="opacity:.35"><span style="font-size:10.5px;color:var(--text-faint)">—</span></div>
+      <div class="lcfoot"><b>Runefang Steel</b>ΔE 1.4 · Citadel</div></div>
+  </div>
+  <div class="keyline">Keyboard: the docks are buttons in a radiogroup (“Seed role: Primary / Accent”). Neutral seed → the Accent dock greys with “a neutral seed always holds Primary”.</div>
+  <p class="verdict"><b>Strongest unification.</b> Reads as “my paint plays this role”, the toolbar loses a
+  widget (mobile win), and dragging the chip is a natural later upgrade. Cost: the docks add one row of
+  height to two columns.</p>
+</section>
+
+<section id="d2">
+  <h2>2 · The hero badge becomes the flip</h2>
+  <p class="why">The hero already stamps your pick with a “main / accent” pill. Make that pill the control:
+  tapping it flips the role (it shows the flip affordance on hover). The toolbar control disappears; the
+  palette bar is untouched.</p>
+  <div class="hero">
+    <span class="hsw"></span>
+    <span class="hname">Faerzress Purple</span>
+    <span class="hhex">#87146E</span>
+    <button class="roleflip" onclick="d2flip(this)">accent <span class="arr">⇄</span></button>
+    <span class="hmeta">Army Painter · D&amp;D · layer · approx</span>
+  </div>
+  <div class="micro" style="margin-top:14px">Live palette → nearest paint</div>
+  <div class="livepal">
+    <div class="lcol"><div class="lctop" style="background:#1E7A32;color:#fff"><span class="lctag">Primary</span><span class="lchex">#146E24</span></div><div class="lcfoot"><b>Warpstone Glow</b>ΔE 2.1</div></div>
+    <div class="lcol"><div class="lctop" style="background:#87146E;color:#fff"><span class="lctag">Accent · your pick</span><span class="lchex">#87146E</span></div><div class="lcfoot"><b>Faerzress Purple</b>ΔE 0.0</div></div>
+    <div class="lcol"><div class="lctop" style="background:linear-gradient(158deg,#c9c9d2,#6E7177);color:#15100A"><span class="lctag">Metal</span><span class="lchex">#B5B5BD</span></div><div class="lcfoot"><b>Runefang Steel</b>ΔE 1.4</div></div>
+  </div>
+  <p class="verdict"><b>Smallest change, least discoverable.</b> One tap, zero new layout — but it turns a
+  state badge into a control (blurs our badge-vs-ring language, §3.5), and nothing at the palette hints
+  the role can change. Best if we want minimal surface.</p>
+</section>
+
+<section id="d3">
+  <h2>3 · Anchor markers in the column corners</h2>
+  <p class="why">Each column that can hold the seed (Primary, Accent) wears a small ⚓ radio in its corner.
+  The filled one marks where your pick anchors; tapping the hollow one moves it. The seed chip stays on the
+  hero — the palette only carries the two-dot radio.</p>
+  <div class="micro">Live palette → nearest paint</div>
+  <div class="livepal">
+    <div class="lcol"><div class="lctop" style="background:#1E7A32;color:#fff"><span class="lctag">Primary</span><span class="lchex">#146E24</span></div>
+      <button class="anchor" title="Seed as Primary" onclick="d3pick(this)"><svg viewBox="0 0 16 16"><path fill="#fff" d="M8 1a2 2 0 0 1 1 3.73V6h3v2H9v4.6c1.9-.36 3.4-1.6 4-3.6l1.9.6C14 12.7 11.4 15 8 15s-6-2.3-6.9-5.4L3 9c.6 2 2.1 3.24 4 3.6V8H4V6h3V4.73A2 2 0 0 1 8 1z"/></svg></button>
+      <div class="lcfoot"><b>Warpstone Glow</b>ΔE 2.1</div></div>
+    <div class="lcol"><div class="lctop" style="background:#87146E;color:#fff"><span class="lctag">Accent</span><span class="lchex">#87146E</span></div>
+      <button class="anchor on" title="Seeded as Accent" onclick="d3pick(this)"><svg viewBox="0 0 16 16"><path fill="#15100A" d="M8 1a2 2 0 0 1 1 3.73V6h3v2H9v4.6c1.9-.36 3.4-1.6 4-3.6l1.9.6C14 12.7 11.4 15 8 15s-6-2.3-6.9-5.4L3 9c.6 2 2.1 3.24 4 3.6V8H4V6h3V4.73A2 2 0 0 1 8 1z"/></svg></button>
+      <div class="lcfoot"><b>Faerzress Purple</b>ΔE 0.0</div></div>
+    <div class="lcol"><div class="lctop" style="background:linear-gradient(158deg,#c9c9d2,#6E7177);color:#15100A"><span class="lctag">Metal</span><span class="lchex">#B5B5BD</span></div><div class="lcfoot"><b>Runefang Steel</b>ΔE 1.4</div></div>
+  </div>
+  <div class="keyline">Same radiogroup semantics as 1, zero extra height — but the corner already hosts nothing today, so it stays clean.</div>
+  <p class="verdict"><b>Most compact.</b> No layout cost, palette stays pure. Cost: a 20px corner target is
+  tight on touch (needs a bigger hit area), and an anchor glyph needs the legend to explain itself the
+  first time.</p>
+</section>
+
+<script>
+  function d1move(dock) {
+    const chip = document.querySelector('#d1 .seedchip');
+    const old = chip.parentElement;
+    dock.replaceWith(Object.assign(document.createElement('div'), { className: 'dock', innerHTML: '' }));
+    const nd = document.querySelectorAll('#d1 .dock')[0];
+    nd.appendChild(chip);
+    old.outerHTML = '<button class="dock empty" onclick="d1move(this)">⚓ seed here</button>';
+  }
+  function d2flip(b) { b.innerHTML = (b.textContent.trim().startsWith('accent') ? 'main' : 'accent') + ' <span class="arr">⇄</span>'; }
+  function d3pick(b) {
+    document.querySelectorAll('#d3 .anchor').forEach(a => { a.classList.remove('on'); a.querySelector('path').setAttribute('fill', '#fff'); });
+    b.classList.add('on'); b.querySelector('path').setAttribute('fill', '#15100A');
+  }
+</script>
+</body>
+</html>

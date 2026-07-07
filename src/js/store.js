@@ -44,10 +44,37 @@ const state = load();
 const owned = new Set(state.owned);
 const want = new Set(state.want);
 
+/* Native-shell persistence (IOS_APP_PLAN §4b): WKWebView can evict localStorage, so under Capacitor
+ * every persist ALSO writes through to the Preferences plugin. The plugin object is injected by the
+ * shell at runtime — never an import, so §6's no-dependency rule holds and the web pays nothing. */
+const nativePrefs = () =>
+  (globalThis.Capacitor?.isNativePlatform?.() && globalThis.Capacitor?.Plugins?.Preferences) || null;
+
 function persist() {
   state.owned = [...owned];
   state.want = [...want];
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* private mode — in-memory only */ }
+  const json = JSON.stringify(state);
+  try { localStorage.setItem(KEY, json); } catch { /* private mode — in-memory only */ }
+  nativePrefs()?.set({ key: KEY, value: json }).catch(() => { /* mirror only — localStorage is the fast path */ });
+}
+
+/** Recover from native storage when WKWebView evicted localStorage (await BEFORE the first render;
+ *  resolves false immediately on the web). localStorage, when present, is always authoritative —
+ *  the Preferences copy is a write-through mirror of it. @returns {Promise<boolean>} state changed */
+export async function hydrate() {
+  const p = nativePrefs(); if (!p) return false;
+  try {
+    let ls = null; try { ls = localStorage.getItem(KEY); } catch { /* private mode */ }
+    if (ls) { persist(); return false; }               // intact → just refresh the mirror
+    const { value } = await p.get({ key: KEY });
+    if (!value) { persist(); return false; }           // first native run → seed the mirror
+    const s = normalise(JSON.parse(value));            // evicted → the mirror is the survivor
+    owned.clear(); s.owned.forEach(x => owned.add(x));
+    want.clear(); s.want.forEach(x => want.add(x));
+    for (const k of Object.keys(PREF_DEFAULTS)) if (k in s.prefs) state.prefs[k] = s.prefs[k];
+    persist();
+    return true;
+  } catch { return false; }
 }
 
 /* ---- collection (owned / to-buy are mutually exclusive) ---- */

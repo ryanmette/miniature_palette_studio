@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Palette Studio for Miniatures</title>
 <meta name="description" content="Pick a miniature paint and get colour harmonies matched to the real paints you can buy." />
 <link rel="stylesheet" href="styles/fonts.css" />
@@ -63,10 +63,6 @@
       <div class="seedbar">
         <button class="btn paints-btn" id="paintsBtn" aria-haspopup="true" aria-expanded="false" aria-controls="paintsDrawer" title="Browse and pick a paint">☰&nbsp;Paints <span class="caret" aria-hidden="true">▾</span></button>
         <div class="hexin" title="Type any hex to seed a scheme"><span>#</span><input id="hex" maxlength="6" inputmode="text" aria-label="Hex colour" /></div>
-        <div class="seg" id="seedRole" role="group" aria-label="Seed role">
-          <button data-role="main" aria-pressed="true">Main</button>
-          <button data-role="accent" aria-pressed="false">Accent</button>
-        </div>
         <button class="btn" id="fromPhoto" title="Pick a colour from a photo (processed on your device)">From photo</button>
         <input id="photoFile" type="file" accept="image/*" hidden />
         <button class="btn" id="compare" aria-pressed="false" title="Pin this scheme, then compare">Compare</button>
@@ -266,7 +262,8 @@
 <div id="status" class="sr-only" aria-live="polite"></div>
 <script type="module" src="js/app.js"></script>
 <script>
-if ('serviceWorker' in navigator) {
+// Inside the Capacitor shell the assets are bundled — a SW adds nothing but staleness risk there.
+if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) {
   // If a SW already controls this page, reload once when a NEW SW takes over so the page can't keep
   // running an old shell against fresh assets (the v1.3.0 stale-cache bug). No reload on first install.
   const hadController = !!navigator.serviceWorker.controller;
