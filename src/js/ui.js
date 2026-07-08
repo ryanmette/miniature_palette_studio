@@ -243,7 +243,8 @@ export function roleSlots(scheme, markOf) {
     ? `<div class="sharednote"><span class="warnpill">pick replaced</span> <strong>${esc(r.substituted.name)}</strong> is ${esc(r.substituted.why)} — nearest eligible paint shown.</div>`
     : '';
   return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}" data-hex="${safeColor(r.idealHex)}">`
-    + `<div class="shead"><span class="role">${esc(r.role)}</span><span class="wt">${esc(r.weight)}</span></div>`
+    + `<div class="shead"><span class="role">${esc(r.role)}</span>`
+    +   `<span class="sheadr"><button type="button" class="eqjump" data-goequiv="${safeColor(r.idealHex)}" title="Show this colour's cross-brand equivalents" aria-label="Show equivalents for ${esc(r.role)}">⇄ equivalents</button><span class="wt">${esc(r.weight)}</span></span></div>`
     + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match, markOf)}</div>`
     + subNote(r)
     + sharedNote(r)
@@ -254,6 +255,18 @@ export function roleSlots(scheme, markOf) {
     + (r.nmm ? `<div class="ladcap nmmcap" title="Non-metallic metal: paint the metal illusion with flat paints — deep shadow, mid tone, near-white ping">NMM · non-metallic metal (flats)</div>`
       + `<div class="ladder">${r.nmm.map(step).join('')}</div>` : '')
     + `</div>`).join('')}</div>`;
+}
+
+/** Equivalents source picker (§3.6 mobile fix): one chip per scheme colour, labelled by role.
+ *  The desktop column-click drill-down stays; these chips are the same selection, IN the tab it
+ *  affects — the only entry point a phone can actually see. cols: [{hex, label}]. */
+export function equivSourceChips(cols, activeHex) {
+  const a = (activeHex || '').toUpperCase();
+  return `<div class="micro" style="margin:12px 0 7px">Show equivalents for</div>`
+    + `<div class="eqsrcrow" role="group" aria-label="Show equivalents for">`
+    + cols.map(c => `<button type="button" class="eqchip" data-eqsrc="${safeColor(c.hex)}" aria-pressed="${c.hex.toUpperCase() === a}">`
+      + `<span class="sw" style="background-color:${safeColor(c.hex)}"></span>${esc(c.label)}</button>`).join('')
+    + `</div>`;
 }
 
 /** Curated equivalence group — interchangeable paints (ΔE ≤ 1) across brands. `members`: [paint]. */

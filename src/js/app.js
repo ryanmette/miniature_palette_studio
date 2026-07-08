@@ -616,9 +616,28 @@ function setupWheel() {
   let rtimer = 0;   // re-measure + redraw when the responsive canvas box changes (resize / orientation / stack)
   window.addEventListener('resize', () => { clearTimeout(rtimer); rtimer = setTimeout(() => { measure(); draw(); }, 150); });
 }
+/** The scheme colours the Equivalents tab can source from — mirrors the live palette's columns
+ *  (rule/free nodes + the pinned accent + Metal), labelled the way the bar labels them. */
+function equivSourceCols() {
+  const ideals = roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() });
+  const roleByHex = {};
+  for (const d of ideals) roleByHex[d.idealHex.toUpperCase()] = d.role;
+  const cols = paletteNodes().map(n => ({ hex: n.hex,
+    label: roleByHex[n.hex.toUpperCase()] || (n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added' : `${n.deg > 0 ? '+' : ''}${n.deg}°`) }));
+  const pin = accentPin();
+  if (pin && !cols.some(c => c.hex.toUpperCase() === pin.toUpperCase())) cols.push({ hex: pin, label: 'Accent' });
+  const metal = ideals.find(d => d.metal);
+  cols.push({ hex: metal.idealHex, label: 'Metal' });
+  const seen = new Set();   // a free node can duplicate a rule colour — one chip per colour
+  return cols.filter(c => { const k = c.hex.toUpperCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+}
 function renderEquiv() {
-  const srcHex = equivSourceHex();
+  // XSS barrier: srcHex descends from user-influenced values (chip data attrs, column data-hex,
+  // the pick jump, the URL seed). normHex's integer round-trip re-mints it as a provably-hex string
+  // (and the sink esc()s as defence-in-depth) — nothing below interpolates the raw input.
+  const srcHex = normHex(equivSourceHex()) || '#000000';
   const p = basePaint();
+  const chips = ui.equivSourceChips(equivSourceCols(), srcHex);
   // When the source is the seed AND the seed is a real paint, keep the richer view (curated interchangeable
   // group + that paint's cross-brand equivalents). Any other selected column resolves to its ideal colour.
   if (p && srcHex === (baseHex() || '').toUpperCase()) {
@@ -627,12 +646,12 @@ function renderEquiv() {
     const memberIds = new Set(members.map(m => m.id));
     const label = groupOf(state.idx, self)?.label || 'this colour';
     const eq = equivalents(state.idx, self, { n: 8 }).filter(e => !memberIds.has(e.paint.id));   // avoid dupes
-    $('#panel-equiv').innerHTML = ui.equivGroup(label, members, store.markOf)
+    $('#panel-equiv').innerHTML = chips + ui.equivGroup(label, members, store.markOf)
       + ui.equivalentsPanel(`${ui.pname(p)} (${p.brand})`, eq, store.markOf);
   } else {
     const role = (state.roleByHex || {})[srcHex];
     const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
-    $('#panel-equiv').innerHTML = ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8), store.markOf);
+    $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8), store.markOf);
   }
 }
 function renderA11y() {
@@ -1388,6 +1407,10 @@ function wire() {
   $('main').addEventListener('mouseover', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('focusin', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('click', e => {
+    const eqs = e.target.closest('[data-eqsrc]');
+    if (eqs) { e.stopPropagation(); setEquivSource(eqs.dataset.eqsrc); return; }   // tab-local source chips (A)
+    const gq = e.target.closest('[data-goequiv]');
+    if (gq) { e.stopPropagation(); setTab('equiv'); setEquivSource(gq.dataset.goequiv); return; }   // Plan-card jump (B)
     const sd = e.target.closest('[data-seeddock]');
     if (sd) {   // the palette's seed dock IS the Main|Accent control now
       e.stopPropagation();

@@ -8,7 +8,14 @@ export const clamp255 = x => (x < 0 ? 0 : x > 255 ? 255 : x);
 /** Normalise a user/URL-supplied colour string to '#RRGGBB' (uppercase), or null if it isn't a
  *  6-digit hex (with or without the leading '#'). The ONE validation guard for colour input —
  *  seven hand-rolled copies of this regex had already drifted into with-# and without-# variants. */
-export const normHex = s => { const m = /^#?([0-9a-fA-F]{6})$/.exec(String(s ?? '').trim()); return m ? '#' + m[1].toUpperCase() : null; };
+export const normHex = s => {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(String(s ?? '').trim());
+  if (!m) return null;
+  // Rebuild via an integer round-trip rather than echoing the capture group: numerically identical,
+  // but the output provably contains only hex digits even to a static analyser (taint ends at the
+  // parseInt) — normHex/safeColor products are interpolated into HTML all over the app.
+  return '#' + parseInt(m[1], 16).toString(16).padStart(6, '0').toUpperCase();
+};
 
 /** "#RGB" or "#RRGGBB" → [r,g,b] in 0–255. */
 export function hexToRgb(hex) {

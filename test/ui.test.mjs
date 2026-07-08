@@ -99,3 +99,20 @@ test('seed docks: chip on the seeded role, switch dock on the other, reserved ro
   const dhtml = livePalette(disabledVm, 'ideal', { '#146E24': 'Accent' });
   assert.ok(dhtml.includes('aria-disabled="true"') && dhtml.includes('always holds Primary'), 'neutral dock disabled with the why');
 });
+
+test('equivalents source chips + the Plan-card jump carry the right hooks', async () => {
+  const { equivSourceChips } = await import('../src/js/ui.js');
+  const html = equivSourceChips([
+    { hex: '#9A1115', label: 'Primary' }, { hex: '#094C96', label: 'Secondary' }, { hex: '#C8A13A', label: 'Metal' },
+  ], '#094C96');
+  assert.equal((html.match(/class="eqchip"/g) || []).length, 3);
+  assert.ok(html.includes('data-eqsrc="#9A1115"'), 'chips carry the source hex');
+  assert.ok(/data-eqsrc="#094C96" aria-pressed="true"/.test(html), 'active chip pressed');
+  // the Plan card's jump: one per role, targeting the role's ideal
+  const { indexDataset } = await import('../src/js/data.js');
+  const { buildScheme } = await import('../src/js/scheme.js');
+  const idx = indexDataset({ version: 't', paints: [{ id: 'r', brand: 'A', line: '—', name: 'Red', hex: '#9A1115', type: 'layer' }] });
+  const slots = roleSlots(buildScheme(idx, '#9A1115', 'complementary'), () => 'none');
+  assert.equal((slots.match(/data-goequiv=/g) || []).length, 4, 'every role card gets the jump');
+  assert.ok(slots.includes('data-goequiv="#9A1115"'), 'jump targets the role ideal');
+});

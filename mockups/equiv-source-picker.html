@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equivalents source picker — 3 directions</title>
+<style>
+  :root {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --success:#86A559;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px;
+    --font:"Inter",system-ui,sans-serif; --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+    --shadow:0 1px 2px rgba(0,0,0,.45);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:26px; }
+  h1 { font-family:var(--display); font-size:21px; margin:0 0 4px; }
+  .sub { color:var(--text-muted); max-width:74ch; margin:0 0 24px; font-size:13.5px; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow); padding:18px; margin-bottom:24px; max-width:430px; }
+  h2 { font-family:var(--display); font-size:15.5px; margin:0 0 2px; }
+  .why { color:var(--text-muted); font-size:12px; margin:0 0 14px; }
+  .verdict { font-size:12px; margin:12px 0 0; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:9px; }
+  .verdict b { color:var(--text); }
+  .micro { font-size:11px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); }
+  .tabs { display:flex; gap:18px; border-bottom:1px solid var(--border); margin-bottom:12px; font-size:13.5px; color:var(--text-muted); }
+  .tabs b { color:var(--text); border-bottom:2px solid var(--accent); padding-bottom:6px; font-weight:600; }
+  .tabs span { padding-bottom:6px; }
+
+  /* A — source chips inside the tab */
+  .srcrow { display:flex; gap:7px; flex-wrap:wrap; margin:10px 0 14px; }
+  .srcchip { display:inline-flex; align-items:center; gap:7px; border:1px solid var(--border); background:var(--surface-2);
+    border-radius:var(--r-pill); padding:5px 12px 5px 5px; font-size:12px; font-weight:600; color:var(--text-muted); cursor:pointer; }
+  .srcchip .sw { width:20px; height:20px; border-radius:7px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.25); }
+  .srcchip.on { border-color:var(--accent); color:var(--text); box-shadow:0 0 0 1px var(--accent); background:var(--surface); }
+  .eqhead { font-size:13px; margin:2px 0 10px; }
+  .eqhead b { font-weight:600; }
+  .eqrow { display:flex; gap:9px; align-items:center; border:1px solid var(--border); border-radius:var(--r-ctrl); padding:8px 9px; margin-bottom:8px; }
+  .eqrow .sw { width:34px; height:34px; border-radius:var(--r-ctrl); box-shadow:inset 0 0 0 1px rgba(0,0,0,.25); flex:none; }
+  .eqrow .nm { font-size:12.5px; font-weight:500; }
+  .eqrow .br { font-size:11px; color:var(--text-muted); }
+  .eqrow .de { margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--text-muted); background:var(--surface-2); border-radius:5px; padding:2px 6px; }
+
+  /* B — jump action on the Plan role card */
+  .slot { border:1px solid var(--border); border-radius:var(--r-ctrl); padding:12px; }
+  .shead { display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; }
+  .role { font-family:var(--display); font-weight:600; font-size:15px; }
+  .wt { color:var(--text-faint); font-size:12px; }
+  .ivsa { display:flex; gap:9px; align-items:center; }
+  .ivsa .sw { width:52px; height:52px; border-radius:var(--r-ctrl); box-shadow:inset 0 0 0 1px rgba(0,0,0,.25); flex:none; }
+  .arr { color:var(--text-faint); }
+  .meta .t1 { font-size:11px; color:var(--text-faint); }
+  .meta .t2 { font-size:13px; font-weight:600; }
+  .meta .t3 { font-size:11.5px; color:var(--text-muted); }
+  .cardacts { display:flex; gap:8px; margin-top:11px; }
+  .eqbtn { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-muted);
+    border-radius:var(--r-pill); padding:4px 12px; font-size:11.5px; font-weight:600; cursor:pointer; }
+  .eqbtn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* C — long-press/tap sheet */
+  .sheetwrap { position:relative; padding-bottom:8px; }
+  .sheet { border:1px solid var(--border-strong); background:var(--surface); border-radius:12px; box-shadow:0 18px 50px rgba(0,0,0,.5);
+    width:230px; margin:12px auto 0; overflow:hidden; }
+  .sheet .shhead { display:flex; gap:8px; align-items:center; padding:9px 11px; border-bottom:1px solid var(--border); font-size:12px; font-weight:600; }
+  .sheet .shhead .sw { width:20px; height:20px; border-radius:6px; }
+  .sheet button { display:flex; width:100%; gap:8px; align-items:center; border:none; background:none; color:var(--text); text-align:left;
+    padding:9px 12px; font-size:12.5px; font-family:var(--font); cursor:pointer; }
+  .sheet button:hover { background:var(--surface-2); }
+  .sheet .ico { width:16px; text-align:center; color:var(--text-faint); }
+</style>
+</head>
+<body>
+<h1>Equivalents for any scheme colour — 3 directions</h1>
+<p class="sub">Today the source-switch is "tap a live-palette column while on the Equivalents tab" — fine on
+desktop where the palette sits beside the tabs, invisible on a phone where the palette scrolled away long ago.
+Scheme: Rakarth Flesh primary · Dark Elf Skin secondary · Magecast Magenta accent.</p>
+
+<section id="a">
+  <h2>A · Source chips in the Equivalents tab</h2>
+  <p class="why">The tab opens with a swatch-chip strip — every scheme colour, labelled by role. Tap one, the
+  list below re-sources. The control lives exactly where its effect shows; the desktop column-click stays as
+  a bonus and the two stay in sync (same ring language).</p>
+  <div class="tabs"><span>Plan · roles</span><b>Equivalents</b><span>Accessibility</span></div>
+  <div class="micro">Show equivalents for</div>
+  <div class="srcrow">
+    <span class="srcchip"><span class="sw" style="background:#A89A88"></span>Primary</span>
+    <span class="srcchip on"><span class="sw" style="background:#57525E"></span>Secondary</span>
+    <span class="srcchip"><span class="sw" style="background:#7C2F86"></span>Accent</span>
+    <span class="srcchip"><span class="sw" style="background:linear-gradient(158deg,#c9c9d2,#6E7177)"></span>Metal</span>
+  </div>
+  <div class="eqhead">Closest matches to <b>Secondary · #57525E</b> across brands</div>
+  <div class="eqrow"><span class="sw" style="background:#5A5560"></span><span><span class="nm">Dark Elf Skin</span><br><span class="br">Reaper · Master Series</span></span><span class="de">ΔE 4.2</span></div>
+  <div class="eqrow"><span class="sw" style="background:#514D59"></span><span><span class="nm">Eshin Grey</span><br><span class="br">Citadel · Layer</span></span><span class="de">ΔE 4.9</span></div>
+  <div class="eqrow"><span class="sw" style="background:#5E5A67"></span><span><span class="nm">Grey Matter</span><br><span class="br">Army Painter · Fanatic</span></span><span class="de">ΔE 5.3</span></div>
+  <p class="verdict"><b>Direct + discoverable.</b> One row of chips, identical on phone and desktop, reuses the
+  segmented/chip language. Added (free) swatches join the strip automatically. Recommended.</p>
+</section>
+
+<section id="b">
+  <h2>B · "⇄ Equivalents" action on each Plan role card</h2>
+  <p class="why">Every role card gets a small action that jumps to the Equivalents tab with that colour
+  pre-selected. Meets the painter where the question occurs ("what else matches this Secondary?"), at the
+  cost of a cross-tab jump and one more button per card.</p>
+  <div class="slot">
+    <div class="shead"><span class="role">Secondary</span><span class="wt">~30%</span></div>
+    <div class="ivsa">
+      <span class="sw" style="background:#57525E"></span><span class="arr">→</span><span class="sw" style="background:#5A5560"></span>
+      <span class="meta"><span class="t1">Nearest real paint</span><br><span class="t2">Dark Elf Skin</span><br><span class="t3">Reaper · Master Series</span></span>
+    </div>
+    <div class="cardacts">
+      <span class="eqbtn">⇄ Equivalents</span>
+      <span class="eqbtn">+ buy</span>
+    </div>
+  </div>
+  <p class="verdict"><b>Great trailhead, worse round-trip.</b> Perfect discoverability at the moment of need,
+  but you leave the Plan to use it and each card grows an action row. Pairs well WITH A (the jump lands on A's
+  chips); weak alone.</p>
+</section>
+
+<section id="c">
+  <h2>C · Tap-a-swatch action sheet (everywhere)</h2>
+  <p class="why">Any swatch in the app (role cards, ladders, live palette) opens a tiny sheet on tap:
+  Equivalents · Use as base · Copy hex. Maximum generality — every colour becomes a first-class object.</p>
+  <div class="sheetwrap">
+    <div class="ivsa">
+      <span class="sw" style="width:52px;height:52px;border-radius:10px;background:#57525E;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25), 0 0 0 2px var(--accent)"></span>
+      <span class="meta" style="align-self:center"><span class="t3">tapped ↴</span></span>
+    </div>
+    <div class="sheet">
+      <div class="shhead"><span class="sw" style="background:#57525E"></span>Secondary · #57525E</div>
+      <button><span class="ico">⇄</span>Show equivalents</button>
+      <button><span class="ico">◎</span>Use as base colour</button>
+      <button><span class="ico">⧉</span>Copy #57525E</button>
+    </div>
+  </div>
+  <p class="verdict"><b>Most powerful, most invasive.</b> A new interaction layer that collides with what taps
+  already do (ladder tips, drill-down, copy buttons) and needs §3.4-careful overlay work everywhere. Better as
+  a later unification than as this fix.</p>
+</section>
+</body>
+</html>
