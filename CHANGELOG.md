@@ -19,6 +19,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   pills cost three full rows on a phone, pushing the grid below the fold; the filter is now a native
   `All brands` select in the filter row — the same control the Paints drawer already uses for brand
   (mockups/shelf-brand-filter.html, direction A of three). Same filtering behaviour, zero rows.
+- **Dataset 1.5.0: equivalence groups never mix finish classes (§5.2, per Ryan).** The ΔE-only
+  clustering was type-blind, so 70 of 175 auto-seeded groups claimed cross-finish "interchangeable"
+  pairs — a Brown Wash grouped with a flat layer paint, Ki-Rin Gold with Mouldy Ochre. Paints now
+  cluster only within a finish class (metal · translucent wash/shade/ink/contrast/glaze · effect ·
+  opaque flat): 120 groups / 292 paints, all single-class. Applied in `build-dataset.mjs` (not
+  hand-overrides — the override vocabulary can't split both halves of a mixed group), so rebuilds
+  stay correct; paint list, hexes and types are unchanged from 1.4.1.
 - **Metallic suggestions always float true metallics first (§7, per Ryan).** When the equivalents
   source is itself metallic — a picked `metal` paint, or the Metal column's ideal — `metal`-type
   paints now rank strictly above flats (`equivalents` metal tier; `nearestPaints` gains a

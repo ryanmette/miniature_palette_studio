@@ -52,8 +52,10 @@ opt-in via a Plan-tab toggle. `metal` is the Metal role. Citadel's **Technical**
   from the source repo into `.cache/raw/`, then `node scripts/build-dataset.mjs`.
 - All rows are `approx: true` (community-sourced). `lab` is derived at runtime, never stored.
 - **Curated equivalence groups** are auto-seeded at build time: paints within **ΔE 2000 ≤ 1.0** ("indistinguishable")
-  are union-find clustered into `groups[]` (each with a representative `refHex` + a basic-colour `label`), and every
-  member paint carries a `groupId`. v1.3.0: **175 groups, 431 paints** (max group diameter ΔE 2.84). Surfaced in the
+  **and the same finish class** (metal · translucent media · effect · opaque — a hex match across finish classes is
+  not interchangeability on the model) are union-find clustered into `groups[]` (each with a representative `refHex`
+  + a basic-colour `label`), and every member paint carries a `groupId`. v1.5.0: **120 groups, 292 paints**
+  (max group diameter ΔE 2.16). Surfaced in the
   Equivalents tab; the *closest other-brand* matches are still computed at runtime by ΔE 2000.
 - QA: [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs) — **hard checks PASS** (valid sRGB hex,
   required fields, unique ids, allowed types). Soft flags (reviewed, accepted): cross-brand near-duplicates
