@@ -6,6 +6,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **`tag-release.yml` workflow** — creates a release tag (§8 checklist, final step) from Actions →
+  *Tag release* with a `vX.Y.Z` name + commit SHA. Remote Claude Code sessions can only push the
+  working branch, so tagging no longer needs a local clone.
 - **Pick WHICH colour's equivalents you see — from anywhere.** The Equivalents tab now opens with a
   **source chip strip** (one swatch chip per scheme colour, labelled by role — Primary/Secondary/
   Accent/Metal plus any added swatches): tap a chip and the cross-brand list re-sources. Every Plan
