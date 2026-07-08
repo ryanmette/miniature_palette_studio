@@ -220,7 +220,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5) — runs in CI (test.yml)
 │   └── check-docs.mjs         ← doc-freshness QA (§8/§9) — README/tree/CHANGELOG claims vs reality; runs in CI
 ├── .github/
-│   ├── workflows/             ← deploy.yml (publish src/ to GitHub Pages, M9) · test.yml (node --test + data/docs validators on push/PR)
+│   ├── workflows/             ← deploy.yml (publish src/ to GitHub Pages, M9) · test.yml (node --test + data/docs validators on push/PR) · tag-release.yml (dispatchable release-tag creator, §8)
 │   └── dependabot.yml         ← keep workflow actions current (github-actions ecosystem only; no npm)
 ├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/scheme/a11y/data/store/ui/collection-io)
 └── src/                       ← the app (✓ M1–M8: data, engine, shell, all feature UI)
@@ -402,7 +402,7 @@ If any constant or formula changes, bump dataset/app version and note it in CHAN
 - **Tags** mark releases (`v0.1.0` = approved plan + mockup baseline).
 - **Release checklist (cutting a version):** bump `package.json` → turn CHANGELOG `[Unreleased]` into the
   release heading → refresh README's Status paragraph → add the release line to PLAN.md §5 (+ its "Current
-  status" stamp) → tag. `scripts/check-docs.mjs` (CI) enforces the mechanical parts — version, dataset
+  status" stamp) → tag (from a clone, or Actions → *Tag release* — remote sessions can't push tags). `scripts/check-docs.mjs` (CI) enforces the mechanical parts — version, dataset
   counts, the §4 tree — so a stale README fails the build instead of shipping.
 - **One concern per commit.** If a change touches design tokens, it updates §3 here too.
 - Deploy = push `src/` to GitHub Pages via `.github/workflows/deploy.yml`; Squarespace **links** to it (an inline iframe needs the Business plan). See `docs/EMBED.md`.

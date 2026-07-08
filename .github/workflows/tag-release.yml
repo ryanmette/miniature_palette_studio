@@ -1,0 +1,34 @@
+name: Tag release
+
+# Creates a release tag (§8 checklist, final step) from Actions. Exists because remote
+# Claude Code sessions can only push the working branch — tag pushes are rejected — so
+# the tag step can run here instead of needing a local clone.
+# Run it: Actions → Tag release → Run workflow → tag (vX.Y.Z) + the release commit's SHA.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name (vX.Y.Z, e.g. v1.8.0)"
+        required: true
+      sha:
+        description: "Full commit SHA to tag (defaults to the dispatched branch's HEAD)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create the tag
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const tag = context.payload.inputs.tag.trim();
+            const sha = (context.payload.inputs.sha || '').trim() || context.sha;
+            if (!/^v\d+\.\d+\.\d+$/.test(tag)) { core.setFailed(`Not a vX.Y.Z tag: ${tag}`); return; }
+            await github.rest.git.createRef({ ...context.repo, ref: `refs/tags/${tag}`, sha });
+            core.notice(`Created ${tag} at ${sha}`);
