@@ -87,7 +87,7 @@ const BRANDS = [
 const FINISH = new Set(['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect']);
 // Utility products that aren't a colour — mediums, varnishes, sealers, thinners. Skip (not paints).
 const SKIP_NAME = /\bmedium\b|thinner|retarder|\bsealer\b|varnish|\badditive\b|improver|anti-shine|lahmian|'?ardcoat|stirrer|reducer|\bcleaner\b|\bglaze medium\b/i;
-const METAL_RE = /\bmetal|\bgold|silver|bronze|brass|copper|\bsteel\b|chrome|gunmetal|\btin\b|\biron\b|mithril|chainmail|pewter|platinum|leadbelcher|runefang|ironbreaker|warplock|hashut|\bauric\b|gehenna/i;
+const METAL_RE = /\bmetal|\bgold|silver|bronze|brass|copper|\bsteel\b|chrome|gunmetal|\btin\b|\biron\b|mithril|chainmail|pewter|platinum|leadbelcher|runefang|ironbreaker|warplock|hashut|\bauric\b|gehenna|retributor|screaming bell|necron compound|sigmarite|canoptek/i;
 const slug = s => s.toLowerCase().replace(/['’!.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 /** Resolve the stored type from the line's kind + the paint name (finishes win; then metal; then flat). */

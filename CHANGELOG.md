@@ -14,6 +14,22 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   chips — it was just invisible on phones, where the live palette scrolls away above the tabs
   (mockups/equiv-source-picker.html directions A+B, per Ryan). SW `ps-v27`.
 
+### Changed
+- **Metallic suggestions always float true metallics first (§7, per Ryan).** When the equivalents
+  source is itself metallic — a picked `metal` paint, or the Metal column's ideal — `metal`-type
+  paints now rank strictly above flats (`equivalents` metal tier; `nearestPaints` gains a
+  `floatTypes` option): a flat paint near a gold's hex is not an equivalent of that gold on the
+  model. A metal's auto-seeded "interchangeable" group also lists its metal members first (the ΔE
+  clustering is type-blind, so 30 of 175 groups mix metals with flats). Reported ΔE stays the true
+  distance (§2); flat sources keep pure ΔE order. SW `ps-v28`.
+
+### Fixed
+- **Dataset 1.4.1: five Citadel metallics were typed as flat paints** — Retributor Armour and
+  Screaming Bell (`base`), Necron Compound and Sigmarite (`dry`), Canoptek Alloy (`layer`) — their
+  names carry no metal keyword, so the build's `METAL_RE` missed them. All five are now `metal`
+  (241 metallics), which puts them in the Metal role's pool and gives them the metal-first float
+  above; `METAL_RE` learned the five names so a dataset rebuild agrees.
+
 ## [1.8.0] - 2026-07-07
 ### Added
 - **Stage-1 groundwork for the native app (IOS_APP_PLAN §4b, repo-side items).** ① The shell is

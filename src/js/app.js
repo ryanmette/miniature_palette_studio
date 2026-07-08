@@ -643,6 +643,8 @@ function renderEquiv() {
   if (p && srcHex === (baseHex() || '').toUpperCase()) {
     const self = state.idx.byId.get(p.id);
     const members = groupMembers(state.idx, self);                 // curated equivalents (ΔE ≤ 1)
+    // Auto-seeded groups cluster by ΔE alone, so a metal's group can hold flats — list true metallics first
+    if (self.type === 'metal') members.sort((a, b) => (a.type === 'metal' ? 0 : 1) - (b.type === 'metal' ? 0 : 1));
     const memberIds = new Set(members.map(m => m.id));
     const label = groupOf(state.idx, self)?.label || 'this colour';
     const eq = equivalents(state.idx, self, { n: 8 }).filter(e => !memberIds.has(e.paint.id));   // avoid dupes
@@ -651,7 +653,9 @@ function renderEquiv() {
   } else {
     const role = (state.roleByHex || {})[srcHex];
     const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
-    $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8), store.markOf);
+    // The Metal column's matches float true metallics first — a flat near the hex isn't an equivalent (§7)
+    const srcOpts = role === 'Metal' ? { floatTypes: new Set(['metal']) } : {};
+    $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8, srcOpts), store.markOf);
   }
 }
 function renderA11y() {

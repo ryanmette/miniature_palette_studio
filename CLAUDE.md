@@ -327,6 +327,10 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   role's all-metal pool demotes all candidates equally so it's unaffected), and a **picked-paint
   tie-break** (−0.001 — the paint the user explicitly picked wins exact ΔE ties, e.g. Layer vs Dry
   twins that share a hex). Constants live in `app.js`/`data.js`; change them only with a CHANGELOG note.
+  The mirror rule for **metallic sources**: when the equivalents source is itself metallic (a picked
+  `metal` paint, or the Metal column's ideal), **true metallics rank strictly first** — a flat paint
+  near the hex is not an equivalent of a metal on the model (`equivalents` metal tier · `nearestPaints`
+  `floatTypes`; a metal's auto-seeded group also lists its metal members first). Reported ΔE stays true.
 - **Harmonies** are computed from the base in HSL. Most rotate **hue** (keeping S/L); the two *value*
   harmonies instead vary **lightness/saturation** at the base hue. Each partner is a locked `{dh,ds,dl}`
   step from the base (`harmony.js` `HARMONY_STEPS`):

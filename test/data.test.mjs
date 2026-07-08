@@ -153,3 +153,32 @@ test('owned-boost keeps true-ΔE order among owned paints (no score floor)', () 
   const m = nearestPaint(rev, '#9A1115', { boostIds: new Set(['far-red', 'near-red']), boostAmount: 6 });
   assert.equal(m.paint.id, 'near-red');
 });
+
+test('equivalents from a METAL source float true metallics above nearer flats, ΔE stays true (§7)', () => {
+  // The flat ochre sits nearer the gold's hex than the rival brand's gold — the metal must still lead.
+  const fx = indexDataset({ version: 't', paints: [
+    { id: 'c-gold', brand: 'Citadel', line: 'Base', name: 'Retributor Armour', hex: '#C8A13A', type: 'metal' },
+    { id: 'v-ochre', brand: 'Vallejo', line: 'Model Color', name: 'Ochre', hex: '#C7A23B', type: 'layer' },
+    { id: 'v-gold', brand: 'Vallejo', line: 'Metal Color', name: 'Gold', hex: '#D0A845', type: 'metal' },
+  ] });
+  const eq = equivalents(fx, fx.byId.get('c-gold'), { n: 2 });
+  assert.equal(eq[0].paint.id, 'v-gold');                       // metal first, despite larger ΔE
+  assert.equal(eq[1].paint.id, 'v-ochre');
+  assert.ok(eq[0].deltaE > eq[1].deltaE);                       // reported distances untouched (honesty)
+  // a FLAT source keeps pure ΔE order — no metal preference
+  const flat = equivalents(fx, fx.byId.get('v-ochre'), { n: 2 });
+  assert.equal(flat[0].paint.id, 'c-gold');                     // nearest by hex, type irrelevant
+});
+
+test('nearestPaints floatTypes ranks the floated type strictly first, then by score', () => {
+  const fx = indexDataset({ version: 't', paints: [
+    { id: 'ochre', brand: 'A', line: '—', name: 'Ochre', hex: '#C7A23B', type: 'layer' },
+    { id: 'gold-far', brand: 'B', line: '—', name: 'Old Gold', hex: '#D8B055', type: 'metal' },
+    { id: 'gold-near', brand: 'C', line: '—', name: 'Gold', hex: '#D0A845', type: 'metal' },
+  ] });
+  const top = nearestPaints(fx, '#C8A13A', 3, { floatTypes: new Set(['metal']) });
+  assert.deepEqual(top.map(m => m.paint.id), ['gold-near', 'gold-far', 'ochre']);
+  // without the flag, pure distance order
+  const plain = nearestPaints(fx, '#C8A13A', 3);
+  assert.equal(plain[0].paint.id, 'ochre');
+});
