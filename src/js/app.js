@@ -739,7 +739,6 @@ function renderShelfBar() {
 function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
   for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
-  $('#brandChips').innerHTML = ui.brandChips(state.brands, state.shelfBrand);
   const view = shelfPaints();
   $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel);
   // tag each cell with a DOM id for aria-activedescendant (keyboard cursor); the empty-state
@@ -1536,11 +1535,7 @@ function wire() {
 
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
-  $('#brandChips').addEventListener('click', e => {
-    const b = e.target.closest('.chip'); if (!b) return;
-    state.shelfBrand = b.dataset.brand;
-    shelfFilterChanged();
-  });
+  $('#shelfBrand').addEventListener('change', e => { state.shelfBrand = e.target.value; shelfFilterChanged(); });
   let sqTimer = 0;   // debounce: every keystroke rebuilt the full 2,508-cell grid — type-lag on phones
   $('#shelfQ').addEventListener('input', e => {
     clearTimeout(sqTimer);
@@ -1597,6 +1592,7 @@ async function init() {
   await store.hydrate();   // native shell: recover the collection if WKWebView evicted localStorage (no-op on the web)
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
+  $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // the Shelf filters brand the same way the drawer does
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
   const typeOpts = types.map(t => `<option value="${ui.esc(t)}">${ui.esc(t.charAt(0).toUpperCase() + t.slice(1))}</option>`).join('');
   $('#ptype').insertAdjacentHTML('beforeend', typeOpts);

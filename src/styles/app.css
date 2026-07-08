@@ -386,17 +386,13 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfstats .s-owned { color: var(--success); }
 .shelfstats .s-want { color: var(--buy); }
 .shelfhint { margin: 0; font-size: 12.5px; color: var(--text-faint); }
-/* Shelf filter bar: search + status + type + sort on one wrapping row (search grows, controls size to content). */
+/* Shelf filter bar: search + status + brand + type + sort on one wrapping row (search grows, controls
+   size to content). Brand is a select like the drawer's — the old wrapped chip rows cost three rows on
+   a phone (mockups/shelf-brand-filter.html, direction A). */
 .shelffilters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .shelffilters input[type="search"] { flex: 1 1 220px; width: auto; min-width: 150px; }
 .shelffilters select { flex: 0 1 auto; width: auto; min-width: 120px; }
 .shelffilters .seg { flex: none; }
-.brandchips { display: flex; flex-wrap: wrap; gap: 7px; }
-.chip { height: 30px; padding: 0 13px; border-radius: var(--r-pill); border: 1px solid var(--border);
-  background: var(--surface); color: var(--text-muted); font-weight: 500; font-size: 12.5px; box-sizing: border-box; }
-.chip:hover { border-color: var(--border-strong); color: var(--text); }
-.chip:focus-visible { outline: none; box-shadow: var(--focus); border-color: var(--accent); }
-.chip[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 
 .shelfgrid { position: relative; display: grid; gap: 8px; -webkit-user-select: none; user-select: none; touch-action: pan-y;
   grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }

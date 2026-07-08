@@ -15,6 +15,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (mockups/equiv-source-picker.html directions A+B, per Ryan). SW `ps-v27`.
 
 ### Changed
+- **The Shelf's brand filter is now a dropdown, not chip rows (per Ryan).** The nine wrapped brand
+  pills cost three full rows on a phone, pushing the grid below the fold; the filter is now a native
+  `All brands` select in the filter row — the same control the Paints drawer already uses for brand
+  (mockups/shelf-brand-filter.html, direction A of three). Same filtering behaviour, zero rows.
 - **Metallic suggestions always float true metallics first (§7, per Ryan).** When the equivalents
   source is itself metallic — a picked `metal` paint, or the Metal column's ideal — `metal`-type
   paints now rank strictly above flats (`equivalents` metal tier; `nearestPaints` gains a
