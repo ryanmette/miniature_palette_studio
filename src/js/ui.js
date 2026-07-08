@@ -83,12 +83,6 @@ export const markBadge = mark =>
     : mark === 'want' ? `<span class="cbadge want" aria-hidden="true">${cartGlyph}</span>`
       : '';
 
-/** Brand filter chips for the shelf. `active` is the selected brand ('' = all). */
-export function brandChips(brands, active = '') {
-  const chip = (val, lbl) => `<button class="chip" data-brand="${esc(val)}" aria-pressed="${val === active}">${esc(lbl)}</button>`;
-  return chip('', 'All') + brands.map(b => chip(b, b)).join('');
-}
-
 /** Shelf action bar: fixed-height row (reserved space → no reflow when it fills, §3.4). Empty until a
  *  selection exists, then shows "N selected" + mark actions. The persistent how-to hint lives up top. */
 export function shelfBar(count) {

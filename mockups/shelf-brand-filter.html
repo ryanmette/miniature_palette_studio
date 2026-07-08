@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shelf brand filter — 3 directions</title>
+<style>
+  :root {
+    --bg:#FBFBFE; --surface:#FFFFFF; --surface-2:#F1F2FF;
+    --border:#E6E7F8; --border-strong:#D3D5F0;
+    --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
+    --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+    --buy:#2563EB; --success:#16A34A;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px;
+    --font:"Inter",system-ui,sans-serif; --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+    --shadow-pop:0 10px 40px rgba(60,50,120,.18);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:26px 22px; }
+  h1 { font-family:var(--display); font-size:21px; margin:0 0 4px; }
+  .sub { color:var(--text-muted); max-width:74ch; margin:0 0 24px; font-size:13.5px; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow); padding:18px; margin-bottom:24px; max-width:430px; }
+  h2 { font-family:var(--display); font-size:15.5px; margin:0 0 2px; }
+  .why { color:var(--text-muted); font-size:12px; margin:0 0 14px; }
+  .verdict { font-size:12px; margin:14px 0 0; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:9px; }
+  .verdict b { color:var(--text); }
+
+  /* shared shelf-filter chrome, mirrors app.css */
+  .filters { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .filters input[type="search"] { flex:1 1 180px; min-width:140px; height:36px; border:1px solid var(--border);
+    border-radius:var(--r-ctrl); padding:0 12px; font:inherit; color:var(--text); background:var(--surface); }
+  .filters input::placeholder { color:var(--text-faint); }
+  select { height:36px; border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface);
+    color:var(--text); font:inherit; font-size:13px; padding:0 8px; }
+  .seg { display:inline-flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; }
+  .seg button { border:none; background:none; font:inherit; font-size:13px; color:var(--text-muted); padding:5px 14px;
+    border-radius:8px; cursor:pointer; }
+  .seg button.on { background:var(--surface); color:var(--text); box-shadow:var(--shadow); font-weight:500; }
+  .chip { height:30px; padding:0 13px; border-radius:var(--r-pill); border:1px solid var(--border);
+    background:var(--surface); color:var(--text-muted); font-weight:500; font-size:12.5px; font-family:var(--font); cursor:pointer; }
+  .chip.on { background:var(--accent-weak); border-color:var(--accent); color:var(--accent); }
+  .gridpeek { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:14px; }
+  .gridpeek i { display:block; aspect-ratio:1; border-radius:var(--r-ctrl); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+
+  /* A — brand select in the filter row */
+  .rowa { margin-top:2px; }
+
+  /* B — Brands chip + bottom sheet */
+  .btrig { display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 13px; border-radius:var(--r-ctrl);
+    border:1px solid var(--border); background:var(--surface); color:var(--text); font:inherit; font-size:13px; cursor:pointer; }
+  .btrig .n { color:var(--text-muted); }
+  .btrig b { font-weight:600; }
+  .btrig .car { color:var(--text-faint); font-size:10px; }
+  .btrig.active { border-color:var(--accent); }
+  .btrig.active b { color:var(--accent); }
+  .phone { position:relative; margin-top:14px; border:1px solid var(--border-strong); border-radius:18px; overflow:hidden; height:330px; background:var(--bg); }
+  .phone .dim { position:absolute; inset:0; background:rgba(32,34,58,.32); }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:var(--surface); border-radius:16px 16px 0 0;
+    box-shadow:var(--shadow-pop); padding:10px 16px 16px; }
+  .sheet .grab { width:36px; height:4px; border-radius:99px; background:var(--border-strong); margin:0 auto 10px; }
+  .sheet h3 { font-family:var(--display); font-size:14px; margin:0 0 10px; }
+  .sheet .brow { display:flex; align-items:center; gap:10px; width:100%; border:none; background:none; font:inherit;
+    text-align:left; padding:10px 4px; border-bottom:1px solid var(--border); color:var(--text); font-size:14px; cursor:pointer; }
+  .sheet .brow:last-child { border-bottom:none; }
+  .sheet .brow .ct { margin-left:auto; color:var(--text-faint); font-size:12px; }
+  .sheet .brow.on { color:var(--accent); font-weight:600; }
+  .sheet .brow .tick { width:16px; color:var(--accent); }
+  .ghostgrid { padding:14px 16px; display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+  .ghostgrid i { display:block; aspect-ratio:1; border-radius:10px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+
+  /* C — one-row scroll strip */
+  .strip { display:flex; gap:7px; overflow-x:auto; scrollbar-width:none; margin-top:2px; padding:2px;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 26px),transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 26px),transparent); }
+  .strip::-webkit-scrollbar { display:none; }
+  .strip .chip { flex:none; }
+</style>
+</head>
+<body>
+<h1>Shelf brand filter — reclaiming three rows</h1>
+<p class="sub">Today the nine brand chips wrap into three full rows on a phone, pushing the grid below the fold.
+Three ways to fold them down. In every mock the search / status / type / sort row stays as-is.</p>
+
+<section>
+  <h2>A — Brand dropdown in the filter row</h2>
+  <p class="why">The brand filter becomes a native <code>&lt;select&gt;</code> beside "All types" — exactly how the
+  Paints drawer already filters by brand. Three rows → zero.</p>
+  <div class="filters">
+    <input type="search" placeholder="Search your shelf…">
+    <div class="seg"><button class="on">All</button><button>Owned</button><button>To buy</button></div>
+  </div>
+  <div class="filters rowa" style="margin-top:10px">
+    <select><option>All brands</option></select>
+    <select><option>All types</option></select>
+    <select><option>Default order</option></select>
+  </div>
+  <div class="gridpeek">
+    <i style="background:#EFE3A8"></i><i style="background:#EDEFE4"></i><i style="background:#DCE7F2"></i><i style="background:#7A4A28"></i><i style="background:#6C7FA5"></i>
+    <i style="background:#4A2026"></i><i style="background:#BCAEB6"></i><i style="background:#7D2069"></i><i style="background:#A8C6B4"></i><i style="background:#B9BCBE"></i>
+  </div>
+  <p class="verdict"><b>Cheapest & most consistent.</b> Same control the Paints drawer already uses; native picker UI is
+  ideal on touch; free keyboard/screen-reader support. Cost: switching brands is two taps instead of one, and you
+  can't see the brand list at a glance.</p>
+</section>
+
+<section>
+  <h2>B — "Brands ▾" chip opening a bottom sheet</h2>
+  <p class="why">One compact trigger showing the active brand; tapping opens an overlay listing every brand with its
+  paint count — big touch rows, one tap to switch once open.</p>
+  <div class="filters">
+    <input type="search" placeholder="Search your shelf…">
+    <button class="btrig active"><span class="n">Brand:</span> <b>Citadel</b> <span class="car">▼</span></button>
+  </div>
+  <div class="phone">
+    <div class="ghostgrid">
+      <i style="background:#EFE3A8"></i><i style="background:#EDEFE4"></i><i style="background:#DCE7F2"></i><i style="background:#7A4A28"></i><i style="background:#6C7FA5"></i>
+      <i style="background:#4A2026"></i><i style="background:#BCAEB6"></i><i style="background:#7D2069"></i><i style="background:#A8C6B4"></i><i style="background:#B9BCBE"></i>
+    </div>
+    <div class="dim"></div>
+    <div class="sheet" role="dialog" aria-label="Filter by brand">
+      <div class="grab"></div>
+      <h3>Filter by brand</h3>
+      <button class="brow"><span class="tick"></span>All brands <span class="ct">2508</span></button>
+      <button class="brow"><span class="tick"></span>Army Painter <span class="ct">312</span></button>
+      <button class="brow on"><span class="tick">✓</span>Citadel <span class="ct">294</span></button>
+      <button class="brow"><span class="tick"></span>P3 <span class="ct">108</span></button>
+      <button class="brow"><span class="tick"></span>Vallejo <span class="ct">476</span></button>
+    </div>
+  </div>
+  <p class="verdict"><b>Richest, but the most new machinery.</b> Gains per-brand counts and big targets, but it's a new
+  overlay component to build, test and localise — and §3.5 discourages new picker patterns when a segmented control
+  or select already fits. Two taps to switch, same as A.</p>
+</section>
+
+<section>
+  <h2>C — One-row scrollable chip strip</h2>
+  <p class="why">The chips stay, but confined to a single horizontally scrollable row with edge fades — the exact
+  pattern the harmony picker already uses (<code>.harmscroll</code>). The active chip auto-centres. Three rows → one.</p>
+  <div class="filters">
+    <input type="search" placeholder="Search your shelf…">
+    <div class="seg"><button class="on">All</button><button>Owned</button><button>To buy</button></div>
+  </div>
+  <div class="strip">
+    <button class="chip on">All</button>
+    <button class="chip">Army Painter</button>
+    <button class="chip">Citadel</button>
+    <button class="chip">P3</button>
+    <button class="chip">Pro Acryl</button>
+    <button class="chip">Reaper</button>
+    <button class="chip">Scale75</button>
+    <button class="chip">Two Thin Coats</button>
+    <button class="chip">Vallejo</button>
+  </div>
+  <div class="gridpeek">
+    <i style="background:#EFE3A8"></i><i style="background:#EDEFE4"></i><i style="background:#DCE7F2"></i><i style="background:#7A4A28"></i><i style="background:#6C7FA5"></i>
+    <i style="background:#4A2026"></i><i style="background:#BCAEB6"></i><i style="background:#7D2069"></i><i style="background:#A8C6B4"></i><i style="background:#B9BCBE"></i>
+  </div>
+  <p class="verdict"><b>Keeps one-tap switching.</b> On-system precedent (harmony strip), zero new patterns, still shows
+  the brand vocabulary at a glance. Cost: one row remains, and off-screen brands need a swipe to reach.</p>
+</section>
+
+<p class="sub" style="margin-top:4px"><b>Recommendation: A</b> — it reclaims everything, matches the Paints drawer
+exactly, and brand filtering on the Shelf is a set-and-forget choice while bulk-stocking, so two taps is fine.
+If one-tap brand hopping turns out to matter, C is the on-system fallback.</p>
+</body>
+</html>

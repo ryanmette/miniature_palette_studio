@@ -171,6 +171,8 @@
           <button data-mark="owned" aria-pressed="false" data-i18n="filterOwned">Owned</button>
           <button data-mark="want" aria-pressed="false" data-i18n="filterToBuy">To buy</button>
         </div>
+        <label class="sr-only" for="shelfBrand">Filter the shelf by brand</label>
+        <select id="shelfBrand"><option value="" data-i18n="allBrands">All brands</option></select>
         <label class="sr-only" for="shelfType">Filter by type</label>
         <select id="shelfType"><option value="">All types</option></select>
         <label class="sr-only" for="shelfSort">Sort the shelf</label>
@@ -182,7 +184,6 @@
           <option value="light">Sort: lightness</option>
         </select>
       </div>
-      <div class="brandchips" id="brandChips" role="group" aria-label="Filter the shelf by brand"></div>
     </div>
     <div class="shelfgrid" id="shelfGrid" role="listbox" aria-multiselectable="true"
          aria-label="Paints — select swatches, then press P for owned, U for to buy, X to clear" tabindex="0"></div>

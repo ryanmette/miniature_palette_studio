@@ -643,6 +643,8 @@ function renderEquiv() {
   if (p && srcHex === (baseHex() || '').toUpperCase()) {
     const self = state.idx.byId.get(p.id);
     const members = groupMembers(state.idx, self);                 // curated equivalents (ΔE ≤ 1)
+    // Auto-seeded groups cluster by ΔE alone, so a metal's group can hold flats — list true metallics first
+    if (self.type === 'metal') members.sort((a, b) => (a.type === 'metal' ? 0 : 1) - (b.type === 'metal' ? 0 : 1));
     const memberIds = new Set(members.map(m => m.id));
     const label = groupOf(state.idx, self)?.label || 'this colour';
     const eq = equivalents(state.idx, self, { n: 8 }).filter(e => !memberIds.has(e.paint.id));   // avoid dupes
@@ -651,7 +653,9 @@ function renderEquiv() {
   } else {
     const role = (state.roleByHex || {})[srcHex];
     const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
-    $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8), store.markOf);
+    // The Metal column's matches float true metallics first — a flat near the hex isn't an equivalent (§7)
+    const srcOpts = role === 'Metal' ? { floatTypes: new Set(['metal']) } : {};
+    $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8, srcOpts), store.markOf);
   }
 }
 function renderA11y() {
@@ -735,7 +739,6 @@ function renderShelfBar() {
 function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
   for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
-  $('#brandChips').innerHTML = ui.brandChips(state.brands, state.shelfBrand);
   const view = shelfPaints();
   $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel);
   // tag each cell with a DOM id for aria-activedescendant (keyboard cursor); the empty-state
@@ -1532,11 +1535,7 @@ function wire() {
 
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
-  $('#brandChips').addEventListener('click', e => {
-    const b = e.target.closest('.chip'); if (!b) return;
-    state.shelfBrand = b.dataset.brand;
-    shelfFilterChanged();
-  });
+  $('#shelfBrand').addEventListener('change', e => { state.shelfBrand = e.target.value; shelfFilterChanged(); });
   let sqTimer = 0;   // debounce: every keystroke rebuilt the full 2,508-cell grid — type-lag on phones
   $('#shelfQ').addEventListener('input', e => {
     clearTimeout(sqTimer);
@@ -1593,6 +1592,7 @@ async function init() {
   await store.hydrate();   // native shell: recover the collection if WKWebView evicted localStorage (no-op on the web)
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
+  $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // the Shelf filters brand the same way the drawer does
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
   const typeOpts = types.map(t => `<option value="${ui.esc(t)}">${ui.esc(t.charAt(0).toUpperCase() + t.slice(1))}</option>`).join('');
   $('#ptype').insertAdjacentHTML('beforeend', typeOpts);

@@ -14,6 +14,33 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   chips — it was just invisible on phones, where the live palette scrolls away above the tabs
   (mockups/equiv-source-picker.html directions A+B, per Ryan). SW `ps-v27`.
 
+### Changed
+- **The Shelf's brand filter is now a dropdown, not chip rows (per Ryan).** The nine wrapped brand
+  pills cost three full rows on a phone, pushing the grid below the fold; the filter is now a native
+  `All brands` select in the filter row — the same control the Paints drawer already uses for brand
+  (mockups/shelf-brand-filter.html, direction A of three). Same filtering behaviour, zero rows.
+- **Dataset 1.5.0: equivalence groups never mix finish classes (§5.2, per Ryan).** The ΔE-only
+  clustering was type-blind, so 70 of 175 auto-seeded groups claimed cross-finish "interchangeable"
+  pairs — a Brown Wash grouped with a flat layer paint, Ki-Rin Gold with Mouldy Ochre. Paints now
+  cluster only within a finish class (metal · translucent wash/shade/ink/contrast/glaze · effect ·
+  opaque flat): 120 groups / 292 paints, all single-class. Applied in `build-dataset.mjs` (not
+  hand-overrides — the override vocabulary can't split both halves of a mixed group), so rebuilds
+  stay correct; paint list, hexes and types are unchanged from 1.4.1.
+- **Metallic suggestions always float true metallics first (§7, per Ryan).** When the equivalents
+  source is itself metallic — a picked `metal` paint, or the Metal column's ideal — `metal`-type
+  paints now rank strictly above flats (`equivalents` metal tier; `nearestPaints` gains a
+  `floatTypes` option): a flat paint near a gold's hex is not an equivalent of that gold on the
+  model. A metal's auto-seeded "interchangeable" group also lists its metal members first (the ΔE
+  clustering is type-blind, so 30 of 175 groups mix metals with flats). Reported ΔE stays the true
+  distance (§2); flat sources keep pure ΔE order. SW `ps-v28`.
+
+### Fixed
+- **Dataset 1.4.1: five Citadel metallics were typed as flat paints** — Retributor Armour and
+  Screaming Bell (`base`), Necron Compound and Sigmarite (`dry`), Canoptek Alloy (`layer`) — their
+  names carry no metal keyword, so the build's `METAL_RE` missed them. All five are now `metal`
+  (241 metallics), which puts them in the Metal role's pool and gives them the metal-first float
+  above; `METAL_RE` learned the five names so a dataset rebuild agrees.
+
 ## [1.8.0] - 2026-07-07
 ### Added
 - **Stage-1 groundwork for the native app (IOS_APP_PLAN §4b, repo-side items).** ① The shell is

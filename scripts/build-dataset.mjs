@@ -87,7 +87,7 @@ const BRANDS = [
 const FINISH = new Set(['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect']);
 // Utility products that aren't a colour — mediums, varnishes, sealers, thinners. Skip (not paints).
 const SKIP_NAME = /\bmedium\b|thinner|retarder|\bsealer\b|varnish|\badditive\b|improver|anti-shine|lahmian|'?ardcoat|stirrer|reducer|\bcleaner\b|\bglaze medium\b/i;
-const METAL_RE = /\bmetal|\bgold|silver|bronze|brass|copper|\bsteel\b|chrome|gunmetal|\btin\b|\biron\b|mithril|chainmail|pewter|platinum|leadbelcher|runefang|ironbreaker|warplock|hashut|\bauric\b|gehenna/i;
+const METAL_RE = /\bmetal|\bgold|silver|bronze|brass|copper|\bsteel\b|chrome|gunmetal|\btin\b|\biron\b|mithril|chainmail|pewter|platinum|leadbelcher|runefang|ironbreaker|warplock|hashut|\bauric\b|gehenna|retributor|screaming bell|necron compound|sigmarite|canoptek/i;
 const slug = s => s.toLowerCase().replace(/['’!.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 /** Resolve the stored type from the line's kind + the paint name (finishes win; then metal; then flat). */
@@ -172,11 +172,19 @@ function colourName(hex) {
 
 // Union–find over pairs within ΔE ≤ EQUIV_DE ("indistinguishable"). A cheap Euclidean-Lab gate skips
 // obviously-far pairs so we don't run ΔE2000 on all ~3M combinations.
+// "Interchangeable" means "swap one for the other on the model", and that's false across finish
+// classes even at ΔE 0: a wash is translucent, a metallic reads as metal, an effect is its own
+// medium. So paints only cluster WITHIN a finish class — metal · translucent media · effect · opaque.
 const EQUIV_DE = 1.0;
+const FINISH_CLASS = t => t === 'metal' ? 'metal'
+  : (t === 'wash' || t === 'shade' || t === 'ink' || t === 'contrast' || t === 'glaze') ? 'trans'
+    : t === 'effect' ? 'effect' : 'flat';
 const labs = paints.map(p => toLab(hx(p.hex)));
+const klass = paints.map(p => FINISH_CLASS(p.type));
 const parent = paints.map((_, i) => i);
 const find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
 for (let i = 0; i < paints.length; i++) for (let j = i + 1; j < paints.length; j++) {
+  if (klass[i] !== klass[j]) continue;                            // never claim cross-finish interchangeability
   const dl = labs[i][0] - labs[j][0], da = labs[i][1] - labs[j][1], db = labs[i][2] - labs[j][2];
   if (dl * dl + da * da + db * db > 36) continue;                 // ΔE≤1 ⇒ Euclidean Lab ≪ 6; cheap reject
   if (dE(labs[i], labs[j]) <= EQUIV_DE) { const ri = find(i), rj = find(j); if (ri !== rj) parent[ri] = rj; }
@@ -224,11 +232,11 @@ try {
 } catch (e) { console.log(`group-overrides: skipped (${e.message})`); }
 
 const dataset = {
-  version: '1.4.0',
+  version: '1.5.0',
   generated: CAPTURED,
   license: 'Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.',
   attribution: 'Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.',
-  note: 'Hex is sRGB and approximate; Lab is derived at runtime (CLAUDE.md §5/§7). Finishes (wash/shade/ink/contrast/glaze/effect) are excluded from harmony suggestions at runtime. groups[] = curated equivalence clusters (paints within ΔE 1.0); paints carry groupId.',
+  note: 'Hex is sRGB and approximate; Lab is derived at runtime (CLAUDE.md §5/§7). Finishes (wash/shade/ink/contrast/glaze/effect) are excluded from harmony suggestions at runtime. groups[] = curated equivalence clusters (paints within ΔE 1.0 of the same finish class — metal, translucent media, effect, opaque); paints carry groupId.',
   groups,
   paints,
 };
