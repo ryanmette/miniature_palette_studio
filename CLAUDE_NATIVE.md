@@ -285,8 +285,10 @@ github-actions-only (CLAUDE.md §4); Capacitor version bumps are deliberate, han
   4. Camera: the permission prompt shows the §8 string; **deny → graceful fallback**; grant →
      photo intake ends in `seedFromHex()`; the live eyedropper tracks in real time on-device.
   5. Safe areas on a notched device, light and dark; no horizontal scroll.
-  6. VoiceOver + Reduce Motion pass (§9).
-  7. Share links produced in-app open correctly on the web.
+  6. iPad: the split-view layout renders (both panes usable, no horizontal scroll) and Apple
+     Pencil pressure/tilt registers on the wheel canvas (the §1 iPad-optimised scope).
+  7. VoiceOver + Reduce Motion pass (§9).
+  8. Share links produced in-app open correctly on the web.
 
 **A native change is done only when:**
 1. It conforms to this file — and to CLAUDE.md wherever it touches shared code.
@@ -309,8 +311,8 @@ recommendations, the third overrides this file's earlier default):
 - **Free at launch, no IAP in v2.0.** ✅ resolved 2026-07-09 (Ryan) — the simplest review. A Pro
   tier later = MONETIZATION path C, gated on a §1 amendment (§8).
 - **iPad: optimised in v2.0.** ✅ resolved 2026-07-09 (Ryan) — a split-view + Pencil-tuned layout
-  ships in v2.0 (§1), overriding the earlier "ships as-is" default. It is web-layer work (§3.6);
-  a natively-rendered iPad UI stays Stage 3 (§2).
+  ships in v2.0 (§1), overriding the earlier "ships as-is" default. It is web-layer work
+  (CLAUDE.md §3.6); a natively-rendered iPad UI stays Stage 3 (§2).
 - **Apple Developer account holder:** Ryan. ✅ resolved 2026-07-09 — enrolled and paid; builds
   and releases come from his Mac.
 
