@@ -4,7 +4,8 @@
 It exists so v1 is built in a way that makes a future app cheap (it already is — see §3).
 
 > v1 stays a static web app embedded in Squarespace. Everything below is optional, future, and
-> would get its own constitution before any code.
+> gets its own constitution before any code — **drafted 2026-07-09: [`CLAUDE_NATIVE.md`](../CLAUDE_NATIVE.md)**
+> (dormant until Stage-1 kickoff; it activates at `npx cap add ios`, §4b step 7).
 
 > **Update (2026-07-05 — v2 kickoff review).** The plan below survives review with one big correction
 > and one shrink: **colour-from-photo is no longer a native-only draw** — the on-device photo
@@ -54,7 +55,7 @@ the next. You can't skip ahead, and you don't advance until the previous stage p
 | **0 · PWA** ✅ | manifest + service worker; installable, offline | ~100% | low–med | Home-screen only | **done** — it's the live foundation |
 | **1 · Capacitor wrap** ⭐ | the web app in a native shell + native plugins (camera, barcode, haptics, share) | ~90% | med–high | **Yes** | there's real demand and you want camera/inventory in-store |
 | **2 · Selective native (hybrid)** | replace hot / native-feel screens (wheel, camera) with native modules; the rest stays web | ~70% | high | Yes | specific screens need native perf or feel |
-| **3 · Full native SwiftUI** | rebuild the UI in SwiftUI; port the colour math to Swift, or run it via JavaScriptCore | engine only | highest | Yes | reviews / usage / iPad + Pencil demand a fully native app |
+| **3 · Full native SwiftUI** | rebuild the UI in SwiftUI; port the colour math to Swift, or run it via JavaScriptCore | engine only | highest | Yes | reviews / usage / a *natively-rendered* iPad + Pencil (PencilKit) experience — beyond v2.0's web-layer iPad tuning — demands a fully native app |
 
 ⭐ = the first App-Store release (v2.0).
 
@@ -103,7 +104,8 @@ So v1 is, deliberately, already 40–90% of a v2 app depending on approach.
    already built on the web (`store.js` + the Finder grid) is the inventory foundation it builds on.
 3. **Stage 2 — go hybrid** only for the screens that actually need native perf/feel (e.g. the wheel,
    the camera capture), leaving everything else as the shared web UI.
-4. **Stage 3 — full SwiftUI** only once reviews / usage / iPad demand justify maintaining a second UI
+4. **Stage 3 — full SwiftUI** only once reviews / usage / a *natively-rendered* iPad + Pencil
+   (PencilKit) experience — beyond v2.0's web-layer iPad tuning — justify maintaining a second UI
    codebase.
 
 The point: **native is the destination, reached by a ratchet rather than a rewrite** — each stage
@@ -132,11 +134,17 @@ web runtime, so §6's no-runtime-dependency rule holds.
 
 ### 4b. Stage-1 kickoff checklist (v2.0) — in order
 
+*(Prerequisite met: the native-track constitution — [`CLAUDE_NATIVE.md`](../CLAUDE_NATIVE.md) —
+is drafted; step 7's `cap add ios` commit activates it. Its §11 adopts the step-3 recommendations
+for Ryan to confirm. **Confirmed 2026-07-09** — the §9 openers are resolved (§9); its §11 stamps
+carry the decisions.)*
+
 **Ryan, off-repo (lead-time items — start these first):**
-1. **Apple Developer Program** enrolment ($99/yr; approval can take a couple of days).
-2. A Mac with **Xcode** + Node. (All native builds happen there — never from this repo's CI.)
-3. Decide the two §9 openers that gate setup: **Android too?** (Capacitor makes it nearly free —
-   recommend yes, later) and **free at launch** (recommend: free, no IAP in v2.0 — simplest review).
+1. ✅ **Apple Developer Program** enrolment (2026-07-09 — enrolled + paid).
+2. ✅ A Mac with **Xcode** + Node (Node ≥ v24). All native builds happen there — never from this repo's CI.
+3. ✅ **Decisions made 2026-07-09** (stamped in `CLAUDE_NATIVE.md` §11 / §9 below): **Android** yes,
+   later · **free at launch**, no IAP · **iPad optimised in v2.0** (split view + Pencil) · **account
+   holder** Ryan.
 
 **Repo work (can be done in this repo, before/parallel):**
 4. **App icon + splash set** rendered from `icon.svg` (Capacitor assets tooling wants PNGs).
@@ -199,7 +207,14 @@ update in place. No personal data leaves the device → trivial privacy posture.
 
 ---
 
-## 9. Open questions (revisit at v2 kickoff)
+## 9. Open questions — ✅ resolved at kickoff (2026-07-09, Ryan)
 
-Android too (Capacitor/RN cover both; SwiftUI doesn't)? · free vs. paid/Pro? · iPad-optimised? ·
-who maintains the Apple account and releases?
+All four are decided; the binding record + amendment rules live in `CLAUDE_NATIVE.md` §11.
+- **Android too?** → **Yes, later.** Capacitor/RN cover both; not v2.0.
+- **Free vs. paid/Pro?** → **Free at launch, no IAP.** A Pro tier is a later MONETIZATION path C.
+- **iPad-optimised?** → **Yes, in v2.0** — a split-view + Apple-Pencil-tuned layout (web-layer;
+  a natively-rendered iPad UI stays Stage 3).
+- **Who maintains the Apple account and releases?** → **Ryan**, from his Mac.
+
+Implementation-time opens (not kickoff-gating) remain in `CLAUDE_NATIVE.md` §11: CocoaPods vs SPM,
+dataset-update storage, and whether a PWA install affordance exists to hide.

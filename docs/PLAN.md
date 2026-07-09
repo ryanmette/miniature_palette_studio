@@ -107,9 +107,21 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 adversarial review: 38 verified findings fixed). **Monetization direction chosen: A (affiliate
 links) + B (audience funnel)** — see [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan
 files retailer applications (§9). **Next planned work: the native app, Stage 1 (v2.0)** — the
-kickoff checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork already shipped in v1.8.
+kickoff checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork already shipped in v1.8, and
+the native-track constitution is drafted (`CLAUDE_NATIVE.md`, dormant until kickoff).
 Still outside this repo: the Mac/Xcode build, a designer for the asset library, and the optional
 palette-from-photo enhancement.
+
+### Native Stage-1 kickoff — greenlit (2026-07-09)
+Ryan has **authorised Stage-1 (v2.0) kickoff**: enrolled in the Apple Developer Program (paid), a
+Mac with Xcode + Node ≥ v24 is ready, and the `IOS_APP_PLAN.md` §4b step-3 / §9 decisions are made
+and stamped — **Android** yes-later · **free** at launch, no IAP · **iPad optimised in v2.0**
+(split view + Apple Pencil, web-layer) · **account holder** Ryan. This paragraph is the Stage-1
+**authorisation** record (the decision stamp `CLAUDE_NATIVE.md` §2 permits); the **demand
+evidence** §2 also asks for — usage, "is there an app?" requests, in-store camera use — still
+needs to be added here at or before the `npx cap add ios` commit that activates the native
+constitution. Remaining: the Mac-side `cap add ios` → `sync` → `open` (that
+commit adds `ios/` and updates the `CLAUDE.md` §4 tree), then the two camera features → TestFlight.
 
 ### Shipped in v1.8 — Neutral mode: neutral seeds get a real scheme engine
 

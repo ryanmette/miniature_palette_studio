@@ -48,7 +48,9 @@ gets a **derived wash + highlight** paint in v1; deeper multi-step ladders are a
 User accounts, server/database, payments, paint inventory sync, a "buy" checkout,
 native mobile apps, AI color suggestions.
 These are parked in [`docs/PLAN.md`](docs/PLAN.md) §Future; a native iPhone app is explored
-separately in [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) (v2 only).
+separately in [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) (v2 only) and governed by its own
+constitution, [`CLAUDE_NATIVE.md`](CLAUDE_NATIVE.md) (a draft, dormant until Stage-1's
+`npx cap add ios` commit activates it).
 
 ### Non-negotiables
 - **No backend.** Everything runs in the browser. The dataset is a static JSON file.
@@ -184,6 +186,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ```
 /
 ├── CLAUDE.md                  ← this file (constitution)
+├── CLAUDE_NATIVE.md           ← native-track constitution (v2, DRAFT — dormant until Stage-1's npx cap add ios; CLAUDE.md wins on shared code)
 ├── README.md                  ← what it is, how to run/deploy
 ├── LICENSE                    ← proprietary, all rights reserved (code only; dataset = see SOURCES.md)
 ├── SECURITY.md                ← security policy (static/no-backend scope; private vuln reporting)
@@ -310,7 +313,9 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 ## 6. Coding standards
 
 - ES2020+, modules, `const`/`let`, no transpilation assumed.
-- **Dependencies: none at runtime, and zero third-party runtime requests.** The webfonts (Inter, Space Grotesk) are **self-hosted** (§3.3), so the app makes no external calls at all. Tests use Node's **built-in** runner (`node --test` / `node:assert`) — no install, no devDependency. Anything else needs a line here. We hand-roll colour math (it's small and well-specified) rather than pull a library.
+- **Dependencies: none at runtime, and zero third-party runtime requests.** The webfonts (Inter, Space Grotesk) are **self-hosted** (§3.3), so the app makes no external calls at all. Tests use Node's **built-in** runner (`node --test` / `node:assert`) — no install, no devDependency. Anything else needs a line here.
+  (One standing exception, dormant until Stage-1 kickoff: the native track's **dev-only** Capacitor
+  packages, allowlisted in [`CLAUDE_NATIVE.md`](CLAUDE_NATIVE.md) §4 — they never enter the web runtime.) We hand-roll colour math (it's small and well-specified) rather than pull a library.
 - Pure functions for math; side effects only in `ui.js`/`app.js`.
 - Accessibility: semantic HTML, labelled controls, keyboard operable, visible focus, `aria-live` for dynamic palette updates, respects `prefers-reduced-motion`.
 - Performance budget: first render < 100ms after JSON load; nearest-paint search over the full dataset < 16ms (precompute Lab once).
@@ -398,7 +403,9 @@ If any constant or formula changes, bump dataset/app version and note it in CHAN
 - **Git from day one.** `main` is always deployable. Work on short-lived `feat/*`, `fix/*`, `docs/*` branches.
 - **Conventional Commits**: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`. Imperative mood.
 - **Semantic Versioning** for the app and the dataset (independent versions). The **web app stays on `1.x`**; **`v2.0` is reserved for the native app** (`docs/IOS_APP_PLAN.md`) — ship web features as minor bumps, not a 2.0.
-- **CHANGELOG.md** in Keep a Changelog format; update it in the same PR as the change.
+- **CHANGELOG.md** in Keep a Changelog format; update it in the same PR as the change. Once the
+  native `2.x` stream exists, a release moves **only its own stream's entries** out of
+  `[Unreleased]` (CLAUDE_NATIVE.md §6).
 - **Tags** mark releases (`v0.1.0` = approved plan + mockup baseline).
 - **Release checklist (cutting a version):** bump `package.json` → turn CHANGELOG `[Unreleased]` into the
   release heading → refresh README's Status paragraph → add the release line to PLAN.md §5 (+ its "Current
