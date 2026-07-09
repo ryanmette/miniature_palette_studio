@@ -135,7 +135,7 @@ web runtime, so §6's no-runtime-dependency rule holds.
 
 *(Prerequisite met: the native-track constitution — [`CLAUDE_NATIVE.md`](../CLAUDE_NATIVE.md) —
 is drafted; step 7's `cap add ios` commit activates it. Its §11 adopts the step-3 recommendations
-as defaults for Ryan to confirm.)*
+(plus an iPad-as-is default) for Ryan to confirm.)*
 
 **Ryan, off-repo (lead-time items — start these first):**
 1. **Apple Developer Program** enrolment ($99/yr; approval can take a couple of days).
