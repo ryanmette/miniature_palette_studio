@@ -55,7 +55,7 @@ the next. You can't skip ahead, and you don't advance until the previous stage p
 | **0 · PWA** ✅ | manifest + service worker; installable, offline | ~100% | low–med | Home-screen only | **done** — it's the live foundation |
 | **1 · Capacitor wrap** ⭐ | the web app in a native shell + native plugins (camera, barcode, haptics, share) | ~90% | med–high | **Yes** | there's real demand and you want camera/inventory in-store |
 | **2 · Selective native (hybrid)** | replace hot / native-feel screens (wheel, camera) with native modules; the rest stays web | ~70% | high | Yes | specific screens need native perf or feel |
-| **3 · Full native SwiftUI** | rebuild the UI in SwiftUI; port the colour math to Swift, or run it via JavaScriptCore | engine only | highest | Yes | reviews / usage / iPad + Pencil demand a fully native app |
+| **3 · Full native SwiftUI** | rebuild the UI in SwiftUI; port the colour math to Swift, or run it via JavaScriptCore | engine only | highest | Yes | reviews / usage / a *natively-rendered* iPad + Pencil (PencilKit) experience — beyond v2.0's web-layer iPad tuning — demands a fully native app |
 
 ⭐ = the first App-Store release (v2.0).
 
@@ -104,7 +104,8 @@ So v1 is, deliberately, already 40–90% of a v2 app depending on approach.
    already built on the web (`store.js` + the Finder grid) is the inventory foundation it builds on.
 3. **Stage 2 — go hybrid** only for the screens that actually need native perf/feel (e.g. the wheel,
    the camera capture), leaving everything else as the shared web UI.
-4. **Stage 3 — full SwiftUI** only once reviews / usage / iPad demand justify maintaining a second UI
+4. **Stage 3 — full SwiftUI** only once reviews / usage / a *natively-rendered* iPad + Pencil
+   (PencilKit) experience — beyond v2.0's web-layer iPad tuning — justify maintaining a second UI
    codebase.
 
 The point: **native is the destination, reached by a ratchet rather than a rewrite** — each stage
