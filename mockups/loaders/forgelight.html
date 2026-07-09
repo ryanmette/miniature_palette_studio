@@ -53,10 +53,10 @@
 <body>
 <header>
   <h1>Forgelight — loading &amp; refresh, grimdark</h1>
-  <p class="sub">Round five. <b>Sparks</b> and <b>Ember bokeh</b> are locked ✓ — unchanged from round four. The two
-  loaders get a v2 pass: <b>Molten fill</b> gains a meniscus, a travelling swell, per-cell cooling and bubbles;
-  <b>Molten veins</b> goes organic — smoothed curves, branches tapering to capillary tips, heat trailing the growth
-  front. Frame switchers still re-host every effect in different containers. Molten Harmonics rules throughout:
+  <p class="sub">Round six. <b>Sparks</b> and <b>Ember bokeh</b> stay locked ✓. Loader physics refined per review:
+  <b>Molten veins</b> growth is now provably monotone — tips stall but never retreat; <b>Molten fill</b>'s
+  annealing is decoupled from the number — metal sets by how long it has sat, so the tail hardens while the front
+  still pours, and after 100% the melt takes a few seconds to fully set before the loop rests. Frame switchers still re-host every effect in different containers. Molten Harmonics rules throughout:
   seeded, deterministic, vanilla Canvas&nbsp;2D, one heat ramp around the brass accent, finished frame under
   <code>prefers-reduced-motion</code>.</p>
 </header>
@@ -66,13 +66,14 @@
   <section class="card">
     <span class="eyebrow">Load · determinate</span>
     <h2>Molten fill · v2</h2>
-    <p class="use">The liquid gets a life: the melt piles into a <em>meniscus</em> at the leading edge, a slow swell
-    travels along the surface, and the bar tells its own history — fresh pour glows, the tail cools toward annealed
-    brass. Bubbles rise through the melt and pop at the surface. Front still pinned to exactly p·width.</p>
+    <p class="use">The melt piles into a <em>meniscus</em> at the leading edge and a slow swell travels the surface —
+    but <em>setting is physics, not percentage</em>: each cell anneals by how long it has sat. The tail stills,
+    darkens and takes a sheen while the front still pours; bubbles only rise through molten stretches; after the
+    number reaches 100% the last of the melt visibly sets, then the loop rests. Front stays pinned to p·width.</p>
     <div class="stage"><canvas id="cv-fill" aria-label="Molten fill loader: living molten metal fills the bar, front locked to progress"></canvas></div>
     <div class="row"><button id="fill-play">▶ Simulate load</button><input id="fill-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten fill progress">
       <span class="frameseg" role="group" aria-label="Host frame" id="fill-frames"><button data-w="340" data-h="56" aria-pressed="true">Bar</button><button data-w="300" data-h="170" aria-pressed="false">Panel</button><button data-w="84" data-h="220" aria-pressed="false">Column</button></span></div>
-    <p class="algo">analytic tongue + gaussian meniscus at the front · per-cell age → cooling colour · travelling surface wave · seeded bubbles rise &amp; pop · vertical hosts: level = p·height</p>
+    <p class="algo">analytic tongue + gaussian meniscus, front = p·width · per-cell age → anneal (colour cools, wobble stills, glow dies, sheen forms) · loop rests only when fully set · vertical hosts: level = p·height</p>
   </section>
 
   <section class="card">
@@ -89,13 +90,13 @@
   <section class="card">
     <span class="eyebrow">Load · determinate</span>
     <h2>Molten veins · v2</h2>
-    <p class="use">Organic now: paths are smoothed curves, every branch <em>tapers</em> to a fine capillary tip, and the
-    heat is a story — white-hot at the living tip, cooling through gold to settled inlay over the ~70px behind it.
-    The surge-and-stall rhythm stays; the whole network still lands together at 100%.</p>
+    <p class="use">Organic, and now irreversible: smoothed curves, branches <em>tapering</em> to capillary tips, heat
+    trailing each living tip — and the surge rhythm is mathematically monotone, so a tip can stall dead but can
+    never slide backwards. Branches emerge through their junctions; the network lands together at 100%.</p>
     <div class="stage"><canvas id="cv-veins" aria-label="Molten veins loader: tapering curved veins grow in surges, heat trailing the tips"></canvas></div>
     <div class="row"><button id="vein-play">▶ Simulate load</button><input id="vein-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten veins progress">
       <span class="frameseg" role="group" aria-label="Host frame" id="vein-frames"><button data-w="340" data-h="180" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="90" aria-pressed="false">Banner</button></span></div>
-    <p class="algo">seeded branch grammar toward +x, Chaikin-smoothed · per-segment width taper to capillary tips · colour = exp cool-off behind the front · per-branch surge clocks, monotone, all reach 1 at p=1</p>
+    <p class="algo">seeded branch grammar toward +x, Chaikin-smoothed · width tapers to capillary tips · colour = exp cool-off behind the front · surge f(q)=q−sin(ωq+φ)/ω: f′≥0, no backtracking, f(1)=1</p>
   </section>
 
   <section class="card">
@@ -150,9 +151,10 @@
     // ideal profile: tongue with front at EXACTLY p·N, plus a gaussian meniscus pile at the leading edge
     const prof = (pp, i) => { const f = pp * N;
       if (!horiz) return pp * H * .86;
+      if (pp >= 1) return CAP();   // the front has reached the wall: the melt levels out
       const d = (f - i) / TAPER();
       let v = d <= 0 ? 0 : CAP() * Math.pow(Math.min(1, d), .7);
-      v += CAP() * .11 * Math.exp(-Math.pow((i - f) / (TAPER() * .3), 2)) * (pp < 1 ? 1 : 0);
+      v += CAP() * .11 * Math.exp(-Math.pow((i - f) / (TAPER() * .3), 2));
       return Math.min(v, CAP() * 1.06); };
     const init = (w, h) => { W = w; H = h; x = size('cv-fill', w, h); horiz = w >= h * 1.2;
       N = Math.max(20, Math.round(w / 3)); hh = new Float32Array(N); vv = new Float32Array(N);
@@ -173,33 +175,37 @@
       // bubbles: born in the covered melt, rise, pop at the surface
       const t2 = performance.now();
       if (t2 - lastBub > 620 && p > .05) { lastBub = t2;
-        const covered = []; for (let i = 0; i < N; i++) if (hh[i] > 6) covered.push(i);
-        if (covered.length) { const ci = covered[(brng() * covered.length) | 0];
+        const molten = []; for (let i = 0; i < N; i++) if (hh[i] > 6 && age[i] < .7) molten.push(i);   // set metal doesn't bubble
+        if (molten.length) { const ci = molten[(brng() * molten.length) | 0];
           bubbles.push({ i: ci, y: H - 2, r: .8 + brng() * 1.3, pop: 0 }); } }
       for (let b = bubbles.length - 1; b >= 0; b--) { const bu = bubbles[b];
         if (bu.pop > 0) { bu.pop += .12; if (bu.pop >= 1) bubbles.splice(b, 1); continue; }
         bu.y -= .55; const ys = H - hh[bu.i];
         if (bu.y <= ys + 2.5 || hh[bu.i] < 3) bu.pop = .01; } };
-    const wob = (i, t) => Math.sin(i * .33 - t * 2.4) * Math.min(2.4, hh[i] * .07);   // travelling swell
+    const wob = (i, t) => Math.sin(i * .33 - t * 2.4) * Math.min(2.4, hh[i] * .07) * (1 - age[i] * .85);   // travelling swell; set metal stills
     const draw = () => { clear(x, W, H); const colW = W / N, t = performance.now() / 1000;
       x.globalCompositeOperation = 'source-over';
       for (let i = 0; i < N; i++) { const hc = hh[i] + (horiz ? wob(i, t) : 0);   // per-cell column, coloured by its own history
         if (hc < .5) continue;
         const tc = .58 + hot[i] * .32 - age[i] * .2;
         x.fillStyle = heat(tc); x.fillRect(i * colW, H - hc, colW + .7, hc); }
-      x.globalCompositeOperation = 'lighter';   // surface: faint halo + bright line where it moves
-      for (const [wd, aMul] of [[5, .12], [1.6, 1]]) {
-        x.lineWidth = wd; x.beginPath(); let started = false;
-        for (let i = 0; i < N; i++) { const hc = hh[i] + (horiz ? wob(i, t) : 0);
-          if (hc < .5) { started = false; continue; }
-          const px = i * colW + colW / 2, py = H - hc;
-          if (!started) { x.moveTo(px, py); started = true; } else x.lineTo(px, py); }
-        x.strokeStyle = heat(.8, .18 * aMul + 0); x.stroke(); }
-      for (let i = 0; i < N - 1; i++) { if (hot[i] < .12) continue;   // hot stretches burn brighter
-        const hc = hh[i] + (horiz ? wob(i, t) : 0); if (hc < .5) continue;
-        x.strokeStyle = heat(.6 + hot[i] * .4, hot[i] * .8); x.lineWidth = 1.6;
+      { x.beginPath(); x.moveTo(0, H);   // body depth: one vertical light-to-shadow wash over the whole melt
+        for (let i = 0; i < N; i++) x.lineTo(i * colW + colW / 2, H - Math.max(0, hh[i] + (horiz ? wob(i, t) : 0)));
+        x.lineTo(W, H); x.closePath();
+        const gd = x.createLinearGradient(0, H - (horiz ? CAP() : H * .86), 0, H);
+        gd.addColorStop(0, 'rgba(255,246,223,.07)'); gd.addColorStop(.4, 'rgba(0,0,0,0)'); gd.addColorStop(1, 'rgba(0,0,0,.24)');
+        x.fillStyle = gd; x.fill(); }
+      x.globalCompositeOperation = 'lighter';   // molten surface glows per cell; the glow dies as the metal sets
+      for (let i = 0; i < N - 1; i++) { const hc = hh[i] + (horiz ? wob(i, t) : 0);
+        if (hc < .5 || hh[i + 1] < .5) continue;
+        const a = (.22 + hot[i] * .6) * (1 - age[i] * .85); if (a < .02) continue;
+        x.strokeStyle = heat(.6 + hot[i] * .4, a); x.lineWidth = 1.6;
         x.beginPath(); x.moveTo(i * colW + colW / 2, H - hc);
         x.lineTo((i + 1) * colW + colW / 2, H - hh[i + 1] - (horiz ? wob(i + 1, t) : 0)); x.stroke(); }
+      x.globalCompositeOperation = 'source-over';   // annealed stretches take a quiet sheen instead
+      for (let i = 0; i < N; i++) { if (age[i] < .9 || hh[i] < 1) continue;
+        x.fillStyle = 'rgba(255,246,223,.14)'; x.fillRect(i * colW, H - hh[i] - 1.2, colW + .7, 1.6); }
+      x.globalCompositeOperation = 'lighter';
       for (const bu of bubbles) { const bx = bu.i * colW + colW / 2;   // bubbles: dark bead rising, tiny hot ring on pop
         if (bu.pop > 0) { x.strokeStyle = heat(.9, (1 - bu.pop) * .7); x.lineWidth = 1;
           x.beginPath(); x.arc(bx, H - hh[bu.i] + 1, 1.5 + bu.pop * 4, 0, 7); x.stroke(); }
@@ -220,18 +226,21 @@
       x.fillStyle = g; x.fillRect(0, H - full, W, full);
       x.fillStyle = 'rgba(255,246,223,.16)'; x.fillRect(0, H - full, W, 2.5);
       pctLabel(); };
-    const settled = () => { if (p < 1) return false;
-      if (horiz) { for (let i = 0; i < N; i++) if (Math.abs(prof(1, i) - hh[i]) > .8) return false; return bubbles.length === 0; }
-      for (let i = 0; i < N; i++) if (Math.abs(vv[i]) > .05) return false; return bubbles.length === 0; };
+    // "set" is a physical state, not a percentage: the loop only rests once the whole melt has annealed
+    const settled = () => { if (p < 1 || bubbles.length) return false;
+      for (let i = 0; i < N; i++) { if (hh[i] > 1 && age[i] < .97) return false;
+        if (horiz ? Math.abs(prof(1, i) - hh[i]) > .8 : Math.abs(vv[i]) > .05) return false; }
+      return true; };
     const loop = () => { cancelAnimationFrame(raf);
-      const go = () => { step(); draw(); if (settled()) { still(); return; } raf = requestAnimationFrame(go); };
+      const go = () => { step(); draw(); if (settled()) return;   // the last live frame IS the final frame
+        raf = requestAnimationFrame(go); };
       raf = requestAnimationFrame(go); };
     const scrub = document.getElementById('fill-scrub');
     scrub.addEventListener('input', () => { p = scrub.value / 1000; if (REDUCED) return still(); loop(); });
     document.getElementById('fill-play').addEventListener('click', () => { if (REDUCED) { p = 1; scrub.value = 1000; return still(); }
       hh.fill(0); vv.fill(0); hot.fill(0); age.fill(0); bubbles = []; const t0 = performance.now(); cancelAnimationFrame(raf);
       const go = ts => { p = Math.min(1, (ts - t0) / 3000); scrub.value = Math.round(p * 1000); step(); draw();
-        if (settled()) { still(); return; } raf = requestAnimationFrame(go); };
+        if (settled()) return; raf = requestAnimationFrame(go); };
       raf = requestAnimationFrame(go); });
     frames('fill-frames', (w, h) => init(w, h));
     init(340, 56);
@@ -298,7 +307,7 @@
     const grow = () => { const r = mulberry(41); branches = []; maxD = 0;
       let side = 1;
       const spawn = (px, py, a, wd, d0, gen, parent) => {
-        const b = { pts: null, wd, d0, d1: d0, off: r() * .2, om: 12 + r() * 14, ph: r() * 7, parent };
+        const b = { pts: null, wd, d0, d1: d0, off: r() * .2, k: 2 + (r() * 3 | 0), ph: r() * 7, parent };
         const raw = [{ x: px, y: py, d: d0 }]; let a0 = a, d = d0;
         const steps = gen === 0 ? 999 : gen >= 3 ? 4 + (r() * 5 | 0) : 12 + (r() * 12 | 0);
         for (let i = 0; i < steps; i++) { const L = 10 + r() * 6;
@@ -313,8 +322,11 @@
         maxD = Math.max(maxD, d); };
       spawn(6, H / 2, 0, 3.2, 0, 0, null);
       spawn(6, H / 2, .5, 2, 0, 1, null); spawn(6, H / 2, -.5, 2, 0, 1, null); };
-    const bp = (b, p) => { const q = Math.min(1, Math.max(0, (p - b.off) / (1 - b.off)));   // per-branch surge clock
-      return Math.min(1, Math.max(0, q + Math.sin(q * b.om + b.ph) * .034 * Math.sin(Math.PI * q) * 4)); };
+    // per-branch stall-and-lunge that is PROVABLY monotone: d/dq [q - sin(ωq+φ)/ω] = 1 - cos(ωq+φ) ≥ 0,
+    // so a tip can pause dead but can never retreat; f(0)=0 and f(1)=1 keep the landing exact.
+    const bp = (b, p) => { const q = Math.min(1, Math.max(0, (p - b.off) / (1 - b.off)));
+      const w = 2 * Math.PI * b.k;
+      return q - (Math.sin(w * q + b.ph) - Math.sin(b.ph)) / w; };
     // a branch only exists once its parent's front has reached the junction — no orphaned fragments
     let frameN = 0;
     const limOf = (b, p) => { if (b._c === frameN) return b._lim; b._c = frameN;
