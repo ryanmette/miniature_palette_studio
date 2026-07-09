@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forgelight — grimdark loading &amp; refresh states</title>
+<style>
+  :root {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --shadow:0 1px 2px rgba(0,0,0,.45);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:30px 22px 44px; }
+  header { max-width:780px; margin:0 auto 26px; }
+  h1 { font-family:var(--display); font-size:24px; font-weight:600; margin:0 0 6px; letter-spacing:.01em; text-wrap:balance; }
+  .sub { color:var(--text-muted); margin:0; max-width:68ch; font-size:13.5px; }
+  .sub b { color:var(--text); font-weight:600; }
+  .board { display:grid; grid-template-columns:repeat(auto-fit, minmax(330px, 1fr)); gap:18px; max-width:780px; margin:0 auto; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow); padding:16px; display:flex; flex-direction:column; gap:11px; }
+  .eyebrow { font-size:11px; font-weight:500; letter-spacing:.07em; text-transform:uppercase; color:var(--accent); }
+  h2 { font-family:var(--display); font-size:16px; font-weight:600; margin:0; }
+  .use { color:var(--text-muted); font-size:12.5px; margin:0; }
+  canvas { width:100%; border-radius:var(--r-ctrl); border:1px solid var(--border); background:#100D0B; display:block; touch-action:none; }
+  .row { display:flex; gap:9px; align-items:center; min-height:34px; }
+  button { font:inherit; font-size:12.5px; font-weight:500; color:var(--text); background:var(--surface-2); border:1px solid var(--border-strong);
+    border-radius:var(--r-ctrl); padding:6px 13px; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button:focus-visible { outline:none; box-shadow:0 0 0 3px var(--accent-weak); border-color:var(--accent); }
+  input[type="range"] { flex:1; accent-color:var(--accent); min-width:60px; }
+  .algo { font-family:var(--mono); font-size:10.5px; color:var(--text-faint); margin:0; border-top:1px dashed var(--border); padding-top:9px; }
+  .rmnote { display:none; max-width:780px; margin:0 auto 20px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-ctrl);
+    padding:9px 13px; color:var(--text-muted); font-size:12.5px; }
+  @media (prefers-reduced-motion: reduce) { .rmnote { display:block; } }
+  footer { max-width:780px; margin:26px auto 0; color:var(--text-faint); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Forgelight — loading &amp; refresh, grimdark</h1>
+  <p class="sub">Four algorithmic states for the dark theme, in the <b>Molten Harmonics</b> family: seeded,
+  deterministic, vanilla Canvas&nbsp;2D, themed only through the §3.1 tokens. Every colour is the brass accent
+  at a different temperature — a heat ramp from white-hot through <b>#C2912F</b> down to the border colour —
+  so nothing off-token ever appears. Loaders are <b>determinate</b> (drag the scrub bar); under
+  <code>prefers-reduced-motion</code> each shows its finished frame instead.</p>
+</header>
+<p class="rmnote">Reduced motion is on — each state is showing its final still frame, exactly as it would ship.</p>
+
+<div class="board">
+  <section class="card">
+    <span class="eyebrow">Refresh · one-shot</span>
+    <h2>Anvil sparks</h2>
+    <p class="use">Confirms a re-roll or pull-to-refresh: one hammer strike, a burst of cooling sparks, done in under a second.</p>
+    <canvas id="cv-sparks" aria-label="Anvil sparks animation: a burst of brass sparks scattering from a strike point"></canvas>
+    <div class="row"><button id="strike">⚒ Strike again</button></div>
+    <p class="algo">90 seeded particles · upward-biased radial burst · gravity + drag · colour = remaining life on the heat ramp · additive streaks</p>
+  </section>
+
+  <section class="card">
+    <span class="eyebrow">Load · determinate</span>
+    <h2>Rune ring</h2>
+    <p class="use">Dataset load: twelve seeded runes etch and ignite clockwise with real progress; the sigil at the centre flashes when the palette is ready.</p>
+    <canvas id="cv-runes" aria-label="Rune ring loader: runes around a circle light up with progress"></canvas>
+    <div class="row"><button id="rune-play">▶ Simulate load</button><input id="rune-scrub" type="range" min="0" max="1000" value="1000" aria-label="Rune ring progress"></div>
+    <p class="algo">12 glyphs grown from a seeded spine-and-branch grammar · stroke-length dash reveal · lit runes bloom brass, unlit stay etched in border grey</p>
+  </section>
+
+  <section class="card">
+    <span class="eyebrow">Load · determinate</span>
+    <h2>Molten veins</h2>
+    <p class="use">Heavier work (photo sampling, big imports): molten light fractures through dark stone; the crack network <em>is</em> the progress bar.</p>
+    <canvas id="cv-veins" aria-label="Molten veins loader: glowing cracks branch across stone with progress"></canvas>
+    <div class="row"><button id="vein-play">▶ Simulate load</button><input id="vein-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten veins progress"></div>
+    <p class="algo">Seeded branching random walk (~500 segments) · draw order = progress · growth tips render white-hot, older veins cool down the ramp</p>
+  </section>
+
+  <section class="card">
+    <span class="eyebrow">Ambient · loop</span>
+    <h2>Ember drift</h2>
+    <p class="use">A quiet "still working" state for long background waits — a banked forge, not a spinner. Calm enough to sit behind text.</p>
+    <canvas id="cv-embers" aria-label="Ember drift: faint embers rising slowly like a banked forge"></canvas>
+    <div class="row"><button id="ember-toggle">❚❚ Pause</button></div>
+    <p class="algo">28 seeded embers · constant rise + sine sway · two-sine flicker per ember · additive glow, brightness capped to stay behind content</p>
+  </section>
+</div>
+
+<footer>All four share one seeded PRNG and one heat ramp; swapping the ramp for the Playful Bright palette re-themes them without touching the choreography — the Molten Harmonics rule.</footer>
+
+<script>
+(() => {
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const W = 340, H = 232;
+  const mulberry = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const ctx2d = id => { const c = document.getElementById(id); const d = Math.min(2, devicePixelRatio || 1); c.width = W * d; c.height = H * d; c.style.aspectRatio = W + '/' + H; const x = c.getContext('2d'); x.scale(d, d); return x; };
+  // heat ramp: t=1 white-hot → t=0 cold border-grey. All colours are the brass accent at a temperature.
+  const RAMP = ['#FFF6DF','#F5CE78','#D6A646','#C2912F','#A8781D','#6E4E14','#3A302A'].map(h => [1,3,5].map(i => parseInt(h.slice(i, i + 2), 16)));
+  const heat = (t, a = 1) => { t = Math.max(0, Math.min(1, t)); const f = (1 - t) * (RAMP.length - 1), i = Math.min(RAMP.length - 2, f | 0), u = f - i;
+    const c = RAMP[i].map((v, k) => Math.round(v + (RAMP[i + 1][k] - v) * u)); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; };
+  const vignette = x => { const g = x.createRadialGradient(W/2, H/2, H*0.32, W/2, H/2, W*0.72); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.5)'); x.fillStyle = g; x.fillRect(0, 0, W, H); };
+  const clear = x => { x.globalCompositeOperation = 'source-over'; x.fillStyle = '#100D0B'; x.fillRect(0, 0, W, H); };
+
+  /* ---- 1 · Anvil sparks (one-shot refresh burst) ---- */
+  {
+    const x = ctx2d('cv-sparks'); const ax = W / 2, ay = H - 46;
+    let parts = [], flash = 0, raf = 0;
+    const spawn = seed => { const r = mulberry(seed); parts = []; flash = 1;
+      for (let i = 0; i < 90; i++) { const a = -Math.PI / 2 + (r() - .5) * 2.4, sp = 1.6 + r() * 4.6;
+        parts.push({ x: ax, y: ay, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: .012 + r() * .022, w: r() < .12 ? 2.2 : 1.1 }); } };
+    const anvil = () => { x.globalCompositeOperation = 'source-over';
+      x.fillStyle = '#251F1A'; x.beginPath(); x.roundRect(ax - 34, ay, 68, 10, 3); x.fill();
+      x.fillStyle = '#1C1815'; x.fillRect(ax - 12, ay + 10, 24, 14);
+      x.strokeStyle = heat(.42, .8); x.lineWidth = 1.5; x.beginPath(); x.moveTo(ax - 34, ay + 1.2); x.lineTo(ax + 34, ay + 1.2); x.stroke(); };
+    const draw = () => { clear(x); anvil();
+      x.globalCompositeOperation = 'lighter';
+      if (flash > 0) { const g = x.createRadialGradient(ax, ay, 0, ax, ay, 60 * flash); g.addColorStop(0, heat(1, .85 * flash)); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.beginPath(); x.arc(ax, ay, 60 * flash, 0, 7); x.fill(); flash -= .09; }
+      let live = false;
+      for (const p of parts) { if (p.life <= 0) continue; live = true;
+        x.strokeStyle = heat(p.life, Math.min(1, p.life * 1.6)); x.lineWidth = p.w * (0.5 + p.life * 0.7);
+        x.beginPath(); x.moveTo(p.x, p.y); x.lineTo(p.x - p.vx * 2.2, p.y - p.vy * 2.2); x.stroke();
+        p.x += p.vx; p.y += p.vy; p.vy += .11; p.vx *= .988; p.vy *= .988; p.life -= p.decay;
+        if (p.y > ay + 9 && p.vy > 0) { p.vy *= -.42; p.vx *= .6; p.life *= .7; } }
+      x.globalCompositeOperation = 'lighter';   // resting ember on the strike point
+      const g2 = x.createRadialGradient(ax, ay - 2, 0, ax, ay - 2, 9); g2.addColorStop(0, heat(.75, .5)); g2.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = g2; x.beginPath(); x.arc(ax, ay - 2, 9, 0, 7); x.fill();
+      vignette(x);
+      if ((live || flash > 0) && !REDUCED) raf = requestAnimationFrame(draw); };
+    let n = 7;
+    document.getElementById('strike').addEventListener('click', () => { cancelAnimationFrame(raf); spawn(n += 13); if (REDUCED) { parts = []; flash = 0; } draw(); });
+    if (REDUCED) { draw(); } else { spawn(7); draw(); }
+  }
+
+  /* ---- 2 · Rune ring (determinate loader) ---- */
+  {
+    const x = ctx2d('cv-runes'); const cx = W / 2, cy = H / 2 + 2, R0 = 84;
+    const r = mulberry(99);
+    const runes = Array.from({ length: 12 }, () => { // spine-and-branch grammar on a unit box
+      const s = [[[0.5, 0], [0.5, 1]]]; const nb = 2 + (r() * 3 | 0);
+      for (let i = 0; i < nb; i++) { const y0 = .12 + r() * .7, side = r() < .5 ? 0 : 1, y1 = y0 + (r() * .5 - .1);
+        s.push([[0.5, y0], [side, Math.max(0, Math.min(1, y1))]]); }
+      return s; });
+    const seglen = s => Math.hypot((s[1][0] - s[0][0]) * 13, (s[1][1] - s[0][1]) * 22);
+    const drawRune = (i, lit, part) => { const a = -Math.PI / 2 + i * Math.PI / 6;
+      x.save(); x.translate(cx + Math.cos(a) * R0, cy + Math.sin(a) * R0); x.rotate(a + Math.PI / 2);
+      x.lineCap = 'round'; const total = runes[i].reduce((t, s) => t + seglen(s), 0); let budget = part * total;
+      for (const s of runes[i]) { const L = seglen(s); const f = lit ? 1 : Math.max(0, Math.min(1, budget / L)); budget -= L; if (f <= 0) break;
+        const X = t => (s[0][0] + (s[1][0] - s[0][0]) * t - 0.5) * 13, Y = t => (s[0][1] + (s[1][1] - s[0][1]) * t - 0.5) * 22;
+        x.strokeStyle = lit || f < 1 ? heat(.72, lit ? .95 : .9) : '#3A302A'; x.lineWidth = 2;
+        if (lit) { x.shadowColor = heat(.6, .9); x.shadowBlur = 8; }
+        x.beginPath(); x.moveTo(X(0), Y(0)); x.lineTo(X(f), Y(f)); x.stroke(); x.shadowBlur = 0; }
+      x.restore(); };
+    let flashT = 0;
+    const render = p => { clear(x);
+      x.strokeStyle = '#251F1A'; x.lineWidth = 1; x.beginPath(); x.arc(cx, cy, R0, 0, 7); x.stroke();
+      const f = p * 12;
+      for (let i = 0; i < 12; i++) drawRune(i, i < (f | 0) || p >= 1, i === (f | 0) ? f - (f | 0) : 0);
+      // unlit runes stay faintly pre-etched
+      x.globalCompositeOperation = 'source-over';
+      for (let i = Math.ceil(f); i < 12 && p < 1; i++) { x.globalAlpha = .35; drawRune(i, false, 1); x.globalAlpha = 1; }
+      // centre sigil: the harmony wheel, igniting on completion
+      const done = p >= 1, glow = done ? .55 + .45 * Math.sin(flashT * 2.2) : .12 + p * .25;
+      x.globalCompositeOperation = 'lighter';
+      x.strokeStyle = heat(.8, glow); x.lineWidth = 1.6; if (done) { x.shadowColor = heat(.7, .8); x.shadowBlur = 14; }
+      x.beginPath(); x.arc(cx, cy, 26, 0, 7); x.stroke();
+      for (let k = 0; k < 3; k++) { const a = -Math.PI / 2 + k * 2 * Math.PI / 3;
+        x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(a) * 26, cy + Math.sin(a) * 26); x.stroke();
+        x.fillStyle = heat(.9, glow); x.beginPath(); x.arc(cx + Math.cos(a) * 26, cy + Math.sin(a) * 26, 3.4, 0, 7); x.fill(); }
+      x.shadowBlur = 0; vignette(x);
+      x.globalCompositeOperation = 'source-over'; x.fillStyle = '#A8998A'; x.font = '10.5px ui-monospace,Menlo,monospace'; x.textAlign = 'center';
+      x.fillText(Math.round(p * 100) + '%', cx, H - 12); };
+    const scrub = document.getElementById('rune-scrub');
+    let raf = 0, p = 1;
+    const loop = ts => { flashT = ts / 1000; render(p); if (p >= 1 && !REDUCED) raf = requestAnimationFrame(loop); };
+    const setP = v => { p = v; scrub.value = Math.round(v * 1000); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); };
+    scrub.addEventListener('input', () => setP(scrub.value / 1000));
+    document.getElementById('rune-play').addEventListener('click', () => { if (REDUCED) return setP(1);
+      cancelAnimationFrame(raf); const t0 = performance.now();
+      const go = ts => { const t = (ts - t0) / 2600; p = Math.min(1, t < .5 ? t * 1.4 : .7 + (t - .5) * .6); scrub.value = Math.round(p * 1000); flashT = ts / 1000; render(p);
+        raf = requestAnimationFrame(p < 1 ? go : loop); };
+      raf = requestAnimationFrame(go); });
+    setP(1);
+  }
+
+  /* ---- 3 · Molten veins (determinate loader) ---- */
+  {
+    const x = ctx2d('cv-veins');
+    const r = mulberry(41); const segs = [];
+    { const base = r() * Math.PI * 2;   // 4 trunks from the centre, then branches; walls reflect so veins fill the frame
+      const walkers = Array.from({ length: 4 }, (_, k) => ({ x: W / 2, y: H / 2, a: base + k * Math.PI / 2 + (r() - .5) * .6, wd: 3 }));
+      while (walkers.length && segs.length < 500) { const wk = walkers.shift(); let { x: px, y: py, a, wd } = wk;
+        const steps = 10 + (r() * 16 | 0);
+        for (let i = 0; i < steps && segs.length < 500; i++) { a += (r() - .5) * .9; const L = 5 + r() * 8;
+          let nx = px + Math.cos(a) * L, ny = py + Math.sin(a) * L;
+          if (nx < 10 || nx > W - 10) { a = Math.PI - a; nx = px + Math.cos(a) * L; }
+          if (ny < 10 || ny > H - 10) { a = -a; ny = py + Math.sin(a) * L; }
+          segs.push({ x1: px, y1: py, x2: nx, y2: ny, wd }); px = nx; py = ny;
+          if (wd > .55 && r() < .3) walkers.push({ x: px, y: py, a: a + (r() < .5 ? 1 : -1) * (.7 + r() * .9), wd: wd * .68 }); } } }
+    const speck = Array.from({ length: 130 }, () => [r() * W, r() * H, r() * 1.4 + .3, .04 + r() * .07]);
+    const render = p => { clear(x);
+      x.globalCompositeOperation = 'source-over';   // stone: seeded speckle on near-black
+      for (const [sx, sy, sr, sa] of speck) { x.fillStyle = `rgba(236,227,216,${sa})`; x.fillRect(sx, sy, sr, sr); }
+      const n = Math.round(p * segs.length);
+      x.globalCompositeOperation = 'lighter'; x.lineCap = 'round';
+      for (let i = 0; i < n; i++) { const s = segs[i], rel = (n - i) / segs.length;
+        // rel small → just grown (hot); rel large → old (cooled to settled brass)
+        const t = p >= 1 ? .45 : Math.max(.3, 1 - rel * 5);
+        x.strokeStyle = heat(t, .9); x.lineWidth = s.wd * (t > .8 ? 1.5 : 1);
+        if (t > .8) { x.shadowColor = heat(.85, .9); x.shadowBlur = 10; }
+        x.beginPath(); x.moveTo(s.x1, s.y1); x.lineTo(s.x2, s.y2); x.stroke(); x.shadowBlur = 0; }
+      if (p >= 1) { const g = x.createRadialGradient(W/2, H/2, 10, W/2, H/2, W*.45); g.addColorStop(0, heat(.6, .1)); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.fillRect(0, 0, W, H); }
+      vignette(x);
+      x.globalCompositeOperation = 'source-over'; x.fillStyle = '#A8998A'; x.font = '10.5px ui-monospace,Menlo,monospace'; x.textAlign = 'center';
+      x.fillText(Math.round(p * 100) + '%', W / 2, H - 12); };
+    const scrub = document.getElementById('vein-scrub');
+    let raf = 0;
+    scrub.addEventListener('input', () => { cancelAnimationFrame(raf); render(scrub.value / 1000); });
+    document.getElementById('vein-play').addEventListener('click', () => { if (REDUCED) { scrub.value = 1000; return render(1); }
+      cancelAnimationFrame(raf); const t0 = performance.now();
+      const go = ts => { const p = Math.min(1, (ts - t0) / 2400); scrub.value = Math.round(p * 1000); render(p); if (p < 1) raf = requestAnimationFrame(go); };
+      raf = requestAnimationFrame(go); });
+    render(1);
+  }
+
+  /* ---- 4 · Ember drift (ambient loop) ---- */
+  {
+    const x = ctx2d('cv-embers');
+    const r = mulberry(23);
+    const em = Array.from({ length: 28 }, () => ({ x0: r() * W, off: r() * (H + 30), sp: 9 + r() * 14, sway: 4 + r() * 11,
+      ph: r() * 7, f1: 1.7 + r() * 2.4, f2: 3.1 + r() * 3.3, sz: .9 + r() * 1.7, big: r() < .14 }));
+    let running = !REDUCED, raf = 0;
+    const render = t => { clear(x);
+      x.globalCompositeOperation = 'lighter';
+      for (const e of em) { const y = H + 12 - ((t * e.sp + e.off) % (H + 30));
+        const flick = .45 + .3 * Math.sin(t * e.f1 + e.ph) + .25 * Math.sin(t * e.f2 + e.ph * 2);
+        const ex = e.x0 + Math.sin(t * .7 + e.ph) * e.sway;
+        const heatT = .35 + .45 * flick + (e.big ? .18 : 0), a = Math.max(0, Math.min(.85, flick)) * Math.min(1, (H - y) / 26 + .2);
+        const rad = e.sz * (e.big ? 2.4 : 1) * (0.7 + flick * .5);
+        const g = x.createRadialGradient(ex, y, 0, ex, y, rad * 3.2); g.addColorStop(0, heat(heatT, a)); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.beginPath(); x.arc(ex, y, rad * 3.2, 0, 7); x.fill(); }
+      const gl = x.createLinearGradient(0, H, 0, H - 44); gl.addColorStop(0, heat(.5, .16)); gl.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = gl; x.fillRect(0, H - 44, W, 44);   // the banked coals below the frame
+      vignette(x); };
+    const loop = ts => { render(ts / 1000); if (running) raf = requestAnimationFrame(loop); };
+    const btn = document.getElementById('ember-toggle');
+    btn.addEventListener('click', () => { if (REDUCED) return; running = !running; btn.textContent = running ? '❚❚ Pause' : '▶ Resume'; if (running) raf = requestAnimationFrame(loop); else cancelAnimationFrame(raf); });
+    if (REDUCED) { render(4.2); btn.textContent = '▶ Resume'; } else raf = requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>
