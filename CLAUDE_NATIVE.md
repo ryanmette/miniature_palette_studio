@@ -45,7 +45,11 @@ camera. Positioning is unchanged: a **collection-aware scheme planner**, not a f
 - **Haptics on the wheel** (detents — §9), the **native share sheet** (the existing
   `navigator.share` chain already lands there; the plugin only if WKWebView proves it needs one),
   and the shipped **Preferences-backed persistence** (§3).
-- **iPhone first.** iPad runs the same responsive layout; an iPad-*optimised* pass is not v2.0 (§11).
+- **iPhone and iPad, both optimised.** v2.0 ships an **iPad-tuned layout** (split view + Apple
+  Pencil on the wheel) alongside the iPhone build — resolved at kickoff (§11). This is
+  **web-layer** work: responsive CSS + Pencil via pointer events (pressure/tilt on the existing
+  canvas), governed by CLAUDE.md §3.6. A *natively-rendered* iPad UI (PencilKit) stays a Stage-3
+  question (§2).
 
 ### Stretch (inside v2.0, never gating it) — barcode paint-add
 The dataset carries **no EAN/UPC codes** and no open source reliably provides them (IOS_APP_PLAN,
@@ -89,7 +93,7 @@ commit as the first stage-N code.
 | 0 · PWA ✅ | manifest + SW; installable, offline | Home-screen only | **done** — the live foundation |
 | **1 · Capacitor wrap** ⭐ v2.0 | web app in a native shell + §4 plugins | **Yes** | demand evidence in PLAN.md: sustained usage, "is there an app?" requests, in-store camera use |
 | 2 · Hybrid | *named* hot screens (wheel, camera) go native | Yes | a named screen with an observed perf/feel failure the web layer can't fix |
-| 3 · Full SwiftUI | second UI codebase; engine ported or run via JavaScriptCore | Yes | reviews / usage / iPad + Pencil demand it, and the second-codebase cost is accepted in writing |
+| 3 · Full SwiftUI | second UI codebase; engine ported or run via JavaScriptCore | Yes | reviews / usage / a *natively-rendered* iPad + Pencil (PencilKit) experience demand it — beyond what v2.0's web-layer iPad tuning (§1) delivers — and the second-codebase cost is accepted in writing |
 
 **What survives every stage: the pure engine + static dataset** — that is *why* CLAUDE.md §4/§6
 keep them framework-free, and they stay governed by CLAUDE.md at every stage. A Stage-3 Swift port
@@ -297,24 +301,25 @@ github-actions-only (CLAUDE.md §4); Capacitor version bumps are deliberate, han
 
 ## 11. Decisions & open questions (IOS_APP_PLAN §9)
 
-**Adopted defaults** — the first two are the plan's §4b-step-3 recommendations, the third is this
-file's own call; all adopted here so work can proceed. **Ryan confirms all three at kickoff and
-stamps each line** (house style: ✅ resolved YYYY-MM-DD):
-- **Android: yes, later.** Capacitor makes it nearly free; not v2.0. Adding it = an `android/`
-  folder under the §5 rules, a §4-tree line, and an amendment here — same commit.
-- **Free at launch, no IAP in v2.0** — the simplest review. A Pro tier later = MONETIZATION
-  path C, gated on a §1 amendment (§8).
-- **iPad: ships as-is** (the responsive layout is the iPad layout — our default; the plan leaves
-  this one open). An iPad-optimised pass is a Stage-2/3 question (§2).
+**Resolved at kickoff** (2026-07-09, Ryan — the first two adopt the plan's §4b-step-3
+recommendations, the third overrides this file's earlier default):
+- **Android: yes, later.** ✅ resolved 2026-07-09 (Ryan). Capacitor makes it nearly free; not
+  v2.0. Adding it = an `android/` folder under the §5 rules, a §4-tree line, and an amendment
+  here — same commit.
+- **Free at launch, no IAP in v2.0.** ✅ resolved 2026-07-09 (Ryan) — the simplest review. A Pro
+  tier later = MONETIZATION path C, gated on a §1 amendment (§8).
+- **iPad: optimised in v2.0.** ✅ resolved 2026-07-09 (Ryan) — a split-view + Pencil-tuned layout
+  ships in v2.0 (§1), overriding the earlier "ships as-is" default. It is web-layer work (§3.6);
+  a natively-rendered iPad UI stays Stage 3 (§2).
+- **Apple Developer account holder:** Ryan. ✅ resolved 2026-07-09 — enrolled and paid; builds
+  and releases come from his Mac.
 
-**Open — resolve before the first TestFlight upload; stamp resolutions inline, don't delete:**
-1. **Who holds the Apple Developer account and cuts releases?** Until stamped: assume Ryan, solo,
-   from his Mac.
-2. **CocoaPods vs Swift Package Manager** for `ios/` — take what the Capacitor CLI defaults to at
+**Open — resolve when building; stamp resolutions inline, don't delete:**
+1. **CocoaPods vs Swift Package Manager** for `ios/` — take what the Capacitor CLI defaults to at
    kickoff, commit its lockfile (§5), record the choice here, and don't churn it.
-3. **Dataset-update storage** (§7): Preferences is sized for prefs, not a 2,500-paint JSON —
+2. **Dataset-update storage** (§7): Preferences is sized for prefs, not a 2,500-paint JSON —
    likely the filesystem or Cache API; decide when building, record here.
-4. **Does a PWA install affordance exist to hide?** (§4b step 5 names one; none found in `src/`
+3. **Does a PWA install affordance exist to hide?** (§4b step 5 names one; none found in `src/`
    today — confirm, then wire or strike.)
 
 ---

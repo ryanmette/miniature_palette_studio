@@ -112,6 +112,15 @@ the native-track constitution is drafted (`CLAUDE_NATIVE.md`, dormant until kick
 Still outside this repo: the Mac/Xcode build, a designer for the asset library, and the optional
 palette-from-photo enhancement.
 
+### Native Stage-1 kickoff — greenlit (2026-07-09)
+Ryan has **authorised Stage-1 (v2.0) kickoff**: enrolled in the Apple Developer Program (paid), a
+Mac with Xcode + Node ≥ v24 is ready, and the `IOS_APP_PLAN.md` §4b step-3 / §9 decisions are made
+and stamped — **Android** yes-later · **free** at launch, no IAP · **iPad optimised in v2.0**
+(split view + Apple Pencil, web-layer) · **account holder** Ryan. This paragraph is the Stage-1
+demand/authorisation record `CLAUDE_NATIVE.md` §2 requires before the `npx cap add ios` commit
+activates the native constitution. Remaining: the Mac-side `cap add ios` → `sync` → `open` (that
+commit adds `ios/` and updates the `CLAUDE.md` §4 tree), then the two camera features → TestFlight.
+
 ### Shipped in v1.8 — Neutral mode: neutral seeds get a real scheme engine
 
 **Problem.** Hue rotation does nothing to a neutral seed (black/white/grey): with S≈0 every "harmony"
