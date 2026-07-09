@@ -111,8 +111,9 @@ mechanisms rather than conventions. `app.js` is down to 1,510 lines with `seed.j
 `wheel.js` split out; unit tests are at 135. **Monetization direction chosen: A (affiliate links) +
 B (audience funnel)** — see [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files
 retailer applications (§9). **Next planned work: the native app, Stage 1 (v2.0)** — the kickoff
-checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork shipped in v1.8. Two decisions are
-queued in §5's follow-ups (accent-seed across the neutral boundary; the per-module comment pass).
+checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork shipped in v1.8, and the native-track
+constitution is drafted (`CLAUDE_NATIVE.md`, dormant until kickoff). Two decisions are queued in §5's
+follow-ups (accent-seed across the neutral boundary; the per-module comment pass).
 Still outside this repo: the Mac/Xcode build, a designer for the asset library, and the optional
 palette-from-photo enhancement.
 
