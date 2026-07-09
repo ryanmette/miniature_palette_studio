@@ -27,355 +27,326 @@
   .eyebrow { font-size:11px; font-weight:500; letter-spacing:.07em; text-transform:uppercase; color:var(--accent); }
   h2 { font-family:var(--display); font-size:16px; font-weight:600; margin:0; }
   .use { color:var(--text-muted); font-size:12.5px; margin:0; flex:1; }
-  canvas { width:100%; border-radius:var(--r-ctrl); border:1px solid var(--border); background:#100D0B; display:block; touch-action:none; }
-  .row { display:flex; gap:9px; align-items:center; min-height:34px; }
+  .stage { display:flex; align-items:center; justify-content:center; min-height:254px; background:#0D0B09; border:1px solid var(--border); border-radius:var(--r-ctrl); padding:12px; }
+  canvas { max-width:100%; border-radius:8px; border:1px solid var(--border-strong); background:#100D0B; display:block; touch-action:none; }
+  .row { display:flex; gap:9px; align-items:center; min-height:34px; flex-wrap:wrap; }
   button { font:inherit; font-size:12.5px; font-weight:500; color:var(--text); background:var(--surface-2); border:1px solid var(--border-strong);
     border-radius:var(--r-ctrl); padding:6px 13px; cursor:pointer; }
   button:hover { border-color:var(--accent); }
   button:focus-visible { outline:none; box-shadow:0 0 0 3px var(--accent-weak); border-color:var(--accent); }
+  .frameseg { display:inline-flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; margin-left:auto; }
+  .frameseg button { border:none; background:none; padding:4px 10px; border-radius:7px; color:var(--text-muted); font-size:11.5px; }
+  .frameseg button[aria-pressed="true"] { background:var(--surface); color:var(--text); box-shadow:var(--shadow); }
   input[type="range"] { flex:1; accent-color:var(--accent); min-width:60px; }
   .algo { font-family:var(--mono); font-size:10.5px; color:var(--text-faint); margin:0; border-top:1px dashed var(--border); padding-top:9px; }
   .rmnote { display:none; max-width:780px; margin:0 auto 20px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-ctrl);
     padding:9px 13px; color:var(--text-muted); font-size:12.5px; }
   @media (prefers-reduced-motion: reduce) { .rmnote { display:block; } }
-  footer { max-width:780px; margin:26px auto 0; color:var(--text-faint); font-size:12px; }
+  .ship { max-width:780px; margin:26px auto 0; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); padding:16px 18px; }
+  .ship h2 { margin-bottom:8px; }
+  .ship ul { margin:0; padding-left:18px; color:var(--text-muted); font-size:13px; }
+  .ship li { margin-bottom:5px; }
+  .ship b { color:var(--text); }
 </style>
 </head>
 <body>
 <header>
   <h1>Forgelight — loading &amp; refresh, grimdark</h1>
-  <p class="sub">Round two: six algorithmic states in the <b>Molten Harmonics</b> family — seeded, deterministic,
-  vanilla Canvas&nbsp;2D, themed only through the §3.1 tokens. Every colour is the brass accent at a temperature:
-  one heat ramp from white-hot through <b>#C2912F</b> down to the border grey. Loaders are <b>determinate</b>
-  (scrub them); under <code>prefers-reduced-motion</code> each shows its finished frame. <em>The rune ring from
-  round one is cut — runic glyphs carry co-opted associations we keep away from the brand.</em></p>
+  <p class="sub">Round three: the four survivors, rebuilt to be <b>creatures of their environment</b> — no props,
+  no anvils, no crucibles. Each algorithm takes only a box and fills it; the <b>frame switcher</b> on every card
+  re-hosts the same code in a different container to prove it. Still the Molten Harmonics rules: seeded,
+  deterministic, vanilla Canvas&nbsp;2D, one heat ramp around the brass accent, finished frame under
+  <code>prefers-reduced-motion</code>.</p>
 </header>
 <p class="rmnote">Reduced motion is on — each state is showing its final still frame, exactly as it would ship.</p>
 
 <div class="board">
   <section class="card">
-    <span class="eyebrow">Refresh · one-shot</span>
-    <h2>Anvil sparks · v2</h2>
-    <p class="use">One hammer strike confirms a re-roll: a shockwave rings across the anvil face, sparks scatter, and a few molten droplets land and cool into beads where they fall.</p>
-    <canvas id="cv-sparks" aria-label="Anvil sparks: a burst of brass sparks and molten droplets scattering from a strike"></canvas>
-    <div class="row"><button id="strike">⚒ Strike again</button></div>
-    <p class="algo">90 sparks + 6 droplets, seeded · gravity, drag, floor bounce · droplets stick &amp; cool in place · colour = life on the heat ramp · additive</p>
-  </section>
-
-  <section class="card">
     <span class="eyebrow">Load · determinate</span>
-    <h2>Molten veins · v2</h2>
-    <p class="use">Heavier work: molten light fractures outward through dark stone — the crack network <em>is</em> the progress bar. At 100% it quenches into settled brass inlay with a slow pulse of light.</p>
-    <canvas id="cv-veins" aria-label="Molten veins loader: glowing cracks branch across stone with progress, then settle to brass"></canvas>
-    <div class="row"><button id="vein-play">▶ Simulate load</button><input id="vein-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten veins progress"></div>
-    <p class="algo">Seeded branching walk, outward bias, tapering width · smooth growth front (partial segment) · tips white-hot, body cools · quench + inlay pulse at 1</p>
-  </section>
-
-  <section class="card">
-    <span class="eyebrow">Load · determinate</span>
-    <h2>Crucible pour</h2>
-    <p class="use">A progress bar that is literally molten: the crucible tips and a stream fills the trough left to right. The stream cuts and the bar cools to brass when the load completes.</p>
-    <canvas id="cv-pour" aria-label="Crucible pour loader: molten metal pours into a trough that fills with progress"></canvas>
-    <div class="row"><button id="pour-play">▶ Simulate load</button><input id="pour-scrub" type="range" min="0" max="1000" value="1000" aria-label="Crucible pour progress"></div>
-    <p class="algo">Sine-wobble stream + impact spatter · fill gradient runs cool→hot toward the leading edge · at 1 the stream stops and the bar anneals</p>
-  </section>
-
-  <section class="card">
-    <span class="eyebrow">Load · determinate</span>
-    <h2>Drybrush stroke</h2>
-    <p class="use">The most painterly loader we can make: a drybrush streak advances across dark primer — bristle gaps, ragged edge and all. The brush lifts away at 100%.</p>
-    <canvas id="cv-brush" aria-label="Drybrush stroke loader: a brass drybrush streak advances across dark primer with progress"></canvas>
-    <div class="row"><button id="brush-play">▶ Simulate load</button><input id="brush-scrub" type="range" min="0" max="1000" value="1000" aria-label="Drybrush progress"></div>
-    <p class="algo">16 seeded bristle tracks · per-track dropout noise = dry gaps · leading 14px renders hot, wake cools to matte brass · brush glyph rides the edge</p>
+    <h2>Molten fill</h2>
+    <p class="use">The bar <em>is</em> the algorithm: a viscous 1-D fluid sim pours in from the start edge and creeps
+    across the container — thick tongue, wavering surface, hot where it moves. In a tall frame it fills bottom-up
+    instead. When the load completes the flow anneals flat and the loop stops.</p>
+    <div class="stage"><canvas id="cv-fill" aria-label="Molten fill loader: viscous fluid fills the bar with progress"></canvas></div>
+    <div class="row"><button id="fill-play">▶ Simulate load</button><input id="fill-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten fill progress">
+      <span class="frameseg" role="group" aria-label="Host frame" id="fill-frames"><button data-w="340" data-h="56" aria-pressed="true">Bar</button><button data-w="300" data-h="170" aria-pressed="false">Panel</button><button data-w="84" data-h="220" aria-pressed="false">Column</button></span></div>
+    <p class="algo">lava-flow cellular sim: cells spill when slope &gt; yield (Bingham-ish) · injected volume ∝ p² keeps the front ≈ p·width · flow heats cells, rest cools · vertical hosts switch to a levelling surface-wave sim</p>
   </section>
 
   <section class="card">
     <span class="eyebrow">Refresh · one-shot</span>
-    <h2>d20 tumble</h2>
-    <p class="use">The tabletop native. A wireframe d20 tumbles with decaying spin and settles with a soft brass flash — re-rolling the scheme is, after all, a dice roll.</p>
-    <canvas id="cv-d20" aria-label="d20 tumble: a wireframe twenty-sided die tumbles and settles"></canvas>
-    <div class="row"><button id="roll">⟳ Roll again</button></div>
-    <p class="algo">True icosahedron, orthographic · seeded spin decays on an ease-out cubic · edge alpha by depth · settle flash blooms then banks</p>
+    <h2>Sparks</h2>
+    <p class="use">No anvil — the burst lives wherever it's fired and the <em>container</em> does the work: sparks
+    ricochet off every wall, shedding heat with each bounce until they gutter out. Click anywhere in the box to
+    strike there (in the app: the burst originates from the control you pressed).</p>
+    <div class="stage"><canvas id="cv-sparks" aria-label="Sparks: brass sparks ricochet around the container walls"></canvas></div>
+    <div class="row"><button id="strike">⚒ Strike</button>
+      <span class="frameseg" role="group" aria-label="Host frame" id="sparks-frames"><button data-w="340" data-h="170" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="72" aria-pressed="false">Strip</button></span></div>
+    <p class="algo">70 seeded sparks, full-circle burst · gravity + drag · wall/floor bounces at −0.7 restitution cost heat · faint impact puffs on the walls · additive streaks, colour = life on the ramp</p>
+  </section>
+
+  <section class="card">
+    <span class="eyebrow">Load · determinate</span>
+    <h2>Molten veins</h2>
+    <p class="use">Directed now: the network is born at the start edge and grows with purpose toward the far end —
+    progress reads left to right like a root system of light. Beading is gone (each branch strokes as one continuous
+    path); only the live growth tips glow. At 100% it settles into calm brass inlay.</p>
+    <div class="stage"><canvas id="cv-veins" aria-label="Molten veins loader: a directed vein network grows across the container with progress"></canvas></div>
+    <div class="row"><button id="vein-play">▶ Simulate load</button><input id="vein-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten veins progress">
+      <span class="frameseg" role="group" aria-label="Host frame" id="vein-frames"><button data-w="340" data-h="180" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="90" aria-pressed="false">Banner</button></span></div>
+    <p class="algo">seeded branch grammar, heading pulled toward +x · reveal by distance-along-tree so the frontier advances coherently · one stroke per branch (no cap hotspots) · tips only carry glow</p>
   </section>
 
   <section class="card">
     <span class="eyebrow">Ambient · loop</span>
-    <h2>Ember drift · v2</h2>
-    <p class="use">A banked forge for long background waits — now with depth: near embers ride brighter and faster over a dim far field, and one occasionally crackles into a tiny spark.</p>
-    <canvas id="cv-embers" aria-label="Ember drift: layered embers rising slowly like a banked forge"></canvas>
-    <div class="row"><button id="ember-toggle">❚❚ Pause</button></div>
-    <p class="algo">34 embers on 2 depth layers · rise + sine sway · two-sine flicker · seeded crackle schedule fires a spark streak every few seconds</p>
+    <h2>Ember bokeh</h2>
+    <p class="use">Leaning into what it wanted to be: a defocused forge. Three depth-of-field layers of bokeh discs —
+    bright-rimmed the way real lens bokeh is — drift upward, and crackle sparks fire several times more often,
+    snapping a moment of focus through the blur.</p>
+    <div class="stage"><canvas id="cv-embers" aria-label="Ember bokeh: layered defocused embers drifting upward"></canvas></div>
+    <div class="row"><button id="ember-toggle">❚❚ Pause</button>
+      <span class="frameseg" role="group" aria-label="Host frame" id="ember-frames"><button data-w="340" data-h="180" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="80" aria-pressed="false">Strip</button></span></div>
+    <p class="algo">3 DOF layers: far pin-points → near wide discs with a bokeh rim (bright ring, soft core) · rise + sine sway + two-sine flicker · crackle streaks every ~1.1s, up to two live</p>
   </section>
 </div>
 
-<footer>All six share one seeded PRNG and one heat ramp; swapping the ramp for the Playful Bright palette re-themes the choreography untouched — the Molten Harmonics rule.</footer>
+<div class="ship">
+  <h2>Shipping notes — dynamic to the environment, light on resources</h2>
+  <ul>
+    <li><b>Container-driven.</b> Every effect is <code>render(ctx, w, h, state)</code> — no fixed geometry. In the app a
+      host element's box (via ResizeObserver) sets the frame, exactly as the frame switchers do here; particle and
+      cell counts scale with area, DPR is capped at 2.</li>
+    <li><b>They only run during their moment.</b> Loaders animate while a real load is in flight and <em>stop</em> at 1
+      (the annealed frame is static). Sparks are a ~1s one-shot. The bokeh loop pauses on <code>document.hidden</code>,
+      when scrolled out of view, and under reduced motion.</li>
+    <li><b>Opt-in, off by default.</b> A "Forge effects" control in the ⋯ settings popover (a segmented off · on per
+      §3.5 — the theme switch stays the only toggle-switch), persisted through <code>store.js</code> prefs, offered in
+      the dark theme. Off = the current instant states; nothing regresses.</li>
+    <li><b>No dependency, no drift.</b> Seeded PRNG + one heat ramp derived from <code>--accent</code>; swap the ramp for
+      the Playful palette and the same choreography serves the light theme later.</li>
+  </ul>
+</div>
 
 <script>
 (() => {
   const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const W = 340, H = 232;
   const mulberry = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-  const ctx2d = id => { const c = document.getElementById(id); const d = Math.min(2, devicePixelRatio || 1); c.width = W * d; c.height = H * d; c.style.aspectRatio = W + '/' + H; const x = c.getContext('2d'); x.scale(d, d); return x; };
-  // heat ramp: t=1 white-hot → t=0 cold border-grey. Every colour is the brass accent at a temperature.
   const RAMP = ['#FFF6DF','#F5CE78','#D6A646','#C2912F','#A8781D','#6E4E14','#3A302A'].map(h => [1,3,5].map(i => parseInt(h.slice(i, i + 2), 16)));
   const heat = (t, a = 1) => { t = Math.max(0, Math.min(1, t)); const f = (1 - t) * (RAMP.length - 1), i = Math.min(RAMP.length - 2, f | 0), u = f - i;
     const c = RAMP[i].map((v, k) => Math.round(v + (RAMP[i + 1][k] - v) * u)); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; };
-  const vignette = x => { const g = x.createRadialGradient(W/2, H/2, H*0.32, W/2, H/2, W*0.72); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.5)'); x.fillStyle = g; x.fillRect(0, 0, W, H); };
-  const clear = x => { x.globalCompositeOperation = 'source-over'; x.fillStyle = '#100D0B'; x.fillRect(0, 0, W, H); };
-  const pct = (x, p) => { x.globalCompositeOperation = 'source-over'; x.fillStyle = '#A8998A'; x.font = '10.5px ui-monospace,Menlo,monospace'; x.textAlign = 'center'; x.fillText(Math.round(p * 100) + '%', W / 2, H - 10); };
-  // shared scaffold for the determinate loaders: scrub + a ~2.5s simulated load
-  const loader = (playId, scrubId, render, after) => { const scrub = document.getElementById(scrubId); let raf = 0;
-    const show = p => { cancelAnimationFrame(raf); render(p); if (p >= 1 && after && !REDUCED) { const go = ts => { after(ts / 1000); raf = requestAnimationFrame(go); }; raf = requestAnimationFrame(go); } };
-    scrub.addEventListener('input', () => show(scrub.value / 1000));
-    document.getElementById(playId).addEventListener('click', () => { if (REDUCED) { scrub.value = 1000; return show(1); }
-      cancelAnimationFrame(raf); const t0 = performance.now();
-      const go = ts => { const p = Math.min(1, (ts - t0) / 2500); scrub.value = Math.round(p * 1000); render(p); if (p < 1) raf = requestAnimationFrame(go); else show(1); };
-      raf = requestAnimationFrame(go); });
-    show(1); };
+  const size = (id, w, h) => { const c = document.getElementById(id); const d = Math.min(2, devicePixelRatio || 1);
+    c.width = w * d; c.height = h * d; c.style.width = w + 'px'; const x = c.getContext('2d'); x.setTransform(d, 0, 0, d, 0, 0); return x; };
+  const clear = (x, w, h) => { x.globalCompositeOperation = 'source-over'; x.fillStyle = '#100D0B'; x.fillRect(0, 0, w, h); };
+  const frames = (segId, onPick) => { const seg = document.getElementById(segId);
+    seg.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+      for (const s of seg.querySelectorAll('button')) s.setAttribute('aria-pressed', String(s === b));
+      onPick(+b.dataset.w, +b.dataset.h); }); };
 
-  /* ---- Anvil sparks v2 (one-shot refresh) ---- */
+  /* ---- Molten fill: the bar IS the algorithm (viscous lava-flow cellular sim) ---- */
   {
-    const x = ctx2d('cv-sparks'); const ax = W / 2, ay = H - 46;
-    let parts = [], beads = [], flash = 0, ring = 0, raf = 0;
-    const spawn = seed => { const r = mulberry(seed); parts = []; beads = []; flash = 1; ring = 0.01;
-      for (let i = 0; i < 90; i++) { const a = -Math.PI / 2 + (r() - .5) * 2.4, sp = 1.6 + r() * 4.6;
-        parts.push({ x: ax, y: ay, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: .012 + r() * .022, w: r() < .12 ? 2.2 : 1.1, spark: true }); }
-      for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + (r() - .5) * 1.7, sp = 1.2 + r() * 2.2;   // heavy droplets: arc, land, cool in place
-        parts.push({ x: ax, y: ay, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: .004, w: 2 + r() * 1.2, spark: false }); } };
-    const anvil = () => { x.globalCompositeOperation = 'source-over';
-      x.fillStyle = '#251F1A'; x.beginPath(); x.roundRect(ax - 34, ay, 68, 10, 3); x.fill();
-      x.fillStyle = '#1C1815'; x.fillRect(ax - 12, ay + 10, 24, 14);
-      x.strokeStyle = heat(.42, .8); x.lineWidth = 1.5; x.beginPath(); x.moveTo(ax - 34, ay + 1.2); x.lineTo(ax + 34, ay + 1.2); x.stroke(); };
-    const draw = () => { clear(x); anvil();
-      x.globalCompositeOperation = 'lighter';
-      if (ring > 0 && ring < 1) { x.strokeStyle = heat(.9, .7 * (1 - ring)); x.lineWidth = 2;   // shockwave rings outward along the face
-        x.beginPath(); x.ellipse(ax, ay + 1, 40 * ring, 5 * ring, 0, 0, 7); x.stroke(); ring += .06; }
-      if (flash > 0) { const g = x.createRadialGradient(ax, ay, 0, ax, ay, 60 * flash); g.addColorStop(0, heat(1, .85 * flash)); g.addColorStop(1, 'rgba(0,0,0,0)');
-        x.fillStyle = g; x.beginPath(); x.arc(ax, ay, 60 * flash, 0, 7); x.fill(); flash -= .09; }
-      let live = ring > 0 && ring < 1;
-      for (const b of beads) { if (b.temp > .12) { b.temp -= .006; live = true; }   // landed droplets cool into beads
-        x.fillStyle = heat(b.temp, .95); x.beginPath(); x.arc(b.x, b.y, b.w, 0, 7); x.fill(); }
-      for (const p of parts) { if (p.life <= 0) continue; live = true;
-        x.strokeStyle = heat(p.life, Math.min(1, p.life * 1.6)); x.lineWidth = p.w * (0.5 + p.life * 0.7);
-        x.beginPath(); x.moveTo(p.x, p.y); x.lineTo(p.x - p.vx * 2.2, p.y - p.vy * 2.2); x.stroke();
-        p.x += p.vx; p.y += p.vy; p.vy += .11; p.vx *= .988; p.vy *= .988; p.life -= p.decay;
-        if (p.y > ay + 1 && p.vy > 0) { if (!p.spark && Math.abs(p.x - ax) < 33) { p.life = 0; beads.push({ x: p.x, y: ay - 1, w: p.w * .8, temp: .95 }); }
-          else { p.vy *= -.42; p.vx *= .6; p.life *= .7; } } }
-      const g2 = x.createRadialGradient(ax, ay - 2, 0, ax, ay - 2, 9); g2.addColorStop(0, heat(.75, .5)); g2.addColorStop(1, 'rgba(0,0,0,0)');
-      x.fillStyle = g2; x.beginPath(); x.arc(ax, ay - 2, 9, 0, 7); x.fill();
-      vignette(x);
-      if (live && !REDUCED) raf = requestAnimationFrame(draw); };
-    let n = 7;
-    document.getElementById('strike').addEventListener('click', () => { cancelAnimationFrame(raf); spawn(n += 13); if (REDUCED) { parts = []; flash = 0; ring = 0; } draw(); });
-    if (REDUCED) { beads = [{x: ax-14, y: ay-1, w: 1.7, temp:.3},{x: ax+9, y: ay-1, w: 2.1, temp:.3},{x: ax+22, y: ay-1, w: 1.4, temp:.3}]; draw(); }
-    else { spawn(7); draw(); }
-  }
-
-  /* ---- Molten veins v2 (determinate loader) ---- */
-  {
-    const x = ctx2d('cv-veins');
-    const r = mulberry(41); const segs = [];
-    { const base = r() * Math.PI * 2;   // 4 trunks from the centre; angle pulled outward so coverage reads as radial progress
-      const walkers = Array.from({ length: 4 }, (_, k) => ({ x: W / 2, y: H / 2, a: base + k * Math.PI / 2 + (r() - .5) * .6, wd: 3.4 }));
-      while (walkers.length && segs.length < 520) { const wk = walkers.shift(); let { x: px, y: py, a, wd } = wk;
-        const steps = 10 + (r() * 16 | 0);
-        for (let i = 0; i < steps && segs.length < 520; i++) {
-          const out = Math.atan2(py - H / 2, px - W / 2);   // outward pull
-          let d = out - a; d = Math.atan2(Math.sin(d), Math.cos(d));
-          a += (r() - .5) * .9 + d * .12;
-          const L = 5 + r() * 8;
-          let nx = px + Math.cos(a) * L, ny = py + Math.sin(a) * L;
-          if (nx < 10 || nx > W - 10) { a = Math.PI - a; nx = px + Math.cos(a) * L; }
-          if (ny < 10 || ny > H - 10) { a = -a; ny = py + Math.sin(a) * L; }
-          segs.push({ x1: px, y1: py, x2: nx, y2: ny, wd }); px = nx; py = ny; wd *= .992;
-          if (wd > .55 && r() < .3) walkers.push({ x: px, y: py, a: a + (r() < .5 ? 1 : -1) * (.7 + r() * .9), wd: wd * .66 }); } } }
-    const speck = Array.from({ length: 130 }, () => [r() * W, r() * H, r() * 1.4 + .3, .04 + r() * .07]);
-    const render = (p, time = 0) => { clear(x);
+    let W, H, x, horiz, N, hh, vv, hot, vol, raf = 0, p = 1;
+    const init = (w, h) => { W = w; H = h; x = size('cv-fill', w, h); horiz = w >= h * 1.2;
+      N = Math.max(20, Math.round((horiz ? w : w) / 3)); hh = new Float32Array(N); vv = new Float32Array(N); hot = new Float32Array(N); vol = 0;
+      if (REDUCED) { p = 1; still(); } else { warm(); loop(); } };
+    const CAP = () => horiz ? H * .74 : W;   // max depth (horiz) — vertical uses level instead
+    const yieldSlope = () => Math.max(.35, CAP() / N * 1.15);
+    const targetVol = pp => { const s = yieldSlope(); return horiz ? Math.min(s * Math.pow(pp * N, 2) / 2, CAP() * N * .96) : pp * N * H * .8; };
+    const step = () => { const tv = targetVol(p);
+      if (horiz) { // pour in at the start edge; cells spill forward when the slope beats the yield — molten metal creeps
+        const dv = Math.min(Math.max((tv - vol) * .22, 0), H * 1.2); hh[0] += dv; vol += dv;
+        if (tv < vol - 1) { const drain = (vol - tv) * .08; hh[0] = Math.max(0, hh[0] - drain); vol -= drain; }
+        const s = yieldSlope();
+        for (let pass = 0; pass < 8; pass++) for (let i = 0; i < N - 1; i++) {
+          const ex = hh[i] - hh[i + 1] - s * (.8 + .4 * Math.sin(i * 1.7 + performance.now() / 300));
+          if (ex > 0) { const m = Math.min(ex * .42, hh[i]); hh[i] -= m; hh[i + 1] += m; hot[i + 1] = Math.min(1, hot[i + 1] + m * .1); } }
+      } else { // vertical host: a levelling pool — surface waves around the rising level
+        const lvl = p * H * .86; const mean = vol / N; const dv = (lvl - mean) * .08;
+        for (let i = 0; i < N; i++) { hh[i] += dv * (0.7 + .6 * Math.sin(i * 2.1 + performance.now() / 260)); } vol += dv * N;
+        for (let i = 0; i < N; i++) { const l = hh[(i + N - 1) % N], r0 = hh[(i + 1) % N];
+          vv[i] += ((l + r0) / 2 - hh[i]) * .18; vv[i] *= .94; if (Math.abs(dv) > .05) hot[i] = Math.min(1, hot[i] + Math.abs(dv) * .05); }
+        for (let i = 0; i < N; i++) hh[i] += vv[i];
+      }
+      for (let i = 0; i < N; i++) hot[i] *= .955; };
+    const draw = () => { clear(x, W, H); const colW = W / N;
       x.globalCompositeOperation = 'source-over';
-      for (const [sx, sy, sr, sa] of speck) { x.fillStyle = `rgba(236,227,216,${sa})`; x.fillRect(sx, sy, sr, sr); }
-      const nF = p * segs.length, n = nF | 0, frac = nF - n;
-      x.lineCap = 'round';
-      if (p >= 1) { // quenched: brass inlay — dark body + bright core, a slow pulse of light travelling the network
-        for (let i = 0; i < segs.length; i++) { const s = segs[i];
-          x.globalCompositeOperation = 'source-over';
-          x.strokeStyle = heat(.34, 1); x.lineWidth = s.wd * 1.4; x.beginPath(); x.moveTo(s.x1, s.y1); x.lineTo(s.x2, s.y2); x.stroke();
-          const ph = ((i / segs.length) - time * .22) % 1, pulse = Math.exp(-Math.pow(((ph + 1) % 1) - .5, 2) * 90);
-          x.globalCompositeOperation = 'lighter';
-          x.strokeStyle = heat(.55 + pulse * .3, .55 + pulse * .45); x.lineWidth = s.wd * .6;
-          x.beginPath(); x.moveTo(s.x1, s.y1); x.lineTo(s.x2, s.y2); x.stroke(); }
-        const g = x.createRadialGradient(W/2, H/2, 10, W/2, H/2, W*.45); g.addColorStop(0, heat(.6, .1)); g.addColorStop(1, 'rgba(0,0,0,0)');
-        x.fillStyle = g; x.fillRect(0, 0, W, H);
-      } else { x.globalCompositeOperation = 'lighter';
-        for (let i = 0; i < n; i++) { const s = segs[i], rel = (n - i) / segs.length;
-          const t = Math.max(.32, 1 - rel * 6);
-          x.strokeStyle = heat(t, .9); x.lineWidth = s.wd * (t > .8 ? 1.5 : 1);
-          if (t > .8) { x.shadowColor = heat(.85, .9); x.shadowBlur = 10; }
-          x.beginPath(); x.moveTo(s.x1, s.y1); x.lineTo(s.x2, s.y2); x.stroke(); x.shadowBlur = 0; }
-        if (n < segs.length && frac > 0) { const s = segs[n];   // smooth growth front: partial leading segment
-          x.strokeStyle = heat(1, .95); x.lineWidth = s.wd * 1.5; x.shadowColor = heat(.9, .9); x.shadowBlur = 12;
-          x.beginPath(); x.moveTo(s.x1, s.y1); x.lineTo(s.x1 + (s.x2 - s.x1) * frac, s.y1 + (s.y2 - s.y1) * frac); x.stroke(); x.shadowBlur = 0; } }
-      vignette(x); pct(x, p); };
-    loader('vein-play', 'vein-scrub', render, t => render(1, t));
-  }
-
-  /* ---- Crucible pour (determinate loader) ---- */
-  {
-    const x = ctx2d('cv-pour');
-    const tx0 = 42, tx1 = W - 42, ty = H - 74, th = 24;      // trough
-    const sx = tx0 + 12, sy0 = 52;                            // stream falls here
-    const r0 = mulberry(77);
-    const spat = Array.from({ length: 14 }, () => [r0() * 7, .4 + r0() * .6, r0() * 7]);   // impact spatter params
-    const render = (p, time = 0) => { clear(x);
-      x.globalCompositeOperation = 'source-over';
-      x.fillStyle = '#251F1A';   // crucible: tipped vessel, top-left
-      x.beginPath(); x.moveTo(sx - 30, sy0 - 22); x.lineTo(sx + 12, sy0 - 34); x.lineTo(sx + 8, sy0 - 12); x.lineTo(sx - 20, sy0 - 4); x.closePath(); x.fill();
-      x.strokeStyle = '#4D4138'; x.lineWidth = 1.2; x.stroke();
-      x.strokeStyle = '#3A302A'; x.lineWidth = 3;   // trough shell
-      x.beginPath(); x.roundRect(tx0 - 4, ty - 4, tx1 - tx0 + 8, th + 8, 6); x.stroke();
-      const lead = tx0 + (tx1 - tx0) * p;
-      if (p > 0) { x.globalCompositeOperation = 'lighter';   // the molten fill: cool at the tail, hot at the leading edge
-        const g = x.createLinearGradient(tx0, 0, lead, 0);
-        g.addColorStop(0, heat(p >= 1 ? .5 : .45, .95)); g.addColorStop(1, heat(p >= 1 ? .55 : .95, .98));
-        x.fillStyle = g; x.beginPath(); x.roundRect(tx0, ty, Math.max(4, lead - tx0), th, 4); x.fill();
-        const gm = x.createRadialGradient(lead, ty + th / 2, 0, lead, ty + th / 2, 22);   // meniscus glow at the front
-        gm.addColorStop(0, heat(1, p >= 1 ? .18 : .55)); gm.addColorStop(1, 'rgba(0,0,0,0)');
-        x.fillStyle = gm; x.beginPath(); x.arc(lead, ty + th / 2, 22, 0, 7); x.fill();
-        if (p >= 1) { x.globalCompositeOperation = 'source-over';   // annealed sheen once full
-          const sh = x.createLinearGradient(0, ty, 0, ty + th); sh.addColorStop(0, 'rgba(255,246,223,.28)'); sh.addColorStop(.35, 'rgba(255,246,223,0)');
-          x.fillStyle = sh; x.beginPath(); x.roundRect(tx0, ty, tx1 - tx0, th, 4); x.fill(); } }
-      if (p < 1) { x.globalCompositeOperation = 'lighter';   // the stream: near-straight, a slow ripple sliding down it
-        const glip = x.createRadialGradient(sx, sy0 - 10, 0, sx, sy0 - 10, 14);   // molten glow at the crucible lip
-        glip.addColorStop(0, heat(1, .55)); glip.addColorStop(1, 'rgba(0,0,0,0)');
-        x.fillStyle = glip; x.beginPath(); x.arc(sx, sy0 - 10, 14, 0, 7); x.fill();
-        x.lineCap = 'round'; x.strokeStyle = heat(.97, .95); x.lineWidth = 2.6;
-        x.beginPath(); x.moveTo(sx, sy0 - 12);
-        for (let yy = sy0 - 12; yy <= ty + 3; yy += 6) x.lineTo(sx + Math.sin(yy * .045 - time * 3) * .9, yy);
-        x.stroke();
-        x.strokeStyle = heat(1, .3); x.lineWidth = 4.5; x.stroke();   // soft halo pass over the same path
-        for (const [dx, sp, ph] of spat) { const u = (time * sp + ph) % 1;   // impact spatter ticks
-          x.fillStyle = heat(.9, (1 - u) * .8); x.beginPath(); x.arc(sx - 6 + dx + u * 10 * (dx > 3.5 ? 1 : -1), ty - u * 12, 1.2, 0, 7); x.fill(); } }
-      vignette(x); pct(x, p); };
-    let liveRaf = 0;   // the stream wobbles even while scrubbed, so run a light loop below 1
-    const live = p => { cancelAnimationFrame(liveRaf); if (REDUCED) return render(p);
-      const go = ts => { render(p, ts / 1000); liveRaf = requestAnimationFrame(go); }; liveRaf = requestAnimationFrame(go); };
-    const scrub = document.getElementById('pour-scrub');
-    scrub.addEventListener('input', () => { const p = scrub.value / 1000; p < 1 ? live(p) : (cancelAnimationFrame(liveRaf), render(1)); });
-    document.getElementById('pour-play').addEventListener('click', () => { if (REDUCED) { scrub.value = 1000; return render(1); }
-      cancelAnimationFrame(liveRaf); const t0 = performance.now();
-      const go = ts => { const p = Math.min(1, (ts - t0) / 2500); scrub.value = Math.round(p * 1000); render(p, ts / 1000); liveRaf = p < 1 ? requestAnimationFrame(go) : 0; if (p >= 1) render(1); };
-      liveRaf = requestAnimationFrame(go); });
-    render(1);
-  }
-
-  /* ---- Drybrush stroke (determinate loader) ---- */
-  {
-    const x = ctx2d('cv-brush');
-    const r = mulberry(63);
-    const x0 = 34, x1 = W - 34, midY = H / 2 - 6;
-    const tracks = Array.from({ length: 16 }, () => ({ dy: (r() - .5) * 22, w: .7 + r() * 2, a: .25 + r() * .6,
-      ph: r() * 40, f: .05 + r() * .12, gap: .25 + r() * .35 }));
-    const speck = Array.from({ length: 110 }, () => [r() * W, r() * H, r() * 1.3 + .3, .03 + r() * .06]);
-    const arc = t => midY + Math.sin(t * Math.PI) * -8;   // the stroke bows up slightly, like a real pass
-    const render = p => { clear(x);
-      x.globalCompositeOperation = 'source-over';
-      for (const [px, py, pr, pa] of speck) { x.fillStyle = `rgba(236,227,216,${pa})`; x.fillRect(px, py, pr, pr); }
-      const lead = x0 + (x1 - x0) * p;
-      x.lineCap = 'round';
-      for (const tr of tracks) { let on = false, sx2 = 0;
-        for (let px = x0; px <= lead; px += 3) { const t = (px - x0) / (x1 - x0);
-          const drop = Math.sin(px * tr.f + tr.ph) + Math.sin(px * tr.f * 2.7 + tr.ph * 2) * .5;   // dropout = dry gaps
-          const paint = drop > -1 + tr.gap * 2;
-          if (paint && !on) { on = true; sx2 = px; }
-          if ((!paint || px + 3 > lead) && on) { on = false;
-            const hot = lead - px < 14 && p < 1;
-            x.globalCompositeOperation = hot ? 'lighter' : 'source-over';
-            x.strokeStyle = hot ? heat(.85, .9) : heat(.48, tr.a);
-            x.lineWidth = tr.w;
-            x.beginPath(); x.moveTo(sx2, arc((sx2 - x0) / (x1 - x0)) + tr.dy); x.lineTo(px, arc(t) + tr.dy); x.stroke(); } } }
-      if (p < 1) { const t = p;   // the brush riding the leading edge: ferrule + angled handle
-        const by = arc(t) - 4; x.globalCompositeOperation = 'source-over';
-        x.fillStyle = '#251F1A'; x.beginPath(); x.moveTo(lead - 2, by - 2); x.lineTo(lead + 10, by - 14); x.lineTo(lead + 16, by - 8); x.lineTo(lead + 4, by + 4); x.closePath(); x.fill();
-        x.strokeStyle = '#4D4138'; x.lineWidth = 1; x.stroke();
-        x.strokeStyle = '#3A302A'; x.lineWidth = 4; x.lineCap = 'round';
-        x.beginPath(); x.moveTo(lead + 13, by - 11); x.lineTo(lead + 40, by - 38); x.stroke();
-        x.globalCompositeOperation = 'lighter';   // hot bristle tips
-        const g = x.createRadialGradient(lead, by + 4, 0, lead, by + 4, 12); g.addColorStop(0, heat(.9, .5)); g.addColorStop(1, 'rgba(0,0,0,0)');
-        x.fillStyle = g; x.beginPath(); x.arc(lead, by + 4, 12, 0, 7); x.fill(); }
-      vignette(x); pct(x, p); };
-    loader('brush-play', 'brush-scrub', render);
-  }
-
-  /* ---- d20 tumble (one-shot refresh) ---- */
-  {
-    const x = ctx2d('cv-d20'); const cx = W / 2, cy = H / 2 - 4, SC = 52;
-    const PHI = (1 + Math.sqrt(5)) / 2;
-    let verts = [];
-    for (const s of [1, -1]) for (const t of [PHI, -PHI]) { verts.push([0, s, t]); verts.push([s, t, 0]); verts.push([t, 0, s]); }
-    verts = verts.map(v => { const L = Math.hypot(...v); return v.map(c => c / L); });
-    const edges = [];
-    { let mind = 9; for (let i = 0; i < 12; i++) for (let j = i + 1; j < 12; j++) mind = Math.min(mind, Math.hypot(verts[i][0]-verts[j][0], verts[i][1]-verts[j][1], verts[i][2]-verts[j][2]));
-      for (let i = 0; i < 12; i++) for (let j = i + 1; j < 12; j++) if (Math.hypot(verts[i][0]-verts[j][0], verts[i][1]-verts[j][1], verts[i][2]-verts[j][2]) < mind * 1.05) edges.push([i, j]); }
-    const rot = ([X, Y, Z], ax, ay) => { let y = Y * Math.cos(ax) - Z * Math.sin(ax), z = Y * Math.sin(ax) + Z * Math.cos(ax);
-      let X2 = X * Math.cos(ay) + z * Math.sin(ay); z = -X * Math.sin(ay) + z * Math.cos(ay); return [X2, y, z]; };
-    let raf = 0, seed = 3;
-    const draw = (ax, ay, settle) => { clear(x);
-      x.globalCompositeOperation = 'lighter'; x.lineCap = 'round';
-      const pv = verts.map(v => rot(v, ax, ay));
-      const es = edges.map(([i, j]) => ({ i, j, z: (pv[i][2] + pv[j][2]) / 2 })).sort((a, b) => a.z - b.z);
-      if (settle > 0) { const g = x.createRadialGradient(cx, cy, 0, cx, cy, SC * 1.5); g.addColorStop(0, heat(.9, .4 * settle)); g.addColorStop(1, 'rgba(0,0,0,0)');
-        x.fillStyle = g; x.beginPath(); x.arc(cx, cy, SC * 1.5, 0, 7); x.fill(); }
-      for (const e of es) { const A = pv[e.i], B = pv[e.j], d = (e.z + 1) / 2;
-        x.strokeStyle = heat(.55 + d * .3 + settle * .15, .2 + d * .65); x.lineWidth = 1 + d * 1.2;
-        x.beginPath(); x.moveTo(cx + A[0] * SC, cy + A[1] * SC); x.lineTo(cx + B[0] * SC, cy + B[1] * SC); x.stroke(); }
-      for (const v of pv) { const d = (v[2] + 1) / 2; x.fillStyle = heat(.75, .25 + d * .6);
-        x.beginPath(); x.arc(cx + v[0] * SC, cy + v[1] * SC, 1.4 + d, 0, 7); x.fill(); }
-      // ground shadow, so it reads as sitting on the table
-      x.globalCompositeOperation = 'source-over'; x.fillStyle = 'rgba(0,0,0,.5)';
-      x.beginPath(); x.ellipse(cx, cy + SC + 14, SC * .8, 7, 0, 0, 7); x.fill();
-      vignette(x); };
-    const roll = () => { cancelAnimationFrame(raf); const r = mulberry(seed += 17);
-      const a0 = r() * 7, b0 = r() * 7, va = 6 + r() * 5, vb = 5 + r() * 5, T = 1800, t0 = performance.now();
-      if (REDUCED) return draw(a0 + va, b0 + vb, 0);
-      const go = ts => { const u = Math.min(1, (ts - t0) / T), e = 1 - Math.pow(1 - u, 3);
-        const settle = u >= 1 ? Math.max(0, 1 - (ts - t0 - T) / 700) : 0;
-        draw(a0 + va * e, b0 + vb * e, settle);
-        if (u < 1 || settle > 0) raf = requestAnimationFrame(go); };
+      if (horiz) { x.beginPath(); x.moveTo(0, H);   // body
+        for (let i = 0; i < N; i++) x.lineTo(i * colW + colW / 2, H - hh[i]);
+        x.lineTo(W, H); x.closePath();
+        const g = x.createLinearGradient(0, H - CAP(), 0, H); g.addColorStop(0, heat(.52)); g.addColorStop(1, heat(.4));
+        x.fillStyle = g; x.fill();
+        x.globalCompositeOperation = 'lighter';   // live surface: hot where it flows
+        for (let i = 0; i < N - 1; i++) { if (hh[i] < .5 && hh[i + 1] < .5) continue;
+          x.strokeStyle = heat(.55 + hot[i] * .45, .25 + hot[i] * .7); x.lineWidth = 1.6;
+          x.beginPath(); x.moveTo(i * colW + colW / 2, H - hh[i]); x.lineTo((i + 1) * colW + colW / 2, H - hh[i + 1]); x.stroke(); }
+      } else { x.beginPath(); x.moveTo(0, H);
+        for (let i = 0; i < N; i++) x.lineTo(i * colW + colW / 2, H - Math.max(0, hh[i]));
+        x.lineTo(W, H); x.closePath();
+        const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, heat(.55)); g.addColorStop(1, heat(.4));
+        x.fillStyle = g; x.fill();
+        x.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < N - 1; i++) { x.strokeStyle = heat(.6 + hot[i] * .4, .3 + hot[i] * .6); x.lineWidth = 1.6;
+          x.beginPath(); x.moveTo(i * colW + colW / 2, H - hh[i]); x.lineTo((i + 1) * colW + colW / 2, H - hh[i + 1]); x.stroke(); } }
+      pctLabel(); };
+    const pctLabel = () => { x.globalCompositeOperation = 'source-over'; x.fillStyle = 'rgba(236,227,216,.75)';
+      x.font = '10px ui-monospace,Menlo,monospace'; x.textAlign = horiz ? 'right' : 'center';
+      if (H > 40) x.fillText(Math.round(p * 100) + '%', horiz ? W - 8 : W / 2, horiz ? 14 : 16); };
+    const still = () => { // annealed final frame (also the reduced-motion frame): flat, cooled, sheened — and the loop is stopped
+      clear(x, W, H); x.globalCompositeOperation = 'source-over';
+      const full = horiz ? CAP() : H * .86;
+      const g = horiz ? x.createLinearGradient(0, H - full, 0, H) : x.createLinearGradient(0, H - full, 0, H);
+      g.addColorStop(0, heat(.56)); g.addColorStop(1, heat(.42)); x.fillStyle = g;
+      x.fillRect(0, H - full, W, full);
+      x.fillStyle = 'rgba(255,246,223,.16)'; x.fillRect(0, H - full, W, 2.5);
+      pctLabel(); };
+    const settled = () => { if (p < 1) return false; let mx = 0;
+      if (horiz) { const tv = targetVol(1); if (Math.abs(vol - tv) > 2) return false; for (let i = 0; i < N - 1; i++) mx = Math.max(mx, Math.abs(hh[i] - hh[i + 1])); return mx < yieldSlope() * 1.6; }
+      for (let i = 0; i < N; i++) mx = Math.max(mx, Math.abs(vv[i])); return mx < .05; };
+    const loop = () => { cancelAnimationFrame(raf);
+      const go = () => { step(); draw(); if (settled()) { still(); return; } raf = requestAnimationFrame(go); };
       raf = requestAnimationFrame(go); };
-    document.getElementById('roll').addEventListener('click', roll);
-    roll();
+    const warm = () => { for (let i = 0; i < 140; i++) step(); };
+    const scrub = document.getElementById('fill-scrub');
+    scrub.addEventListener('input', () => { p = scrub.value / 1000; if (REDUCED) return still(); loop(); });
+    document.getElementById('fill-play').addEventListener('click', () => { if (REDUCED) { p = 1; scrub.value = 1000; return still(); }
+      hh.fill(0); vv.fill(0); hot.fill(0); vol = 0; const t0 = performance.now(); cancelAnimationFrame(raf);
+      const go = ts => { p = Math.min(1, (ts - t0) / 3000); scrub.value = Math.round(p * 1000); step(); draw();
+        if (settled()) { still(); return; } raf = requestAnimationFrame(go); };
+      raf = requestAnimationFrame(go); });
+    frames('fill-frames', (w, h) => init(w, h));
+    init(340, 56);
   }
 
-  /* ---- Ember drift v2 (ambient loop) ---- */
+  /* ---- Sparks: the container is the instrument — ricochets off every wall ---- */
   {
-    const x = ctx2d('cv-embers');
-    const r = mulberry(23);
-    const em = Array.from({ length: 34 }, () => { const depth = .35 + r() * .65;   // depth scales size, speed, brightness
-      return { x0: r() * W, off: r() * (H + 30), sp: (7 + r() * 12) * depth, sway: (4 + r() * 11) * depth,
-        ph: r() * 7, f1: 1.7 + r() * 2.4, f2: 3.1 + r() * 3.3, sz: (.8 + r() * 1.6) * depth, depth, big: r() < .12 }; });
-    let running = !REDUCED, raf = 0;
-    const render = t => { clear(x);
+    let W, H, x, parts = [], puffs = [], flash = null, raf = 0, seedN = 5;
+    const init = (w, h) => { W = w; H = h; x = size('cv-sparks', w, h); parts = []; puffs = []; flash = null;
+      if (REDUCED) rest(); else strike(W / 2, H * .45); };
+    const strike = (sx, sy) => { const r = mulberry(seedN += 13); flash = { x: sx, y: sy, a: 1 };
+      const count = Math.min(70, Math.max(28, Math.round(W * H / 800)));
+      parts = Array.from({ length: count }, () => { const a = r() * Math.PI * 2, sp = 1.8 + r() * 4.4;
+        return { x: sx, y: sy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: .005 + r() * .009, w: r() < .12 ? 2 : 1.1 }; });
+      draw(); };
+    const rest = () => { clear(x, W, H);
+      x.globalCompositeOperation = 'lighter';   // a few guttered beads on the floor
+      for (const [fx, fw] of [[.3, 1.6], [.55, 2], [.72, 1.3]]) { x.fillStyle = heat(.3, .8); x.beginPath(); x.arc(W * fx, H - 3, fw, 0, 7); x.fill(); } };
+    const draw = () => { cancelAnimationFrame(raf); clear(x, W, H);
       x.globalCompositeOperation = 'lighter';
-      for (const e of em) { const y = H + 12 - ((t * e.sp + e.off) % (H + 30));
+      if (flash) { const g = x.createRadialGradient(flash.x, flash.y, 0, flash.x, flash.y, 44 * flash.a);
+        g.addColorStop(0, heat(1, .8 * flash.a)); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.beginPath(); x.arc(flash.x, flash.y, 44 * flash.a, 0, 7); x.fill();
+        flash.a -= .08; if (flash.a <= 0) flash = null; }
+      for (let i = puffs.length - 1; i >= 0; i--) { const q = puffs[i];   // wall-impact puffs
+        const g = x.createRadialGradient(q.x, q.y, 0, q.x, q.y, 7); g.addColorStop(0, heat(.8, q.a * .6)); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.beginPath(); x.arc(q.x, q.y, 7, 0, 7); x.fill(); q.a -= .07; if (q.a <= 0) puffs.splice(i, 1); }
+      let live = !!flash || puffs.length > 0;
+      for (const s of parts) { if (s.life <= 0) continue; live = true;
+        x.strokeStyle = heat(s.life, Math.min(1, s.life * 1.6)); x.lineWidth = s.w * (.5 + s.life * .7); x.lineCap = 'round';
+        x.beginPath(); x.moveTo(s.x, s.y); x.lineTo(s.x - s.vx * 2.2, s.y - s.vy * 2.2); x.stroke();
+        s.x += s.vx; s.y += s.vy; s.vy += .045; s.vx *= .995; s.vy *= .995; s.life -= s.decay;
+        // every wall answers back: bounce costs heat, leaves a puff
+        const hit = (px, py) => { puffs.push({ x: px, y: py, a: .8 }); s.life *= .82; };
+        if (s.x < 2 && s.vx < 0) { s.vx *= -.7; hit(2, s.y); }
+        if (s.x > W - 2 && s.vx > 0) { s.vx *= -.7; hit(W - 2, s.y); }
+        if (s.y < 2 && s.vy < 0) { s.vy *= -.7; hit(s.x, 2); }
+        if (s.y > H - 2 && s.vy > 0) { s.vy *= -.7; s.vx *= .9; hit(s.x, H - 2); } }
+      if (live && !REDUCED) raf = requestAnimationFrame(draw); else if (!REDUCED) rest(); };
+    document.getElementById('strike').addEventListener('click', () => { if (REDUCED) return rest(); strike(W / 2, H * .45); });
+    document.getElementById('cv-sparks').addEventListener('pointerdown', e => { if (REDUCED) return;
+      const r = e.currentTarget.getBoundingClientRect(); strike(e.clientX - r.left, e.clientY - r.top); });
+    frames('sparks-frames', (w, h) => init(w, h));
+    init(340, 170);
+  }
+
+  /* ---- Molten veins: born at the start edge, growing with direction ---- */
+  {
+    let W, H, x, branches, maxD, raf = 0;
+    const grow = () => { const r = mulberry(41); branches = []; maxD = 0;
+      let side = 1;   // children alternate up/down so the network fans instead of braiding the midline
+      const spawn = (px, py, a, wd, d0, gen) => { const pts = [{ x: px, y: py, d: d0 }]; let a0 = a, d = d0;
+        const steps = gen === 0 ? 999 : 14 + (r() * 12 | 0);
+        for (let i = 0; i < steps; i++) { const L = 8 + r() * 5;
+          a0 += (r() - .5) * .45 - a0 * .07;   // gentle jitter, heading eased back toward +x (a=0)
+          const ny = py + Math.sin(a0) * L; const nx = px + Math.cos(a0) * L;
+          if (nx > W - 8 || ny < 8 || ny > H - 8 || nx < 4) break;
+          px = nx; py = ny; d += L; pts.push({ x: px, y: py, d });
+          if (gen < 3 && r() < .12 && branches.length < 26) { side = -side; spawn(px, py, a0 + side * (.55 + r() * .55), wd * .68, d, gen + 1); } }
+        if (pts.length > 2) { branches.push({ pts, wd }); maxD = Math.max(maxD, d); } };
+      spawn(6, H / 2, 0, 3, 0, 0);
+      spawn(6, H / 2, .5, 1.9, 0, 1); spawn(6, H / 2, -.5, 1.9, 0, 1);   // two companion roots so the origin reads as a source
+    };
+    const drawBranch = (b, dLim, settled) => { const pts = b.pts; let last = null;
+      x.beginPath(); x.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) { const q = pts[i];
+        if (q.d <= dLim) { x.lineTo(q.x, q.y); last = q; }
+        else { const pr = pts[i - 1]; const f = (dLim - pr.d) / (q.d - pr.d);
+          if (f > 0) { const ix = pr.x + (q.x - pr.x) * f, iy = pr.y + (q.y - pr.y) * f; x.lineTo(ix, iy); last = { x: ix, y: iy, d: dLim }; }
+          break; } }
+      x.strokeStyle = settled ? heat(.46, .9) : heat(.55, .95); x.lineWidth = b.wd; x.lineCap = 'round'; x.lineJoin = 'round'; x.stroke();
+      return last; };
+    const render = (p, time = 0) => { clear(x, W, H);
+      x.globalCompositeOperation = 'source-over';   // one continuous stroke per branch — no cap hotspots
+      const dLim = p * maxD, tips = [];
+      for (const b of branches) { const tip = drawBranch(b, dLim, p >= 1); if (tip && tip.d > dLim - 1 && p < 1) tips.push(tip); }
+      if (p >= 1) { x.globalCompositeOperation = 'lighter';   // settled: one quiet breathing glow over the whole inlay, no pulses
+        const a = .1 + .05 * Math.sin(time * 1.1);
+        const g = x.createLinearGradient(0, 0, W, 0); g.addColorStop(0, heat(.6, a)); g.addColorStop(1, heat(.6, a * .5));
+        x.fillStyle = g; x.fillRect(0, 0, W, H);
+      } else { x.globalCompositeOperation = 'lighter';   // only the living tips glow
+        for (const t of tips) { const g = x.createRadialGradient(t.x, t.y, 0, t.x, t.y, 10);
+          g.addColorStop(0, heat(.95, .8)); g.addColorStop(1, 'rgba(0,0,0,0)');
+          x.fillStyle = g; x.beginPath(); x.arc(t.x, t.y, 10, 0, 7); x.fill(); } }
+      x.globalCompositeOperation = 'source-over'; x.fillStyle = 'rgba(236,227,216,.75)';
+      x.font = '10px ui-monospace,Menlo,monospace'; x.textAlign = 'right'; if (H > 40) x.fillText(Math.round(p * 100) + '%', W - 8, 14); };
+    const scrub = document.getElementById('vein-scrub');
+    let p = 1;
+    const show = pp => { p = pp; cancelAnimationFrame(raf); render(p);
+      if (p >= 1 && !REDUCED) { const go = ts => { render(1, ts / 1000); raf = requestAnimationFrame(go); }; raf = requestAnimationFrame(go); } };
+    scrub.addEventListener('input', () => show(scrub.value / 1000));
+    document.getElementById('vein-play').addEventListener('click', () => { if (REDUCED) { scrub.value = 1000; return show(1); }
+      cancelAnimationFrame(raf); const t0 = performance.now();
+      const go = ts => { const pp = Math.min(1, (ts - t0) / 2500); scrub.value = Math.round(pp * 1000); render(pp);
+        if (pp < 1) raf = requestAnimationFrame(go); else show(1); };
+      raf = requestAnimationFrame(go); });
+    const init = (w, h) => { W = w; H = h; x = size('cv-veins', w, h); grow(); show(REDUCED ? 1 : p); };
+    frames('vein-frames', (w, h) => init(w, h));
+    init(340, 180);
+  }
+
+  /* ---- Ember bokeh: a defocused forge, three depth-of-field layers ---- */
+  {
+    let W, H, x, em, raf = 0, running = !REDUCED;
+    const build = () => { const r = mulberry(23);
+      const layer = (n, rad0, rad1, a0, sp0) => Array.from({ length: n }, () => ({
+        x0: r() * W, off: r() * (H + 40), sp: sp0 * (.7 + r() * .6), sway: 4 + r() * 10,
+        ph: r() * 7, f1: 1.7 + r() * 2.4, f2: 3.1 + r() * 3.3, rad: rad0 + r() * (rad1 - rad0), a: a0 * (.7 + r() * .6) }));
+      em = [...layer(Math.round(W * H / 3000), .8, 1.8, .5, 13),      // far: sharp pin-points
+            ...layer(Math.round(W * H / 4200), 3, 6, .3, 9),          // mid
+            ...layer(Math.round(W * H / 7000), 9, 16, .16, 6)]; };    // near: wide bokeh discs
+    const disc = (ex, ey, rad, t, a) => { const g = x.createRadialGradient(ex, ey, 0, ex, ey, rad);
+      g.addColorStop(0, heat(t, a * .55)); g.addColorStop(.72, heat(t, a)); g.addColorStop(1, heat(t, 0));   // bright rim = lens bokeh
+      x.fillStyle = g; x.beginPath(); x.arc(ex, ey, rad, 0, 7); x.fill(); };
+    const render = t => { clear(x, W, H);
+      x.globalCompositeOperation = 'lighter';
+      for (const e of em) { const y = H + 16 - ((t * e.sp + e.off) % (H + 40));
         const flick = .45 + .3 * Math.sin(t * e.f1 + e.ph) + .25 * Math.sin(t * e.f2 + e.ph * 2);
         const ex = e.x0 + Math.sin(t * .7 + e.ph) * e.sway;
-        const heatT = (.3 + .45 * flick + (e.big ? .18 : 0)) * (0.6 + e.depth * .4);
-        const a = Math.max(0, Math.min(.85, flick)) * Math.min(1, (H - y) / 26 + .2) * e.depth;
-        const rad = e.sz * (e.big ? 2.4 : 1) * (0.7 + flick * .5);
-        const g = x.createRadialGradient(ex, y, 0, ex, y, rad * 3.2); g.addColorStop(0, heat(heatT, a)); g.addColorStop(1, 'rgba(0,0,0,0)');
-        x.fillStyle = g; x.beginPath(); x.arc(ex, y, rad * 3.2, 0, 7); x.fill(); }
-      { const k = Math.floor(t / 2.8), u = (t / 2.8) % 1;   // seeded crackle: one ember pops a spark streak every few seconds
-        if (u < .3) { const cr = mulberry(k * 31 + 5); const sx2 = 30 + cr() * (W - 60), sy2 = H - 30 - cr() * 90, aa = -Math.PI / 2 + (cr() - .5) * 1.6;
-          const d = u / .3, L = 10 + cr() * 8;
-          x.strokeStyle = heat(.95, (1 - d) * .9); x.lineWidth = 1.2;
-          x.beginPath(); x.moveTo(sx2 + Math.cos(aa) * L * d, sy2 + Math.sin(aa) * L * d);
-          x.lineTo(sx2 + Math.cos(aa) * L * (d + .25), sy2 + Math.sin(aa) * L * (d + .25)); x.stroke(); } }
-      const gl = x.createLinearGradient(0, H, 0, H - 44); gl.addColorStop(0, heat(.5, .16)); gl.addColorStop(1, 'rgba(0,0,0,0)');
-      x.fillStyle = gl; x.fillRect(0, H - 44, W, 44);
-      vignette(x); };
+        disc(ex, y, e.rad * (.8 + flick * .35), .35 + .4 * flick, e.a * Math.max(.2, flick)); }
+      for (let k = 0; k < 2; k++) { const cyc = t / 1.1 + k * .53, ki = Math.floor(cyc), u = cyc % 1;   // crackle: two interleaved schedules
+        if (u < .32) { const cr = mulberry(ki * 31 + 5 + k * 977); const sx = 20 + cr() * (W - 40), sy = H - 20 - cr() * (H * .55), aa = -Math.PI / 2 + (cr() - .5) * 1.8;
+          const d = u / .32, L = 9 + cr() * 9;
+          x.strokeStyle = heat(.95, (1 - d) * .9); x.lineWidth = 1.2; x.lineCap = 'round';
+          x.beginPath(); x.moveTo(sx + Math.cos(aa) * L * d, sy + Math.sin(aa) * L * d);
+          x.lineTo(sx + Math.cos(aa) * L * (d + .3), sy + Math.sin(aa) * L * (d + .3)); x.stroke(); } }
+      const gl = x.createLinearGradient(0, H, 0, H - Math.min(44, H * .4)); gl.addColorStop(0, heat(.5, .16)); gl.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = gl; x.fillRect(0, H - Math.min(44, H * .4), W, Math.min(44, H * .4)); };
     const loop = ts => { render(ts / 1000); if (running) raf = requestAnimationFrame(loop); };
     const btn = document.getElementById('ember-toggle');
-    btn.addEventListener('click', () => { if (REDUCED) return; running = !running; btn.textContent = running ? '❚❚ Pause' : '▶ Resume'; if (running) raf = requestAnimationFrame(loop); else cancelAnimationFrame(raf); });
-    if (REDUCED) { render(4.2); btn.textContent = '▶ Resume'; } else raf = requestAnimationFrame(loop);
+    btn.addEventListener('click', () => { if (REDUCED) return; running = !running; btn.textContent = running ? '❚❚ Pause' : '▶ Resume';
+      if (running) raf = requestAnimationFrame(loop); else cancelAnimationFrame(raf); });
+    const init = (w, h) => { W = w; H = h; x = size('cv-embers', w, h); build(); cancelAnimationFrame(raf);
+      if (REDUCED) { render(4.2); btn.textContent = '▶ Resume'; } else { running = true; btn.textContent = '❚❚ Pause'; raf = requestAnimationFrame(loop); } };
+    frames('ember-frames', (w, h) => init(w, h));
+    init(340, 180);
   }
 })();
 </script>
