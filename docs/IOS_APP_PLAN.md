@@ -4,7 +4,8 @@
 It exists so v1 is built in a way that makes a future app cheap (it already is — see §3).
 
 > v1 stays a static web app embedded in Squarespace. Everything below is optional, future, and
-> would get its own constitution before any code.
+> gets its own constitution before any code — **drafted 2026-07-09: [`CLAUDE_NATIVE.md`](../CLAUDE_NATIVE.md)**
+> (dormant until Stage-1 kickoff; it activates at `npx cap add ios`, §4b step 7).
 
 > **Update (2026-07-05 — v2 kickoff review).** The plan below survives review with one big correction
 > and one shrink: **colour-from-photo is no longer a native-only draw** — the on-device photo
@@ -131,6 +132,10 @@ dataset carry over unchanged (§3). Keep the npm Capacitor deps **dev-only** —
 web runtime, so §6's no-runtime-dependency rule holds.
 
 ### 4b. Stage-1 kickoff checklist (v2.0) — in order
+
+*(Prerequisite met: the native-track constitution — [`CLAUDE_NATIVE.md`](../CLAUDE_NATIVE.md) —
+is drafted; step 7's `cap add ios` commit activates it. Its §11 adopts the step-3 recommendations
+as defaults for Ryan to confirm.)*
 
 **Ryan, off-repo (lead-time items — start these first):**
 1. **Apple Developer Program** enrolment ($99/yr; approval can take a couple of days).

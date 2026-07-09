@@ -107,7 +107,8 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 adversarial review: 38 verified findings fixed). **Monetization direction chosen: A (affiliate
 links) + B (audience funnel)** — see [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan
 files retailer applications (§9). **Next planned work: the native app, Stage 1 (v2.0)** — the
-kickoff checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork already shipped in v1.8.
+kickoff checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork already shipped in v1.8, and
+the native-track constitution is drafted (`CLAUDE_NATIVE.md`, dormant until kickoff).
 Still outside this repo: the Mac/Xcode build, a designer for the asset library, and the optional
 palette-from-photo enhancement.
 

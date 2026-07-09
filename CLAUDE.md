@@ -48,7 +48,8 @@ gets a **derived wash + highlight** paint in v1; deeper multi-step ladders are a
 User accounts, server/database, payments, paint inventory sync, a "buy" checkout,
 native mobile apps, AI color suggestions.
 These are parked in [`docs/PLAN.md`](docs/PLAN.md) §Future; a native iPhone app is explored
-separately in [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) (v2 only).
+separately in [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) (v2 only) and governed by its own
+constitution, [`CLAUDE_NATIVE.md`](CLAUDE_NATIVE.md) (a draft, dormant until Stage-1 kickoff).
 
 ### Non-negotiables
 - **No backend.** Everything runs in the browser. The dataset is a static JSON file.
@@ -184,6 +185,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ```
 /
 ├── CLAUDE.md                  ← this file (constitution)
+├── CLAUDE_NATIVE.md           ← native-track constitution (v2, DRAFT — dormant until Stage-1 kickoff; this file wins on shared code)
 ├── README.md                  ← what it is, how to run/deploy
 ├── LICENSE                    ← proprietary, all rights reserved (code only; dataset = see SOURCES.md)
 ├── SECURITY.md                ← security policy (static/no-backend scope; private vuln reporting)
