@@ -12,8 +12,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the in-shell divergence registry + closed plugin allowlist, the `ios/` generated-vs-owned split,
   two-stream versioning (web `1.x` in `package.json` · native `2.x` as the Xcode marketing
   version) with a CHANGELOG split rule, the offline/privacy posture ("Data Not Collected", one
-  sanctioned network request), and a device smoke checklist. The IOS_APP_PLAN §9 openers are
-  adopted as defaults pending Ryan's kickoff stamps.
+  sanctioned network request), and a device smoke checklist. Three of the four IOS_APP_PLAN §9
+  openers are adopted as defaults pending Ryan's kickoff stamps (account ownership stays open).
 - **`tag-release.yml` workflow** — creates a release tag (§8 checklist, final step) from Actions →
   *Tag release* with a `vX.Y.Z` name + commit SHA. Remote Claude Code sessions can only push the
   working branch, so tagging no longer needs a local clone.

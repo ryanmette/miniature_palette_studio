@@ -5,7 +5,9 @@
 > §4b step 7). Until that commit exists it constrains **nothing** — web work answers to
 > [`CLAUDE.md`](CLAUDE.md) alone, and the Stage-1 groundwork already shipped in v1.8 (safe-areas,
 > the in-shell SW skip, the `store.js` Preferences mirror, `native/assets/`) remains governed
-> there. From activation onward it is the single source of truth for **the native shell and
+> there. *(One exception: the §3 registry rows describing those shipped guards are live
+> documentation now — keep them true, dormancy notwithstanding.)* From activation onward it is
+> the single source of truth for **the native shell and
 > everything native-only**: on native matters, this file wins. If a decision here turns out
 > wrong, **change this file in the same commit** as the code — never let shell and constitution
 > drift apart.
@@ -77,7 +79,8 @@ crash-reporting SDKs of any kind, and Stage-2/3 native screens (they need §2 ad
 
 Stages, not options (IOS_APP_PLAN §2). Each stage must *earn* the next; you can't skip ahead.
 **No stage is entered until the previous stage's gate evidence is recorded in `docs/PLAN.md` — a
-gut feeling is not a gate** (PLAN §5's 2026-07-07 status stamp is the Stage-1 record). Advancing
+gut feeling is not a gate.** (Stage 1's demand evidence goes into PLAN §5 at or before the
+`cap add ios` commit; the 2026-07-07 stamp records the decision, not the evidence.) Advancing
 also **amends this file first** — scope (§1), the registry (§3), the allowlist (§4) — in the same
 commit as the first stage-N code.
 
@@ -119,10 +122,10 @@ never **look**.
 | 1 | Service worker registration skipped in-shell *(v1.8)* | `src/index.html` | assets are bundled — a SW adds only staleness risk |
 | 2 | `store.js` write-through to the Preferences plugin + `hydrate()` recovery, awaited before first render; localStorage stays authoritative *(v1.8)* | `src/js/store.js` | WKWebView can evict localStorage at the OS's discretion |
 
-Approved-pending (IOS_APP_PLAN §4b steps 5/8/9 — each earns its row when it lands): the ⋯ menu's
-"About & data" wording swap; hiding any PWA install affordance *(none exists in `src/` today —
-confirm at kickoff whether this item is moot)*; camera photo intake; the live eyedropper; wheel
-haptics.
+Approved-pending — each earns its row when it lands: the ⋯ menu's "About & data" wording swap and
+hiding any PWA install affordance *(none exists in `src/` today — confirm at kickoff whether that
+item is moot)* (IOS_APP_PLAN §4b step 5); camera photo intake (step 8); the live eyedropper
+(step 9); wheel haptics (its §4a/§5).
 
 *Not a divergence:* safe-area handling (`viewport-fit=cover` + `env(safe-area-inset-*)`) — it
 resolves to 0 on ordinary browsers; one stylesheet, no guard. *Not wired yet — do not assume:* no
@@ -294,8 +297,9 @@ github-actions-only (CLAUDE.md §4); Capacitor version bumps are deliberate, han
 
 ## 11. Decisions & open questions (IOS_APP_PLAN §9)
 
-**Adopted defaults** — the plan's own recommendations, adopted here so work can proceed. **Ryan
-confirms at kickoff (§4b step 3) and stamps each line** (house style: ✅ resolved YYYY-MM-DD):
+**Adopted defaults** — the first two are the plan's §4b-step-3 recommendations, the third is this
+file's own call; all adopted here so work can proceed. **Ryan confirms all three at kickoff and
+stamps each line** (house style: ✅ resolved YYYY-MM-DD):
 - **Android: yes, later.** Capacitor makes it nearly free; not v2.0. Adding it = an `android/`
   folder under the §5 rules, a §4-tree line, and an amendment here — same commit.
 - **Free at launch, no IAP in v2.0** — the simplest review. A Pro tier later = MONETIZATION
