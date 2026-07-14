@@ -54,7 +54,7 @@
 <header>
   <h1>Forgelight — loading &amp; refresh, grimdark</h1>
   <p class="sub">Round six. <b>Sparks</b> and <b>Ember bokeh</b> stay locked ✓. Loader physics refined per review:
-  <b>Molten veins</b> growth is now provably monotone — tips stall but never retreat; <b>Molten fill</b>'s
+  <b>Molten veins</b> growth is smooth and provably monotone — speed breathes, never stalls dead, never retreats; <b>Molten fill</b>'s
   annealing is decoupled from the number — metal sets by how long it has sat, so the tail hardens while the front
   still pours, and after 100% the melt takes a few seconds to fully set before the loop rests. Frame switchers still re-host every effect in different containers. Molten Harmonics rules throughout:
   seeded, deterministic, vanilla Canvas&nbsp;2D, one heat ramp around the brass accent, finished frame under
@@ -80,23 +80,24 @@
     <span class="eyebrow">Refresh · one-shot <span class="lock">· locked ✓</span></span>
     <h2>Sparks</h2>
     <p class="use">Locked from round four: sparks ricochet off every wall; the <em>first</em> hit lands a bright flash
-    and sometimes shatters the spark into smaller shards. Click anywhere in the box to strike there.</p>
+    and sometimes shatters the spark into smaller shards. Click anywhere in the box to strike there. The <b>Room</b>
+    frame zooms way out — open air, nothing to collide with but the floor, so the burst reads as pure arcs.</p>
     <div class="stage"><canvas id="cv-sparks" aria-label="Sparks: brass sparks ricochet, flash and fragment against the container walls"></canvas></div>
     <div class="row"><button id="strike">⚒ Strike</button>
-      <span class="frameseg" role="group" aria-label="Host frame" id="sparks-frames"><button data-w="340" data-h="170" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="72" aria-pressed="false">Strip</button></span></div>
-    <p class="algo">70 seeded sparks · first impact: big flash, ~45% fragment into 2–4 shards (gen 1, faster decay) · later bounces cost heat quietly · additive streaks on the ramp</p>
+      <span class="frameseg" role="group" aria-label="Host frame" id="sparks-frames"><button data-w="340" data-h="170" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="72" aria-pressed="false">Strip</button><button data-w="960" data-h="600" aria-pressed="false">Room</button></span></div>
+    <p class="algo">70 seeded sparks · first impact: big flash, ~45% fragment into 2–4 shards (gen 1, faster decay) · later bounces cost heat quietly · Room frame: floor-only collisions, walls open · additive streaks</p>
   </section>
 
   <section class="card">
     <span class="eyebrow">Load · determinate</span>
     <h2>Molten veins · v2</h2>
-    <p class="use">Organic, and now irreversible: smoothed curves, branches <em>tapering</em> to capillary tips, heat
-    trailing each living tip — and the surge rhythm is mathematically monotone, so a tip can stall dead but can
-    never slide backwards. Branches emerge through their junctions; the network lands together at 100%.</p>
+    <p class="use">Organic and irreversible, now smooth: growth speed <em>breathes</em> between 0.5× and 1.5× —
+    it ebbs and flows but never stalls dead and never slides backwards. Smoothed curves, branches tapering to
+    capillary tips, heat trailing each living tip; branches emerge through their junctions and land together at 100%.</p>
     <div class="stage"><canvas id="cv-veins" aria-label="Molten veins loader: tapering curved veins grow in surges, heat trailing the tips"></canvas></div>
     <div class="row"><button id="vein-play">▶ Simulate load</button><input id="vein-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten veins progress">
       <span class="frameseg" role="group" aria-label="Host frame" id="vein-frames"><button data-w="340" data-h="180" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="90" aria-pressed="false">Banner</button></span></div>
-    <p class="algo">seeded branch grammar toward +x, Chaikin-smoothed · width tapers to capillary tips · colour = exp cool-off behind the front · surge f(q)=q−sin(ωq+φ)/ω: f′≥0, no backtracking, f(1)=1</p>
+    <p class="algo">seeded branch grammar toward +x, Chaikin-smoothed · width tapers to capillary tips · colour = exp cool-off behind the front · f(q)=q−A·sin(ωq+φ)/ω, A=.5: f′∈[.5,1.5] — smooth, monotone, f(1)=1</p>
   </section>
 
   <section class="card">
@@ -248,8 +249,9 @@
 
   /* ---- Sparks (locked): first impact flashes, sometimes shatters into shards ---- */
   {
-    let W, H, x, parts = [], puffs = [], flash = null, raf = 0, seedN = 5, rng = mulberry(1);
-    const init = (w, h) => { W = w; H = h; x = size('cv-sparks', w, h); parts = []; puffs = []; flash = null;
+    let W, H, x, parts = [], puffs = [], flash = null, raf = 0, seedN = 5, rng = mulberry(1), open = false;
+    const init = (w, h) => { W = w; H = h; open = w >= 600;   // the Room: zoomed out, open air — only the floor exists
+      x = size('cv-sparks', w, h); parts = []; puffs = []; flash = null;
       if (REDUCED) rest(); else strike(W / 2, H * .45); };
     const strike = (sx, sy) => { rng = mulberry(seedN += 13); flash = { x: sx, y: sy, a: 1 };
       const count = Math.min(70, Math.max(28, Math.round(W * H / 800)));
@@ -283,9 +285,9 @@
               born.push({ x: s.x, y: s.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: s.life * .8, decay: s.decay * 1.9, w: .8, gen: 1, hits: 0 }); }
             s.life *= .45; }
           else s.life *= .82; };
-        if (s.x < 2 && s.vx < 0) { s.vx *= -.7; hit(2, s.y); }
-        if (s.x > W - 2 && s.vx > 0) { s.vx *= -.7; hit(W - 2, s.y); }
-        if (s.y < 2 && s.vy < 0) { s.vy *= -.7; hit(s.x, 2); }
+        if (!open) { if (s.x < 2 && s.vx < 0) { s.vx *= -.7; hit(2, s.y); }
+          if (s.x > W - 2 && s.vx > 0) { s.vx *= -.7; hit(W - 2, s.y); }
+          if (s.y < 2 && s.vy < 0) { s.vy *= -.7; hit(s.x, 2); } }
         if (s.y > H - 2 && s.vy > 0) { s.vy *= -.7; s.vx *= .9; hit(s.x, H - 2); } }
       if (born.length) parts.push(...born);
       if (live && !REDUCED) raf = requestAnimationFrame(draw); else if (!REDUCED) rest(); };
@@ -307,7 +309,7 @@
     const grow = () => { const r = mulberry(41); branches = []; maxD = 0;
       let side = 1;
       const spawn = (px, py, a, wd, d0, gen, parent) => {
-        const b = { pts: null, wd, d0, d1: d0, off: r() * .2, k: 2 + (r() * 3 | 0), ph: r() * 7, parent };
+        const b = { pts: null, wd, d0, d1: d0, off: r() * .1, k: 2 + (r() * 2 | 0), ph: r() * 7, parent };
         const raw = [{ x: px, y: py, d: d0 }]; let a0 = a, d = d0;
         const steps = gen === 0 ? 999 : gen >= 3 ? 4 + (r() * 5 | 0) : 12 + (r() * 12 | 0);
         for (let i = 0; i < steps; i++) { const L = 10 + r() * 6;
@@ -322,11 +324,13 @@
         maxD = Math.max(maxD, d); };
       spawn(6, H / 2, 0, 3.2, 0, 0, null);
       spawn(6, H / 2, .5, 2, 0, 1, null); spawn(6, H / 2, -.5, 2, 0, 1, null); };
-    // per-branch stall-and-lunge that is PROVABLY monotone: d/dq [q - sin(ωq+φ)/ω] = 1 - cos(ωq+φ) ≥ 0,
-    // so a tip can pause dead but can never retreat; f(0)=0 and f(1)=1 keep the landing exact.
+    // per-branch ebb-and-flow, PROVABLY smooth AND monotone: d/dq = 1 - A·cos(ωq+φ) ∈ [1-A, 1+A]
+    // with A = .5, so growth speed breathes between .5× and 1.5× but never stalls dead and never
+    // retreats; f(0)=0 and f(1)=1 keep the landing exact.
+    const AMP = .5;
     const bp = (b, p) => { const q = Math.min(1, Math.max(0, (p - b.off) / (1 - b.off)));
       const w = 2 * Math.PI * b.k;
-      return q - (Math.sin(w * q + b.ph) - Math.sin(b.ph)) / w; };
+      return q - AMP * (Math.sin(w * q + b.ph) - Math.sin(b.ph)) / w; };
     // a branch only exists once its parent's front has reached the junction — no orphaned fragments
     let frameN = 0;
     const limOf = (b, p) => { if (b._c === frameN) return b._lim; b._c = frameN;
