@@ -53,12 +53,12 @@
 <body>
 <header>
   <h1>Forgelight — loading &amp; refresh, grimdark</h1>
-  <p class="sub">Round six. <b>Sparks</b> and <b>Ember bokeh</b> stay locked ✓. Loader physics refined per review:
-  <b>Molten veins</b> growth is smooth and provably monotone — speed breathes, never stalls dead, never retreats; <b>Molten fill</b>'s
-  annealing is decoupled from the number — metal sets by how long it has sat, so the tail hardens while the front
-  still pours, and after 100% the melt takes a few seconds to fully set before the loop rests. Frame switchers still re-host every effect in different containers. Molten Harmonics rules throughout:
-  seeded, deterministic, vanilla Canvas&nbsp;2D, one heat ramp around the brass accent, finished frame under
-  <code>prefers-reduced-motion</code>.</p>
+  <p class="sub">Round seven. <b>Sparks</b> and <b>Ember bokeh</b> stay locked ✓ (Sparks gained the zoomed-out
+  <b>Room</b> frame — open air, floor-only). The veins are <b>reapproached as Molten bloom</b>: pop-and-fade beads
+  along sinuous curves instead of sharp lightning. <b>Molten fill</b> is fed by a metaphorical <b>tap</b> that
+  throttles closed across the last few percent — no snap at 100%, just a pour ending, then the melt sets by time.
+  Molten Harmonics rules throughout: seeded, deterministic, vanilla Canvas&nbsp;2D, one heat ramp, finished frame
+  under <code>prefers-reduced-motion</code>.</p>
 </header>
 <p class="rmnote">Reduced motion is on — each state is showing its final still frame, exactly as it would ship.</p>
 
@@ -66,14 +66,14 @@
   <section class="card">
     <span class="eyebrow">Load · determinate</span>
     <h2>Molten fill · v2</h2>
-    <p class="use">The melt piles into a <em>meniscus</em> at the leading edge and a slow swell travels the surface —
-    but <em>setting is physics, not percentage</em>: each cell anneals by how long it has sat. The tail stills,
-    darkens and takes a sheen while the front still pours; bubbles only rise through molten stretches; after the
-    number reaches 100% the last of the melt visibly sets, then the loop rests. Front stays pinned to p·width.</p>
+    <p class="use">Fed from the start edge by a <em>tap</em> (metaphorical — no fixture): the source corner runs
+    white-hot and refuses to set while the pour is on. Over the last few percent the tap <em>throttles closed</em> —
+    the inflow glow dies, the meniscus relaxes, the melt levels — so there is no snap at 100%, just a pour ending.
+    Cells still anneal by time-sat; the loop rests only once everything has set. Front stays pinned to p·width.</p>
     <div class="stage"><canvas id="cv-fill" aria-label="Molten fill loader: living molten metal fills the bar, front locked to progress"></canvas></div>
     <div class="row"><button id="fill-play">▶ Simulate load</button><input id="fill-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten fill progress">
       <span class="frameseg" role="group" aria-label="Host frame" id="fill-frames"><button data-w="340" data-h="56" aria-pressed="true">Bar</button><button data-w="300" data-h="170" aria-pressed="false">Panel</button><button data-w="84" data-h="220" aria-pressed="false">Column</button></span></div>
-    <p class="algo">analytic tongue + gaussian meniscus, front = p·width · per-cell age → anneal (colour cools, wobble stills, glow dies, sheen forms) · loop rests only when fully set · vertical hosts: level = p·height</p>
+    <p class="algo">analytic tongue, front = p·width · feed flow throttles 93→100% (source cells stay hot + molten, inflow glow dies) · level + meniscus blend over the last 6% · per-cell age → anneal · loop rests when set</p>
   </section>
 
   <section class="card">
@@ -90,14 +90,15 @@
 
   <section class="card">
     <span class="eyebrow">Load · determinate</span>
-    <h2>Molten veins · v2</h2>
-    <p class="use">Organic and irreversible, now smooth: growth speed <em>breathes</em> between 0.5× and 1.5× —
-    it ebbs and flows but never stalls dead and never slides backwards. Smoothed curves, branches tapering to
-    capillary tips, heat trailing each living tip; branches emerge through their junctions and land together at 100%.</p>
+    <h2>Molten bloom <span style="font-weight:400">(veins v3)</span></h2>
+    <p class="use">Reapproached — the lightning is gone. Growth is now a chain of molten <em>beads</em> laid along
+    slow sinuous curves: each new bead <b>pops</b> in oversized with a soft flash, then shrinks and cools into the
+    vein — the sparks' pop-and-fade, but building something. No line segments anywhere, so nothing can read sharp
+    or angular. Same breathing clock: never stalls dead, never retreats, lands together at 100%.</p>
     <div class="stage"><canvas id="cv-veins" aria-label="Molten veins loader: tapering curved veins grow in surges, heat trailing the tips"></canvas></div>
     <div class="row"><button id="vein-play">▶ Simulate load</button><input id="vein-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten veins progress">
       <span class="frameseg" role="group" aria-label="Host frame" id="vein-frames"><button data-w="340" data-h="180" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="90" aria-pressed="false">Banner</button></span></div>
-    <p class="algo">seeded branch grammar toward +x, Chaikin-smoothed · width tapers to capillary tips · colour = exp cool-off behind the front · f(q)=q−A·sin(ωq+φ)/ω, A=.5: f′∈[.5,1.5] — smooth, monotone, f(1)=1</p>
+    <p class="algo">sinuous branch grammar (curvature = slow sine, not noise) · adaptive bead resample (spacing tracks radius → continuous veins) · beads pop ×1.9 at birth, settle as e^(−fd/26) · colour cools behind the front · breathing monotone clock</p>
   </section>
 
   <section class="card">
@@ -152,11 +153,13 @@
     // ideal profile: tongue with front at EXACTLY p·N, plus a gaussian meniscus pile at the leading edge
     const prof = (pp, i) => { const f = pp * N;
       if (!horiz) return pp * H * .86;
-      if (pp >= 1) return CAP();   // the front has reached the wall: the melt levels out
       const d = (f - i) / TAPER();
       let v = d <= 0 ? 0 : CAP() * Math.pow(Math.min(1, d), .7);
-      v += CAP() * .11 * Math.exp(-Math.pow((i - f) / (TAPER() * .3), 2));
-      return Math.min(v, CAP() * 1.06); };
+      const lv = Math.min(1, Math.max(0, (pp - .94) / .06)), sm = lv * lv * (3 - 2 * lv);   // last 6%: the melt levels out
+      v += CAP() * .11 * Math.exp(-Math.pow((i - f) / (TAPER() * .3), 2)) * (1 - sm);       // ...and the meniscus relaxes with it
+      return Math.min(v + (CAP() - v) * sm, CAP() * 1.06); };
+    // the feed ("tap", metaphorically): full flow until ~93%, throttling to zero at 100%
+    const flow = pp => { const u = Math.min(1, Math.max(0, (pp - .93) / .07)); return 1 - u * u * (3 - 2 * u); };
     const init = (w, h) => { W = w; H = h; x = size('cv-fill', w, h); horiz = w >= h * 1.2;
       N = Math.max(20, Math.round(w / 3)); hh = new Float32Array(N); vv = new Float32Array(N);
       hot = new Float32Array(N); age = new Float32Array(N); bubbles = [];
@@ -173,6 +176,10 @@
           hot[i] = Math.min(1, hot[i] * .94 + Math.abs(dv) * .05);
           age[i] = hh[i] > 1 ? Math.min(1, age[i] + .0045) : 0; }
         for (let i = 0; i < N; i++) hh[i] += vv[i]; }
+      { const fl = flow(p);   // the feed: source cells run hot and refuse to set while the pour is on
+        if (fl > .02) { if (horiz) { for (let i = 0; i < 3; i++) { hot[i] = Math.min(1, hot[i] + (.05 - i * .012) * fl);
+              if (fl > .3) age[i] = Math.min(age[i], .4); } }
+          else { const mid = N >> 1; hot[mid] = Math.min(1, hot[mid] + .04 * fl); if (fl > .3) age[mid] = Math.min(age[mid], .4); } } }
       // bubbles: born in the covered melt, rise, pop at the surface
       const t2 = performance.now();
       if (t2 - lastBub > 620 && p > .05) { lastBub = t2;
@@ -217,6 +224,11 @@
       if (horiz && p < 1) { const fx = p * W;   // meniscus glow pinned to the true front
         const gm = x.createRadialGradient(fx, H - 5, 0, fx, H - 5, 17); gm.addColorStop(0, heat(.95, .5)); gm.addColorStop(1, 'rgba(0,0,0,0)');
         x.fillStyle = gm; x.beginPath(); x.arc(fx, H - 5, 17, 0, 7); x.fill(); }
+      { const fl = flow(p);   // the feed's inflow glow at the start edge — it throttles out as p → 1
+        if (fl > .02) { const gx = horiz ? 0 : W / 2, gy = horiz ? H - Math.max(8, hh[0] * .7) : 4;
+          const gf = x.createRadialGradient(gx, gy, 0, gx, gy, 22);
+          gf.addColorStop(0, heat(.98, .6 * fl)); gf.addColorStop(1, 'rgba(0,0,0,0)');
+          x.fillStyle = gf; x.beginPath(); x.arc(gx, gy, 22, 0, 7); x.fill(); } }
       pctLabel(); };
     const pctLabel = () => { x.globalCompositeOperation = 'source-over'; x.fillStyle = 'rgba(236,227,216,.75)';
       x.font = '10px ui-monospace,Menlo,monospace'; x.textAlign = horiz ? 'right' : 'center';
@@ -298,78 +310,75 @@
     init(340, 170);
   }
 
-  /* ---- Molten veins v2: smoothed curves, tapered capillary tips, heat trailing the front ---- */
+  /* ---- Molten bloom (veins v3): pop-and-fade growth — beads, not line segments ---- */
   {
-    let W, H, x, branches, maxD, raf = 0;
-    const chaikin = pts => { const out = [pts[0]];   // one corner-cutting pass; d interpolates with the points
+    let W, H, x, branches, raf = 0;
+    const chaikin = pts => { const out = [pts[0]];
       for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1];
         out.push({ x: a.x * .75 + b.x * .25, y: a.y * .75 + b.y * .25, d: a.d * .75 + b.d * .25 });
         out.push({ x: a.x * .25 + b.x * .75, y: a.y * .25 + b.y * .75, d: a.d * .25 + b.d * .75 }); }
       out.push(pts[pts.length - 1]); return out; };
-    const grow = () => { const r = mulberry(41); branches = []; maxD = 0;
-      let side = 1;
+    const grow = () => { const r = mulberry(41); branches = []; let side = 1;
       const spawn = (px, py, a, wd, d0, gen, parent) => {
-        const b = { pts: null, wd, d0, d1: d0, off: r() * .1, k: 2 + (r() * 2 | 0), ph: r() * 7, parent };
+        const b = { nodes: null, wd, d0, d1: d0, off: r() * .1, k: 2 + (r() * 2 | 0), ph: r() * 7, parent };
         const raw = [{ x: px, y: py, d: d0 }]; let a0 = a, d = d0;
+        const bend = r() * 7, bf = .03 + r() * .03;   // sinuous meander: curvature is a slow sine, not noise
         const steps = gen === 0 ? 999 : gen >= 3 ? 4 + (r() * 5 | 0) : 12 + (r() * 12 | 0);
-        for (let i = 0; i < steps; i++) { const L = 10 + r() * 6;
-          a0 += (r() - .5) * .32 - a0 * .06;
-          const ny = py + Math.sin(a0) * L; const nx = px + Math.cos(a0) * L;
-          if (nx > W - 8 || ny < 8 || ny > H - 8 || nx < 4) break;
+        for (let i = 0; i < steps; i++) { const L = 9 + r() * 5;
+          a0 += Math.sin(d * bf + bend) * .22 + (r() - .5) * .1 - a0 * .05;
+          const ny = py + Math.sin(a0) * L, nx = px + Math.cos(a0) * L;
+          if (nx > W - 10 || ny < 10 || ny > H - 10 || nx < 4) break;
           px = nx; py = ny; d += L; raw.push({ x: px, y: py, d });
-          const pBranch = gen >= 2 ? .18 : .12;   // fine capillaries split more eagerly near the ends
-          if (gen < 4 && r() < pBranch && branches.length < 34) { side = -side;
-            spawn(px, py, a0 + side * (.5 + r() * .55), wd * .62, d, gen + 1, b); } }
-        if (raw.length > 2) { b.pts = chaikin(raw); b.d1 = d; branches.push(b); }
-        maxD = Math.max(maxD, d); };
-      spawn(6, H / 2, 0, 3.2, 0, 0, null);
-      spawn(6, H / 2, .5, 2, 0, 1, null); spawn(6, H / 2, -.5, 2, 0, 1, null); };
-    // per-branch ebb-and-flow, PROVABLY smooth AND monotone: d/dq = 1 - A·cos(ωq+φ) ∈ [1-A, 1+A]
-    // with A = .5, so growth speed breathes between .5× and 1.5× but never stalls dead and never
-    // retreats; f(0)=0 and f(1)=1 keep the landing exact.
+          const pB = gen >= 2 ? .16 : .11;
+          if (gen < 4 && r() < pB && branches.length < 30) { side = -side;
+            spawn(px, py, a0 + side * (.55 + r() * .5), wd * .6, d, gen + 1, b); } }
+        if (raw.length > 2) { let pts = raw; for (let c = 0; c < 2; c++) pts = chaikin(pts);
+          const span = Math.max(1, d - d0);   // adaptive resample: bead spacing follows local bead size, so veins stay continuous
+          const R = dd => Math.max(.7, wd * (1 - ((dd - d0) / span) * .62));
+          const nodes = []; let need = 0;
+          for (let i = 1; i < pts.length; i++) { const a2 = pts[i - 1], q = pts[i];
+            const seg = Math.hypot(q.x - a2.x, q.y - a2.y) || .001; let s0 = need;
+            while (s0 < seg) { const f = s0 / seg, dd = a2.d + (q.d - a2.d) * f;
+              nodes.push({ x: a2.x + (q.x - a2.x) * f, y: a2.y + (q.y - a2.y) * f, d: dd, r: R(dd) });
+              s0 += Math.max(1.3, R(dd) * 1.15); }
+            need = s0 - seg; }
+          if (nodes.length > 1) { b.nodes = nodes; b.d1 = d; branches.push(b); } } };
+      spawn(6, H / 2, 0, 3.4, 0, 0, null);
+      spawn(6, H / 2, .5, 2.1, 0, 1, null); spawn(6, H / 2, -.5, 2.1, 0, 1, null); };
+    // growth clock: speed breathes between .5x and 1.5x — smooth, monotone, lands exactly at 1
     const AMP = .5;
     const bp = (b, p) => { const q = Math.min(1, Math.max(0, (p - b.off) / (1 - b.off)));
       const w = 2 * Math.PI * b.k;
       return q - AMP * (Math.sin(w * q + b.ph) - Math.sin(b.ph)) / w; };
-    // a branch only exists once its parent's front has reached the junction — no orphaned fragments
     let frameN = 0;
     const limOf = (b, p) => { if (b._c === frameN) return b._lim; b._c = frameN;
       let own = bp(b, p) * (b.d1 - b.d0);
-      if (p < 1 && b.parent && b.parent.pts) {   // flow continues THROUGH the junction: emerge, don't pop
+      if (p < 1 && b.parent && b.parent.nodes) {   // flow continues THROUGH the junction: emerge, don't pop in mid-air
         const past = limOf(b.parent, p) - b.d0;
         own = Math.min(own, Math.max(0, past * 2.2)); }
       b._lim = b.d0 + own; return b._lim; };
-    // per-segment stroke: width tapers along the branch, colour cools with distance behind the front
-    const drawBranch = (b, dLim, p) => { const pts = b.pts; let tip = null;
-      x.lineCap = 'round';
-      for (let i = 1; i < pts.length; i++) { const a = pts[i - 1], q = pts[i];
-        if (a.d >= dLim) break;
-        let ex = q.x, ey = q.y, ed = q.d;
-        if (q.d > dLim) { const f = (dLim - a.d) / (q.d - a.d); ex = a.x + (q.x - a.x) * f; ey = a.y + (q.y - a.y) * f; ed = dLim; }
-        const along = (a.d - b.d0) / Math.max(1, b.d1 - b.d0);
-        const wd = Math.max(.5, b.wd * (1 - along * .68));
-        const fd = dLim - a.d;   // distance behind this branch's front
-        const tc = p >= 1 ? .46 : .44 + .5 * Math.exp(-fd / 70);
-        x.strokeStyle = heat(tc, 1); x.lineWidth = wd;
-        x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(ex, ey); x.stroke();
-        if (ed >= dLim) { tip = { x: ex, y: ey }; break; }
-        tip = { x: ex, y: ey }; }
-      return tip; };
     const render = (p, time = 0) => { clear(x, W, H);
       x.globalCompositeOperation = 'source-over';
-      const tips = []; frameN++;
+      frameN++;
+      const glows = [];
       for (const b of branches) { const dLim = limOf(b, p);
-        if (dLim <= b.d0 && p < 1) continue;   // gated: parent hasn't reached this junction yet
-        const tip = drawBranch(b, dLim, p);
-        if (tip && p < 1 && dLim < b.d1) tips.push(tip); }
-      if (p >= 1) { x.globalCompositeOperation = 'lighter';
-        const a = .1 + .05 * Math.sin(time * 1.1);
+        if (dLim <= b.d0 && p < 1) continue;
+        for (const n of b.nodes) { if (p < 1 && n.d > dLim) break;
+          const baseR = n.r;
+          const fd = p >= 1 ? 1e9 : dLim - n.d;      // how far behind the growth front this bead is
+          const pop = Math.exp(-fd / 26);            // newborn beads pop in oversized...
+          const rr = baseR * (1 + pop * .9);         // ...then shrink and cool into the vein
+          const tc = p >= 1 ? .46 : .44 + .52 * Math.exp(-fd / 90);
+          x.fillStyle = heat(tc, 1);
+          x.beginPath(); x.arc(n.x, n.y, rr, 0, 7); x.fill();
+          if (pop > .25 && p < 1) glows.push({ x: n.x, y: n.y, a: pop }); } }
+      x.globalCompositeOperation = 'lighter';   // the pop's flash, fading as each bead settles
+      for (const g of glows) { const gr = x.createRadialGradient(g.x, g.y, 0, g.x, g.y, 9);
+        gr.addColorStop(0, heat(.95, .55 * g.a)); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = gr; x.beginPath(); x.arc(g.x, g.y, 9, 0, 7); x.fill(); }
+      if (p >= 1) { const a = .1 + .05 * Math.sin(time * 1.1);
         const g = x.createLinearGradient(0, 0, W, 0); g.addColorStop(0, heat(.6, a)); g.addColorStop(1, heat(.6, a * .5));
-        x.fillStyle = g; x.fillRect(0, 0, W, H);
-      } else { x.globalCompositeOperation = 'lighter';
-        for (const t of tips) { const g = x.createRadialGradient(t.x, t.y, 0, t.x, t.y, 8);
-          g.addColorStop(0, heat(.95, .75)); g.addColorStop(1, 'rgba(0,0,0,0)');
-          x.fillStyle = g; x.beginPath(); x.arc(t.x, t.y, 8, 0, 7); x.fill(); } }
+        x.fillStyle = g; x.fillRect(0, 0, W, H); }
       x.globalCompositeOperation = 'source-over'; x.fillStyle = 'rgba(236,227,216,.75)';
       x.font = '10px ui-monospace,Menlo,monospace'; x.textAlign = 'right'; if (H > 40) x.fillText(Math.round(p * 100) + '%', W - 8, 14); };
     const scrub = document.getElementById('vein-scrub');
