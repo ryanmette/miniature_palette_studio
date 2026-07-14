@@ -214,7 +214,8 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   │   └── bento-dashboard.html · sticky-studio-rail.html
 │   └── loaders/
 │       ├── MOLTEN_HARMONICS.md ← loader philosophy (see §3.4)
-│       └── loader.html        ← determinate loader (drop → wheel → wells)
+│       ├── loader.html        ← determinate loader (drop → wheel → wells)
+│       └── forgelight.html    ← 6 dark-theme algorithmic load/refresh states (sparks · veins · pour · brush · d20 · embers)
 ├── scripts/                   ← dev tooling, NOT shipped (never required at runtime)
 │   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
 │   ├── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5) — runs in CI (test.yml)
