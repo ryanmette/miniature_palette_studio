@@ -220,6 +220,16 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    whole-tree sweep. Note `main` already drifted from 295 → 381 commented lines in `app.js` on its own
    through PRs #21–#27, so the gap is smaller than #20 assumed.
 
+6. **Accent-seed mode is dropped, not parked, when the seed goes neutral** (found 2026-08-11 while
+   testing the step-3 refactor; not a regression — this is how it has always behaved). Drag the wheel
+   through the low-saturation centre and `ensureHarmonyMode()` correctly forces `seedRole = 'main'`
+   (a neutral accent has no complement to build from) — but unlike `preNeutralHarmony`, the seed role
+   is never restored when the seed regains its hue, so a drag that merely *passes through* grey
+   silently ends accent-seed mode. **Decision needed before fixing:** park and restore it symmetrically
+   with the harmony, or keep it sticky on the grounds that leaving accent mode is a bigger change of
+   intent than swapping a harmony? Cheap either way (`ensureHarmonyMode`, beside the existing park);
+   the question is which is less surprising to a painter mid-drag.
+
 ---
 
 ## 6. Squarespace embedding — superseded by docs/EMBED.md

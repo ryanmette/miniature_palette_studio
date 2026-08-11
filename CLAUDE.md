@@ -236,6 +236,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── js/data.js             ← load + index dataset, nearest-paint search (M2)
     ├── js/harmony.js          ← harmony generation (see §7) (M2)
     ├── js/a11y.js             ← colour-blindness sim + WCAG contrast + CVD collision (M2/M7)
+    ├── js/seed.js             ← the seed FRAME: pick ↔ scheme base (accent-seed is 180° away). Pure.
     ├── js/scheme.js           ← role mapping + ideal-vs-actual + wash/highlight (M4)
     ├── js/ui.js               ← rendering + events (M3)
     ├── js/app.js              ← state, URL share encoding, wiring (M3)

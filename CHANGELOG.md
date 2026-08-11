@@ -46,6 +46,42 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   distance (§2); flat sources keep pure ΔE order. SW `ps-v28`.
 
 ### Fixed
+- **One render chokepoint — the output tabs can no longer sit on a stale colour.** Every path that
+  changed scheme state used to assemble its own list of renderers, and the lists disagreed: the
+  wheel's `commit()` repainted the canvas, live palette and hero but never the **Plan / Equivalents /
+  Accessibility** tabs, so dragging a node, moving the lightness slider or hitting **↻ Generate**
+  left the role cards, ideal-vs-actual matches, tone ladders and shopping-gap count pinned to the
+  *pre-drag* colour until some unrelated action happened to re-render them — the live-exploration
+  path, which is the whole point of the wheel. All of them now call **`render(reason)`**
+  (`seed` · `scheme` · `palette` · `drag` · `settle` · `all`), which owns the order:
+  `ensureHarmonyMode()` first (nothing may read neutral mode before it settles), then studio → hero →
+  the active tab, then one announce. Drag frames stay coalesced to one repaint each; measured against
+  the previous commit the median frame is unchanged (vsync-bound) on all three tabs, with the added
+  tab render costing ~3–5 ms at p95.
+- **The hero can't claim a seed role the engine has already overridden.** `renderHero()` ran *before*
+  `ensureHarmonyMode()` in two paths, so typing a neutral hex while in accent-seed mode drew the hero
+  from the stale mode — no "neutral" tag, badge still reading **accent** — and nothing re-rendered it
+  after the engine moved the seed to Primary. Ordering is now fixed inside `render()`.
+- **The neutral-mode switch is actually announced.** `ensureHarmonyMode()` wrote its explanation into
+  `#status` and the caller's own `announce()` overwrote it a statement later, so a screen-reader user
+  was never told the harmony had been swapped out from under them. The note is now handed to
+  `announce()`, which **composes** it ahead of the standing summary and consumes it once.
+- **The wheel draws the scheme, not a colour 180° from it.** In accent-seed mode the wheel built its
+  nodes from the *pick* while the live palette and Plan built theirs from the scheme base — two
+  frames 180° apart. Two of three wheel nodes were colours in no scheme, three of four scheme colours
+  had no node, and the `data-hex` colour link could never match, so hovering a Plan card silently
+  failed to ring anything. New **`src/js/seed.js`** owns the pick ↔ scheme-base mapping as pure,
+  tested functions; everything that renders, hit-tests or resolves a swatch key now works in the
+  scheme frame, and `baseHex()` is renamed **`pickHex()`** and confined to the pick's own identity
+  (hero, seed badge, hex field, share URL). Wheel **role badges (P/A/2) now work in accent-seed mode**
+  too — they had to be suppressed there precisely because the frames disagreed.
+- **Lock and edit act on the colour the column actually shows.** The live palette mints `p:<deg>`
+  swatch keys relative to the scheme base while `swatchHex()`/`detachPartner()` resolved them against
+  the pick, so in accent-seed mode the colour editor opened on the wrong colour and locking a partner
+  visibly recoloured the column. Both now resolve in the scheme frame (`seed.js swatchKeyHex`), and
+  the *write* side matches: editing the base column and **"use as base colour"** go through
+  `seedFromSchemeBase()`, as does a wheel drag — writing the raw colour made the scheme jump 180° the
+  moment it was set. SW `ps-v30`.
 - **Owned paints are marked as owned even when the collection isn't driving the ranking.** With
   *Use my collection* at its default **off**, `matchOpts()` passed neither ranking set, so
   `decorate()` short-circuited and every match reported `owned: false` — the live palette's ✓ owned
