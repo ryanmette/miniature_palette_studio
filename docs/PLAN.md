@@ -207,6 +207,19 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    (e.g. a reformulation), disambiguate the name/line. Likely a handful of other dupes exist — the
    validator check will surface them all.
 
+5. **Redo the plain-English comment pass — after the render-chokepoint refactor** (noted 2026-08-11).
+   PR #20 (codebase-wide inline comments, opened 2026-07-03) was **closed unmerged**: it appended
+   *trailing* comments to existing code lines, so every annotated line became a modified line and the
+   branch went irreconcilable with seven PRs of subsequent work — 12 conflicting files, and worse, the
+   comments that still merged *cleanly* had gone stale invisibly (it asserted `ensureHarmonyMode` was
+   `neutralMode`'s only writer; `main` now has three). §6 was amended in the same change to welcome a
+   plain-English *what* alongside the *why*, with the anti-drift rule and a preference for comments
+   *above* a line over trailing ones. **Do the fresh pass after the `render(reason)` chokepoint +
+   `pickHex()`/`schemeBase()` rename land** — that refactor rewrites part of `app.js` again, so
+   commenting first would waste the work. Scope it per-module and land it in small PRs, not one
+   whole-tree sweep. Note `main` already drifted from 295 → 381 commented lines in `app.js` on its own
+   through PRs #21–#27, so the gap is smaller than #20 assumed.
+
 ---
 
 ## 6. Squarespace embedding — superseded by docs/EMBED.md

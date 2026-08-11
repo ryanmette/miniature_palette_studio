@@ -18,6 +18,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (mockups/equiv-source-picker.html directions A+B, per Ryan). SW `ps-v27`.
 
 ### Changed
+- **§6 comment rule amended: the *why*, plus a plain-English *what* where it helps (per Ryan).** The
+  rule was "comments explain *why*, not *what*"; it now welcomes an approachable *what* alongside,
+  bound by an explicit anti-drift clause — correct or delete a comment in the same commit as the code
+  it no longer matches — and a preference for comments *above* a line rather than trailing it. The
+  trailing-comment caveat is the lesson of **PR #20** (whole-tree inline-comment pass, closed
+  unmerged): trailing comments couple prose to the code line in git, so the branch collided with seven
+  PRs of later work across 12 files, and the comments that *did* merge cleanly had silently gone stale.
+  A fresh, per-module pass is queued in PLAN.md §5 for after the render-chokepoint refactor.
 - **The Shelf's brand filter is now a dropdown, not chip rows (per Ryan).** The nine wrapped brand
   pills cost three full rows on a phone, pushing the grid below the fold; the filter is now a native
   `All brands` select in the filter row — the same control the Paints drawer already uses for brand

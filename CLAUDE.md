@@ -314,7 +314,12 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 - Pure functions for math; side effects only in `ui.js`/`app.js`.
 - Accessibility: semantic HTML, labelled controls, keyboard operable, visible focus, `aria-live` for dynamic palette updates, respects `prefers-reduced-motion`.
 - Performance budget: first render < 100ms after JSON load; nearest-paint search over the full dataset < 16ms (precompute Lab once).
-- Comments explain *why*, not *what*.
+- Comments carry the *why*. A plain-English *what* is welcome too where it makes the code approachable
+  to a reader new to it — but a comment must never drift from the code it describes: correct or delete
+  it in the same commit as the code it no longer matches. A trailing comment on a code line couples the
+  two in git (every annotated line becomes a modified line), so prefer a comment *above* the line when
+  the note is more than a few words — a large trailing-comment pass conflicts with any later edit and
+  goes stale invisibly where it doesn't (the lesson of PR #20, closed unmerged).
 
 ---
 
