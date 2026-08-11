@@ -1,7 +1,7 @@
 // ui.js — pure render-to-string helpers. No DOM access, no globals (import-safe + testable).
 // DOM wiring lives in app.js. Colour decisions come from the engine (color.js).
 
-import { textOn, normHex } from './color.js';
+import { textOn, normHex, rgbToHsl, hexToRgb } from './color.js';
 import { HARMONY_OFFSETS } from './harmony.js';
 
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -163,7 +163,7 @@ export const popChips = (pops, active) =>
   '<span class="micro">Quick pops</span>' + pops.map(p =>
     `<button type="button" class="pop${p.hex.toUpperCase() === (active || '').toUpperCase() ? ' on' : ''}"`
     + ` data-pop="${esc(p.hex)}" aria-pressed="${p.hex.toUpperCase() === (active || '').toUpperCase()}"`
-    + ` title="Use ${esc(p.name)} as the pop accent"><span class="sw" style="background:${esc(p.hex)}"></span>${esc(p.name)}</button>`).join('');
+    + ` title="Use ${esc(p.name)} as the pop accent">${swatch(p.hex)}${esc(p.name)}</button>`).join('');
 
 const tier = t => `var(--${t})`;
 
@@ -300,9 +300,22 @@ const COPY_ICON = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" s
  *  it maps to one (via `roleByHex`), so it reads in the same language as the Plan. The Metal role has no
  *  wheel node, so it rides along as a **display-only** column (no edit/lock/drag). Added/free colours and
  *  unmatched value-ramp steps keep a node tag. `fill`: 'ideal' | 'real'; nearest paint + ΔE stay in both (§2). */
+/**
+ * Label a value-harmony column by what actually VARIES. Shades/monochromatic partners rotate no hue,
+ * so harmonyPartners gives them all `deg 0` — rendering that as a hue offset put a meaningless "0°"
+ * on every one of them, identical across columns that differ in lightness or saturation.
+ */
+export function toneTag(hex, baseHex) {
+  const a = rgbToHsl(hexToRgb(normHex(hex) || '#000000')), b = rgbToHsl(hexToRgb(normHex(baseHex) || '#000000'));
+  const dl = a[2] - b[2], ds = a[1] - b[1];
+  if (Math.abs(dl) >= Math.abs(ds)) return dl >= 0 ? 'Lighter' : 'Darker';
+  return ds >= 0 ? 'Richer' : 'Softer';
+}
+
 export function livePalette(vm, fill, roleByHex = {}) {
   if (!vm.length) return '';
   const real = fill === 'real';
+  const baseCol = (vm.find(c => c.kind === 'base') || vm[0]).hex;   // reference for value-partner tone labels
   const freeCount = vm.filter(c => c.kind === 'free').length;   // added swatches are the reorderable ones
   return `<div class="livepal">${vm.map(c => {
     const bg = safeColor(real && c.match ? c.match.paint.hex : c.hex);   // hex label + copy follow the fill
@@ -311,7 +324,8 @@ export function livePalette(vm, fill, roleByHex = {}) {
     const isMetal = c.kind === 'metal', isPin = c.kind === 'pin';   // pin = the accent-seed colour riding along (display-only, like Metal)
     const cHex = safeColor(c.hex);                         // the swatch's own (ideal) colour — what "use as base"/edit start from
     const role = roleByHex[cHex.toUpperCase()];            // unify with the Plan: show the role this colour plays
-    const tag = role || (isBase ? 'Base' : isFree ? 'Added' : isMetal ? 'Metal' : isPin ? 'Accent' : `${c.deg > 0 ? '+' : ''}${c.deg}°`);
+    const tag = role || (isBase ? 'Base' : isFree ? 'Added' : isMetal ? 'Metal' : isPin ? 'Accent'
+      : c.deg ? `${c.deg > 0 ? '+' : ''}${c.deg}°` : toneTag(c.hex, baseCol));   // deg 0 = a value partner, not a hue offset
     // Finish overlay: a real-fill column wears its matched paint's finish; the ideal Metal column wears the
     // metallic sheen (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
     const fx = real && m ? fxCls(m.paint).trim() : (isMetal ? 'metal' : '');

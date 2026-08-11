@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, segmented, hero, paintStrip } from '../src/js/ui.js';
+import { livePalette, roleSlots, segmented, hero, paintStrip, popChips } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -115,4 +115,41 @@ test('equivalents source chips + the Plan-card jump carry the right hooks', asyn
   const slots = roleSlots(buildScheme(idx, '#9A1115', 'complementary'), () => 'none');
   assert.equal((slots.match(/data-goequiv=/g) || []).length, 4, 'every role card gets the jump');
   assert.ok(slots.includes('data-goequiv="#9A1115"'), 'jump targets the role ideal');
+});
+
+test('popChips routes its swatch through safeColor — no inline-style exception (§ui.js:11)', () => {
+  const on = popChips([{ hex: '#9C1626', name: 'Crimson' }], '#9c1626');
+  assert.match(on, /background-color:#9C1626;/);        // background-color, so finish overlays can layer
+  assert.doesNotMatch(on, /style="background:/);
+  assert.match(on, /aria-pressed="true"/);              // matching the active pop is case-insensitive
+  // A colour that never came from rgbToHex/normHex must not escape into the STYLE block (it may
+  // still appear escaped in data-pop — an attribute, not a CSS sink).
+  const bad = popChips([{ hex: 'red;background-image:url(x)', name: 'Bad' }], null);
+  assert.match(bad, /style="background-color:#000000;"/);
+  assert.doesNotMatch(bad, /style="[^"]*background-image/);
+});
+
+test('value-harmony columns get a tone label, not a meaningless "0°"', async () => {
+  const { toneTag } = await import('../src/js/ui.js');
+  const { rgbToHsl, hexToRgb, hslToRgb, rgbToHex } = await import('../src/js/color.js');
+  // Build the partners the way the recipes actually do (§7), so the labels are tested against real
+  // inputs: `shades` moves ONLY lightness, `monochromatic` moves mostly saturation.
+  const BASE = '#9A1115';
+  const [h, sat, l] = rgbToHsl(hexToRgb(BASE));
+  const step = (ds, dl) => rgbToHex(hslToRgb([h, Math.max(0, sat + ds), Math.max(0, Math.min(1, l + dl))]));
+  const lighter = step(0, 0.12), darker = step(0, -0.12), softer = step(-0.34, 0);
+
+  assert.equal(toneTag(lighter, BASE), 'Lighter');
+  assert.equal(toneTag(darker, BASE), 'Darker');
+  assert.equal(toneTag(softer, BASE), 'Softer');   // monochromatic: saturation is what moved
+
+  const valueVm = [
+    { id: 'p0', kind: 'base', deg: 0, hex: BASE, match: null },
+    { id: 'p1', kind: 'partner', deg: 0, hex: darker, match: null },
+    { id: 'p2', kind: 'partner', deg: 0, hex: lighter, match: null },
+  ];
+  const html = livePalette(valueVm, 'ideal', { [BASE]: 'Primary' });
+  assert.doesNotMatch(html, />0°</, 'no bare 0° tags');
+  assert.match(html, /class="lctag">Darker</);
+  assert.match(html, /class="lctag">Lighter</);
 });

@@ -4,6 +4,9 @@
 import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
   isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex } from './color.js';
+import { schemeBaseOf, pickForSchemeBase, swatchKeyHex } from './seed.js';   // the pick ↔ scheme-base frame
+import { encodeState, decodeState } from './share.js';   // the share-link contract (state ⇄ URL)
+import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
@@ -31,12 +34,17 @@ const OWNED_BOOST = 6;   // ΔE the soft owned-boost is "worth" — owned paints
 const METAL_DEMOTE = 4;  // ΔE handicap on metallics for COLOUR roles (they read differently on the model); the
                          // Metal role's all-metal pool demotes every candidate equally, so it's unaffected (§7)
 
-const baseHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
+/** The colour the painter PICKED. Its identity only — the hero, the seed badge, the hex field and the
+ *  share URL. Anything that renders, hit-tests or resolves a swatch key uses schemeBase() (see seed.js). */
+const pickHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
 /** Entry mode C: when the seed is the *accent*, build the scheme around its complement. */
-const schemeBase = () => (state.seedRole === 'accent' ? rotateHue(baseHex(), 180) : baseHex());
+const schemeBase = () => schemeBaseOf(pickHex(), state.seedRole);
+/** Write the SCHEME base — the wheel's frame and the palette's base column. In accent-seed mode the
+ *  pick lives 180° away, so it's the pick that actually gets stored (seed.js pickForSchemeBase). */
+const seedFromSchemeBase = hex => seedFromHex(pickForSchemeBase(hex, state.seedRole));
 /** Accent-seed pinning (§7): in accent mode the Accent role's ideal is the picked colour verbatim,
  *  in every harmony. Null in main mode — the geometry decides. */
-const accentPin = () => (state.seedRole === 'accent' ? baseHex() : null);
+const accentPin = () => (state.seedRole === 'accent' ? pickHex() : null);
 
 /* ---- neutral mode (CLAUDE.md §7 / PLAN v1.8): a neutral seed swaps the scheme engine ---- */
 // Hysteresis (enter < NEUTRAL_CHROMA, exit > NEUTRAL_EXIT): a drag hovering on the boundary can't
@@ -59,6 +67,9 @@ const POPS = [
 function matchOpts() {
   const o = { ladder: state.ladder };
   const owned = store.ownedIds();
+  // Ownership always decorates the match (the ✓ owned badge + the export's `owned` column are facts
+  // about the shelf); only RANKING is gated on the collection setting.
+  if (owned.size) o.knownOwnedIds = owned;
   if (state.collection === 'only' && owned.size) o.ownedIds = owned;
   else if (state.collection === 'prefer' && owned.size) { o.boostIds = owned; o.boostAmount = OWNED_BOOST; }
   // Keep finishes (washes/shades/contrast/effects) out of harmony suggestions; Contrast is opt-in.
@@ -107,7 +118,7 @@ function sortPaints(list, key = state.psort) {
     case 'brand': return list.slice().sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
     case 'hue': return by(p => rgbToHsl(hexToRgb(p.hex))[0]);
     case 'light': return by(p => rgbToHsl(hexToRgb(p.hex))[2]);
-    case 'de': { const bl = hexToLab(baseHex()); return by(p => deltaE2000(bl, p.lab)); }
+    case 'de': { const bl = hexToLab(pickHex()); return by(p => deltaE2000(bl, p.lab)); }
     case 'owned': return list.slice().sort((a, b) => (store.isOwned(b.id) - store.isOwned(a.id)) || a.name.localeCompare(b.name));
     default: return list;   // dataset order
   }
@@ -132,11 +143,10 @@ let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony c
  *  correct in accent-seed mode (the base node is then the Accent); Metal has no wheel node. */
 function wheelRoleGlyphs() {
   const m = {};
-  // The wheel draws its nodes off baseHex(); the scheme's roles are off schemeBase(). In accent-seed mode
-  // those frames are 180° apart, so the wheel nodes don't map to the scheme roles (they'd mislabel/vanish).
-  // Only badge roles when the two frames coincide (main mode); the live palette + Plan still carry roles.
-  if (state.seedRole === 'accent') return m;
-  for (const d of roleIdeals(schemeBase(), state.harmony, activePop())) {
+  // The wheel now draws in the SAME frame the roles are computed in (schemeBase()), so the badges are
+  // correct in accent-seed mode too — they used to be suppressed there because the two frames were
+  // 180° apart and every glyph would have landed on the wrong node.
+  for (const d of roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() })) {
     if (d.metal) continue;
     m[d.idealHex.toUpperCase()] = d.role === 'Primary' ? 'P' : d.role === 'Accent' ? 'A' : '2';
   }
@@ -231,7 +241,7 @@ function linkHighlight(hex) {
  *  left palette and the right list read as tied (an extension of the §3.5 colour link). The source defaults
  *  to the seed; it's session-only (not encoded in the URL) and falls back to the seed if the scheme changes. */
 function equivSourceHex() {
-  const def = (baseHex() || '#000000').toUpperCase();
+  const def = (pickHex() || '#000000').toUpperCase();
   if (state.equivSource) {
     for (const el of document.querySelectorAll('.lcol[data-hex]'))
       if (el.dataset.hex.toUpperCase() === state.equivSource) return state.equivSource;   // still a live column
@@ -282,13 +292,14 @@ function renderPops() {
 function setPopHex(hex) {
   const h = normHex(hex); if (!h) return;
   state.popHex = clampPop(h);
-  refreshStudio(); renderActive(); renderPops(); scheduleAnnounce(); updateUrl();
+  render('scheme');
 }
 /** The neutral-mode chokepoint — call whenever the seed may have changed class. Keeps the harmony
  *  legal for the seed (parking/restoring the painter's hue harmony across the boundary), forces the
  *  seed to Primary (a neutral accent has no complement to build around), and syncs the banner, strip,
  *  and pop chips. Cheap when nothing changed, so the wheel's per-frame commit() can call it. */
 let lastNeutral = null, preNeutralHarmony = null;
+let modeNote = '';   // set by ensureHarmonyMode on a real mode change; consumed once by announce()
 function ensureHarmonyMode() {
   const C = labChroma(schemeBase());
   const n = neutralMode ? C < NEUTRAL_EXIT : C < NEUTRAL_CHROMA;   // hysteresis deadband 10–14
@@ -300,7 +311,10 @@ function ensureHarmonyMode() {
     state.dropOffsets = [];
     if (n) { preNeutralHarmony = state.harmony; state.harmony = 'neutral-pop'; }
     else { state.harmony = validHarmony(preNeutralHarmony) && !isNeutralHarmony(preNeutralHarmony) ? preNeutralHarmony : 'complementary'; preNeutralHarmony = null; }
-    $('#status').textContent = n
+    // Hand the note to announce() rather than writing #status here: this used to land in the live
+    // region and be overwritten a statement later by the caller's own announce(), so the one thing a
+    // screen-reader user needed to hear — the harmony changed under them — was never spoken.
+    modeNote = n
       ? 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.'
       : `Seed has a hue again — back to the ${state.harmony} scheme.`;
   }
@@ -336,28 +350,78 @@ function collapseBanner() {
   clearTimeout(bannerTimer);
   nb.hidden = true; np.hidden = false; np.setAttribute('aria-expanded', 'false');
 }
-/** Redraw the always-visible studio (wheel + live palette) after a discrete base/harmony change. */
-function refreshStudio() {
-  ensureHarmonyMode();   // the seed may have crossed the neutral boundary (picker, hex, drag, undo)
-  state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
+/** Repaint the always-visible studio column (wheel + live palette + pop chips). */
+function drawStudio() { wheelDraw(); renderLive(); renderPops(); }
+/** Re-derive the wheel's lightness from the seed. Only needed when the seed changed from OUTSIDE the
+ *  wheel (paint pick, hex field, undo, init) — during a drag the slider is already the source. */
+function syncWheelL() {
+  state.wheelL = rgbToHsl(hexToRgb(schemeBase()))[2];
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
-  wheelDraw(); renderLive(); renderPops();
+}
+
+/**
+ * THE render chokepoint. Every path that changes scheme state calls render(reason) instead of
+ * assembling its own list of renderers. The hand-rolled lists disagreed with each other, which is
+ * how the Plan/Equivalents/Accessibility tabs could sit on a stale colour through an entire wheel
+ * drag, and how the hero could paint before neutral mode had settled and claim a role the engine
+ * had already overridden.
+ *
+ * The order is load-bearing:
+ *   1. ensureHarmonyMode() FIRST — it can rewrite state.harmony and state.seedRole, so nothing may
+ *      read the mode before it settles.
+ *   2. studio (wheel + live palette + pops) → 3. hero → 4. the active output tab.
+ *   5. ONE announce, composing any mode-change note instead of overwriting it.
+ *
+ * Reasons:
+ *   'all'     init / undo / redo — everything, including the paint drawer
+ *   'seed'    the pick changed (paint, hex field, photo, "use as base")
+ *   'scheme'  harmony · seed role · pop changed; the seed itself did not
+ *   'palette' added/locked/reordered swatches — studio only, exactly as before
+ *   'drag'    a live wheel frame: coalesced to one repaint per frame, URL + speech debounced
+ *   'settle'  a drag ended: commit the URL and speak; everything is already painted
+ */
+let renderRaf = 0;
+function render(reason = 'scheme') {
+  if (reason === 'settle') { updateUrl(); announce(); return; }
+
+  ensureHarmonyMode();   // the seed may have crossed the neutral boundary (picker, hex, drag, undo)
+  if (reason === 'seed' || reason === 'all') syncWheelL();
+
+  if (reason === 'palette') { drawStudio(); updateUrl(); return; }
+
+  const paint = () => {
+    if (reason === 'all' || reason === 'seed') renderList();
+    drawStudio();
+    renderHero(reason !== 'drag');   // no pop animation mid-drag
+    renderActive();                  // the output tabs follow the scheme — mid-drag included
+  };
+
+  if (reason === 'drag') {
+    // Coalesce the heavy repaint (nearest-paint scans + canvas + tab) to one per frame, and debounce
+    // the history write + aria-live: a drag fires pointermove far faster than WebKit's replaceState
+    // limit (which throws mid-drag) and far faster than a screen reader can speak.
+    if (!renderRaf) renderRaf = requestAnimationFrame(() => { renderRaf = 0; paint(); });
+    scheduleUrlUpdate(); scheduleAnnounce();
+    return;
+  }
+  paint();
+  updateUrl(); announce();
 }
 const MAX_FREE = 6;   // bounds URL length + per-frame nearest-paint scans (S5 micro-decision)
 /** Add a colour "along the line": extend the base's value ramp (alternating lighter/darker tints &
  *  shades, stepping outward) rather than inventing a new hue. New swatches are draggable + editable. */
 function addFreeNode() {
   if (state.extraNodes.length >= MAX_FREE) return;
-  const [bh, bs, bl] = rgbToHsl(hexToRgb(baseHex()));
+  const [bh, bs, bl] = rgbToHsl(hexToRgb(schemeBase()));
   const k = state.extraNodes.length, dir = k % 2 === 0 ? 1 : -1, mag = 0.12 + 0.10 * Math.floor(k / 2);
   const l = Math.min(0.94, Math.max(0.06, bl + dir * mag));
   state.extraNodes.push({ h: bh, s: bs, l });
-  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+  syncNodeBtns(); render('palette');
 }
 /** Remove a free node (by index, or the last when omitted). */
 function removeFreeNode(idx) {
   if (typeof idx === 'number' && idx >= 0) state.extraNodes.splice(idx, 1); else state.extraNodes.pop();
-  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+  syncNodeBtns(); render('palette');
 }
 function syncNodeBtns() {
   const a = $('#addnode'), d = $('#delnode');
@@ -366,14 +430,18 @@ function syncNodeBtns() {
 }
 /** Current hex of an addressable swatch key ('base' | 'p:<deg>' | 'x:<idx>'). */
 function swatchHex(sw) {
-  if (sw.startsWith('p:')) return rotateHue(baseHex(), +sw.slice(2));
-  if (sw.startsWith('x:')) { const o = state.extraNodes[+sw.slice(2)]; if (o) return rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); }
-  return baseHex();
+  // Resolved in the SCHEME frame: the live palette mints 'p:<deg>' keys relative to schemeBase(), so
+  // resolving them against the pick landed 180° away in accent-seed mode (the editor opened on the
+  // wrong colour and locking visibly recoloured the column).
+  return swatchKeyHex(sw, {
+    schemeBase: schemeBase(), extraNodes: state.extraNodes, wheelL: state.wheelL,
+    toHex: hsl => rgbToHex(hslToRgb(hsl)),
+  });
 }
 /** Detach a harmony partner into the editable free-swatch list (so lock/edit can pin it independently). */
 function detachPartner(deg, extra) {
   if (state.extraNodes.length >= MAX_FREE) return false;
-  const [bh, bs] = rgbToHsl(hexToRgb(baseHex()));
+  const [bh, bs] = rgbToHsl(hexToRgb(schemeBase()));
   if (!state.dropOffsets.includes(deg)) state.dropOffsets.push(deg);
   state.extraNodes.push({ h: ((bh + deg) % 360 + 360) % 360, s: bs, l: state.wheelL, ...extra });
   return true;
@@ -383,16 +451,16 @@ function lockSwatch(sw) {
   if (sw === 'base') return;
   if (sw.startsWith('p:')) detachPartner(+sw.slice(2), { locked: true });
   else if (sw.startsWith('x:')) { const o = state.extraNodes[+sw.slice(2)]; if (o) o.locked = !o.locked; }
-  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+  syncNodeBtns(); render('palette');
 }
 /** Set an arbitrary hex on a swatch (the base re-seeds; any other swatch becomes a pinned free swatch). */
 function editSwatch(sw, hex) {
   hex = normHex(hex); if (!hex) return;
-  if (sw === 'base') { seedFromHex(hex); return; }
+  if (sw === 'base') { seedFromSchemeBase(hex); return; }   // the base column IS the scheme base (§seed.js frame)
   const [h, s, l] = rgbToHsl(hexToRgb(hex));
   if (sw.startsWith('p:')) detachPartner(+sw.slice(2), { h, s, l });
   else if (sw.startsWith('x:')) { const i = +sw.slice(2); if (state.extraNodes[i]) state.extraNodes[i] = { ...state.extraNodes[i], h, s, l }; }
-  syncNodeBtns(); wheelDraw(); renderLive(); updateUrl();
+  syncNodeBtns(); render('palette');
 }
 let swEditTarget = null;   // swatch key being edited via the native colour picker
 /** Open the per-swatch colour editor (native picker), seeded with the swatch's current colour. */
@@ -402,219 +470,7 @@ function moveFreeNode(from, to) {
   const a = state.extraNodes;
   if (!(from >= 0 && from < a.length && to >= 0 && to < a.length) || from === to) return;
   const [m] = a.splice(from, 1); a.splice(to, 0, m);
-  wheelDraw(); renderLive(); updateUrl();
-}
-function setupWheel() {
-  const cv = $('#wheel'), ctx = cv.getContext('2d');
-  const COARSE = matchMedia('(pointer:coarse)').matches;
-  const NODE = COARSE ? { base: 15, part: 12, hit: 26 } : { base: 11, part: 8, hit: 18 };  // hit: used in S4
-  let W, H, cx, cy, R;
-  function measure() {                          // size the buffer to the CSS box × DPR; geometry stays in CSS px
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    W = Math.round(cv.getBoundingClientRect().width) || 280; H = W;   // square (aspect-ratio:1 in CSS)
-    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);     // draw in CSS px → crisp on retina
-    cx = W / 2; cy = H / 2; R = W / 2 - 16;
-  }
-  state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
-  $('#wl').value = Math.round(state.wheelL * 100);
-  const pos = (h, s) => [cx + Math.sin(h * Math.PI / 180) * s * R, cy - Math.cos(h * Math.PI / 180) * s * R];
-  const disc = document.createElement('canvas');   // offscreen filled HSV disc, rasterised once per (size, lightness)
-  let discKey = '';
-  function buildDisc() {                            // hue = angle, saturation = radius, lightness = the wheel slider
-    const key = W + ':' + Math.round(state.wheelL * 100);   // colour data only → theme-independent; cached
-    if (key === discKey) return;
-    discKey = key;
-    // Rasterise at HALF resolution and let drawImage upscale: the disc is smooth gradients so the
-    // difference is invisible, and a lightness-slider drag re-rasterises EVERY frame (the cache key
-    // changes per tick) — full-res was ~200k hslToRgb calls per frame, well past the 16ms budget (§6).
-    const DW = Math.ceil(W / 2), DH = Math.ceil(H / 2), dcx = cx / 2, dcy = cy / 2, dR = R / 2;
-    disc.width = DW; disc.height = DH;
-    const dctx = disc.getContext('2d'), img = dctx.createImageData(DW, DH), data = img.data, L = state.wheelL;
-    for (let j = 0; j < DH; j++) {
-      const dy = j - dcy;
-      for (let i = 0; i < DW; i++) {
-        const dx = i - dcx, dist = Math.sqrt(dx * dx + dy * dy), idx = (j * DW + i) * 4;
-        if (dist > dR + 0.5) { data[idx + 3] = 0; continue; }   // outside the disc → transparent
-        const [r, g, bl] = hslToRgb([(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, dist >= dR ? 1 : dist / dR, L]);
-        // feather the rim alpha over the last px — a hard cutoff upscales into a stair-stepped edge
-        data[idx] = r; data[idx + 1] = g; data[idx + 2] = bl; data[idx + 3] = Math.round(255 * Math.max(0, Math.min(1, dR + 0.5 - dist)));
-      }
-    }
-    dctx.putImageData(img, 0, 0);
-  }
-  function draw() {
-    const b = baseHex();
-    const [h, s] = rgbToHsl(hexToRgb(b));
-    // Chrome (spokes/rings/halo) reads from the §3 token set (re-read each draw so a theme toggle is
-    // reflected); the HSV disc + node fills are colour *data*. Node outlines use a per-node contrast
-    // (textOn) so they stay visible on any colour in both the light and forge-dark themes (§3.1/§10).
-    const cs = getComputedStyle(document.documentElement);
-    const spoke = cs.getPropertyValue('--border-strong').trim() || '#888';
-    ctx.clearRect(0, 0, W, H);
-    buildDisc(); ctx.drawImage(disc, 0, 0, W, H);   // filled HSV colour field (replaces the dotted hue ring)
-    const offs = HARMONY_OFFSETS[state.harmony];
-    const hueH = isHueHarmony(state.harmony);   // value harmonies (shades/mono) have no ring partners to draw
-    ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
-    const spokeTo = (hh, ss) => { const [x, y] = pos(hh, ss); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); };
-    spokeTo(h, s);                                          // base — a spoke to every colour (Adobe-style)
-    if (hueH) for (const o of offs) if (!state.dropOffsets.includes(o)) spokeTo(h + o, s);   // hue partners (skip detached)
-    for (const o of state.extraNodes) spokeTo(o.h, o.s);   // free/added
-    if (hueH) for (const o of offs) { if (state.dropOffsets.includes(o)) continue; const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
-    const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
-    if (popNodeOn()) {   // neutral mode: the pop node is the wheel's draggable accent (the seed sits at the hueless centre)
-      const pop = activePop(), [ph, psat] = rgbToHsl(hexToRgb(pop)), [px, py] = pos(ph, psat);
-      spokeTo(ph, psat);
-      ctx.fillStyle = pop; ctx.beginPath(); ctx.arc(px, py, NODE.base, 0, 7); ctx.fill();
-      ctx.lineWidth = 3; ctx.strokeStyle = accent; ctx.stroke();
-    }
-    for (const o of state.extraNodes) { const [fx, fy] = pos(o.h, o.s); ctx.fillStyle = rgbToHex(hslToRgb([o.h, o.s, o.l ?? state.wheelL])); ctx.beginPath(); ctx.arc(fx, fy, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = o.locked ? 3.5 : 2.5; ctx.strokeStyle = accent; ctx.stroke(); }
-    const [bx, by] = pos(h, s); ctx.fillStyle = b; ctx.beginPath(); ctx.arc(bx, by, NODE.base, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = textOn(b); ctx.stroke();
-    if (focused && !dragging) { const ns = hitNodes(), n = ns[Math.min(activeIdx, ns.length - 1)]; if (n) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 6, 0, 7); ctx.lineWidth = 2.5; ctx.strokeStyle = accent; ctx.stroke(); } }
-    // Role badges: stamp P / A / 2 on the node that plays each role, so the wheel says which is the
-    // Primary/Accent/Secondary (legend below decodes it). Token pair (--accent / --on-accent + --surface
-    // ring) → legible on any node colour in both themes; clamped inside the disc so a rim node's badge
-    // can't fall off the edge. The map is keyed by drawn hex, so it's correct in accent-seed mode too.
-    const rg = wheelRoleGlyphs();
-    if (Object.keys(rg).length) {
-      const surf = cs.getPropertyValue('--surface').trim() || '#fff';
-      const onAcc = cs.getPropertyValue('--on-accent').trim() || '#fff';
-      const r = COARSE ? 10 : 8.5;
-      for (const n of hitNodes()) {
-        const nh = nodeHex(n).toUpperCase();
-        const g = rg[nh]; if (!g) continue;
-        let bxr = n.x + 12, byr = n.y - 12;
-        const vx = bxr - cx, vy = byr - cy, dd = Math.hypot(vx, vy), lim = R - r - 1;
-        if (dd > lim) { bxr = cx + vx / dd * lim; byr = cy + vy / dd * lim; }
-        ctx.beginPath(); ctx.arc(bxr, byr, r, 0, 7); ctx.fillStyle = accent; ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = surf; ctx.stroke();
-        ctx.fillStyle = onAcc; ctx.font = '700 ' + (COARSE ? 12 : 10) + 'px Inter, system-ui, sans-serif';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(g, bxr, byr);
-        ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';   // reset so later canvas text is unaffected
-      }
-    }
-    // Colour link (hover a role/column elsewhere): ring whichever node is that same colour — recomputing
-    // each node's drawn hex the way it's filled, so the match is exact (no wheelL/rounding drift).
-    if (state.hiHex) for (const n of hitNodes()) {
-      if (nodeHex(n).toUpperCase() === state.hiHex) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 5, 0, 7); ctx.lineWidth = 3; ctx.strokeStyle = accent; ctx.stroke(); }
-    }
-  }
-  /** A node's drawn hex, matching how it's filled — the single mapping for badges/link rings/announce. */
-  const nodeHex = n => n.kind === 'base' ? baseHex() : n.kind === 'pop' ? activePop()
-    : n.kind === 'partner' ? rotateHue(baseHex(), n.deg)
-    : rgbToHex(hslToRgb([n.h, n.s, state.extraNodes[n.idx]?.l ?? state.wheelL]));
-  wheelDraw = draw;          // expose the redraw for discrete base/harmony changes (picker, hex, harmony)
-  let raf = 0;
-  function commit() {
-    ensureHarmonyMode();   // cheap no-op unless the drag just crossed the neutral boundary (strip/banner swap)
-    // Coalesce the heavy redraw (≈nearest-paint scans + canvas) to one per frame, and debounce the
-    // history write + aria-live — a drag fires pointermove far faster than WebKit's ~100-calls-per-30s
-    // replaceState limit (which would throw mid-drag) and faster than a screen reader can speak.
-    if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); renderLive(); renderHero(false); });   // no pop during a live drag
-    scheduleUrlUpdate(); scheduleAnnounce();
-  }
-  /** True when the wheel's draggable accent node is the neutral-mode pop (pop-bearing schemes only). */
-  const popNodeOn = () => isNeutralHarmony(state.harmony) && state.harmony !== 'warm-cool';
-  /** Drag/nudge the pop: hue + saturation from the wheel, lightness preserved (POP_MIN_S keeps it a pop). */
-  function setPop(h, s) {
-    const l = rgbToHsl(hexToRgb(activePop()))[2];
-    state.popHex = rgbToHex(hslToRgb([((h % 360) + 360) % 360, Math.max(POP_MIN_S, Math.min(1, s)), l]));
-    renderPops();
-    commit();
-  }
-  function setBase(h, s) {
-    // Adobe-style: moving the base moves everything. Partners are derived (they already follow);
-    // free nodes are absolute, so rotate them by the base's hue delta to keep their relationship.
-    const dh = ((h - rgbToHsl(hexToRgb(baseHex()))[0]) % 360 + 360) % 360;
-    if (dh && state.extraNodes.length) state.extraNodes = state.extraNodes.map(n => n.locked ? n : { ...n, h: ((n.h + dh) % 360 + 360) % 360 });
-    state.customHex = rgbToHex(hslToRgb([h, s, state.wheelL]));
-    $('#hex').value = state.customHex.replace('#', '');
-    commit();
-  }
-  const pointerXY = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height)]; };
-  const pointerPolar = e => { const [px, py] = pointerXY(e), dx = px - cx, dy = py - cy; return [(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, Math.max(0, Math.min(1, Math.hypot(dx, dy) / R))]; };
-  function hitNodes() {                  // every grabbable node: kind, its hue/sat, and screen position
-    const [h, s] = rgbToHsl(hexToRgb(baseHex())), [bx, by] = pos(h, s);
-    const ns = [{ kind: 'base', h, s, x: bx, y: by }];
-    if (isHueHarmony(state.harmony)) HARMONY_OFFSETS[state.harmony].forEach(o => { if (state.dropOffsets.includes(o)) return; const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
-    if (popNodeOn()) { const [ph, psat] = rgbToHsl(hexToRgb(activePop())), [x, y] = pos(ph, psat); ns.push({ kind: 'pop', h: ph, s: psat, x, y }); }
-    state.extraNodes.forEach((o, i) => { const [x, y] = pos(o.h, o.s); ns.push({ kind: 'free', idx: i, h: o.h, s: o.s, x, y }); });
-    return ns;
-  }
-  function pickNode(e) {                 // nearest node within the touch-safe hit radius (free > partner > base on a tie)
-    const [px, py] = pointerXY(e);
-    let best = null;
-    hitNodes().forEach((n, i) => {
-      const d = Math.hypot(n.x - px, n.y - py); if (d > NODE.hit) return;
-      const pri = n.kind === 'free' || n.kind === 'pop' ? 0 : n.kind === 'partner' ? 1 : 2;
-      if (!best || d < best.d - 4 || (d < best.d + 4 && pri < best.pri)) best = { ...n, d, pri, index: i };
-    });
-    return best;
-  }
-  let active = null, dragging = false, activeIdx = 0, focused = false;
-  function applyDrag(e) {                // route the drag to whichever node was grabbed
-    const [ph, ps] = pointerPolar(e);
-    if (active && active.kind === 'partner') setBase((ph - active.deg + 360) % 360, ps);   // rotate the whole harmony rigidly
-    // spread, don't replace: a free node may carry an explicit lightness and a locked flag —
-    // a drag must move its hue/sat WITHOUT unpinning it or snapping its colour to the wheel slider
-    else if (active && active.kind === 'free') { state.extraNodes[active.idx] = { ...state.extraNodes[active.idx], h: ph, s: ps }; commit(); }
-    else if (active && active.kind === 'pop') setPop(ph, ps);   // neutral mode: the pop is the draggable accent
-    else setBase(ph, ps);               // base node, or empty space → move the base
-  }
-  cv.addEventListener('pointerdown', e => { collapseBanner(); dragging = true; wheelDragging = true; active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });   // interacting with the wheel dismisses the explainer — it must never block a drag
-  cv.addEventListener('pointermove', e => { if (dragging) applyDrag(e); });
-  // pointercancel too: a touch drag the OS takes over (gesture/scroll) never fires pointerup, and
-  // without this the wheel stays in dragging mode, chasing every later no-button pointermove.
-  const endDrag = () => { if (!dragging) return; dragging = false; wheelDragging = false; active = null; cv.style.cursor = 'grab'; updateUrl(); announce(); };
-  cv.addEventListener('pointerup', endDrag);
-  cv.addEventListener('pointercancel', endDrag);
-  // --- keyboard operability (WCAG): focus the wheel, then arrows adjust the active node, [ ] cycle, +/- add/remove ---
-  function announceActive() {
-    const ns = hitNodes(); if (!ns.length) return;
-    const n = ns[Math.min(activeIdx, ns.length - 1)];
-    const label = n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added colour' : n.kind === 'pop' ? 'Pop accent' : `Partner ${Math.round(n.deg)} degrees`;
-    // announce the node's DRAWN colour (nodeHex) — a free node with its own lightness is NOT at
-    // wheelL, and the spoken hex / nearest paint must match what the eye (and live palette) sees
-    const hex = nodeHex(n).toUpperCase();
-    const rgl = wheelRoleGlyphs()[hex];                          // name the role for non-visual users
-    const role = rgl === 'P' ? 'Primary, ' : rgl === 'A' ? 'Accent, ' : rgl === '2' ? 'Secondary, ' : '';
-    const sp = basePaint();   // the pick wins exact ties in the announcement too (must agree with the Plan)
-    const aOpts = sp && hex.toUpperCase() === sp.hex.toUpperCase() ? { ...matchOpts(), preferIds: new Set([sp.id]) } : matchOpts();
-    const m = nearestPaint(state.idx, hex, aOpts);
-    $('#status').textContent = m ? `${role}${label}, ${hex}, nearest ${ui.pname(m.paint)}, ΔE ${m.deltaE.toFixed(1)}.` : `${role}${label}, ${hex}, no close paint.`;
-  }
-  function nudgeActive(dh, ds) {
-    const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1);
-    const n = ns[activeIdx];
-    const nh = ((n.h + dh) % 360 + 360) % 360, nsv = Math.max(0, Math.min(1, n.s + ds));
-    if (n.kind === 'free') { state.extraNodes[n.idx] = { ...state.extraNodes[n.idx], h: nh, s: nsv }; commit(); }
-    else if (n.kind === 'pop') setPop(nh, nsv);
-    else setBase(n.kind === 'partner' ? ((nh - n.deg) % 360 + 360) % 360 : nh, nsv);
-  }
-  cv.addEventListener('focus', () => { focused = true; const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1); announceActive(); draw(); });
-  cv.addEventListener('blur', () => { focused = false; draw(); });
-  cv.addEventListener('keydown', e => {
-    const len = hitNodes().length, big = e.shiftKey ? 5 : 1;
-    let handled = true;
-    switch (e.key) {
-      case 'ArrowLeft': nudgeActive(-2 * big, 0); break;
-      case 'ArrowRight': nudgeActive(2 * big, 0); break;
-      case 'ArrowUp': nudgeActive(0, 0.04 * big); break;
-      case 'ArrowDown': nudgeActive(0, -0.04 * big); break;
-      case '[': activeIdx = (activeIdx - 1 + len) % len; announceActive(); draw(); break;
-      case ']': activeIdx = (activeIdx + 1) % len; announceActive(); draw(); break;
-      case '+': case '=': addFreeNode(); activeIdx = hitNodes().length - 1; announceActive(); draw(); break;
-      case '-': case '_': removeFreeNode(); activeIdx = Math.min(activeIdx, hitNodes().length - 1); announceActive(); draw(); break;
-      default: handled = false;
-    }
-    if (handled) e.preventDefault();
-  });
-  $('#wl').addEventListener('input', e => { state.wheelL = +e.target.value / 100; const [h, s] = rgbToHsl(hexToRgb(baseHex())); setBase(h, s); });
-  $('#wrand').addEventListener('click', () => setBase(Math.random() * 360, 0.5 + Math.random() * 0.45));
-  measure();
-  draw();
-  let rtimer = 0;   // re-measure + redraw when the responsive canvas box changes (resize / orientation / stack)
-  window.addEventListener('resize', () => { clearTimeout(rtimer); rtimer = setTimeout(() => { measure(); draw(); }, 150); });
+  render('palette');
 }
 /** The scheme colours the Equivalents tab can source from — mirrors the live palette's columns
  *  (rule/free nodes + the pinned accent + Metal), labelled the way the bar labels them. */
@@ -622,8 +478,10 @@ function equivSourceCols() {
   const ideals = roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() });
   const roleByHex = {};
   for (const d of ideals) roleByHex[d.idealHex.toUpperCase()] = d.role;
-  const cols = paletteNodes().map(n => ({ hex: n.hex,
-    label: roleByHex[n.hex.toUpperCase()] || (n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added' : `${n.deg > 0 ? '+' : ''}${n.deg}°`) }));
+  const nodes = paletteNodes(), baseCol = (nodes.find(n => n.kind === 'base') || nodes[0]).hex;
+  const cols = nodes.map(n => ({ hex: n.hex,
+    label: roleByHex[n.hex.toUpperCase()] || (n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added'
+      : n.deg ? `${n.deg > 0 ? '+' : ''}${n.deg}°` : ui.toneTag(n.hex, baseCol)) }));   // deg 0 = value partner (§F13)
   const pin = accentPin();
   if (pin && !cols.some(c => c.hex.toUpperCase() === pin.toUpperCase())) cols.push({ hex: pin, label: 'Accent' });
   const metal = ideals.find(d => d.metal);
@@ -640,7 +498,7 @@ function renderEquiv() {
   const chips = ui.equivSourceChips(equivSourceCols(), srcHex);
   // When the source is the seed AND the seed is a real paint, keep the richer view (curated interchangeable
   // group + that paint's cross-brand equivalents). Any other selected column resolves to its ideal colour.
-  if (p && srcHex === (baseHex() || '').toUpperCase()) {
+  if (p && srcHex === (pickHex() || '').toUpperCase()) {
     const self = state.idx.byId.get(p.id);
     const members = groupMembers(state.idx, self);                 // curated equivalents (ΔE ≤ 1)
     // Auto-seeded groups cluster by ΔE alone, so a metal's group can hold flats — list true metallics first
@@ -952,6 +810,9 @@ function shelfKeydown(e) {
   // The context menu counts as "in the grid": openMenu moves focus onto its first button, and without
   // this Escape (and P/U/X) would dead-end there — no keyboard way back out of the menu.
   if (ae && ae !== document.body && ae.id !== 'shelfGrid' && !ae.closest('#shelfGrid') && !ae.closest('#shelfMenu')) return;
+  // Never hijack a browser/OS chord: ⌘P (print), Ctrl+U (view source) and Ctrl+X (cut) all collide
+  // with the P/U/X triage keys. Shift is NOT excluded — Shift+Arrow extends the selection.
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
   const k = e.key.toLowerCase();
   if (k === 'p') { applyMark('owned'); e.preventDefault(); }
   else if (k === 'u') { applyMark('want'); e.preventDefault(); }
@@ -1012,6 +873,7 @@ function markPaint(id, mark) {
   if (p) $('#status').textContent = `${ui.pname(p)}, ${ui.markLabel(mark)}.`;
 }
 function paintListKeydown(e) {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;   // same chord guard as the Shelf (⌘P / Ctrl+U / Ctrl+X)
   const chips = [...$('#list').querySelectorAll('.pchip')]; if (!chips.length) return;
   const cur = document.activeElement.closest ? document.activeElement.closest('.pchip') : null;
   let i = cur ? chips.indexOf(cur) : -1;
@@ -1033,11 +895,13 @@ function paintListKeydown(e) {
 function setSeedRole(role) {
   if ((role !== 'main' && role !== 'accent') || state.seedRole === role) return;
   state.seedRole = role;
-  renderHero(); refreshStudio(); renderActive(); announce(); updateUrl();
+  render('scheme');
 }
 function renderHero(animate = true) {
   $('#hero').innerHTML = ui.hero(baseInfo(), animate, store.markOf, state.seedRole, neutralSeed());   // animate=false during a live drag (no pop spam)
-  const wk = document.querySelector('.wkey'); if (wk) wk.hidden = state.seedRole === 'accent';   // no role badges in accent mode → hide their legend
+  // The legend stays in both seed modes now: the wheel draws in the scheme frame, so the P/A/2 badges
+  // are correct in accent-seed mode too (they used to be suppressed there — see wheelRoleGlyphs).
+  const wk = document.querySelector('.wkey'); if (wk) wk.hidden = false;
 }
 let urlTimer = null, announceTimer = null, wheelDragging = false;   // wheelDragging gates mid-drag history snapshots
 function announce() {
@@ -1045,25 +909,14 @@ function announce() {
   // The substituted-pick honesty note must reach assistive tech too, not just sighted users (§2/§3.5).
   const sub = state.tab === 'plan' && state.scheme && state.scheme.roles.find(r => r.substituted);
   const subTxt = sub ? ` Note: your pick ${sub.substituted.name} is ${sub.substituted.why}; nearest eligible paint shown.` : '';
-  $('#status').textContent = `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.` + subTxt;
+  // A pending mode-change note leads (it's the news), then the standing summary. Consumed once — the
+  // switch is announced on the render that caused it, not on every later one.
+  const note = modeNote; modeNote = '';
+  $('#status').textContent = (note ? note + ' ' : '') + `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.` + subTxt;
 }
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
-  const p = new URLSearchParams();
-  // A paint seed shares its ID, not just its hex — the recipient must get the same paint (brand,
-  // group, buy state, exact-tie preference), not an anonymous "Custom #…". The hex rides along as a
-  // fallback so an old link (or a paint dropped from a future dataset) still reproduces the colours.
-  if (!state.customHex && state.baseId) p.set('p', state.baseId);
-  p.set('c', baseHex().replace('#', ''));
-  p.set('h', state.harmony);
-  if (state.mode === 'shelf') p.set('m', 'shelf');
-  if (state.tab !== 'plan') p.set('v', state.tab);
-  if (state.seedRole === 'accent') p.set('r', 'accent');
-  if (state.theme === 'dark') p.set('t', 'dark');
-  if (state.showReal) p.set('f', '1');
-  if (state.extraNodes.length) p.set('x', state.extraNodes.map(n => `${Math.round(n.h)}.${Math.round(n.s * 100)}.${Math.round((n.l ?? state.wheelL) * 100)}${n.locked ? '!' : ''}`).join('-'));
-  if (state.dropOffsets.length) p.set('d', state.dropOffsets.join('.'));
-  if (state.popHex) p.set('pp', state.popHex.replace('#', ''));   // neutral mode's pop accent — share links must reproduce the scheme
+  const p = encodeState({ ...state, pickHex: pickHex() });   // the link carries the PICK, role in `r` (share.js)
   history.replaceState(null, '', '?' + p.toString());
   // Mid-gesture URL writes (the debounced updates while a wheel drag is still down) must NOT snapshot:
   // one drag would otherwise litter the undo stack with intermediates, so Ctrl+Z after a drag stepped
@@ -1105,13 +958,13 @@ function applySnap(json) {
   state.popHex = o.popHex || null;
   state.extraNodes = (o.extraNodes || []).map(n => ({ h: n.h, s: n.s, ...(n.l != null ? { l: n.l } : {}), ...(n.locked ? { locked: true } : {}) }));
   state.dropOffsets = [...(o.dropOffsets || [])];
-  state.wheelL = rgbToHsl(hexToRgb(baseHex()))[2];
+  state.wheelL = rgbToHsl(hexToRgb(schemeBase()))[2];
   neutralMode = typeof o.neutral === 'boolean' ? o.neutral : null;   // restore the hysteresis holder with the snapshot
   preNeutralHarmony = o.preNeutral ?? null;
   lastNeutral = null;   // force ensureHarmonyMode (via refreshStudio) to re-sync banner/strip/pops for the restored seed
   syncSeg();
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
-  const hx = $('#hex'); if (hx) hx.value = baseHex().replace('#', '');
+  const hx = $('#hex'); if (hx) hx.value = pickHex().replace('#', '');
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
   syncNodeBtns();
 }
@@ -1129,7 +982,7 @@ function scheduleAnnounce() {
   if (announceTimer) clearTimeout(announceTimer);
   announceTimer = setTimeout(announce, 400);
 }
-function renderAll() { renderList(); renderHero(); refreshStudio(); renderActive(); announce(); updateUrl(); }
+const renderAll = () => render('all');   // init / undo / redo
 
 function setTheme(t) {
   state.theme = t === 'dark' ? 'dark' : 'light';
@@ -1154,7 +1007,7 @@ function setMode(mode) {
   else { renderList(); }   // refresh the drawer's owned state in case the shelf changed it
   updateUrl();
 }
-function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = baseHex().replace('#', ''); renderAll(); }
+function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = pickHex().replace('#', ''); renderAll(); }
 /** Centre the active harmony chip in the scrollable strip — horizontal only (no page jump). */
 function scrollHarmonyActive() {
   const seg = $('#seg'), el = seg && seg.querySelector('button[aria-pressed="true"]');
@@ -1281,30 +1134,38 @@ function importCollectionFile(file) {
 function applyCsv(text) {
   const res = csvToMarks(state.idx, text);
   let added = 0, changed = 0;   // count what the merge does to EXISTING marks (report, don't hide)
+  const byMark = new Map();     // mark → ids, so each mark costs ONE write
   for (const m of res.marks) {
     const prev = store.markOf(m.id);
     if (prev === m.mark) continue;
     prev === 'none' ? added++ : changed++;
-    store.setMark(m.id, m.mark);   // merge onto the current shelf (import wins; the toast says so)
+    if (!byMark.has(m.mark)) byMark.set(m.mark, []);
+    byMark.get(m.mark).push(m.id);
   }
+  // Grouped, not per row: setMark() ends in persist(), which JSON.stringifies the whole collection
+  // and writes localStorage. A 1,500-row paintRack import did that 1,500 times over a growing array
+  // inside one FileReader turn and froze the main thread — setMarks() exists for exactly this.
+  for (const [mark, ids] of byMark) store.setMarks(ids, mark);   // merge onto the shelf (import wins; the toast says so)
   return { ...res, added, changed };
 }
-/** After a JSON restore: re-read every pref the backup may have carried into live state/UI —
- *  without this the restored theme/locale/plan settings only took effect after a full reload. */
-function applyRestoredPrefs() {
+/** Pull every pref out of the store into live state + chrome. No rendering, so it's safe at init —
+ *  where the seed isn't resolved yet and renderHero() would have nothing to draw. */
+function applyPrefsToState() {
   const th = store.getPref('theme'); if (th === 'light' || th === 'dark') setTheme(th);
   const lo = store.getPref('locale'); if (lo) { i18n.setLocale(lo); syncLocaleSeg(); }
   const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
   const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
   state.includeContrast = !!store.getPref('contrast');
-  renderHero(); wheelDraw();
 }
+/** After a JSON restore: apply the prefs the backup carried AND repaint what shows them — without
+ *  this the restored theme/locale/plan settings only took effect after a full reload. */
+function applyRestoredPrefs() { applyPrefsToState(); renderHero(); wheelDraw(); }
 
 /** Seed the scheme from an arbitrary hex (shared by the hex field + the photo eyedropper). */
 function seedFromHex(hex) {
   state.customHex = hex.toUpperCase();
   $('#hex').value = state.customHex.replace('#', '');
-  renderHero(); refreshStudio(); renderActive(); renderList(); announce(); updateUrl();
+  render('seed');
 }
 
 /** Photo eyedropper (#v2): pick a colour from a local image — drawn to a canvas, sampled (3×3 average),
@@ -1371,7 +1232,14 @@ function setupEyedropper() {
 }
 
 function wire() {
-  $('#q').addEventListener('input', e => { state.q = e.target.value; renderList(); });
+  // Same 140ms debounce the Shelf search already had: every keystroke otherwise re-ran
+  // filteredPaints() + sortPaints() over 2,508 paints and replaced the whole chip strip's innerHTML,
+  // so typing a paint name cost nine full parse+layout cycles — type-lag on phones.
+  let qTimer = 0;
+  $('#q').addEventListener('input', e => {
+    clearTimeout(qTimer);
+    qTimer = setTimeout(() => { state.q = e.target.value; renderList(); }, 140);
+  });
   $('#brand').addEventListener('change', e => { state.brand = e.target.value; renderList(); });
   $('#ptype').addEventListener('change', e => { state.ptype = e.target.value; renderList(); });
   $('#psort').addEventListener('change', e => { state.psort = e.target.value; renderList(); });
@@ -1427,7 +1295,7 @@ function wire() {
     const mv = e.target.closest('[data-move]'); if (mv) { e.stopPropagation(); const [i, dir] = mv.dataset.move.split(':').map(Number); moveFreeNode(i, i + dir); return; }  // reorder (keyboard/touch path)
     const lk = e.target.closest('[data-lock]'); if (lk) { e.stopPropagation(); lockSwatch(lk.dataset.lock); return; }              // lock / unlock a swatch
     const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openSwatchEditor(ed.dataset.edit); return; }        // edit a swatch's hex
-    const sb = e.target.closest('[data-setbase]'); if (sb) { e.stopPropagation(); seedFromHex(sb.dataset.setbase); return; }   // promote a swatch to the base colour
+    const sb = e.target.closest('[data-setbase]'); if (sb) { e.stopPropagation(); seedFromSchemeBase(sb.dataset.setbase); return; }   // promote a swatch to the SCHEME base (accent-seed stores the pick 180° away)
     const dn = e.target.closest('[data-delnode]'); if (dn) { e.stopPropagation(); removeFreeNode(+dn.dataset.delnode); return; }  // delete an added swatch
     if (state.tab === 'equiv') {   // on the Equivalents tab, clicking a palette column drills into that colour's matches
       const lc = e.target.closest('.lcol[data-hex]');   // …but not when the click is the column's copy button (handled below)
@@ -1449,7 +1317,7 @@ function wire() {
     state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
     for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
     scrollHarmonyActive();
-    refreshStudio(); renderActive(); announce(); updateUrl();
+    render('scheme');
   });
   // Quick pops (neutral mode): each chip just moves the wheel's pop node — not a second system.
   $('#pops').addEventListener('click', e => {
@@ -1583,13 +1451,20 @@ function wire() {
 
 async function init() {
   const url = new URLSearchParams(location.search);
-  let theme = url.get('t');
-  if (!theme) theme = store.getPref('theme');   // owned/to-buy + prefs are loaded by store.js on import
-  if (!theme) theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  setTheme(theme);
+  // Theme precedence: the link's `t` (a shared scheme carries the theme it was designed in) > the
+  // stored pref > the OS. Held separately from the resolved value because applyPrefsToState() below
+  // re-applies the STORED pref after hydrate, and must not outrank the link.
+  const urlTheme = url.get('t') === 'dark' ? 'dark' : url.get('t') === 'light' ? 'light' : null;
+  setTheme(urlTheme || store.getPref('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 
   state.idx = await loadDataset('./data/paints.json');
-  await store.hydrate();   // native shell: recover the collection if WKWebView evicted localStorage (no-op on the web)
+  // Native shell: recover the collection if WKWebView evicted localStorage (no-op on the web). This
+  // ran TWICE — the second call was byte-identical dead work — and neither re-applied what it
+  // restored, so on a shell whose storage had been evicted the recovered theme/locale sat in state
+  // while the DOM kept the pre-hydrate one. applyRestoredPrefs() exists for exactly that.
+  await store.hydrate();
+  applyPrefsToState();   // hydrate may have restored theme/locale/plan prefs — apply them, don't strand them
+  if (urlTheme) setTheme(urlTheme);   // ...but the link's theme still outranks the stored pref
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
   $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // the Shelf filters brand the same way the drawer does
@@ -1598,39 +1473,29 @@ async function init() {
   $('#ptype').insertAdjacentHTML('beforeend', typeOpts);
   $('#shelfType').insertAdjacentHTML('beforeend', typeOpts);
 
-  await store.hydrate();   // native shell: recover the collection if WKWebView evicted localStorage (no-op on the web)
-  const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
-  const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
-  state.includeContrast = !!store.getPref('contrast');
-
-  const h = url.get('h'); if (h && validHarmony(h)) state.harmony = h;
-  const pp = normHex(url.get('pp')); if (pp) state.popHex = clampPop(pp);
-  const v = url.get('v'); if (v && renderers[v]) state.tab = v;
-  if (url.get('f') === '1') state.showReal = true;
-  const xp = url.get('x');
-  if (xp) state.extraNodes = xp.split('-').map(tok => {
-    const locked = tok.endsWith('!'); const t = locked ? tok.slice(0, -1) : tok;
-    const [hh, sa, la] = t.split('.'); const H = +hh, S = +sa / 100, L = +la / 100;
-    if (!(Number.isFinite(H) && Number.isFinite(S))) return null;
-    return { h: ((H % 360) + 360) % 360, s: Math.min(1, Math.max(0, S)),
-      ...(Number.isFinite(L) ? { l: Math.min(1, Math.max(0, L)) } : {}), ...(locked ? { locked: true } : {}) };
-  }).filter(Boolean).slice(0, MAX_FREE);
-  const dp = url.get('d'); if (dp) state.dropOffsets = dp.split('.').map(Number).filter(Number.isFinite);
-  if (url.get('r') === 'accent') state.seedRole = 'accent';   // the palette's seed docks render the state
-  const pid = url.get('p'), c = normHex(url.get('c'));
-  if (pid && state.idx.byId.has(pid)) state.baseId = pid;   // paint seed round-trips as the paint itself
-  else if (c) state.customHex = c;
-  else state.baseId = state.idx.paints[0].id;
+  // One decoder (share.js), validators injected — anything this build no longer has is dropped so an
+  // old link still opens on the fallbacks. `t`/`m` are read separately: theme applies before this
+  // point, and the Shelf deep-link is applied after the first render.
+  Object.assign(state, decodeState(url, {
+    validHarmony, hasPaint: id => state.idx.byId.has(id), validTab: t => !!renderers[t], maxFree: MAX_FREE,
+  }));
+  if (!state.customHex && !state.baseId) state.baseId = state.idx.paints[0].id;   // no usable seed in the link
 
   ensureHarmonyMode();   // seed is now known: sync the strip (incl. neutral mode) + banner + pops
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   syncNodeBtns();
-  $('#hex').value = baseHex().replace('#', '');
+  $('#hex').value = pickHex().replace('#', '');
   syncTabs();
   wire();
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
   syncLocaleSeg();
-  setupWheel();   // wheel is now always-visible static markup; bind it once
+  // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
+  // passed in — it owns no scheme state, so this list IS its whole contract with the app.
+  wheelDraw = setupWheel({
+    state, render, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs,
+    addFreeNode, removeFreeNode, collapseBanner,
+    setDragging: v => { wheelDragging = v; },   // gates mid-drag history snapshots (one undo entry per drag)
+  });
   setupEyedropper();
   renderAll();
   if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf

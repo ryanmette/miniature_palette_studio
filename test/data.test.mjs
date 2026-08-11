@@ -69,6 +69,18 @@ test('no ownership context leaves the match shape plain (no owned/adjust keys)',
   assert.equal('owned' in m, false);
 });
 
+test('knownOwnedIds reports ownership WITHOUT touching the ranking', () => {
+  // The default "use my collection: off" passes no boost/filter set. Ownership is still a fact about
+  // the shelf: without this the ✓ owned badge vanished and the export told you to buy what you own.
+  const owned = nearestPaint(idx, '#9B1216', { knownOwnedIds: new Set(['citadel-red']) });
+  assert.equal(owned.paint.id, 'citadel-red');
+  assert.equal(owned.owned, true);
+  // Marking a DIFFERENT paint owned must not promote it — decoration only, never a boost.
+  const other = nearestPaint(idx, '#9B1216', { knownOwnedIds: new Set(['vallejo-red']) });
+  assert.equal(other.paint.id, 'citadel-red');
+  assert.equal(other.owned, false);
+});
+
 test('excludeTypes keeps finish paints (washes/contrast) out of suggestions', () => {
   const fx = indexDataset({ version: 'test', paints: [
     { id: 'wash-near', brand: 'Citadel', line: 'Shade', name: 'Reikland Fleshshade', hex: '#9B1216', type: 'wash' },
@@ -181,4 +193,30 @@ test('nearestPaints floatTypes ranks the floated type strictly first, then by sc
   // without the flag, pure distance order
   const plain = nearestPaints(fx, '#C8A13A', 3);
   assert.equal(plain[0].paint.id, 'ochre');
+});
+
+test('equivalents: a metal source keeps metals first even when the prefilter would prune them', () => {
+  // The prefilter keeps the N nearest by cheap Euclidean distance, so a metal surrounded by hundreds
+  // of near flats could have every metal pruned before the metal-first tier (§7) ever applied.
+  // Needs a dataset larger than the pool to exercise the rescue at all.
+  const paints = [{ id: 'src', brand: 'Citadel', line: 'Base', name: 'Gold', hex: '#C8A13A', type: 'metal' }];
+  for (let i = 0; i < 400; i++)   // a dense cloud of FLATS right next to the source hex
+    paints.push({ id: 'flat' + i, brand: 'Vallejo', line: 'Game', name: 'Flat ' + i,
+      hex: '#C' + (8 + i % 2) + 'A1' + (0x3A + i % 8).toString(16).padStart(2, '0'), type: 'layer' });
+  // ...and one genuinely distant metal, far outside the Euclidean top-N.
+  paints.push({ id: 'far-metal', brand: 'Vallejo', line: 'Game', name: 'Far Silver', hex: '#8894A0', type: 'metal' });
+  const big = indexDataset({ version: 't', paints });
+
+  const eq = equivalents(big, big.byId.get('src'), { n: 5 });
+  assert.equal(eq[0].paint.type, 'metal', 'a metal must lead the list for a metal source');
+  assert.equal(eq[0].paint.id, 'far-metal');
+  assert.ok(eq.every(e => e.paint.brand !== 'Citadel'), 'never returns the source brand');
+  // reported ΔE stays the TRUE distance even though the metal was floated (§2)
+  assert.ok(eq[0].deltaE > eq[1].deltaE, 'the floated metal is genuinely further than the near flats');
+});
+
+test('equivalents: a flat source keeps pure ΔE order (no tier), ascending', () => {
+  const eq = equivalents(idx, idx.byId.get('citadel-red'), { n: 3 });
+  assert.ok(eq.every(e => e.paint.brand !== 'Citadel'));
+  for (let i = 1; i < eq.length; i++) assert.ok(eq[i].deltaE >= eq[i - 1].deltaE, 'ascending ΔE');
 });

@@ -43,28 +43,60 @@ for (const p of P){
   if (productKeys.has(pk)) errors.push(`duplicate product ${p.brand} ${p.line} "${p.name}" (${p.id})`); else productKeys.add(pk);
 }
 
-/* ---- SOFT flags ---- */
+/* ---- SOFT flags ----
+ * These used to print ~640 lines every run and CI passed regardless, which is indistinguishable
+ * from printing nothing: a real regression would have scrolled past unnoticed. Both checks now
+ * report a COUNT plus only the entries that are actually actionable, so the visible list trends to
+ * zero and anything new stands out. Pass --verbose for the full detail.
+ */
+const VERBOSE = process.argv.includes('--verbose');
 const labs = P.map(p => lab(hx(p.hex)));
-// near-duplicate pairs (ΔE < 1.0), cross-brand only (informational)
-const dupes = [];
+const byId = new Map(P.map(p => [p.id, p]));
+// Finish class, mirroring §5.2's clustering rule — a wash is never interchangeable with a flat that
+// happens to share its hex, so a cross-finish near-duplicate is EXPECTED, not a finding.
+const finishClass = t => t === 'metal' ? 'metal'
+  : ['wash','shade','ink','contrast','glaze'].includes(t) ? 'translucent'
+  : ['effect','technical'].includes(t) ? 'effect' : 'flat';
+
+// Cross-brand near-duplicates (ΔE < 1.0). Most are the whole point of groups[] — the actionable ones
+// are same-finish pairs that are NOT in a shared equivalence group, i.e. a group the build missed.
+const dupes = { total: 0, grouped: 0, crossFinish: 0, actionable: [] };
 for (let i=0;i<P.length;i++) for (let j=i+1;j<P.length;j++){
   if (P[i].brand===P[j].brand) continue;
   const d = dE(labs[i],labs[j]);
-  if (d < 1.0) dupes.push([d, P[i], P[j]]);
+  if (d >= 1.0) continue;
+  dupes.total++;
+  if (P[i].groupId && P[i].groupId === P[j].groupId) dupes.grouped++;
+  else if (finishClass(P[i].type) !== finishClass(P[j].type)) dupes.crossFinish++;
+  else dupes.actionable.push([d, P[i], P[j]]);
 }
-dupes.sort((a,b)=>a[0]-b[0]);
+dupes.actionable.sort((a,b)=>a[0]-b[0]);
 // name/hue sanity
 const BANDS = {red:[[338,360],[0,15]],orange:[[8,48]],yellow:[[42,72]],green:[[66,170]],turquoise:[[155,205]],teal:[[155,205]],blue:[[188,258]],purple:[[278,322]],violet:[[278,322]],pink:[[300,350]],magenta:[[300,350]]};
-const mism = [];
+// Accepted name/hue exceptions — miniature paints carry fantasy names on purpose ("Thunderbird Blue"
+// is a green), so most mismatches are correct data. The file grandfathers the set that existed when
+// this check was made actionable; NEW ones are reported.
+let accepted = new Set();
+try {
+  const ex = JSON.parse(readFileSync(join(ROOT, 'scripts', 'data-exceptions.json'), 'utf8'));
+  accepted = new Set(ex.nameHueAccepted || []);
+} catch { /* no exceptions file → every mismatch is new */ }
+
+const mism = [], grandfathered = [];
 for (const p of P){
   const {h,s} = hue(p.hex); if (s < 0.25) continue;
   for (const [word, bands] of Object.entries(BANDS)){
     if (new RegExp(`\\b${word}`,'i').test(p.name)){
-      if (!bands.some(([lo,hi]) => h>=lo && h<=hi)) mism.push(`${p.name} (${p.brand}) ${p.hex} hue ${h.toFixed(0)}° vs "${word}"`);
+      if (!bands.some(([lo,hi]) => h>=lo && h<=hi)) {
+        const line = `${p.name} (${p.brand}) ${p.hex} hue ${h.toFixed(0)}° vs "${word}"  [${p.id}]`;
+        (accepted.has(p.id) ? grandfathered : mism).push(line);
+      }
       break;
     }
   }
 }
+// An accepted id that no longer mismatches is stale — the exceptions file should shrink, not rot.
+const stale = [...accepted].filter(id => !byId.has(id) || !grandfathered.some(l => l.endsWith(`[${id}]`)));
 
 /* ---- report ---- */
 const byBrand = {}, byType = {};
@@ -73,11 +105,15 @@ console.log(`\nDataset v${data.version} — ${P.length} paints`);
 console.log('by brand:', byBrand);
 console.log('by type :', byType);
 console.log(`approx: ${P.filter(p=>p.approx).length}/${P.length}`);
-console.log(`\nSOFT — cross-brand near-duplicates (ΔE<1.0): ${dupes.length}`);
-for (const [d,a,b] of dupes.slice(0,12)) console.log(`  ΔE ${d.toFixed(2)}  ${a.name} (${a.brand}) ≈ ${b.name} (${b.brand})`);
-if (dupes.length>12) console.log(`  …and ${dupes.length-12} more`);
-console.log(`\nSOFT — name/hue mismatches: ${mism.length}`);
-for (const m of mism.slice(0,20)) console.log('  '+m);
+console.log(`\nSOFT — cross-brand near-duplicates (ΔE<1.0): ${dupes.total} total`
+  + ` · ${dupes.grouped} already grouped · ${dupes.crossFinish} cross-finish (expected, §5.2)`);
+console.log(`  ungrouped same-finish pairs (actionable): ${dupes.actionable.length}`);
+for (const [d,a,b] of dupes.actionable) console.log(`  ΔE ${d.toFixed(2)}  ${a.name} (${a.brand}) ≈ ${b.name} (${b.brand})  — should share a groupId`);
+
+console.log(`\nSOFT — name/hue mismatches: ${mism.length} new · ${grandfathered.length} accepted (scripts/data-exceptions.json)`);
+for (const m of mism) console.log('  NEW  '+m);
+if (stale.length) console.log(`  ${stale.length} accepted id(s) no longer mismatch — prune them from data-exceptions.json`);
+if (VERBOSE) for (const g of grandfathered) console.log('  ok   '+g);
 
 console.log(`\nHARD checks: ${errors.length===0 ? 'PASS ✓' : 'FAIL ✗'}`);
 if (errors.length){ for (const e of errors.slice(0,40)) console.log('  '+e); process.exit(1); }

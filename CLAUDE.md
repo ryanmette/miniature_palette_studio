@@ -218,6 +218,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── scripts/                   ← dev tooling, NOT shipped (never required at runtime)
 │   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
 │   ├── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5) — runs in CI (test.yml)
+│   ├── data-exceptions.json   ← accepted SOFT-check exceptions (fantasy names); keeps the live count at 0
 │   └── check-docs.mjs         ← doc-freshness QA (§8/§9) — README/tree/CHANGELOG claims vs reality; runs in CI
 ├── .github/
 │   ├── workflows/             ← deploy.yml (publish src/ to GitHub Pages, M9) · test.yml (node --test + data/docs validators on push/PR) · tag-release.yml (dispatchable release-tag creator, §8)
@@ -236,6 +237,9 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── js/data.js             ← load + index dataset, nearest-paint search (M2)
     ├── js/harmony.js          ← harmony generation (see §7) (M2)
     ├── js/a11y.js             ← colour-blindness sim + WCAG contrast + CVD collision (M2/M7)
+    ├── js/seed.js             ← the seed FRAME: pick ↔ scheme base (accent-seed is 180° away). Pure.
+    ├── js/share.js            ← the share-link contract: palette state ⇄ URL query. Pure.
+    ├── js/wheel.js            ← the interactive wheel (canvas draw + hit-test + drag/keys); app injected
     ├── js/scheme.js           ← role mapping + ideal-vs-actual + wash/highlight (M4)
     ├── js/ui.js               ← rendering + events (M3)
     ├── js/app.js              ← state, URL share encoding, wiring (M3)
@@ -314,7 +318,12 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 - Pure functions for math; side effects only in `ui.js`/`app.js`.
 - Accessibility: semantic HTML, labelled controls, keyboard operable, visible focus, `aria-live` for dynamic palette updates, respects `prefers-reduced-motion`.
 - Performance budget: first render < 100ms after JSON load; nearest-paint search over the full dataset < 16ms (precompute Lab once).
-- Comments explain *why*, not *what*.
+- Comments carry the *why*. A plain-English *what* is welcome too where it makes the code approachable
+  to a reader new to it — but a comment must never drift from the code it describes: correct or delete
+  it in the same commit as the code it no longer matches. A trailing comment on a code line couples the
+  two in git (every annotated line becomes a modified line), so prefer a comment *above* the line when
+  the note is more than a few words — a large trailing-comment pass conflicts with any later edit and
+  goes stale invisibly where it doesn't (the lesson of PR #20, closed unmerged).
 
 ---
 

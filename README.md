@@ -10,13 +10,15 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
-**v1.8.0** — the neutral-mode + polish release, live. Everything through v1.7 (engine, wheel,
+**v1.9.0** — the correctness + structure release, live. Everything through v1.8 (engine, wheel,
 ideal-vs-actual roles, equivalents, accessibility, Shelf/PWA, photo eyedropper, editable live
-palette) plus: **neutral seeds get a real scheme engine** (pop-driven harmonies, hysteresis,
-wheel overlay explainer), the full ladder set (temperature · NMM · wash-media-aware), pick
-fidelity + cross-line name disambiguation, **accent-seed pinning**, the **seed docks** (the
-Main|Accent control lives on the palette), a 38-finding adversarial-review hardening pass
-(correctness, performance, tokens), and the Stage-1 native-app groundwork. See
+palette, neutral-seed schemes) plus: **pick your equivalents source** from any scheme colour,
+**metal-first cross-brand matching**, and a full-codebase review closing **all 15 findings** —
+most usefully, the output tabs no longer sit on a stale colour through a wheel drag, and the
+wheel now draws the scheme it is actually building (it disagreed with the palette by 180° in
+accent-seed mode). Under that: one **`render(reason)`** chokepoint, a tested pick ↔ scheme-base
+frame (`seed.js`), a tested share-link contract (`share.js`), the wheel extracted to its own
+module, and a dataset validator whose warnings mean something again. See
 [`CHANGELOG.md`](CHANGELOG.md) for the full history and [`docs/PLAN.md`](docs/PLAN.md) §5 for
 what's next.
 
@@ -31,7 +33,7 @@ what's next.
 | [`mockups/index.html`](mockups/index.html) | Design-reference mockup (open in a browser). Not the app. |
 | [`src/data/paints.json`](src/data/paints.json) · [`SOURCES.md`](src/data/SOURCES.md) | The curated dataset — **2,508 paints across 8 brands** — + provenance. |
 | `scripts/` | `build-dataset.mjs` (assemble dataset) · `validate-data.mjs` (data QA) · `check-docs.mjs` (doc-freshness QA) — dev-only, all run in CI. |
-| `src/` | The app — `index.html`, `styles/`, `js/` (color · harmony · a11y · data · scheme · ui · app · store · collection-io · i18n), `data/`, PWA files. |
+| `src/` | The app — `index.html`, `styles/`, `js/` (color · harmony · seed · a11y · data · scheme · share · wheel · ui · app · store · collection-io · i18n), `data/`, PWA files. |
 
 ## Run, test, deploy
 - **App:** `cd src && python3 -m http.server`, then open the printed `localhost` URL (the app fetches `data/paints.json` over http, so a file:// open won't work).

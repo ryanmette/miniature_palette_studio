@@ -102,12 +102,17 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.7.0** — Adobe-style palette release: editable live palette (lock/edit/add/reorder, drag, undo/redo), 10 harmony schemes + scrollable harmony strip, palette↔URL fidelity.
 - **v1.8.0** — the neutral + polish release: neutral-seed scheme engine (pop harmonies, hysteresis, wheel-overlay explainer), studio redesign (Paints drawer, condensed hero, role badges, seed **docks** replacing the Main|Accent toggle), temperature/NMM/wash-media ladders, pick fidelity + `dname` disambiguation, accent-seed pinning, Equivalents drill-down, dark-theme brass + animated theme switch, doc-freshness CI gate, a 38-finding adversarial-review hardening pass, mobile no-overspill pass, and Stage-1 native groundwork (safe areas, Preferences persistence, icon/splash set).
 
-### Current status (2026-07-07)
-**v1.8.0 released** — the web app is comprehensively feature-complete and hardened (full-codebase
-adversarial review: 38 verified findings fixed). **Monetization direction chosen: A (affiliate
-links) + B (audience funnel)** — see [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan
-files retailer applications (§9). **Next planned work: the native app, Stage 1 (v2.0)** — the
-kickoff checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork already shipped in v1.8.
+- **v1.9.0** — the correctness + structure release: Equivalents source chips (pick which scheme colour's cross-brand matches you see), metal-first equivalents + dataset 1.5.0 single-finish groups, the Shelf's brand dropdown, and a full-codebase review closing **all 15 findings** — the output tabs no longer sit on a stale colour through a wheel drag, and the wheel draws the scheme it is building (it disagreed with the palette by 180° in accent-seed mode). Structurally: one `render(reason)` chokepoint, `seed.js` (the tested pick ↔ scheme-base frame), `share.js` (the tested share-link contract), `wheel.js` extracted from `app.js` (1,729 → 1,510 lines), the CSV/search/SW/equivalents performance batch, and a dataset validator whose SOFT warnings are actionable again (640 lines of noise → 0 new).
+### Current status (2026-08-11)
+**v1.9.0 released** — the web app is feature-complete and hardened. A second full-codebase review
+found 15 findings and all 15 are fixed, along with the structural debt behind them: render order and
+the pick ↔ scheme-base frame each caused a cluster of findings and are now single, documented
+mechanisms rather than conventions. `app.js` is down to 1,510 lines with `seed.js`, `share.js` and
+`wheel.js` split out; unit tests are at 135. **Monetization direction chosen: A (affiliate links) +
+B (audience funnel)** — see [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files
+retailer applications (§9). **Next planned work: the native app, Stage 1 (v2.0)** — the kickoff
+checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork shipped in v1.8. Two decisions are
+queued in §5's follow-ups (accent-seed across the neutral boundary; the per-module comment pass).
 Still outside this repo: the Mac/Xcode build, a designer for the asset library, and the optional
 palette-from-photo enhancement.
 
@@ -206,6 +211,29 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    same paint from two sources, collapse to one with the better-sourced hex; if they're distinct
    (e.g. a reformulation), disambiguate the name/line. Likely a handful of other dupes exist — the
    validator check will surface them all.
+
+5. **Redo the plain-English comment pass — after the render-chokepoint refactor** (noted 2026-08-11).
+   PR #20 (codebase-wide inline comments, opened 2026-07-03) was **closed unmerged**: it appended
+   *trailing* comments to existing code lines, so every annotated line became a modified line and the
+   branch went irreconcilable with seven PRs of subsequent work — 12 conflicting files, and worse, the
+   comments that still merged *cleanly* had gone stale invisibly (it asserted `ensureHarmonyMode` was
+   `neutralMode`'s only writer; `main` now has three). §6 was amended in the same change to welcome a
+   plain-English *what* alongside the *why*, with the anti-drift rule and a preference for comments
+   *above* a line over trailing ones. **Do the fresh pass after the `render(reason)` chokepoint +
+   `pickHex()`/`schemeBase()` rename land** — that refactor rewrites part of `app.js` again, so
+   commenting first would waste the work. Scope it per-module and land it in small PRs, not one
+   whole-tree sweep. Note `main` already drifted from 295 → 381 commented lines in `app.js` on its own
+   through PRs #21–#27, so the gap is smaller than #20 assumed.
+
+6. **Accent-seed mode is dropped, not parked, when the seed goes neutral** (found 2026-08-11 while
+   testing the step-3 refactor; not a regression — this is how it has always behaved). Drag the wheel
+   through the low-saturation centre and `ensureHarmonyMode()` correctly forces `seedRole = 'main'`
+   (a neutral accent has no complement to build from) — but unlike `preNeutralHarmony`, the seed role
+   is never restored when the seed regains its hue, so a drag that merely *passes through* grey
+   silently ends accent-seed mode. **Decision needed before fixing:** park and restore it symmetrically
+   with the harmony, or keep it sticky on the grounds that leaving accent mode is a bigger change of
+   intent than swapping a harmony? Cheap either way (`ensureHarmonyMode`, beside the existing park);
+   the question is which is less surprising to a painter mid-drag.
 
 ---
 

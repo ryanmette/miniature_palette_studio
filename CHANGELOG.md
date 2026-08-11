@@ -5,6 +5,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.9.0] - 2026-08-11
 ### Added
 - **`tag-release.yml` workflow** — creates a release tag (§8 checklist, final step) from Actions →
   *Tag release* with a `vX.Y.Z` name + commit SHA. Remote Claude Code sessions can only push the
@@ -18,6 +20,29 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (mockups/equiv-source-picker.html directions A+B, per Ryan). SW `ps-v27`.
 
 ### Changed
+- **`app.js` gave up the wheel — `src/js/wheel.js` (1,729 → 1,510 lines).** The canvas disc, node
+  hit-testing, pointer drag, keyboard nudge, the lightness slider and Generate now live in their own
+  module. It owns no scheme state: `setupWheel(app)` takes the eleven things it needs (`state`,
+  `render`, `schemeBase`, `activePop`, `matchOpts`, `basePaint`, `wheelRoleGlyphs`, `addFreeNode`,
+  `removeFreeNode`, `collapseBanner`, `setDragging`) and returns its `draw`, so that list *is* the
+  whole contract. Pure code motion — no behaviour change, verified by the full browser smoke set.
+- **The dataset validator's SOFT checks report signal instead of 640 lines of noise.** They printed
+  455 near-duplicate pairs and 185 name/hue mismatches on every run while CI passed regardless, which
+  is indistinguishable from printing nothing — a real regression would have scrolled past unseen.
+  Now: near-duplicates are split into *already grouped* (299), *cross-finish, expected by §5.2* (156)
+  and **ungrouped same-finish — the only actionable kind (0)**; name/hue mismatches are checked
+  against `scripts/data-exceptions.json`, which grandfathers the existing 185 (miniature paints carry
+  fantasy names on purpose — Thunderbird Blue is a green) so the live count is **0 new**. A mismatch
+  introduced by a future rebuild now stands out, and an accepted id that stops mismatching is
+  reported as stale so the file shrinks rather than rots. `--verbose` still prints everything.
+- **§6 comment rule amended: the *why*, plus a plain-English *what* where it helps (per Ryan).** The
+  rule was "comments explain *why*, not *what*"; it now welcomes an approachable *what* alongside,
+  bound by an explicit anti-drift clause — correct or delete a comment in the same commit as the code
+  it no longer matches — and a preference for comments *above* a line rather than trailing it. The
+  trailing-comment caveat is the lesson of **PR #20** (whole-tree inline-comment pass, closed
+  unmerged): trailing comments couple prose to the code line in git, so the branch collided with seven
+  PRs of later work across 12 files, and the comments that *did* merge cleanly had silently gone stale.
+  A fresh, per-module pass is queued in PLAN.md §5 for after the render-chokepoint refactor.
 - **The Shelf's brand filter is now a dropdown, not chip rows (per Ryan).** The nine wrapped brand
   pills cost three full rows on a phone, pushing the grid below the fold; the filter is now a native
   `All brands` select in the filter row — the same control the Paints drawer already uses for brand
@@ -38,6 +63,121 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   distance (§2); flat sources keep pure ΔE order. SW `ps-v28`.
 
 ### Fixed
+- **`./js/seed.js` was missing from the service worker's precache list** — added in the same
+  `[Unreleased]` cycle that introduced it, so it never shipped broken, but a cold offline install
+  would have precached every other module and not that one.
+- **CSV import writes once per mark, not once per row.** `applyCsv()` called `store.setMark()` for
+  every row, and each call ends in `persist()` — a full `JSON.stringify` of the collection plus a
+  `localStorage` write. A 1,500-row paintRack import did that 1,500 times over a growing array inside
+  one `FileReader` turn and froze the main thread. Rows are grouped by mark and flushed through
+  `store.setMarks()`, which exists for exactly this: two writes instead of 1,500.
+- **The Paints drawer's search is debounced (140 ms), like the Shelf's already was.** Every keystroke
+  re-ran `filteredPaints()` + `sortPaints()` over 2,508 paints and replaced the whole chip strip's
+  `innerHTML`, so typing a paint name cost one full parse+layout cycle per character — type-lag on
+  phones. The Shelf search was fixed for this long ago; the drawer never got the same treatment.
+- **The service worker no longer stores one copy of the app shell per share link.** Palette state
+  lives in the query string and `updateUrl()` mints a new one on every settled change, so each visit
+  was a navigation to a unique URL and the network-first branch cached the shell under it — one full
+  `index.html` per shared scheme, accumulating forever, none ever read back (the offline fallback
+  matches `./index.html`). Navigations are now cached under `./index.html` itself, so the offline
+  shell still refreshes on every visit without the cache growing without bound.
+- **Cross-brand equivalents go through the same prefilter as every other search.** `equivalents()`
+  scanned and sorted the entire dataset — ~2,200 ΔE 2000 calls and a 2,200-element sort — to return
+  6–8 rows, and the Equivalents tab re-runs it on every source-chip click (and now on every wheel-drag
+  frame). It uses `candidatePool()` like `nearestPaint`/`nearestPaints` do: **~5.5× faster**, verified
+  against a full-dataset reference over all 2,508 paints — **rank 1 is identical for every paint and
+  no quality label changes**; 10 tail rows of ~20,000 differ by ≤1.3 ΔE, all inside already-Poor
+  matches. The pool is widened to 192 for this path (vs the default 64) precisely to hold that line.
+- **The metal-first guarantee can no longer be pruned away.** `candidatePool()` rescued owned paints
+  from the distance prune but not **floated types**, so a metallic source surrounded by near flats
+  could have every metal dropped before the metal-first tier (§7) was ever applied — latent since the
+  tier was introduced, and newly reachable now that `equivalents()` uses the pool. Both
+  `equivalents()` and `nearestPaints({floatTypes})` are covered. SW `ps-v31`.
+- **One render chokepoint — the output tabs can no longer sit on a stale colour.** Every path that
+  changed scheme state used to assemble its own list of renderers, and the lists disagreed: the
+  wheel's `commit()` repainted the canvas, live palette and hero but never the **Plan / Equivalents /
+  Accessibility** tabs, so dragging a node, moving the lightness slider or hitting **↻ Generate**
+  left the role cards, ideal-vs-actual matches, tone ladders and shopping-gap count pinned to the
+  *pre-drag* colour until some unrelated action happened to re-render them — the live-exploration
+  path, which is the whole point of the wheel. All of them now call **`render(reason)`**
+  (`seed` · `scheme` · `palette` · `drag` · `settle` · `all`), which owns the order:
+  `ensureHarmonyMode()` first (nothing may read neutral mode before it settles), then studio → hero →
+  the active tab, then one announce. Drag frames stay coalesced to one repaint each; measured against
+  the previous commit the median frame is unchanged (vsync-bound) on all three tabs, with the added
+  tab render costing ~3–5 ms at p95.
+- **The hero can't claim a seed role the engine has already overridden.** `renderHero()` ran *before*
+  `ensureHarmonyMode()` in two paths, so typing a neutral hex while in accent-seed mode drew the hero
+  from the stale mode — no "neutral" tag, badge still reading **accent** — and nothing re-rendered it
+  after the engine moved the seed to Primary. Ordering is now fixed inside `render()`.
+- **The neutral-mode switch is actually announced.** `ensureHarmonyMode()` wrote its explanation into
+  `#status` and the caller's own `announce()` overwrote it a statement later, so a screen-reader user
+  was never told the harmony had been swapped out from under them. The note is now handed to
+  `announce()`, which **composes** it ahead of the standing summary and consumes it once.
+- **The wheel draws the scheme, not a colour 180° from it.** In accent-seed mode the wheel built its
+  nodes from the *pick* while the live palette and Plan built theirs from the scheme base — two
+  frames 180° apart. Two of three wheel nodes were colours in no scheme, three of four scheme colours
+  had no node, and the `data-hex` colour link could never match, so hovering a Plan card silently
+  failed to ring anything. New **`src/js/seed.js`** owns the pick ↔ scheme-base mapping as pure,
+  tested functions; everything that renders, hit-tests or resolves a swatch key now works in the
+  scheme frame, and `baseHex()` is renamed **`pickHex()`** and confined to the pick's own identity
+  (hero, seed badge, hex field, share URL). Wheel **role badges (P/A/2) now work in accent-seed mode**
+  too — they had to be suppressed there precisely because the frames disagreed.
+- **Lock and edit act on the colour the column actually shows.** The live palette mints `p:<deg>`
+  swatch keys relative to the scheme base while `swatchHex()`/`detachPartner()` resolved them against
+  the pick, so in accent-seed mode the colour editor opened on the wrong colour and locking a partner
+  visibly recoloured the column. Both now resolve in the scheme frame (`seed.js swatchKeyHex`), and
+  the *write* side matches: editing the base column and **"use as base colour"** go through
+  `seedFromSchemeBase()`, as does a wheel drag — writing the raw colour made the scheme jump 180° the
+  moment it was set. SW `ps-v30`.
+- **Share links round-trip through one tested contract.** The URL encode and decode halves were
+  hand-rolled at opposite ends of `app.js` and had no tests, on a format that is a user-facing promise
+  (a pasted link must reproduce the scheme). Both now live in **`src/js/share.js`** as pure functions
+  with the param vocabulary documented in one place, covered by a round-trip test plus the awkward
+  cases: a link naming a harmony/paint/tab this build no longer has still opens on the fallbacks,
+  malformed swatch tokens are dropped rather than thrown on, values are clamped, the added-swatch cap
+  is enforced, and a hand-edited achromatic `pp` is clamped to a real pop.
+- **Value-harmony columns are labelled by what varies, not "0°".** Shades/monochromatic partners
+  rotate no hue, so every one of them carried `deg 0` and rendered the same meaningless `0°` tag.
+  They now read **Lighter / Darker** (or **Richer / Softer** when saturation is what moved), in the
+  live palette and the Equivalents source chips alike.
+- **`store.hydrate()` ran twice at startup, and neither call applied what it restored.** The two
+  calls were byte-identical; the second was dead work. Worse, both ran *after* `setTheme()` and after
+  i18n had resolved its locale, so on a native shell whose storage had been evicted the recovered
+  theme/locale sat in state while the DOM kept the pre-hydrate one. One call now, followed by
+  `applyPrefsToState()` — split out of `applyRestoredPrefs()` so it can run before the seed exists,
+  where the old function's trailing `renderHero()` would have had nothing to draw. A link's `t=dark`
+  still outranks the stored pref.
+- **Owned paints are marked as owned even when the collection isn't driving the ranking.** With
+  *Use my collection* at its default **off**, `matchOpts()` passed neither ranking set, so
+  `decorate()` short-circuited and every match reported `owned: false` — the live palette's ✓ owned
+  badge never appeared and the exported shopping list told you to buy paints already on your shelf.
+  Ownership is a fact about the shelf, not a ranking mode: `nearestPaint`/`nearestPaints` now take a
+  decoration-only **`knownOwnedIds`** set that is supplied on every search, while `boostIds`/
+  `ownedIds` keep their existing ranking roles. Reported ΔE and match order are unchanged (§2/§7).
+- **The NMM recipe's paints reach the buy list and the export.** The Metal role card renders three
+  non-metallic-metal rungs as a real recommendation, but `schemeGaps()` and `shoppingList()` walked
+  `r.ladders` only — so *"+ Add N to buy"* silently omitted them and the export had no row for them,
+  sending a painter following that recipe to the shop missing exactly its paints. Both now walk
+  `r.nmm`; export rows are labelled **`Metal NMM <step>`** so the alternative technique is legible,
+  and paint-id dedupe across ladders + NMM still holds (you buy one pot).
+- **⌘P, Ctrl+U and Ctrl+X no longer mark paints.** The Shelf's Lightroom-style P/U/X triage keys and
+  the Paints drawer's chip shortcuts matched on `e.key` without excluding modifier chords, so ⌘P
+  marked the whole selection owned and swallowed the print dialog; Ctrl+X did the same instead of
+  cutting. Both handlers now ignore `meta`/`ctrl`/`alt` — Shift is deliberately still allowed, since
+  Shift+Arrow extends the Shelf selection.
+- **`src/js/data.js` is a text file again.** The `dname` disambiguation key joins brand and name with
+  a NUL separator, but it was written as a *literal* NUL byte in the source — so git classified the
+  whole module as binary. `git diff` reported `Bin 10546 -> 10939 bytes` instead of a reviewable
+  diff, and `grep` answered "binary file matches"; the one module doing all the paint matching was
+  the one module you couldn't read a diff of. Now written as the `\u0000` escape: byte-identical
+  at runtime, ASCII on disk. (This commit still shows as binary because the *old* blob was; diffs
+  from here on are textual.)
+- **`popChips` routes its swatch through `safeColor()`.** It was the one colour sink in `ui.js`
+  using `esc()` and the `background` shorthand, against the invariant the module states at line 11 —
+  `esc()` passes `;`, `(`, `)` and `url` straight through. Not exploitable (the only caller is the
+  hardcoded `POPS` constant), but the defence-in-depth guarantee is now actually uniform: the chip
+  reuses the shared `swatch()` helper, which also restores `background-color` so finish overlays can
+  layer (§3.5). SW `ps-v29`.
 - **Dataset 1.4.1: five Citadel metallics were typed as flat paints** — Retributor Armour and
   Screaming Bell (`base`), Necron Compound and Sigmarite (`dry`), Canoptek Alloy (`layer`) — their
   names carry no metal keyword, so the build's `METAL_RE` missed them. All five are now `metal`
@@ -813,6 +953,7 @@ The **collection release**: a paint shelf, collection-aware planning, portabilit
 - CIEDE2000 implementation validated against 9 Sharma et al. reference pairs (exact to 4 dp).
 
 [Unreleased]: https://github.com/ryanmette/miniature_palette_studio/commits/main
+[1.9.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.9.0
 [1.8.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.8.0
 [0.1.0]: https://github.com/ryanmette/miniature_palette_studio
 <!-- Release headings above aren't linked: no git tags have been pushed yet. When tags land
