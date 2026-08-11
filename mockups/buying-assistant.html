@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buying assistant — 4 directions for the paint-first workflow</title>
+<style>
+  /* Grimdark tokens (subset) — matches src/styles/tokens.css */
+  :root {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+    --success:#86A559; --success-weak:#232A16;
+    --warning:#C9923A; --warning-weak:#2E2412;
+    --danger:#D2563F; --danger-weak:#2E1A14;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px;
+    --font:"Inter",system-ui,sans-serif; --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+    --shadow:0 1px 2px rgba(0,0,0,.45);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:28px; }
+  h1 { font-family:var(--display); font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--text-muted); max-width:78ch; margin:0 0 8px; }
+  .frame { max-width:78ch; margin:0 0 26px; padding:14px 16px; background:var(--accent-weak); border:1px solid var(--accent); border-radius:var(--r-card); font-size:13px; }
+  .frame b { color:var(--accent); }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow); padding:20px; margin-bottom:26px; max-width:900px; }
+  h2 { font-family:var(--display); font-size:16px; margin:0 0 2px; }
+  h2 .tag { font-family:var(--font); font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin-left:8px; }
+  .why { color:var(--text-muted); font-size:12.5px; margin:0 0 16px; max-width:76ch; }
+  .verdict { font-size:12.5px; margin:16px 0 0; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:10px; }
+  .verdict b { color:var(--text); }
+  .verdict .pro::before { content:"+ "; color:var(--success); font-weight:700; }
+  .verdict .con::before { content:"− "; color:var(--danger); font-weight:700; }
+  .verdict div { margin-top:3px; }
+  .micro { font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); }
+
+  /* --- shared app-chrome look-alikes --- */
+  .mock { background:var(--bg); border:1px solid var(--border); border-radius:var(--r-ctrl); padding:12px; }
+  .modenav { display:inline-flex; gap:2px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-pill); padding:3px; }
+  .modenav button { font:inherit; font-size:12px; font-weight:600; border:0; background:transparent; color:var(--text-muted); padding:5px 14px; border-radius:var(--r-pill); cursor:pointer; }
+  .modenav button[aria-pressed="true"] { background:var(--accent); color:var(--on-accent); }
+  .modenav button.new { outline:1.5px dashed var(--accent); outline-offset:1px; }
+  .field { display:flex; align-items:center; gap:8px; background:var(--surface-2); border:1px solid var(--border-strong); border-radius:var(--r-ctrl); padding:9px 12px; margin-top:10px; }
+  .field input { flex:1; font:inherit; background:transparent; border:0; color:var(--text); outline:none; }
+  .field .ic { color:var(--text-faint); }
+  .sw { width:34px; height:34px; border-radius:8px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.35); flex:none; }
+  .sw.lg { width:56px; height:56px; border-radius:10px; }
+  .sw.sm { width:22px; height:22px; border-radius:6px; }
+  .metal { background-image:linear-gradient(125deg,rgba(255,255,255,0) 34%,rgba(255,255,255,.5) 50%,rgba(255,255,255,0) 64%); }
+
+  .row { display:flex; align-items:center; gap:10px; padding:8px; border-radius:var(--r-ctrl); }
+  .row + .row { margin-top:2px; }
+  .row:hover { background:var(--surface-2); }
+  .row .nm { font-weight:600; font-size:13px; }
+  .row .br { color:var(--text-muted); font-size:11.5px; }
+  .row .grow { flex:1; min-width:0; }
+  .de { font-family:var(--mono); font-size:11.5px; padding:2px 7px; border-radius:var(--r-pill); white-space:nowrap; }
+  .de.good { background:var(--success-weak); color:var(--success); }
+  .de.fair { background:var(--warning-weak); color:var(--warning); }
+  .de.poor { background:var(--danger-weak); color:var(--danger); }
+  .state { font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:var(--r-pill); white-space:nowrap; }
+  .state.owned { background:var(--success-weak); color:var(--success); }
+  .state.buy { background:var(--buy-weak); color:var(--buy); }
+  .btn { font:inherit; font-size:12px; font-weight:600; border:1px solid var(--border-strong); background:var(--surface-2); color:var(--text); border-radius:var(--r-ctrl); padding:6px 12px; cursor:pointer; }
+  .btn.acc { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .btn.buy { background:var(--buy); border-color:var(--buy); color:var(--on-buy); }
+  .btn.sm { padding:4px 9px; font-size:11.5px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .chip { font-size:11.5px; border:1px solid var(--border-strong); background:var(--surface-2); color:var(--text-muted); border-radius:var(--r-pill); padding:4px 11px; cursor:pointer; }
+  .chip[aria-pressed="true"] { background:var(--accent-weak); border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .hdr { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .divide { border-top:1px solid var(--border); margin:12px 0; }
+
+  /* B — detail sheet */
+  .sheet { background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card); box-shadow:0 18px 50px rgba(0,0,0,.5); padding:16px; max-width:430px; }
+  .sheet .top { display:flex; gap:12px; align-items:flex-start; }
+  .sheet h3 { font-family:var(--display); font-size:17px; margin:0; }
+  .sheet .meta { color:var(--text-muted); font-size:12px; }
+  .sheet .hex { font-family:var(--mono); font-size:12px; color:var(--text-muted); }
+  .seclabel { font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); margin:14px 0 6px; }
+
+  /* D — paint-first home */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(46px,1fr)); gap:6px; margin-top:10px; }
+  .cell { aspect-ratio:1; border-radius:8px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.3); position:relative; }
+  .cell .b { position:absolute; right:2px; bottom:2px; width:12px; height:12px; border-radius:50%; font-size:8px; display:grid; place-items:center; font-weight:700; }
+  .cell .b.o { background:var(--success); color:#14190A; }
+  .cell .b.w { background:var(--buy); color:var(--on-buy); }
+
+  /* scanner */
+  .scan { display:flex; gap:14px; align-items:center; }
+  .viewfinder { width:150px; height:110px; border-radius:var(--r-ctrl); background:linear-gradient(160deg,#2a2320,#171312); border:1px solid var(--border-strong); position:relative; flex:none; overflow:hidden; }
+  .viewfinder .bracket { position:absolute; width:22px; height:22px; border:2px solid var(--accent); }
+  .viewfinder .bracket.tl { top:10px; left:10px; border-right:0; border-bottom:0; }
+  .viewfinder .bracket.tr { top:10px; right:10px; border-left:0; border-bottom:0; }
+  .viewfinder .bracket.bl { bottom:10px; left:10px; border-right:0; border-top:0; }
+  .viewfinder .bracket.br { bottom:10px; right:10px; border-left:0; border-top:0; }
+  .viewfinder .pot { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:44px; height:56px; border-radius:6px 6px 8px 8px; background:linear-gradient(180deg,#3b3129,#241d18); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+  .viewfinder .pot .cap { height:12px; border-radius:6px 6px 0 0; background:#9A1115; }
+  .viewfinder .pot .lbl { margin:6px 4px; height:8px; border-radius:2px; background:rgba(255,255,255,.25); }
+  .viewfinder .pot .lbl.s { width:60%; }
+  .barcode { display:flex; gap:1.5px; align-items:flex-end; height:26px; margin-top:6px; }
+  .barcode i { display:block; width:2px; background:var(--text-muted); height:100%; }
+  .barcode i:nth-child(3n) { width:3px; }
+  .barcode i:nth-child(4n) { height:78%; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; margin-top:8px; }
+  th,td { text-align:left; padding:6px 10px 6px 0; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); font-weight:600; }
+  tr:last-child td { border-bottom:0; }
+  code { font-family:var(--mono); font-size:.9em; background:var(--surface-2); padding:1px 5px; border-radius:5px; }
+  .rec { border-color:var(--accent); }
+  .rec h2 { color:var(--accent); }
+  ol { padding-left:18px; }
+  ol li { margin:6px 0; }
+</style>
+</head>
+<body>
+
+<h1>Buying assistant — 4 directions for the paint-first workflow</h1>
+<p class="sub">Exploration only. Nothing here is built; this is the mockup review step that precedes a
+PLAN.md entry, in the manner of <code>studio-layouts.html</code> and <code>equiv-source-picker.html</code>.</p>
+
+<div class="frame">
+  <b>The observation (Ryan, in use):</b> the app gets opened less to pick a <i>scheme</i> and more to
+  search paints and find what is close to one — a buying assistant.
+  <br><br>
+  <b>What that actually is:</b> not a new persona. It is <b>P3 · Marcus, the Range Switcher</b>, already
+  in <code>USE_CASES.md</code> §1 — <i>“give me the closest paint I can actually buy today for this
+  colour.”</i> The app has every piece of P3's answer (ΔE matching, cross-brand equivalents, owned/to-buy
+  marks, the interchangeable groups) but files them all <i>inside</i> the scheme output. To ask “what is
+  close to Mephiston Red?” today you must pick a paint, let it seed a scheme, then switch to the
+  Equivalents tab. The engine is fine; the <b>information architecture assumes PLAN is the job</b> when
+  in practice the job is <b>RESOLVE → SHOP</b> (§0.5).
+  <br><br>
+  So this is a <b>priority inversion between existing personas</b>, not a missing feature — which is good
+  news: three of the four directions below are re-routing, not new engine work.
+</div>
+
+<!-- ─────────────────────────── A ─────────────────────────── -->
+<section>
+  <h2>A · “Find” as a third top-level mode <span class="tag">new surface · additive</span></h2>
+  <p class="why">Studio / Shelf becomes Studio / Shelf / <b>Find</b>. A search-first surface whose whole
+  output is “this paint, and the paints near it”. No seed, no harmony, no roles — the scheme engine is
+  never started. Maps cleanly onto a future app tab bar (§3.6).</p>
+
+  <div class="mock">
+    <div class="modenav">
+      <button>Studio</button><button>Shelf</button><button class="new" aria-pressed="true">Find</button>
+    </div>
+    <div class="field"><span class="ic">⌕</span><input value="mephiston" readonly><span class="micro">2 matches</span></div>
+
+    <div class="micro" style="margin:14px 0 4px">Paint</div>
+    <div class="row" style="background:var(--surface-2)">
+      <span class="sw" style="background:#9A1115"></span>
+      <span class="grow"><span class="nm">Mephiston Red</span><br><span class="br">Citadel · Base</span></span>
+      <span class="state owned">✓ owned</span>
+    </div>
+
+    <div class="micro" style="margin:14px 0 4px">Closest in other brands</div>
+    <div class="row">
+      <span class="sw" style="background:#A01418"></span>
+      <span class="grow"><span class="nm">Bloody Red</span><br><span class="br">Vallejo · Game Color</span></span>
+      <span class="de good">ΔE 1.4</span><button class="btn sm buy">+ buy</button>
+    </div>
+    <div class="row">
+      <span class="sw" style="background:#96161B"></span>
+      <span class="grow"><span class="nm">Pure Red</span><br><span class="br">Army Painter · Warpaints</span></span>
+      <span class="de good">ΔE 2.1</span><span class="state buy">on list</span>
+    </div>
+    <div class="row">
+      <span class="sw" style="background:#8E1519"></span>
+      <span class="grow"><span class="nm">Blood Red</span><br><span class="br">Scale75 · Fantasy</span></span>
+      <span class="de good">ΔE 3.0</span><button class="btn sm buy">+ buy</button>
+    </div>
+
+    <div class="micro" style="margin:14px 0 4px">Closest you already own</div>
+    <div class="row">
+      <span class="sw" style="background:#8E2757"></span>
+      <span class="grow"><span class="nm">Pink Horror</span><br><span class="br">Citadel · Layer</span></span>
+      <span class="de fair">ΔE 4.8</span><span class="micro">warm it slightly</span>
+    </div>
+    <div style="margin-top:12px"><button class="btn">Build a scheme from this →</button></div>
+  </div>
+
+  <p class="verdict">
+    <b>Verdict.</b>
+    <div class="pro">Honest IA: a distinct job gets a distinct surface, and the answer is the whole page rather than a tab three clicks in.</div>
+    <div class="pro">The scheme becomes the <i>optional</i> next step (“build a scheme from this”), which matches how it is actually used.</div>
+    <div class="con">A third mode is a real cost on a phone, and it overlaps the Shelf — both are “a list of paints with search and filters”.</div>
+  </p>
+</section>
+
+<!-- ─────────────────────────── B ─────────────────────────── -->
+<section>
+  <h2>B · Paint detail sheet, reachable from everywhere <span class="tag">no new mode · smallest</span></h2>
+  <p class="why">Tapping any paint <i>anywhere</i> — drawer chip, Shelf cell, live-palette column, a
+  ladder rung, an equivalents row — opens one sheet that answers everything about that paint. Every
+  existing surface becomes a doorway to the buying answer, and nothing moves.</p>
+
+  <div class="mock" style="display:flex; justify-content:center; padding:20px">
+    <div class="sheet">
+      <div class="top">
+        <span class="sw lg" style="background:#9A1115"></span>
+        <div class="grow">
+          <h3>Mephiston Red</h3>
+          <div class="meta">Citadel · Base · <span class="hex">#9A1115</span></div>
+          <div style="margin-top:8px; display:flex; gap:6px;">
+            <span class="state owned">✓ owned</span>
+            <button class="btn sm">Mark to buy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="seclabel">Interchangeable — same colour</div>
+      <div class="row" style="padding:5px 0">
+        <span class="sw sm" style="background:#9B1216"></span>
+        <span class="grow"><span class="nm">Bloody Red</span> <span class="br">· Vallejo</span></span>
+        <span class="de good">ΔE 0.6</span>
+      </div>
+
+      <div class="seclabel">Closest in other brands</div>
+      <div class="row" style="padding:5px 0">
+        <span class="sw sm" style="background:#96161B"></span>
+        <span class="grow"><span class="nm">Pure Red</span> <span class="br">· Army Painter</span></span>
+        <span class="de good">ΔE 2.1</span>
+      </div>
+      <div class="row" style="padding:5px 0">
+        <span class="sw sm" style="background:#8E1519"></span>
+        <span class="grow"><span class="nm">Blood Red</span> <span class="br">· Scale75</span></span>
+        <span class="de good">ΔE 3.0</span>
+      </div>
+
+      <div class="seclabel">Nearest on your shelf</div>
+      <div class="row" style="padding:5px 0">
+        <span class="sw sm" style="background:#8E2757"></span>
+        <span class="grow"><span class="nm">Pink Horror</span> <span class="br">· warm it slightly</span></span>
+        <span class="de fair">ΔE 4.8</span>
+      </div>
+
+      <div class="divide"></div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn acc">Seed a scheme</button>
+        <button class="btn">Find substitutes</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="verdict">
+    <b>Verdict.</b>
+    <div class="pro">By far the cheapest — it is one component plus a click handler on surfaces that already exist, and it makes the Shelf immediately useful for lookup.</div>
+    <div class="pro">Composes with every other direction: A, C and D all want this sheet as their leaf node.</div>
+    <div class="con">Gives search no home of its own — you still have to already be looking at the paint. It answers “what about <i>this</i>?”, not “find me something like…”.</div>
+  </p>
+</section>
+
+<!-- ─────────────────────────── C ─────────────────────────── -->
+<section>
+  <h2>C · Substitute finder — “I need X, what can I use?” <span class="tag">the literal ask</span></h2>
+  <p class="why">The shopping-gap flow inverted. You name a paint you <i>don't</i> have — a tutorial's
+  recipe, a discontinued pot, something a friend used — and constrain the answer by what is actually
+  available to you: only what you own, or only the brands the shop in front of you stocks.</p>
+
+  <div class="mock">
+    <div class="field"><span class="ic">↔</span><input value="Vallejo Model Color · Flat Earth" readonly></div>
+    <div class="chips">
+      <span class="micro" style="align-self:center; margin-right:2px">Limit to</span>
+      <button class="chip" aria-pressed="true">Anything</button>
+      <button class="chip">Only what I own</button>
+      <button class="chip">Only what I can buy</button>
+    </div>
+    <div class="chips">
+      <span class="micro" style="align-self:center; margin-right:2px">Stocked here</span>
+      <button class="chip" aria-pressed="true">Citadel</button>
+      <button class="chip" aria-pressed="true">Army Painter</button>
+      <button class="chip">Vallejo</button>
+      <button class="chip">Scale75</button>
+      <button class="chip">P3</button>
+    </div>
+
+    <div class="divide"></div>
+    <div class="row">
+      <span class="sw" style="background:#6B4A2F"></span>
+      <span class="grow"><span class="nm">Mournfang Brown</span><br><span class="br">Citadel · Base — stocked</span></span>
+      <span class="de good">ΔE 2.3</span><button class="btn sm buy">+ buy</button>
+    </div>
+    <div class="row">
+      <span class="sw" style="background:#71503A"></span>
+      <span class="grow"><span class="nm">Leather Brown</span><br><span class="br">Army Painter — stocked</span></span>
+      <span class="de good">ΔE 3.1</span><button class="btn sm buy">+ buy</button>
+    </div>
+    <div class="row" style="opacity:.55">
+      <span class="sw" style="background:#6E4B31"></span>
+      <span class="grow"><span class="nm">Flat Earth</span><br><span class="br">Vallejo — not stocked here</span></span>
+      <span class="de good">ΔE 0</span>
+    </div>
+    <div class="divide"></div>
+    <div class="row" style="background:var(--success-weak)">
+      <span class="sw" style="background:#7A5236"></span>
+      <span class="grow"><span class="nm">Steel Legion Drab</span><br><span class="br">Citadel — <b>on your shelf</b>, darken slightly</span></span>
+      <span class="de fair">ΔE 4.4</span>
+    </div>
+  </div>
+
+  <p class="verdict">
+    <b>Verdict.</b>
+    <div class="pro">Says out loud what the tool is being used for, and “only these brands” is exactly the in-store constraint the barcode idea implies.</div>
+    <div class="pro">“You already own something close enough — adjust it” is the §0.5 value prop, finally reachable without building a scheme.</div>
+    <div class="con">A brand filter is a crude proxy for a shop's actual stock, and we have no store data. It is honest only if labelled as a brand filter, not “what this shop has”.</div>
+  </p>
+</section>
+
+<!-- ─────────────────────────── D ─────────────────────────── -->
+<section>
+  <h2>D · Flip the default — the paint list is the home <span class="tag">biggest change · no new surface</span></h2>
+  <p class="why">Take the observation at face value: if the job is mostly paints, open on paints. The
+  Shelf grid becomes <b>Paints</b> — the whole catalogue, with owned/to-buy as <i>filters</i> rather than
+  the point — and the Studio becomes something you launch from a paint you have chosen.</p>
+
+  <div class="mock">
+    <div class="modenav">
+      <button class="new" aria-pressed="true">Paints</button><button>Studio</button>
+    </div>
+    <div class="field"><span class="ic">⌕</span><input value="" placeholder="Search 2,508 paints…" readonly><span class="micro">⌘K</span></div>
+    <div class="chips">
+      <button class="chip" aria-pressed="true">All</button>
+      <button class="chip">Owned</button>
+      <button class="chip">To buy</button>
+      <button class="chip">All brands ▾</button>
+      <button class="chip">Type ▾</button>
+    </div>
+    <div class="grid">
+      <div class="cell" style="background:#9A1115"><span class="b o">✓</span></div>
+      <div class="cell" style="background:#A01418"></div>
+      <div class="cell" style="background:#650001"><span class="b o">✓</span></div>
+      <div class="cell" style="background:#C8202A"></div>
+      <div class="cell" style="background:#8E2757"><span class="b w">▾</span></div>
+      <div class="cell" style="background:#2D567C"><span class="b o">✓</span></div>
+      <div class="cell" style="background:#0B6371"></div>
+      <div class="cell" style="background:#1E939C"></div>
+      <div class="cell metal" style="background:#C8A13A"><span class="b o">✓</span></div>
+      <div class="cell metal" style="background:#C2C8CC"></div>
+      <div class="cell" style="background:#70746D"></div>
+      <div class="cell" style="background:#3E6B2F"><span class="b w">▾</span></div>
+      <div class="cell" style="background:#847F37"></div>
+      <div class="cell" style="background:#D7955A"></div>
+      <div class="cell" style="background:#F8BF3E"></div>
+      <div class="cell" style="background:#5B3B8C"></div>
+    </div>
+    <div class="micro" style="margin-top:10px">Tap a swatch → the detail sheet from direction B</div>
+  </div>
+
+  <p class="verdict">
+    <b>Verdict.</b>
+    <div class="pro">The most honest response to the observation — it reorders the app around the job actually being done, and adds no new surface at all.</div>
+    <div class="con">Demotes the signature feature. The ideal-vs-actual scheme engine is what makes this <i>this</i> tool rather than a paint database, and burying it risks the thing nobody else has.</div>
+    <div class="con">Large edit: default mode, IA, the §3.6 header rules and the mode switch all move at once.</div>
+  </p>
+</section>
+
+<!-- ─────────────────────────── scanner ─────────────────────────── -->
+<section>
+  <h2>Cross-cutting · Scan a pot in the shop <span class="tag">v2 · native</span></h2>
+  <p class="why">Point the camera at a pot and get: do I already own this · what is it close to · is it on
+  my list. It is the in-store half of directions C and D. The camera makes it a native-app capability
+  (<code>IOS_APP_PLAN.md</code>) — <code>BarcodeDetector</code> exists in Chrome/Android but not Safari,
+  so the web build would be Android-only at best.</p>
+
+  <div class="scan">
+    <div class="viewfinder">
+      <span class="bracket tl"></span><span class="bracket tr"></span>
+      <span class="bracket bl"></span><span class="bracket br"></span>
+      <div class="pot"><div class="cap"></div><div class="lbl"></div><div class="lbl s"></div></div>
+    </div>
+    <div class="grow">
+      <div class="row" style="padding:6px 0">
+        <span class="sw" style="background:#9A1115"></span>
+        <span class="grow"><span class="nm">Mephiston Red</span><br><span class="br">Citadel · Base — matched from the label</span></span>
+        <span class="state owned">✓ you own this</span>
+      </div>
+      <div class="barcode" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+    </div>
+  </div>
+
+  <p class="why" style="margin-top:16px"><b>The blocker is data, not the camera.</b> Two routes, and only
+  one of them is available to us today:</p>
+  <table>
+    <tr><th>Route</th><th>What it needs</th><th>Feasible now?</th></tr>
+    <tr>
+      <td><b>Barcode</b> (EAN/UPC)</td>
+      <td>A barcode → paint-id mapping. <code>paints.json</code> has no such field, and no open dataset carries one; it would have to be gathered pot by pot.</td>
+      <td><b>No.</b> A scanner with no mapping scans a number and returns nothing.</td>
+    </tr>
+    <tr>
+      <td><b>Label OCR</b></td>
+      <td>Read the printed name, fuzzy-match it against the 2,508 names we already hold. On-device Vision text recognition on iOS; no new data at all.</td>
+      <td><b>Yes</b> — and it degrades gracefully: a bad read just puts text in the search field.</td>
+    </tr>
+    <tr>
+      <td><b>Crowd-sourced barcodes</b></td>
+      <td>Scan-and-tag: users map a barcode to a paint they identify by hand, building the table over time.</td>
+      <td><b>No</b> — needs a backend to collect it, which §1 forbids.</td>
+    </tr>
+  </table>
+  <p class="verdict"><b>Verdict.</b>
+    <div class="pro"><b>OCR first.</b> It works with the dataset we have, keeps the no-backend rule, and reaches the same goal — identify the pot in my hand.</div>
+    <div class="con">Barcode is the better UX <i>if</i> the mapping ever exists; treat it as a data-sourcing project (TD5's sibling), not a UI one.</div>
+  </p>
+</section>
+
+<!-- ─────────────────────────── recommendation ─────────────────────────── -->
+<section class="rec">
+  <h2>Recommendation — B, then C, and hold D</h2>
+  <p class="why">The four are not exclusive. B is the leaf node all of them need, and it is small enough
+  to ship on its own and learn from.</p>
+  <ol>
+    <li><b>B — the paint detail sheet.</b> One new component, reusing <code>equivalents()</code>,
+      <code>nearestPaints()</code>, <code>groupMembers()</code> and the store marks — all shipped. It makes
+      the Shelf's 2,508 swatches answer questions instead of just being marked, and it is the reversible
+      first step: if the observation is right, usage will show it.</li>
+    <li><b>C — the substitute finder</b>, as a mode on the sheet rather than a new surface (“Find
+      substitutes” in the mock above), with the own/buy/brand constraints. This is the literal buying
+      assistant, and needs no engine work.</li>
+    <li><b>A — “Find” mode</b> only if B and C prove that search wants a home of its own. Adding a third
+      mode first would be guessing.</li>
+    <li><b>D — flipping the default</b> is the one to sit on. It is the most honest reading of the
+      observation and the easiest to regret: the scheme engine is the differentiator, and one person's
+      usage over a few weeks is a signal, not a mandate. Revisit once B/C have been lived with.</li>
+    <li><b>Scanner</b> — OCR route, native only, after the Stage-1 app shell exists. Park the barcode
+      variant behind the data question.</li>
+  </ol>
+  <p class="verdict"><b>The through-line:</b> every direction here is about <i>routing</i>, not
+  capability. The app already computes every answer P3 needs — it just files them behind a scheme.</p>
+</section>
+
+</body>
+</html>

@@ -5,6 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Design exploration: the buying-assistant workflow** (`mockups/buying-assistant.html`, not shipped).
+  Raised from Ryan's own use — the app gets opened less to build a *scheme* and more to look a paint up
+  and find what is close to it. That is **P3 · Marcus** from `USE_CASES.md` §1 verbatim, so it is a
+  **priority inversion between existing personas, not a missing feature**: the engine already computes
+  every answer P3 needs but files them inside the scheme output. Four routing directions mocked (paint
+  detail sheet · substitute finder · a "Find" mode · flipping the default to paint-first), plus the
+  in-store scanner. Recommendation and reasoning recorded in `PLAN.md` §5 backlog 7–11.
+- **Label OCR recorded as the shipping route for in-store pot identification** (`IOS_APP_PLAN.md` §5).
+  Barcode was already parked there with the right blocker — no EAN/UPC column exists and no open dataset
+  supplies one. Reading the printed *name* and fuzzy-matching the 2,508 names we already hold needs no new
+  data, keeps the no-backend rule, and degrades to "put the text in the search field". Barcode stays the
+  nicer UX if a mapping ever exists — a data-sourcing project, not a UI one.
+
 ### Changed
 - **Accent-seed mode now parks and restores across the neutral boundary (per Ryan).** A neutral seed
   always holds Primary — a neutral accent has no complement to build from — but a drag that merely
