@@ -5,6 +5,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.9.0] - 2026-08-11
 ### Added
 - **`tag-release.yml` workflow** — creates a release tag (§8 checklist, final step) from Actions →
   *Tag release* with a `vX.Y.Z` name + commit SHA. Remote Claude Code sessions can only push the
@@ -951,6 +953,7 @@ The **collection release**: a paint shelf, collection-aware planning, portabilit
 - CIEDE2000 implementation validated against 9 Sharma et al. reference pairs (exact to 4 dp).
 
 [Unreleased]: https://github.com/ryanmette/miniature_palette_studio/commits/main
+[1.9.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.9.0
 [1.8.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.8.0
 [0.1.0]: https://github.com/ryanmette/miniature_palette_studio
 <!-- Release headings above aren't linked: no git tags have been pushed yet. When tags land
