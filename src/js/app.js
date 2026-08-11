@@ -298,28 +298,55 @@ function setPopHex(hex) {
  *  legal for the seed (parking/restoring the painter's hue harmony across the boundary), forces the
  *  seed to Primary (a neutral accent has no complement to build around), and syncs the banner, strip,
  *  and pop chips. Cheap when nothing changed, so the wheel's per-frame commit() can call it. */
-let lastNeutral = null, preNeutralHarmony = null;
+let lastNeutral = null, preNeutralHarmony = null, preNeutralSeedRole = null;
 let modeNote = '';   // set by ensureHarmonyMode on a real mode change; consumed once by announce()
+/**
+ * Can a parked accent role be handed back yet? Restoring flips schemeBase() 180°, and Lab chroma is
+ * NOT identical across hues, so restoring on a seed that has only just cleared the threshold could
+ * land the ROTATED seed back under it and flip the mode again next frame. Require the rotated seed
+ * to be clearly non-neutral too; until then the role stays parked.
+ */
+const canRestoreAccent = () =>
+  preNeutralSeedRole === 'accent' && labChroma(schemeBaseOf(pickHex(), 'accent')) > NEUTRAL_EXIT;
+
 function ensureHarmonyMode() {
   const C = labChroma(schemeBase());
   const n = neutralMode ? C < NEUTRAL_EXIT : C < NEUTRAL_CHROMA;   // hysteresis deadband 10–14
   neutralMode = n;
   const legal = n ? NEUTRAL_OK.has(state.harmony) : !isNeutralHarmony(state.harmony);
-  if (n === lastNeutral && legal) return;
+  // A parked accent role is a PENDING restore, so it's re-evaluated on every call rather than only
+  // on a mode flip: a drag that keeps moving away from grey gets the role back as soon as the
+  // rotated seed clears the deadband, not merely at the instant it crossed it.
+  const restoring = !n && canRestoreAccent();
+  if (n === lastNeutral && legal && !restoring) return;
   lastNeutral = n;
+
+  const notes = [];
   if (!legal) {
     state.dropOffsets = [];
     if (n) { preNeutralHarmony = state.harmony; state.harmony = 'neutral-pop'; }
     else { state.harmony = validHarmony(preNeutralHarmony) && !isNeutralHarmony(preNeutralHarmony) ? preNeutralHarmony : 'complementary'; preNeutralHarmony = null; }
-    // Hand the note to announce() rather than writing #status here: this used to land in the live
-    // region and be overwritten a statement later by the caller's own announce(), so the one thing a
-    // screen-reader user needed to hear — the harmony changed under them — was never spoken.
-    modeNote = n
+    notes.push(n
       ? 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.'
-      : `Seed has a hue again — back to the ${state.harmony} scheme.`;
+      : `Seed has a hue again — back to the ${state.harmony} scheme.`);
   }
-  if (n && state.seedRole === 'accent') state.seedRole = 'main';   // neutral always holds Primary; drop out of accent-seed mode
-  // (the palette's Accent dock renders disabled with the why — renderLive follows this call)
+  // The seed role parks and restores SYMMETRICALLY with the harmony above. A neutral seed always
+  // holds Primary (a neutral accent has no complement to build from), but before this a drag that
+  // merely PASSED THROUGH the low-saturation centre ended accent-seed mode for good — the harmony
+  // came back on the way out and the seed role didn't.
+  if (n && state.seedRole === 'accent') {
+    preNeutralSeedRole = 'accent';
+    state.seedRole = 'main';   // the palette's Accent dock renders disabled with the why (renderLive follows)
+  } else if (restoring) {
+    state.seedRole = 'accent';
+    preNeutralSeedRole = null;
+    notes.push('Your pick seeds the Accent role again.');
+  }
+  // Hand the notes to announce() rather than writing #status here: they used to land in the live
+  // region and be overwritten a statement later by the caller's own announce(), so the one thing a
+  // screen-reader user needed to hear — the scheme changed under them — was never spoken.
+  if (notes.length) modeNote = notes.join(' ');
+
   setNeutralUi(n);
   syncSeg(); renderPops();
 }
@@ -895,6 +922,7 @@ function paintListKeydown(e) {
 function setSeedRole(role) {
   if ((role !== 'main' && role !== 'accent') || state.seedRole === role) return;
   state.seedRole = role;
+  preNeutralSeedRole = null;   // an explicit dock choice outranks anything parked at the neutral boundary
   render('scheme');
 }
 function renderHero(animate = true) {
@@ -935,7 +963,7 @@ function paletteSnap() {
     // the hysteresis holder + parked harmony are palette state too: without them, undoing to a seed in
     // the 10–14 chroma deadband is re-classified with the CURRENT mode and the restored harmony is
     // forced away (and the parked hue harmony is lost when undoing across a neutral entry)
-    neutral: neutralMode, preNeutral: preNeutralHarmony,
+    neutral: neutralMode, preNeutral: preNeutralHarmony, preSeedRole: preNeutralSeedRole,
     extraNodes: state.extraNodes.map(n => ({ h: Math.round(n.h * 10) / 10, s: Math.round(n.s * 1000) / 1000, l: n.l ?? null, locked: !!n.locked })),
     dropOffsets: [...state.dropOffsets],
   });
@@ -961,6 +989,7 @@ function applySnap(json) {
   state.wheelL = rgbToHsl(hexToRgb(schemeBase()))[2];
   neutralMode = typeof o.neutral === 'boolean' ? o.neutral : null;   // restore the hysteresis holder with the snapshot
   preNeutralHarmony = o.preNeutral ?? null;
+  preNeutralSeedRole = o.preSeedRole ?? null;   // parked seed role travels with the snapshot too
   lastNeutral = null;   // force ensureHarmonyMode (via refreshStudio) to re-sync banner/strip/pops for the restored seed
   syncSeg();
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));

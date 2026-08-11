@@ -212,7 +212,7 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    (e.g. a reformulation), disambiguate the name/line. Likely a handful of other dupes exist — the
    validator check will surface them all.
 
-5. **Redo the plain-English comment pass — after the render-chokepoint refactor** (noted 2026-08-11).
+5. ✅ **DONE in part (comment-pass PR).** ~~Redo the plain-English comment pass — after the render-chokepoint refactor~~ (noted 2026-08-11). First batch landed: `color.js`, `a11y.js`, `i18n.js` — the three thinnest modules, 11–21% → 35–43% commented, verified comments-only by strip-diff and with every note ABOVE its line per the amended §6. Remaining, in later batches: `store.js`, `collection-io.js`, `ui.js`, and `app.js` itself.
    PR #20 (codebase-wide inline comments, opened 2026-07-03) was **closed unmerged**: it appended
    *trailing* comments to existing code lines, so every annotated line became a modified line and the
    branch went irreconcilable with seven PRs of subsequent work — 12 conflicting files, and worse, the
@@ -225,15 +225,20 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    whole-tree sweep. Note `main` already drifted from 295 → 381 commented lines in `app.js` on its own
    through PRs #21–#27, so the gap is smaller than #20 assumed.
 
-6. **Accent-seed mode is dropped, not parked, when the seed goes neutral** (found 2026-08-11 while
+6. ✅ **DONE (park-and-restore PR) — Ryan chose park-and-restore.** ~~Accent-seed mode is dropped, not parked, when the seed goes neutral~~ (found 2026-08-11 while
    testing the step-3 refactor; not a regression — this is how it has always behaved). Drag the wheel
    through the low-saturation centre and `ensureHarmonyMode()` correctly forces `seedRole = 'main'`
    (a neutral accent has no complement to build from) — but unlike `preNeutralHarmony`, the seed role
    is never restored when the seed regains its hue, so a drag that merely *passes through* grey
    silently ends accent-seed mode. **Decision needed before fixing:** park and restore it symmetrically
-   with the harmony, or keep it sticky on the grounds that leaving accent mode is a bigger change of
-   intent than swapping a harmony? Cheap either way (`ensureHarmonyMode`, beside the existing park);
-   the question is which is less surprising to a painter mid-drag.
+   with the harmony, or keep it sticky? **Parked**, symmetrically with the harmony: the role is held
+   in `preNeutralSeedRole` and handed back on the way out. Two wrinkles the implementation had to
+   handle — restoring flips `schemeBase()` 180° and Lab chroma is not constant across hues, so the
+   restore waits until the ROTATED seed also clears the hysteresis exit (or a restore could bounce
+   the mode straight back); and the pending restore is re-evaluated on every call rather than only on
+   a mode flip, so a drag that keeps moving away from grey gets the role back rather than only at the
+   instant it crossed. An explicit dock choice clears the park, and the parked role travels in the
+   undo snapshot alongside the parked harmony.
 
 ---
 

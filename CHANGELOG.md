@@ -5,6 +5,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Accent-seed mode now parks and restores across the neutral boundary (per Ryan).** A neutral seed
+  always holds Primary — a neutral accent has no complement to build from — but a drag that merely
+  *passed through* the low-saturation centre used to end accent-seed mode for good: the harmony was
+  parked and handed back on the way out, the seed role was not. It parks now too, symmetrically, in
+  `preNeutralSeedRole`. Two wrinkles the fix had to handle: restoring flips `schemeBase()` 180° and
+  Lab chroma is not constant across hues, so the restore waits until the **rotated** seed also clears
+  the hysteresis exit (otherwise it could bounce the mode straight back); and a pending restore is
+  re-evaluated on every call rather than only on a mode flip, so a drag that keeps moving away from
+  grey gets the role back rather than only at the instant it crossed. An explicit dock choice clears
+  the park, and the parked role travels in the undo snapshot beside the parked harmony. SW `ps-v33`.
+- **Plain-English comment pass, batch 1: `color.js`, `a11y.js`, `i18n.js`.** The first instalment of
+  the per-module pass §6 now allows and PR #20 failed to deliver — the three *thinnest* modules, which
+  are also some of the densest reading: 11–21% → 35–43% commented, in line with the rest of the tree.
+  `color.js` gains the whole hex → linear → XYZ → Lab → ΔE pipeline explained in one place and
+  CIEDE2000 sectioned into its published steps with what each correction is actually for; `a11y.js`
+  explains why the CVD matrices must be applied in *linear* light and what each dichromacy is;
+  `i18n.js` documents the sparse-override fallback. Every note sits **above** its line, never trailing
+  (the §6 rule #20 taught us), and the pass is verified comments-only by strip-diff — the code is
+  byte-identical. Remaining batches: `store.js`, `collection-io.js`, `ui.js`, `app.js`.
 
 ## [1.9.0] - 2026-08-11
 ### Added
