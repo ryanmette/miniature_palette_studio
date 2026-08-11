@@ -1,6 +1,20 @@
 // color.js — pure colour math for Palette Studio. No DOM, no globals, no deps.
 // Conventions locked in CLAUDE.md §7: sRGB ↔ linear ↔ XYZ ↔ CIELAB (D65),
 // matching via CIEDE2000 (kL=kC=kH=1). Verified against Sharma et al. reference pairs.
+//
+// The pipeline, and why it has so many steps: a hex is a display encoding, not a measurement of
+// light, and the numeric distance between two hexes has almost nothing to do with how different
+// they LOOK. So every match in the app walks the same road —
+//
+//   #RRGGBB → sRGB 0-255 → linear light → CIE XYZ → CIELAB → ΔE 2000
+//
+//   • linear light  undoes the display's gamma curve, so the numbers are proportional to photons
+//   • XYZ           a device-independent way to say "this colour", tied to a reference white (D65)
+//   • CIELAB        re-spaces XYZ so equal numeric steps look like equal perceptual steps
+//   • ΔE 2000       patches the places CIELAB still gets wrong (blues, near-neutrals, saturation)
+//
+// HSL also appears here, but only for the harmony geometry (rotate the hue, keep S/L) — it is a
+// convenient dial, not a perceptual space, and nothing is ever MATCHED in it.
 
 export const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
 export const clamp255 = x => (x < 0 ? 0 : x > 255 ? 255 : x);
@@ -30,7 +44,13 @@ export function rgbToHex([r, g, b]) {
   return '#' + [r, g, b].map(v => Math.round(clamp255(v)).toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
-/** sRGB channel 0–255 → linear-light 0–1. */
+/**
+ * sRGB channel 0–255 → linear-light 0–1.
+ * Displays don't emit light in proportion to the stored value — sRGB bakes in a gamma curve so the
+ * limited bits land where the eye is most sensitive. Undo it before doing any maths that assumes
+ * light adds up (mixing, XYZ, the colour-blindness matrices). The two-part curve (a short linear
+ * toe below 0.04045, a power curve above) is the sRGB spec's, not an approximation of it.
+ */
 export const srgbToLinear = c => {
   c /= 255;
   return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -43,7 +63,11 @@ export const linearToRgb = ([r, g, b]) => [linearToSrgb(r), linearToSrgb(g), lin
 
 const D65 = [0.95047, 1.0, 1.08883];
 
-/** [r,g,b] 0–255 → CIE XYZ (D65, Y in 0–1). */
+/**
+ * [r,g,b] 0–255 → CIE XYZ (D65, Y in 0–1).
+ * The matrix is the sRGB→XYZ primaries under D65 (daylight white). Y is luminance, which is why the
+ * green row (0.7152) dominates: the eye takes most of its brightness signal from green.
+ */
 export function rgbToXyz([r, g, b]) {
   const [R, G, B] = rgbToLinear([r, g, b]);
   return [
@@ -53,7 +77,13 @@ export function rgbToXyz([r, g, b]) {
   ];
 }
 
-/** CIE XYZ (D65) → CIELAB [L,a,b]. */
+/**
+ * CIE XYZ (D65) → CIELAB [L,a,b]: L* = lightness 0–100, a* = green→red, b* = blue→yellow.
+ * Each channel is divided by the reference white first, so Lab describes a colour RELATIVE to what
+ * counts as white. `f` is a cube root — the eye's response to intensity is roughly a power law —
+ * swapped for a straight line below a small threshold, where the cube root's slope runs away toward
+ * infinity and would amplify noise in the near-blacks.
+ */
 export function xyzToLab([x, y, z]) {
   const f = t => (t > 0.008856451679035631 ? Math.cbrt(t) : t / 0.12841854934601665 + 4 / 29);
   const fx = f(x / D65[0]), fy = f(y / D65[1]), fz = f(z / D65[2]);
@@ -75,24 +105,47 @@ export const NEUTRAL_CHROMA = 10;
 export const NEUTRAL_EXIT = 14;
 export const isNeutral = hex => labChroma(hex) < NEUTRAL_CHROMA;
 
-/** CIEDE2000 colour difference between two CIELAB values (kL=kC=kH=1). */
+/**
+ * CIEDE2000 colour difference between two CIELAB values (kL=kC=kH=1) — the single matching metric
+ * for the whole app (§7). Roughly: ΔE 1 is the smallest difference a person can notice side by side,
+ * ΔE 2–3 is a good paint match, ΔE 10+ is plainly a different colour (the §3.2 scale).
+ *
+ * It is long because it is CIELAB plus four corrections, each fixing a place where plain Lab
+ * distance disagrees with people:
+ *   G       inflates a* for near-neutral colours, where Lab overstates how different faint tints look
+ *   Sl/Sc/Sh weight lightness/chroma/hue differences by WHERE in the space you are — a chroma step
+ *            matters less among already-vivid colours than among muted ones
+ *   T        varies the hue weighting around the hue circle (blues and reds are not equally touchy)
+ *   Rt       the rotation term: a specific correction for the blue region near 275°, where hue and
+ *            chroma errors interact
+ * Everything is on the CIE's published formula; the variable names follow Sharma et al. so the code
+ * can be read against the paper. Do not "simplify" it — §7 locks the metric so results never drift.
+ */
 export function deltaE2000(lab1, lab2) {
   const [L1, a1, b1] = lab1, [L2, a2, b2] = lab2;
   const rad = Math.PI / 180, deg = 180 / Math.PI;
+  // Step 1 — chroma (distance from the neutral axis) of each colour, and the a* inflation G that
+  // stretches near-neutrals apart so two barely-tinted greys don't read as identical.
   const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2);
   const Cbar = (C1 + C2) / 2, Cbar7 = Math.pow(Cbar, 7);
   const G = 0.5 * (1 - Math.sqrt(Cbar7 / (Cbar7 + 6103515625))); // 25^7
+  // Step 2 — re-derive chroma and hue in that adjusted space (the primed values).
   const a1p = (1 + G) * a1, a2p = (1 + G) * a2;
   const C1p = Math.hypot(a1p, b1), C2p = Math.hypot(a2p, b2);
   let h1p = Math.atan2(b1, a1p); if (h1p < 0) h1p += 2 * Math.PI;
   let h2p = Math.atan2(b2, a2p); if (h2p < 0) h2p += 2 * Math.PI;
+  // Step 3 — the three differences. Hue is an ANGLE, so its difference has to take the short way
+  // round the circle (±180°), and is undefined when either colour is neutral (no hue to compare).
   const dLp = L2 - L1, dCp = C2p - C1p;
   let dhp = 0;
   if (C1p * C2p !== 0) {
     dhp = h2p - h1p;
     if (dhp > Math.PI) dhp -= 2 * Math.PI; else if (dhp < -Math.PI) dhp += 2 * Math.PI;
   }
+  // ΔH' converts that hue ANGLE into a distance: the same angular gap means a bigger visual
+  // difference the more saturated the two colours are, hence the √(C1'·C2') factor.
   const dHp = 2 * Math.sqrt(C1p * C2p) * Math.sin(dhp / 2);
+  // Step 4 — the midpoints the weighting functions are evaluated at.
   const Lbp = (L1 + L2) / 2, Cbp = (C1p + C2p) / 2;
   let hbp;
   if (C1p * C2p === 0) hbp = h1p + h2p;
@@ -101,6 +154,8 @@ export function deltaE2000(lab1, lab2) {
   // (The old always-add branch put h̄' a full turn high for sum ≥ 2π; T's cosines are 2π-periodic so
   // the numeric effect was < 2e-4 ΔE, but the published formula is the locked convention, §7.)
   else hbp = h1p + h2p < 2 * Math.PI ? (h1p + h2p + 2 * Math.PI) / 2 : (h1p + h2p - 2 * Math.PI) / 2;
+  // Step 5 — the weighting terms. T tunes hue sensitivity around the circle; Rt (via dTheta and Rc)
+  // is the blue-region rotation; Sl/Sc/Sh scale each difference by where in the space it happens.
   const T = 1 - 0.17 * Math.cos(hbp - 30 * rad) + 0.24 * Math.cos(2 * hbp)
     + 0.32 * Math.cos(3 * hbp + 6 * rad) - 0.20 * Math.cos(4 * hbp - 63 * rad);
   const dTheta = 30 * rad * Math.exp(-Math.pow((hbp * deg - 275) / 25, 2));
@@ -110,6 +165,7 @@ export function deltaE2000(lab1, lab2) {
   const Sc = 1 + 0.045 * Cbp;
   const Sh = 1 + 0.015 * Cbp * T;
   const Rt = -Math.sin(2 * dTheta) * Rc;
+  // Step 6 — weighted root-sum-square of the three differences, plus the chroma/hue interaction.
   return Math.sqrt(
     (dLp / Sl) ** 2 + (dCp / Sc) ** 2 + (dHp / Sh) ** 2 + Rt * (dCp / Sc) * (dHp / Sh)
   );
@@ -117,7 +173,13 @@ export function deltaE2000(lab1, lab2) {
 
 export const deltaE2000Hex = (h1, h2) => deltaE2000(hexToLab(h1), hexToLab(h2));
 
-/** [r,g,b] 0–255 → HSL [h 0–360, s 0–1, l 0–1]. */
+/**
+ * [r,g,b] 0–255 → HSL [h 0–360, s 0–1, l 0–1].
+ * Used for the harmony GEOMETRY only (rotate the hue, keep saturation and lightness) — never for
+ * matching, which is always Lab/ΔE. HSL is a reshuffle of RGB, so equal steps in it are not equal
+ * perceptual steps: this is exactly why a "saturated" near-black like #100000 reads as vivid here
+ * but correctly classifies as neutral by Lab chroma (see isNeutral).
+ */
 export function rgbToHsl([r, g, b]) {
   r /= 255; g /= 255; b /= 255;
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;

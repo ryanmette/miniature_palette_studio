@@ -5,6 +5,12 @@
 
 import * as store from './store.js';
 
+/**
+ * The string table. en-GB is CANONICAL — it holds every key — and every other locale is a sparse
+ * override layer holding only what actually differs, so a missing key falls back rather than
+ * rendering a raw key or an empty string. Today that means en-US carries just the spelling splits
+ * (colour/color), which is why it has two entries rather than twenty.
+ */
 const LOCALES = {
   'en-GB': {
     tagline: 'for miniatures',
@@ -31,6 +37,11 @@ const LOCALES = {
   },
 };
 
+/**
+ * Which locale to start in: an explicit choice the painter saved, else the device's language, else
+ * en-GB. Read once at import time (see `locale` below) — the app is a single page, and a language
+ * change re-applies through setLocale() rather than by re-detecting.
+ */
 function detect() {
   const pref = store.getPref('locale');
   if (pref && LOCALES[pref]) return pref;
@@ -40,9 +51,20 @@ function detect() {
 let locale = detect();
 
 export const getLocale = () => locale;
+/**
+ * Translate a key. Three-step fallback: the active locale's override → the canonical en-GB string →
+ * the key itself. Returning the key is deliberate: a missing string shows up as an obvious `roleMetal`
+ * in the UI rather than a blank space, so it gets noticed and fixed.
+ * Note `??` and not `||` — an intentionally empty string stays empty instead of falling through.
+ */
 export const t = key => (LOCALES[locale] && LOCALES[locale][key]) ?? LOCALES['en-GB'][key] ?? key;
 
-/** Swap textContent of [data-i18n] elements and placeholders of [data-i18n-ph]. Call after render / on change. */
+/**
+ * Swap textContent of [data-i18n] elements and placeholders of [data-i18n-ph]. Call after render, and
+ * on any language change. Static chrome is marked up in the HTML rather than built in JS, so this
+ * walks the DOM instead of the template layer; dynamic strings go through t() at build time.
+ * Also sets <html lang>, which is what screen readers use to pick a pronunciation.
+ */
 export function apply(root = document) {
   root.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   root.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
