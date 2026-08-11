@@ -208,6 +208,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── seed-role-unify.html   ← 3-way exploration: folding the Main|Accent toggle into the palette
 │   ├── equiv-source-picker.html ← 3-way exploration: picking WHICH colour's equivalents the tab shows
 │   ├── shelf-brand-filter.html ← 3-way exploration: folding the Shelf's brand-chip rows down (mobile)
+│   ├── buying-assistant.html ← 4-way exploration: the paint-first / buying-assistant workflow (P3) + the in-store scanner
 │   ├── studio-layouts.html    ← 5-way Studio layout exploration (scroll-reduction) + judge ranking
 │   ├── layouts/               ← the 5 standalone layout mocks embedded by studio-layouts.html
 │   │   ├── split-sticky-studio.html · cockpit-3col.html · instrument-band.html

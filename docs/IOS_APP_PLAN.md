@@ -164,10 +164,19 @@ no open dataset reliably supplies one, so scanning needs its own barcode→paint
 (start by capturing codes for the paints Ryan physically owns; crowd-sourcing comes later, if ever).
 Push for "back in stock" much later. Out (still): accounts, server, payments, social feed.
 
+**Label OCR is the route that actually works today (added 2026-08-11).** The barcode blocker above is a
+*data* problem, not a camera one — and it has a way around it. Reading the **printed name** off the pot
+with on-device text recognition (Vision on iOS) and fuzzy-matching it against the 2,508 names already in
+`paints.json` needs **no new data at all**, keeps the no-backend rule (§1), and answers the same in-store
+question: *what is this pot, do I already own it, what is it close to?* It also degrades gracefully — a
+bad read just drops its text into the search field instead of failing. Treat barcode as the nicer UX to
+reach **if** a mapping ever exists, and OCR as the shipping path. Sketched in
+[`mockups/buying-assistant.html`](../mockups/buying-assistant.html) §Cross-cutting.
+
 Net-new for mobile is now **smaller**: the inventory/collection UI + persistence already exist on the
 web (the Shelf + `store.js`), and offline is handled by the PWA service worker. The genuinely native
-work is the **camera eyedropper** and **barcode add** (the two things a phone does that the web can't),
-plus haptics and the native share sheet — exactly the "real native value" Apple's review wants (§7).
+work is the **camera eyedropper** and **pot identification** (the two things a phone does that the web
+can't), plus haptics and the native share sheet — exactly the "real native value" Apple's review wants (§7).
 
 ---
 
