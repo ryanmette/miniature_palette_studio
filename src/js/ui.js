@@ -163,7 +163,7 @@ export const popChips = (pops, active) =>
   '<span class="micro">Quick pops</span>' + pops.map(p =>
     `<button type="button" class="pop${p.hex.toUpperCase() === (active || '').toUpperCase() ? ' on' : ''}"`
     + ` data-pop="${esc(p.hex)}" aria-pressed="${p.hex.toUpperCase() === (active || '').toUpperCase()}"`
-    + ` title="Use ${esc(p.name)} as the pop accent"><span class="sw" style="background:${esc(p.hex)}"></span>${esc(p.name)}</button>`).join('');
+    + ` title="Use ${esc(p.name)} as the pop accent">${swatch(p.hex)}${esc(p.name)}</button>`).join('');
 
 const tier = t => `var(--${t})`;
 

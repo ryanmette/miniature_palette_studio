@@ -203,7 +203,10 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
 export function schemeGaps(scheme, ownedSet = new Set()) {
   const seen = new Set(), gaps = [];
   for (const r of scheme.roles) {
-    const matches = [r.match, ...r.ladders.flatMap(l => l.steps.map(s => s.match))];
+    // The NMM rungs are rendered on the Metal card as a real recipe, so they're real gaps too —
+    // omitting them sent a painter following that recipe to the shop missing exactly its paints.
+    const nmm = (r.nmm || []).map(s => s.match);
+    const matches = [r.match, ...r.ladders.flatMap(l => l.steps.map(s => s.match)), ...nmm];
     for (const m of matches) {
       if (!m || ownedSet.has(m.paint.id) || seen.has(m.paint.id)) continue;
       seen.add(m.paint.id);
@@ -231,6 +234,9 @@ export function shoppingList(scheme) {
     for (const lad of r.ladders) for (const s of lad.steps) {
       push(s.key === 'base' || s.key === 'mid' ? r.role : `${r.role} ${s.key}`, s.match);
     }
+    // NMM is an ALTERNATIVE to the metallic, so its rungs are labelled as such rather than folded
+    // into the role — the painter can see which rows belong to which technique.
+    for (const s of (r.nmm || [])) push(`${r.role} NMM ${s.key}`, s.match);
   }
   return rows;
 }

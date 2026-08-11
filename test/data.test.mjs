@@ -69,6 +69,18 @@ test('no ownership context leaves the match shape plain (no owned/adjust keys)',
   assert.equal('owned' in m, false);
 });
 
+test('knownOwnedIds reports ownership WITHOUT touching the ranking', () => {
+  // The default "use my collection: off" passes no boost/filter set. Ownership is still a fact about
+  // the shelf: without this the ✓ owned badge vanished and the export told you to buy what you own.
+  const owned = nearestPaint(idx, '#9B1216', { knownOwnedIds: new Set(['citadel-red']) });
+  assert.equal(owned.paint.id, 'citadel-red');
+  assert.equal(owned.owned, true);
+  // Marking a DIFFERENT paint owned must not promote it — decoration only, never a boost.
+  const other = nearestPaint(idx, '#9B1216', { knownOwnedIds: new Set(['vallejo-red']) });
+  assert.equal(other.paint.id, 'citadel-red');
+  assert.equal(other.owned, false);
+});
+
 test('excludeTypes keeps finish paints (washes/contrast) out of suggestions', () => {
   const fx = indexDataset({ version: 'test', paints: [
     { id: 'wash-near', brand: 'Citadel', line: 'Shade', name: 'Reikland Fleshshade', hex: '#9B1216', type: 'wash' },

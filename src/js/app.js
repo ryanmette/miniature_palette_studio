@@ -59,6 +59,9 @@ const POPS = [
 function matchOpts() {
   const o = { ladder: state.ladder };
   const owned = store.ownedIds();
+  // Ownership always decorates the match (the ✓ owned badge + the export's `owned` column are facts
+  // about the shelf); only RANKING is gated on the collection setting.
+  if (owned.size) o.knownOwnedIds = owned;
   if (state.collection === 'only' && owned.size) o.ownedIds = owned;
   else if (state.collection === 'prefer' && owned.size) { o.boostIds = owned; o.boostAmount = OWNED_BOOST; }
   // Keep finishes (washes/shades/contrast/effects) out of harmony suggestions; Contrast is opt-in.
@@ -952,6 +955,9 @@ function shelfKeydown(e) {
   // The context menu counts as "in the grid": openMenu moves focus onto its first button, and without
   // this Escape (and P/U/X) would dead-end there — no keyboard way back out of the menu.
   if (ae && ae !== document.body && ae.id !== 'shelfGrid' && !ae.closest('#shelfGrid') && !ae.closest('#shelfMenu')) return;
+  // Never hijack a browser/OS chord: ⌘P (print), Ctrl+U (view source) and Ctrl+X (cut) all collide
+  // with the P/U/X triage keys. Shift is NOT excluded — Shift+Arrow extends the selection.
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
   const k = e.key.toLowerCase();
   if (k === 'p') { applyMark('owned'); e.preventDefault(); }
   else if (k === 'u') { applyMark('want'); e.preventDefault(); }
@@ -1012,6 +1018,7 @@ function markPaint(id, mark) {
   if (p) $('#status').textContent = `${ui.pname(p)}, ${ui.markLabel(mark)}.`;
 }
 function paintListKeydown(e) {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;   // same chord guard as the Shelf (⌘P / Ctrl+U / Ctrl+X)
   const chips = [...$('#list').querySelectorAll('.pchip')]; if (!chips.length) return;
   const cur = document.activeElement.closest ? document.activeElement.closest('.pchip') : null;
   let i = cur ? chips.indexOf(cur) : -1;

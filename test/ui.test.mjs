@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, segmented, hero, paintStrip } from '../src/js/ui.js';
+import { livePalette, roleSlots, segmented, hero, paintStrip, popChips } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -115,4 +115,16 @@ test('equivalents source chips + the Plan-card jump carry the right hooks', asyn
   const slots = roleSlots(buildScheme(idx, '#9A1115', 'complementary'), () => 'none');
   assert.equal((slots.match(/data-goequiv=/g) || []).length, 4, 'every role card gets the jump');
   assert.ok(slots.includes('data-goequiv="#9A1115"'), 'jump targets the role ideal');
+});
+
+test('popChips routes its swatch through safeColor — no inline-style exception (§ui.js:11)', () => {
+  const on = popChips([{ hex: '#9C1626', name: 'Crimson' }], '#9c1626');
+  assert.match(on, /background-color:#9C1626;/);        // background-color, so finish overlays can layer
+  assert.doesNotMatch(on, /style="background:/);
+  assert.match(on, /aria-pressed="true"/);              // matching the active pop is case-insensitive
+  // A colour that never came from rgbToHex/normHex must not escape into the STYLE block (it may
+  // still appear escaped in data-pop — an attribute, not a CSS sink).
+  const bad = popChips([{ hex: 'red;background-image:url(x)', name: 'Bad' }], null);
+  assert.match(bad, /style="background-color:#000000;"/);
+  assert.doesNotMatch(bad, /style="[^"]*background-image/);
 });

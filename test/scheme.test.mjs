@@ -108,6 +108,29 @@ test('schemeGaps lists distinct unowned paints; excludes owned', () => {
   assert.ok(!fewer.some(g => g.paint.id === ownedOne));
 });
 
+test('NMM rungs reach schemeGaps and the export — they are shown as a real recipe', () => {
+  const s = buildScheme(fx, '#9A1115', 'complementary');
+  const metal = s.roles.find(r => r.role === 'Metal');
+  assert.equal(metal.nmm.length, 3);                       // shadow · mid · highlight (§7)
+  const gapIds = new Set(schemeGaps(s).map(g => g.paint.id));
+  for (const n of metal.nmm) assert.ok(gapIds.has(n.match.paint.id), `NMM ${n.key} missing from gaps`);
+  const rows = shoppingList(s);
+  const keys = new Set(rows.map(r => r.brand + r.name));
+  for (const n of metal.nmm) assert.ok(keys.has(n.match.paint.brand + n.match.paint.name), `NMM ${n.key} missing from export`);
+  const ids = rows.map(r => r.hex + r.name);
+  assert.equal(ids.length, new Set(ids).size);             // dedupe still holds across ladders + NMM
+});
+
+test('shoppingList labels NMM-only rungs as the alternative technique', () => {
+  // Straight from a scheme shape: in the small fixture above every NMM paint also serves a ladder
+  // step, and dedupe (correctly) keeps the first label — so the labelling needs its own case.
+  const m = h => ({ paint: { id: 'x' + h, name: 'P' + h, brand: 'B', line: 'L', hex: h }, deltaE: 0 });
+  const scheme = { roles: [{ role: 'Metal', ladders: [], nmm: [
+    { key: 'shadow', match: m('#111111') }, { key: 'mid', match: m('#222222') }, { key: 'highlight', match: m('#333333') },
+  ] }] };
+  assert.deepEqual(shoppingList(scheme).map(r => r.role), ['Metal NMM shadow', 'Metal NMM mid', 'Metal NMM highlight']);
+});
+
 test('roleIdeals: neutral seed + neutral-pop → Primary = seed, Accent = pop, gunmetal Metal', () => {
   const defs = roleIdeals('#1B1B1F', 'neutral-pop', '#9C1626');
   const by = Object.fromEntries(defs.map(d => [d.role, d.idealHex]));

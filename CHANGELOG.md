@@ -38,6 +38,37 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   distance (§2); flat sources keep pure ΔE order. SW `ps-v28`.
 
 ### Fixed
+- **Owned paints are marked as owned even when the collection isn't driving the ranking.** With
+  *Use my collection* at its default **off**, `matchOpts()` passed neither ranking set, so
+  `decorate()` short-circuited and every match reported `owned: false` — the live palette's ✓ owned
+  badge never appeared and the exported shopping list told you to buy paints already on your shelf.
+  Ownership is a fact about the shelf, not a ranking mode: `nearestPaint`/`nearestPaints` now take a
+  decoration-only **`knownOwnedIds`** set that is supplied on every search, while `boostIds`/
+  `ownedIds` keep their existing ranking roles. Reported ΔE and match order are unchanged (§2/§7).
+- **The NMM recipe's paints reach the buy list and the export.** The Metal role card renders three
+  non-metallic-metal rungs as a real recommendation, but `schemeGaps()` and `shoppingList()` walked
+  `r.ladders` only — so *"+ Add N to buy"* silently omitted them and the export had no row for them,
+  sending a painter following that recipe to the shop missing exactly its paints. Both now walk
+  `r.nmm`; export rows are labelled **`Metal NMM <step>`** so the alternative technique is legible,
+  and paint-id dedupe across ladders + NMM still holds (you buy one pot).
+- **⌘P, Ctrl+U and Ctrl+X no longer mark paints.** The Shelf's Lightroom-style P/U/X triage keys and
+  the Paints drawer's chip shortcuts matched on `e.key` without excluding modifier chords, so ⌘P
+  marked the whole selection owned and swallowed the print dialog; Ctrl+X did the same instead of
+  cutting. Both handlers now ignore `meta`/`ctrl`/`alt` — Shift is deliberately still allowed, since
+  Shift+Arrow extends the Shelf selection.
+- **`src/js/data.js` is a text file again.** The `dname` disambiguation key joins brand and name with
+  a NUL separator, but it was written as a *literal* NUL byte in the source — so git classified the
+  whole module as binary. `git diff` reported `Bin 10546 -> 10939 bytes` instead of a reviewable
+  diff, and `grep` answered "binary file matches"; the one module doing all the paint matching was
+  the one module you couldn't read a diff of. Now written as the `\u0000` escape: byte-identical
+  at runtime, ASCII on disk. (This commit still shows as binary because the *old* blob was; diffs
+  from here on are textual.)
+- **`popChips` routes its swatch through `safeColor()`.** It was the one colour sink in `ui.js`
+  using `esc()` and the `background` shorthand, against the invariant the module states at line 11 —
+  `esc()` passes `;`, `(`, `)` and `url` straight through. Not exploitable (the only caller is the
+  hardcoded `POPS` constant), but the defence-in-depth guarantee is now actually uniform: the chip
+  reuses the shared `swatch()` helper, which also restores `background-color` so finish overlays can
+  layer (§3.5). SW `ps-v29`.
 - **Dataset 1.4.1: five Citadel metallics were typed as flat paints** — Retributor Armour and
   Screaming Bell (`base`), Necron Compound and Sigmarite (`dry`), Canoptek Alloy (`layer`) — their
   names carry no metal keyword, so the build's `METAL_RE` missed them. All five are now `metal`
