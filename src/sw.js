@@ -11,12 +11,12 @@
 // fresh index.html (the v1.3.0 bug). 'reload' always hits the origin and refreshes the HTTP cache.
 // Bump CACHE on any shell/asset change. skipWaiting + clients.claim hand control to the new SW promptly.
 
-const CACHE = 'ps-v30';
+const CACHE = 'ps-v31';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './styles/fonts.css', './styles/tokens.css', './styles/app.css',
   './js/app.js', './js/color.js', './js/harmony.js', './js/data.js', './js/a11y.js',
-  './js/scheme.js', './js/ui.js', './js/store.js', './js/collection-io.js', './js/i18n.js',
+  './js/scheme.js', './js/seed.js', './js/ui.js', './js/store.js', './js/collection-io.js', './js/i18n.js',
   './assets/fonts/inter-400.woff2', './assets/fonts/inter-500.woff2', './assets/fonts/inter-600.woff2',
   './assets/fonts/space-grotesk-500.woff2', './assets/fonts/space-grotesk-600.woff2', './assets/fonts/space-grotesk-700.woff2',
   './data/paints.json',
@@ -49,7 +49,15 @@ self.addEventListener('fetch', e => {
     // error rather than index.html (HTML served where a module is expected is a hard load failure).
     e.respondWith(
       fetch(req, { cache: 'reload' }).then(res => {
-        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+        if (res.ok) {
+          const copy = res.clone();
+          // Navigations are cached under './index.html', NOT their own URL: palette state lives in the
+          // query string and updateUrl() mints a new one on every settled change, so keying by request
+          // stored one full copy of the shell per shared scheme, forever — and none were ever read
+          // back, since the offline fallback below matches './index.html'.
+          const key = req.mode === 'navigate' ? './index.html' : req;
+          caches.open(CACHE).then(c => c.put(key, copy));
+        }
         return res;
       }).catch(() => caches.match(req).then(hit => hit || (req.mode === 'navigate' ? caches.match('./index.html') : Response.error())))
     );

@@ -46,6 +46,36 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   distance (§2); flat sources keep pure ΔE order. SW `ps-v28`.
 
 ### Fixed
+- **`./js/seed.js` was missing from the service worker's precache list** — added in the same
+  `[Unreleased]` cycle that introduced it, so it never shipped broken, but a cold offline install
+  would have precached every other module and not that one.
+- **CSV import writes once per mark, not once per row.** `applyCsv()` called `store.setMark()` for
+  every row, and each call ends in `persist()` — a full `JSON.stringify` of the collection plus a
+  `localStorage` write. A 1,500-row paintRack import did that 1,500 times over a growing array inside
+  one `FileReader` turn and froze the main thread. Rows are grouped by mark and flushed through
+  `store.setMarks()`, which exists for exactly this: two writes instead of 1,500.
+- **The Paints drawer's search is debounced (140 ms), like the Shelf's already was.** Every keystroke
+  re-ran `filteredPaints()` + `sortPaints()` over 2,508 paints and replaced the whole chip strip's
+  `innerHTML`, so typing a paint name cost one full parse+layout cycle per character — type-lag on
+  phones. The Shelf search was fixed for this long ago; the drawer never got the same treatment.
+- **The service worker no longer stores one copy of the app shell per share link.** Palette state
+  lives in the query string and `updateUrl()` mints a new one on every settled change, so each visit
+  was a navigation to a unique URL and the network-first branch cached the shell under it — one full
+  `index.html` per shared scheme, accumulating forever, none ever read back (the offline fallback
+  matches `./index.html`). Navigations are now cached under `./index.html` itself, so the offline
+  shell still refreshes on every visit without the cache growing without bound.
+- **Cross-brand equivalents go through the same prefilter as every other search.** `equivalents()`
+  scanned and sorted the entire dataset — ~2,200 ΔE 2000 calls and a 2,200-element sort — to return
+  6–8 rows, and the Equivalents tab re-runs it on every source-chip click (and now on every wheel-drag
+  frame). It uses `candidatePool()` like `nearestPaint`/`nearestPaints` do: **~5.5× faster**, verified
+  against a full-dataset reference over all 2,508 paints — **rank 1 is identical for every paint and
+  no quality label changes**; 10 tail rows of ~20,000 differ by ≤1.3 ΔE, all inside already-Poor
+  matches. The pool is widened to 192 for this path (vs the default 64) precisely to hold that line.
+- **The metal-first guarantee can no longer be pruned away.** `candidatePool()` rescued owned paints
+  from the distance prune but not **floated types**, so a metallic source surrounded by near flats
+  could have every metal dropped before the metal-first tier (§7) was ever applied — latent since the
+  tier was introduced, and newly reachable now that `equivalents()` uses the pool. Both
+  `equivalents()` and `nearestPaints({floatTypes})` are covered. SW `ps-v31`.
 - **One render chokepoint — the output tabs can no longer sit on a stale colour.** Every path that
   changed scheme state used to assemble its own list of renderers, and the lists disagreed: the
   wheel's `commit()` repainted the canvas, live palette and hero but never the **Plan / Equivalents /

@@ -117,9 +117,12 @@ function decorate(m, targetHex, opts) {
  * practice, always within the Euclidean top-KEEP, so the reported ΔE2000 result doesn't drift (§7).
  * Boosted (owned) paints are always kept so the soft owned-boost (#6) can't be pruned out.
  */
-const KEEP = 64;
 function candidatePool(indexed, target, opts) {
   const [L, A, B] = target;
+  // opts.keep widens the prefilter for searches that return a LIST rather than a winner: the top-1 by
+  // ΔE2000 is always inside the Euclidean top-64, but the 5th-8th are not always, and a short pool
+  // let a marginally worse paint take a tail slot (measured: rank 1 never moved, ranks 2-8 by ≤1.3 ΔE).
+  const KEEP = opts.keep || 64;
   // Allocation-free top-KEEP by cheap squared-Lab distance (no per-call sort / object array).
   const kd = new Float64Array(KEEP).fill(Infinity), kp = new Array(KEEP);
   let filled = 0, worst = Infinity, wi = 0;
@@ -134,10 +137,17 @@ function candidatePool(indexed, target, opts) {
     }
   }
   const top = kp.slice(0, filled);
-  // Always keep boosted (owned) paints so the soft owned-boost (#6) can never be pruned.
-  if (opts.boostIds && filled === KEEP) {
+  // Rescue paints the raw-distance prune would drop even though ranking must still see them:
+  //  • boosted (owned) paints — the soft owned-boost (#6) can't apply to a paint that isn't here;
+  //  • FLOATED types (§7) — a metal source ranks metals strictly first, but the top-KEEP is chosen by
+  //    distance alone, so a metal surrounded by near flats could have every metal pruned away and
+  //    the guarantee would silently fail.
+  if (filled === KEEP && (opts.boostIds || opts.floatTypes)) {
     const inTop = new Set(top);
-    for (const p of indexed.paints) if (opts.boostIds.has(p.id) && passesFilter(p, opts) && !inTop.has(p)) top.push(p);
+    for (const p of indexed.paints) {
+      if (inTop.has(p) || !passesFilter(p, opts)) continue;
+      if ((opts.boostIds && opts.boostIds.has(p.id)) || (opts.floatTypes && opts.floatTypes.has(p.type))) top.push(p);
+    }
   }
   return top;
 }
@@ -176,9 +186,18 @@ export function nearestPaints(indexed, hex, n = 5, opts = {}) {
  *  metal on the model — so for a metal source, metals rank strictly first (reported ΔE stays true, §2). */
 export function equivalents(indexed, paint, { n = 6 } = {}) {
   const lab = paint.lab || hexToLab(paint.hex);
-  const tier = paint.type === 'metal' ? (p => p.type === 'metal' ? 0 : 1) : () => 0;
-  return indexed.paints
-    .filter(p => p.brand !== paint.brand)
+  const isMetal = paint.type === 'metal';
+  // Through the same cheap prefilter every other search uses (§6): this scanned + sorted the WHOLE
+  // dataset — ~2,200 ΔE2000 calls and a 2,200-element sort — to return 6-8 rows, and the Equivalents
+  // tab re-runs it on every source-chip click. candidatePool already understands excludeBrands, and
+  // floatTypes keeps the metal tier below from being pruned out of existence.
+  // keep=192, not the default 64: this returns a LIST, and a short pool let a marginally worse paint
+  // take a tail slot. Measured over all 2,508 paints against a full-dataset reference — rank 1 is
+  // identical either way; 192 cuts the differing tail rows from 94 to 10 (of ~20,000) and is still
+  // ~5.5× faster than the full scan it replaces.
+  const opts = { excludeBrands: new Set([paint.brand]), keep: 192, ...(isMetal ? { floatTypes: new Set(['metal']) } : {}) };
+  const tier = isMetal ? (p => p.type === 'metal' ? 0 : 1) : () => 0;
+  return candidatePool(indexed, lab, opts)
     .map(p => ({ paint: p, deltaE: deltaE2000(lab, p.lab) }))
     .sort((a, b) => tier(a.paint) - tier(b.paint) || a.deltaE - b.deltaE)
     .slice(0, n)

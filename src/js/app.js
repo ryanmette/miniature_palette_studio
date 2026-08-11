@@ -1352,12 +1352,18 @@ function importCollectionFile(file) {
 function applyCsv(text) {
   const res = csvToMarks(state.idx, text);
   let added = 0, changed = 0;   // count what the merge does to EXISTING marks (report, don't hide)
+  const byMark = new Map();     // mark → ids, so each mark costs ONE write
   for (const m of res.marks) {
     const prev = store.markOf(m.id);
     if (prev === m.mark) continue;
     prev === 'none' ? added++ : changed++;
-    store.setMark(m.id, m.mark);   // merge onto the current shelf (import wins; the toast says so)
+    if (!byMark.has(m.mark)) byMark.set(m.mark, []);
+    byMark.get(m.mark).push(m.id);
   }
+  // Grouped, not per row: setMark() ends in persist(), which JSON.stringifies the whole collection
+  // and writes localStorage. A 1,500-row paintRack import did that 1,500 times over a growing array
+  // inside one FileReader turn and froze the main thread — setMarks() exists for exactly this.
+  for (const [mark, ids] of byMark) store.setMarks(ids, mark);   // merge onto the shelf (import wins; the toast says so)
   return { ...res, added, changed };
 }
 /** After a JSON restore: re-read every pref the backup may have carried into live state/UI —
@@ -1442,7 +1448,14 @@ function setupEyedropper() {
 }
 
 function wire() {
-  $('#q').addEventListener('input', e => { state.q = e.target.value; renderList(); });
+  // Same 140ms debounce the Shelf search already had: every keystroke otherwise re-ran
+  // filteredPaints() + sortPaints() over 2,508 paints and replaced the whole chip strip's innerHTML,
+  // so typing a paint name cost nine full parse+layout cycles — type-lag on phones.
+  let qTimer = 0;
+  $('#q').addEventListener('input', e => {
+    clearTimeout(qTimer);
+    qTimer = setTimeout(() => { state.q = e.target.value; renderList(); }, 140);
+  });
   $('#brand').addEventListener('change', e => { state.brand = e.target.value; renderList(); });
   $('#ptype').addEventListener('change', e => { state.ptype = e.target.value; renderList(); });
   $('#psort').addEventListener('change', e => { state.psort = e.target.value; renderList(); });
