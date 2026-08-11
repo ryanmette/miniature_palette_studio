@@ -128,3 +128,28 @@ test('popChips routes its swatch through safeColor — no inline-style exception
   assert.match(bad, /style="background-color:#000000;"/);
   assert.doesNotMatch(bad, /style="[^"]*background-image/);
 });
+
+test('value-harmony columns get a tone label, not a meaningless "0°"', async () => {
+  const { toneTag } = await import('../src/js/ui.js');
+  const { rgbToHsl, hexToRgb, hslToRgb, rgbToHex } = await import('../src/js/color.js');
+  // Build the partners the way the recipes actually do (§7), so the labels are tested against real
+  // inputs: `shades` moves ONLY lightness, `monochromatic` moves mostly saturation.
+  const BASE = '#9A1115';
+  const [h, sat, l] = rgbToHsl(hexToRgb(BASE));
+  const step = (ds, dl) => rgbToHex(hslToRgb([h, Math.max(0, sat + ds), Math.max(0, Math.min(1, l + dl))]));
+  const lighter = step(0, 0.12), darker = step(0, -0.12), softer = step(-0.34, 0);
+
+  assert.equal(toneTag(lighter, BASE), 'Lighter');
+  assert.equal(toneTag(darker, BASE), 'Darker');
+  assert.equal(toneTag(softer, BASE), 'Softer');   // monochromatic: saturation is what moved
+
+  const valueVm = [
+    { id: 'p0', kind: 'base', deg: 0, hex: BASE, match: null },
+    { id: 'p1', kind: 'partner', deg: 0, hex: darker, match: null },
+    { id: 'p2', kind: 'partner', deg: 0, hex: lighter, match: null },
+  ];
+  const html = livePalette(valueVm, 'ideal', { [BASE]: 'Primary' });
+  assert.doesNotMatch(html, />0°</, 'no bare 0° tags');
+  assert.match(html, /class="lctag">Darker</);
+  assert.match(html, /class="lctag">Lighter</);
+});

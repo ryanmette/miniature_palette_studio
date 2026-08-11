@@ -18,6 +18,21 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   (mockups/equiv-source-picker.html directions A+B, per Ryan). SW `ps-v27`.
 
 ### Changed
+- **`app.js` gave up the wheel — `src/js/wheel.js` (1,729 → 1,510 lines).** The canvas disc, node
+  hit-testing, pointer drag, keyboard nudge, the lightness slider and Generate now live in their own
+  module. It owns no scheme state: `setupWheel(app)` takes the eleven things it needs (`state`,
+  `render`, `schemeBase`, `activePop`, `matchOpts`, `basePaint`, `wheelRoleGlyphs`, `addFreeNode`,
+  `removeFreeNode`, `collapseBanner`, `setDragging`) and returns its `draw`, so that list *is* the
+  whole contract. Pure code motion — no behaviour change, verified by the full browser smoke set.
+- **The dataset validator's SOFT checks report signal instead of 640 lines of noise.** They printed
+  455 near-duplicate pairs and 185 name/hue mismatches on every run while CI passed regardless, which
+  is indistinguishable from printing nothing — a real regression would have scrolled past unseen.
+  Now: near-duplicates are split into *already grouped* (299), *cross-finish, expected by §5.2* (156)
+  and **ungrouped same-finish — the only actionable kind (0)**; name/hue mismatches are checked
+  against `scripts/data-exceptions.json`, which grandfathers the existing 185 (miniature paints carry
+  fantasy names on purpose — Thunderbird Blue is a green) so the live count is **0 new**. A mismatch
+  introduced by a future rebuild now stands out, and an accepted id that stops mismatching is
+  reported as stale so the file shrinks rather than rots. `--verbose` still prints everything.
 - **§6 comment rule amended: the *why*, plus a plain-English *what* where it helps (per Ryan).** The
   rule was "comments explain *why*, not *what*"; it now welcomes an approachable *what* alongside,
   bound by an explicit anti-drift clause — correct or delete a comment in the same commit as the code
@@ -112,6 +127,24 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the *write* side matches: editing the base column and **"use as base colour"** go through
   `seedFromSchemeBase()`, as does a wheel drag — writing the raw colour made the scheme jump 180° the
   moment it was set. SW `ps-v30`.
+- **Share links round-trip through one tested contract.** The URL encode and decode halves were
+  hand-rolled at opposite ends of `app.js` and had no tests, on a format that is a user-facing promise
+  (a pasted link must reproduce the scheme). Both now live in **`src/js/share.js`** as pure functions
+  with the param vocabulary documented in one place, covered by a round-trip test plus the awkward
+  cases: a link naming a harmony/paint/tab this build no longer has still opens on the fallbacks,
+  malformed swatch tokens are dropped rather than thrown on, values are clamped, the added-swatch cap
+  is enforced, and a hand-edited achromatic `pp` is clamped to a real pop.
+- **Value-harmony columns are labelled by what varies, not "0°".** Shades/monochromatic partners
+  rotate no hue, so every one of them carried `deg 0` and rendered the same meaningless `0°` tag.
+  They now read **Lighter / Darker** (or **Richer / Softer** when saturation is what moved), in the
+  live palette and the Equivalents source chips alike.
+- **`store.hydrate()` ran twice at startup, and neither call applied what it restored.** The two
+  calls were byte-identical; the second was dead work. Worse, both ran *after* `setTheme()` and after
+  i18n had resolved its locale, so on a native shell whose storage had been evicted the recovered
+  theme/locale sat in state while the DOM kept the pre-hydrate one. One call now, followed by
+  `applyPrefsToState()` — split out of `applyRestoredPrefs()` so it can run before the seed exists,
+  where the old function's trailing `renderHero()` would have had nothing to draw. A link's `t=dark`
+  still outranks the stored pref.
 - **Owned paints are marked as owned even when the collection isn't driving the ranking.** With
   *Use my collection* at its default **off**, `matchOpts()` passed neither ranking set, so
   `decorate()` short-circuited and every match reported `owned: false` — the live palette's ✓ owned

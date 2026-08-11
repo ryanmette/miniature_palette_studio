@@ -218,6 +218,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── scripts/                   ← dev tooling, NOT shipped (never required at runtime)
 │   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
 │   ├── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5) — runs in CI (test.yml)
+│   ├── data-exceptions.json   ← accepted SOFT-check exceptions (fantasy names); keeps the live count at 0
 │   └── check-docs.mjs         ← doc-freshness QA (§8/§9) — README/tree/CHANGELOG claims vs reality; runs in CI
 ├── .github/
 │   ├── workflows/             ← deploy.yml (publish src/ to GitHub Pages, M9) · test.yml (node --test + data/docs validators on push/PR) · tag-release.yml (dispatchable release-tag creator, §8)
@@ -237,6 +238,8 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── js/harmony.js          ← harmony generation (see §7) (M2)
     ├── js/a11y.js             ← colour-blindness sim + WCAG contrast + CVD collision (M2/M7)
     ├── js/seed.js             ← the seed FRAME: pick ↔ scheme base (accent-seed is 180° away). Pure.
+    ├── js/share.js            ← the share-link contract: palette state ⇄ URL query. Pure.
+    ├── js/wheel.js            ← the interactive wheel (canvas draw + hit-test + drag/keys); app injected
     ├── js/scheme.js           ← role mapping + ideal-vs-actual + wash/highlight (M4)
     ├── js/ui.js               ← rendering + events (M3)
     ├── js/app.js              ← state, URL share encoding, wiring (M3)

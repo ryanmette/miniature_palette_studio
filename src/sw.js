@@ -11,12 +11,13 @@
 // fresh index.html (the v1.3.0 bug). 'reload' always hits the origin and refreshes the HTTP cache.
 // Bump CACHE on any shell/asset change. skipWaiting + clients.claim hand control to the new SW promptly.
 
-const CACHE = 'ps-v31';
+const CACHE = 'ps-v32';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './styles/fonts.css', './styles/tokens.css', './styles/app.css',
   './js/app.js', './js/color.js', './js/harmony.js', './js/data.js', './js/a11y.js',
-  './js/scheme.js', './js/seed.js', './js/ui.js', './js/store.js', './js/collection-io.js', './js/i18n.js',
+  './js/scheme.js', './js/seed.js', './js/share.js', './js/wheel.js',
+  './js/ui.js', './js/store.js', './js/collection-io.js', './js/i18n.js',
   './assets/fonts/inter-400.woff2', './assets/fonts/inter-500.woff2', './assets/fonts/inter-600.woff2',
   './assets/fonts/space-grotesk-500.woff2', './assets/fonts/space-grotesk-600.woff2', './assets/fonts/space-grotesk-700.woff2',
   './data/paints.json',
