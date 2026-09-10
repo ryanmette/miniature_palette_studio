@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forgelight — grimdark loading &amp; refresh states</title>
+<style>
+  :root {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --shadow:0 1px 2px rgba(0,0,0,.45);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:30px 22px 44px; }
+  header { max-width:780px; margin:0 auto 26px; }
+  h1 { font-family:var(--display); font-size:24px; font-weight:600; margin:0 0 6px; letter-spacing:.01em; text-wrap:balance; }
+  .sub { color:var(--text-muted); margin:0; max-width:68ch; font-size:13.5px; }
+  .sub b { color:var(--text); font-weight:600; }
+  .board { display:grid; grid-template-columns:repeat(auto-fit, minmax(330px, 1fr)); gap:18px; max-width:780px; margin:0 auto; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow); padding:16px; display:flex; flex-direction:column; gap:11px; }
+  .eyebrow { font-size:11px; font-weight:500; letter-spacing:.07em; text-transform:uppercase; color:var(--accent); }
+  .eyebrow .lock { color:var(--text-faint); }
+  h2 { font-family:var(--display); font-size:16px; font-weight:600; margin:0; }
+  .use { color:var(--text-muted); font-size:12.5px; margin:0; flex:1; }
+  .stage { display:flex; align-items:center; justify-content:center; min-height:254px; background:#0D0B09; border:1px solid var(--border); border-radius:var(--r-ctrl); padding:12px; }
+  canvas { max-width:100%; border-radius:8px; border:1px solid var(--border-strong); background:#100D0B; display:block; touch-action:none; }
+  .row { display:flex; gap:9px; align-items:center; min-height:34px; flex-wrap:wrap; }
+  button { font:inherit; font-size:12.5px; font-weight:500; color:var(--text); background:var(--surface-2); border:1px solid var(--border-strong);
+    border-radius:var(--r-ctrl); padding:6px 13px; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button:focus-visible { outline:none; box-shadow:0 0 0 3px var(--accent-weak); border-color:var(--accent); }
+  .frameseg { display:inline-flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; margin-left:auto; }
+  .frameseg button { border:none; background:none; padding:4px 10px; border-radius:7px; color:var(--text-muted); font-size:11.5px; }
+  .frameseg button[aria-pressed="true"] { background:var(--surface); color:var(--text); box-shadow:var(--shadow); }
+  input[type="range"] { flex:1; accent-color:var(--accent); min-width:60px; }
+  .algo { font-family:var(--mono); font-size:10.5px; color:var(--text-faint); margin:0; border-top:1px dashed var(--border); padding-top:9px; }
+  .rmnote { display:none; max-width:780px; margin:0 auto 20px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-ctrl);
+    padding:9px 13px; color:var(--text-muted); font-size:12.5px; }
+  @media (prefers-reduced-motion: reduce) { .rmnote { display:block; } }
+  .ship { max-width:780px; margin:26px auto 0; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); padding:16px 18px; }
+  .ship h2 { margin-bottom:8px; }
+  .ship ul { margin:0; padding-left:18px; color:var(--text-muted); font-size:13px; }
+  .ship li { margin-bottom:5px; }
+  .ship b { color:var(--text); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Forgelight — loading &amp; refresh, grimdark</h1>
+  <p class="sub">Round seven. <b>Sparks</b> and <b>Ember bokeh</b> stay locked ✓ (Sparks gained the zoomed-out
+  <b>Room</b> frame — open air, floor-only). The veins are <b>reapproached as Molten bloom</b>: pop-and-fade beads
+  along sinuous curves instead of sharp lightning. <b>Molten fill</b> is fed by a metaphorical <b>tap</b> that
+  throttles closed across the last few percent — no snap at 100%, just a pour ending, then the melt sets by time.
+  Molten Harmonics rules throughout: seeded, deterministic, vanilla Canvas&nbsp;2D, one heat ramp, finished frame
+  under <code>prefers-reduced-motion</code>.</p>
+</header>
+<p class="rmnote">Reduced motion is on — each state is showing its final still frame, exactly as it would ship.</p>
+
+<div class="board">
+  <section class="card">
+    <span class="eyebrow">Load · determinate</span>
+    <h2>Molten fill · v2</h2>
+    <p class="use">Fed from the start edge by a <em>tap</em> (metaphorical — no fixture): the source corner runs
+    white-hot and refuses to set while the pour is on. Over the last few percent the tap <em>throttles closed</em> —
+    the inflow glow dies, the meniscus relaxes, the melt levels — so there is no snap at 100%, just a pour ending.
+    Cells still anneal by time-sat; the loop rests only once everything has set. Front stays pinned to p·width.</p>
+    <div class="stage"><canvas id="cv-fill" aria-label="Molten fill loader: living molten metal fills the bar, front locked to progress"></canvas></div>
+    <div class="row"><button id="fill-play">▶ Simulate load</button><input id="fill-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten fill progress">
+      <span class="frameseg" role="group" aria-label="Host frame" id="fill-frames"><button data-w="340" data-h="56" aria-pressed="true">Bar</button><button data-w="300" data-h="170" aria-pressed="false">Panel</button><button data-w="84" data-h="220" aria-pressed="false">Column</button></span></div>
+    <p class="algo">analytic tongue, front = p·width · feed flow throttles 93→100% (source cells stay hot + molten, inflow glow dies) · level + meniscus blend over the last 6% · per-cell age → anneal · loop rests when set</p>
+  </section>
+
+  <section class="card">
+    <span class="eyebrow">Refresh · one-shot <span class="lock">· locked ✓</span></span>
+    <h2>Sparks</h2>
+    <p class="use">Locked from round four: sparks ricochet off every wall; the <em>first</em> hit lands a bright flash
+    and sometimes shatters the spark into smaller shards. Click anywhere in the box to strike there. The <b>Room</b>
+    frame zooms way out — open air, nothing to collide with but the floor, so the burst reads as pure arcs.</p>
+    <div class="stage"><canvas id="cv-sparks" aria-label="Sparks: brass sparks ricochet, flash and fragment against the container walls"></canvas></div>
+    <div class="row"><button id="strike">⚒ Strike</button>
+      <span class="frameseg" role="group" aria-label="Host frame" id="sparks-frames"><button data-w="340" data-h="170" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="72" aria-pressed="false">Strip</button><button data-w="960" data-h="600" aria-pressed="false">Room</button></span></div>
+    <p class="algo">70 seeded sparks · first impact: big flash, ~45% fragment into 2–4 shards (gen 1, faster decay) · later bounces cost heat quietly · Room frame: floor-only collisions, walls open · additive streaks</p>
+  </section>
+
+  <section class="card">
+    <span class="eyebrow">Load · determinate</span>
+    <h2>Molten bloom <span style="font-weight:400">(veins v3)</span></h2>
+    <p class="use">Reapproached — the lightning is gone. Growth is now a chain of molten <em>beads</em> laid along
+    slow sinuous curves: each new bead <b>pops</b> in oversized with a soft flash, then shrinks and cools into the
+    vein — the sparks' pop-and-fade, but building something. No line segments anywhere, so nothing can read sharp
+    or angular. Same breathing clock: never stalls dead, never retreats, lands together at 100%.</p>
+    <div class="stage"><canvas id="cv-veins" aria-label="Molten veins loader: tapering curved veins grow in surges, heat trailing the tips"></canvas></div>
+    <div class="row"><button id="vein-play">▶ Simulate load</button><input id="vein-scrub" type="range" min="0" max="1000" value="1000" aria-label="Molten veins progress">
+      <span class="frameseg" role="group" aria-label="Host frame" id="vein-frames"><button data-w="340" data-h="180" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="90" aria-pressed="false">Banner</button></span></div>
+    <p class="algo">sinuous branch grammar (curvature = slow sine, not noise) · adaptive bead resample (spacing tracks radius → continuous veins) · beads pop ×1.9 at birth, settle as e^(−fd/26) · colour cools behind the front · breathing monotone clock</p>
+  </section>
+
+  <section class="card">
+    <span class="eyebrow">Ambient · loop <span class="lock">· locked ✓</span></span>
+    <h2>Ember bokeh</h2>
+    <p class="use">Locked from round four: one ember field at three focal depths — dense pin-sharp far motes, a mid
+    plane, and big soft foreground bokeh drifting faster (it's closer) with the same rise-sway-flicker.</p>
+    <div class="stage"><canvas id="cv-embers" aria-label="Ember bokeh: one ember field at three focal depths drifting upward"></canvas></div>
+    <div class="row"><button id="ember-toggle">❚❚ Pause</button>
+      <span class="frameseg" role="group" aria-label="Host frame" id="ember-frames"><button data-w="340" data-h="180" aria-pressed="true">Wide</button><button data-w="250" data-h="250" aria-pressed="false">Square</button><button data-w="340" data-h="80" aria-pressed="false">Strip</button></span></div>
+    <p class="algo">one motion model, three focal planes · parallax: near = bigger, softer, faster; far = dense pin-points · soft-core discs with a faint bokeh rim · crackle streaks every ~1.1s</p>
+  </section>
+</div>
+
+<div class="ship">
+  <h2>Shipping notes — dynamic to the environment, light on resources</h2>
+  <ul>
+    <li><b>Container-driven.</b> Every effect is <code>render(ctx, w, h, state)</code> — no fixed geometry. In the app a
+      host element's box (via ResizeObserver) sets the frame, exactly as the frame switchers do here; particle and
+      cell counts scale with area, DPR is capped at 2.</li>
+    <li><b>They only run during their moment.</b> Loaders animate while a real load is in flight and <em>stop</em> at 1
+      (the annealed frame is static). Sparks are a ~1s one-shot. The bokeh loop pauses on <code>document.hidden</code>,
+      when scrolled out of view, and under reduced motion.</li>
+    <li><b>Opt-in, off by default.</b> A "Forge effects" control in the ⋯ settings popover (a segmented off · on per
+      §3.5 — the theme switch stays the only toggle-switch), persisted through <code>store.js</code> prefs, offered in
+      the dark theme. Off = the current instant states; nothing regresses.</li>
+    <li><b>No dependency, no drift.</b> Seeded PRNG + one heat ramp derived from <code>--accent</code>; swap the ramp for
+      the Playful palette and the same choreography serves the light theme later.</li>
+  </ul>
+</div>
+
+<script>
+(() => {
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mulberry = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const RAMP = ['#FFF6DF','#F5CE78','#D6A646','#C2912F','#A8781D','#6E4E14','#3A302A'].map(h => [1,3,5].map(i => parseInt(h.slice(i, i + 2), 16)));
+  const heat = (t, a = 1) => { t = Math.max(0, Math.min(1, t)); const f = (1 - t) * (RAMP.length - 1), i = Math.min(RAMP.length - 2, f | 0), u = f - i;
+    const c = RAMP[i].map((v, k) => Math.round(v + (RAMP[i + 1][k] - v) * u)); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; };
+  const size = (id, w, h) => { const c = document.getElementById(id); const d = Math.min(2, devicePixelRatio || 1);
+    c.width = w * d; c.height = h * d; c.style.width = w + 'px'; const x = c.getContext('2d'); x.setTransform(d, 0, 0, d, 0, 0); return x; };
+  const clear = (x, w, h) => { x.globalCompositeOperation = 'source-over'; x.fillStyle = '#100D0B'; x.fillRect(0, 0, w, h); };
+  const frames = (segId, onPick) => { const seg = document.getElementById(segId);
+    seg.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+      for (const s of seg.querySelectorAll('button')) s.setAttribute('aria-pressed', String(s === b));
+      onPick(+b.dataset.w, +b.dataset.h); }); };
+
+  /* ---- Molten fill v2: meniscus, travelling swell, per-cell cooling, bubbles ---- */
+  {
+    let W, H, x, horiz, N, hh, hot, age, vv, raf = 0, p = 1, bubbles = [], lastBub = 0, brng = mulberry(9);
+    const CAP = () => H * .72;
+    const TAPER = () => Math.max(4, N * .22);
+    // ideal profile: tongue with front at EXACTLY p·N, plus a gaussian meniscus pile at the leading edge
+    const prof = (pp, i) => { const f = pp * N;
+      if (!horiz) return pp * H * .86;
+      const d = (f - i) / TAPER();
+      let v = d <= 0 ? 0 : CAP() * Math.pow(Math.min(1, d), .7);
+      const lv = Math.min(1, Math.max(0, (pp - .94) / .06)), sm = lv * lv * (3 - 2 * lv);   // last 6%: the melt levels out
+      v += CAP() * .11 * Math.exp(-Math.pow((i - f) / (TAPER() * .3), 2)) * (1 - sm);       // ...and the meniscus relaxes with it
+      return Math.min(v + (CAP() - v) * sm, CAP() * 1.06); };
+    // the feed ("tap", metaphorically): full flow until ~93%, throttling to zero at 100%
+    const flow = pp => { const u = Math.min(1, Math.max(0, (pp - .93) / .07)); return 1 - u * u * (3 - 2 * u); };
+    const init = (w, h) => { W = w; H = h; x = size('cv-fill', w, h); horiz = w >= h * 1.2;
+      N = Math.max(20, Math.round(w / 3)); hh = new Float32Array(N); vv = new Float32Array(N);
+      hot = new Float32Array(N); age = new Float32Array(N); bubbles = [];
+      if (REDUCED) { p = 1; still(); } else { for (let i = 0; i < 40; i++) step(); loop(); } };
+    const step = () => { const t = performance.now() / 1000;
+      if (horiz) { for (let i = 0; i < N; i++) { const T = prof(p, i);
+          const d = (T - hh[i]) * .28; hh[i] += d;
+          hot[i] = Math.min(1, hot[i] * .94 + Math.abs(d) * .09);
+          age[i] = hh[i] > 1 ? Math.min(1, age[i] + .0045) : 0; }   // covered cells cool with age
+      } else { const lvl = p * H * .86, mean = hh.reduce((a, b) => a + b, 0) / N, dv = (lvl - mean) * .1;
+        for (let i = 0; i < N; i++) hh[i] += dv * (0.7 + .6 * Math.sin(i * 2.1 + t * 3.8));
+        for (let i = 0; i < N; i++) { const l = hh[(i + N - 1) % N], r0 = hh[(i + 1) % N];
+          vv[i] += ((l + r0) / 2 - hh[i]) * .18; vv[i] *= .94;
+          hot[i] = Math.min(1, hot[i] * .94 + Math.abs(dv) * .05);
+          age[i] = hh[i] > 1 ? Math.min(1, age[i] + .0045) : 0; }
+        for (let i = 0; i < N; i++) hh[i] += vv[i]; }
+      { const fl = flow(p);   // the feed: source cells run hot and refuse to set while the pour is on
+        if (fl > .02) { if (horiz) { for (let i = 0; i < 3; i++) { hot[i] = Math.min(1, hot[i] + (.05 - i * .012) * fl);
+              if (fl > .3) age[i] = Math.min(age[i], .4); } }
+          else { const mid = N >> 1; hot[mid] = Math.min(1, hot[mid] + .04 * fl); if (fl > .3) age[mid] = Math.min(age[mid], .4); } } }
+      // bubbles: born in the covered melt, rise, pop at the surface
+      const t2 = performance.now();
+      if (t2 - lastBub > 620 && p > .05) { lastBub = t2;
+        const molten = []; for (let i = 0; i < N; i++) if (hh[i] > 6 && age[i] < .7) molten.push(i);   // set metal doesn't bubble
+        if (molten.length) { const ci = molten[(brng() * molten.length) | 0];
+          bubbles.push({ i: ci, y: H - 2, r: .8 + brng() * 1.3, pop: 0 }); } }
+      for (let b = bubbles.length - 1; b >= 0; b--) { const bu = bubbles[b];
+        if (bu.pop > 0) { bu.pop += .12; if (bu.pop >= 1) bubbles.splice(b, 1); continue; }
+        bu.y -= .55; const ys = H - hh[bu.i];
+        if (bu.y <= ys + 2.5 || hh[bu.i] < 3) bu.pop = .01; } };
+    const wob = (i, t) => Math.sin(i * .33 - t * 2.4) * Math.min(2.4, hh[i] * .07) * (1 - age[i] * .85);   // travelling swell; set metal stills
+    const draw = () => { clear(x, W, H); const colW = W / N, t = performance.now() / 1000;
+      x.globalCompositeOperation = 'source-over';
+      for (let i = 0; i < N; i++) { const hc = hh[i] + (horiz ? wob(i, t) : 0);   // per-cell column, coloured by its own history
+        if (hc < .5) continue;
+        const tc = .58 + hot[i] * .32 - age[i] * .2;
+        x.fillStyle = heat(tc); x.fillRect(i * colW, H - hc, colW + .7, hc); }
+      { x.beginPath(); x.moveTo(0, H);   // body depth: one vertical light-to-shadow wash over the whole melt
+        for (let i = 0; i < N; i++) x.lineTo(i * colW + colW / 2, H - Math.max(0, hh[i] + (horiz ? wob(i, t) : 0)));
+        x.lineTo(W, H); x.closePath();
+        const gd = x.createLinearGradient(0, H - (horiz ? CAP() : H * .86), 0, H);
+        gd.addColorStop(0, 'rgba(255,246,223,.07)'); gd.addColorStop(.4, 'rgba(0,0,0,0)'); gd.addColorStop(1, 'rgba(0,0,0,.24)');
+        x.fillStyle = gd; x.fill(); }
+      x.globalCompositeOperation = 'lighter';   // molten surface glows per cell; the glow dies as the metal sets
+      for (let i = 0; i < N - 1; i++) { const hc = hh[i] + (horiz ? wob(i, t) : 0);
+        if (hc < .5 || hh[i + 1] < .5) continue;
+        const a = (.22 + hot[i] * .6) * (1 - age[i] * .85); if (a < .02) continue;
+        x.strokeStyle = heat(.6 + hot[i] * .4, a); x.lineWidth = 1.6;
+        x.beginPath(); x.moveTo(i * colW + colW / 2, H - hc);
+        x.lineTo((i + 1) * colW + colW / 2, H - hh[i + 1] - (horiz ? wob(i + 1, t) : 0)); x.stroke(); }
+      x.globalCompositeOperation = 'source-over';   // annealed stretches take a quiet sheen instead
+      for (let i = 0; i < N; i++) { if (age[i] < .9 || hh[i] < 1) continue;
+        x.fillStyle = 'rgba(255,246,223,.14)'; x.fillRect(i * colW, H - hh[i] - 1.2, colW + .7, 1.6); }
+      x.globalCompositeOperation = 'lighter';
+      for (const bu of bubbles) { const bx = bu.i * colW + colW / 2;   // bubbles: dark bead rising, tiny hot ring on pop
+        if (bu.pop > 0) { x.strokeStyle = heat(.9, (1 - bu.pop) * .7); x.lineWidth = 1;
+          x.beginPath(); x.arc(bx, H - hh[bu.i] + 1, 1.5 + bu.pop * 4, 0, 7); x.stroke(); }
+        else { x.globalCompositeOperation = 'source-over';
+          x.fillStyle = heat(.3, .9); x.beginPath(); x.arc(bx, bu.y, bu.r, 0, 7); x.fill();
+          x.fillStyle = heat(.85, .5); x.beginPath(); x.arc(bx - bu.r * .3, bu.y - bu.r * .3, bu.r * .3, 0, 7); x.fill();
+          x.globalCompositeOperation = 'lighter'; } }
+      if (horiz && p < 1) { const fx = p * W;   // meniscus glow pinned to the true front
+        const gm = x.createRadialGradient(fx, H - 5, 0, fx, H - 5, 17); gm.addColorStop(0, heat(.95, .5)); gm.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = gm; x.beginPath(); x.arc(fx, H - 5, 17, 0, 7); x.fill(); }
+      { const fl = flow(p);   // the feed's inflow glow at the start edge — it throttles out as p → 1
+        if (fl > .02) { const gx = horiz ? 0 : W / 2, gy = horiz ? H - Math.max(8, hh[0] * .7) : 4;
+          const gf = x.createRadialGradient(gx, gy, 0, gx, gy, 22);
+          gf.addColorStop(0, heat(.98, .6 * fl)); gf.addColorStop(1, 'rgba(0,0,0,0)');
+          x.fillStyle = gf; x.beginPath(); x.arc(gx, gy, 22, 0, 7); x.fill(); } }
+      pctLabel(); };
+    const pctLabel = () => { x.globalCompositeOperation = 'source-over'; x.fillStyle = 'rgba(236,227,216,.75)';
+      x.font = '10px ui-monospace,Menlo,monospace'; x.textAlign = horiz ? 'right' : 'center';
+      if (H > 40) x.fillText(Math.round(p * 100) + '%', horiz ? W - 8 : W / 2, horiz ? 14 : 16); };
+    const still = () => { clear(x, W, H); x.globalCompositeOperation = 'source-over';
+      const full = horiz ? CAP() : H * .86;
+      const g = x.createLinearGradient(0, H - full, 0, H); g.addColorStop(0, heat(.52)); g.addColorStop(1, heat(.4));
+      x.fillStyle = g; x.fillRect(0, H - full, W, full);
+      x.fillStyle = 'rgba(255,246,223,.16)'; x.fillRect(0, H - full, W, 2.5);
+      pctLabel(); };
+    // "set" is a physical state, not a percentage: the loop only rests once the whole melt has annealed
+    const settled = () => { if (p < 1 || bubbles.length) return false;
+      for (let i = 0; i < N; i++) { if (hh[i] > 1 && age[i] < .97) return false;
+        if (horiz ? Math.abs(prof(1, i) - hh[i]) > .8 : Math.abs(vv[i]) > .05) return false; }
+      return true; };
+    const loop = () => { cancelAnimationFrame(raf);
+      const go = () => { step(); draw(); if (settled()) return;   // the last live frame IS the final frame
+        raf = requestAnimationFrame(go); };
+      raf = requestAnimationFrame(go); };
+    const scrub = document.getElementById('fill-scrub');
+    scrub.addEventListener('input', () => { p = scrub.value / 1000; if (REDUCED) return still(); loop(); });
+    document.getElementById('fill-play').addEventListener('click', () => { if (REDUCED) { p = 1; scrub.value = 1000; return still(); }
+      hh.fill(0); vv.fill(0); hot.fill(0); age.fill(0); bubbles = []; const t0 = performance.now(); cancelAnimationFrame(raf);
+      const go = ts => { p = Math.min(1, (ts - t0) / 3000); scrub.value = Math.round(p * 1000); step(); draw();
+        if (settled()) return; raf = requestAnimationFrame(go); };
+      raf = requestAnimationFrame(go); });
+    frames('fill-frames', (w, h) => init(w, h));
+    init(340, 56);
+  }
+
+  /* ---- Sparks (locked): first impact flashes, sometimes shatters into shards ---- */
+  {
+    let W, H, x, parts = [], puffs = [], flash = null, raf = 0, seedN = 5, rng = mulberry(1), open = false;
+    const init = (w, h) => { W = w; H = h; open = w >= 600;   // the Room: zoomed out, open air — only the floor exists
+      x = size('cv-sparks', w, h); parts = []; puffs = []; flash = null;
+      if (REDUCED) rest(); else strike(W / 2, H * .45); };
+    const strike = (sx, sy) => { rng = mulberry(seedN += 13); flash = { x: sx, y: sy, a: 1 };
+      const count = Math.min(70, Math.max(28, Math.round(W * H / 800)));
+      parts = Array.from({ length: count }, () => { const a = rng() * Math.PI * 2, sp = 1.8 + rng() * 4.4;
+        return { x: sx, y: sy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: .005 + rng() * .009, w: rng() < .12 ? 2 : 1.1, gen: 0, hits: 0 }; });
+      draw(); };
+    const rest = () => { clear(x, W, H);
+      x.globalCompositeOperation = 'lighter';
+      for (const [fx, fw] of [[.3, 1.6], [.55, 2], [.72, 1.3]]) { x.fillStyle = heat(.3, .8); x.beginPath(); x.arc(W * fx, H - 3, fw, 0, 7); x.fill(); } };
+    const draw = () => { cancelAnimationFrame(raf); clear(x, W, H);
+      x.globalCompositeOperation = 'lighter';
+      if (flash) { const g = x.createRadialGradient(flash.x, flash.y, 0, flash.x, flash.y, 44 * flash.a);
+        g.addColorStop(0, heat(1, .8 * flash.a)); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.beginPath(); x.arc(flash.x, flash.y, 44 * flash.a, 0, 7); x.fill();
+        flash.a -= .08; if (flash.a <= 0) flash = null; }
+      for (let i = puffs.length - 1; i >= 0; i--) { const q = puffs[i];
+        const g = x.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.r); g.addColorStop(0, heat(q.t, q.a * .7)); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.beginPath(); x.arc(q.x, q.y, q.r, 0, 7); x.fill(); q.a -= .06; if (q.a <= 0) puffs.splice(i, 1); }
+      let live = !!flash || puffs.length > 0;
+      const born = [];
+      for (const s of parts) { if (s.life <= 0) continue; live = true;
+        x.strokeStyle = heat(s.life, Math.min(1, s.life * 1.6)); x.lineWidth = s.w * (.5 + s.life * .7); x.lineCap = 'round';
+        x.beginPath(); x.moveTo(s.x, s.y); x.lineTo(s.x - s.vx * 2.2, s.y - s.vy * 2.2); x.stroke();
+        s.x += s.vx; s.y += s.vy; s.vy += .045; s.vx *= .995; s.vy *= .995; s.life -= s.decay;
+        const hit = (px, py) => { s.hits++;
+          const first = s.hits === 1 && s.gen === 0;
+          puffs.push({ x: px, y: py, r: first ? 13 : 7, a: first ? 1 : .6, t: first ? .95 : .8 });
+          if (first && s.life > .3 && rng() < .45) {
+            const n = 2 + (rng() * 3 | 0), sp0 = Math.hypot(s.vx, s.vy);
+            for (let k = 0; k < n; k++) { const a = Math.atan2(s.vy, s.vx) + (rng() - .5) * 1.9, sp = sp0 * (.35 + rng() * .45);
+              born.push({ x: s.x, y: s.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: s.life * .8, decay: s.decay * 1.9, w: .8, gen: 1, hits: 0 }); }
+            s.life *= .45; }
+          else s.life *= .82; };
+        if (!open) { if (s.x < 2 && s.vx < 0) { s.vx *= -.7; hit(2, s.y); }
+          if (s.x > W - 2 && s.vx > 0) { s.vx *= -.7; hit(W - 2, s.y); }
+          if (s.y < 2 && s.vy < 0) { s.vy *= -.7; hit(s.x, 2); } }
+        if (s.y > H - 2 && s.vy > 0) { s.vy *= -.7; s.vx *= .9; hit(s.x, H - 2); } }
+      if (born.length) parts.push(...born);
+      if (live && !REDUCED) raf = requestAnimationFrame(draw); else if (!REDUCED) rest(); };
+    document.getElementById('strike').addEventListener('click', () => { if (REDUCED) return rest(); strike(W / 2, H * .45); });
+    document.getElementById('cv-sparks').addEventListener('pointerdown', e => { if (REDUCED) return;
+      const r = e.currentTarget.getBoundingClientRect(); strike(e.clientX - r.left, e.clientY - r.top); });
+    frames('sparks-frames', (w, h) => init(w, h));
+    init(340, 170);
+  }
+
+  /* ---- Molten bloom (veins v3): pop-and-fade growth — beads, not line segments ---- */
+  {
+    let W, H, x, branches, raf = 0;
+    const chaikin = pts => { const out = [pts[0]];
+      for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1];
+        out.push({ x: a.x * .75 + b.x * .25, y: a.y * .75 + b.y * .25, d: a.d * .75 + b.d * .25 });
+        out.push({ x: a.x * .25 + b.x * .75, y: a.y * .25 + b.y * .75, d: a.d * .25 + b.d * .75 }); }
+      out.push(pts[pts.length - 1]); return out; };
+    const grow = () => { const r = mulberry(41); branches = []; let side = 1;
+      const spawn = (px, py, a, wd, d0, gen, parent) => {
+        const b = { nodes: null, wd, d0, d1: d0, off: r() * .1, k: 2 + (r() * 2 | 0), ph: r() * 7, parent };
+        const raw = [{ x: px, y: py, d: d0 }]; let a0 = a, d = d0;
+        const bend = r() * 7, bf = .03 + r() * .03;   // sinuous meander: curvature is a slow sine, not noise
+        const steps = gen === 0 ? 999 : gen >= 3 ? 4 + (r() * 5 | 0) : 12 + (r() * 12 | 0);
+        for (let i = 0; i < steps; i++) { const L = 9 + r() * 5;
+          a0 += Math.sin(d * bf + bend) * .22 + (r() - .5) * .1 - a0 * .05;
+          const ny = py + Math.sin(a0) * L, nx = px + Math.cos(a0) * L;
+          if (nx > W - 10 || ny < 10 || ny > H - 10 || nx < 4) break;
+          px = nx; py = ny; d += L; raw.push({ x: px, y: py, d });
+          const pB = gen >= 2 ? .16 : .11;
+          if (gen < 4 && r() < pB && branches.length < 30) { side = -side;
+            spawn(px, py, a0 + side * (.55 + r() * .5), wd * .6, d, gen + 1, b); } }
+        if (raw.length > 2) { let pts = raw; for (let c = 0; c < 2; c++) pts = chaikin(pts);
+          const span = Math.max(1, d - d0);   // adaptive resample: bead spacing follows local bead size, so veins stay continuous
+          const R = dd => Math.max(.7, wd * (1 - ((dd - d0) / span) * .62));
+          const nodes = []; let need = 0;
+          for (let i = 1; i < pts.length; i++) { const a2 = pts[i - 1], q = pts[i];
+            const seg = Math.hypot(q.x - a2.x, q.y - a2.y) || .001; let s0 = need;
+            while (s0 < seg) { const f = s0 / seg, dd = a2.d + (q.d - a2.d) * f;
+              nodes.push({ x: a2.x + (q.x - a2.x) * f, y: a2.y + (q.y - a2.y) * f, d: dd, r: R(dd) });
+              s0 += Math.max(1.3, R(dd) * 1.15); }
+            need = s0 - seg; }
+          if (nodes.length > 1) { b.nodes = nodes; b.d1 = d; branches.push(b); } } };
+      spawn(6, H / 2, 0, 3.4, 0, 0, null);
+      spawn(6, H / 2, .5, 2.1, 0, 1, null); spawn(6, H / 2, -.5, 2.1, 0, 1, null); };
+    // growth clock: speed breathes between .5x and 1.5x — smooth, monotone, lands exactly at 1
+    const AMP = .5;
+    const bp = (b, p) => { const q = Math.min(1, Math.max(0, (p - b.off) / (1 - b.off)));
+      const w = 2 * Math.PI * b.k;
+      return q - AMP * (Math.sin(w * q + b.ph) - Math.sin(b.ph)) / w; };
+    let frameN = 0;
+    const limOf = (b, p) => { if (b._c === frameN) return b._lim; b._c = frameN;
+      let own = bp(b, p) * (b.d1 - b.d0);
+      if (p < 1 && b.parent && b.parent.nodes) {   // flow continues THROUGH the junction: emerge, don't pop in mid-air
+        const past = limOf(b.parent, p) - b.d0;
+        own = Math.min(own, Math.max(0, past * 2.2)); }
+      b._lim = b.d0 + own; return b._lim; };
+    const render = (p, time = 0) => { clear(x, W, H);
+      x.globalCompositeOperation = 'source-over';
+      frameN++;
+      const glows = [];
+      for (const b of branches) { const dLim = limOf(b, p);
+        if (dLim <= b.d0 && p < 1) continue;
+        for (const n of b.nodes) { if (p < 1 && n.d > dLim) break;
+          const baseR = n.r;
+          const fd = p >= 1 ? 1e9 : dLim - n.d;      // how far behind the growth front this bead is
+          const pop = Math.exp(-fd / 26);            // newborn beads pop in oversized...
+          const rr = baseR * (1 + pop * .9);         // ...then shrink and cool into the vein
+          const tc = p >= 1 ? .46 : .44 + .52 * Math.exp(-fd / 90);
+          x.fillStyle = heat(tc, 1);
+          x.beginPath(); x.arc(n.x, n.y, rr, 0, 7); x.fill();
+          if (pop > .25 && p < 1) glows.push({ x: n.x, y: n.y, a: pop }); } }
+      x.globalCompositeOperation = 'lighter';   // the pop's flash, fading as each bead settles
+      for (const g of glows) { const gr = x.createRadialGradient(g.x, g.y, 0, g.x, g.y, 9);
+        gr.addColorStop(0, heat(.95, .55 * g.a)); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = gr; x.beginPath(); x.arc(g.x, g.y, 9, 0, 7); x.fill(); }
+      if (p >= 1) { const a = .1 + .05 * Math.sin(time * 1.1);
+        const g = x.createLinearGradient(0, 0, W, 0); g.addColorStop(0, heat(.6, a)); g.addColorStop(1, heat(.6, a * .5));
+        x.fillStyle = g; x.fillRect(0, 0, W, H); }
+      x.globalCompositeOperation = 'source-over'; x.fillStyle = 'rgba(236,227,216,.75)';
+      x.font = '10px ui-monospace,Menlo,monospace'; x.textAlign = 'right'; if (H > 40) x.fillText(Math.round(p * 100) + '%', W - 8, 14); };
+    const scrub = document.getElementById('vein-scrub');
+    let p = 1;
+    const show = pp => { p = pp; cancelAnimationFrame(raf); render(p);
+      if (p >= 1 && !REDUCED) { const go = ts => { render(1, ts / 1000); raf = requestAnimationFrame(go); }; raf = requestAnimationFrame(go); } };
+    scrub.addEventListener('input', () => show(scrub.value / 1000));
+    document.getElementById('vein-play').addEventListener('click', () => { if (REDUCED) { scrub.value = 1000; return show(1); }
+      cancelAnimationFrame(raf); const t0 = performance.now();
+      const go = ts => { const pp = Math.min(1, (ts - t0) / 2500); scrub.value = Math.round(pp * 1000); render(pp);
+        if (pp < 1) raf = requestAnimationFrame(go); else show(1); };
+      raf = requestAnimationFrame(go); });
+    const init = (w, h) => { W = w; H = h; x = size('cv-veins', w, h); grow(); show(REDUCED ? 1 : p); };
+    frames('vein-frames', (w, h) => init(w, h));
+    init(340, 180);
+  }
+
+  /* ---- Ember bokeh (locked): one ember field at three focal depths ---- */
+  {
+    let W, H, x, em, raf = 0, running = !REDUCED;
+    const build = () => { const r = mulberry(23);
+      const layer = (n, rad0, rad1, a0, par) => Array.from({ length: n }, () => ({
+        x0: r() * W, off: r() * (H + 40), sp: (8 + r() * 7) * par, sway: (5 + r() * 8) * par,
+        ph: r() * 7, f1: 1.7 + r() * 2.4, f2: 3.1 + r() * 3.3, rad: rad0 + r() * (rad1 - rad0),
+        a: a0 * (.7 + r() * .6), par }));
+      em = [...layer(Math.round(W * H / 1500), .7, 1.6, .5, .55),
+            ...layer(Math.round(W * H / 3800), 3.5, 7, .26, 1),
+            ...layer(Math.round(W * H / 5200), 12, 24, .11, 1.8)]; };
+    const disc = (ex, ey, rad, t, a, soft) => { const g = x.createRadialGradient(ex, ey, 0, ex, ey, rad);
+      if (soft) { g.addColorStop(0, heat(t, a * .45)); g.addColorStop(.55, heat(t, a * .75)); g.addColorStop(.82, heat(t, a)); g.addColorStop(1, heat(t, 0)); }
+      else { g.addColorStop(0, heat(t, a)); g.addColorStop(1, heat(t, 0)); }
+      x.fillStyle = g; x.beginPath(); x.arc(ex, ey, rad, 0, 7); x.fill(); };
+    const render = t => { clear(x, W, H);
+      x.globalCompositeOperation = 'lighter';
+      for (const e of em) { const y = H + 26 - ((t * e.sp + e.off) % (H + 52));
+        const flick = .45 + .3 * Math.sin(t * e.f1 + e.ph) + .25 * Math.sin(t * e.f2 + e.ph * 2);
+        const ex = e.x0 + Math.sin(t * .7 + e.ph) * e.sway;
+        disc(ex, y, e.rad * (.85 + flick * .3), .32 + .4 * flick, e.a * Math.max(.2, flick), e.rad > 8); }
+      for (let k = 0; k < 2; k++) { const cyc = t / 1.1 + k * .53, ki = Math.floor(cyc), u = cyc % 1;
+        if (u < .32) { const cr = mulberry(ki * 31 + 5 + k * 977); const sx = 20 + cr() * (W - 40), sy = H - 20 - cr() * (H * .55), aa = -Math.PI / 2 + (cr() - .5) * 1.8;
+          const d = u / .32, L = 9 + cr() * 9;
+          x.strokeStyle = heat(.95, (1 - d) * .9); x.lineWidth = 1.2; x.lineCap = 'round';
+          x.beginPath(); x.moveTo(sx + Math.cos(aa) * L * d, sy + Math.sin(aa) * L * d);
+          x.lineTo(sx + Math.cos(aa) * L * (d + .3), sy + Math.sin(aa) * L * (d + .3)); x.stroke(); } }
+      const gh = Math.min(44, H * .4);
+      const gl = x.createLinearGradient(0, H, 0, H - gh); gl.addColorStop(0, heat(.5, .16)); gl.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = gl; x.fillRect(0, H - gh, W, gh); };
+    const loop = ts => { render(ts / 1000); if (running) raf = requestAnimationFrame(loop); };
+    const btn = document.getElementById('ember-toggle');
+    btn.addEventListener('click', () => { if (REDUCED) return; running = !running; btn.textContent = running ? '❚❚ Pause' : '▶ Resume';
+      if (running) raf = requestAnimationFrame(loop); else cancelAnimationFrame(raf); });
+    const init = (w, h) => { W = w; H = h; x = size('cv-embers', w, h); build(); cancelAnimationFrame(raf);
+      if (REDUCED) { render(4.2); btn.textContent = '▶ Resume'; } else { running = true; btn.textContent = '❚❚ Pause'; raf = requestAnimationFrame(loop); } };
+    frames('ember-frames', (w, h) => init(w, h));
+    init(340, 180);
+  }
+})();
+</script>
+</body>
+</html>
