@@ -25,6 +25,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `i18n.js` documents the sparse-override fallback. Every note sits **above** its line, never trailing
   (the §6 rule #20 taught us), and the pass is verified comments-only by strip-diff — the code is
   byte-identical. Remaining batches: `store.js`, `collection-io.js`, `ui.js`, `app.js`.
+- **`CLAUDE.md` tells the truth about status.** The constitution's status line had read "Pre-build /
+  planning" since the first commit — through nine releases and a live deploy — so the first line a
+  visitor reads contradicted the README beside it. It now says the app is shipped and live and points
+  at `package.json` / this file for the version rather than naming one, so it cannot go stale again.
+  The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
+  list, so `check-docs` could not catch it).
 
 ## [1.9.0] - 2026-08-11
 ### Added

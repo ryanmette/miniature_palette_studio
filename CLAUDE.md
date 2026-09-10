@@ -6,7 +6,10 @@
 > the code — never let code and constitution drift apart.
 
 Working title: **Palette Studio for Miniatures** (provisional — rename is a one-line change here).
-Status: **Pre-build / planning.** Approved scope is in [`docs/PLAN.md`](docs/PLAN.md).
+Status: **Shipped and live.** The v1.x web app is deployed at [palette.ryanmette.com](https://palette.ryanmette.com/)
+(milestones M1–M9 done; the current version is whatever [`package.json`](package.json) and
+[`CHANGELOG.md`](CHANGELOG.md) say — this line deliberately carries no number, so it cannot go stale).
+Roadmap, backlog and release history: [`docs/PLAN.md`](docs/PLAN.md).
 
 ---
 
@@ -223,7 +226,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── .github/
 │   ├── workflows/             ← deploy.yml (publish src/ to GitHub Pages, M9) · test.yml (node --test + data/docs validators on push/PR) · tag-release.yml (dispatchable release-tag creator, §8)
 │   └── dependabot.yml         ← keep workflow actions current (github-actions ecosystem only; no npm)
-├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/scheme/a11y/data/store/ui/collection-io)
+├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/scheme/a11y/data/seed/share/store/ui/collection-io)
 └── src/                       ← the app (✓ M1–M8: data, engine, shell, all feature UI)
     ├── index.html             ← (M3)
     ├── CNAME · .nojekyll       ← GitHub Pages: custom domain (palette.ryanmette.com) + disable Jekyll (M9)
