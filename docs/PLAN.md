@@ -240,6 +240,53 @@ Raised by Ryan after the neutral-mode merge; parked here so they survive. In rou
    instant it crossed. An explicit dock choice clears the park, and the parked role travels in the
    undo snapshot alongside the parked harmony.
 
+### Backlog — the buying-assistant turn (raised 2026-08-11 by Ryan, from his own use)
+
+**The signal.** In practice the app is opened less to build a *scheme* and more to look a paint up and
+find what is close to it — a buying assistant. That is **P3 · Marcus** (`USE_CASES.md` §1) verbatim, so
+this is a **priority inversion between existing personas, not a missing feature**: the engine already
+computes every answer P3 needs (ΔE matching, cross-brand equivalents, interchangeable groups, owned/
+to-buy marks) but files them *inside* the scheme output. Four routing directions explored in
+[`mockups/buying-assistant.html`](../mockups/buying-assistant.html); none needs new engine work.
+
+7. **Paint detail sheet — direction B** (recommended first). One component: tap any paint anywhere
+   (Shelf cell, drawer chip, live-palette column, ladder rung, equivalents row) → a sheet with identity,
+   finish, owned/to-buy toggle, its interchangeable group, closest in other brands, and *closest on your
+   shelf* with an adjust direction. Reuses `equivalents()`, `nearestPaints()`, `groupMembers()` and the
+   store marks — all shipped. Reversible, and it is the leaf node every other direction below needs.
+8. **Substitute finder — direction C.** “I need X, what can I use?” as a mode *on* that sheet rather than
+   a new surface: constrain by *only what I own* / *only these brands* (the in-store constraint) and rank
+   the alternatives. The literal buying assistant; still no engine work.
+9. **“Find” as a third mode — direction A.** Only if 7 and 8 show that search wants a home of its own.
+   Adding a third mode before that is guessing.
+10. **Flipping the default to a paint-first home — direction D. HOLD.** The most honest reading of the
+    signal and the easiest to regret: the ideal-vs-actual scheme engine is the differentiator, and one
+    person's usage over a few weeks is a signal, not a mandate. Revisit after 7/8 have been lived with.
+11. **In-store pot identification (v2, native).** Barcode was already parked in `IOS_APP_PLAN.md` §5 with
+    the right blocker — no EAN/UPC column exists and no open dataset supplies one. The way around it is
+    **label OCR**: read the printed name on the pot, fuzzy-match against the 2,508 names we already hold.
+    No new data, no backend, and it degrades to “put the text in the search field”. Barcode stays the
+    nicer UX *if* a mapping ever exists — a data-sourcing project, not a UI one.
+
+### Next session (planned 2026-08-11 for 2026-08-12)
+
+Ordered, with the reasoning rather than just the list:
+
+1. **Build direction B, the paint detail sheet** (backlog 7). Highest value on the board because it comes
+   from observed use rather than from the review, it is small, and it is safe under *either* outcome of
+   the D question — if the paint-first reading is right, B is the first step; if it is wrong, B is still a
+   better Shelf. `ui.js` component + a click handler on surfaces that already exist, unit tests for the
+   render, one browser smoke for the doorways.
+2. **Then direction C on top of it** (backlog 8), if 1 lands cleanly — the own/brand constraints and the
+   ranked alternatives. Ship 1+2 as one PR under `[Unreleased]`; that is a **v1.10.0** when cut.
+3. **Carry-items only if there is room:** comment batch 2 (`store.js`, `collection-io.js` — small), then
+   `ui.js`. `app.js` last and probably separately; it is 1,539 lines and deserves its own pass.
+
+**Explicitly NOT tomorrow:** direction D (held, above) · the scanner (needs the Stage-1 native shell to
+exist first) · TD5 dataset provenance (a data-sourcing job needing manufacturer values, not a code task) ·
+splitting the Shelf/drawer out of `app.js` (internal quality, no user-visible value — it can wait behind
+work that changes what the tool does).
+
 ---
 
 ## 6. Squarespace embedding — superseded by docs/EMBED.md
