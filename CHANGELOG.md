@@ -19,6 +19,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   data, keeps the no-backend rule, and degrades to "put the text in the search field". Barcode stays the
   nicer UX if a mapping ever exists — a data-sourcing project, not a UI one.
 
+- **`CLAUDE_NATIVE.md` — the native-track constitution (v2), drafted.** IOS_APP_PLAN's
+  "constitution before any code" prerequisite, written before Stage-1 kickoff and **dormant until
+  the `npx cap add ios` commit activates it**. Locks precedence (CLAUDE.md wins on shared code),
+  the in-shell divergence registry + closed plugin allowlist, the `ios/` generated-vs-owned split,
+  two-stream versioning (web `1.x` in `package.json` · native `2.x` as the Xcode marketing
+  version) with a CHANGELOG split rule, the offline/privacy posture ("Data Not Collected", one
+  sanctioned network request), and a device smoke checklist.
+- **Native Stage-1 (v2.0) kickoff decisions stamped (2026-07-09, Ryan).** All four IOS_APP_PLAN §9
+  openers are now resolved in `CLAUDE_NATIVE.md` §11 (and §9 / §4b of the plan, and PLAN.md §5):
+  **Android** yes-later · **free** at launch, no IAP · **iPad optimised in v2.0** (split view +
+  Apple Pencil — a change from the draft's "ships as-is" default, expanding v2.0 scope; web-layer
+  work, a native iPad UI stays Stage 3) · **Apple account holder** Ryan. Apple enrolment and the
+  Mac toolchain are in place; the remaining kickoff work is Mac-side (`npx cap add ios`).
 ### Changed
 - **Accent-seed mode now parks and restores across the neutral boundary (per Ryan).** A neutral seed
   always holds Primary — a neutral accent has no complement to build from — but a drag that merely

@@ -111,10 +111,23 @@ mechanisms rather than conventions. `app.js` is down to 1,510 lines with `seed.j
 `wheel.js` split out; unit tests are at 135. **Monetization direction chosen: A (affiliate links) +
 B (audience funnel)** — see [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files
 retailer applications (§9). **Next planned work: the native app, Stage 1 (v2.0)** — the kickoff
-checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork shipped in v1.8. Two decisions are
-queued in §5's follow-ups (accent-seed across the neutral boundary; the per-module comment pass).
+checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork shipped in v1.8, and the native-track
+constitution is drafted (`CLAUDE_NATIVE.md`, dormant until kickoff). The two decisions that had been
+queued in §5's follow-ups (accent-seed across the neutral boundary; the per-module comment pass) both
+shipped in PR #32 and sit in `[Unreleased]`; §5's live backlog is now the buying-assistant plan (items 7–11).
 Still outside this repo: the Mac/Xcode build, a designer for the asset library, and the optional
 palette-from-photo enhancement.
+
+### Native Stage-1 kickoff — greenlit (2026-07-09)
+Ryan has **authorised Stage-1 (v2.0) kickoff**: enrolled in the Apple Developer Program (paid), a
+Mac with Xcode + Node ≥ v24 is ready, and the `IOS_APP_PLAN.md` §4b step-3 / §9 decisions are made
+and stamped — **Android** yes-later · **free** at launch, no IAP · **iPad optimised in v2.0**
+(split view + Apple Pencil, web-layer) · **account holder** Ryan. This paragraph is the Stage-1
+**authorisation** record (the decision stamp `CLAUDE_NATIVE.md` §2 permits); the **demand
+evidence** §2 also asks for — usage, "is there an app?" requests, in-store camera use — still
+needs to be added here at or before the `npx cap add ios` commit that activates the native
+constitution. Remaining: the Mac-side `cap add ios` → `sync` → `open` (that
+commit adds `ios/` and updates the `CLAUDE.md` §4 tree), then the two camera features → TestFlight.
 
 ### Shipped in v1.8 — Neutral mode: neutral seeds get a real scheme engine
 
