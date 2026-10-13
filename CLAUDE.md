@@ -234,6 +234,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/scheme/a11y/data/seed/share/store/ui/collection-io)
 └── src/                       ← the app (✓ M1–M8: data, engine, shell, all feature UI)
     ├── index.html             ← (M3)
+    ├── privacy.html · support.html  ← privacy policy + support pages: the App Store Connect URLs, linked from About & data (CLAUDE_NATIVE.md §8)
     ├── CNAME · .nojekyll       ← GitHub Pages: custom domain (palette.ryanmette.com) + disable Jekyll (M9)
     ├── manifest.webmanifest · sw.js · icon.svg  ← PWA: installable + offline app shell (collection branch)
     ├── styles/fonts.css       ← @font-face for the self-hosted webfonts (§3.3/§6)
@@ -254,6 +255,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── js/store.js            ← versioned, portable collection (owned/to-buy) + prefs persistence — the storage chokepoint
     ├── js/collection-io.js    ← paintRack-CSV ⇄ marks + CSV export; pure matcher (#27)
     ├── js/i18n.js             ← lightweight UI-string localization (chrome only; auto-detect locale + en-GB/en-US)
+    ├── js/infopage.js         ← the info pages' only script: the app's theme + an in-page Back link (no browser back in the iOS app or installed PWA)
     └── data/
         ├── paints.json        ← curated dataset (see §5) — shipped ✓ M1
         ├── SOURCES.md         ← provenance + licensing (see §5) — shipped ✓ M1
@@ -427,7 +429,7 @@ If any constant or formula changes, bump dataset/app version and note it in CHAN
   counts, the §4 tree — so a stale README fails the build instead of shipping.
 - **One concern per commit.** If a change touches design tokens, it updates §3 here too.
 - Deploy = push `src/` to GitHub Pages via `.github/workflows/deploy.yml`; Squarespace **links** to it (an inline iframe needs the Business plan). See `docs/EMBED.md`.
-- **Service-worker discipline (learned the hard way — broke the live site twice).** GitHub Pages serves assets with `cache-control: max-age=600`, so a plain network-first SW can still hand a browser a *stale* `app.js` against a fresh `index.html`. Rules: (1) **bump `CACHE` in `src/sw.js` on every shell/asset change**; (2) the SW is **network-first for the app shell** (navigations + same-origin JS/CSS) and fetches it with **`{cache:'reload'}`** to bypass the HTTP cache (fonts/dataset stay cache-first); (3) `index.html` **auto-reloads once on `controllerchange`** so a new SW can't leave a mismatched shell. After deploying, hard-refresh and confirm `palette.ryanmette.com/sw.js` shows the new `CACHE`.
+- **Service-worker discipline (learned the hard way — broke the live site twice).** GitHub Pages serves assets with `cache-control: max-age=600`, so a plain network-first SW can still hand a browser a *stale* `app.js` against a fresh `index.html`. Rules: (1) **bump `CACHE` in `src/sw.js` on every shell/asset change**; (2) the SW is **network-first for the app shell** (navigations + same-origin JS/CSS) and fetches it with **`{cache:'reload'}`** to bypass the HTTP cache (fonts/dataset stay cache-first); (3) `index.html` **auto-reloads once on `controllerchange`** so a new SW can't leave a mismatched shell; (4) only a navigation to the **app itself** (`/` or `/index.html`) is cached as the shell — any other page in scope (`privacy.html`, `support.html`) caches under its own URL, or one visit to it would replace the offline copy of the app. After deploying, hard-refresh and confirm `palette.ryanmette.com/sw.js` shows the new `CACHE`.
 
 ---
 
