@@ -480,6 +480,19 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 @media (prefers-reduced-motion: no-preference) {
   .about[open] { animation: mh-rise .2s cubic-bezier(.2,.7,.2,1); }
 }
+
+/* Standalone info pages (privacy.html, support.html): a reading column under the app's own header.
+   `main.doc` replaces the workspace grid on `main`; the Back link is an <a> styled as a .btn. */
+main.doc { display: block; max-width: 720px; padding: 24px 16px 48px; }
+.doc h1 { font-size: var(--fs-h1); }
+.doc .docdate { margin: 4px 0 24px; font-size: var(--fs-small); color: var(--text-muted); }
+.doc h2 { font-size: var(--fs-h2); margin: 32px 0 8px; }
+.doc h3 { font-size: var(--fs-body); margin: 24px 0 4px; }
+.doc p { margin: 0 0 12px; }
+.doc ul { margin: 0 0 12px; padding-left: 24px; }
+.doc li { margin-bottom: 8px; }
+.doc a { color: var(--accent); font-weight: 500; }
+a.btn { text-decoration: none; }
 /* photo eyedropper */
 .edstage { position: relative; display: flex; justify-content: center; }
 .edcanvas { display: block; max-width: 100%; height: auto; border-radius: 10px; cursor: crosshair; touch-action: none;

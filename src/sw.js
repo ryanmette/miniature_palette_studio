@@ -11,9 +11,10 @@
 // fresh index.html (the v1.3.0 bug). 'reload' always hits the origin and refreshes the HTTP cache.
 // Bump CACHE on any shell/asset change. skipWaiting + clients.claim hand control to the new SW promptly.
 
-const CACHE = 'ps-v34';
+const CACHE = 'ps-v35';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
+  './privacy.html', './support.html', './js/infopage.js',
   './styles/fonts.css', './styles/tokens.css', './styles/app.css',
   './js/app.js', './js/color.js', './js/harmony.js', './js/data.js', './js/a11y.js',
   './js/scheme.js', './js/seed.js', './js/share.js', './js/wheel.js',
@@ -36,6 +37,9 @@ self.addEventListener('activate', e => {
 });
 
 const isShell = (req, url) => req.mode === 'navigate' || /\.(?:js|css)$/.test(url.pathname);
+// A navigation to the app itself ('/' or '/index.html', any query). Other pages in scope (privacy.html,
+// support.html) are navigations too, but must never be stored as the app.
+const isAppNav = (req, url) => req.mode === 'navigate' && /\/(?:index\.html)?$/.test(url.pathname);
 
 self.addEventListener('fetch', e => {
   const req = e.request;
@@ -52,11 +56,13 @@ self.addEventListener('fetch', e => {
       fetch(req, { cache: 'reload' }).then(res => {
         if (res.ok) {
           const copy = res.clone();
-          // Navigations are cached under './index.html', NOT their own URL: palette state lives in the
-          // query string and updateUrl() mints a new one on every settled change, so keying by request
-          // stored one full copy of the shell per shared scheme, forever — and none were ever read
-          // back, since the offline fallback below matches './index.html'.
-          const key = req.mode === 'navigate' ? './index.html' : req;
+          // App navigations are cached under './index.html', NOT their own URL: palette state lives in
+          // the query string and updateUrl() mints a new one on every settled change, so keying by
+          // request stored one full copy of the shell per shared scheme, forever — and none were ever
+          // read back, since the offline fallback below matches './index.html'. Every OTHER page keys
+          // by its own URL: keying them under './index.html' too would let one visit to privacy.html
+          // replace the offline copy of the app.
+          const key = isAppNav(req, url) ? './index.html' : req;
           caches.open(CACHE).then(c => c.put(key, copy));
         }
         return res;

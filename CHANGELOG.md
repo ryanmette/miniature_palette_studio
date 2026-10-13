@@ -32,6 +32,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Apple Pencil — a change from the draft's "ships as-is" default, expanding v2.0 scope; web-layer
   work, a native iPad UI stays Stage 3) · **Apple account holder** Ryan. Apple enrolment and the
   Mac toolchain are in place; the remaining kickoff work is Mac-side (`npx cap add ios`).
+- **Privacy policy and support pages** (`privacy.html`, `support.html`). App Store Connect requires
+  both URLs for every app, and guideline 5.1.1(i) also wants the policy reachable inside the app, so
+  About & data now links to both. The policy covers the website and the iOS app: no data collected;
+  the collection, settings, photos and camera frames stay on the device; the app makes no network
+  requests; GitHub Pages logs visitor IPs for security. Support points to ryanmette.com/contact and
+  answers the common questions (approximate matches, moving a collection between devices, offline
+  use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
+  in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
 - **Accent-seed mode now parks and restores across the neutral boundary (per Ryan).** A neutral seed
   always holds Primary — a neutral accent has no complement to build from — but a drag that merely
@@ -58,6 +66,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   at `package.json` / this file for the version rather than naming one, so it cannot go stale again.
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
+### Fixed
+- **The service worker no longer stores every page as the app.** It cached every navigation under
+  `./index.html`, which was harmless while the app was the only page. With the privacy and support
+  pages in scope, a visit to either replaced the cached app: offline, a scheme link or `/index.html`
+  opened the privacy policy instead (bare `/` survived only because it is precached separately), and
+  after a return to the app the two pages opened the app instead. Checked in Chromium with the server
+  stopped, old worker against new. Only `/` and `/index.html` are cached as the app now; other pages
+  key by their own URL (CLAUDE.md §8 rule 4). `CACHE` → `ps-v35`.
 
 ## [1.9.0] - 2026-08-11
 ### Added

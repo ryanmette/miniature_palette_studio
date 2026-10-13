@@ -244,6 +244,11 @@ github-actions-only (CLAUDE.md §4); Capacitor version bumps are deliberate, han
   UserDefaults access at minimum). Capacitor and its plugins ship their own manifests — kept
   current via the pinned versions (§4). Verify the reason codes against Apple's current list at
   kickoff.
+- **App Store Connect URLs.** Privacy policy: `https://palette.ryanmette.com/privacy.html`;
+  support: `https://palette.ryanmette.com/support.html` (both in `src/`, so they also ship inside
+  the app). Guideline 5.1.1(i) also wants the policy reachable in-app — About & data links both.
+  The policy states what the app does with data, so any change to that (a network request, the
+  camera, storage) updates `privacy.html` and its date **in the same commit**.
 - **Guideline 4.2 (minimum functionality):** cleared by design — live eyedropper, offline
   dataset, haptics, the pocket Shelf. If a release ever cuts *all* of those, it doesn't ship.
 - **No login, no payments, no IAP in v2.0** (§11). The sanctioned later path is MONETIZATION
