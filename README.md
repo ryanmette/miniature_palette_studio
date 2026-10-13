@@ -31,7 +31,7 @@ what's next.
 | [`CLAUDE.md`](CLAUDE.md) | Project constitution — scope, design system, conventions, guardrails. **Read first.** |
 | [`docs/PLAN.md`](docs/PLAN.md) | Roadmap, architecture, milestones. |
 | [`mockups/index.html`](mockups/index.html) | Design-reference mockup (open in a browser). Not the app. |
-| [`src/data/paints.json`](src/data/paints.json) · [`SOURCES.md`](src/data/SOURCES.md) | The curated dataset — **2,508 paints across 8 brands** — + provenance. |
+| [`src/data/paints.json`](src/data/paints.json) · [`SOURCES.md`](src/data/SOURCES.md) | The imported paint dataset — **2,508 paints across 8 brands** — + provenance. |
 | `scripts/` | `build-dataset.mjs` (assemble dataset) · `validate-data.mjs` (data QA) · `check-docs.mjs` (doc-freshness QA) — dev-only, all run in CI. |
 | `src/` | The app — `index.html`, `styles/`, `js/` (color · harmony · seed · a11y · data · scheme · share · wheel · ui · app · store · collection-io · i18n), `data/`, PWA files. |
 
@@ -46,7 +46,13 @@ sRGB → CIELAB (D65); perceptual matching via **CIEDE2000**; harmonies by hue r
 HSL; color-blindness via Machado (2009) matrices; contrast via WCAG 2.1 relative luminance.
 Constants are fixed in `CLAUDE.md` §7 so results never drift.
 
+## Data source
+The paint list (names, brands and hex values) is imported from the community dataset
+[Arcturus5404/miniature-paints](https://github.com/Arcturus5404/miniature-paints) (MIT License,
+© 2022 Rick Fleuren) — it is not my own curation. This project adds the colour matching on top;
+full provenance is in [`src/data/SOURCES.md`](src/data/SOURCES.md).
+
 ## License
 Proprietary — all rights reserved; see [`LICENSE`](LICENSE). The license covers the code;
-the curated dataset's provenance and upstream terms are recorded in
+the imported dataset's provenance and upstream terms are recorded in
 [`src/data/SOURCES.md`](src/data/SOURCES.md).
