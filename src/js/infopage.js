@@ -14,6 +14,8 @@ document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
 // page's own folder rather than location.origin, which can read "null" under the iOS app's custom
 // capacitor:// scheme.
 const appBase = new URL('./', location.href).href;
+// Same reason as app.js: iOS needs a touchstart listener before it shows :active (the Back button's press).
+document.addEventListener('touchstart', () => {}, { passive: true });
 document.querySelector('#backToApp')?.addEventListener('click', e => {
   if (history.length > 1 && document.referrer.startsWith(appBase)) {
     e.preventDefault();

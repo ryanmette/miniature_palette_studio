@@ -1530,6 +1530,10 @@ async function init() {
   if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf
 }
 
+// iOS WebKit only applies :active styles on touch when a touchstart listener exists. The touch styles
+// remove the grey tap flash (app.css), so :active (buttons press to .96) is now the press feedback.
+document.addEventListener('touchstart', () => {}, { passive: true });
+
 init().catch(err => {
   // err.message is not under the app's control (fetch/parse errors can echo response bodies) — the
   // ONE innerHTML sink that must escape (every other render path goes through ui.js esc()).

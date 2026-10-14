@@ -67,6 +67,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Phones: tapping a text field no longer zooms the page, and neither does a double-tap.** Found
+  running the app in the iOS simulator. The hex, search and filter fields were 13px, and iOS zooms the
+  whole page when a field under 16px takes focus; on touch they are 16px now. Double-tap zoom is off
+  (`touch-action: manipulation`); pinch-zoom stays on the website for accessibility. Touch also loses
+  the grey tap flash (buttons keep their own press feedback) and long-pressing a control no longer
+  selects its label. Desktop is unchanged. `CACHE` → `ps-v36`.
 - **The service worker no longer stores every page as the app.** It cached every navigation under
   `./index.html`, which was harmless while the app was the only page. With the privacy and support
   pages in scope, a visit to either replaced the cached app: offline, a scheme link or `/index.html`

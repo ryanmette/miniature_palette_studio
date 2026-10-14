@@ -551,6 +551,20 @@ a.btn { text-decoration: none; }
      because only the touched cell ever hovers */
 }
 
+/* Touch should feel like an app, not a web page (§3.6). Desktop (fine pointers) is unaffected. */
+@media (pointer: coarse) {
+  /* Double-tap no longer zooms the page. Pinch-zoom stays on the website (WCAG 1.4.4); the iOS app
+     blocks pinch natively. No grey tap flash either: buttons give their own press feedback (:active). */
+  html { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  /* iOS zooms the whole page when a text field under 16px takes focus, and doesn't zoom back. These
+     selectors match the 13px rules above at the same specificity, so source order wins. */
+  .hexin input, .hexin span, input[type="search"], select { font-size: 16px; }
+  /* Long-pressing a control selected its label or opened the copy menu. Content text stays selectable. */
+  button, .btn, .seg, [role="switch"], [role="tab"] {
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  }
+}
+
 /* motion — fades + gentle bounce (§3.4) */
 @keyframes mh-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes mh-pop { 0% { transform: scale(.82); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
