@@ -10,5 +10,10 @@
     "validate:data": "node scripts/validate-data.mjs",
     "validate:docs": "node scripts/check-docs.mjs"
   },
-  "license": "SEE LICENSE IN LICENSE"
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3"
+  }
 }
