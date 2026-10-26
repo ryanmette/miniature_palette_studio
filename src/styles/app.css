@@ -413,8 +413,6 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelffbtn, .sheethead, .sheetdone, .shelfhandle, .shelfscrim { display: none; }
 .shelfmlbl { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap; border: 0; }   /* sr-only on desktop; visible in the phone sheet */
-/* keyboard cursor + focus must not land behind the pinned bar (WCAG 2.4.11) */
-.shelfgrid .cell { scroll-margin-top: calc(var(--hdr-h) + var(--dock-h, 0px) + 8px); }
 
 .shelfgrid { position: relative; display: grid; gap: 8px; -webkit-user-select: none; user-select: none; touch-action: pan-y;
   grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
@@ -585,7 +583,13 @@ a.btn { text-decoration: none; }
      sheet pulled down over the grid — the floating-overlay shadow (§3.4) and the Filters sheet's --r-card
      corners, mirrored to the bottom edge. The fade stays for the tucked edge. Off while the Filters sheet
      is open: the dock then sits above the header, and the shadow would bleed up over the tabs. */
-  .shelfdock.over:not(.sheet-open) { box-shadow: var(--shadow-pop); border-radius: 0 0 var(--r-card) var(--r-card); }
+  .shelfdock.over:not(.sheet-open) { border-radius: 0 0 var(--r-card) var(--r-card); }
+  /* The shadow lives on its own layer and fades by opacity, which the compositor animates without
+     repainting. Animating box-shadow itself repainted every frame of the 200ms fade (about 4–8ms
+     each on a slow phone). The corners switch at once: they sit over the page's side margin. */
+  .shelfdock::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    border-radius: 0 0 var(--r-card) var(--r-card); box-shadow: var(--shadow-pop); opacity: 0; }
+  .shelfdock.over:not(.sheet-open)::before { opacity: 1; }
   .shelfdock.over:not(.sheet-open)::after { opacity: 0; }
   .shelfhead { margin-bottom: 10px; gap: 8px; }
   .shelfhead h2 { font-size: var(--fs-h2); margin: 0; }   /* title + tools share one row, as mocked */
@@ -623,11 +627,11 @@ a.btn { text-decoration: none; }
   .shelfscrim { display: block; position: fixed; inset: 0; z-index: 1; background: rgba(0,0,0,.45); }   /* = the About dialog's backdrop */
 }
 @media (max-width: 520px) and (prefers-reduced-motion: no-preference) {
-  /* the fade cross-fades into the shadow (§3.4, 200ms). ::after needs its own rule here: the global
-     reduced-motion rule (*) does not reach pseudo-elements, so it must only ever animate in this block */
-  .shelfdock { transition: transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .2s cubic-bezier(.2,.7,.2,1),
-    border-radius .2s cubic-bezier(.2,.7,.2,1); }
-  .shelfdock::after { transition: opacity .2s cubic-bezier(.2,.7,.2,1); }
+  /* the fade cross-fades into the shadow (§3.4, 200ms): transform and opacity only, so the compositor
+     runs them without repainting. The pseudo-elements need their own rule here: the global reduced-motion
+     rule (*) does not reach them, so they must only ever animate in this block */
+  .shelfdock { transition: transform .2s cubic-bezier(.2,.7,.2,1); }
+  .shelfdock::before, .shelfdock::after { transition: opacity .2s cubic-bezier(.2,.7,.2,1); }
 }
 .shelf-select { display: none; }                              /* multi-select toggle is a touch affordance only */
 .shelf-select[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }

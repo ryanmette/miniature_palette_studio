@@ -651,19 +651,21 @@ const headerH = () => $('header').getBoundingClientRect().height;
 function applyDock() {
   const d = $('#shelfDock'), panel = $('#shelfPanel'), handle = $('#shelfHandle');
   const tucked = PHONE.matches && dock.stuck && !dock.open;
-  d.style.setProperty('--panel-h', handle.offsetTop + 'px');   // tucking slides the handle row up to the header
-  d.classList.toggle('stuck', dock.stuck);
-  d.classList.toggle('tucked', tucked);
+  // Read every layout value before any write. A read after the class writes below forced an extra style
+  // pass on the frame the panel reveals. The classes only change transform, visibility, shadow and
+  // corners, so these sizes are the same before and after the writes.
+  const ph = handle.offsetTop, dh = d.offsetHeight, hh = headerH();
   // "over": the open panel covers paints, so it reads as a sheet pulled down over the grid (shadow + rounded
   // corners, app.css). Keyed to that state, not to a gesture: a tap, a drag, a scroll-up reveal and a focused
   // search all look the same. Layout values (header + dock height vs the grid's top), so the slide's
   // transform can't make it flicker; just after pinning only the title is under the panel, so no shadow.
-  const over = PHONE.matches && dock.stuck && !tucked && $('#shelfGrid').getBoundingClientRect().top < headerH() + d.offsetHeight;
+  const over = PHONE.matches && dock.stuck && !tucked && $('#shelfGrid').getBoundingClientRect().top < hh + dh;
+  d.style.setProperty('--panel-h', ph + 'px');   // tucking slides the handle row up to the header
+  d.classList.toggle('stuck', dock.stuck);
+  d.classList.toggle('tucked', tucked);
   d.classList.toggle('over', over);
   panel.inert = tucked;
   handle.setAttribute('aria-expanded', String(!tucked));
-  // the cursor cell's scroll margin clears whatever part of the dock is showing
-  document.documentElement.style.setProperty('--dock-h', (tucked ? d.offsetHeight - handle.offsetTop : d.offsetHeight) + 'px');
 }
 function setDockOpen(open, { focus = false } = {}) {
   dock.open = open; dock.acc = 0;
@@ -806,6 +808,18 @@ function setCursor(id) {
 /** Keep a cell's name tip on-screen: a tip is centred on its cell, so edge-column names would clip at
  *  the viewport (the Shelf bug on phones). Measured invisibly (the tip is display:none until shown —
  *  no paint between the style writes), then shifted via --tipdx in the tip's transform. */
+/** Scroll the keyboard-cursor cell into view, clear of the sticky header and filter dock (WCAG 2.4.11).
+ *  Done here, not in CSS. A CSS scroll margin had to read the dock's height from a custom property on
+ *  :root, which restyled every cell (~6,500 elements) on each tuck and reveal. scroll-padding on the root
+ *  made the browser treat the dock as covered, so focusing its own search field scrolled the page. */
+function revealCell(c) {
+  if (!c) return;
+  const r = c.getBoundingClientRect(), roof = $('#shelfDock').getBoundingClientRect().bottom + 8, floor = window.innerHeight - 8;
+  const dy = r.top < roof ? r.top - roof : r.bottom > floor ? r.bottom - floor : 0;
+  if (!dy) return;
+  dock.quietUntil = performance.now() + 200;   // our own scroll: it must not tuck or reveal the dock over the cell
+  window.scrollBy(0, dy);
+}
 function clampTip(c) {
   const tip = c.querySelector('.celltip'); if (!tip) return;
   tip.style.cssText = 'display:block;visibility:hidden';
@@ -998,7 +1012,7 @@ function moveCursor(key, extend) {
   const id = list[i];
   if (extend && shelf.anchor) setSelection(rangeIds(shelf.anchor, id), { cursor: id });
   else setSelection([id], { anchor: id, cursor: id });
-  cellEl(id)?.scrollIntoView({ block: 'nearest' });
+  revealCell(cellEl(id));
   const p = state.idx.byId.get(id);
   announceShelf(`${ui.pname(p)}, ${p.brand}, ${ui.markLabel(store.markOf(id))}.`);
 }

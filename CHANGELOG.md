@@ -115,6 +115,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Shelf on phones: the filter panel no longer stutters when it tucks or opens.** Each tuck or open
+  wrote a CSS variable on the page root, and every swatch read it. So the browser restyled the whole
+  page (about 6,500 elements), about 80ms each time on a mid-range phone. Now the keyboard cursor keeps
+  clear of the panel in JavaScript. The open panel's shadow fades on its own layer, so it does not repaint
+  every frame, and the dock reads the layout before it writes. Measured at a 4× CPU slow-down: opening
+  84ms → 4.5ms, tucking 82ms → 4.4ms. A scroll-up reveal repaints 6 times, not about 30.
+- **Shelf on phones: the keyboard cursor no longer lands under the panel.** After a long jump (for
+  example, the first arrow key deep in the grid), the page's own scroll counted as a scroll up and opened
+  the panel over the cursor. Scrolls made by the app no longer move the panel.
 - **The Shelf opens at its top again.** Opening the Shelf moved keyboard focus to the swatch grid, and
   `focus()` scrolled the page to the grid. The title, search and filters were above the screen (228px
   on a phone, 64px on desktop). Now the page goes to the top and the grid takes focus without a scroll,
