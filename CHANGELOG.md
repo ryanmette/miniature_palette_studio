@@ -13,7 +13,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   A, a **Use my paints** row in ⋯ plus a **matching note** under the live palette when the setting is on
   (recommended); B, the control on the palette at all times; C, the ⋯ row only. The frames use values
   that I read from the running app with a 23-paint shelf. The mockup also has an interactive phone
-  frame. If A is chosen, CLAUDE.md §3.6 must change in the same commit as the build.
+  frame. **Chosen (Ryan, 2026-10-26):** A, with the label "Use my paints". Equivalents ignores the
+  setting. When the shelf has no owned paints, the note says "Open Shelf" and opens the Shelf. The
+  build must change CLAUDE.md §3.6 in the same commit.
 - **Design exploration: Shelf landing** (`mockups/shelf-landing.html`, not shipped). On a phone the
   Shelf controls fill 62% of the first screen, and the search goes away when you scroll. Three
   directions: A, fix the jump only (shipped, see Fixed); B, a compact header with search and status

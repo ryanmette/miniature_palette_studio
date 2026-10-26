@@ -248,7 +248,7 @@
 
 <!-- ============================================================ A. RECOMMENDED -->
 <section class="recd">
-  <h2>A · The setting moves to ⋯, and a note on the palette shows when it is on <span class="rec">Recommended</span></h2>
+  <h2>A · The setting moves to ⋯, and a note on the palette shows when it is on <span class="rec">Chosen</span></h2>
   <p class="why">⋯ gets a <b>Use my paints</b> row (Off · Prefer · Only), next to the theme and language settings. When the
   setting is on, a <b>matching note</b> shows below the live palette. Tap the note to open ⋯ at that row. When it is Off,
   you see nothing new. The Plan tab no longer has the control.</p>
@@ -346,8 +346,9 @@
       <button class="mnote" type="button"><span class="ck">✓</span><span class="tx"><b>Only owned</b><span class="mt">From your 23 owned paints</span></span><span class="go">Change</span></button>
       <p>The count shows how small the pool is, so a poor match makes sense.</p></div>
     <div class="state"><h4>On, but your shelf is empty</h4>
-      <button class="mnote" type="button"><span class="ck off">○</span><span class="tx"><b>Prefer owned</b><span class="mt">No owned paints yet</span></span><span class="go">Change</span></button>
-      <p>Today the app ignores the setting without a word when you own nothing. The note says so. ⋯ then shows a link to the Shelf.</p></div>
+      <button class="mnote" type="button"><span class="ck off">○</span><span class="tx"><b>Prefer owned</b><span class="mt">No owned paints yet</span></span><span class="go">Open Shelf</span></button>
+      <p>Today the app ignores the setting without a word when you own nothing. The note says so, and here it opens the Shelf,
+      where you mark the paints you own. In every other state it opens ⋯.</p></div>
   </div>
 
   <h3 class="lab">Desktop (1280px) — the note sits in the sticky studio column</h3>
@@ -397,7 +398,9 @@
       content <i>down</i>. Changing the setting already redraws the paints, so the page does not move in a surprising way.</li>
     <li><b>Keyboard and screen readers.</b> The note is a <code>&lt;button aria-haspopup aria-controls="settingsMenu"&gt;</code>
       with an accessible name such as “Use my paints: prefer owned. Change”. Opening ⋯ from it moves focus to the selected option,
-      and Esc returns focus to the note, not to ⋯. A change is announced through the existing live region.</li>
+      and Esc returns focus to the note, not to ⋯. A change is announced through the existing live region. In the empty-shelf
+      state the note opens the Shelf instead, so it drops <code>aria-haspopup</code> and its name says so: “Use my paints: prefer
+      owned, but you own no paints yet. Open Shelf”.</li>
     <li><b>Nothing else changes.</b> The setting is still saved per device. A share link still does not carry it, so a friend who
       opens your link sees matches from <i>their</i> shelf. That is correct.</li>
     <li><b>Constitution change (§3.6).</b> The header bullet would say that the ⋯ popover holds theme, locale, <b>Use my paints</b>
@@ -445,16 +448,15 @@
   approximation”. <b>Not recommended.</b></p>
 </section>
 
-<!-- ============================================================ OPEN QUESTIONS -->
-<section>
-  <h2>Open questions for you</h2>
+<!-- ============================================================ DECISIONS -->
+<section class="recd">
+  <h2>Decisions (Ryan, 2026-10-26)</h2>
   <ul class="notes">
-    <li><b>The label.</b> “Use my paints” (Off · Prefer · Only) is short enough for a phone. Other options: “Use my shelf”, which
-      matches the Shelf tab (but the shelf also holds to-buy paints), or keep “Use my collection” (it makes the row wider).</li>
-    <li><b>Equivalents.</b> I suggest that it stays outside the setting. It compares brands, so it must list every brand. Owned
-      paints already show ✓ in that list.</li>
-    <li><b>The empty-shelf case.</b> Should the note offer “Open Shelf” directly, rather than “Change”? I used “Change” in every
-      state so that the note always does the same thing.</li>
+    <li><b>Direction A is chosen:</b> the setting moves to ⋯, and the matching note shows on the live palette when it is on.</li>
+    <li><b>The label is “Use my paints”</b> (Off · Prefer · Only). It is short enough for a phone. “Use my shelf” was not chosen,
+      because the shelf also holds to-buy paints.</li>
+    <li><b>Equivalents ignores the setting.</b> It compares brands, so it must list every brand. Owned paints already show ✓ in that list.</li>
+    <li><b>Empty shelf: the note says “Open Shelf”</b> and opens the Shelf. In every other state it says “Change” and opens ⋯.</li>
   </ul>
 </section>
 
