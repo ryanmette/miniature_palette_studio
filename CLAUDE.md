@@ -218,6 +218,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── shelf-brand-filter.html ← 3-way exploration: folding the Shelf's brand-chip rows down (mobile)
 │   ├── shelf-landing.html     ← keeping the Shelf's search + filters in view — chosen: phone pull-down handle bar, desktop pinned bar (+ the 3 directions)
 │   ├── buying-assistant.html ← 4-way exploration: the paint-first / buying-assistant workflow (P3) + the in-store scanner
+│   ├── collection-setting.html ← 3-way exploration: moving “Use my collection” to the ⋯ menu + a matching note on the live palette
 │   ├── studio-layouts.html    ← 5-way Studio layout exploration (scroll-reduction) + judge ranking
 │   ├── layouts/               ← the 5 standalone layout mocks embedded by studio-layouts.html
 │   │   ├── split-sticky-studio.html · cockpit-3col.html · instrument-band.html

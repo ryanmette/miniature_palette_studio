@@ -6,6 +6,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Design exploration: where the collection setting goes** (`mockups/collection-setting.html`, not
+  shipped). Ryan asked if *Use my collection* (Off · Prefer owned · Only owned) must move from the Plan
+  tab to the ⋯ menu. The setting changes the live palette, the Plan and the Accessibility swap, but its
+  only control is in the Plan tab, and the palette shows no sign that it is on. Three directions:
+  A, a **Use my paints** row in ⋯ plus a **matching note** under the live palette when the setting is on
+  (recommended); B, the control on the palette at all times; C, the ⋯ row only. The frames use values
+  that I read from the running app with a 23-paint shelf. The mockup also has an interactive phone
+  frame. If A is chosen, CLAUDE.md §3.6 must change in the same commit as the build.
 - **Design exploration: Shelf landing** (`mockups/shelf-landing.html`, not shipped). On a phone the
   Shelf controls fill 62% of the first screen, and the search goes away when you scroll. Three
   directions: A, fix the jump only (shipped, see Fixed); B, a compact header with search and status
