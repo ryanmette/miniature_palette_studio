@@ -6,6 +6,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Two new brands: AK Interactive and AMMO by Mig — dataset 1.6.0 (3,225 paints, 10 brands).** Both
+  come from the same MIT-licensed source as the other brands (Arcturus5404/miniature-paints, `AK.md`
+  and `Mig.md`). The new paints show in the Shelf, the Paints drawer, the brand filters and the
+  cross-brand matches.
+  - **AK Interactive (467):** the current 3rd Gen acrylics only — Standard, AFV, Air, Figures,
+    Intense, Pastel, Metallic and Ink. The older 2nd Gen sets are not included, because 3rd Gen
+    replaces them and they are almost duplicates. Primers and auxiliary mediums are not included.
+  - **AMMO by Mig (239):** the Acrylics range (A.MIG-0xxx) and the Washes. Primers are not included.
+    The source does not have the newer AMMO Atom range yet.
+  - Equivalence groups: 180 (was 117). The 64 name/hue notes from the validator are military colour
+    names (for example "Russian Green" is an olive). They are accepted in `data-exceptions.json`.
 - **Design exploration: the buying-assistant workflow** (`mockups/buying-assistant.html`, not shipped).
   Raised from Ryan's own use — the app gets opened less to build a *scheme* and more to look a paint up
   and find what is close to it. That is **P3 · Marcus** from `USE_CASES.md` §1 verbatim, so it is a

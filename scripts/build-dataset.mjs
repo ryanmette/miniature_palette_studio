@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * build-dataset.mjs — assemble src/data/paints.json (dataset v1.2.0).
+ * build-dataset.mjs — assemble src/data/paints.json (dataset v1.6.0).
  *
  * Source: all brands are parsed at build time from the MIT-licensed community dataset
  *   github.com/Arcturus5404/miniature-paints (© 2022 Rick Fleuren, "Miniature Painter Pro").
  * Stage the raw markdown into RAW_DIR (default below), one file per brand:
- *   Citadel_Colour.md Vallejo.md Army_Painter.md Duncan.md P3.md Reaper.md Scale75.md Monument.md
- * e.g.  for f in Citadel_Colour Vallejo Army_Painter Duncan P3 Reaper Scale75 Monument; do \
+ *   Citadel_Colour.md Vallejo.md Army_Painter.md Duncan.md P3.md Reaper.md Scale75.md Monument.md AK.md Mig.md
+ * e.g.  for f in Citadel_Colour Vallejo Army_Painter Duncan P3 Reaper Scale75 Monument AK Mig; do \
  *         curl -sL https://raw.githubusercontent.com/Arcturus5404/miniature-paints/main/paints/$f.md -o RAW/$f.md; done
  *
  * Per CLAUDE.md §5: hex is sRGB; Lab is derived at runtime (never stored). All entries are
@@ -30,7 +30,8 @@ const src = file => `${REPO}/blob/main/paints/${file}`;
 const norm = s => s.replace(/\s+/g, ' ').trim();   // source has stray double-spaces (e.g. "Warfront  Range")
 
 /**
- * Per-brand config: file, the column index of the "Set", and a map of source-set → {line, kind}.
+ * Per-brand config: file, the column index of the "Set", an optional `captured` date (brands added later
+ * than CAPTURED), and a map of source-set → {line, kind}.
  * `kind` chooses the type: base/layer/dry are flat colours; wash/shade/ink/contrast/glaze/effect are
  * finishes (kept out of harmony suggestions); metal is the metallic role. Sets not listed are skipped
  * (airbrush duplicates, primers/sprays, craft/weathering, discontinued).
@@ -82,6 +83,17 @@ const BRANDS = [
     'Monument Pro Acrylic Paints': ['Pro Acryl', 'layer'], 'Monument Pro Signature Series': ['Signature', 'layer'],
     'Monument Pro Acrylic Wash': ['Wash', 'wash'],
   } },
+  // AK: only the current 3rd Gen acrylics. The older AFV/Air/Figures/General/Naval sets are the
+  // superseded 2nd Gen range and would near-duplicate it. "Air" here is aircraft colours, not airbrush.
+  { brand: 'AK Interactive', file: 'AK.md', setIdx: 3, captured: '2026-10-26', sets: {
+    'Standard (3rd Gen)': ['3rd Gen', 'layer'], 'AFV (3rd Gen)': ['3rd Gen AFV', 'layer'],
+    'Air (3rd Gen)': ['3rd Gen Air', 'layer'], 'Figures (3rd Gen)': ['3rd Gen Figures', 'layer'],
+    'Intense (3rd Gen)': ['3rd Gen Intense', 'layer'], 'Pastel (3rd Gen)': ['3rd Gen Pastel', 'layer'],
+    'Metallic (3rd Gen)': ['3rd Gen Metallic', 'metal'], 'Ink (3rd Gen)': ['3rd Gen Ink', 'ink'],
+  } },
+  { brand: 'AMMO by Mig', file: 'Mig.md', setIdx: 3, captured: '2026-10-26', sets: {
+    'Acrylics': ['Acrylic', 'layer'], 'Washes': ['Wash', 'wash'],
+  } },
 ];
 
 const FINISH = new Set(['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect']);
@@ -121,11 +133,11 @@ function parseRows(text, setIdx) {
 /* ---- assemble ---- */
 const paints = [];
 const seen = new Set();
-function add(brand, line, name, hex, type, sourceUrl) {
+function add(brand, line, name, hex, type, sourceUrl, captured = CAPTURED) {
   if (!name || SKIP_NAME.test(name)) return;
   const id = `${slug(brand)}-${slug(line)}-${slug(name)}`;
   if (seen.has(id)) return; seen.add(id);
-  paints.push({ id, brand, line, name, hex: hex.toUpperCase(), type, discontinued: false, approx: true, source: 'community', sourceUrl, captured: CAPTURED });
+  paints.push({ id, brand, line, name, hex: hex.toUpperCase(), type, discontinued: false, approx: true, source: 'community', sourceUrl, captured });
 }
 
 const skipped = {};
@@ -136,7 +148,7 @@ for (const b of BRANDS) {
     const map = wanted[row.set];
     if (!map) { skipped[`${b.brand} / ${row.set}`] = (skipped[`${b.brand} / ${row.set}`] || 0) + 1; continue; }
     const [line, kind] = map;
-    add(b.brand, line, row.name, row.hex, resolveType(row.name, kind), url);
+    add(b.brand, line, row.name, row.hex, resolveType(row.name, kind), url, b.captured);
   }
 }
 
@@ -237,7 +249,7 @@ try {
 } catch (e) { console.log(`group-overrides: skipped (${e.message})`); }
 
 const dataset = {
-  version: '1.5.2',
+  version: '1.6.0',
   generated: CAPTURED,
   license: 'Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.',
   attribution: 'Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.',
