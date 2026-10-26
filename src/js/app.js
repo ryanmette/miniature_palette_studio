@@ -668,8 +668,16 @@ function applyDock() {
   handle.setAttribute('aria-expanded', String(!tucked));
 }
 function setDockOpen(open, { focus = false } = {}) {
+  const wasTucked = $('#shelfDock').classList.contains('tucked');
   dock.open = open; dock.acc = 0;
   applyDock();
+  // While the panel slides down under the finger, it ignores taps. A quick second tap on the handle
+  // otherwise landed on the search field and popped the phone keyboard (the slide is 200ms).
+  if (open && wasTucked) {
+    const panel = $('#shelfPanel');
+    panel.style.pointerEvents = 'none';
+    setTimeout(() => { panel.style.pointerEvents = ''; }, 250);
+  }
   // keyboard only: on touch, focusing the search would pop the on-screen keyboard over the grid
   if (focus) (open ? $('#shelfQ') : $('#shelfHandle')).focus({ preventScroll: true });
 }

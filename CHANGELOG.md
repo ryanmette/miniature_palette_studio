@@ -128,6 +128,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   while the mouse pointed at another swatch, so two tooltips overlapped. Now the last input wins.
   Pointing shows the name of the swatch you point at, and the selected swatch's name comes back when
   the pointer leaves the swatches. Arrow keys show the keyboard cursor's name again.
+- **Shelf on phones: a quick second tap on the handle no longer opens the keyboard.** The panel slides
+  down under the finger, so the second tap landed on the search field. While the panel slides in, it
+  ignores taps.
 - **Shelf on phones: the keyboard cursor no longer lands under the panel.** After a long jump (for
   example, the first arrow key deep in the grid), the page's own scroll counted as a scroll up and opened
   the panel over the cursor. Scrolls made by the app no longer move the panel.
