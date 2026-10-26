@@ -103,6 +103,7 @@
 
   /* ===== Chosen design (2026-10-26) ===== */
   section.chosen { max-width:1000px; border-color:var(--accent); }
+  #edge { max-width:1300px; }
   .apph.flat { border-bottom:none; }
   /* the drag handle: a 4px pill, hit area 44px tall (§3.6), sits right under the tabs, no rule between */
   .handle { position:relative; height:24px; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--bg); }
@@ -133,17 +134,196 @@
   .dgrid { display:grid; grid-template-columns:repeat(14,1fr); gap:7px; padding:0 16px 16px; }
   .dgrid i { display:block; aspect-ratio:1; border-radius:8px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
   .desk .pin { padding:9px 16px; }
+
+  /* ===== Edge options (2026-10-26) — what marks where the pinned panel ends and the paints begin ===== */
+  .phone.dark { --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62; --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 18px 50px rgba(0,0,0,.5); color:var(--text); }
+  .phone.short { height:400px; }
+  /* the pinned dock: tabs live in .apph above it; this block holds [panel] + handle */
+  .phone.short .apph { position:relative; z-index:3; }   /* tabs stay above the paints scrolling under them */
+  .dk { position:absolute; left:0; right:0; top:87px; z-index:2; background:var(--bg); }
+  .dk .handle { background:transparent; }
+  .dk .hchip { position:absolute; right:10px; font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted);
+    line-height:16px; padding:0 8px; border-radius:var(--r-pill); }
+  .dk .panel { background:transparent; padding-top:2px; }
+  .dk.e-fade::after { content:""; position:absolute; left:0; right:0; top:100%; height:14px; background:linear-gradient(var(--bg), transparent); }
+  .dk.e-line { border-bottom:1px solid var(--border-strong); box-shadow:var(--shadow); }
+  .dk.e-pop { box-shadow:var(--shadow-pop); }
+  .egrid { position:absolute; left:0; right:0; }
+  .hpill2 { width:38px; height:5px; border-radius:99px; background:var(--text-muted); }
+  .opt { border-top:1px dashed var(--border); margin-top:18px; padding-top:14px; }
+  .opt:first-of-type { border-top:none; margin-top:6px; padding-top:0; }
+  .opt h3 { font-family:var(--display); font-size:14.5px; margin:0 0 2px; }
+  .tag { display:inline-block; font-size:10.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; border-radius:var(--r-pill);
+    padding:0 8px; margin-left:6px; vertical-align:1px; background:var(--surface-2); color:var(--text-muted); }
+  /* zoomed close-up of the edge, cloned from the frame by the script at the bottom */
+  .zoomwin { position:relative; width:300px; height:110px; overflow:hidden; border:1px solid var(--border-strong); border-radius:12px; margin-top:8px; background:#fff; }
+  .zoomwin .phone { position:absolute; left:0; top:0; border:none; border-radius:0; transform-origin:0 0; }
+  .zoomcap { font-size:11px; color:var(--text-muted); margin-top:3px; }
 </style>
 </head>
 <body>
 <h1>Shelf landing — keeping search in view</h1>
-<p class="sub"><b>Decided 2026-10-26:</b> phone = C with a pull-down handle under the tabs; desktop = B. The chosen design is first; the three original directions follow for the record.</p>
+<p class="sub"><b>New (2026-10-26):</b> two options for the edge under the pinned phone panel are first (<a href="#edge">jump</a>).
+<b>Decided 2026-10-26:</b> phone = C with a pull-down handle under the tabs; desktop = B. The chosen design is first; the three original directions follow for the record.</p>
 <p class="sub">Two problems, one fix for each.
 <b>The bug:</b> opening the Shelf calls <code>$('#shelfGrid').focus()</code>. Focus scrolls the page to the
 grid, so the page jumps past the title, search and filters (228px on a phone, 64px on desktop).
 <b>The layout:</b> on a phone the shelf controls fill 62% of the first screen (the swatches start 522px down an
 844px screen). After you scroll, the search is gone. Each direction below fixes the bug. B and C also fix the layout.
 Frames are a 390px phone at about 77% scale.</p>
+
+<!-- ============ EDGE OPTIONS ============ -->
+<section class="chosen" id="edge">
+  <h2>Edge under the pinned panel — 2 options <span class="rec">Asked 2026-10-26</span></h2>
+  <p class="why">Once the phone panel is pinned, swatches scroll <i>under</i> it. Something must say where the chrome ends
+  and the paints begin. Today (as built) that is a 14px fade. The two options below replace it. Both keep the
+  approved rule that there is <b>no line between the tabs and the panel</b>. The edge is only at the <b>bottom</b> of the
+  whole chrome (tabs + panel + handle), and only while it is pinned. At the top of the page nothing passes under it,
+  so there is no edge at all. Both options use only the two elevation tokens from §3.4. Each frame has a 2.5×
+  close-up of the edge below it.</p>
+
+  <div class="opt">
+    <h3>Option 1 — Hard line + short shadow <span class="tag">same edge in every pinned state</span></h3>
+    <p class="why">A 1px <code>--border-strong</code> line with <code>--shadow</code>
+    under it. <code>--shadow</code> is the in-flow chrome tier, the short soft shadow that cards already use. The line is
+    <code>--border-strong</code>, not the Studio header's <code>--border</code>: at 1.2:1 the lighter token all but
+    disappears in light mode, and you asked for a <i>hard</i> line. The line and
+    shadow move with the panel: under the handle when tucked, under the open panel when it is pulled down.</p>
+  <div class="pair">
+    <figure><figcaption>1a · Light, tucked</figcaption>
+      <div class="phone short" data-zoom="111"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid egrid" data-n="35" data-off="7" style="top:77px"></div>
+        <div class="dk e-line">
+          
+          <div class="handle"><span class="hpill2"></span><span class="hchip">⌕ Search</span></div>
+        </div>
+      </div></div>
+    </figure>
+    <figure><figcaption>1b · Light, pulled open over the paints</figcaption>
+      <div class="phone short" data-zoom="197"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid egrid" data-n="35" data-off="7" style="top:163px"></div>
+        <div class="dk e-line">
+          <div class="panel stack">
+            <div class="row" style="flex-wrap:nowrap"><div class="field">⌕ Search your shelf…</div>
+              <span class="btn fbtn" style="height:32px">Filters</span></div>
+            <div class="seg"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+          </div>
+          <div class="handle"><span class="hpill2"></span><span class="hchip">⌕ Search</span></div>
+        </div>
+      </div></div>
+    </figure>
+    <figure><figcaption>1c · Dark, tucked</figcaption>
+      <div class="phone short dark" data-zoom="111"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid egrid" data-n="35" data-off="7" style="top:77px"></div>
+        <div class="dk e-line">
+          
+          <div class="handle"><span class="hpill2"></span><span class="hchip">⌕ Search</span></div>
+        </div>
+      </div></div>
+    </figure>
+    <figure><figcaption>1d · Dark, pulled open</figcaption>
+      <div class="phone short dark" data-zoom="197"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid egrid" data-n="35" data-off="7" style="top:163px"></div>
+        <div class="dk e-line">
+          <div class="panel stack">
+            <div class="row" style="flex-wrap:nowrap"><div class="field">⌕ Search your shelf…</div>
+              <span class="btn fbtn" style="height:32px">Filters</span></div>
+            <div class="seg"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+          </div>
+          <div class="handle"><span class="hpill2"></span><span class="hchip">⌕ Search</span></div>
+        </div>
+      </div></div>
+    </figure>
+  </div>
+    <p class="verdict"><b>What it says:</b> "this is a toolbar", always, in the same way as the pinned desktop bar (which
+    would gain the same line so the two match). <b>Build:</b> give the dock a transparent 1px bottom border at all
+    times and colour it only when pinned (<code>border-bottom-color</code>, never <code>border-width</code>, so pinning
+    moves nothing by 1px, §3.4), plus <code>box-shadow: var(--shadow)</code>; remove the fade. <b>Watch:</b> the dark
+    <code>--shadow</code> is only <code>0 1px 2px</code>, so in dark the line does almost all the work (1c, 1d).</p>
+  </div>
+
+  <div class="opt">
+    <h3>Option 2 — Fade when tucked, shadow when open <span class="tag">the edge shows the panel's state</span></h3>
+    <p class="why">Tucked: today's fade (only the handle row is there, so a light touch is enough). Pulled down or tapped
+    open: the fade cross-fades (200ms, §3.4 enter/exit) into <code>--shadow-pop</code>. That is the floating-overlay tier
+    the Paints drawer already uses, because the open panel now <i>covers</i> paints. Under reduced motion it switches
+    with no animation.</p>
+  <div class="pair">
+    <figure><figcaption>2a · Light, tucked — fade (today)</figcaption>
+      <div class="phone short" data-zoom="111"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid egrid" data-n="35" data-off="7" style="top:77px"></div>
+        <div class="dk e-fade">
+          
+          <div class="handle"><span class="hpill2"></span><span class="hchip">⌕ Search</span></div>
+        </div>
+      </div></div>
+    </figure>
+    <figure><figcaption>2b · Light, pulled open — shadow</figcaption>
+      <div class="phone short" data-zoom="197"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid egrid" data-n="35" data-off="7" style="top:163px"></div>
+        <div class="dk e-pop">
+          <div class="panel stack">
+            <div class="row" style="flex-wrap:nowrap"><div class="field">⌕ Search your shelf…</div>
+              <span class="btn fbtn" style="height:32px">Filters</span></div>
+            <div class="seg"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+          </div>
+          <div class="handle"><span class="hpill2"></span><span class="hchip">⌕ Search</span></div>
+        </div>
+      </div></div>
+    </figure>
+    <figure><figcaption>2c · Dark, tucked — fade</figcaption>
+      <div class="phone short dark" data-zoom="111"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid egrid" data-n="35" data-off="7" style="top:77px"></div>
+        <div class="dk e-fade">
+          
+          <div class="handle"><span class="hpill2"></span><span class="hchip">⌕ Search</span></div>
+        </div>
+      </div></div>
+    </figure>
+    <figure><figcaption>2d · Dark, pulled open — shadow</figcaption>
+      <div class="phone short dark" data-zoom="197"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid egrid" data-n="35" data-off="7" style="top:163px"></div>
+        <div class="dk e-pop">
+          <div class="panel stack">
+            <div class="row" style="flex-wrap:nowrap"><div class="field">⌕ Search your shelf…</div>
+              <span class="btn fbtn" style="height:32px">Filters</span></div>
+            <div class="seg"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+          </div>
+          <div class="handle"><span class="hpill2"></span><span class="hchip">⌕ Search</span></div>
+        </div>
+      </div></div>
+    </figure>
+  </div>
+    <p class="verdict"><b>What it says:</b> "the panel is now on top of your paints". The edge changes when the panel's
+    job changes. <b>Build:</b> <code>.shelfdock.stuck:not(.tucked)</code> gets <code>box-shadow: var(--shadow-pop)</code>
+    and its fade goes to <code>opacity: 0</code>, with both on a 200ms transition. <b>One decision in it:</b> you said
+    "dragged or tapped". The panel can also open on a scroll up of more than 60px. I would give it the same shadow
+    whichever way it opened, because the shadow describes the panel's state, not the gesture. Otherwise the same open
+    panel would look different depending on how it got there.</p>
+  </div>
+
+  <p class="verdict"><b>Possible mix:</b> Option 1's line + <code>--shadow</code> while tucked, and Option 2's
+  <code>--shadow-pop</code> while open. Light chrome edge while pinned, deeper shadow while covering paints. Say if
+  you want it mocked.</p>
+</section>
 
 <!-- ============ CHOSEN ============ -->
 <section class="chosen">
@@ -419,6 +599,23 @@ Frames are a 390px phone at about 77% scale.</p>
   for (const g of document.querySelectorAll('.grid, .dgrid')) {
     const n = +g.dataset.n, off = +(g.dataset.off || 0);
     g.innerHTML = Array.from({ length: n }, (_, i) => `<i style="background:${HEX[(i + off) % HEX.length]}"></i>`).join('');
+  }
+  // 2.5× close-ups of the edge: clone each frame that has data-zoom into a small window under it.
+  const Z = 2.5;
+  for (const ph of document.querySelectorAll('.phone[data-zoom]')) {
+    // measure the real dock edge: the first swatch row sits half under it, and the close-up centres on it
+    const dk = ph.querySelector('.dk'), edge = dk.offsetTop + dk.offsetHeight;
+    ph.querySelector('.egrid').style.top = (edge - 34) + 'px';
+    ph.dataset.zoom = edge;
+    const win = document.createElement('div'); win.className = 'zoomwin';
+    const c = ph.cloneNode(true); c.removeAttribute('data-zoom');
+    const y = +ph.dataset.zoom, x = 75;   // centre the close-up on the handle pill
+    c.style.transform = `translate(${-x * Z}px, ${-(y - 110 / Z / 2) * Z}px) scale(${Z})`;
+    win.appendChild(c);
+    if (ph.classList.contains('dark')) win.style.background = '#141110';
+    ph.after(win);
+    const cap = document.createElement('div'); cap.className = 'zoomcap'; cap.textContent = '2.5× close-up of the edge';
+    win.after(cap);
   }
 </script>
 </body>
