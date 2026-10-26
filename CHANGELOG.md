@@ -75,7 +75,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     dialog (Esc closes it, and focus goes back to Filters). Hidden controls are `inert`. The keyboard
     cursor scrolls clear of the pinned bar.
   - Fixed on the way: the card entry animation left a `transform` on the Shelf, which would have put
-    the phone sheet in the wrong place.
+    the phone sheet in the wrong place. And when the panel was tucked, the selected status button's
+    shadow showed below the tabs, as a faint line where there must be none. Now the panel's contents
+    hide once the slide ends.
 - **Accent-seed mode now parks and restores across the neutral boundary (per Ryan).** A neutral seed
   always holds Primary — a neutral accent has no complement to build from — but a drag that merely
   *passed through* the low-saturation centre used to end accent-seed mode for good: the harmony was

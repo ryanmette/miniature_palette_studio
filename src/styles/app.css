@@ -573,6 +573,10 @@ a.btn { text-decoration: none; }
   .shelfdock { margin: 0 -14px 4px; padding: 4px 14px 0; background: var(--bg); }
   .shelfdock.stuck { box-shadow: none; }
   .shelfdock.tucked { transform: translateY(calc(-1 * var(--panel-h, 0px))); }
+  /* Once the slide ends, the tucked panel's contents hide: the selected status button's shadow otherwise
+     bled below the tabs — a faint line in the one place there must be none. Showing them again is
+     instant (the delay applies only in the tucked state); under reduced motion there is no delay at all. */
+  .shelfdock.tucked .shelffilters { visibility: hidden; transition: visibility 0s linear .2s; }
   /* the fade under the header stands in for a rule while swatches pass beneath (Ryan, 2026-10-26) */
   .shelfdock::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px; pointer-events: none;
     background: linear-gradient(var(--bg), transparent); opacity: 0; }
