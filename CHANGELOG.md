@@ -61,6 +61,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **Equivalents rank by finish** (Ryan, 2026-10-26; a §7 ranking change). The tab used to rank only by
+  ΔE, so a flat paint's "closest in other brands" often held washes, contrasts or texture paints. For
+  example, Scale75's "Dust in Summertime" texture paint showed for Citadel Death Guard Green. Now a paint
+  of a different finish class (flat · translucent · effect · metal) ranks as if it were 4 ΔE further
+  (`FINISH_PENALTY`). It still shows when it is clearly closer. The ΔE on each card stays the true
+  distance. Role colours and custom hexes on the tab count as flat targets.
+  - Measured over the whole dataset: for flat paints, 78% → 99% of matches share the finish, with mean
+    ΔE 3.60 → 3.88. For washes and other translucent paints, 11% → 55%.
+  - A strict "same finish first" rule (as metals use) was rejected: it pulled 293 matches over ΔE 10
+    into wash lists. The penalty adds 24.
 - **Shelf: search and filters stay in reach while you scroll.** The Shelf's search, status, brand, type
   and sort now live in one dock (`mockups/shelf-landing.html`, "Chosen", plus its design critique).
   - **Desktop and tablet:** the bar pins under the header and does not hide.
@@ -81,7 +91,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     - This happens however the panel opened. It does not happen just after the panel pins, and it
       is off while the Filters sheet is open.
     - Note: `--shadow-pop` is violet-tinted in light mode. Over the first row of paints it adds a
-      faint haze, the same as the Paints drawer does. A neutral shadow would be a §3.1 token change.
+      light violet haze (up to about ΔE 5), the same as the Paints drawer does. In dark, the shadow
+      cannot be seen on the background, but it darkens the first row of paints under the panel (a
+      peach reads as tan). A neutral shadow would be a §3.1 token change.
   - Keyboard and screen reader: the handle is a button with `aria-expanded`. The sheet is a modal
     dialog (Esc closes it, and focus goes back to Filters). Hidden controls are `inert`. The keyboard
     cursor scrolls clear of the pinned bar.
@@ -115,6 +127,30 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Shelf on phones: the filter panel no longer stutters when it tucks or opens.** Each tuck or open
+  wrote a CSS variable on the page root, and every swatch read it. So the browser restyled the whole
+  page (about 6,500 elements), about 80ms each time on a mid-range phone. Now the keyboard cursor keeps
+  clear of the panel in JavaScript. The open panel's shadow fades on its own layer, so it does not repaint
+  every frame, and the dock reads the layout before it writes. Measured at a 4× CPU slow-down: opening
+  84ms → 4.5ms, tucking 82ms → 4.4ms. A scroll-up reveal repaints 6 times, not about 30.
+- **Shelf: swatch names are no longer hidden under the pinned filter bar** (Ryan's report). The new
+  filter bar paints over the grid, so a tooltip above a swatch near it went under the bar. Now the
+  tooltip shows below the swatch when the header or the bar leaves no room above it.
+- **Shelf: only one swatch name shows at a time** (Ryan's report). The selected swatch kept its name
+  while the mouse pointed at another swatch, so two tooltips overlapped. Now the last input wins.
+  Pointing shows the name of the swatch you point at, and the selected swatch's name comes back when
+  the pointer leaves the swatches. Arrow keys show the keyboard cursor's name again.
+- **Studio: the live palette's colour blocks line up again** (Ryan's report). Each colour block
+  stretched to fill the space its own footer left, so a ΔE that wrapped, a "metallic" badge or the
+  "seed here" dock made the blocks end at different heights (up to 43px apart). Now the columns share
+  three rows (colour, seed dock, paint) through a CSS subgrid, so the colour blocks, docks and paint
+  names line up. Phones, where the columns stack as rows, do not change.
+- **Shelf on phones: a quick second tap on the handle no longer opens the keyboard.** The panel slides
+  down under the finger, so the second tap landed on the search field. While the panel slides in, it
+  ignores taps.
+- **Shelf on phones: the keyboard cursor no longer lands under the panel.** After a long jump (for
+  example, the first arrow key deep in the grid), the page's own scroll counted as a scroll up and opened
+  the panel over the cursor. Scrolls made by the app no longer move the panel.
 - **The Shelf opens at its top again.** Opening the Shelf moved keyboard focus to the swatch grid, and
   `focus()` scrolled the page to the grid. The title, search and filters were above the screen (228px
   on a phone, 64px on desktop). Now the page goes to the top and the grid takes focus without a scroll,

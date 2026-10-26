@@ -27,7 +27,7 @@
   --warning: #C2740B; --warning-weak: #FBEBD3;
   --danger: #DC2647;  --danger-weak: #FCE4EA;
   --shadow: 0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
-  --shadow-pop: 0 10px 40px rgba(60,50,120,.18);   /* floating overlays (drawer, loupe) — the ONLY other elevation tier (§3.4) */
+  --shadow-pop: 0 10px 40px rgba(60,50,120,.18);   /* floating overlays (drawer, loupe, sheets incl. the open phone Shelf panel) — the ONLY other elevation tier (§3.4) */
 }
 
 /* DARK — "Grimdark Tabletop" */

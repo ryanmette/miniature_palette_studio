@@ -8,7 +8,7 @@ import { schemeBaseOf, pickForSchemeBase, swatchKeyHex } from './seed.js';   // 
 import { encodeState, decodeState } from './share.js';   // the share-link contract (state ⇄ URL)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
+import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
@@ -538,8 +538,11 @@ function renderEquiv() {
   } else {
     const role = (state.roleByHex || {})[srcHex];
     const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
-    // The Metal column's matches float true metallics first — a flat near the hex isn't an equivalent (§7)
-    const srcOpts = role === 'Metal' ? { floatTypes: new Set(['metal']) } : {};
+    // The Metal column's matches float true metallics first — a flat near the hex isn't an equivalent (§7).
+    // Any other colour is a flat target (the Plan matches roles with finishes excluded), so washes, contrasts,
+    // texture paints and metals rank FINISH_PENALTY further, as for a picked flat paint. Reported ΔE stays true.
+    const srcOpts = role === 'Metal' ? { floatTypes: new Set(['metal']), demoteTypes: new Set(FINISH_TYPES), demoteAmount: FINISH_PENALTY }
+      : { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY };
     $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8, srcOpts), store.markOf);
   }
 }
@@ -651,23 +654,33 @@ const headerH = () => $('header').getBoundingClientRect().height;
 function applyDock() {
   const d = $('#shelfDock'), panel = $('#shelfPanel'), handle = $('#shelfHandle');
   const tucked = PHONE.matches && dock.stuck && !dock.open;
-  d.style.setProperty('--panel-h', handle.offsetTop + 'px');   // tucking slides the handle row up to the header
-  d.classList.toggle('stuck', dock.stuck);
-  d.classList.toggle('tucked', tucked);
+  // Read every layout value before any write. A read after the class writes below forced an extra style
+  // pass on the frame the panel reveals. The classes only change transform, visibility, shadow and
+  // corners, so these sizes are the same before and after the writes.
+  const ph = handle.offsetTop, dh = d.offsetHeight, hh = headerH();
   // "over": the open panel covers paints, so it reads as a sheet pulled down over the grid (shadow + rounded
   // corners, app.css). Keyed to that state, not to a gesture: a tap, a drag, a scroll-up reveal and a focused
   // search all look the same. Layout values (header + dock height vs the grid's top), so the slide's
   // transform can't make it flicker; just after pinning only the title is under the panel, so no shadow.
-  const over = PHONE.matches && dock.stuck && !tucked && $('#shelfGrid').getBoundingClientRect().top < headerH() + d.offsetHeight;
+  const over = PHONE.matches && dock.stuck && !tucked && $('#shelfGrid').getBoundingClientRect().top < hh + dh;
+  d.style.setProperty('--panel-h', ph + 'px');   // tucking slides the handle row up to the header
+  d.classList.toggle('stuck', dock.stuck);
+  d.classList.toggle('tucked', tucked);
   d.classList.toggle('over', over);
   panel.inert = tucked;
   handle.setAttribute('aria-expanded', String(!tucked));
-  // the cursor cell's scroll margin clears whatever part of the dock is showing
-  document.documentElement.style.setProperty('--dock-h', (tucked ? d.offsetHeight - handle.offsetTop : d.offsetHeight) + 'px');
 }
 function setDockOpen(open, { focus = false } = {}) {
+  const wasTucked = $('#shelfDock').classList.contains('tucked');
   dock.open = open; dock.acc = 0;
   applyDock();
+  // While the panel slides down under the finger, it ignores taps. A quick second tap on the handle
+  // otherwise landed on the search field and popped the phone keyboard (the slide is 200ms).
+  if (open && wasTucked) {
+    const panel = $('#shelfPanel');
+    panel.style.pointerEvents = 'none';
+    setTimeout(() => { panel.style.pointerEvents = ''; }, 250);
+  }
   // keyboard only: on touch, focusing the search would pop the on-screen keyboard over the grid
   if (focus) (open ? $('#shelfQ') : $('#shelfHandle')).focus({ preventScroll: true });
 }
@@ -806,15 +819,32 @@ function setCursor(id) {
 /** Keep a cell's name tip on-screen: a tip is centred on its cell, so edge-column names would clip at
  *  the viewport (the Shelf bug on phones). Measured invisibly (the tip is display:none until shown —
  *  no paint between the style writes), then shifted via --tipdx in the tip's transform. */
+/** Scroll the keyboard-cursor cell into view, clear of the sticky header and filter dock (WCAG 2.4.11).
+ *  Done here, not in CSS. A CSS scroll margin had to read the dock's height from a custom property on
+ *  :root, which restyled every cell (~6,500 elements) on each tuck and reveal. scroll-padding on the root
+ *  made the browser treat the dock as covered, so focusing its own search field scrolled the page. */
+function revealCell(c) {
+  if (!c) return;
+  const r = c.getBoundingClientRect(), roof = $('#shelfDock').getBoundingClientRect().bottom + 8, floor = window.innerHeight - 8;
+  const dy = r.top < roof ? r.top - roof : r.bottom > floor ? r.bottom - floor : 0;
+  if (!dy) return;
+  dock.quietUntil = performance.now() + 200;   // our own scroll: it must not tuck or reveal the dock over the cell
+  window.scrollBy(0, dy);
+}
 function clampTip(c) {
   const tip = c.querySelector('.celltip'); if (!tip) return;
   tip.style.cssText = 'display:block;visibility:hidden';
-  const w = tip.offsetWidth;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
   tip.style.cssText = '';
   const r = c.getBoundingClientRect(), vw = document.documentElement.clientWidth;
   const ideal = r.left + r.width / 2 - w / 2;             // where the centred tip's left edge would land
   const dx = ideal < 8 ? 8 - ideal : ideal + w > vw - 8 ? vw - 8 - (ideal + w) : 0;
   if (dx) tip.style.setProperty('--tipdx', dx.toFixed(1) + 'px');
+  // Vertically the tip sits above the cell, unless that would put it under the sticky chrome: the header,
+  // or in the Shelf the filter dock, which paints over the grid. Then it flips below the cell.
+  let roof = $('header').getBoundingClientRect().bottom;
+  if (state.mode === 'shelf') roof = Math.max(roof, $('#shelfDock').getBoundingClientRect().bottom);
+  tip.classList.toggle('below', r.top - 5 - h < roof + 4);
 }
 function rangeIds(aId, bId) {
   const list = shelf.viewIds || shelfPaints().map(p => p.id);   // the order renderShelf last drew
@@ -854,6 +884,11 @@ function updateCell(c, mark) {
 function setupShelf() {
   const grid = $('#shelfGrid');
   grid.addEventListener('pointerover', e => { const c = e.target.closest('.cell'); shelf.hover = c ? c.dataset.id : null; if (c) clampTip(c); });
+  // One tooltip at a time, last input wins (app.css): pointing at a cell shows that cell's name; using the
+  // keys shows the keyboard cursor's name again. Real movement only: a keyboard-driven scroll under a
+  // resting mouse changes what is hovered, and that must not count as pointing.
+  grid.addEventListener('pointermove', e => { if ((e.movementX || e.movementY) && grid.dataset.input !== 'pointer') grid.dataset.input = 'pointer'; });
+  grid.addEventListener('pointerdown', () => { grid.dataset.input = 'pointer'; });
   grid.addEventListener('pointerout', e => { if (!e.relatedTarget || !grid.contains(e.relatedTarget)) shelf.hover = null; });
   grid.addEventListener('focusin', e => { const c = e.target.closest('.cell'); if (c) clampTip(c); });
 
@@ -982,6 +1017,7 @@ function shelfKeydown(e) {
   // Never hijack a browser/OS chord: ⌘P (print), Ctrl+U (view source) and Ctrl+X (cut) all collide
   // with the P/U/X triage keys. Shift is NOT excluded — Shift+Arrow extends the selection.
   if (e.metaKey || e.ctrlKey || e.altKey) return;
+  $('#shelfGrid').dataset.input = 'key';   // the keyboard cursor's tooltip wins again (one tooltip at a time)
   const k = e.key.toLowerCase();
   if (k === 'p') { applyMark('owned'); e.preventDefault(); }
   else if (k === 'u') { applyMark('want'); e.preventDefault(); }
@@ -998,7 +1034,7 @@ function moveCursor(key, extend) {
   const id = list[i];
   if (extend && shelf.anchor) setSelection(rangeIds(shelf.anchor, id), { cursor: id });
   else setSelection([id], { anchor: id, cursor: id });
-  cellEl(id)?.scrollIntoView({ block: 'nearest' });
+  revealCell(cellEl(id));
   const p = state.idx.byId.get(id);
   announceShelf(`${ui.pname(p)}, ${p.brand}, ${ui.markLabel(store.markOf(id))}.`);
 }

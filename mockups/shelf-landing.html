@@ -330,9 +330,10 @@ Frames are a 390px phone at about 77% scale.</p>
     <p class="verdict" style="margin:4px 0 10px"><b>Decided (Ryan, 2026-10-26): Option 2, with rounded corners.</b> While the open
     panel covers paints, its bottom edge gets the Filters sheet's corners (<code>--r-card</code>), mirrored: the sheet
     rounds its top as it comes up from the bottom, and the panel rounds its bottom as it comes down from the top. The
-    frames below show that. The shadow and corners use the "covers paints" rule (however the panel opened). Nothing shows
-    just after the panel pins, and both turn off while the Filters sheet is open. The corners sit over the page's side
-    margin, so you see them mostly through the shadow's curve. They are clear in light and faint in dark.</p>
+    frames below show that. The shadow and corners use the "covers paints" rule (however the panel opened). Neither shows
+    just after the panel pins (the fade does), and both turn off while the Filters sheet is open. The corners sit over
+    the page's side margin, where the panel and the page share <code>--bg</code>, so you see them only through the
+    shadow's curve: about as clear as the edge itself in light (ΔE ≈ 3–4), and barely visible in dark (ΔE ≈ 1).</p>
     <p class="why">Tucked: today's fade. Only the handle row is there, so a light touch is enough. Pulled down or tapped
     open over the paints: the fade cross-fades (200ms, §3.4) into <code>--shadow-pop</code>. That is the floating-overlay
     tier the Paints drawer already uses, because the open panel now <i>covers</i> paints. With reduced motion it switches
@@ -420,12 +421,14 @@ Frames are a 390px phone at about 77% scale.</p>
     the shadow starts with a sharp 1px step under the panel. <b>Watch, dark:</b> the shadow cannot be seen on the background
     (ΔE 1.7). It only darkens the first row and a half of paints, so a peach reads as tan. Tucked and open differ only in
     how far down the darkening reaches, so in dark the "fade turns into shadow" change is weak.</p>
-    <p class="verdict"><b>Build:</b> phone only (inside the ≤520px block), so the desktop bar keeps <code>--shadow</code>.
-    Add <code>box-shadow</code> to the dock's <i>existing</i> transform transition; a second <code>transition</code>
-    declaration would replace it and stop the slide. Give <code>::after</code> its own opacity transition. Put both in the
-    existing <code>prefers-reduced-motion: no-preference</code> block, because the global reduced-motion rule
-    (<code>*</code>) does not reach <code>::after</code>. A class set by <code>app.js</code> (grid top above the dock's
-    bottom edge) carries the "covers paints" rule.</p>
+    <p class="verdict"><b>Build (as shipped):</b> phone only (inside the ≤520px block), so the desktop bar keeps
+    <code>--shadow</code>. The shadow lives on <code>.shelfdock::before</code> (<code>--shadow-pop</code> with the
+    <code>--r-card</code> bottom corners) and fades by opacity, as the <code>::after</code> fade does. Both
+    transitions sit in the existing <code>prefers-reduced-motion: no-preference</code> block, because the global
+    reduced-motion rule (<code>*</code>) does not reach pseudo-elements. Animating <code>box-shadow</code> itself, as
+    first built, repainted every frame of the fade. The dock's own corners switch at once (they sit over the side
+    margin). A class set by <code>app.js</code> (grid top above the dock's bottom edge) carries the "covers paints"
+    rule.</p>
   </div>
 
   <div class="opt">
