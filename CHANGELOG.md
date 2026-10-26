@@ -9,7 +9,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Design exploration: Shelf landing** (`mockups/shelf-landing.html`, not shipped). On a phone the
   Shelf controls fill 62% of the first screen, and the search goes away when you scroll. Three
   directions: A, fix the jump only (shipped, see Fixed); B, a compact header with search and status
-  pinned while the grid scrolls (recommended); C, the same bar but it hides as you scroll down.
+  pinned while the grid scrolls; C, the same bar but it hides as you scroll down. **Chosen (Ryan,
+  2026-10-26):** on a phone, C with a drag handle under the Studio / Shelf tabs (no rule between them)
+  that pulls the search and filter panel open over the grid; on desktop, B. The mockup shows both.
 - **Two new brands: AK Interactive and AMMO by Mig — dataset 1.6.0 (3,225 paints, 10 brands).** Both
   come from the same MIT-licensed source as the other brands (Arcturus5404/miniature-paints, `AK.md`
   and `Mig.md`). The new paints show in the Shelf, the Paints drawer, the brand filters and the

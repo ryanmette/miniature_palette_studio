@@ -100,16 +100,175 @@
   .menu div:first-child { background:var(--surface-2); }
 
   @media (prefers-reduced-motion: no-preference) { .pin { transition:transform .2s cubic-bezier(.2,.7,.2,1); } }
+
+  /* ===== Chosen design (2026-10-26) ===== */
+  section.chosen { max-width:1000px; border-color:var(--accent); }
+  .apph.flat { border-bottom:none; }
+  /* the drag handle: a 4px pill, hit area 44px tall (§3.6), sits right under the tabs, no rule between */
+  .handle { position:relative; height:24px; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--bg); }
+  .handle .pill { width:38px; height:5px; border-radius:99px; background:var(--border-strong); }
+  .handle .hit { position:absolute; left:30%; right:30%; top:-10px; bottom:-10px; border:1.5px dashed var(--accent); border-radius:10px; opacity:.55; }
+  .handle .peek { position:absolute; right:10px; font-size:10px; color:var(--accent); background:var(--accent-weak);
+    border-radius:var(--r-pill); padding:0 8px; line-height:16px; }
+  .panel { background:var(--bg); padding:2px 10px 6px; }
+  .panel.over { position:absolute; left:0; right:0; z-index:2; box-shadow:var(--shadow-pop); border-radius:0 0 16px 16px; }
+  .fade { position:absolute; left:0; right:0; height:14px; z-index:1; background:linear-gradient(var(--bg),rgba(251,251,254,0)); }
+  .titlerow { display:flex; align-items:center; gap:6px; padding:4px 10px 0; }
+  .titlerow h3 { font-family:var(--display); font-size:16px; margin:0; }
+  .titlerow .stats { margin:0 0 0 2px; }
+  .gest { position:absolute; left:50%; transform:translateX(-50%); font-size:18px; color:var(--accent); z-index:3; }
+  .ann { font-size:11.5px; color:var(--text-muted); margin:6px 0 0; max-width:300px; }
+  .ann b { color:var(--text); }
+
+  /* desktop frame */
+  .desk { position:relative; width:100%; max-width:960px; height:400px; border:1px solid var(--border-strong); border-radius:12px;
+    overflow:hidden; background:var(--bg); font-size:12px; }
+  .desk .apph { display:flex; align-items:center; gap:12px; padding:9px 16px; }
+  .desk .apph .mseg { margin:0; width:150px; }
+  .desk .card { margin:12px 16px; }
+  .dbar { display:flex; gap:8px; align-items:center; flex-wrap:nowrap; }
+  .dbar .field { flex:1 1 220px; }
+  .dbar .seg { flex:none; }
+  .dbar .seg span { padding:3px 12px; white-space:nowrap; }
+  .dgrid { display:grid; grid-template-columns:repeat(14,1fr); gap:7px; padding:0 16px 16px; }
+  .dgrid i { display:block; aspect-ratio:1; border-radius:8px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  .desk .pin { padding:9px 16px; }
 </style>
 </head>
 <body>
 <h1>Shelf landing — keeping search in view</h1>
+<p class="sub"><b>Decided 2026-10-26:</b> phone = C with a pull-down handle under the tabs; desktop = B. The chosen design is first; the three original directions follow for the record.</p>
 <p class="sub">Two problems, one fix for each.
 <b>The bug:</b> opening the Shelf calls <code>$('#shelfGrid').focus()</code>. Focus scrolls the page to the
 grid, so the page jumps past the title, search and filters (228px on a phone, 64px on desktop).
 <b>The layout:</b> on a phone the shelf controls fill 62% of the first screen (the swatches start 522px down an
 844px screen). After you scroll, the search is gone. Each direction below fixes the bug. B and C also fix the layout.
 Frames are a 390px phone at about 77% scale.</p>
+
+<!-- ============ CHOSEN ============ -->
+<section class="chosen">
+  <h2>Chosen — phone: pull-down bar (C + handle) · desktop: pinned bar (B) <span class="rec">Decision 2026-10-26</span></h2>
+  <p class="why"><b>Phone (≤520px).</b> The search and filter panel lives under the Studio / Shelf tabs, with no rule
+  between them. It shares the header background, so the tabs, the panel and the handle read as one surface.
+  A <b>drag handle</b> sits at its bottom edge. Scroll down and the panel tucks up under the tabs; only the handle
+  stays. Pull the handle down (or tap it, or scroll up) and the panel slides back out <i>over</i> the grid.
+  It is an overlay, so the swatches do not move (§3.4). Brand · type · sort open in a sheet from <b>Filters</b>.</p>
+
+  <div class="pair">
+    <figure><figcaption>1 · At the top — panel open</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="panel stack">
+          <div class="row" style="flex-wrap:nowrap"><div class="field">⌕ Search your shelf…</div>
+            <span class="btn fbtn" style="height:32px">Filters</span></div>
+          <div class="seg"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+        </div>
+        <div class="handle"><span class="pill"></span><span class="hit"></span></div>
+        <div class="titlerow"><h3>My paint shelf</h3><span class="btn" style="margin-left:auto">Select</span><span class="btn ic">⋯</span></div>
+        <div class="titlerow" style="padding-bottom:8px"><span class="stats"><span class="o">0 owned</span> · <span class="b">0 to buy</span> · 3225 total</span></div>
+        <div class="grid" data-n="35"></div>
+      </div></div>
+      <p class="ann">The swatches start at about <b>40%</b> of the screen (was 62%). Dashed box = the handle's 44px touch area.</p>
+    </figure>
+
+    <figure><figcaption>2 · Scrolled down — only the handle</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="handle"><span class="pill"></span><span class="peek">⌕ green · Owned · 2</span></div>
+        <div style="position:relative"><div class="fade"></div><div class="grid" data-n="45" data-off="12" style="padding-top:4px"></div></div>
+      </div></div>
+      <p class="ann">While the panel is hidden, a small <b>summary chip</b> on the handle row says that a search or filters
+      are on, so an empty-looking shelf is never a mystery. No line under the header: a short fade shows that swatches
+      pass under it.</p>
+    </figure>
+
+    <figure><figcaption>3 · Handle pulled down — panel over the grid</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid" data-n="45" data-off="12" style="padding-top:22px"></div>
+        <div class="panel over" style="top:87px">
+          <div class="stack">
+            <div class="row" style="flex-wrap:nowrap"><div class="field" style="color:var(--text)">⌕ green</div>
+              <span class="btn fbtn" style="height:32px">Filters <span class="badge">2</span></span></div>
+            <div class="seg"><span>All</span><span class="on">Owned</span><span>To buy</span></div>
+          </div>
+          <div class="handle" style="background:transparent;margin-top:4px"><span class="pill"></span></div>
+        </div>
+        <span class="gest" style="top:232px;left:64%">↓</span>
+      </div></div>
+      <p class="ann">Drag, tap, or a small scroll up all open it. Drag it up, tap again, or scroll down to tuck it away.
+      It never hides while the search field has focus.</p>
+    </figure>
+
+    <figure><figcaption>4 · Filters sheet</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph flat"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="handle"><span class="pill"></span></div>
+        <div class="grid" data-n="40" style="padding-top:4px"></div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <h4>Filters <span class="reset">Reset</span></h4>
+          <div class="lab">Brand</div><div class="sel">AK Interactive</div>
+          <div class="lab">Type</div><div class="sel">Metal</div>
+          <div class="lab">Sort</div><div class="sel">Default order</div>
+          <div class="done">Show 21 paints</div>
+        </div>
+      </div></div>
+      <p class="ann">The same native <code>&lt;select&gt;</code> controls as today, inside a sheet. Import / Export stay in the
+      title row's <b>⋯</b>.</p>
+    </figure>
+  </div>
+
+  <p class="why" style="margin-top:22px"><b>Desktop (&gt;520px).</b> Direction B. One bar holds search, status, brand,
+  type and sort. It pins under the app header while the grid scrolls (<code>position: sticky</code>) and never hides.
+  There is no sheet and no handle, because there is room for every control inline.</p>
+  <figure><figcaption>5 · Desktop, at the top</figcaption>
+    <div class="desk">
+      <div class="apph"><span class="logo" style="width:24px;height:24px;border-radius:7px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center">P</span>
+        <b style="font-family:var(--display)">Palette Studio</b>
+        <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div><span class="dots" style="margin-left:auto">⋯</span></div>
+      <div class="card" style="padding:12px 14px">
+        <div class="row" style="flex-wrap:nowrap"><h3 style="margin:0">My paint shelf</h3>
+          <span class="stats" style="margin:0 0 0 10px"><span class="o">0 owned</span> · <span class="b">0 to buy</span> · 3225 total</span>
+          <span class="btn" style="margin-left:auto">Select</span><span class="btn">Import…</span><span class="btn">Export CSV</span></div>
+        <div class="dbar" style="margin-top:10px">
+          <div class="field">⌕ Search your shelf…</div>
+          <div class="seg"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+          <span class="sel">All brands</span><span class="sel">All types</span><span class="sel">Default order</span>
+        </div>
+      </div>
+      <div class="dgrid" data-n="56"></div>
+    </div>
+  </figure>
+  <figure style="margin-top:14px"><figcaption>6 · Desktop, scrolled — the bar stays pinned under the header</figcaption>
+    <div class="desk">
+      <div class="apph"><span class="logo" style="width:24px;height:24px;border-radius:7px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center">P</span>
+        <b style="font-family:var(--display)">Palette Studio</b>
+        <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div><span class="dots" style="margin-left:auto">⋯</span></div>
+      <div class="pin dbar" style="top:49px">
+        <div class="field" style="color:var(--text)">⌕ green</div>
+        <div class="seg"><span>All</span><span class="on">Owned</span><span>To buy</span></div>
+        <span class="sel" style="border-color:var(--accent)">AK Interactive</span><span class="sel">All types</span><span class="sel">Default order</span>
+        <span class="btn">Select</span>
+      </div>
+      <div class="dgrid" data-n="84" data-off="20" style="padding-top:60px"></div>
+    </div>
+  </figure>
+
+  <p class="verdict"><b>How it would be built.</b> One panel element, two behaviours by breakpoint (CSS + a small
+  script; no new dependency). Phone: the handle is a <code>&lt;button aria-expanded aria-controls="shelfPanel"&gt;</code>,
+  so Enter / Space open and close it and screen readers hear the state; drag is extra, never the only way.
+  The panel slides with <code>transform</code> (an overlay, no reflow) and snaps open or shut under
+  <code>prefers-reduced-motion</code>. Desktop: <code>position: sticky</code> under the header. The sort keeps the
+  current default order, and the first-load paint stays whichever paint sorts first.
+  <b>Open point:</b> the "no line" rule means the header has no edge when swatches pass under it; the mock uses a
+  short fade instead. Say if you want no fade either.</p>
+</section>
 
 <!-- ============ A ============ -->
 <section>
@@ -251,7 +410,7 @@ Frames are a 390px phone at about 77% scale.</p>
     "#EB5D0B","#C61215","#734C21","#F49401","#312E0D","#1E2D4C","#4A5E53","#533914","#EBA43A","#224618","#3B4D3D",
     "#494A45","#0A0C1B","#542303","#E6BC56","#0D1814","#7B7873","#F54949","#CCC4AF","#B7A261","#69B4C7","#7F190D",
     "#ECA71C","#3A889F","#036242","#6D6D65","#243128","#7C8872"];
-  for (const g of document.querySelectorAll('.grid')) {
+  for (const g of document.querySelectorAll('.grid, .dgrid')) {
     const n = +g.dataset.n, off = +(g.dataset.off || 0);
     g.innerHTML = Array.from({ length: n }, (_, i) => `<i style="background:${HEX[(i + off) % HEX.length]}"></i>`).join('');
   }
