@@ -61,6 +61,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **Equivalents rank by finish** (Ryan, 2026-10-26; a §7 ranking change). The tab used to rank only by
+  ΔE, so a flat paint's "closest in other brands" often held washes, contrasts or texture paints. For
+  example, Scale75's "Dust in Summertime" texture paint showed for Citadel Death Guard Green. Now a paint
+  of a different finish class (flat · translucent · effect · metal) ranks as if it were 4 ΔE further
+  (`FINISH_PENALTY`). It still shows when it is clearly closer. The ΔE on each card stays the true
+  distance. Role colours and custom hexes on the tab count as flat targets.
+  - Measured over the whole dataset: for flat paints, 78% → 99% of matches share the finish, with mean
+    ΔE 3.60 → 3.88. For washes and other translucent paints, 11% → 55%.
+  - A strict "same finish first" rule (as metals use) was rejected: it pulled 293 matches over ΔE 10
+    into wash lists. The penalty adds 24.
 - **Shelf: search and filters stay in reach while you scroll.** The Shelf's search, status, brand, type
   and sort now live in one dock (`mockups/shelf-landing.html`, "Chosen", plus its design critique).
   - **Desktop and tablet:** the bar pins under the header and does not hide.
