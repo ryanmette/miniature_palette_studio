@@ -1032,7 +1032,9 @@ function setMode(mode) {
   document.querySelector('.workspace').hidden = on;
   $('#shelf').hidden = !on;
   for (const b of $('#modeNav').children) b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
-  if (on) { renderShelf(); $('#shelfGrid').focus(); }
+  // Open the Shelf at its top. focus() alone scrolls the page to the grid and hides the search + filters;
+  // the grid still takes focus so arrows and P/U/X work at once.
+  if (on) { renderShelf(); window.scrollTo(0, 0); $('#shelfGrid').focus({ preventScroll: true }); }
   else { renderList(); }   // refresh the drawer's owned state in case the shelf changed it
   updateUrl();
 }

@@ -78,6 +78,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **The Shelf opens at its top again.** Opening the Shelf moved keyboard focus to the swatch grid, and
+  `focus()` scrolled the page to the grid. The title, search and filters were above the screen (228px
+  on a phone, 64px on desktop). Now the page goes to the top and the grid takes focus without a scroll,
+  so arrow keys and P/U/X still work at once.
 - **Dataset 1.5.1: 30 flat paints are no longer tagged as metallic.** The build guesses "metal" from
   a metal word in the name. That guess was wrong for flat paints that only use the word: "Golden Skin",
   "Silver Grey", "Bronze Green", "Steel Legion Drab", and Reaper's "NMM Gold" (NMM is non-metallic
