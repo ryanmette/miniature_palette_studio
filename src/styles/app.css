@@ -581,6 +581,12 @@ a.btn { text-decoration: none; }
   .shelfdock::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px; pointer-events: none;
     background: linear-gradient(var(--bg), transparent); opacity: 0; }
   .shelfdock.stuck::after { opacity: 1; }
+  /* Open over the paints (mockups/shelf-landing.html #edge, Option 2, Ryan 2026-10-26): the panel becomes a
+     sheet pulled down over the grid — the floating-overlay shadow (§3.4) and the Filters sheet's --r-card
+     corners, mirrored to the bottom edge. The fade stays for the tucked edge. Off while the Filters sheet
+     is open: the dock then sits above the header, and the shadow would bleed up over the tabs. */
+  .shelfdock.over:not(.sheet-open) { box-shadow: var(--shadow-pop); border-radius: 0 0 var(--r-card) var(--r-card); }
+  .shelfdock.over:not(.sheet-open)::after { opacity: 0; }
   .shelfhead { margin-bottom: 10px; gap: 8px; }
   .shelfhead h2 { font-size: var(--fs-h2); margin: 0; }   /* title + tools share one row, as mocked */
   .shelftop { gap: 8px; }
@@ -617,7 +623,11 @@ a.btn { text-decoration: none; }
   .shelfscrim { display: block; position: fixed; inset: 0; z-index: 1; background: rgba(0,0,0,.45); }   /* = the About dialog's backdrop */
 }
 @media (max-width: 520px) and (prefers-reduced-motion: no-preference) {
-  .shelfdock { transition: transform .2s cubic-bezier(.2,.7,.2,1); }
+  /* the fade cross-fades into the shadow (§3.4, 200ms). ::after needs its own rule here: the global
+     reduced-motion rule (*) does not reach pseudo-elements, so it must only ever animate in this block */
+  .shelfdock { transition: transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .2s cubic-bezier(.2,.7,.2,1),
+    border-radius .2s cubic-bezier(.2,.7,.2,1); }
+  .shelfdock::after { transition: opacity .2s cubic-bezier(.2,.7,.2,1); }
 }
 .shelf-select { display: none; }                              /* multi-select toggle is a touch affordance only */
 .shelf-select[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }

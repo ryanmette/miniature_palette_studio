@@ -72,6 +72,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     "Import…" and "Export CSV" show as "Import" and "Export" there.
   - A filter change scrolls the first results to just below the dock. Before, a filter applied far
     down the grid could leave a blank screen.
+  - **The edge under the phone panel shows its state** (Option 2 in `mockups/shelf-landing.html`,
+    with rounded corners; Ryan, 2026-10-26).
+    - When pinned or tucked, a short fade marks the edge.
+    - When the open panel covers paints, it reads as a sheet pulled down over the grid: the
+      floating-overlay shadow (`--shadow-pop`), plus the Filters sheet's rounded corners on its
+      bottom edge. The fade cross-fades into the shadow in 200ms.
+    - This happens however the panel opened. It does not happen just after the panel pins, and it
+      is off while the Filters sheet is open.
+    - Note: `--shadow-pop` is violet-tinted in light mode. Over the first row of paints it adds a
+      faint haze, the same as the Paints drawer does. A neutral shadow would be a §3.1 token change.
   - Keyboard and screen reader: the handle is a button with `aria-expanded`. The sheet is a modal
     dialog (Esc closes it, and focus goes back to Filters). Hidden controls are `inert`. The keyboard
     cursor scrolls clear of the pinned bar.

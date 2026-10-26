@@ -654,6 +654,12 @@ function applyDock() {
   d.style.setProperty('--panel-h', handle.offsetTop + 'px');   // tucking slides the handle row up to the header
   d.classList.toggle('stuck', dock.stuck);
   d.classList.toggle('tucked', tucked);
+  // "over": the open panel covers paints, so it reads as a sheet pulled down over the grid (shadow + rounded
+  // corners, app.css). Keyed to that state, not to a gesture: a tap, a drag, a scroll-up reveal and a focused
+  // search all look the same. Layout values (header + dock height vs the grid's top), so the slide's
+  // transform can't make it flicker; just after pinning only the title is under the panel, so no shadow.
+  const over = PHONE.matches && dock.stuck && !tucked && $('#shelfGrid').getBoundingClientRect().top < headerH() + d.offsetHeight;
+  d.classList.toggle('over', over);
   panel.inert = tucked;
   handle.setAttribute('aria-expanded', String(!tucked));
   // the cursor cell's scroll margin clears whatever part of the dock is showing

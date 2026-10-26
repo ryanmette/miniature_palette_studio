@@ -152,13 +152,13 @@
   .dk .panel { background:transparent; padding-top:2px; }
   .dk.e-fade::after { content:""; position:absolute; left:0; right:0; top:100%; height:14px; background:linear-gradient(var(--bg), transparent); }
   .dk.e-line { border-bottom:1px solid var(--border-strong); box-shadow:var(--shadow); }
-  .dk.e-pop { box-shadow:var(--shadow-pop); }
+  .dk.e-pop { box-shadow:var(--shadow-pop); border-radius:0 0 var(--r-card) var(--r-card); }   /* chosen: + the Filters sheet's corners */
   .dk.e-mix { border-bottom:1px solid var(--border-strong); box-shadow:var(--shadow-pop); }
   /* live frames: tap the handle — the same 200ms timing and easing as the build (§3.4) */
-  .dk.live { transition:transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .2s cubic-bezier(.2,.7,.2,1); }
+  .dk.live { transition:transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .2s cubic-bezier(.2,.7,.2,1), border-radius .2s cubic-bezier(.2,.7,.2,1); }
   .dk.live::after { transition:opacity .2s cubic-bezier(.2,.7,.2,1); }
   .dk.live.tucked { transform:translateY(calc(-1 * var(--ph, 0px))); }
-  .dk.live.o2:not(.tucked) { box-shadow:var(--shadow-pop); }
+  .dk.live.o2:not(.tucked) { box-shadow:var(--shadow-pop); border-radius:0 0 var(--r-card) var(--r-card); }
   .dk.live.o2:not(.tucked)::after { opacity:0; }
   .dk.live.o3.tucked { box-shadow:var(--shadow); }
   .dk.live.o3:not(.tucked) { box-shadow:var(--shadow-pop); }
@@ -184,7 +184,8 @@
 </head>
 <body>
 <h1>Shelf landing — keeping search in view</h1>
-<p class="sub"><b>New (2026-10-26):</b> options for the edge under the pinned phone panel are first (<a href="#edge">jump</a>).
+<p class="sub"><b>New (2026-10-26):</b> options for the edge under the pinned phone panel are first (<a href="#edge">jump</a>) —
+<b>Option 2 chosen and built</b>, with the Filters sheet's rounded corners on the open panel.
 <b>Decided 2026-10-26:</b> phone = C with a pull-down handle under the tabs; desktop = B. The chosen design is first; the three original directions follow for the record.</p>
 <p class="sub">Two problems, one fix for each.
 <b>The bug:</b> opening the Shelf calls <code>$('#shelfGrid').focus()</code>. Focus scrolls the page to the
@@ -325,7 +326,13 @@ Frames are a 390px phone at about 77% scale.</p>
   </div>
 
   <div class="opt">
-    <h3>Option 2 — Fade when tucked, shadow when open <span class="tag">the edge shows the panel's state</span></h3>
+    <h3>Option 2 — Fade when tucked, shadow when open <span class="tag">the edge shows the panel's state</span> <span class="rec">Chosen 2026-10-26 · built</span></h3>
+    <p class="verdict" style="margin:4px 0 10px"><b>Decided (Ryan, 2026-10-26): Option 2, with rounded corners.</b> While the open
+    panel covers paints, its bottom edge gets the Filters sheet's corners (<code>--r-card</code>), mirrored: the sheet
+    rounds its top as it comes up from the bottom, and the panel rounds its bottom as it comes down from the top. The
+    frames below show that. The shadow and corners use the "covers paints" rule (however the panel opened). Nothing shows
+    just after the panel pins, and both turn off while the Filters sheet is open. The corners sit over the page's side
+    margin, so you see them mostly through the shadow's curve. They are clear in light and faint in dark.</p>
     <p class="why">Tucked: today's fade. Only the handle row is there, so a light touch is enough. Pulled down or tapped
     open over the paints: the fade cross-fades (200ms, §3.4) into <code>--shadow-pop</code>. That is the floating-overlay
     tier the Paints drawer already uses, because the open panel now <i>covers</i> paints. With reduced motion it switches
