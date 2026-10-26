@@ -58,6 +58,22 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **Shelf: search and filters stay in reach while you scroll.** The Shelf's search, status, brand, type
+  and sort now live in one dock (`mockups/shelf-landing.html`, "Chosen", plus its design critique).
+  - **Desktop and tablet:** the bar pins under the header and does not hide.
+  - **Phone:** the panel sits under the Studio / Shelf tabs with no line between them. When you scroll
+    down, it goes up under the header. A scroll up of more than 60px, a tap, or a drag on the handle
+    brings it back over the grid. The grid does not move. The handle shows a chip ("⌕ Search", or your
+    search and the filter count). Brand, type and sort open in a bottom sheet.
+  - On a phone the swatches start at 41% of the screen (was 62%). The title row is on one line, so
+    "Import…" and "Export CSV" show as "Import" and "Export" there.
+  - A filter change scrolls the first results to just below the dock. Before, a filter applied far
+    down the grid could leave a blank screen.
+  - Keyboard and screen reader: the handle is a button with `aria-expanded`. The sheet is a modal
+    dialog (Esc closes it, and focus goes back to Filters). Hidden controls are `inert`. The keyboard
+    cursor scrolls clear of the pinned bar.
+  - Fixed on the way: the card entry animation left a `transform` on the Shelf, which would have put
+    the phone sheet in the wrong place.
 - **Accent-seed mode now parks and restores across the neutral boundary (per Ryan).** A neutral seed
   always holds Primary — a neutral accent has no complement to build from — but a drag that merely
   *passed through* the low-saturation centre used to end accent-seed mode for good: the harmony was

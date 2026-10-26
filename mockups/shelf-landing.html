@@ -266,8 +266,14 @@ Frames are a 390px phone at about 77% scale.</p>
   The panel slides with <code>transform</code> (an overlay, no reflow) and snaps open or shut under
   <code>prefers-reduced-motion</code>. Desktop: <code>position: sticky</code> under the header. The sort keeps the
   current default order, and the first-load paint stays whichever paint sorts first.
-  <b>Open point:</b> the "no line" rule means the header has no edge when swatches pass under it; the mock uses a
-  short fade instead. Say if you want no fade either.</p>
+  <b>Fade:</b> kept (Ryan, 2026-10-26).</p>
+  <p class="verdict"><b>As built (after the design critique).</b> These frames are the approved mock; the build
+  differs on purpose: (1) the handle is <b>hidden at the top</b> (frame 1) — nothing to pull there; (2) the handle
+  chip is <b>always</b> there ("⌕ Search" when nothing is on), so search is findable while tucked; (3) a scroll up
+  reveals the panel only after <b>60px</b>; (4) every filter change scrolls the first results to just below the
+  dock; (5) the pill is drawn in <code>--text-muted</code> (the mock's <code>--border-strong</code> was 1.4:1, failing
+  WCAG 1.4.11); (6) the title row keeps <b>labelled</b> Import / Export buttons instead of a second <b>⋯</b>, and the
+  how-to hint stays; (7) an active brand/type uses the badge recipe (weak fill), not an accent border.</p>
 </section>
 
 <!-- ============ A ============ -->
