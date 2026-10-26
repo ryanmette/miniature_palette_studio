@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shelf landing — 3 directions</title>
+<style>
+  :root {
+    --bg:#FBFBFE; --surface:#FFFFFF; --surface-2:#F1F2FF;
+    --border:#E6E7F8; --border-strong:#D3D5F0;
+    --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
+    --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+    --buy:#2563EB; --success:#16A34A; --danger:#DC2647;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px;
+    --font:"Inter",system-ui,sans-serif; --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+    --shadow-pop:0 10px 40px rgba(60,50,120,.18);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:26px 16px; }
+  h1 { font-family:var(--display); font-size:21px; margin:0 0 4px; }
+  .sub { color:var(--text-muted); max-width:78ch; margin:0 0 24px; font-size:13.5px; }
+  .sub code, .why code { font-size:12px; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow);
+    padding:18px; margin-bottom:24px; max-width:800px; }
+  h2 { font-family:var(--display); font-size:15.5px; margin:0 0 2px; }
+  .why { color:var(--text-muted); font-size:12.5px; margin:0 0 14px; max-width:72ch; }
+  .verdict { font-size:12.5px; margin:14px 0 0; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:9px; max-width:72ch; }
+  .verdict b { color:var(--text); }
+  .rec { display:inline-block; font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase;
+    background:var(--accent-weak); color:var(--accent); border-radius:var(--r-pill); padding:1px 9px; margin-left:6px; vertical-align:2px; }
+
+  /* two phone frames per direction: the first screen, and the same page scrolled down */
+  .pair { display:flex; flex-wrap:wrap; gap:16px; }
+  figure { margin:0; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:6px; }
+  .phone { position:relative; width:300px; height:560px; border:1px solid var(--border-strong); border-radius:22px;
+    overflow:hidden; background:var(--bg); font-size:12px; }
+  .scroller { position:absolute; inset:0; }
+
+  /* the app header (mode switch), same in every frame */
+  .apph { background:var(--bg); padding:10px 12px 8px; border-bottom:1px solid var(--border); }
+  .apph .r1 { display:flex; align-items:center; gap:8px; font-family:var(--display); font-weight:600; font-size:14px; }
+  .apph .logo { width:22px; height:22px; border-radius:7px; background:var(--accent); color:var(--on-accent);
+    display:grid; place-items:center; font-size:12px; }
+  .apph .dots { margin-left:auto; width:30px; height:30px; border:1px solid var(--border); border-radius:var(--r-ctrl);
+    display:grid; place-items:center; color:var(--text-muted); background:var(--surface); }
+  .mseg { display:flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; margin-top:8px; }
+  .mseg span { flex:1; text-align:center; padding:4px; border-radius:8px; color:var(--text-muted); }
+  .mseg span.on { background:var(--surface); color:var(--text); box-shadow:var(--shadow); font-weight:500; }
+
+  .card { margin:10px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); padding:12px; }
+  .card h3 { font-family:var(--display); font-size:16px; margin:0 0 6px; }
+  .btn { display:inline-flex; align-items:center; gap:5px; height:28px; padding:0 9px; border:1px solid var(--border);
+    border-radius:var(--r-ctrl); background:var(--surface); color:var(--text); font-size:11.5px; white-space:nowrap; }
+  .btn.ic { width:30px; padding:0; justify-content:center; color:var(--text-muted); }
+  .row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .stats { font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:6px 0 2px; }
+  .stats .o { color:var(--success); } .stats .b { color:var(--buy); }
+  .hint { color:var(--text-faint); font-size:10.5px; margin:0 0 8px; }
+  .field { height:32px; border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface);
+    color:var(--text-faint); display:flex; align-items:center; padding:0 10px; gap:6px; flex:1; min-width:0; }
+  .sel { height:32px; border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface);
+    display:flex; align-items:center; padding:0 9px; gap:4px; color:var(--text); }
+  .sel::after { content:"▾"; color:var(--text-faint); font-size:9px; margin-left:4px; }
+  .seg { display:flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; }
+  .seg span { flex:1; text-align:center; padding:3px 8px; border-radius:8px; color:var(--text-muted); }
+  .seg span.on { background:var(--surface); color:var(--text); box-shadow:var(--shadow); font-weight:500; }
+  .fbtn { position:relative; }
+  .fbtn .badge { min-width:16px; height:16px; border-radius:var(--r-pill); background:var(--accent); color:var(--on-accent);
+    font-size:10px; display:grid; place-items:center; padding:0 4px; }
+  .stack > * + * { margin-top:7px; }
+
+  .grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:0 10px 10px; }
+  .grid i { display:block; aspect-ratio:1; border-radius:8px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+
+  /* the pinned bar in B and C */
+  .pin { position:absolute; left:0; right:0; z-index:2; background:var(--surface); border-bottom:1px solid var(--border);
+    box-shadow:var(--shadow); padding:8px 10px; }
+  .pin.hidden { transform:translateY(-100%); box-shadow:none; }
+  .gone { position:absolute; left:10px; right:10px; border:1.5px dashed var(--danger); border-radius:10px; color:var(--danger);
+    font-size:10.5px; text-align:center; padding:3px; background:rgba(255,255,255,.85); }
+  .note { position:absolute; right:8px; font-size:10px; color:var(--accent); background:var(--accent-weak);
+    border-radius:var(--r-pill); padding:1px 8px; }
+
+  /* the Filters sheet in B */
+  .dim { position:absolute; inset:0; background:rgba(32,34,58,.32); z-index:3; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; z-index:4; background:var(--surface); border-radius:16px 16px 0 0;
+    box-shadow:var(--shadow-pop); padding:10px 14px 14px; }
+  .sheet .grab { width:36px; height:4px; border-radius:99px; background:var(--border-strong); margin:0 auto 10px; }
+  .sheet h4 { font-family:var(--display); font-size:14px; margin:0 0 10px; display:flex; }
+  .sheet h4 .reset { margin-left:auto; font-family:var(--font); font-weight:400; font-size:12px; color:var(--accent); }
+  .sheet .lab { font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:8px 0 4px; }
+  .sheet .sel { width:100%; justify-content:space-between; }
+  .sheet .done { margin-top:12px; height:36px; border-radius:var(--r-ctrl); background:var(--accent); color:var(--on-accent);
+    display:grid; place-items:center; font-weight:500; }
+  .menu { position:absolute; right:10px; z-index:4; width:170px; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--r-ctrl); box-shadow:var(--shadow-pop); padding:4px; }
+  .menu div { padding:7px 9px; border-radius:7px; }
+  .menu div:first-child { background:var(--surface-2); }
+
+  @media (prefers-reduced-motion: no-preference) { .pin { transition:transform .2s cubic-bezier(.2,.7,.2,1); } }
+</style>
+</head>
+<body>
+<h1>Shelf landing — keeping search in view</h1>
+<p class="sub">Two problems, one fix for each.
+<b>The bug:</b> opening the Shelf calls <code>$('#shelfGrid').focus()</code>. Focus scrolls the page to the
+grid, so the page jumps past the title, search and filters (228px on a phone, 64px on desktop).
+<b>The layout:</b> on a phone the shelf controls fill 62% of the first screen (the swatches start 522px down an
+844px screen). After you scroll, the search is gone. Each direction below fixes the bug. B and C also fix the layout.
+Frames are a 390px phone at about 77% scale.</p>
+
+<!-- ============ A ============ -->
+<section>
+  <h2>A — Fix the jump only</h2>
+  <p class="why">One-line change: <code>focus({ preventScroll: true })</code>. Keyboard focus still goes to the grid
+  (arrow keys and P/U/X work at once), but the page stays at the top. The layout does not change.</p>
+  <div class="pair">
+    <figure><figcaption>First screen</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="card stack" style="margin-bottom:6px">
+          <h3>My paint shelf</h3>
+          <div class="row"><span class="btn">Select</span><span class="btn">Import…</span><span class="btn">Export CSV</span></div>
+          <div class="stats"><span class="o">0 owned</span> · <span class="b">0 to buy</span> · 3225 total</div>
+          <p class="hint">Tap a swatch to cycle owned → to buy → clear · “Select” for multi · long-press for the menu.</p>
+          <div class="field">Search your shelf…</div>
+          <div class="seg"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+          <div class="row"><span class="sel">All brands</span><span class="sel">All types</span></div>
+          <div class="row"><span class="sel">Default order</span></div>
+        </div>
+        <div class="grid" data-n="15"></div>
+      </div></div>
+    </figure>
+    <figure><figcaption>Scrolled down</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid" data-n="40" style="padding-top:10px"></div>
+        <div class="gone" style="top:96px">Search and filters are above, off the screen</div>
+      </div></div>
+    </figure>
+  </div>
+  <p class="verdict"><b>Smallest change, no risk.</b> It fixes what you saw. The cost: the swatches still start below the
+  middle of a phone screen, and to change a filter after scrolling you must scroll back up through the grid
+  (more than 600 rows on "All brands").</p>
+</section>
+
+<!-- ============ B ============ -->
+<section>
+  <h2>B — Compact header, pinned search <span class="rec">Recommended</span></h2>
+  <p class="why">Fold the controls into two short rows, and pin them under the app header while the grid scrolls
+  (<code>position: sticky</code>). Row 1: search + <b>Filters</b> (brand · type · sort in a bottom sheet, with a badge that
+  counts the active filters). Row 2: the status filter (All · Owned · To buy), because you use it most.
+  Select stays visible because it is a mode. Import and Export move to a <b>⋯</b> menu. The hint shows on first visit only.
+  On desktop the same bar pins too, but brand · type · sort stay inline (there is room) and no sheet is needed.</p>
+  <div class="pair">
+    <figure><figcaption>First screen</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="card" style="padding-bottom:10px">
+          <div class="row" style="flex-wrap:nowrap"><h3 style="margin:0">My paint shelf</h3>
+            <span class="btn" style="margin-left:auto">Select</span><span class="btn ic">⋯</span></div>
+          <div class="stats"><span class="o">0 owned</span> · <span class="b">0 to buy</span> · 3225 total</div>
+          <div class="stack" style="margin-top:8px">
+            <div class="row" style="flex-wrap:nowrap"><div class="field">⌕ Search your shelf…</div>
+              <span class="btn fbtn" style="height:32px">Filters</span></div>
+            <div class="seg"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+          </div>
+        </div>
+        <div class="grid" data-n="30"></div>
+      </div></div>
+    </figure>
+    <figure><figcaption>Scrolled down — the bar stays</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="pin stack" style="top:87px">
+          <div class="row" style="flex-wrap:nowrap"><div class="field" style="color:var(--text)">⌕ green</div>
+            <span class="btn fbtn" style="height:32px">Filters <span class="badge">2</span></span></div>
+          <div class="seg"><span>All</span><span class="on">Owned</span><span>To buy</span></div>
+        </div>
+        <div class="grid" data-n="40" data-off="20" style="padding-top:88px"></div>
+      </div></div>
+    </figure>
+    <figure><figcaption>Filters sheet open</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid" data-n="40" style="padding-top:10px"></div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <h4>Filters <span class="reset">Reset</span></h4>
+          <div class="lab">Brand</div><div class="sel">AK Interactive</div>
+          <div class="lab">Type</div><div class="sel">Metal</div>
+          <div class="lab">Sort</div><div class="sel">Default order</div>
+          <div class="done">Show 21 paints</div>
+        </div>
+      </div></div>
+    </figure>
+  </div>
+  <p class="verdict"><b>Best balance.</b> The swatches start at about 30% of the screen (was 62%), and search and status
+  are always one tap away. Brand · type · sort keep the native <code>&lt;select&gt;</code> controls (free keyboard and
+  screen-reader support), only inside a sheet. Sticky does not reflow the grid (§3.4). Cost: brand/type/sort take one
+  more tap on a phone, and the pinned bar uses about 90px of screen while you scroll.</p>
+</section>
+
+<!-- ============ C ============ -->
+<section>
+  <h2>C — Compact header, bar hides as you scroll</h2>
+  <p class="why">The same compact header as B. But the pinned bar slides away when you scroll down, and comes back
+  as soon as you scroll up a little (like the Safari address bar). It slides with <code>transform</code>, so the grid
+  does not reflow. With reduced motion it shows or hides with no animation.</p>
+  <div class="pair">
+    <figure><figcaption>Scrolling down — full screen of swatches</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="grid" data-n="45" data-off="10" style="padding-top:10px"></div>
+        <span class="note" style="top:96px">scrolling ↓ — bar hidden</span>
+      </div></div>
+    </figure>
+    <figure><figcaption>Small scroll up — the bar returns</figcaption>
+      <div class="phone"><div class="scroller">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div class="pin stack" style="top:87px">
+          <div class="row" style="flex-wrap:nowrap"><div class="field">⌕ Search your shelf…</div>
+            <span class="btn fbtn" style="height:32px">Filters</span></div>
+          <div class="seg"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+        </div>
+        <div class="grid" data-n="40" data-off="30" style="padding-top:88px"></div>
+        <span class="note" style="bottom:10px">scrolling ↑ — bar back</span>
+      </div></div>
+    </figure>
+  </div>
+  <p class="verdict"><b>Most room for swatches, more moving parts.</b> Good for long browsing. Cost: about 30 lines of
+  scroll-direction JavaScript, and the bar moves under your finger. That can surprise people, and it must never hide
+  while the search field has focus. If B's pinned bar feels too tall in use, it is easy to move to C later.</p>
+</section>
+
+<script>
+  // Fill each mock grid with real dataset hexes (first paints in the shipped dataset).
+  const HEX = ["#555E1B","#CF4E27","#332A47","#1C2A2B","#006557","#003839","#42423A","#5B605A","#F7B57B","#E2B848",
+    "#DE935A","#131E0D","#42271E","#C52219","#C7D0CD","#886DA4","#358578","#A13B2F","#9E4429","#654D1F","#D78464",
+    "#57460E","#D1AC5C","#DB5E30","#533125","#2D1E01","#E9582C","#4F411C","#B83E26","#331E09","#0D265C","#029837",
+    "#EB5D0B","#C61215","#734C21","#F49401","#312E0D","#1E2D4C","#4A5E53","#533914","#EBA43A","#224618","#3B4D3D",
+    "#494A45","#0A0C1B","#542303","#E6BC56","#0D1814","#7B7873","#F54949","#CCC4AF","#B7A261","#69B4C7","#7F190D",
+    "#ECA71C","#3A889F","#036242","#6D6D65","#243128","#7C8872"];
+  for (const g of document.querySelectorAll('.grid')) {
+    const n = +g.dataset.n, off = +(g.dataset.off || 0);
+    g.innerHTML = Array.from({ length: n }, (_, i) => `<i style="background:${HEX[(i + off) % HEX.length]}"></i>`).join('');
+  }
+</script>
+</body>
+</html>
