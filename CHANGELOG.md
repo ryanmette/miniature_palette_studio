@@ -81,7 +81,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     - This happens however the panel opened. It does not happen just after the panel pins, and it
       is off while the Filters sheet is open.
     - Note: `--shadow-pop` is violet-tinted in light mode. Over the first row of paints it adds a
-      faint haze, the same as the Paints drawer does. A neutral shadow would be a §3.1 token change.
+      light violet haze (up to about ΔE 5), the same as the Paints drawer does. In dark, the shadow
+      cannot be seen on the background, but it darkens the first row of paints under the panel (a
+      peach reads as tan). A neutral shadow would be a §3.1 token change.
   - Keyboard and screen reader: the handle is a button with `aria-expanded`. The sheet is a modal
     dialog (Esc closes it, and focus goes back to Filters). Hidden controls are `inert`. The keyboard
     cursor scrolls clear of the pinned bar.
