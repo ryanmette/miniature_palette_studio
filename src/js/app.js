@@ -823,12 +823,17 @@ function revealCell(c) {
 function clampTip(c) {
   const tip = c.querySelector('.celltip'); if (!tip) return;
   tip.style.cssText = 'display:block;visibility:hidden';
-  const w = tip.offsetWidth;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
   tip.style.cssText = '';
   const r = c.getBoundingClientRect(), vw = document.documentElement.clientWidth;
   const ideal = r.left + r.width / 2 - w / 2;             // where the centred tip's left edge would land
   const dx = ideal < 8 ? 8 - ideal : ideal + w > vw - 8 ? vw - 8 - (ideal + w) : 0;
   if (dx) tip.style.setProperty('--tipdx', dx.toFixed(1) + 'px');
+  // Vertically the tip sits above the cell, unless that would put it under the sticky chrome: the header,
+  // or in the Shelf the filter dock, which paints over the grid. Then it flips below the cell.
+  let roof = $('header').getBoundingClientRect().bottom;
+  if (state.mode === 'shelf') roof = Math.max(roof, $('#shelfDock').getBoundingClientRect().bottom);
+  tip.classList.toggle('below', r.top - 5 - h < roof + 4);
 }
 function rangeIds(aId, bId) {
   const list = shelf.viewIds || shelfPaints().map(p => p.id);   // the order renderShelf last drew
@@ -868,6 +873,11 @@ function updateCell(c, mark) {
 function setupShelf() {
   const grid = $('#shelfGrid');
   grid.addEventListener('pointerover', e => { const c = e.target.closest('.cell'); shelf.hover = c ? c.dataset.id : null; if (c) clampTip(c); });
+  // One tooltip at a time, last input wins (app.css): pointing at a cell shows that cell's name; using the
+  // keys shows the keyboard cursor's name again. Real movement only: a keyboard-driven scroll under a
+  // resting mouse changes what is hovered, and that must not count as pointing.
+  grid.addEventListener('pointermove', e => { if ((e.movementX || e.movementY) && grid.dataset.input !== 'pointer') grid.dataset.input = 'pointer'; });
+  grid.addEventListener('pointerdown', () => { grid.dataset.input = 'pointer'; });
   grid.addEventListener('pointerout', e => { if (!e.relatedTarget || !grid.contains(e.relatedTarget)) shelf.hover = null; });
   grid.addEventListener('focusin', e => { const c = e.target.closest('.cell'); if (c) clampTip(c); });
 
@@ -996,6 +1006,7 @@ function shelfKeydown(e) {
   // Never hijack a browser/OS chord: ⌘P (print), Ctrl+U (view source) and Ctrl+X (cut) all collide
   // with the P/U/X triage keys. Shift is NOT excluded — Shift+Arrow extends the selection.
   if (e.metaKey || e.ctrlKey || e.altKey) return;
+  $('#shelfGrid').dataset.input = 'key';   // the keyboard cursor's tooltip wins again (one tooltip at a time)
   const k = e.key.toLowerCase();
   if (k === 'p') { applyMark('owned'); e.preventDefault(); }
   else if (k === 'u') { applyMark('want'); e.preventDefault(); }

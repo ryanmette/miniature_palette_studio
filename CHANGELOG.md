@@ -121,6 +121,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   clear of the panel in JavaScript. The open panel's shadow fades on its own layer, so it does not repaint
   every frame, and the dock reads the layout before it writes. Measured at a 4× CPU slow-down: opening
   84ms → 4.5ms, tucking 82ms → 4.4ms. A scroll-up reveal repaints 6 times, not about 30.
+- **Shelf: swatch names are no longer hidden under the pinned filter bar** (Ryan's report). The new
+  filter bar paints over the grid, so a tooltip above a swatch near it went under the bar. Now the
+  tooltip shows below the swatch when the header or the bar leaves no room above it.
+- **Shelf: only one swatch name shows at a time** (Ryan's report). The selected swatch kept its name
+  while the mouse pointed at another swatch, so two tooltips overlapped. Now the last input wins.
+  Pointing shows the name of the swatch you point at, and the selected swatch's name comes back when
+  the pointer leaves the swatches. Arrow keys show the keyboard cursor's name again.
 - **Shelf on phones: the keyboard cursor no longer lands under the panel.** After a long jump (for
   example, the first arrow key deep in the grid), the page's own scroll counted as a scroll up and opened
   the panel over the cursor. Scrolls made by the app no longer move the panel.
