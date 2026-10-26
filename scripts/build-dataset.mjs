@@ -86,7 +86,8 @@ const BRANDS = [
 
 const FINISH = new Set(['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect']);
 // Utility products that aren't a colour — mediums, varnishes, sealers, thinners. Skip (not paints).
-const SKIP_NAME = /\bmedium\b|thinner|retarder|\bsealer\b|varnish|\badditive\b|improver|anti-shine|lahmian|'?ardcoat|stirrer|reducer|\bcleaner\b|\bglaze medium\b/i;
+// A medium is "<something> Medium" (Glaze Medium, Speedpaint Medium -90-); "Medium Sea Grey" is a colour.
+const SKIP_NAME = /\bmedium\s*(-\d+-)?\s*$|^medium (wet|xpress)\b|thinner|retarder|\bsealer\b|varnish|\badditive\b|improver|anti-shine|lahmian|'?ardcoat|stirrer|reducer|\bcleaner\b/i;
 // Flat paints that only borrow a metal word: "Golden Skin", "Silver Grey", "Bronze Green", "Steel Legion
 // Drab", Reaper's "NMM Gold" (non-metallic metal is flat paint by definition). Lines that are metallic
 // by range (kind 'metal') ignore this — it only stops the name-based guess below.
@@ -236,7 +237,7 @@ try {
 } catch (e) { console.log(`group-overrides: skipped (${e.message})`); }
 
 const dataset = {
-  version: '1.5.1',
+  version: '1.5.2',
   generated: CAPTURED,
   license: 'Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.',
   attribution: 'Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.',

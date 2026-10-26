@@ -73,6 +73,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   metal, so it is flat paint). These paints had a metal sheen and the engine did not use them for colour
   roles. Now an exclusion list (`NOT_METAL_RE` in `build-dataset.mjs`) stops the name guess for these
   patterns. Ranges that are metallic by line do not change. Equivalence groups: 117 (was 120).
+- **Dataset 1.5.2: 11 colours named "Medium …" are back.** The build skips utility mediums, but the
+  rule matched any name with the word "medium". It dropped real colours such as Vallejo Model Color
+  "Medium Sea Grey" and "Medium Olive", and Scale75 Warfront "SS Camo Medium Brown". Now the rule skips
+  only a name that ends in "Medium" (for example "Glaze Medium"), plus "Medium Wet" and "Medium Xpress".
+  The dataset has 2,519 paints (was 2,508).
 - **Phones: tapping a text field no longer zooms the page, and neither does a double-tap.** Found
   running the app in the iOS simulator. The hex, search and filter fields were 13px, and iOS zooms the
   whole page when a field under 16px takes focus; on touch they are 16px now. Double-tap zoom is off

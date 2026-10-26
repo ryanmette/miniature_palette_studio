@@ -31,7 +31,7 @@ what's next.
 | [`CLAUDE.md`](CLAUDE.md) | Project constitution — scope, design system, conventions, guardrails. **Read first.** |
 | [`docs/PLAN.md`](docs/PLAN.md) | Roadmap, architecture, milestones. |
 | [`mockups/index.html`](mockups/index.html) | Design-reference mockup (open in a browser). Not the app. |
-| [`src/data/paints.json`](src/data/paints.json) · [`SOURCES.md`](src/data/SOURCES.md) | The imported paint dataset — **2,508 paints across 8 brands** — + provenance. |
+| [`src/data/paints.json`](src/data/paints.json) · [`SOURCES.md`](src/data/SOURCES.md) | The imported paint dataset — **2,519 paints across 8 brands** — + provenance. |
 | `scripts/` | `build-dataset.mjs` (assemble dataset) · `validate-data.mjs` (data QA) · `check-docs.mjs` (doc-freshness QA) — dev-only, all run in CI. |
 | `src/` | The app — `index.html`, `styles/`, `js/` (color · harmony · seed · a11y · data · scheme · share · wheel · ui · app · store · collection-io · i18n), `data/`, PWA files. |
 
