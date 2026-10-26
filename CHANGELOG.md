@@ -130,6 +130,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   while the mouse pointed at another swatch, so two tooltips overlapped. Now the last input wins.
   Pointing shows the name of the swatch you point at, and the selected swatch's name comes back when
   the pointer leaves the swatches. Arrow keys show the keyboard cursor's name again.
+- **Studio: the live palette's colour blocks line up again** (Ryan's report). Each colour block
+  stretched to fill the space its own footer left, so a ΔE that wrapped, a "metallic" badge or the
+  "seed here" dock made the blocks end at different heights (up to 43px apart). Now the columns share
+  three rows (colour, seed dock, paint) through a CSS subgrid, so the colour blocks, docks and paint
+  names line up. Phones, where the columns stack as rows, do not change.
 - **Shelf on phones: a quick second tap on the handle no longer opens the keyboard.** The panel slides
   down under the finger, so the second tap landed on the search field. While the panel slides in, it
   ignores taps.
