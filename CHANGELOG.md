@@ -6,6 +6,26 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Design exploration: Shelf landing** (`mockups/shelf-landing.html`, not shipped). On a phone the
+  Shelf controls fill 62% of the first screen, and the search goes away when you scroll. Three
+  directions: A, fix the jump only (shipped, see Fixed); B, a compact header with search and status
+  pinned while the grid scrolls; C, the same bar but it hides as you scroll down. **Chosen (Ryan,
+  2026-10-26):** on a phone, C with a drag handle under the Studio / Shelf tabs (no rule between them)
+  that pulls the search and filter panel open over the grid; on desktop, B. The mockup shows both.
+  It also shows options for the edge under the pinned phone panel (Ryan, 2026-10-26): a hard line
+  with a short shadow, or the fade that turns into a drop shadow when the panel opens over the paints,
+  plus a mix of the two. It has live frames, close-ups, and pixel notes from four independent reviews.
+- **Two new brands: AK Interactive and AMMO by Mig — dataset 1.6.0 (3,225 paints, 10 brands).** Both
+  come from the same MIT-licensed source as the other brands (Arcturus5404/miniature-paints, `AK.md`
+  and `Mig.md`). The new paints show in the Shelf, the Paints drawer, the brand filters and the
+  cross-brand matches.
+  - **AK Interactive (467):** the current 3rd Gen acrylics only — Standard, AFV, Air, Figures,
+    Intense, Pastel, Metallic and Ink. The older 2nd Gen sets are not included, because 3rd Gen
+    replaces them and they are almost duplicates. Primers and auxiliary mediums are not included.
+  - **AMMO by Mig (239):** the Acrylics range (A.MIG-0xxx) and the Washes. Primers are not included.
+    The source does not have the newer AMMO Atom range yet.
+  - Equivalence groups: 180 (was 117). The 64 name/hue notes from the validator are military colour
+    names (for example "Russian Green" is an olive). They are accepted in `data-exceptions.json`.
 - **Design exploration: the buying-assistant workflow** (`mockups/buying-assistant.html`, not shipped).
   Raised from Ryan's own use — the app gets opened less to build a *scheme* and more to look a paint up
   and find what is close to it. That is **P3 · Marcus** from `USE_CASES.md` §1 verbatim, so it is a
@@ -41,6 +61,34 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **Shelf: search and filters stay in reach while you scroll.** The Shelf's search, status, brand, type
+  and sort now live in one dock (`mockups/shelf-landing.html`, "Chosen", plus its design critique).
+  - **Desktop and tablet:** the bar pins under the header and does not hide.
+  - **Phone:** the panel sits under the Studio / Shelf tabs with no line between them. When you scroll
+    down, it goes up under the header. A scroll up of more than 60px, a tap, or a drag on the handle
+    brings it back over the grid. The grid does not move. The handle shows a chip ("⌕ Search", or your
+    search and the filter count). Brand, type and sort open in a bottom sheet.
+  - On a phone the swatches start at 41% of the screen (was 62%). The title row is on one line, so
+    "Import…" and "Export CSV" show as "Import" and "Export" there.
+  - A filter change scrolls the first results to just below the dock. Before, a filter applied far
+    down the grid could leave a blank screen.
+  - **The edge under the phone panel shows its state** (Option 2 in `mockups/shelf-landing.html`,
+    with rounded corners; Ryan, 2026-10-26).
+    - When pinned or tucked, a short fade marks the edge.
+    - When the open panel covers paints, it reads as a sheet pulled down over the grid: the
+      floating-overlay shadow (`--shadow-pop`), plus the Filters sheet's rounded corners on its
+      bottom edge. The fade cross-fades into the shadow in 200ms.
+    - This happens however the panel opened. It does not happen just after the panel pins, and it
+      is off while the Filters sheet is open.
+    - Note: `--shadow-pop` is violet-tinted in light mode. Over the first row of paints it adds a
+      faint haze, the same as the Paints drawer does. A neutral shadow would be a §3.1 token change.
+  - Keyboard and screen reader: the handle is a button with `aria-expanded`. The sheet is a modal
+    dialog (Esc closes it, and focus goes back to Filters). Hidden controls are `inert`. The keyboard
+    cursor scrolls clear of the pinned bar.
+  - Fixed on the way: the card entry animation left a `transform` on the Shelf, which would have put
+    the phone sheet in the wrong place. And when the panel was tucked, the selected status button's
+    shadow showed below the tabs, as a faint line where there must be none. Now the panel's contents
+    hide once the slide ends.
 - **Accent-seed mode now parks and restores across the neutral boundary (per Ryan).** A neutral seed
   always holds Primary — a neutral accent has no complement to build from — but a drag that merely
   *passed through* the low-saturation centre used to end accent-seed mode for good: the harmony was
@@ -67,6 +115,21 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **The Shelf opens at its top again.** Opening the Shelf moved keyboard focus to the swatch grid, and
+  `focus()` scrolled the page to the grid. The title, search and filters were above the screen (228px
+  on a phone, 64px on desktop). Now the page goes to the top and the grid takes focus without a scroll,
+  so arrow keys and P/U/X still work at once.
+- **Dataset 1.5.1: 30 flat paints are no longer tagged as metallic.** The build guesses "metal" from
+  a metal word in the name. That guess was wrong for flat paints that only use the word: "Golden Skin",
+  "Silver Grey", "Bronze Green", "Steel Legion Drab", and Reaper's "NMM Gold" (NMM is non-metallic
+  metal, so it is flat paint). These paints had a metal sheen and the engine did not use them for colour
+  roles. Now an exclusion list (`NOT_METAL_RE` in `build-dataset.mjs`) stops the name guess for these
+  patterns. Ranges that are metallic by line do not change. Equivalence groups: 117 (was 120).
+- **Dataset 1.5.2: 11 colours named "Medium …" are back.** The build skips utility mediums, but the
+  rule matched any name with the word "medium". It dropped real colours such as Vallejo Model Color
+  "Medium Sea Grey" and "Medium Olive", and Scale75 Warfront "SS Camo Medium Brown". Now the rule skips
+  only a name that ends in "Medium" (for example "Glaze Medium"), plus "Medium Wet" and "Medium Xpress".
+  The dataset has 2,519 paints (was 2,508).
 - **Phones: tapping a text field no longer zooms the page, and neither does a double-tap.** Found
   running the app in the iOS simulator. The hex, search and filter fields were 13px, and iOS zooms the
   whole page when a field under 16px takes focus; on touch they are 16px now. Double-tap zoom is off

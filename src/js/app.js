@@ -634,11 +634,153 @@ function renderShelf() {
   setCursor(shelf.cursor && cellEl(shelf.cursor) ? shelf.cursor : null);
   paintedSel = new Set(shelf.sel);   // the rebuilt grid baked the selection in — resync the diff base
   shelf.viewIds = view.map(p => p.id);   // cache the visible order: keyboard nav must not re-filter+sort 2,508 paints per keypress
-  renderShelfStats(); renderShelfBar();
+  renderShelfStats(); renderShelfBar(); syncShelfFilterUi();
 }
 /** A shelf filter (brand/status/type/search) changed → membership changes, so drop the selection
  *  (its ids may no longer be visible) and re-render. Sorting uses renderShelf directly (keeps selection). */
-function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null }); renderShelf(); }
+function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null }); renderShelf(); revealShelfResults(); }
+
+/* ---- Shelf dock (§3.6; mockups/shelf-landing.html "Chosen" + its design critique) ----
+   Desktop: a sticky filter bar, always open. Phone (≤520px): the bar tucks up under the header on a
+   small scroll down; a real scroll up, a tap, or a drag on the handle brings it back. Movement is
+   transform-only (CSS), so the grid never reflows (§3.4). Tucked controls are `inert` — never
+   focusable or read out while out of sight. */
+const PHONE = matchMedia('(max-width: 520px)');
+const dock = { open: true, acc: 0, lastY: 0, stuck: false, quietUntil: 0, sheet: false };
+const headerH = () => $('header').getBoundingClientRect().height;
+function applyDock() {
+  const d = $('#shelfDock'), panel = $('#shelfPanel'), handle = $('#shelfHandle');
+  const tucked = PHONE.matches && dock.stuck && !dock.open;
+  d.style.setProperty('--panel-h', handle.offsetTop + 'px');   // tucking slides the handle row up to the header
+  d.classList.toggle('stuck', dock.stuck);
+  d.classList.toggle('tucked', tucked);
+  // "over": the open panel covers paints, so it reads as a sheet pulled down over the grid (shadow + rounded
+  // corners, app.css). Keyed to that state, not to a gesture: a tap, a drag, a scroll-up reveal and a focused
+  // search all look the same. Layout values (header + dock height vs the grid's top), so the slide's
+  // transform can't make it flicker; just after pinning only the title is under the panel, so no shadow.
+  const over = PHONE.matches && dock.stuck && !tucked && $('#shelfGrid').getBoundingClientRect().top < headerH() + d.offsetHeight;
+  d.classList.toggle('over', over);
+  panel.inert = tucked;
+  handle.setAttribute('aria-expanded', String(!tucked));
+  // the cursor cell's scroll margin clears whatever part of the dock is showing
+  document.documentElement.style.setProperty('--dock-h', (tucked ? d.offsetHeight - handle.offsetTop : d.offsetHeight) + 'px');
+}
+function setDockOpen(open, { focus = false } = {}) {
+  dock.open = open; dock.acc = 0;
+  applyDock();
+  // keyboard only: on touch, focusing the search would pop the on-screen keyboard over the grid
+  if (focus) (open ? $('#shelfQ') : $('#shelfHandle')).focus({ preventScroll: true });
+}
+function onShelfScroll() {
+  if (state.mode !== 'shelf') return;
+  const y = window.scrollY, dy = y - dock.lastY;
+  dock.lastY = y;
+  const stuck = $('#shelfSentinel').getBoundingClientRect().top < headerH() - 0.5;
+  if (stuck !== dock.stuck) { dock.stuck = stuck; if (!stuck) { dock.open = true; dock.acc = 0; } }
+  // never hide while someone is typing in the search, or while the sheet is open; ignore our own scrolls
+  const typing = document.activeElement === $('#shelfQ');
+  if (PHONE.matches && dock.stuck && !typing && !dock.sheet && performance.now() > dock.quietUntil) {
+    const next = ui.dockStep(dock, dy);
+    dock.acc = next.acc; dock.open = next.open;
+  }
+  applyDock();
+}
+/** After a filter change, bring the first results into view just below the dock. Without this, a
+ *  filter applied deep in the grid leaves the page scrolled past a now-shorter list (blank screen),
+ *  or the first results hide under the dock. */
+function revealShelfResults() {
+  if (state.mode !== 'shelf') return;
+  const g = $('#shelfGrid').getBoundingClientRect().top, d = $('#shelfDock').getBoundingClientRect().bottom;
+  if (g >= d) return;   // already in view (at the top of the page)
+  dock.quietUntil = performance.now() + 200;
+  window.scrollTo(0, window.scrollY + g - d - 8);
+  dock.lastY = window.scrollY;
+}
+/** Text + active state for the handle chip, the Filters badge, the active selects, and the sheet button. */
+function syncShelfFilterUi() {
+  const sum = ui.shelfFilterSummary({ q: state.shelfQ, mark: state.shelfMark, brand: state.shelfBrand, type: state.shelfType });
+  const chip = $('#shelfChip');
+  chip.textContent = sum.text;
+  chip.classList.toggle('on', sum.any);
+  $('#shelfHandle').setAttribute('aria-label', 'Search and filters' + (sum.any ? ` — ${sum.text.replace('⌕ ', '')}` : ''));
+  const badge = $('#shelfFBadge');
+  badge.hidden = !sum.sheet;
+  badge.textContent = sum.sheet || '';
+  $('#shelfFiltersBtn').setAttribute('aria-label', sum.sheet ? `Filters, ${sum.sheet} on` : 'Filters');
+  $('#shelfBrand').classList.toggle('on', !!state.shelfBrand);
+  $('#shelfType').classList.toggle('on', !!state.shelfType);
+  const n = shelf.viewIds ? shelf.viewIds.length : 0;
+  $('#shelfDone').textContent = `Show ${n.toLocaleString()} paint${n === 1 ? '' : 's'}`;
+}
+/* Filters sheet (phone): the desktop bar's brand · type · sort elements, shown as a modal sheet. */
+function openShelfSheet() {
+  const m = $('#shelfMore');
+  dock.sheet = true;
+  m.classList.add('open');
+  m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-labelledby', 'shelfMoreTitle');
+  m.removeAttribute('aria-label');
+  $('#shelfScrim').hidden = false;
+  $('#shelfDock').classList.add('sheet-open');
+  $('#shelfFiltersBtn').setAttribute('aria-expanded', 'true');
+  $('#shelfBrand').focus();
+}
+function closeShelfSheet({ returnFocus = true } = {}) {
+  if (!dock.sheet) return;
+  const m = $('#shelfMore');
+  dock.sheet = false;
+  m.classList.remove('open');
+  m.setAttribute('role', 'group'); m.removeAttribute('aria-modal'); m.removeAttribute('aria-labelledby');
+  m.setAttribute('aria-label', 'More filters');
+  $('#shelfScrim').hidden = true;
+  $('#shelfDock').classList.remove('sheet-open');
+  $('#shelfFiltersBtn').setAttribute('aria-expanded', 'false');
+  if (returnFocus) $('#shelfFiltersBtn').focus({ preventScroll: true });
+}
+function setupShelfDock() {
+  // the header's height changes with the breakpoint, the safe area, and wrapping — track it live
+  new ResizeObserver(() => { document.documentElement.style.setProperty('--hdr-h', headerH() + 'px'); applyDock(); }).observe($('header'));
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; onShelfScroll(); });
+  }, { passive: true });
+  PHONE.addEventListener('change', () => { closeShelfSheet({ returnFocus: false }); dock.open = true; applyDock(); });
+
+  // handle: tap or Enter/Space toggles; a vertical drag opens (down) or tucks (up). Tap is the main way;
+  // drag is extra (WCAG 2.5.7). touch-action:none on the handle keeps the drag from scrolling the page.
+  const h = $('#shelfHandle');
+  let drag = null, dragged = false;
+  h.addEventListener('pointerdown', e => { drag = { y: e.clientY, moved: false }; dragged = false; h.setPointerCapture(e.pointerId); });
+  h.addEventListener('pointermove', e => { if (drag && Math.abs(e.clientY - drag.y) > 12) drag.moved = true; });
+  h.addEventListener('pointerup', e => {
+    if (drag && drag.moved) { dragged = true; setDockOpen(e.clientY > drag.y); }
+    drag = null;
+  });
+  h.addEventListener('pointercancel', () => { drag = null; });
+  h.addEventListener('click', e => {
+    if (dragged) { dragged = false; return; }   // the drag already did it
+    setDockOpen(!dock.open, { focus: e.detail === 0 });
+  });
+
+  $('#shelfFiltersBtn').addEventListener('click', openShelfSheet);
+  $('#shelfScrim').addEventListener('click', () => closeShelfSheet());
+  $('#shelfDone').addEventListener('click', () => closeShelfSheet());
+  $('#shelfReset').addEventListener('click', () => {
+    state.shelfBrand = state.shelfType = state.shelfSort = '';
+    $('#shelfBrand').value = $('#shelfType').value = $('#shelfSort').value = '';
+    shelfFilterChanged();
+  });
+  $('#shelfMore').addEventListener('keydown', e => {
+    if (!dock.sheet) return;
+    if (e.key === 'Escape') { e.stopPropagation(); closeShelfSheet(); return; }
+    if (e.key !== 'Tab') return;   // keep focus inside the modal sheet
+    const f = [...$('#shelfMore').querySelectorAll('button, select')];
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+    else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+  });
+}
 function announceShelf(msg) { $('#status').textContent = msg; }
 
 /* selection primitives — outline only (CSS), so no reflow (§3.4) */
@@ -1029,10 +1171,18 @@ function setMode(mode) {
   const on = state.mode === 'shelf';
   closePaints();   // the paint drawer is a Studio control; never leave it open across a mode switch
   document.querySelector('main').dataset.mode = state.mode;
+  document.body.dataset.mode = state.mode;   // the phone header drops its rule in Shelf mode (app.css)
+  if (!on) closeShelfSheet({ returnFocus: false });
   document.querySelector('.workspace').hidden = on;
   $('#shelf').hidden = !on;
   for (const b of $('#modeNav').children) b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
-  if (on) { renderShelf(); $('#shelfGrid').focus(); }
+  // Open the Shelf at its top. focus() alone scrolls the page to the grid and hides the search + filters;
+  // the grid still takes focus so arrows and P/U/X work at once.
+  if (on) {
+    renderShelf(); window.scrollTo(0, 0);
+    Object.assign(dock, { open: true, acc: 0, lastY: 0, stuck: false }); applyDock();
+    $('#shelfGrid').focus({ preventScroll: true });
+  }
   else { renderList(); }   // refresh the drawer's owned state in case the shelf changed it
   updateUrl();
 }
@@ -1445,7 +1595,7 @@ function wire() {
   });
   $('#shelfType').addEventListener('change', e => { state.shelfType = e.target.value; shelfFilterChanged(); });
   // Sorting doesn't change which paints are shown, so keep the selection — just re-render in the new order.
-  $('#shelfSort').addEventListener('change', e => { state.shelfSort = e.target.value; renderShelf(); });
+  $('#shelfSort').addEventListener('change', e => { state.shelfSort = e.target.value; renderShelf(); revealShelfResults(); });
   $('#shelfBar').addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
     if (b.dataset.act === 'deselect') setSelection([], { anchor: null });
@@ -1469,6 +1619,7 @@ function wire() {
   document.addEventListener('pointerdown', e => { if (menuOpen && !e.target.closest('#shelfMenu')) closeMenu(); }, true);
   document.addEventListener('keydown', shelfKeydown);
   setupShelf();
+  setupShelfDock();
 
   // About & data modal — native <dialog> handles Esc + focus trap; close on backdrop click.
   const about = $('#about');

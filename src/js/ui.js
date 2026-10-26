@@ -96,6 +96,28 @@ export function shelfBar(count) {
     + `</span>`;
 }
 
+/** What the Shelf's filters are doing, for the phone handle chip and the Filters badge. The chip is
+ *  always there ("⌕ Search" when nothing is on) so search is findable while the panel is tucked away.
+ *  `sheet` counts only what lives in the Filters sheet (brand, type); sort is an order, not a filter. */
+export function shelfFilterSummary({ q = '', mark = '', brand = '', type = '' } = {}) {
+  const query = q.trim();
+  const filters = [mark, brand, type].filter(Boolean).length;
+  const text = `⌕ ${query ? `“${query}”` : 'Search'}` + (filters ? ` · ${filters} filter${filters === 1 ? '' : 's'}` : '');
+  return { text, filters, sheet: [brand, type].filter(Boolean).length, any: !!query || filters > 0 };
+}
+
+/** Phone Shelf dock: tuck on a small scroll down, reveal only after a real scroll up. A small scroll up
+ *  is usually someone looking for a paint they just passed — revealing on every upward pixel would
+ *  cover the rows they want. `acc` sums movement in one direction; dy > 0 is down. */
+export const DOCK_TUCK = 8, DOCK_REVEAL = 60;
+export function dockStep({ acc = 0, open = true }, dy) {
+  if (!dy) return { acc, open };
+  acc = Math.sign(dy) === Math.sign(acc) ? acc + dy : dy;   // a change of direction starts a new run
+  if (open && acc > DOCK_TUCK) return { acc: 0, open: false };
+  if (!open && acc < -DOCK_REVEAL) return { acc: 0, open: true };
+  return { acc, open };
+}
+
 /** Compare two schemes side by side. a/b: { base, harmony, colors:[ideal hexes] }. */
 export function compareBar(a, b) {
   const row = (g, lbl) => `<div class="cmprow"><span class="cmplab">${esc(lbl)} · ${esc(g.harmony)} · <span class="mono">${esc(g.base)}</span></span>`

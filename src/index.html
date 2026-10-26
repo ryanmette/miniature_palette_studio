@@ -156,34 +156,49 @@
         <h2 data-i18n="myShelf">My paint shelf</h2>
         <div class="shelftools">
           <button class="btn sm shelf-select" id="shelfSelect" aria-pressed="false" title="Select multiple swatches to mark at once">Select</button>
-          <button class="btn sm" id="importColl" title="Import a paintRack CSV or a Palette Studio JSON backup">Import…</button>
-          <button class="btn sm" id="exportColl" title="Download your collection as CSV">Export CSV</button>
+          <button class="btn sm" id="importColl" title="Import a paintRack CSV or a Palette Studio JSON backup">Import<span class="lgonly">…</span></button>
+          <button class="btn sm" id="exportColl" title="Download your collection as CSV" aria-label="Export CSV">Export<span class="lgonly"> CSV</span></button>
           <input id="importFile" type="file" accept=".csv,.json,text/csv,application/json" hidden />
         </div>
       </div>
       <div class="shelfstats micro" id="shelfStats" aria-live="polite"></div>
       <p class="shelfhint" id="shelfHint"></p>
-      <div class="shelffilters">
+    </div>
+    <!-- The dock (§3.6, mockups/shelf-landing.html "Chosen"): search + status + filters in one sticky bar.
+         Desktop: pinned under the header. Phone: tucks under the tabs on scroll down; the handle pulls it
+         back; brand · type · sort open as a sheet. The sentinel tells app.js when the dock is pinned. -->
+    <div class="shelfsentinel" id="shelfSentinel" aria-hidden="true"></div>
+    <div class="shelfdock" id="shelfDock">
+      <div class="shelffilters" id="shelfPanel">
         <label class="sr-only" for="shelfQ">Search the shelf</label>
         <input id="shelfQ" type="search" placeholder="Search your shelf…" data-i18n-ph="searchShelf" aria-label="Search the shelf" autocomplete="off" />
+        <button class="btn shelffbtn" id="shelfFiltersBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="shelfMore">Filters<span class="fbadge" id="shelfFBadge" hidden></span></button>
         <div class="seg" id="shelfMarkSeg" role="group" aria-label="Filter by status">
           <button data-mark="" aria-pressed="true" data-i18n="filterAll">All</button>
           <button data-mark="owned" aria-pressed="false" data-i18n="filterOwned">Owned</button>
           <button data-mark="want" aria-pressed="false" data-i18n="filterToBuy">To buy</button>
         </div>
-        <label class="sr-only" for="shelfBrand">Filter the shelf by brand</label>
-        <select id="shelfBrand"><option value="" data-i18n="allBrands">All brands</option></select>
-        <label class="sr-only" for="shelfType">Filter by type</label>
-        <select id="shelfType"><option value="">All types</option></select>
-        <label class="sr-only" for="shelfSort">Sort the shelf</label>
-        <select id="shelfSort">
-          <option value="">Default order</option>
-          <option value="name">Sort: name</option>
-          <option value="brand">Sort: brand</option>
-          <option value="hue">Sort: hue</option>
-          <option value="light">Sort: lightness</option>
-        </select>
+        <div class="shelfscrim" id="shelfScrim" hidden></div>
+        <div class="shelfmore" id="shelfMore" role="group" aria-label="More filters">
+          <div class="sheethead"><h3 id="shelfMoreTitle">Filters</h3><button class="btn sm ghost" id="shelfReset">Reset</button></div>
+          <label class="shelfmlbl" for="shelfBrand">Brand</label>
+          <select id="shelfBrand"><option value="" data-i18n="allBrands">All brands</option></select>
+          <label class="shelfmlbl" for="shelfType">Type</label>
+          <select id="shelfType"><option value="">All types</option></select>
+          <label class="shelfmlbl" for="shelfSort">Sort</label>
+          <select id="shelfSort">
+            <option value="">Default order</option>
+            <option value="name">Sort: name</option>
+            <option value="brand">Sort: brand</option>
+            <option value="hue">Sort: hue</option>
+            <option value="light">Sort: lightness</option>
+          </select>
+          <button class="btn primary sheetdone" id="shelfDone">Show paints</button>
+        </div>
       </div>
+      <button class="shelfhandle" id="shelfHandle" aria-controls="shelfPanel" aria-expanded="true" aria-label="Search and filters">
+        <span class="hpill" aria-hidden="true"></span><span class="hchip" id="shelfChip" aria-hidden="true">⌕ Search</span>
+      </button>
     </div>
     <div class="shelfgrid" id="shelfGrid" role="listbox" aria-multiselectable="true"
          aria-label="Paints — select swatches, then press P for owned, U for to buy, X to clear" tabindex="0"></div>
@@ -214,8 +229,8 @@
       surfaces the gap and never implies a perfect match.</p>
 
     <h3>Data &amp; credits</h3>
-    <p>The dataset (2,508 paints across eight brands — Citadel, Vallejo, The Army Painter, Two Thin Coats,
-      Reaper, Scale75, P3 and Pro Acryl) is imported from the community dataset
+    <p>The dataset (3,225 paints across ten brands — Citadel, Vallejo, The Army Painter, AK Interactive,
+      AMMO by Mig, Two Thin Coats, Reaper, Scale75, P3 and Pro Acryl) is imported from the community dataset
       <a href="https://github.com/Arcturus5404/miniature-paints" target="_blank" rel="noopener">Arcturus5404/miniature-paints</a>,
       used under the <strong>MIT License, © 2022 Rick Fleuren</strong>. I didn't curate the paint list or
       its hex values myself — they come from that project; this tool only adds the matching on top. <strong>DakkaDakka</strong> is
