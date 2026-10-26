@@ -8,7 +8,7 @@ import { schemeBaseOf, pickForSchemeBase, swatchKeyHex } from './seed.js';   // 
 import { encodeState, decodeState } from './share.js';   // the share-link contract (state ⇄ URL)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, groupMembers, groupOf } from './data.js';
+import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
@@ -538,8 +538,11 @@ function renderEquiv() {
   } else {
     const role = (state.roleByHex || {})[srcHex];
     const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
-    // The Metal column's matches float true metallics first — a flat near the hex isn't an equivalent (§7)
-    const srcOpts = role === 'Metal' ? { floatTypes: new Set(['metal']) } : {};
+    // The Metal column's matches float true metallics first — a flat near the hex isn't an equivalent (§7).
+    // Any other colour is a flat target (the Plan matches roles with finishes excluded), so washes, contrasts,
+    // texture paints and metals rank FINISH_PENALTY further, as for a picked flat paint. Reported ΔE stays true.
+    const srcOpts = role === 'Metal' ? { floatTypes: new Set(['metal']), demoteTypes: new Set(FINISH_TYPES), demoteAmount: FINISH_PENALTY }
+      : { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY };
     $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8, srcOpts), store.markOf);
   }
 }

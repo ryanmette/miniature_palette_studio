@@ -355,6 +355,12 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   `metal` paint, or the Metal column's ideal), **true metallics rank strictly first** — a flat paint
   near the hex is not an equivalent of a metal on the model (`equivalents` metal tier · `nearestPaints`
   `floatTypes`; a metal's auto-seeded group also lists its metal members first). Reported ΔE stays true.
+  **Equivalents rank by finish (Ryan, 2026-10-26):** a paint of a different **finish class** (§5.2: flat ·
+  translucent · effect · metal; `finishClass`) ranks **+4** further (`FINISH_PENALTY`, data.js), so a wash,
+  contrast or texture paint is offered as the equivalent of a flat one only when it is clearly closer, and a
+  wash's list leads with washes. Role colours and custom hexes on that tab count as **flat** targets (the
+  Metal column keeps its metal tier). A penalty, not a strict tier: a strict tier pulled 293 matches over
+  ΔE 10 into wash lists. Measured: flat sources 78% → 99% same-finish matches, +0.27 mean ΔE.
 - **Harmonies** are computed from the base in HSL. Most rotate **hue** (keeping S/L); the two *value*
   harmonies instead vary **lightness/saturation** at the base hue. Each partner is a locked `{dh,ds,dl}`
   step from the base (`harmony.js` `HARMONY_STEPS`):

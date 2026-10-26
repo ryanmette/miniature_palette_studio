@@ -57,6 +57,16 @@ export function groupOf(indexed, paint) {
  */
 export const FINISH_TYPES = ['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect', 'technical'];
 
+/** Finish class, the same four the equivalence groups use (§5.2): a wash is never an equivalent of a flat
+ *  that shares its hex, and a texture paint is not an equivalent of either. */
+export const finishClass = t => t === 'metal' ? 'metal' : t === 'effect' || t === 'technical' ? 'effect'
+  : FINISH_TYPES.includes(t) ? 'translucent' : 'flat';
+/** Equivalents rank a paint of a DIFFERENT finish class as if it were this much ΔE further (ranking only;
+ *  the reported ΔE stays true, §2/§7). The same size as the metal demotion for colour roles. Measured over
+ *  the whole dataset: flat sources go from 78% to 99% same-finish matches for +0.27 mean ΔE. A strict
+ *  same-finish-first tier (as metals use) was rejected: for washes it pulled in 293 matches over ΔE 10. */
+export const FINISH_PENALTY = 4;
+
 function passesFilter(p, { excludeId, excludeIds, brands, excludeBrands, ownedIds, types, excludeTypes } = {}) {
   if (excludeId && p.id === excludeId) return false;
   if (excludeIds && excludeIds.has(p.id)) return false;
@@ -183,7 +193,9 @@ export function nearestPaints(indexed, hex, n = 5, opts = {}) {
 
 /** Cross-brand equivalents for a paint: nearest paints in OTHER brands. A metallic paint's true
  *  equivalents are other METALLICS — hex proximity says nothing about how a flat reads next to a
- *  metal on the model — so for a metal source, metals rank strictly first (reported ΔE stays true, §2). */
+ *  metal on the model — so for a metal source, metals rank strictly first. Any other paint of a different
+ *  finish class (a wash, a contrast or a texture paint for a flat source) ranks FINISH_PENALTY further.
+ *  Reported ΔE stays true either way (§2). */
 export function equivalents(indexed, paint, { n = 6 } = {}) {
   const lab = paint.lab || hexToLab(paint.hex);
   const isMetal = paint.type === 'metal';
@@ -197,11 +209,12 @@ export function equivalents(indexed, paint, { n = 6 } = {}) {
   // ~5.5× faster than the full scan it replaces.
   const opts = { excludeBrands: new Set([paint.brand]), keep: 192, ...(isMetal ? { floatTypes: new Set(['metal']) } : {}) };
   const tier = isMetal ? (p => p.type === 'metal' ? 0 : 1) : () => 0;
+  const cls = finishClass(paint.type);
   return candidatePool(indexed, lab, opts)
-    .map(p => ({ paint: p, deltaE: deltaE2000(lab, p.lab) }))
-    .sort((a, b) => tier(a.paint) - tier(b.paint) || a.deltaE - b.deltaE)
+    .map(p => { const deltaE = deltaE2000(lab, p.lab); return { paint: p, deltaE, score: deltaE + (finishClass(p.type) === cls ? 0 : FINISH_PENALTY) }; })
+    .sort((a, b) => tier(a.paint) - tier(b.paint) || a.score - b.score)
     .slice(0, n)
-    .map(m => ({ ...m, quality: matchQuality(m.deltaE) }));
+    .map(({ paint, deltaE }) => ({ paint, deltaE, quality: matchQuality(deltaE) }));
 }
 
 /** Fetch + index the dataset (browser). Tests use indexDataset() with a fixture instead. */

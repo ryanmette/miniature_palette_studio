@@ -220,3 +220,57 @@ test('equivalents: a flat source keeps pure ΔE order (no tier), ascending', () 
   assert.ok(eq.every(e => e.paint.brand !== 'Citadel'));
   for (let i = 1; i < eq.length; i++) assert.ok(eq[i].deltaE >= eq[i - 1].deltaE, 'ascending ΔE');
 });
+
+test('finishClass: the four classes the equivalence groups use (§5.2)', async () => {
+  const { finishClass } = await import('../src/js/data.js');
+  assert.deepEqual(['base', 'layer', 'dry'].map(finishClass), ['flat', 'flat', 'flat']);
+  assert.deepEqual(['wash', 'shade', 'ink', 'contrast', 'glaze'].map(finishClass), Array(5).fill('translucent'));
+  assert.equal(finishClass('effect'), 'effect');
+  assert.equal(finishClass('metal'), 'metal');
+});
+
+test('equivalents: a different finish ranks FINISH_PENALTY further; reported ΔE stays true (§7)', async () => {
+  const { FINISH_PENALTY } = await import('../src/js/data.js');
+  const { hexToLab, deltaE2000 } = await import('../src/js/color.js');
+  const src = '#9A1115', d = h => deltaE2000(hexToLab(src), hexToLab(h));
+  const fx = indexDataset({ version: 't', paints: [
+    { id: 'src', brand: 'Citadel', line: 'Base', name: 'Mephiston Red', hex: src, type: 'base' },
+    { id: 'wash-near', brand: 'A', line: 'Wash', name: 'Red Wash', hex: '#9B1216', type: 'wash' },
+    { id: 'texture-near', brand: 'B', line: 'FX', name: 'Red Texture', hex: '#9A1216', type: 'effect' },
+    { id: 'flat-mid', brand: 'C', line: 'Layer', name: 'Bloody Red', hex: '#A01418', type: 'layer' },
+  ] });
+  // preconditions: the finishes are nearer than the flat, but by less than the penalty
+  assert.ok(d('#9B1216') < d('#A01418') && d('#A01418') - d('#9B1216') < FINISH_PENALTY);
+  const eq = equivalents(fx, fx.byId.get('src'), { n: 3 });
+  assert.equal(eq[0].paint.id, 'flat-mid', 'a flat source lists the flat first');
+  assert.ok(eq[0].deltaE > eq[1].deltaE, 'the ΔE shown is the true distance, not the ranking score');
+  // with NO same-finish candidate, every row carries the same penalty: plain ΔE order, nothing hidden
+  const fromWash = equivalents(fx, fx.byId.get('wash-near'), { n: 3 });
+  assert.equal(fromWash.length, 3);
+  for (let i = 1; i < fromWash.length; i++) assert.ok(fromWash[i].deltaE >= fromWash[i - 1].deltaE, 'ascending ΔE');
+});
+
+test('equivalents: a different finish still wins when it is more than FINISH_PENALTY closer', async () => {
+  const { FINISH_PENALTY } = await import('../src/js/data.js');
+  const { hexToLab, deltaE2000 } = await import('../src/js/color.js');
+  const src = '#9A1115', d = h => deltaE2000(hexToLab(src), hexToLab(h));
+  const fx = indexDataset({ version: 't', paints: [
+    { id: 'src', brand: 'Citadel', line: 'Base', name: 'Mephiston Red', hex: src, type: 'base' },
+    { id: 'wash-near', brand: 'A', line: 'Wash', name: 'Red Wash', hex: '#9B1216', type: 'wash' },
+    { id: 'flat-far', brand: 'C', line: 'Layer', name: 'Brick', hex: '#B4402F', type: 'layer' },
+  ] });
+  assert.ok(d('#B4402F') - d('#9B1216') > FINISH_PENALTY, 'precondition: the flat is far');
+  const eq = equivalents(fx, fx.byId.get('src'), { n: 2 });
+  assert.equal(eq[0].paint.id, 'wash-near', 'a much closer different-finish paint is not hidden');
+});
+
+test('equivalents: a wash source lists washes before flats that are only slightly nearer', async () => {
+  const fx = indexDataset({ version: 't', paints: [
+    { id: 'src', brand: 'Citadel', line: 'Shade', name: 'Red Shade', hex: '#5A1A1A', type: 'shade' },
+    { id: 'flat-near', brand: 'A', line: 'Layer', name: 'Dark Red', hex: '#5B1A1B', type: 'layer' },
+    { id: 'wash-mid', brand: 'B', line: 'Wash', name: 'Red Wash', hex: '#621E1C', type: 'wash' },
+  ] });
+  const eq = equivalents(fx, fx.byId.get('src'), { n: 2 });
+  assert.equal(eq[0].paint.id, 'wash-mid');
+  assert.ok(eq[0].deltaE > eq[1].deltaE);
+});
