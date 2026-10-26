@@ -87,6 +87,10 @@ const BRANDS = [
 const FINISH = new Set(['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect']);
 // Utility products that aren't a colour — mediums, varnishes, sealers, thinners. Skip (not paints).
 const SKIP_NAME = /\bmedium\b|thinner|retarder|\bsealer\b|varnish|\badditive\b|improver|anti-shine|lahmian|'?ardcoat|stirrer|reducer|\bcleaner\b|\bglaze medium\b/i;
+// Flat paints that only borrow a metal word: "Golden Skin", "Silver Grey", "Bronze Green", "Steel Legion
+// Drab", Reaper's "NMM Gold" (non-metallic metal is flat paint by definition). Lines that are metallic
+// by range (kind 'metal') ignore this — it only stops the name-based guess below.
+const NOT_METAL_RE = /\bgolden\b|\b(silver|steel|bronze|gold|iron|tin|copper|brass)[\s-]+(grey|gray|green|yellow|brown|olive|blue|red|orange)\b|\bskin\b|\bnmm\b|\bdrab\b|\bcoppery\b/i;
 const METAL_RE = /\bmetal|\bgold|silver|bronze|brass|copper|\bsteel\b|chrome|gunmetal|\btin\b|\biron\b|mithril|chainmail|pewter|platinum|leadbelcher|runefang|ironbreaker|warplock|hashut|\bauric\b|gehenna|retributor|screaming bell|necron compound|sigmarite|canoptek/i;
 const slug = s => s.toLowerCase().replace(/['’!.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -97,7 +101,7 @@ function resolveType(name, kind) {
   if (/\bwash\b/.test(n)) return 'wash';             // name-based finish fallback (ranges that mix finishes)
   if (/\bshade\b/.test(n)) return 'shade';
   if (/\bink\b/.test(n)) return 'ink';
-  if (kind === 'metal' || METAL_RE.test(name)) return 'metal';
+  if (kind === 'metal' || (METAL_RE.test(name) && !NOT_METAL_RE.test(name))) return 'metal';
   return kind === 'base' ? 'base' : kind === 'dry' ? 'dry' : 'layer';
 }
 
@@ -232,7 +236,7 @@ try {
 } catch (e) { console.log(`group-overrides: skipped (${e.message})`); }
 
 const dataset = {
-  version: '1.5.0',
+  version: '1.5.1',
   generated: CAPTURED,
   license: 'Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.',
   attribution: 'Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.',

@@ -1,5 +1,5 @@
 {
- "version": "1.5.0",
+ "version": "1.5.1",
  "generated": "2026-06-25",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
@@ -97,11 +97,6 @@
   },
   {
    "id": "dark-orange-05",
-   "refHex": "#B16921",
-   "label": "dark orange"
-  },
-  {
-   "id": "dark-orange-06",
    "refHex": "#7B674E",
    "label": "dark orange"
   },
@@ -382,86 +377,71 @@
   },
   {
    "id": "orange-01",
-   "refHex": "#D05E17",
-   "label": "orange"
-  },
-  {
-   "id": "orange-02",
    "refHex": "#E5581E",
    "label": "orange"
   },
   {
-   "id": "orange-03",
+   "id": "orange-02",
    "refHex": "#F6A300",
    "label": "orange"
   },
   {
-   "id": "orange-04",
-   "refHex": "#E1BA7F",
-   "label": "orange"
-  },
-  {
-   "id": "orange-05",
+   "id": "orange-03",
    "refHex": "#EF6F24",
    "label": "orange"
   },
   {
-   "id": "orange-06",
+   "id": "orange-04",
    "refHex": "#C8B79D",
    "label": "orange"
   },
   {
-   "id": "orange-07",
+   "id": "orange-05",
    "refHex": "#D28950",
    "label": "orange"
   },
   {
-   "id": "orange-08",
+   "id": "orange-06",
    "refHex": "#BB9F84",
    "label": "orange"
   },
   {
-   "id": "orange-09",
+   "id": "orange-07",
    "refHex": "#B39E80",
    "label": "orange"
   },
   {
-   "id": "orange-10",
+   "id": "orange-08",
    "refHex": "#AC8454",
    "label": "orange"
   },
   {
-   "id": "orange-11",
+   "id": "orange-09",
    "refHex": "#E4B895",
    "label": "orange"
   },
   {
-   "id": "orange-12",
-   "refHex": "#D6AF83",
-   "label": "orange"
-  },
-  {
-   "id": "orange-13",
+   "id": "orange-10",
    "refHex": "#D9AF75",
    "label": "orange"
   },
   {
-   "id": "orange-14",
+   "id": "orange-11",
    "refHex": "#C19B6E",
    "label": "orange"
   },
   {
-   "id": "orange-15",
+   "id": "orange-12",
    "refHex": "#E86016",
    "label": "orange"
   },
   {
-   "id": "orange-16",
+   "id": "orange-13",
    "refHex": "#EAA432",
    "label": "orange"
   },
   {
-   "id": "orange-17",
+   "id": "orange-14",
    "refHex": "#D59335",
    "label": "orange"
   },
@@ -567,41 +547,46 @@
   },
   {
    "id": "yellow-05",
-   "refHex": "#FFF55A",
+   "refHex": "#FBB81C",
    "label": "yellow"
   },
   {
    "id": "yellow-06",
-   "refHex": "#C5C483",
+   "refHex": "#FFF55A",
    "label": "yellow"
   },
   {
    "id": "yellow-07",
-   "refHex": "#BCBB7E",
+   "refHex": "#C5C483",
    "label": "yellow"
   },
   {
    "id": "yellow-08",
-   "refHex": "#FFCB05",
+   "refHex": "#BCBB7E",
    "label": "yellow"
   },
   {
    "id": "yellow-09",
-   "refHex": "#EABF56",
+   "refHex": "#FFCB05",
    "label": "yellow"
   },
   {
    "id": "yellow-10",
-   "refHex": "#F8ED1F",
+   "refHex": "#EABF56",
    "label": "yellow"
   },
   {
    "id": "yellow-11",
-   "refHex": "#F8D347",
+   "refHex": "#F8ED1F",
    "label": "yellow"
   },
   {
    "id": "yellow-12",
+   "refHex": "#F8D347",
+   "label": "yellow"
+  },
+  {
+   "id": "yellow-13",
    "refHex": "#EFE641",
    "label": "yellow"
   }
@@ -1116,8 +1101,7 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25",
-   "groupId": "orange-01"
+   "captured": "2026-06-25"
   },
   {
    "id": "army-painter-nolzurs-eternal-blue",
@@ -1500,7 +1484,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
-   "groupId": "orange-02"
+   "groupId": "orange-01"
   },
   {
    "id": "army-painter-nolzurs-shadow-wash",
@@ -3946,7 +3930,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
-   "groupId": "orange-03"
+   "groupId": "orange-02"
   },
   {
    "id": "army-painter-warpaints-pixie-pink",
@@ -7218,7 +7202,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "yellow-05"
   },
   {
    "id": "citadel-base-balthasar-gold",
@@ -7814,7 +7799,7 @@
    "line": "Base",
    "name": "Steel Legion Drab",
    "hex": "#584E2D",
-   "type": "metal",
+   "type": "base",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -8482,13 +8467,12 @@
    "line": "Dry",
    "name": "Golden Griffon",
    "hex": "#E1BA7F",
-   "type": "metal",
+   "type": "dry",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25",
-   "groupId": "orange-04"
+   "captured": "2026-06-25"
   },
   {
    "id": "citadel-dry-golgfag-brown",
@@ -8529,7 +8513,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-05"
+   "groupId": "yellow-06"
   },
   {
    "id": "citadel-dry-hoeth-blue",
@@ -8666,7 +8650,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "orange-05"
+   "groupId": "orange-03"
   },
   {
    "id": "citadel-dry-sigmarite",
@@ -8747,7 +8731,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "orange-06"
+   "groupId": "orange-04"
   },
   {
    "id": "citadel-dry-thunderhawk-blue",
@@ -8775,7 +8759,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-06"
+   "groupId": "yellow-07"
   },
   {
    "id": "citadel-dry-underhive-ash",
@@ -8789,7 +8773,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-07"
+   "groupId": "yellow-08"
   },
   {
    "id": "citadel-dry-verminlord-hide",
@@ -8988,7 +8972,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "orange-07"
+   "groupId": "orange-05"
   },
   {
    "id": "citadel-layer-bloodreaver-flesh",
@@ -9174,7 +9158,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-05"
+   "groupId": "yellow-06"
   },
   {
    "id": "citadel-layer-elysian-green",
@@ -9477,7 +9461,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-07"
+   "groupId": "yellow-08"
   },
   {
    "id": "citadel-layer-liberator-gold",
@@ -9490,8 +9474,7 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25",
-   "groupId": "orange-04"
+   "captured": "2026-06-25"
   },
   {
    "id": "citadel-layer-loren-forest",
@@ -9822,7 +9805,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "orange-08"
+   "groupId": "orange-06"
   },
   {
    "id": "citadel-layer-tallarn-sand",
@@ -9902,7 +9885,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "orange-05"
+   "groupId": "orange-03"
   },
   {
    "id": "citadel-layer-tuskgor-fur",
@@ -10322,7 +10305,7 @@
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
    "fx": "texture",
-   "groupId": "orange-09"
+   "groupId": "orange-07"
   },
   {
    "id": "citadel-technical-agrellan-earth",
@@ -10337,7 +10320,7 @@
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
    "fx": "texture",
-   "groupId": "orange-09"
+   "groupId": "orange-07"
   },
   {
    "id": "citadel-technical-armageddon-dunes",
@@ -11533,7 +11516,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/P3.md",
    "captured": "2026-06-25",
-   "groupId": "orange-10"
+   "groupId": "orange-08"
   },
   {
    "id": "p3-p3-mage-hunter-green",
@@ -12651,7 +12634,7 @@
    "line": "Pro Acryl",
    "name": "Dark Golden Brown",
    "hex": "#A58F56",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -12781,7 +12764,7 @@
    "line": "Pro Acryl",
    "name": "Golden Brown",
    "hex": "#BE9953",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -12794,7 +12777,7 @@
    "line": "Pro Acryl",
    "name": "Golden Yellow",
    "hex": "#E9D035",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -14018,7 +14001,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-08"
+   "groupId": "yellow-09"
   },
   {
    "id": "reaper-bones-cats-eye-green",
@@ -14097,8 +14080,7 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25",
-   "groupId": "dark-orange-05"
+   "captured": "2026-06-25"
   },
   {
    "id": "reaper-bones-desert-sand",
@@ -14112,7 +14094,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "orange-06"
+   "groupId": "orange-04"
   },
   {
    "id": "reaper-bones-desert-stone",
@@ -14348,7 +14330,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "orange-05"
+   "groupId": "orange-03"
   },
   {
    "id": "reaper-bones-frost-blue",
@@ -14447,12 +14429,13 @@
    "line": "Bones",
    "name": "Golden Yellow",
    "hex": "#F7B717",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "yellow-05"
   },
   {
    "id": "reaper-bones-heraldic-red",
@@ -14506,7 +14489,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "orange-03"
+   "groupId": "orange-02"
   },
   {
    "id": "reaper-bones-maiden-flesh",
@@ -14783,7 +14766,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "orange-11"
+   "groupId": "orange-09"
   },
   {
    "id": "reaper-bones-shining-mithril",
@@ -14929,7 +14912,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "orange-05"
+   "groupId": "orange-03"
   },
   {
    "id": "reaper-bones-suntan-flesh",
@@ -14956,7 +14939,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "orange-11"
+   "groupId": "orange-09"
   },
   {
    "id": "reaper-bones-tempest-grey",
@@ -15401,7 +15384,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-09"
+   "groupId": "yellow-10"
   },
   {
    "id": "reaper-master-series-black-green",
@@ -15672,13 +15655,12 @@
    "line": "Master Series",
    "name": "Bronzed Skin",
    "hex": "#D05E17",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25",
-   "groupId": "orange-01"
+   "captured": "2026-06-25"
   },
   {
    "id": "reaper-master-series-bronzed-skin-highlight",
@@ -15686,7 +15668,7 @@
    "line": "Master Series",
    "name": "Bronzed Skin Highlight",
    "hex": "#E5A23A",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -15699,7 +15681,7 @@
    "line": "Master Series",
    "name": "Bronzed Skin Shadow",
    "hex": "#A63201",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16012,7 +15994,7 @@
    "line": "Master Series",
    "name": "Coppery Orange",
    "hex": "#D3A083",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16344,7 +16326,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "orange-05"
+   "groupId": "orange-03"
   },
   {
    "id": "reaper-master-series-fire-red",
@@ -16471,7 +16453,7 @@
    "line": "Master Series",
    "name": "Golden Blonde",
    "hex": "#F2E294",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16484,7 +16466,7 @@
    "line": "Master Series",
    "name": "Golden Glow",
    "hex": "#FFD664",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16497,7 +16479,7 @@
    "line": "Master Series",
    "name": "Golden Highlight",
    "hex": "#F2CE9A",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16510,7 +16492,7 @@
    "line": "Master Series",
    "name": "Golden Shadow",
    "hex": "#BD9564",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16523,13 +16505,12 @@
    "line": "Master Series",
    "name": "Golden Skin",
    "hex": "#D2AD81",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25",
-   "groupId": "orange-12"
+   "captured": "2026-06-25"
   },
   {
    "id": "reaper-master-series-gory-red",
@@ -16569,7 +16550,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-06"
+   "groupId": "yellow-07"
   },
   {
    "id": "reaper-master-series-green-liner",
@@ -16910,7 +16891,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-10"
+   "groupId": "yellow-11"
   },
   {
    "id": "reaper-master-series-light-blue",
@@ -17256,7 +17237,7 @@
    "line": "Master Series",
    "name": "NMM Gold Base",
    "hex": "#D59728",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -17269,7 +17250,7 @@
    "line": "Master Series",
    "name": "NMM Gold Highlight",
    "hex": "#FDDC43",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -17282,7 +17263,7 @@
    "line": "Master Series",
    "name": "NMM Gold Shadow",
    "hex": "#8C6627",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -18886,7 +18867,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-11"
+   "groupId": "yellow-12"
   },
   {
    "id": "reaper-pathfinder-cavalier-orange",
@@ -19844,7 +19825,7 @@
    "line": "Artist",
    "name": "Golden Flesh",
    "hex": "#E2A76D",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -20279,7 +20260,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-10"
+   "groupId": "yellow-11"
   },
   {
    "id": "scale75-artist-prusian-blue",
@@ -22015,7 +21996,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "orange-08"
+   "groupId": "orange-06"
   },
   {
    "id": "scale75-metal-n-alchemy-amethyst-alchemy",
@@ -22717,7 +22698,7 @@
    "line": "Scalecolor",
    "name": "Golden Skin",
    "hex": "#EDC89C",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -23382,7 +23363,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "orange-13"
+   "groupId": "orange-10"
   },
   {
    "id": "scale75-warfront-dunkelbraun-brown",
@@ -23501,7 +23482,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "orange-13"
+   "groupId": "orange-10"
   },
   {
    "id": "scale75-warfront-grau",
@@ -23873,7 +23854,7 @@
    "line": "Warfront",
    "name": "SS Camo Golden Brown",
    "hex": "#F0A001",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -24101,7 +24082,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-08"
+   "groupId": "yellow-09"
   },
   {
    "id": "two-thin-coats-wave-1-amethyst-rayne",
@@ -24715,7 +24696,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
-   "groupId": "orange-03"
+   "groupId": "orange-02"
   },
   {
    "id": "two-thin-coats-wave-1-sorcerors-cloak",
@@ -25252,7 +25233,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
-   "groupId": "orange-07"
+   "groupId": "orange-05"
   },
   {
    "id": "two-thin-coats-wave-2-helion-red-wash",
@@ -25344,7 +25325,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
-   "groupId": "orange-14"
+   "groupId": "orange-11"
   },
   {
    "id": "two-thin-coats-wave-2-leviathan-blue",
@@ -25449,8 +25430,7 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25",
-   "groupId": "orange-12"
+   "captured": "2026-06-25"
   },
   {
    "id": "two-thin-coats-wave-2-paladin-flesh",
@@ -26646,13 +26626,12 @@
    "line": "Game Color",
    "name": "Bronze Brown",
    "hex": "#B16921",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25",
-   "groupId": "dark-orange-05"
+   "captured": "2026-06-25"
   },
   {
    "id": "vallejo-game-color-brown",
@@ -27100,7 +27079,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-12"
+   "groupId": "yellow-13"
   },
   {
    "id": "vallejo-game-color-foul-green",
@@ -27200,7 +27179,7 @@
    "line": "Game Color",
    "name": "Gold Yellow",
    "hex": "#D67419",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -27325,7 +27304,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-orange-06"
+   "groupId": "dark-orange-05"
   },
   {
    "id": "vallejo-game-color-heavy-gold-brown",
@@ -27333,7 +27312,7 @@
    "line": "Game Color",
    "name": "Heavy Gold Brown",
    "hex": "#B68644",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -27391,7 +27370,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-15"
+   "groupId": "orange-12"
   },
   {
    "id": "vallejo-game-color-heavy-red",
@@ -27987,7 +27966,7 @@
    "line": "Game Color",
    "name": "Steel Grey",
    "hex": "#7B92A2",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -28045,7 +28024,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-03"
+   "groupId": "orange-02"
   },
   {
    "id": "vallejo-game-color-sunrise-blue",
@@ -28376,7 +28355,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-orange-06"
+   "groupId": "dark-orange-05"
   },
   {
    "id": "vallejo-mecha-color-brown-engine-soot-matt",
@@ -28943,7 +28922,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-15"
+   "groupId": "orange-12"
   },
   {
    "id": "vallejo-mecha-color-petrol-spills-gloss",
@@ -29222,7 +29201,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-12"
+   "groupId": "yellow-13"
   },
   {
    "id": "vallejo-mecha-color-yellow-ochre",
@@ -29236,7 +29215,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-16"
+   "groupId": "orange-13"
   },
   {
    "id": "vallejo-metal-color-aluminium",
@@ -29755,7 +29734,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-02"
+   "groupId": "orange-01"
   },
   {
    "id": "vallejo-model-color-bronze",
@@ -29776,7 +29755,7 @@
    "line": "Model Color",
    "name": "Bronze Green",
    "hex": "#313A29",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -30109,7 +30088,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-17"
+   "groupId": "orange-14"
   },
   {
    "id": "vallejo-model-color-dark-grey",
@@ -30331,7 +30310,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-10"
+   "groupId": "orange-08"
   },
   {
    "id": "vallejo-model-color-desert-yellow",
@@ -30653,7 +30632,7 @@
    "line": "Model Color",
    "name": "Gold Brown",
    "hex": "#BF873C",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -30666,7 +30645,7 @@
    "line": "Model Color",
    "name": "Golden Olive",
    "hex": "#808145",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -30679,7 +30658,7 @@
    "line": "Model Color",
    "name": "Golden Yellow",
    "hex": "#F8A734",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -31104,7 +31083,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-05"
+   "groupId": "orange-03"
   },
   {
    "id": "vallejo-model-color-light-sea-grey",
@@ -31158,7 +31137,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-11"
+   "groupId": "yellow-12"
   },
   {
    "id": "vallejo-model-color-lime-green",
@@ -31342,7 +31321,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-16"
+   "groupId": "orange-13"
   },
   {
    "id": "vallejo-model-color-neutral-grey",
@@ -31499,7 +31478,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-15"
+   "groupId": "orange-12"
   },
   {
    "id": "vallejo-model-color-orange-ochre",
@@ -31789,7 +31768,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-09"
+   "groupId": "yellow-10"
   },
   {
    "id": "vallejo-model-color-scarlet",
@@ -31823,7 +31802,7 @@
    "line": "Model Color",
    "name": "Silver Grey",
    "hex": "#D8CDC9",
-   "type": "metal",
+   "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -31946,7 +31925,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-17"
+   "groupId": "orange-14"
   },
   {
    "id": "vallejo-model-color-tan-yellow",
@@ -31960,7 +31939,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-14"
+   "groupId": "orange-11"
   },
   {
    "id": "vallejo-model-color-transparent-blue",
@@ -32027,7 +32006,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-03"
+   "groupId": "orange-02"
   },
   {
    "id": "vallejo-model-color-turquoise",
@@ -32226,7 +32205,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-12"
+   "groupId": "yellow-13"
   },
   {
    "id": "vallejo-model-color-yellow-green",

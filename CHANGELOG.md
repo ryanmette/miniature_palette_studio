@@ -67,6 +67,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Dataset 1.5.1: 30 flat paints are no longer tagged as metallic.** The build guesses "metal" from
+  a metal word in the name. That guess was wrong for flat paints that only use the word: "Golden Skin",
+  "Silver Grey", "Bronze Green", "Steel Legion Drab", and Reaper's "NMM Gold" (NMM is non-metallic
+  metal, so it is flat paint). These paints had a metal sheen and the engine did not use them for colour
+  roles. Now an exclusion list (`NOT_METAL_RE` in `build-dataset.mjs`) stops the name guess for these
+  patterns. Ranges that are metallic by line do not change. Equivalence groups: 117 (was 120).
 - **Phones: tapping a text field no longer zooms the page, and neither does a double-tap.** Found
   running the app in the iOS simulator. The hex, search and filter fields were 13px, and iOS zooms the
   whole page when a field under 16px takes focus; on touch they are 16px now. Double-tap zoom is off

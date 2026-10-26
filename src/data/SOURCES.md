@@ -54,7 +54,7 @@ opt-in via a Plan-tab toggle. `metal` is the Metal role. Citadel's **Technical**
 - **Curated equivalence groups** are auto-seeded at build time: paints within **ΔE 2000 ≤ 1.0** ("indistinguishable")
   **and the same finish class** (metal · translucent media · effect · opaque — a hex match across finish classes is
   not interchangeability on the model) are union-find clustered into `groups[]` (each with a representative `refHex`
-  + a basic-colour `label`), and every member paint carries a `groupId`. v1.5.0: **120 groups, 292 paints**
+  + a basic-colour `label`), and every member paint carries a `groupId`. v1.5.1: **117 groups, 286 paints**
   (max group diameter ΔE 2.16). Surfaced in the
   Equivalents tab; the *closest other-brand* matches are still computed at runtime by ΔE 2000.
 - QA: [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs) — **hard checks PASS** (valid sRGB hex,
