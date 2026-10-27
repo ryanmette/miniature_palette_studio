@@ -221,7 +221,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── buying-assistant.html ← 4-way exploration: the paint-first / buying-assistant workflow (P3) + the in-store scanner
 │   ├── collection-setting.html ← 3-way exploration: moving “Use my collection” to the ⋯ menu + a matching note on the live palette
 │   ├── paints-picker.html     ← 4-way exploration: the redundant phone Paints drawer — judged; recommended: one seed field + a list that only picks
-│   ├── lightness-slider.html  ← 4-way exploration: labelling the wheel's lightness slider (+ the ↻ random button)
+│   ├── lightness-slider.html  ← 4-way exploration: labelling the wheel's lightness slider — judged; recommended: a colour-ramp track + visible label + d20 Random
 │   ├── studio-layouts.html    ← 5-way Studio layout exploration (scroll-reduction) + judge ranking
 │   ├── layouts/               ← the 5 standalone layout mocks embedded by studio-layouts.html
 │   │   ├── split-sticky-studio.html · cockpit-3col.html · instrument-band.html

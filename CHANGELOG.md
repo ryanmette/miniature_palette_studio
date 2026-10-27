@@ -8,10 +8,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Added
 - **Design exploration: the lightness slider** (`mockups/lightness-slider.html`, not shipped). Ryan
   reported that the slider under the wheel does not say what it does. It sets the lightness of your
-  colour (6–94%), and the whole scheme follows. Four working directions: A, a label and a value; B, a
-  track that shows your colour from dark to light, with end dots (Apple HIG's "left and right icons");
-  C, a 44px track with the label inside; D, seven tone steps. The page also shows three options for the
-  ↻ random button, which can read as "reload". On a phone today the slider is only 16px tall.
+  colour (6–94%), and the harmony colours follow it. Four working directions: A, a label and a value; B,
+  a track that shows your colour from dark to light, with end dots (Apple HIG's "left and right icons");
+  C, a 44px track with the label inside; D, seven tone steps. Three judges chose B (47 of 60). The
+  recommended design keeps B's colour track, drops the end dots, adds a visible "Lightness" label and a
+  thumb ring that contrasts at every lightness, and replaces ↻ (it reads as "redo") with a d20 "Random"
+  button. The page also lists four app bugs; for example, moving the slider to 6% and back changes the
+  colour (`#6B5B4B` comes back as `#6C4B4B`).
 - **Design exploration: the Paints picker** (`mockups/paints-picker.html`, not shipped). Ryan reported
   that the Studio's Paints drawer is redundant and confusing. On a 390px phone, the seed toolbar is 3
   rows, and the open drawer adds 4 rows of controls and shows only about 3½ paints. Its search, filters,
@@ -22,7 +25,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   without the keyboard; a tap only picks; marking moves to a long-press menu; CSV stays on the Shelf; and
   the Shelf menu gets "Use as seed". The page has an interactive demo with 134 real paints and the app's
   ΔE 2000 code. It also lists bugs found on the way, for example that 360px and 375px phones load the
-  page scrolled about 380px down.
+  page part of the way down (384px at 375×667; the offset depends on the screen height). A three-view review
+  checked the page against the code, and its fixes are in (for example, the demo's list now has one tab stop).
 - **Resizable sheets recorded for the full app release** (`IOS_APP_PLAN.md` §1, not built). Ryan asked
   for the iOS sheet behaviour: a card at part height that grows to full height when you scroll or drag it.
   The plan names the Apple terms (resizable sheet, detents, grabber), links Apple's primary sources, and
