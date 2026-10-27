@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paints picker — four directions</title>
+<style>
+  :root {
+    --bg:#FBFBFE; --surface:#FFFFFF; --surface-2:#F1F2FF;
+    --border:#E6E7F8; --border-strong:#D3D5F0;
+    --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
+    --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+    --buy:#2563EB; --success:#16A34A; --warning:#C2740B; --danger:#DC2647;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px; --tap:44px;
+    --font:"Inter",system-ui,sans-serif; --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+    --shadow-pop:0 10px 40px rgba(60,50,120,.18);
+    /* the visible two-ring focus (the app's --focus is ~1.1:1; see the contrast task) */
+    --ring:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  .dark { --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62; --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --success:#86A559; --warning:#C9923A; --danger:#D2563F;
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 18px 50px rgba(0,0,0,.5); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:24px 16px; }
+  h1 { font-family:var(--display); font-size:21px; margin:0 0 4px; }
+  .sub { color:var(--text-muted); max-width:80ch; margin:0 0 16px; font-size:13.5px; }
+  .sub b, .why b, .notes b { color:var(--text); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow);
+    padding:16px; margin-bottom:24px; max-width:1100px; }
+  section.recd { border-color:var(--accent); }
+  h2 { font-family:var(--display); font-size:15.5px; margin:0 0 4px; }
+  h3.lab { font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:24px 0 8px; }
+  .why { color:var(--text-muted); font-size:12.5px; margin:0 0 16px; max-width:78ch; }
+  .rec { display:inline-block; font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase;
+    background:var(--accent-weak); color:var(--accent); border-radius:var(--r-pill); padding:0 8px; margin-left:8px; vertical-align:2px; }
+  ul.notes { margin:0; padding-left:18px; font-size:12.5px; color:var(--text-muted); max-width:82ch; }
+  ul.notes li + li { margin-top:4px; }
+  table.t { border-collapse:collapse; font-size:12.5px; width:100%; max-width:920px; }
+  table.t th, table.t td { text-align:left; padding:6px 12px 6px 0; border-bottom:1px solid var(--border); vertical-align:top; }
+  table.t th { font-weight:500; color:var(--text-muted); }
+  table.t td.n { font-family:var(--mono); white-space:nowrap; }
+  table.t tr.win td { font-weight:600; }
+  .pair { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+  figure { margin:0; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; max-width:320px; }
+  figcaption b { color:var(--text); }
+  .ann { font-size:11.5px; color:var(--text-muted); margin:8px 0 0; max-width:320px; }
+  .ann b { color:var(--text); }
+  .scroll-x { overflow-x:auto; }
+
+  /* ---------- phone frame (320 wide, true 44px targets, type one step smaller) ---------- */
+  .phone { position:relative; width:320px; height:640px; border:1px solid var(--border-strong); border-radius:24px; overflow:hidden;
+    background:var(--bg); color:var(--text); font-size:12px; }
+  .phone.short { height:520px; }
+  .apph { background:var(--bg); padding:8px 12px; border-bottom:1px solid var(--border); }
+  .apph .r1 { display:flex; align-items:center; gap:8px; font-family:var(--display); font-weight:600; font-size:14px; }
+  .logo { width:24px; height:24px; border-radius:7px; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; font-size:12px; }
+  .dots { margin-left:auto; width:var(--tap); height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); display:grid; place-items:center;
+    color:var(--text-muted); background:var(--surface); }
+  .mseg { display:flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; margin-top:8px; }
+  .mseg span { flex:1; text-align:center; padding:8px; border-radius:8px; color:var(--text-muted); }
+  .mseg span.on { background:var(--surface); color:var(--text); box-shadow:var(--shadow); font-weight:500; }
+  .card { margin:12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); padding:12px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:4px; min-height:var(--tap); padding:0 12px; border:1px solid var(--border);
+    border-radius:var(--r-ctrl); background:var(--surface); color:var(--text); font:inherit; font-size:12px; white-space:nowrap; cursor:pointer; }
+  .btn.sm { min-height:32px; font-size:11.5px; }
+  .btn.ic { width:var(--tap); padding:0; }
+  .btn:focus-visible, .seedfield:focus-within, .opt.act, .chip.act, .menu button:focus-visible { outline:none; box-shadow:var(--ring); }
+  .sel { min-height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); display:flex; align-items:center;
+    justify-content:space-between; padding:0 10px; gap:4px; color:var(--text); }
+  .sel::after { content:"▾"; color:var(--text-faint); font-size:10px; }
+  .field { min-height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); display:flex; align-items:center;
+    padding:0 10px; color:var(--text-faint); }
+  .row { display:flex; gap:8px; align-items:center; }
+  .wrap { flex-wrap:wrap; }
+  .micro { font-size:10.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  .hero { display:flex; align-items:center; gap:8px; }
+  .hero .sw { width:28px; height:28px; border-radius:8px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; }
+  .hero b { font-family:var(--display); font-size:13.5px; }
+  .hero .hx { font-family:var(--mono); font-size:11px; color:var(--text-muted); }
+  .hero .meta { font-size:10.5px; color:var(--text-muted); }
+  .wheel { width:220px; height:220px; border-radius:50%; margin:12px auto 0;
+    background:radial-gradient(circle, #8a8a8a 0 4%, transparent 70%), conic-gradient(from 90deg, #e53935, #fdd835, #43a047, #00acc1, #3949ab, #8e24aa, #e53935); }
+  .fold { position:absolute; left:0; right:0; border-top:1.5px dashed var(--danger); z-index:7; pointer-events:none; }
+  .fold span { position:absolute; right:8px; top:-18px; font-size:10px; color:var(--danger); background:var(--bg); padding:0 4px; }
+  .tag { display:inline-block; font-size:10px; color:var(--accent); background:var(--accent-weak); border-radius:var(--r-pill); padding:0 8px; }
+  .meas { position:absolute; right:4px; z-index:6; font-size:10px; color:var(--accent); background:var(--accent-weak); border-radius:var(--r-pill); padding:0 6px; }
+
+  /* today's drawer */
+  .strip { display:flex; gap:10px; overflow:hidden; mask-image:linear-gradient(90deg,#000 85%,transparent); }
+  .strip .c { flex:none; width:64px; text-align:center; font-size:10.5px; color:var(--text-muted); }
+  .strip .c i { display:block; width:64px; height:64px; border-radius:var(--r-ctrl); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); margin-bottom:2px; }
+  .strip .c.on i { box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+  /* ---------- the recommended picker (one component, mounted several times) ---------- */
+  .seedbar { display:flex; gap:6px; align-items:center; }
+  .seedbar > .btn:not(.ic) { padding:0 10px; }
+  .seedfield { flex:1; min-width:0; display:flex; align-items:center; min-height:var(--tap); border:1px solid var(--border-strong); border-radius:var(--r-ctrl);
+    background:var(--surface); }
+  .seedfield input { flex:1; min-width:0; height:calc(var(--tap) - 2px); border:0; background:none; color:var(--text); font:inherit; font-size:12px;
+    padding:0 0 0 8px; outline:none; }
+  .seedfield input::placeholder { color:var(--text-muted); }
+  .seedfield .browse { flex:none; width:36px; height:calc(var(--tap) - 2px); border:0; border-left:1px solid var(--border); background:none; color:var(--text-muted);
+    border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; cursor:pointer; font-size:12px; }
+  .seedfield .browse[aria-expanded="true"] { color:var(--accent); }
+  .seedfield .browse:focus-visible { outline:none; box-shadow:inset 0 0 0 2px var(--accent); }
+  .pick-drawer { position:absolute; left:12px; right:12px; z-index:5; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card);
+    box-shadow:var(--shadow-pop); display:flex; flex-direction:column; overflow:hidden; }
+  .pick-drawer[hidden] { display:none; }
+  .pd-body { overflow-y:auto; overscroll-behavior:contain; padding:8px; flex:1; min-height:0; }
+  .pd-foot { flex:none; border-top:1px solid var(--border); padding:6px 8px; display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-muted); }
+  .pd-foot select { min-height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text); font:inherit;
+    font-size:12px; padding:0 8px; margin-left:auto; }
+  .ghead { font-size:10.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:4px 4px 4px; }
+  .recent { display:flex; gap:6px; overflow-x:auto; padding:2px 2px 8px; }
+  .grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; }
+  .chip { border:0; background:none; padding:2px; border-radius:var(--r-ctrl); text-align:center; color:var(--text); font:inherit; cursor:pointer; position:relative; min-width:0; }
+  .chip .sw { display:block; aspect-ratio:1; border-radius:8px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); position:relative; }
+  .chip .nm { display:block; font-size:10px; line-height:1.25; margin-top:2px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .chip .br { display:block; font-size:9px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .recent .chip { flex:none; width:52px; }
+  .chip.cur .sw { box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+  .badge { position:absolute; top:3px; right:3px; min-width:16px; height:16px; border-radius:var(--r-pill); font-size:9.5px; font-weight:700; display:grid;
+    place-items:center; padding:0 3px; }
+  .badge.owned { background:var(--success); color:#FFFFFF; }
+  .badge.want { background:var(--buy); color:#FFFFFF; }
+  .opt { display:flex; align-items:center; gap:8px; width:100%; min-height:var(--tap); padding:4px 6px; border:0; background:none; border-radius:var(--r-ctrl);
+    color:var(--text); font:inherit; font-size:12px; text-align:left; cursor:pointer; }
+  .opt .sw { flex:none; width:30px; height:30px; border-radius:7px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); position:relative; }
+  .opt .sw .badge { top:-4px; right:-6px; }
+  .opt .tx { flex:1; min-width:0; }
+  .opt .tx b { display:block; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .opt .tx span { display:block; font-size:10.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .opt .de { flex:none; font-size:10.5px; color:var(--text); white-space:nowrap; text-align:right; }
+  .opt .de i { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:4px; }
+  .opt .de small { display:block; font-family:var(--mono); font-size:9.5px; color:var(--text-muted); }
+  .opt.use .sw { display:grid; place-items:center; }
+  .opt:hover, .chip:hover { background:var(--surface-2); }
+  .opt.cur { background:var(--surface-2); }
+  .empty { padding:12px; color:var(--text-muted); font-size:12px; }
+  .hint { font-size:10.5px; color:var(--text-muted); padding:2px 4px 6px; }
+  .menu { position:absolute; z-index:9; min-width:180px; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-ctrl);
+    box-shadow:var(--shadow-pop); padding:4px; }
+  .menu[hidden] { display:none; }
+  .menu .mh { font-size:10.5px; color:var(--text-muted); padding:4px 8px 6px; border-bottom:1px solid var(--border); margin-bottom:4px; }
+  .menu button { display:flex; width:100%; align-items:center; gap:8px; min-height:var(--tap); padding:0 8px; border:0; background:none; border-radius:8px;
+    color:var(--text); font:inherit; font-size:12px; text-align:left; cursor:pointer; }
+  .menu button:hover { background:var(--surface-2); }
+  .menu button[aria-disabled="true"] { color:var(--text-muted); cursor:not-allowed; }
+  .kbd-sim { position:absolute; left:0; right:0; bottom:0; height:220px; z-index:8; background:#D1D4DB; display:grid; grid-template-rows:repeat(4,1fr); gap:6px; padding:8px 4px; }
+  .dark .kbd-sim { background:#2B2B2E; }
+  .kbd-sim div { display:flex; gap:4px; justify-content:center; }
+  .kbd-sim i { flex:1; max-width:26px; border-radius:5px; background:#FFFFFF; box-shadow:0 1px 0 rgba(0,0,0,.3); }
+  .dark .kbd-sim i { background:#6B6B6F; }
+  .ptoast { position:absolute; left:50%; bottom:12px; transform:translateX(-50%); z-index:10; width:max-content; max-width:calc(100% - 24px);
+    background:var(--text); color:var(--bg); border-radius:var(--r-ctrl); padding:8px 12px; font-size:11.5px; box-shadow:var(--shadow-pop); }
+  .ptoast[hidden] { display:none; }
+  .isnew { outline:1.5px dashed var(--accent); outline-offset:3px; border-radius:6px; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+  /* desktop variant: the same component, the field at a fixed width, the results anchored under it */
+  .desk { position:relative; width:100%; max-width:980px; height:560px; border:1px solid var(--border-strong); border-radius:12px; overflow:hidden;
+    background:var(--bg); font-size:12px; --tap:38px; }
+  .desk .apph { display:flex; align-items:center; gap:12px; padding:8px 16px; }
+  .desk .apph .mseg { margin:0; width:160px; }
+  .desk .apph .mseg span { padding:4px; }
+  .desk .card { margin:12px 16px; }
+  .desk .seedfield { flex:0 1 440px; }
+  .desk .seedfield .browse { width:auto; padding:0 12px; white-space:nowrap; }
+  .desk .pick-drawer { right:auto; width:440px; }
+  .desk .grid { grid-template-columns:repeat(8, minmax(0,1fr)); }
+  .desk .dcols { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 16px; }
+  .desk .dcols .card { margin:0; height:360px; }
+
+  /* direction wireframes */
+  .dirs { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:16px; }
+  .dir { border:1px solid var(--border); border-radius:var(--r-card); padding:12px; background:var(--bg); }
+  .dir.win { border-color:var(--accent); }
+  .dir h4 { font-family:var(--display); font-size:13.5px; margin:0 0 4px; }
+  .dir p { font-size:11.5px; color:var(--text-muted); margin:8px 0 0; }
+  .wf { position:relative; height:330px; border:1px solid var(--border-strong); border-radius:18px; background:var(--surface); overflow:hidden; font-size:10px; }
+  .wf .b { position:absolute; left:8px; right:8px; border:1px solid var(--border-strong); border-radius:6px; background:var(--surface-2); display:flex; align-items:center;
+    justify-content:center; color:var(--text-muted); text-align:center; padding:2px 4px; }
+  .wf .b.hot { border-color:var(--accent); color:var(--text); background:var(--accent-weak); }
+  .wf .b.pop { box-shadow:var(--shadow-pop); background:var(--surface); }
+  .wf .tiles { position:absolute; left:8px; right:8px; display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
+  .wf .tiles i { aspect-ratio:1; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<h1>Paints picker — four directions and a recommendation</h1>
+<p class="sub">
+  <b>The problem (Ryan, 2026-10-27):</b> the Studio’s <b>☰ Paints</b> drawer is “redundant and confusing for users”. On a
+  390px phone, the seed toolbar is 3 rows (178px). The open drawer adds 4 rows of controls (194px) and shows only about
+  <b>3½ paints</b>. Most of its controls exist somewhere else too.
+  <br><br>
+  An audit read the code and the docs. Four agents each designed one direction, and three judges scored them: the painter,
+  the constitution and accessibility, and the build. All three judges chose the same base. The <b>recommended mix</b> is at
+  the end, and you can try it: it runs on 134 real paints from all ten brands, with the app’s own ΔE 2000 code.
+</p>
+
+<!-- ============================================================ TODAY -->
+<section>
+  <h2>Today</h2>
+  <p class="why">One job (choose the colour that starts the scheme) has two text inputs. One drawer copies the Shelf’s filters and
+  its import and export. The first phone screen is all controls.</p>
+  <div class="pair">
+    <figure>
+      <figcaption><b>Phone, drawer open</b> (measured at 390px; every phone frame here is drawn at 320, with true 44px targets).</figcaption>
+      <div class="phone">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div></div>
+        <div class="card" style="margin-bottom:6px">
+          <div class="row"><span class="btn" style="background:var(--surface-2)">☰ Paints ▴</span></div>
+          <div class="field" style="margin-top:8px;color:var(--text);font-family:var(--mono)"># 555E1B</div>
+          <div class="row" style="justify-content:flex-end;margin-top:8px"><span class="btn">From photo</span><span class="btn">Compare</span></div>
+        </div>
+        <div class="card" style="margin-top:0;box-shadow:var(--shadow-pop)">
+          <div class="field">Search paints…</div>
+          <div class="row" style="margin-top:6px"><span class="sel" style="flex:1">All brands</span><span class="sel" style="flex:1">All types</span></div>
+          <div class="row" style="margin-top:6px"><span class="sel" style="flex:1">Default order</span><span class="btn sm">Import…</span></div>
+          <div class="row" style="margin-top:6px"><span class="btn sm">Export CSV</span></div>
+          <div class="strip" style="margin-top:10px">
+            <span class="c on"><i style="background:#555E1B"></i>Alga Green</span><span class="c"><i style="background:#C2532F"></i>Amaranth Red</span>
+            <span class="c"><i style="background:#322A47"></i>Amethyst Blue</span><span class="c"><i style="background:#1E2B2A"></i>Anthracite</span>
+          </div>
+          <div style="font-size:10.5px;color:var(--text-muted);margin-top:6px">3225 of 3225 paints · 1 owned</div>
+        </div>
+        <span class="meas" style="top:120px">toolbar 178px</span>
+        <span class="meas" style="top:330px">4 rows of controls</span>
+      </div>
+    </figure>
+    <div style="flex:1;min-width:280px">
+      <h3 class="lab" style="margin-top:0">What is duplicated</h3>
+      <table class="t">
+        <tr><th>In the drawer</th><th>Also</th></tr>
+        <tr><td>Search · brand · type · sort</td><td>The Shelf dock and its Filters sheet (separate state, same lists)</td></tr>
+        <tr><td>Import… · Export CSV</td><td>The Shelf title row (the same code). The ⋯ menu proposal adds Back up / Restore: a third place.</td></tr>
+        <tr><td>Search paints</td><td>The <code>#</code> hex box beside it: two text inputs that both choose the seed</td></tr>
+        <tr><td>Mark owned / to buy</td><td>The Shelf. In the drawer it needs a right-click or P/U/X, so an iPhone cannot do it.</td></tr>
+      </table>
+      <h3 class="lab">Bugs found on the way (reproduced)</h3>
+      <ul class="notes">
+        <li><b>Small phones open scrolled down.</b> At 360px and 375px wide the page loads about 372–386px down, past the toolbar.
+          The tab strip’s <code>scrollIntoView</code> (<code>app.js:1242</code>) also scrolls the page. At 390px it is fine.</li>
+        <li><b>A tap on ☰ Paints raises the keyboard.</b> It always focuses the search, so the keyboard covers the paints.</li>
+        <li><b>A pasted <code>#9A1115</code> does nothing.</b> The hex box keeps 6 characters, so it holds <code>9A111</code>.</li>
+        <li><b>A paint name in the hex box makes a colour.</b> “Abaddon Black” seeds <code>#ABADDB</code>.</li>
+        <li><b>Marks do not always refresh.</b> After a mark, the hero, the drawer or the Studio can show the old state, until the
+          next full render. With Use my collection on, even the matches can be stale.</li>
+        <li><b>The drawer is heavy.</b> It holds 3,225 buttons (3,232 tab stops) and rebuilds them on every colour change, also while
+          it is closed.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ THE FOUR DIRECTIONS -->
+<section>
+  <h2>The four directions</h2>
+  <p class="why">Each agent made the strongest honest case for one direction. The phone sketches show the first screen with the
+  picker open. Scores are 1–5 for clarity, speed, fit and cost from each judge (60 is the maximum).</p>
+  <div class="dirs">
+    <div class="dir win">
+      <h4>A · Slim the drawer <span class="rec">Base of the winner</span></h4>
+      <div class="wf">
+        <div class="b" style="top:8px;height:30px">header · Studio | Shelf</div>
+        <div class="b hot" style="top:46px;height:30px">⌕ Paint name or #hex &nbsp;▾</div>
+        <div class="b pop" style="top:82px;height:210px;align-items:flex-start;padding-top:8px">picker only: a 4-column grid of paints</div>
+        <div class="tiles" style="top:110px;left:16px;right:16px"><i style="background:#555E1B"></i><i style="background:#9A1115"></i><i style="background:#0F3D7C"></i><i style="background:#C8A13A"></i><i style="background:#2A1C51"></i><i style="background:#556229"></i><i style="background:#697068"></i><i style="background:#D6AC57"></i><i style="background:#0F702A"></i><i style="background:#47125A"></i><i style="background:#C21920"></i><i style="background:#1E2B2A"></i></div>
+        <div class="b" style="top:262px;height:24px;left:16px;right:16px">count · Filters</div>
+      </div>
+      <p>One seed field replaces ☰ Paints and the hex box. The drawer only picks: no import, export or marking. It keeps the
+        Studio’s job in the Studio. <b>Scores: 16 · 15 · 16 = 47</b></p>
+    </div>
+    <div class="dir">
+      <h4>C · One search field</h4>
+      <div class="wf">
+        <div class="b hot" style="top:8px;height:30px">⌕ Paint or #hex &nbsp;· Cancel</div>
+        <div class="b" style="top:46px;height:26px;justify-content:flex-start">Recent</div>
+        <div class="b" style="top:76px;height:26px;justify-content:flex-start">▪ Mephiston Red · Citadel Base</div>
+        <div class="b" style="top:106px;height:26px;justify-content:flex-start">▪ #9A1115 · your colour</div>
+        <div class="b" style="top:136px;height:26px;justify-content:flex-start">Browse all 3,225 by colour →</div>
+        <div class="b" style="top:166px;height:156px;background:#D1D4DB">keyboard</div>
+      </div>
+      <p>A full-screen search layer with typeahead rows. Browsing by colour goes to a Shelf “pick mode”. Best typed lookup, but a
+        new full-screen layer and a fourth Shelf behaviour. <b>Scores: 14 · 13 · 14 = 41</b></p>
+    </div>
+    <div class="dir">
+      <h4>D · A “Choose a colour” sheet</h4>
+      <div class="wf">
+        <div class="b" style="top:8px;height:40px">[■ Alga Green ▾] seed button</div>
+        <div class="b pop" style="top:70px;bottom:0;align-items:flex-start;padding-top:8px;border-radius:12px 12px 0 0">Choose a colour</div>
+        <div class="b" style="top:100px;height:26px;left:16px;right:16px">⌕ Paint or #hex · 📷</div>
+        <div class="b" style="top:134px;height:40px;left:16px;right:16px">Recent ▪▪▪▪▪</div>
+        <div class="b" style="top:180px;height:40px;left:16px;right:16px">Your paints ▪▪▪▪▪</div>
+        <div class="b" style="top:226px;height:80px;left:16px;right:16px">Browse by brand ›</div>
+      </div>
+      <p>One button opens one sheet with everything. A good inside, but it hides search behind a tap and adds a tap to the most
+        common jobs. It also needs the resizable sheet, which is planned for later. <b>Scores: 11 · 7 · 10 = 28</b></p>
+    </div>
+    <div class="dir">
+      <h4>B · The Shelf picks</h4>
+      <div class="wf">
+        <div class="b hot" style="top:8px;height:30px">Cancel · Pick a paint</div>
+        <div class="b" style="top:46px;height:30px">⌕ Search · Filters</div>
+        <div class="tiles" style="top:86px"><i style="background:#555E1B"></i><i style="background:#9A1115"></i><i style="background:#0F3D7C"></i><i style="background:#C8A13A"></i><i style="background:#2A1C51"></i><i style="background:#556229"></i><i style="background:#697068"></i><i style="background:#D6AC57"></i><i style="background:#0F702A"></i><i style="background:#47125A"></i><i style="background:#C21920"></i><i style="background:#1E2B2A"></i><i style="background:#9A1115"></i><i style="background:#555E1B"></i><i style="background:#2A1C51"></i><i style="background:#0F3D7C"></i></div>
+      </div>
+      <p>Delete the drawer; ☰ Paints opens the Shelf in a pick mode. One browser, but on the same-looking grid a tap marks in one mode
+        and replaces your scheme in the other. That breaks the locked tap-to-mark rule (USE_CASES §10.2). <b>Scores: 9 · 10 · 9 = 28</b></p>
+    </div>
+  </div>
+  <h3 class="lab">Scores by judge (clarity + speed + fit + cost, each 1–5)</h3>
+  <div class="scroll-x"><table class="t">
+    <tr><th>Direction</th><th>Painter</th><th>Constitution &amp; a11y</th><th>Build &amp; risk</th><th>Total</th></tr>
+    <tr class="win"><td>A · Slim the drawer</td><td class="n">16</td><td class="n">16</td><td class="n">15</td><td class="n">47</td></tr>
+    <tr><td>C · One search field</td><td class="n">14</td><td class="n">14</td><td class="n">13</td><td class="n">41</td></tr>
+    <tr><td>D · Choose-a-colour sheet</td><td class="n">11</td><td class="n">10</td><td class="n">7</td><td class="n">28</td></tr>
+    <tr><td>B · The Shelf picks</td><td class="n">9</td><td class="n">9</td><td class="n">10</td><td class="n">28</td></tr>
+  </table></div>
+</section>
+
+<!-- ============================================================ RECOMMENDED -->
+<section class="recd" id="recommended">
+  <h2>Recommended: one seed field, and a list that only picks <span class="rec">Recommended</span></h2>
+  <p class="why">A’s structure, with the best parts of C and D. <b>One field</b> takes a paint name, a brand word or a hex.
+  <b>▾ Browse</b> opens a colour grid without the keyboard. A tap only <b>picks</b>. Marking moves to a long-press menu.
+  Import and export leave the Studio. Faceted filters stay on the Shelf, where they already are.</p>
+
+  <div class="pair">
+    <figure>
+      <figcaption><b>Try it.</b> Tap <b>▾</b> to browse (no keyboard). Or type: <code>red</code>, <code>vallejo red</code>,
+        <code>citadel shade</code>, <code>#9A1115</code>, <code>9a1115</code> or <code>decade</code>. Tap a paint to pick it.
+        Press and hold a paint (or right-click) to mark it.</figcaption>
+      <div class="phone" data-picker='{"interactive":true}'></div>
+      <p class="ann">The toolbar is <b>one row</b> (74px at 390, measured in the app; today 178px), so the hero and the whole wheel fit on
+        the first screen. Today the screen edge cuts the wheel.</p>
+    </figure>
+    <figure>
+      <figcaption><b>▾ Browse, no keyboard.</b> Recent picks first, then every paint as a colour grid. Your pick has a ring.</figcaption>
+      <div class="phone" data-picker='{"open":"browse"}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>Typing “red”, keyboard up.</b> Rows with brand · line, so the many “Red”s and the Dawnstone twins are clear.
+        Paints you own come first.</figcaption>
+      <div class="phone" data-picker='{"query":"red","keyboard":true}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>A hex, typed or pasted.</b> <code>#</code> + 6 digits changes the colour as you type the last digit. The
+        closest paints follow, with ΔE and its label.</figcaption>
+      <div class="phone" data-picker='{"query":"#9A1115"}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>“decade” is a word, not a colour.</b> Letters-only hex words search names first. “Use #DECADE” is the last
+        option, so nothing changes by accident.</figcaption>
+      <div class="phone short" data-picker='{"query":"decade"}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>Press and hold to mark.</b> A tap only picks. Hold (500ms), right-click, or Shift+F10 opens one shared menu.
+        This also makes marking work on iPhone for the first time.</figcaption>
+      <div class="phone short" data-picker='{"query":"macragge","menu":0}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>Dark theme, browse.</b></figcaption>
+      <div class="phone short dark" data-picker='{"open":"browse"}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>The Shelf gets “Use as seed”.</b> Select one paint, open its menu, and the Studio starts from it. No pick mode.
+        A tap on the Shelf still marks.</figcaption>
+      <div class="phone short">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div style="padding:12px"><div class="field">⌕ Search your shelf…</div></div>
+        <div class="grid" style="padding:0 12px">
+          <span class="chip"><span class="sw" style="background:#9A1115;box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--accent)"><span class="badge owned">✓</span></span><span class="nm">Mephiston Red</span></span>
+          <span class="chip"><span class="sw" style="background:#0F3D7C"><span class="badge owned">✓</span></span><span class="nm">Macragge Blue</span></span>
+          <span class="chip"><span class="sw" style="background:#556229"><span class="badge owned">✓</span></span><span class="nm">Deathworld Forest</span></span>
+          <span class="chip"><span class="sw" style="background:#02134E"><span class="badge want">+</span></span><span class="nm">Kantor Blue</span></span>
+        </div>
+        <div class="menu" style="left:24px;top:250px">
+          <div class="mh">Mephiston Red · Citadel Base</div>
+          <button class="isnew">Use as seed</button>
+          <button>Owned</button><button>To buy</button><button>Clear</button>
+        </div>
+      </div>
+      <p class="ann">“Use as seed” is enabled for exactly one selected paint. With 0 or 2+ selected it stays visible but says why it is off.</p>
+    </figure>
+  </div>
+
+  <h3 class="lab">Desktop (1180px) — the same field and list, anchored under the field</h3>
+  <div class="desk" data-picker='{"desk":true,"open":"browse"}'></div>
+
+  <h3 class="lab">Where everything goes</h3>
+  <div class="scroll-x"><table class="t">
+    <tr><th>Today</th><th>After</th></tr>
+    <tr><td>☰ Paints button + <code>#</code> hex box</td><td>One seed field: <b>Paint or #hex</b>, with <b>▾ Browse</b> inside it</td></tr>
+    <tr><td>Drawer search</td><td>The seed field. Several words narrow it: “vallejo red”, “citadel shade”. The Shelf search gets the same matcher.</td></tr>
+    <tr><td>Drawer brand · type selects</td><td>Gone from the Studio. Brand and type words work in the field. Faceted filters stay on the Shelf.</td></tr>
+    <tr><td>Drawer sort (7 options)</td><td>One Sort at the foot of the browse grid: Hue · Closest to your pick · Owned first · Name</td></tr>
+    <tr><td>Drawer Import… · Export CSV</td><td>CSV stays only on the Shelf. JSON Back up / Restore go in ⋯ (the menu proposal).</td></tr>
+    <tr><td>Drawer marking (right-click, P/U/X)</td><td>One shared mark menu: long-press, right-click, or Shift+F10. P/U/X stay on the Shelf.</td></tr>
+    <tr><td>Hex box as a readout of the colour</td><td>The hero line is the one readout (it already shows the hex).</td></tr>
+    <tr><td>From photo (text button)</td><td>A 44px camera button on a phone (named “From photo”); the text label stays on desktop.</td></tr>
+    <tr><td>No way to seed from the Shelf</td><td>“Use as seed” in the Shelf’s menu</td></tr>
+  </table></div>
+
+  <h3 class="lab">Choices for you (the judges disagreed)</h3>
+  <ul class="notes">
+    <li><b>Live hex.</b> Today a hex seeds as you type. The proposal keeps that for <code>#</code> + 6 digits, and asks for Enter for
+      anything else (a bare <code>9A1115</code>, or <code>#9A1</code>). One judge wanted Enter for everything, so a half-typed hex
+      never flashes a wrong scheme. The proposal avoids that flash, because a 3-digit hex never seeds live.</li>
+    <li><b>Marking in the Studio.</b> The proposal uses a long-press menu (no new buttons). Two judges preferred a small
+      “✓ own · + buy” pair on each Plan row. That pair is easier to find, but it adds more small buttons, and today’s buy buttons are
+      already under 44px.</li>
+    <li><b>Recent picks.</b> The proposal keeps them for this visit only, so they are not new saved data and need no backup or
+      delete. One judge wanted them saved.</li>
+    <li><b>Browse grid or rows.</b> The proposal uses a grid to browse (you look by colour) and rows to search (you read names).
+      The other option is rows everywhere.</li>
+  </ul>
+
+  <h3 class="lab">Fixed by this change</h3>
+  <ul class="notes">
+    <li>The keyboard rises only when you tap the field, never on ▾.</li>
+    <li>A pasted <code>#9A1115</code> works, and “Abaddon Black” can never become <code>#ABADDB</code>.</li>
+    <li>The list exists only while it is open: one tab stop instead of 3,232, and no rebuild of 3,225 buttons on every colour change.</li>
+    <li>One <code>render('marks')</code> path: a mark anywhere updates the hero, the palette, the open list and the Shelf.</li>
+    <li>The small-phone load scroll (<code>app.js:1242</code>), which can also be fixed now, on its own.</li>
+  </ul>
+
+  <h3 class="lab">Constitution and docs (same commit as the build)</h3>
+  <ul class="notes">
+    <li><b>CLAUDE.md §3.6:</b> the header/IA bullet, Top-level modes, the picker bullet (rewritten as “seed field + a list that only
+      picks”), Layout, and the ≤520px rule (“the seed toolbar stays one row”). §3.5: “outside the Shelf, a tap on a paint only picks;
+      marking is the shared mark menu”. §3.1 and §3.4 comments that say “drawer”.</li>
+    <li><b>USE_CASES</b> UC-21 and Priya’s step 2. <b>PLAN</b> backlog 7 (its doorway becomes the mark menu’s “Details”).
+      <b>mockups/collection-setting.html</b>: CSV “stays on the Shelf” only.</li>
+    <li>CHANGELOG, a <code>CACHE</code> bump in <code>sw.js</code>, unit tests for the query parser and the shared matcher.</li>
+  </ul>
+</section>
+
+<script>
+/* ---- the app's colour maths (src/js/color.js, copied so this page works on its own) ---- */
+const Color = (() => {
+  // color.js — pure colour math for Palette Studio. No DOM, no globals, no deps.
+  // Conventions locked in CLAUDE.md §7: sRGB ↔ linear ↔ XYZ ↔ CIELAB (D65),
+  // matching via CIEDE2000 (kL=kC=kH=1). Verified against Sharma et al. reference pairs.
+  //
+  // The pipeline, and why it has so many steps: a hex is a display encoding, not a measurement of
+  // light, and the numeric distance between two hexes has almost nothing to do with how different
+  // they LOOK. So every match in the app walks the same road —
+  //
+  //   #RRGGBB → sRGB 0-255 → linear light → CIE XYZ → CIELAB → ΔE 2000
+  //
+  //   • linear light  undoes the display's gamma curve, so the numbers are proportional to photons
+  //   • XYZ           a device-independent way to say "this colour", tied to a reference white (D65)
+  //   • CIELAB        re-spaces XYZ so equal numeric steps look like equal perceptual steps
+  //   • ΔE 2000       patches the places CIELAB still gets wrong (blues, near-neutrals, saturation)
+  //
+  // HSL also appears here, but only for the harmony geometry (rotate the hue, keep S/L) — it is a
+  // convenient dial, not a perceptual space, and nothing is ever MATCHED in it.
+
+  const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
+  const clamp255 = x => (x < 0 ? 0 : x > 255 ? 255 : x);
+
+  /** Normalise a user/URL-supplied colour string to '#RRGGBB' (uppercase), or null if it isn't a
+   *  6-digit hex (with or without the leading '#'). The ONE validation guard for colour input —
+   *  seven hand-rolled copies of this regex had already drifted into with-# and without-# variants. */
+  const normHex = s => {
+    const m = /^#?([0-9a-fA-F]{6})$/.exec(String(s ?? '').trim());
+    if (!m) return null;
+    // Rebuild via an integer round-trip rather than echoing the capture group: numerically identical,
+    // but the output provably contains only hex digits even to a static analyser (taint ends at the
+    // parseInt) — normHex/safeColor products are interpolated into HTML all over the app.
+    return '#' + parseInt(m[1], 16).toString(16).padStart(6, '0').toUpperCase();
+  };
+
+  /** "#RGB" or "#RRGGBB" → [r,g,b] in 0–255. */
+  function hexToRgb(hex) {
+    let h = String(hex).trim().replace(/^#/, '');
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    if (!/^[0-9a-fA-F]{6}$/.test(h)) throw new Error(`invalid hex: ${hex}`);
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  }
+
+  /** [r,g,b] 0–255 → "#RRGGBB" (uppercase). */
+  function rgbToHex([r, g, b]) {
+    return '#' + [r, g, b].map(v => Math.round(clamp255(v)).toString(16).padStart(2, '0')).join('').toUpperCase();
+  }
+
+  /**
+   * sRGB channel 0–255 → linear-light 0–1.
+   * Displays don't emit light in proportion to the stored value — sRGB bakes in a gamma curve so the
+   * limited bits land where the eye is most sensitive. Undo it before doing any maths that assumes
+   * light adds up (mixing, XYZ, the colour-blindness matrices). The two-part curve (a short linear
+   * toe below 0.04045, a power curve above) is the sRGB spec's, not an approximation of it.
+   */
+  const srgbToLinear = c => {
+    c /= 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  /** linear-light 0–1 → sRGB channel 0–255. */
+  const linearToSrgb = c => 255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+
+  const rgbToLinear = ([r, g, b]) => [srgbToLinear(r), srgbToLinear(g), srgbToLinear(b)];
+  const linearToRgb = ([r, g, b]) => [linearToSrgb(r), linearToSrgb(g), linearToSrgb(b)];
+
+  const D65 = [0.95047, 1.0, 1.08883];
+
+  /**
+   * [r,g,b] 0–255 → CIE XYZ (D65, Y in 0–1).
+   * The matrix is the sRGB→XYZ primaries under D65 (daylight white). Y is luminance, which is why the
+   * green row (0.7152) dominates: the eye takes most of its brightness signal from green.
+   */
+  function rgbToXyz([r, g, b]) {
+    const [R, G, B] = rgbToLinear([r, g, b]);
+    return [
+      R * 0.4124 + G * 0.3576 + B * 0.1805,
+      R * 0.2126 + G * 0.7152 + B * 0.0722,
+      R * 0.0193 + G * 0.1192 + B * 0.9505,
+    ];
+  }
+
+  /**
+   * CIE XYZ (D65) → CIELAB [L,a,b]: L* = lightness 0–100, a* = green→red, b* = blue→yellow.
+   * Each channel is divided by the reference white first, so Lab describes a colour RELATIVE to what
+   * counts as white. `f` is a cube root — the eye's response to intensity is roughly a power law —
+   * swapped for a straight line below a small threshold, where the cube root's slope runs away toward
+   * infinity and would amplify noise in the near-blacks.
+   */
+  function xyzToLab([x, y, z]) {
+    const f = t => (t > 0.008856451679035631 ? Math.cbrt(t) : t / 0.12841854934601665 + 4 / 29);
+    const fx = f(x / D65[0]), fy = f(y / D65[1]), fz = f(z / D65[2]);
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  }
+
+  const rgbToLab = rgb => xyzToLab(rgbToXyz(rgb));
+  const hexToLab = hex => rgbToLab(hexToRgb(hex));
+
+  /** Lab chroma C* = √(a*² + b*²) — perceptual colourfulness (0 = a pure neutral). */
+  const labChroma = hex => { const [, a, b] = hexToLab(hex); return Math.hypot(a, b); };
+  /** Neutral-seed detection threshold (locked, CLAUDE.md §7). Lab chroma is used rather than HSL
+   *  saturation because visually-black "saturated" hexes (e.g. #100000, HSL S=1) must classify as
+   *  neutral. Seeds in the borderline band just above the threshold stay in normal hue mode. */
+  const NEUTRAL_CHROMA = 10;
+  /** Hysteresis exit threshold (locked, §7): the studio ENTERS neutral mode below NEUTRAL_CHROMA but
+   *  only EXITS above NEUTRAL_EXIT, so a drag hovering on the boundary can't flip the mode per frame
+   *  (banner/strip thrash). Seeds in the 10–14 deadband keep whichever mode they arrived in. */
+  const NEUTRAL_EXIT = 14;
+  const isNeutral = hex => labChroma(hex) < NEUTRAL_CHROMA;
+
+  /**
+   * CIEDE2000 colour difference between two CIELAB values (kL=kC=kH=1) — the single matching metric
+   * for the whole app (§7). Roughly: ΔE 1 is the smallest difference a person can notice side by side,
+   * ΔE 2–3 is a good paint match, ΔE 10+ is plainly a different colour (the §3.2 scale).
+   *
+   * It is long because it is CIELAB plus four corrections, each fixing a place where plain Lab
+   * distance disagrees with people:
+   *   G       inflates a* for near-neutral colours, where Lab overstates how different faint tints look
+   *   Sl/Sc/Sh weight lightness/chroma/hue differences by WHERE in the space you are — a chroma step
+   *            matters less among already-vivid colours than among muted ones
+   *   T        varies the hue weighting around the hue circle (blues and reds are not equally touchy)
+   *   Rt       the rotation term: a specific correction for the blue region near 275°, where hue and
+   *            chroma errors interact
+   * Everything is on the CIE's published formula; the variable names follow Sharma et al. so the code
+   * can be read against the paper. Do not "simplify" it — §7 locks the metric so results never drift.
+   */
+  function deltaE2000(lab1, lab2) {
+    const [L1, a1, b1] = lab1, [L2, a2, b2] = lab2;
+    const rad = Math.PI / 180, deg = 180 / Math.PI;
+    // Step 1 — chroma (distance from the neutral axis) of each colour, and the a* inflation G that
+    // stretches near-neutrals apart so two barely-tinted greys don't read as identical.
+    const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2);
+    const Cbar = (C1 + C2) / 2, Cbar7 = Math.pow(Cbar, 7);
+    const G = 0.5 * (1 - Math.sqrt(Cbar7 / (Cbar7 + 6103515625))); // 25^7
+    // Step 2 — re-derive chroma and hue in that adjusted space (the primed values).
+    const a1p = (1 + G) * a1, a2p = (1 + G) * a2;
+    const C1p = Math.hypot(a1p, b1), C2p = Math.hypot(a2p, b2);
+    let h1p = Math.atan2(b1, a1p); if (h1p < 0) h1p += 2 * Math.PI;
+    let h2p = Math.atan2(b2, a2p); if (h2p < 0) h2p += 2 * Math.PI;
+    // Step 3 — the three differences. Hue is an ANGLE, so its difference has to take the short way
+    // round the circle (±180°), and is undefined when either colour is neutral (no hue to compare).
+    const dLp = L2 - L1, dCp = C2p - C1p;
+    let dhp = 0;
+    if (C1p * C2p !== 0) {
+      dhp = h2p - h1p;
+      if (dhp > Math.PI) dhp -= 2 * Math.PI; else if (dhp < -Math.PI) dhp += 2 * Math.PI;
+    }
+    // ΔH' converts that hue ANGLE into a distance: the same angular gap means a bigger visual
+    // difference the more saturated the two colours are, hence the √(C1'·C2') factor.
+    const dHp = 2 * Math.sqrt(C1p * C2p) * Math.sin(dhp / 2);
+    // Step 4 — the midpoints the weighting functions are evaluated at.
+    const Lbp = (L1 + L2) / 2, Cbp = (C1p + C2p) / 2;
+    let hbp;
+    if (C1p * C2p === 0) hbp = h1p + h2p;
+    else if (Math.abs(h1p - h2p) <= Math.PI) hbp = (h1p + h2p) / 2;
+    // Sharma eq. 14: wide hue gaps wrap toward 0° — ADD 2π when the sum is small, SUBTRACT when large.
+    // (The old always-add branch put h̄' a full turn high for sum ≥ 2π; T's cosines are 2π-periodic so
+    // the numeric effect was < 2e-4 ΔE, but the published formula is the locked convention, §7.)
+    else hbp = h1p + h2p < 2 * Math.PI ? (h1p + h2p + 2 * Math.PI) / 2 : (h1p + h2p - 2 * Math.PI) / 2;
+    // Step 5 — the weighting terms. T tunes hue sensitivity around the circle; Rt (via dTheta and Rc)
+    // is the blue-region rotation; Sl/Sc/Sh scale each difference by where in the space it happens.
+    const T = 1 - 0.17 * Math.cos(hbp - 30 * rad) + 0.24 * Math.cos(2 * hbp)
+      + 0.32 * Math.cos(3 * hbp + 6 * rad) - 0.20 * Math.cos(4 * hbp - 63 * rad);
+    const dTheta = 30 * rad * Math.exp(-Math.pow((hbp * deg - 275) / 25, 2));
+    const Cbp7 = Math.pow(Cbp, 7);
+    const Rc = 2 * Math.sqrt(Cbp7 / (Cbp7 + 6103515625));
+    const Sl = 1 + (0.015 * Math.pow(Lbp - 50, 2)) / Math.sqrt(20 + Math.pow(Lbp - 50, 2));
+    const Sc = 1 + 0.045 * Cbp;
+    const Sh = 1 + 0.015 * Cbp * T;
+    const Rt = -Math.sin(2 * dTheta) * Rc;
+    // Step 6 — weighted root-sum-square of the three differences, plus the chroma/hue interaction.
+    return Math.sqrt(
+      (dLp / Sl) ** 2 + (dCp / Sc) ** 2 + (dHp / Sh) ** 2 + Rt * (dCp / Sc) * (dHp / Sh)
+    );
+  }
+
+  const deltaE2000Hex = (h1, h2) => deltaE2000(hexToLab(h1), hexToLab(h2));
+
+  /**
+   * [r,g,b] 0–255 → HSL [h 0–360, s 0–1, l 0–1].
+   * Used for the harmony GEOMETRY only (rotate the hue, keep saturation and lightness) — never for
+   * matching, which is always Lab/ΔE. HSL is a reshuffle of RGB, so equal steps in it are not equal
+   * perceptual steps: this is exactly why a "saturated" near-black like #100000 reads as vivid here
+   * but correctly classifies as neutral by Lab chroma (see isNeutral).
+   */
+  function rgbToHsl([r, g, b]) {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    let h = 0;
+    const l = (mx + mn) / 2;
+    const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+    if (d !== 0) {
+      if (mx === r) h = ((g - b) / d) % 6;
+      else if (mx === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60; if (h < 0) h += 360;
+    }
+    return [h, s, l];
+  }
+
+  /** HSL [h,s,l] → [r,g,b] 0–255. */
+  function hslToRgb([h, s, l]) {
+    h = ((h % 360) + 360) % 360;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    let rgb;
+    if (h < 60) rgb = [c, x, 0]; else if (h < 120) rgb = [x, c, 0];
+    else if (h < 180) rgb = [0, c, x]; else if (h < 240) rgb = [0, x, c];
+    else if (h < 300) rgb = [x, 0, c]; else rgb = [c, 0, x];
+    return rgb.map(v => (v + m) * 255);
+  }
+
+  /** Rotate a colour's hue by `deg`, preserving S and L. Returns a hex. */
+  function rotateHue(hex, deg) {
+    const [h, s, l] = rgbToHsl(hexToRgb(hex));
+    return rgbToHex(hslToRgb([h + deg, s, l]));
+  }
+
+  /** Adjust lightness/saturation (deltas in 0–1), preserving hue. Returns a hex. */
+  function adjustHsl(hex, { dl = 0, ds = 0 } = {}) {
+    const [h, s, l] = rgbToHsl(hexToRgb(hex));
+    return rgbToHex(hslToRgb([h, clamp01(s + ds), clamp01(l + dl)]));
+  }
+
+  /**
+   * Plain-language direction to nudge an owned `paintHex` toward the `idealHex` (use-what-you-own, #6).
+   * Picks the single most-impactful axis (lightness > saturation > hue) so the hint stays actionable.
+   * @returns {string|null} e.g. "lighten slightly", "darken", "mute", "saturate", "shift hue" — or null if already close.
+   */
+  function adjustDirection(idealHex, paintHex) {
+    const [ih, is, il] = rgbToHsl(hexToRgb(idealHex));
+    const [ph, ps, pl] = rgbToHsl(hexToRgb(paintHex));
+    const dl = il - pl, ds = is - ps;
+    let dh = ih - ph; if (dh > 180) dh -= 360; if (dh < -180) dh += 360;
+    // Compare on a common ~0–1 scale; lightness/saturation read more strongly to a painter than hue.
+    const cands = [
+      { m: Math.abs(dl), word: dl > 0 ? 'lighten' : 'darken' },
+      { m: Math.abs(ds) * 0.8, word: ds > 0 ? 'saturate' : 'mute' },
+      { m: (Math.abs(dh) / 180) * 0.6, word: 'shift hue' },
+    ];
+    cands.sort((a, b) => b.m - a.m);
+    const top = cands[0];
+    if (top.m < 0.03) return null;                 // effectively the same colour — no adjustment worth naming
+    return top.word + (top.m < 0.12 ? ' slightly' : '');
+  }
+
+  /** WCAG 2.1 relative luminance of a colour (hex or [r,g,b]), 0–1. */
+  function relativeLuminance(color) {
+    const [r, g, b] = (typeof color === 'string' ? hexToRgb(color) : color).map(srgbToLinear);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  /** WCAG 2.1 contrast ratio between two colours, 1–21. */
+  function contrastRatio(a, b) {
+    const L1 = relativeLuminance(a), L2 = relativeLuminance(b);
+    return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+  }
+
+  const NEAR_BLACK = '#15150F', NEAR_WHITE = '#FFFFFF';
+  /** Pick legible text colour for a swatch: whichever of black/white has higher contrast (§3.5/§7). */
+  function textOn(hex) {
+    return contrastRatio(hex, NEAR_BLACK) >= contrastRatio(hex, NEAR_WHITE) ? NEAR_BLACK : NEAR_WHITE;
+  }
+  return { hexToLab, deltaE2000, textOn, hexToRgb, rgbToHsl };
+})();
+
+/* ---- 134 real paints from src/data/paints.json: [id, brand, line, name, hex, type] ---- */
+const PAINTS = [["ak-interactive-3rd-gen-alga-green","AK Interactive","3rd Gen","Alga Green","#555E1B","layer"],["citadel-base-deathworld-forest","Citadel","Base","Deathworld Forest","#556229","base"],["scale75-artist-violet","Scale75","Artist","Violet","#2A1C51","layer"],["reaper-pathfinder-keleshite-gold","Reaper","Pathfinder","Keleshite Gold","#BD9E44","metal"],["citadel-dry-sigmarite","Citadel","Dry","Sigmarite","#D6AC57","metal"],["citadel-base-macragge-blue","Citadel","Base","Macragge Blue","#0F3D7C","base"],["citadel-base-mephiston-red","Citadel","Base","Mephiston Red","#960C09","base"],["citadel-base-kantor-blue","Citadel","Base","Kantor Blue","#02134E","base"],["citadel-dry-dawnstone","Citadel","Dry","Dawnstone","#697068","dry"],["citadel-layer-dawnstone","Citadel","Layer","Dawnstone","#697068","layer"],["citadel-base-abaddon-black","Citadel","Base","Abaddon Black","#000000","base"],["citadel-layer-warpstone-glow","Citadel","Layer","Warpstone Glow","#0F702A","layer"],["citadel-layer-xereus-purple","Citadel","Layer","Xereus Purple","#47125A","layer"],["citadel-base-naggaroth-night","Citadel","Base","Naggaroth Night","#3B2B50","base"],["citadel-base-retributor-armour","Citadel","Base","Retributor Armour","#EDC169","metal"],["citadel-base-leadbelcher","Citadel","Base","Leadbelcher","#969696","metal"],["citadel-base-corax-white","Citadel","Base","Corax White","#FFFFFF","base"],["citadel-layer-evil-sunz-scarlet","Citadel","Layer","Evil Sunz Scarlet","#C01411","layer"],["citadel-base-caliban-green","Citadel","Base","Caliban Green","#003D15","base"],["citadel-shade-agrax-earthshade","Citadel","Shade","Agrax Earthshade","#A99D8D","shade"],["citadel-shade-nuln-oil","Citadel","Shade","Nuln Oil","#9E9A98","shade"],["citadel-base-balthasar-gold","Citadel","Base","Balthasar Gold","#A77353","metal"],["citadel-base-rhinox-hide","Citadel","Base","Rhinox Hide","#462F30","base"],["citadel-base-mournfang-brown","Citadel","Base","Mournfang Brown","#490F06","base"],["citadel-base-zandri-dust","Citadel","Base","Zandri Dust","#988E56","base"],["citadel-layer-ushabti-bone","Citadel","Layer","Ushabti Bone","#ABA173","layer"],["citadel-base-averland-sunset","Citadel","Base","Averland Sunset","#FBB81C","base"],["citadel-layer-yriel-yellow","Citadel","Layer","Yriel Yellow","#FFD900","layer"],["citadel-layer-moot-green","Citadel","Layer","Moot Green","#3DAF44","layer"],["citadel-layer-calgar-blue","Citadel","Layer","Calgar Blue","#2A497F","layer"],["citadel-layer-cadian-fleshtone","Citadel","Layer","Cadian Fleshtone","#C47652","layer"],["citadel-base-mechanicus-standard-grey","Citadel","Base","Mechanicus Standard Grey","#39484A","base"],["citadel-base-death-guard-green","Citadel","Base","Death Guard Green","#6D774D","base"],["two-thin-coats-wave-3-decadent-purple","Two Thin Coats","Wave 3","Decadent Purple","#C1BED3","layer"],["ak-interactive-3rd-gen-amaranth-red","AK Interactive","3rd Gen","Amaranth Red","#CF4E27","layer"],["ak-interactive-3rd-gen-dead-red","AK Interactive","3rd Gen","Dead Red","#F54949","layer"],["ak-interactive-3rd-gen-scarlet-red","AK Interactive","3rd Gen","Scarlet Red","#D03B27","layer"],["ammo-by-mig-acrylic-blood-red","AMMO by Mig","Acrylic","Blood Red","#AC2B25","layer"],["ammo-by-mig-acrylic-red","AMMO by Mig","Acrylic","Red","#BD2615","layer"],["army-painter-d-d-succubus-red","Army Painter","D&D","Succubus Red","#AA262F","layer"],["army-painter-warpaints-pure-red","Army Painter","Warpaints","Pure Red","#CA1913","layer"],["army-painter-warpaints-fanatic-pure-red","Army Painter","Warpaints Fanatic","Pure Red","#CD151C","layer"],["citadel-base-gal-vorbak-red","Citadel","Base","Gal Vorbak Red","#4B213C","base"],["p3-p3-hoksune-red","P3","P3","Hoksune Red","#4B2015","layer"],["pro-acryl-pro-acryl-bold-pyrrole-red","Pro Acryl","Pro Acryl","Bold Pyrrole Red","#A90F0F","layer"],["reaper-bones-brilliant-red","Reaper","Bones","Brilliant Red","#EC202B","layer"],["scale75-artist-burgundy-wine-red","Scale75","Artist","Burgundy Wine Red","#5A2212","layer"],["two-thin-coats-wave-1-berserker-red","Two Thin Coats","Wave 1","Berserker Red","#4D1A15","layer"],["ak-interactive-3rd-gen-afv-n-8-earth-red-fs30117","AK Interactive","3rd Gen AFV","Nº8 Earth Red (fs30117)","#6D3D26","layer"],["ak-interactive-3rd-gen-air-rlm-79-1941","AK Interactive","3rd Gen Air","Rlm 79 (1941)","#E6A058","layer"],["ak-interactive-3rd-gen-figures-british-uniform-lights","AK Interactive","3rd Gen Figures","British Uniform Lights","#8C682A","layer"],["ak-interactive-3rd-gen-rubber-black","AK Interactive","3rd Gen","Rubber Black","#29251A","layer"],["ak-interactive-3rd-gen-lemon-yellow","AK Interactive","3rd Gen","Lemon Yellow","#FFE121","layer"],["ak-interactive-3rd-gen-green-grey","AK Interactive","3rd Gen","Green-grey","#DFE4BC","layer"],["ak-interactive-3rd-gen-figures-splittermuster-green-spots","AK Interactive","3rd Gen Figures","Splittermuster Green Spots","#303E27","layer"],["ak-interactive-3rd-gen-air-ijn-q1-anti-glare-blue-black","AK Interactive","3rd Gen Air","Ijn Q1 Anti-glare Blue-black","#1B2325","layer"],["ammo-by-mig-acrylic-chipping","AMMO by Mig","Acrylic","Chipping","#260E0E","layer"],["ammo-by-mig-acrylic-brown-soil","AMMO by Mig","Acrylic","Brown Soil","#6E4939","layer"],["ammo-by-mig-acrylic-fs-30219-tan","AMMO by Mig","Acrylic","Fs 30219 Tan","#81603D","layer"],["ammo-by-mig-acrylic-scc-2-british-1941-44-service-drab","AMMO by Mig","Acrylic","Scc 2 (british 1941-44 Service Drab)","#544933","layer"],["ammo-by-mig-acrylic-khaki-green-n-3-british-1939-42","AMMO by Mig","Acrylic","Khaki Green Nº3 (british 1939-42)","#685F38","layer"],["ammo-by-mig-acrylic-sky-type-s-bs-210","AMMO by Mig","Acrylic","Sky Type S (bs 210)","#B4B299","layer"],["ammo-by-mig-acrylic-ral-6014-gelboliv","AMMO by Mig","Acrylic","RAL 6014 Gelboliv","#454732","layer"],["ammo-by-mig-acrylic-ral-6011-resedagr-n","AMMO by Mig","Acrylic","RAL 6011 Resedagrün","#677D4C","layer"],["ammo-by-mig-acrylic-rlm-76-pale-grey","AMMO by Mig","Acrylic","RLM 76 Pale Grey","#9AC4B6","layer"],["army-painter-skin-tones-mocca-skin","Army Painter","Skin Tones","Mocca Skin","#402828","layer"],["army-painter-warpaints-monster-brown","Army Painter","Warpaints","Monster Brown","#9D6A5F","layer"],["army-painter-warpaints-elven-flesh","Army Painter","Warpaints","Elven Flesh","#F9BE94","layer"],["army-painter-warpaints-sulfide-ochre","Army Painter","Warpaints","Sulfide Ochre","#C78600","layer"],["army-painter-warpaints-combat-fatigues","Army Painter","Warpaints","Combat Fatigues","#868E59","layer"],["army-painter-warpaints-fanatic-autumn-sage","Army Painter","Warpaints Fanatic","Autumn Sage","#75AD98","layer"],["army-painter-warpaints-fanatic-bright-sapphire","Army Painter","Warpaints Fanatic","Bright Sapphire","#84CEF0","layer"],["army-painter-warpaints-fanatic-triumphant-navy","Army Painter","Warpaints Fanatic","Triumphant Navy","#1A2C53","layer"],["army-painter-warpaints-fanatic-pink-potion","Army Painter","Warpaints Fanatic","Pink Potion","#F4B9D4","layer"],["citadel-layer-bloodreaver-flesh","Citadel","Layer","Bloodreaver Flesh","#6A4848","layer"],["citadel-base-catachan-fleshtone","Citadel","Base","Catachan Fleshtone","#442B25","base"],["citadel-layer-kislev-flesh","Citadel","Layer","Kislev Flesh","#D1A570","layer"],["citadel-base-steel-legion-drab","Citadel","Base","Steel Legion Drab","#584E2D","base"],["citadel-layer-warboss-green","Citadel","Layer","Warboss Green","#317E57","layer"],["citadel-dry-skink-blue","Citadel","Dry","Skink Blue","#54BDCA","dry"],["citadel-dry-etherium-blue","Citadel","Dry","Etherium Blue","#9EB5CE","dry"],["citadel-dry-lucius-lilac","Citadel","Dry","Lucius Lilac","#B598C9","dry"],["p3-p3-ruddy-blush","P3","P3","Ruddy Blush","#AB3737","layer"],["p3-p3-kapitan-red","P3","P3","Kapitan Red","#D07B3A","layer"],["p3-p3-mud-rut","P3","P3","Mud Rut","#674D2D","layer"],["p3-p3-icy-yellow","P3","P3","Icy Yellow","#C7B378","layer"],["p3-p3-cygnus-yellow","P3","P3","Cygnus Yellow","#F7E52D","layer"],["p3-p3-cryx-bane-base","P3","P3","Cryx Bane Base","#313A25","layer"],["p3-p3-arcane-blue","P3","P3","Arcane Blue","#7ACFD9","layer"],["p3-p3-exile-blue","P3","P3","Exile Blue","#203467","layer"],["pro-acryl-pro-acryl-mahogany","Pro Acryl","Pro Acryl","Mahogany","#261410","layer"],["pro-acryl-pro-acryl-light-umber","Pro Acryl","Pro Acryl","Light Umber","#5E4433","layer"],["pro-acryl-pro-acryl-warm-flesh","Pro Acryl","Pro Acryl","Warm Flesh","#F6C67C","layer"],["pro-acryl-pro-acryl-ivory","Pro Acryl","Pro Acryl","Ivory","#D5D0B3","layer"],["pro-acryl-pro-acryl-dark-camo-green","Pro Acryl","Pro Acryl","Dark Camo Green","#313C2C","layer"],["pro-acryl-signature-matt-cexwish-dark-emerald","Pro Acryl","Signature","Matt Cexwish Dark Emerald","#194245","layer"],["pro-acryl-pro-acryl-blue","Pro Acryl","Pro Acryl","Blue","#0855A3","layer"],["pro-acryl-pro-acryl-purple","Pro Acryl","Pro Acryl","Purple","#63306B","layer"],["reaper-bones-crimson-red","Reaper","Bones","Crimson Red","#711313","layer"],["reaper-master-series-bronzed-skin-shadow","Reaper","Master Series","Bronzed Skin Shadow","#A63201","layer"],["reaper-master-series-highlight-orange","Reaper","Master Series","Highlight Orange","#E27812","layer"],["reaper-bones-bleached-linen","Reaper","Bones","Bleached Linen","#F1E8D9","layer"],["reaper-master-series-bright-skin-highlight","Reaper","Master Series","Bright Skin Highlight","#F1D45F","layer"],["reaper-bones-wilderness-green","Reaper","Bones","Wilderness Green","#173708","layer"],["reaper-master-series-light-blue","Reaper","Master Series","Light Blue","#72DAE5","layer"],["reaper-master-series-midnight-blue","Reaper","Master Series","Midnight Blue","#0B141D","layer"],["reaper-master-series-violet-red","Reaper","Master Series","Violet Red","#611E47","layer"],["scale75-scalecolor-black-leather","Scale75","Scalecolor","Black Leather","#422A2A","layer"],["scale75-fantasy-games-sharpnel-red","Scale75","Fantasy & Games","Sharpnel Red","#6E290A","layer"],["scale75-scalecolor-walnut","Scale75","Scalecolor","Walnut","#7D6450","layer"],["scale75-artist-yellow-ocre","Scale75","Artist","Yellow Ocre","#A0702E","layer"],["scale75-artist-naples-yellow","Scale75","Artist","Naples Yellow","#DAAC22","layer"],["scale75-warfront-ss-camo-medium-green","Scale75","Warfront","Ss Camo Medium Green","#4D5025","layer"],["scale75-artist-alizarin-green","Scale75","Artist","Alizarin Green","#26944B","layer"],["scale75-scalecolor-sky-blue","Scale75","Scalecolor","Sky Blue","#2496C8","layer"],["scale75-artist-dark-ultramarine","Scale75","Artist","Dark Ultramarine","#32297A","layer"],["two-thin-coats-wave-2-dread-red","Two Thin Coats","Wave 2","Dread Red","#6E3E3E","layer"],["two-thin-coats-wave-1-boar-hide","Two Thin Coats","Wave 1","Boar Hide","#724438","layer"],["two-thin-coats-wave-2-noble-steed-brown","Two Thin Coats","Wave 2","Noble Steed Brown","#755339","layer"],["two-thin-coats-wave-2-argonaut-skin","Two Thin Coats","Wave 2","Argonaut Skin","#A78E6C","layer"],["two-thin-coats-wave-3-sun-bleach-yellow","Two Thin Coats","Wave 3","Sun Bleach Yellow","#F5E350","layer"],["two-thin-coats-wave-2-talisman-green","Two Thin Coats","Wave 2","Talisman Green","#79C042","layer"],["two-thin-coats-wave-2-hydra-green","Two Thin Coats","Wave 2","Hydra Green","#344B4D","layer"],["two-thin-coats-wave-1-celestial-blue","Two Thin Coats","Wave 1","Celestial Blue","#6991C0","layer"],["two-thin-coats-wave-3-enchantress-purple","Two Thin Coats","Wave 3","Enchantress Purple","#593662","layer"],["vallejo-game-color-bloody-red","Vallejo","Game Color","Bloody Red","#D41C1C","layer"],["vallejo-game-color-dried-blood","Vallejo","Game Color","Dried Blood","#622A1D","layer"],["vallejo-game-color-skin-tone","Vallejo","Game Color","Skin Tone","#E5AB85","layer"],["vallejo-game-color-earth","Vallejo","Game Color","Earth","#775730","layer"],["vallejo-model-color-canvas","Vallejo","Model Color","Canvas","#4D3E1F","layer"],["vallejo-game-color-fluorescent-yellow","Vallejo","Game Color","Fluorescent Yellow","#F0E639","layer"],["vallejo-game-color-ghost-green","Vallejo","Game Color","Ghost Green","#83C192","layer"],["vallejo-game-color-magic-blue","Vallejo","Game Color","Magic Blue","#0069AA","layer"],["vallejo-model-color-light-violet","Vallejo","Model Color","Light Violet","#A893BC","layer"]].map(([id, brand, line, name, hex, type]) => ({ id, brand, line, name, hex, type }));
+PAINTS.forEach(p => { p.lab = Color.hexToLab(p.hex); p.hue = Color.rgbToHsl(Color.hexToRgb(p.hex))[0]; });
+const BYID = new Map(PAINTS.map(p => [p.id, p]));
+const OWNED_NAMES = ['Deathworld Forest','Sigmarite','Macragge Blue','Mephiston Red','Abaddon Black','Warpstone Glow','Retributor Armour','Leadbelcher',
+  'Corax White','Evil Sunz Scarlet','Caliban Green','Balthasar Gold','Rhinox Hide','Mournfang Brown','Zandri Dust','Ushabti Bone','Averland Sunset',
+  'Yriel Yellow','Moot Green','Calgar Blue','Cadian Fleshtone','Mechanicus Standard Grey'];
+const FINISH = { wash:'wash', shade:'shade', ink:'ink', contrast:'contrast', glaze:'glaze', effect:'effect', technical:'technical', metal:'metallic' };
+const LABEL = d => d <= 1 ? ['Indistinguishable','success'] : d <= 2 ? ['Excellent','success'] : d <= 3.5 ? ['Good','success']
+  : d <= 5 ? ['Fair','warning'] : d <= 10 ? ['Loose','warning'] : ['Poor','danger'];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+
+/** The query parser the build would put in seed.js (pure, unit-tested there). */
+function parseQuery(raw) {
+  const q = raw.trim();
+  let m = q.match(/^#\s*([0-9a-f]{6})$/i);
+  if (m) return { kind: 'hex', hex: '#' + m[1].toUpperCase(), live: true };
+  m = q.match(/^#([0-9a-f]{3})$/i);
+  if (m) return { kind: 'hex', hex: '#' + m[1].split('').map(c => c + c).join('').toUpperCase(), live: false };
+  m = q.match(/^([0-9a-f]{6})$/i);
+  if (m) return /\d/.test(m[1]) ? { kind: 'hex', hex: '#' + m[1].toUpperCase(), live: false }
+    : { kind: 'name', hexWord: '#' + m[1].toUpperCase() };
+  return { kind: 'name' };
+}
+/** The shared matcher (the Shelf would use it too): every word must match name, brand, line or type. */
+function search(q, owned) {
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const n = q.toLowerCase().trim();
+  return PAINTS.filter(p => { const hay = `${p.name} ${p.brand} ${p.line} ${p.type}`.toLowerCase(); return words.every(w => hay.includes(w)); })
+    .map(p => { const nm = p.name.toLowerCase();
+      const tier = nm === n ? 0 : nm.startsWith(n) ? 1 : nm.split(/\s+/).some(w => w.startsWith(words[0])) ? 2 : 3;
+      return { p, tier, own: owned.has(p.id) ? 0 : 1 }; })
+    .sort((a, b) => a.tier - b.tier || a.own - b.own || a.p.name.localeCompare(b.p.name)).map(x => x.p);
+}
+const closest = (hex, n) => { const lab = Color.hexToLab(hex);
+  return PAINTS.filter(p => !['wash','shade','ink','glaze','effect','technical'].includes(p.type))
+    .map(p => ({ p, d: Color.deltaE2000(lab, p.lab) })).sort((a, b) => a.d - b.d).slice(0, n); };
+
+/* ---- one picker component, mounted into every [data-picker] frame ---- */
+let uid = 0;
+function mountPicker(root, opts) {
+  const id = 'pk' + (++uid);
+  const owned = new Set(PAINTS.filter(p => OWNED_NAMES.includes(p.name) && p.brand === 'Citadel' && p.id !== 'citadel-dry-dawnstone').map(p => p.id));
+  owned.add('citadel-layer-dawnstone');
+  const want = new Set(['citadel-base-kantor-blue', 'citadel-layer-xereus-purple']);
+  const st = { pick: { id: 'ak-interactive-3rd-gen-alga-green', hex: '#555E1B' }, recent: ['ak-interactive-3rd-gen-alga-green', 'citadel-base-mephiston-red'],
+    sort: 'hue', active: -1, opts: [], view: null };
+  if (!BYID.has(st.pick.id)) st.pick.id = PAINTS[0].id;
+  const desk = !!opts.desk;
+  root.innerHTML = `
+    <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio${desk ? '' : '<span class="dots" aria-hidden="true">⋯</span>'}</div>
+      ${desk ? '<div class="mseg"><span class="on">Studio</span><span>Shelf</span></div><span class="dots" aria-hidden="true">⋯</span>' : '<div class="mseg"><span class="on">Studio</span><span>Shelf</span></div>'}</div>
+    <div class="card tb">
+      <div class="seedbar">
+        <div class="seedfield isnew">
+          <label class="sr-only" for="${id}q">Search paints or enter a hex colour</label>
+          <input id="${id}q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${id}list"
+            placeholder="${desk ? 'Paint, brand or #hex' : 'Paint or #hex'}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+          <button class="browse" type="button" tabindex="-1" aria-label="Browse paints" aria-expanded="false" aria-controls="${id}list">${desk ? 'Browse ▾' : '▾'}</button>
+        </div>
+        <button class="btn ${desk ? '' : 'ic'}" type="button" aria-label="From photo" title="From photo">${desk ? '📷 From photo' : '📷'}</button>
+        <button class="btn" type="button">Compare</button>
+      </div>
+    </div>
+    ${desk ? '<div class="dcols"><div class="card"><div class="hero"></div><div class="wheel"></div></div><div class="card"><div class="micro">Plan · roles</div></div></div>'
+      : '<div class="card st"><div class="hero"></div><div class="wheel"></div></div>'}
+    <div class="pick-drawer" id="${id}drawer" hidden>
+      <div class="pd-body"><div role="listbox" id="${id}list" aria-label="Paints"></div></div>
+      <div class="pd-foot"></div>
+    </div>
+    <div class="menu" role="menu" hidden></div>
+    <div class="ptoast" role="status" hidden></div>
+    <div class="sr-only" aria-live="polite"></div>`;
+  const $ = s => root.querySelector(s);
+  const input = $('input'), browse = $('.browse'), drawer = $('.pick-drawer'), list = $('[role=listbox]'), foot = $('.pd-foot'), menu = $('.menu');
+
+  function pickInfo() {
+    const p = BYID.get(st.pick.id);
+    return p && p.hex === st.pick.hex ? { name: p.name, meta: `${p.brand} · ${p.line}`, hex: p.hex } : { name: 'Your colour', meta: 'custom hex', hex: st.pick.hex };
+  }
+  function renderHero() {
+    const i = pickInfo();
+    $('.hero').innerHTML = `<span class="sw" style="background:${i.hex}"></span><span><b>${esc(i.name)}</b> <span class="hx">${i.hex}</span><br><span class="meta">${esc(i.meta)}</span></span>`;
+  }
+  let toastT = 0;
+  const toast = m => { const t = $('.ptoast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2200); };
+  const badge = p => owned.has(p.id) ? '<span class="badge owned" aria-hidden="true">✓</span>' : want.has(p.id) ? '<span class="badge want" aria-hidden="true">+</span>' : '';
+  const markWord = p => owned.has(p.id) ? ', owned' : want.has(p.id) ? ', to buy' : '';
+  const chip = (p, k, cls = '') => `<button class="chip ${cls}${p.id === st.pick.id && p.hex === st.pick.hex ? ' cur' : ''}" role="option" id="${id}o${k}" data-k="${k}"
+      aria-selected="${p.id === st.pick.id}" aria-label="${esc(p.name)}, ${esc(p.brand)} ${esc(p.line)}${markWord(p)}">
+      <span class="sw" style="background:${p.hex}">${badge(p)}</span><span class="nm">${esc(p.name)}</span><span class="br">${esc(p.brand)}</span></button>`;
+  const row = (p, k, d) => { const fin = FINISH[p.type]; const L = d != null ? LABEL(d) : null;
+    return `<button class="opt${p.id === st.pick.id && p.hex === st.pick.hex ? ' cur' : ''}" role="option" id="${id}o${k}" data-k="${k}" aria-selected="${p.id === st.pick.id}">
+      <span class="sw" style="background:${p.hex}">${badge(p)}</span>
+      <span class="tx"><b>${esc(p.name)}</b><span>${esc(p.brand)}${p.line && p.line !== p.brand ? ' · ' + esc(p.line) : ''}${fin ? ' · ' + fin : ''}${markWord(p) ? ' ·' + markWord(p).slice(1) : ''}</span></span>
+      ${L ? `<span class="de"><i style="background:var(--${L[1]})"></i>${L[0]}<small>ΔE ${d.toFixed(1)}</small></span>` : ''}</button>`; };
+  const useRow = (hex, k, live) => `<button class="opt use" role="option" id="${id}o${k}" data-k="${k}">
+      <span class="sw" style="background:${hex}"></span><span class="tx"><b>${live ? 'Now your colour: ' : 'Use '}${hex}</b><span>${live ? 'The scheme follows as you type' : 'Start the scheme from this colour'}</span></span></button>`;
+
+  function render() {
+    const q = input.value, parsed = parseQuery(q);
+    st.opts = []; let html = '';
+    if (st.view === 'browse' && !q.trim()) {
+      html += `<div class="ghead">Recent</div><div class="recent" role="group" aria-label="Recent">`
+        + st.recent.map(rid => BYID.get(rid)).filter(Boolean).map(p => { const k = st.opts.push({ p }) - 1; return chip(p, k); }).join('') + `</div>`;
+      const sorted = PAINTS.slice();
+      const L = Color.hexToLab(st.pick.hex);
+      if (st.sort === 'hue') sorted.sort((a, b) => a.hue - b.hue);
+      else if (st.sort === 'closest') sorted.sort((a, b) => Color.deltaE2000(L, a.lab) - Color.deltaE2000(L, b.lab));
+      else if (st.sort === 'owned') sorted.sort((a, b) => (owned.has(b.id) - owned.has(a.id)) || a.name.localeCompare(b.name));
+      else sorted.sort((a, b) => a.name.localeCompare(b.name));
+      html += `<div class="ghead">All paints</div><div class="grid" role="group" aria-label="All paints">`
+        + sorted.map(p => { const k = st.opts.push({ p }) - 1; return chip(p, k); }).join('') + `</div>`;
+      foot.innerHTML = `<span>${PAINTS.length} paints here · 3,225 in the app</span>
+        <label class="sr-only" for="${id}sort">Sort</label><select id="${id}sort">
+        ${[['hue','Sort: hue'],['closest','Closest to your pick'],['owned','Owned first'],['name','Name']].map(([v, l]) => `<option value="${v}"${v === st.sort ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+      foot.hidden = false;
+      foot.querySelector('select').onchange = e => { st.sort = e.target.value; render(); };
+    } else if (q.trim()) {
+      foot.hidden = true;
+      if (parsed.kind === 'hex') {
+        const k0 = st.opts.push({ hex: parsed.hex }) - 1; html += useRow(parsed.hex, k0, parsed.live);
+        html += `<div class="ghead">Closest paints</div>` + closest(parsed.hex, 6).map(({ p, d }) => row(p, st.opts.push({ p }) - 1, d)).join('');
+      } else {
+        const res = search(q, owned);
+        html += res.length ? res.slice(0, 40).map(p => row(p, st.opts.push({ p }) - 1)).join('')
+          : `<div class="empty">No paint matches “${esc(q.trim())}”.</div>`;
+        if (parsed.hexWord) { const k = st.opts.push({ hex: parsed.hexWord }) - 1; html += `<div class="ghead">Or a colour</div>` + useRow(parsed.hexWord, k, false); }
+        $('[aria-live]').textContent = `${res.length} paints`;
+      }
+    }
+    list.innerHTML = html;
+    st.active = st.opts.length ? Math.min(Math.max(st.active, 0), st.opts.length - 1) : -1;
+    if (q.trim() && st.active < 0 && st.opts.length) st.active = 0;
+    syncActive(false);
+  }
+  function syncActive(scroll) {
+    list.querySelectorAll('.act').forEach(e => e.classList.remove('act'));
+    const el = st.active >= 0 ? root.querySelector(`#${id}o${st.active}`) : null;
+    if (el && (input.value.trim() || document.activeElement === input)) { el.classList.add('act'); input.setAttribute('aria-activedescendant', el.id); if (scroll) el.scrollIntoView({ block: 'nearest' }); }
+    else input.removeAttribute('aria-activedescendant');
+  }
+  function place() {
+    const tb = $('.tb'), fieldBox = $('.seedfield').getBoundingClientRect(), rb = root.getBoundingClientRect();
+    drawer.style.top = (fieldBox.bottom - rb.top + 6) + 'px';
+    if (desk) drawer.style.left = (fieldBox.left - rb.left) + 'px';
+    const kb = root.querySelector('.kbd-sim');
+    const bottom = kb ? kb.offsetTop - 6 : root.clientHeight - 12;
+    drawer.style.maxHeight = (bottom - parseFloat(drawer.style.top)) + 'px';
+    drawer.style.height = st.view === 'browse' && !input.value.trim() ? drawer.style.maxHeight : '';
+  }
+  function open(view) { st.view = view; drawer.hidden = false; input.setAttribute('aria-expanded', 'true'); browse.setAttribute('aria-expanded', 'true'); render(); place();
+ }
+  function close() { drawer.hidden = true; st.view = null; input.setAttribute('aria-expanded', 'false'); browse.setAttribute('aria-expanded', 'false'); menu.hidden = true; }
+  function commit(o) {
+    if (!o) return;
+    if (o.p) { st.pick = { id: o.p.id, hex: o.p.hex }; st.recent = [o.p.id, ...st.recent.filter(r => r !== o.p.id)].slice(0, 5); toast(`Seeded from ${o.p.name}`); }
+    else { st.pick = { id: null, hex: o.hex }; toast(`Seeded from ${o.hex}`); }
+    input.value = ''; renderHero(); close();
+  }
+  // a tap only picks
+  list.addEventListener('click', e => { if (lpFired) { lpFired = false; return; } const b = e.target.closest('[data-k]'); if (b) commit(st.opts[+b.dataset.k]); });
+  // ▾ opens the grid WITHOUT focusing the field, so a phone keyboard does not rise
+  browse.addEventListener('click', () => drawer.hidden || st.view !== 'browse' ? (input.value = '', open('browse')) : close());
+  input.addEventListener('input', () => {
+    const parsed = parseQuery(input.value);
+    if (parsed.kind === 'hex' && parsed.live) { st.pick = { id: null, hex: parsed.hex }; renderHero(); }
+    st.active = -1; input.value.trim() ? open('search') : open('browse');
+  });
+  input.addEventListener('keydown', e => {
+    const n = st.opts.length, cols = st.view === 'browse' && !input.value.trim() ? (desk ? 8 : 4) : 1;
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (drawer.hidden) open(input.value.trim() ? 'search' : 'browse'); st.active = Math.min(n - 1, st.active + cols); syncActive(true); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); st.active = Math.max(0, st.active - cols); syncActive(true); }
+    else if (e.key === 'ArrowRight' && cols > 1) { e.preventDefault(); st.active = Math.min(n - 1, st.active + 1); syncActive(true); }
+    else if (e.key === 'ArrowLeft' && cols > 1) { e.preventDefault(); st.active = Math.max(0, st.active - 1); syncActive(true); }
+    else if (e.key === 'Enter') { e.preventDefault(); commit(st.opts[st.active]); }
+    else if (e.key === 'Escape') { if (!menu.hidden) { menu.hidden = true; return; } if (!drawer.hidden) { close(); } else input.value = ''; }
+    else if (e.key === 'F10' && e.shiftKey && st.active >= 0) { e.preventDefault(); const el = root.querySelector(`#${id}o${st.active}`); if (el) openMenu(el); }
+    else if (e.key === 'Tab') close();
+  });
+  // marking is a second gesture: long-press (500ms, cancelled after 10px), right-click or Shift+F10
+  let lpT = 0, lpX = 0, lpY = 0, lpFired = false;
+  list.addEventListener('pointerdown', e => { const b = e.target.closest('[data-k]'); if (!b || !st.opts[+b.dataset.k].p) return; lpX = e.clientX; lpY = e.clientY;
+    lpT = setTimeout(() => { lpFired = true; openMenu(b); }, 500); });
+  list.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - lpX, e.clientY - lpY) > 10) clearTimeout(lpT); });
+  list.addEventListener('pointerup', () => clearTimeout(lpT));
+  list.addEventListener('contextmenu', e => { const b = e.target.closest('[data-k]'); if (!b || !st.opts[+b.dataset.k].p) return; e.preventDefault(); openMenu(b); });
+  function openMenu(el) {
+    const p = st.opts[+el.dataset.k].p; if (!p) return;
+    const r = el.getBoundingClientRect(), rb = root.getBoundingClientRect();
+    menu.innerHTML = `<div class="mh">${esc(p.name)} · ${esc(p.brand)} ${esc(p.line)}</div>`
+      + [['owned', 'Owned'], ['want', 'To buy'], ['none', 'Clear']].map(([v, l]) => `<button role="menuitemradio" aria-checked="${(owned.has(p.id) ? 'owned' : want.has(p.id) ? 'want' : 'none') === v}" data-v="${v}">${l}</button>`).join('')
+      + `<button role="menuitem" aria-disabled="true" title="Later: the paint detail sheet (PLAN backlog 7)">Details… (later)</button>`;
+    menu.hidden = false;
+    const top = Math.min(r.bottom - rb.top + 4, root.clientHeight - menu.offsetHeight - 8);
+    menu.style.top = Math.max(8, top) + 'px'; menu.style.left = Math.min(Math.max(8, r.left - rb.left), root.clientWidth - menu.offsetWidth - 8) + 'px';
+    menu.onclick = ev => { const b = ev.target.closest('[data-v]'); if (!b) return; owned.delete(p.id); want.delete(p.id);
+      if (b.dataset.v === 'owned') owned.add(p.id); if (b.dataset.v === 'want') want.add(p.id);
+      menu.hidden = true; render(); toast(`${p.name}: ${b.textContent.toLowerCase()}`); };
+    menu.onkeydown = ev => { const items = [...menu.querySelectorAll('button')], i = items.indexOf(document.activeElement);
+      if (ev.key === 'ArrowDown') { ev.preventDefault(); items[(i + 1) % items.length].focus(); }
+      if (ev.key === 'ArrowUp') { ev.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+      if (ev.key === 'Escape') { menu.hidden = true; input.focus(); } };
+    if (opts.interactive) menu.querySelector('button').focus();
+  }
+  document.addEventListener('pointerdown', e => {
+    if (!root.contains(e.target) || (!e.target.closest('.pick-drawer') && !e.target.closest('.seedfield') && !e.target.closest('.menu'))) { if (!drawer.hidden) close(); }
+    if (!e.target.closest('.menu') && !e.target.closest('[data-k]')) menu.hidden = true;
+  }, true);
+
+  renderHero();
+  if (opts.keyboard) { const kb = document.createElement('div'); kb.className = 'kbd-sim'; kb.setAttribute('aria-hidden', 'true');
+    kb.innerHTML = [10, 9, 7, 5].map(n => `<div>${'<i></i>'.repeat(n)}</div>`).join(''); root.append(kb); }
+  if (opts.query) { input.value = opts.query; const parsed = parseQuery(opts.query); if (parsed.kind === 'hex' && parsed.live) { st.pick = { id: null, hex: parsed.hex }; renderHero(); } open('search'); }
+  if (opts.open === 'browse') open('browse');
+  if (typeof opts.menu === 'number') { const el = root.querySelector(`#${id}o${opts.menu}`); if (el) openMenu(el); }
+}
+document.querySelectorAll('[data-picker]').forEach(el => mountPicker(el, JSON.parse(el.dataset.picker)));
+</script>
+</body>
+</html>

@@ -6,6 +6,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Design exploration: the Paints picker** (`mockups/paints-picker.html`, not shipped). Ryan reported
+  that the Studio's Paints drawer is redundant and confusing. On a 390px phone, the seed toolbar is 3
+  rows, and the open drawer adds 4 rows of controls and shows only about 3½ paints. Its search, filters,
+  import and export copy the Shelf, and its search and the hex box both choose the seed. Four directions
+  were designed and judged from three views (the painter, the constitution and accessibility, the build):
+  slim the drawer (47 of 60), one search field (41), a "Choose a colour" sheet (28), and Shelf pick mode
+  (28). Recommended: one seed field for a paint name, a brand word or a hex; a ▾ Browse grid that opens
+  without the keyboard; a tap only picks; marking moves to a long-press menu; CSV stays on the Shelf; and
+  the Shelf menu gets "Use as seed". The page has an interactive demo with 134 real paints and the app's
+  ΔE 2000 code. It also lists bugs found on the way, for example that 360px and 375px phones load the
+  page scrolled about 380px down.
 - **Resizable sheets recorded for the full app release** (`IOS_APP_PLAN.md` §1, not built). Ryan asked
   for the iOS sheet behaviour: a card at part height that grows to full height when you scroll or drag it.
   The plan names the Apple terms (resizable sheet, detents, grabber), links Apple's primary sources, and
