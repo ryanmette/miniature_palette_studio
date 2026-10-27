@@ -196,16 +196,21 @@
   }
   @keyframes pop { from { opacity:0; transform:translateY(-4px); } }
 
-  /* ===== The full ⋯ menu (2026-10-27, from the menu audit) =====
+  /* ===== The full ⋯ menu (2026-10-27, from the menu audit; revised after review) =====
      A non-modal settings DIALOG (not role=menu), three groups, --shadow-pop (the floating-overlay tier),
-     --r-card (a panel, §3.5), height clamped to the screen so it scrolls inside itself. On a phone each
-     label sits above a full-width control, and every control is --tap tall (44px on touch). */
+     --r-card (a panel, §3.5), height clamped to the screen at EVERY width so it scrolls inside itself.
+     On a phone each label sits above a full-width control. Controls are --tap tall (44px at ≤520px).
+     The build uses the real components (.seg, .btn, .btn.primary, .themesw); these classes only draw them. */
   :root { --danger-weak:#FCE4EA; }
-  .dark { --danger-weak:#2E1A14; }
+  .dark { --danger-weak:#2E1A14; --focus:0 0 0 3px var(--accent-weak); }
   section.full { max-width:1100px; }
   .smenu { position:absolute; right:8px; top:46px; z-index:6; width:calc(100% - 16px); max-height:calc(100% - 54px); overflow-y:auto;
     overscroll-behavior:contain; background:var(--surface); color:var(--text); border:1px solid var(--border-strong);
-    border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:12px 16px 16px; font-size:12px; }
+    border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:16px; font-size:12px; }
+  .smenu[hidden] { display:none; }
+  .smenu .shead { display:flex; align-items:center; justify-content:space-between; margin:-8px 0 4px; }
+  .smenu .shead b { font-family:var(--display); font-size:14px; }
+  .sdone { min-height:var(--tap); min-width:var(--tap); border:0; background:none; color:var(--accent); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; }
   .smenu .sgrp + .sgrp { border-top:1px solid var(--border); margin-top:12px; padding-top:12px; }
   .smenu .srow + .srow { margin-top:12px; }
   .smenu .sl { display:block; color:var(--text-muted); font-size:12px; margin-bottom:4px; }
@@ -216,62 +221,75 @@
     font:inherit; font-size:12px; cursor:pointer; }
   .sseg button[aria-pressed="true"] { background:var(--surface); color:var(--text); box-shadow:var(--shadow); font-weight:500; }
   .sbtns { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .sbtns button { min-height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface);
+  .sbtns button, .sfull { min-height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface);
     color:var(--text); font:inherit; font-size:12px; cursor:pointer; }
+  .sfull { width:100%; }
   .sbtns button.pri { background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-weight:500; }
   .shint { margin:4px 0 0; font-size:11px; color:var(--text-muted); }
-  .lnk { border:0; background:none; padding:0; color:var(--accent); font:inherit; text-decoration:underline; cursor:pointer; }
+  /* the Use my paints hint is a fixed 44px slot: no state (off · prefer · only · empty shelf) changes its height (§3.4) */
+  .hslot { min-height:var(--tap); display:flex; align-items:center; gap:8px; margin-top:4px; }
+  .hslot .shint { margin:0; flex:1; }
+  .hslot .sfull { width:auto; padding:0 12px; flex:none; }
+  .hslot .sfull[hidden] { display:none; }
   /* the theme switch keeps its 52×30 look; the button around it gives the 44px hit area */
-  .tswb { min-height:var(--tap); min-width:var(--tap); display:grid; place-items:center; border:0; background:none; padding:0 0 0 8px; cursor:pointer; }
+  .tswb { min-height:var(--tap); min-width:var(--tap); display:grid; place-items:center; border:0; background:none; padding:0 0 0 8px; cursor:pointer; border-radius:var(--r-pill); }
   .tsw { width:52px; height:30px; border-radius:var(--r-pill); background:var(--surface-2); border:1px solid var(--border); position:relative; }
   .tsw::after { content:"☀"; position:absolute; left:3px; top:3px; width:22px; height:22px; border-radius:50%; background:var(--surface);
     box-shadow:var(--shadow); display:grid; place-items:center; font-size:12px; color:var(--text-muted); }
   .tswb[aria-checked="true"] .tsw::after { content:"☠"; left:25px; }
-  .smenu button:focus-visible, .cdlg button:focus-visible, .lnk:focus-visible { outline:none; box-shadow:var(--focus); }
+  /* A focus ring that you can see: the app's --focus (3px --accent-weak) is about 1.1:1 against the surface. This is the
+     two-ring pattern app.css already uses on .lccopy (accent vs surface: 5.7:1 light, 6.2:1 dark). */
+  .smenu button:focus-visible, .cdlg button:focus-visible, .abt summary:focus-visible { outline:none; box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
   .smenu .isnew, .abt .isnew { outline:1.5px dashed var(--accent); outline-offset:3px; border-radius:6px; }
-  /* the Restore / Delete confirm: a modal alertdialog, focus starts on Cancel */
-  .cdim { position:absolute; inset:0; z-index:8; background:rgba(20,17,16,.42); display:grid; place-items:center; padding:16px; }
+  /* the Restore / Delete confirm: a native <dialog>.showModal() in the build; focus starts on Cancel.
+     The scrim is the About dialog's ::backdrop value (proposed token --scrim). */
+  .cdim { position:absolute; inset:0; z-index:8; background:rgba(0,0,0,.45); display:grid; place-items:center; padding:16px; }
   .cdim[hidden] { display:none; }
   .cdlg { width:100%; background:var(--surface); color:var(--text); border:1px solid var(--border-strong); border-radius:var(--r-card);
     box-shadow:var(--shadow-pop); padding:16px; font-size:12px; }
   .cdlg h4 { font-family:var(--display); font-size:15px; margin:0 0 8px; }
   .cdlg p { margin:0 0 8px; color:var(--text-muted); }
   .cdlg p b { color:var(--text); }
-  .cdlg .sbtns { margin-top:12px; }
-  /* Destructive buttons: --danger as text is only 4.3:1 on the dark surface, so the words stay --text and
-     only the border and the ⚠ glyph are --danger (graphics need 3:1). No --on-danger token is needed. */
-  .cdlg .sbtns button.danger, .dbtn { border:1.5px solid var(--danger); color:var(--text); font-weight:600; }
-  .cdlg .sbtns button.danger::before, .dbtn::before { content:"⚠ "; color:var(--danger); }
+  .cdlg .sfull { margin-top:4px; }
+  .cdlg .sbtns { margin-top:8px; }
+  /* Destructive buttons: a secondary button with a 1px --danger border. The label stays --text (--danger as text is only
+     4.3:1 on the dark surface); the ⚠ is a decorative, aria-hidden glyph (graphics need 3:1). Needs a §3.5 line. */
+  .sbtns button.danger, .dbtn { border:1px solid var(--danger); color:var(--text); font-weight:600; }
+  .warn { color:var(--danger); }
   .mtoast { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); z-index:9; width:max-content; max-width:calc(100% - 32px);
     background:var(--text); color:var(--bg); border-radius:var(--r-ctrl); padding:8px 12px; font-size:11.5px; box-shadow:var(--shadow-pop); }
   .mtoast[hidden] { display:none; }
   .shellbg { padding:12px; opacity:.55; }
   /* the About & data dialog: its new lower part */
   .abt { position:absolute; inset:12px; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card);
-    box-shadow:var(--shadow-pop); padding:12px 16px; overflow-y:auto; font-size:12px; }
+    box-shadow:var(--shadow-pop); padding:16px; overflow-y:auto; font-size:12px; }
   .abt .ahead { display:flex; align-items:center; justify-content:space-between; }
   .abt .ahead b { font-family:var(--display); font-size:15px; }
   .abt h5 { font-family:var(--display); font-size:13px; margin:12px 0 4px; }
   .abt p { margin:0 0 8px; color:var(--text-muted); }
+  .abt details summary { font-family:var(--display); font-size:13px; font-weight:600; min-height:var(--tap); display:flex; align-items:center; cursor:pointer; }
   .abt dl { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; margin:0; }
   .abt dt { font-family:var(--mono); font-size:10.5px; white-space:nowrap; }
   .abt dd { margin:0; color:var(--text-muted); font-size:11px; }
-  .kbd { display:inline-block; border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:6px; padding:0 4px;
+  .kbd { display:inline-block; border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:var(--r-ctrl); padding:0 6px;
     background:var(--surface-2); color:var(--text); }
   .dbtn { min-height:var(--tap); border-radius:var(--r-ctrl); background:var(--surface); font:inherit; font-size:12px; padding:0 12px; }
-  .fine { font-size:10.5px; color:var(--text-faint); }
-  /* desktop: label left, control right (the grid the popover uses today), --tap 38px */
+  .fine { font-size:10.5px; color:var(--text-muted); }
+  /* desktop: label left, control right (the grid the menu uses today), --tap 38px; same height clamp */
   .desk2 { --tap:38px; }
-  .smenu.wide { top:44px; right:12px; width:360px; max-height:none; }
+  .smenu.wide { top:44px; right:12px; width:380px; max-height:calc(100% - 56px); }
   .smenu.wide .srow { display:grid; grid-template-columns:96px 1fr; align-items:center; column-gap:12px; }
   .smenu.wide .srow .sl { margin:0; }
-  .smenu.wide .srow .shint { grid-column:2; }
+  .smenu.wide .srow .shint, .smenu.wide .srow .hslot { grid-column:2; }
   .smenu.wide .srow.inline { display:grid; }
   .smenu.wide .srow.inline .tswb { justify-self:start; padding:0; }
   .shelfseg { margin:8px 0 0; }
   table.where { border-collapse:collapse; font-size:12.5px; width:100%; max-width:900px; }
   table.where th, table.where td { text-align:left; padding:6px 12px 6px 0; border-bottom:1px solid var(--border); vertical-align:top; }
   table.where th { font-weight:500; color:var(--text-muted); }
+  @media (prefers-reduced-motion: no-preference) {
+    .smenu:not([hidden]), .cdim:not([hidden]) .cdlg { animation:pop .2s cubic-bezier(.2,.7,.2,1); }
+  }
 </style>
 </head>
 <body>
@@ -481,10 +499,8 @@
       owned, but you own no paints yet. Open Shelf”.</li>
     <li><b>Nothing else changes.</b> The setting is still saved per device. A share link still does not carry it, so a friend who
       opens your link sees matches from <i>their</i> shelf. That is correct.</li>
-    <li><b>Constitution change (§3.6).</b> The header bullet would say that the ⋯ popover holds theme, locale, <b>Use my paints</b>
-      (off · prefer · only — a saved personal setting that ranks every stage, shown on the live palette by the matching note when
-      it is on), Export list / Share link, and About &amp; data. It would also remove “the Use my collection control lives in the
-      Plan tab”.</li>
+    <li><b>Constitution change (§3.6).</b> The draft wording is in <a href="#fullmenu">the full ⋯ menu</a> section. It also removes
+      “the Use my collection control lives in the Plan tab”.</li>
   </ul>
   <p class="verdict"><b>Verdict:</b> one setting, in one place, next to the other personal settings, plus an honest sign where its
   effect shows. Off costs nothing. On tells you why a paint you own beat a closer one.</p>
@@ -513,8 +529,8 @@
     </figure>
   </div>
   <p class="verdict"><b>Pro:</b> one tap, and you see it where it acts. <b>Con:</b> a row of 44px controls stays in the studio
-  forever, also for the many people who own nothing. It also <i>looks</i> like a per-scheme choice, but it is a saved preference.
-  §3.6 sends preferences to ⋯ for this reason.</p>
+  forever, also for the many people who own nothing. It also <i>looks</i> like a per-scheme choice, but it is a saved preference
+  that changes more than one stage, so no stage owns it.</p>
 </section>
 
 <!-- ============================================================ C. HIDDEN -->
@@ -541,57 +557,60 @@
 <!-- ============================================================ THE FULL ⋯ MENU (2026-10-27) -->
 <section class="full recd" id="fullmenu">
   <h2>The full ⋯ menu <span class="rec">Proposal · from the menu audit</span></h2>
-  <p class="why">Ryan asked if other things belong in ⋯. An audit read the code and the docs, fetched primary sources (Apple HIG,
-  the Android design guide, MDN, WCAG) and judged every candidate three ways: the constitution, the painter, and the platform.
-  All three judges agreed on the shape below: <b>two new rows and one new button</b>, and <b>fix the menu container first</b>.
-  Everything else stays where it is, moves into About &amp; data, or waits.</p>
+  <p class="why">Ryan asked if other things belong in ⋯. An audit read the code and the docs. It also read primary sources:
+  Apple HIG, the Android design guide, MDN and WCAG. It judged each candidate from three views: the constitution, the painter and
+  the platform. All three views agree on this shape: <b>two new rows and one new button</b>. First, <b>fix the menu container</b>.
+  Other items stay where they are, move into About &amp; data, or wait for a later release. A second review then checked this
+  mockup against the code. Its corrections are in the lists below.</p>
 
   <div class="pair">
     <figure>
       <figcaption><b>Try it (phone).</b> The menu is open. Tap the theme switch, Use my paints, Back up, Restore… or Help.
-      The new parts have a dashed outline in this mockup only.</figcaption>
-      <div class="phone" id="fmPhone" style="height:640px">
+      Tap Done to close it, and ⋯ to open it again. The new parts have a dashed outline in this mockup only.</figcaption>
+      <div class="phone" id="fmPhone" style="height:700px">
         <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio
-          <button class="dots" aria-expanded="true" aria-haspopup="dialog" aria-controls="fmMenu" aria-label="Settings">⋯</button></div>
+          <button class="dots" id="fmDots" aria-expanded="true" aria-haspopup="dialog" aria-controls="fmMenu" aria-label="Settings">⋯</button></div>
           <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div></div>
         <div class="shellbg"><div class="card" style="margin:0"><div class="micro">Live palette → nearest paint</div>
           <div class="lrow" style="margin-top:8px"><div class="blk" style="background:#555E1B;color:#fff"><b>Primary</b><span>#555E1B</span></div><div class="pt"><div class="pname">Deathworld Forest</div></div></div></div></div>
-        <div class="smenu" id="fmMenu" role="dialog" aria-label="Settings">
-          <div class="sgrp" role="group" aria-label="Settings for this device">
-            <div class="srow inline"><span class="sl" id="fmThemeL">Theme</span>
-              <button class="tswb" id="fmTheme" role="switch" aria-checked="false" aria-labelledby="fmThemeL"><span class="tsw" aria-hidden="true"></span></button></div>
+        <div class="smenu" id="fmMenu" role="dialog" aria-labelledby="fmTitle">
+          <div class="shead"><b id="fmTitle">Settings</b><button class="sdone" id="fmDone" type="button">Done</button></div>
+          <div class="sgrp">
+            <div class="srow inline"><span class="sl" aria-hidden="true">Theme</span>
+              <button class="tswb" id="fmTheme" role="switch" aria-checked="false" aria-label="Dark theme"><span class="tsw" aria-hidden="true"></span></button></div>
             <div class="srow"><span class="sl" id="fmLangL">Language</span>
               <div class="sseg" role="group" aria-labelledby="fmLangL"><button aria-pressed="false">English (UK)</button><button aria-pressed="true">English (US)</button></div></div>
             <div class="srow isnew"><span class="sl" id="fmUmpL">Use my paints</span>
-              <div class="sseg" role="group" aria-labelledby="fmUmpL" id="fmUmp"><button data-v="off" aria-pressed="false">Off</button><button data-v="prefer" aria-pressed="true">Prefer</button><button data-v="only" aria-pressed="false">Only</button></div>
-              <p class="shint" id="fmUmpHint" aria-live="polite"></p></div>
+              <div class="sseg" role="group" aria-labelledby="fmUmpL" aria-describedby="fmUmpHint" id="fmUmp"><button data-v="off" aria-pressed="false">Off</button><button data-v="prefer" aria-pressed="true">Prefer</button><button data-v="only" aria-pressed="false">Only</button></div>
+              <div class="hslot"><p class="shint" id="fmUmpHint" aria-live="polite"></p><button class="sfull" id="fmOpenShelf" type="button" hidden>Open Shelf</button></div></div>
           </div>
-          <div class="sgrp" role="group" aria-label="Actions">
-            <div class="srow"><span class="sl">Scheme</span>
-              <div class="sbtns"><button class="pri" data-toast="Downloads the shopping list for this scheme">Export list</button><button data-toast="Copies a link to this scheme">Share link</button></div></div>
-            <div class="srow isnew"><span class="sl">Your data</span>
-              <div class="sbtns"><button id="fmBackup">Back up</button><button id="fmRestore" aria-haspopup="dialog">Restore…</button></div>
-              <p class="shint">One file with your shelf and settings. Keep it safe.</p></div>
+          <div class="sgrp">
+            <div class="srow"><span class="sl" id="fmSchemeL">Scheme</span>
+              <div class="sbtns" role="group" aria-labelledby="fmSchemeL"><button class="pri" data-toast="Downloads the shopping list for this scheme">Export list</button><button data-toast="Copies a link to this scheme">Share link</button></div></div>
+            <div class="srow isnew"><span class="sl" id="fmDataL">Your data</span>
+              <div class="sbtns" role="group" aria-labelledby="fmDataL" aria-describedby="fmDataHint"><button id="fmBackup">Back up</button><button id="fmRestore" aria-haspopup="dialog">Restore…</button></div>
+              <p class="shint" id="fmDataHint">Back up saves one file (.json) to your downloads. Restore… opens that file.</p></div>
           </div>
-          <div class="sgrp" role="group" aria-label="Information">
-            <div class="sbtns"><button data-toast="Opens About &amp; data">About &amp; data</button><button class="isnew" data-toast="Opens the support page. Its Back link returns here">Help</button></div>
+          <div class="sgrp">
+            <div class="srow"><span class="sl" id="fmMoreL">More</span>
+              <div class="sbtns" role="group" aria-labelledby="fmMoreL"><button data-toast="Opens About &amp; data. When it closes, focus returns to ⋯">About &amp; data</button><button class="isnew" data-toast="Opens the support page. Its Back link returns to the app on the same scheme">Help</button></div></div>
           </div>
         </div>
         <div class="cdim" id="fmDim" hidden>
           <div class="cdlg" role="alertdialog" aria-modal="true" aria-labelledby="fmDlgT" aria-describedby="fmDlgD" id="fmDlg">
-            <h4 id="fmDlgT">Replace your shelf?</h4>
-            <p id="fmDlgD">The backup from <b>30 Sep 2026</b> has <b>41 owned · 2 to buy</b> and its settings. It replaces your
-              <b><span id="fmOwnedN">23</span> owned · 4 to buy</b>. You cannot undo this.</p>
-            <p><button class="lnk" id="fmDlgBackup">Back up this shelf first</button></p>
-            <div class="sbtns"><button id="fmDlgCancel">Cancel</button><button class="danger" id="fmDlgOk">Replace shelf</button></div>
+            <h4 id="fmDlgT">Replace your shelf and settings?</h4>
+            <p id="fmDlgD">The backup from <b>30 Sep 2026</b> has <b>41 owned · 2 to buy</b> and its settings. It replaces your shelf
+              (<b><span id="fmOwnedN">23</span> owned · 4 to buy</b>) and your settings. You cannot undo this.</p>
+            <button class="sfull" id="fmDlgBackup" type="button">Back up first</button>
+            <div class="sbtns"><button id="fmDlgCancel">Cancel</button><button class="danger" id="fmDlgOk"><span class="warn" aria-hidden="true">⚠ </span>Replace</button></div>
           </div>
         </div>
         <div class="mtoast" id="fmToast" role="status" hidden></div>
       </div>
       <div class="shelfseg"><span class="micro">Example shelf:</span>
         <span class="seg" id="fmShelf"><button data-n="23" aria-pressed="true">23 owned</button><button data-n="0" aria-pressed="false">Empty</button></span></div>
-      <p class="ann">Restore first asks you to pick a <code>.json</code> file. The mockup skips the file picker and goes straight to the
-        confirm step. Focus starts on <b>Cancel</b>, and Esc closes it.</p>
+      <p class="ann">Restore… first opens the file picker. The mockup does not show the picker. It opens the confirm step. Focus starts on
+        <b>Cancel</b>. Esc closes only the confirm, and focus returns to Restore…. A second Esc closes Settings.</p>
     </figure>
 
     <figure>
@@ -603,39 +622,42 @@
           <h5>Privacy &amp; support</h5>
           <p>Runs entirely in your browser. Your shelf and settings stay on this device. Read the
             <a class="lnk" href="#">privacy policy</a> or get <a class="lnk" href="#">support</a>.</p>
-          <div class="isnew" style="margin-top:12px">
-            <h5 style="margin-top:0">Keyboard shortcuts</h5>
+          <details class="isnew" open style="margin-top:12px">
+            <summary>Keyboard shortcuts</summary>
             <dl>
-              <dt><span class="kbd">Ctrl</span>/<span class="kbd">⌘</span> <span class="kbd">Z</span></dt><dd>Undo (add <span class="kbd">Shift</span> to redo)</dd>
-              <dt><span class="kbd">←</span> <span class="kbd">→</span> <span class="kbd">↑</span> <span class="kbd">↓</span></dt><dd>Wheel: move the colour (<span class="kbd">Shift</span> = bigger steps)</dd>
-              <dt><span class="kbd">[</span> <span class="kbd">]</span></dt><dd>Wheel: previous / next colour</dd>
-              <dt><span class="kbd">+</span> <span class="kbd">−</span></dt><dd>Wheel: add / remove a colour</dd>
-              <dt><span class="kbd">P</span> <span class="kbd">U</span> <span class="kbd">X</span></dt><dd>Shelf and Paints: owned / to buy / clear</dd>
-              <dt><span class="kbd">Esc</span></dt><dd>Close a drawer, sheet or menu</dd>
+              <dt><span class="kbd">Ctrl</span>/<span class="kbd">⌘</span> <span class="kbd">Z</span></dt><dd>Undo a palette change. <span class="kbd">Shift</span>+<span class="kbd">Z</span> or <span class="kbd">Ctrl</span>/<span class="kbd">⌘</span> <span class="kbd">Y</span> redoes.</dd>
+              <dt><span class="kbd">←</span> <span class="kbd">→</span> <span class="kbd">↑</span> <span class="kbd">↓</span></dt><dd>Wheel: hue (← →) and strength (↑ ↓). Add <span class="kbd">Shift</span> for bigger steps.</dd>
+              <dt><span class="kbd">[</span> <span class="kbd">]</span></dt><dd>Wheel: previous or next colour.</dd>
+              <dt><span class="kbd">+</span> <span class="kbd">-</span></dt><dd>Wheel: add a colour, or remove the last one you added.</dd>
+              <dt><span class="kbd">Arrows</span></dt><dd>Shelf: move. Add <span class="kbd">Shift</span> to extend the selection. Paints: move between paints.</dd>
+              <dt><span class="kbd">P</span> <span class="kbd">U</span> <span class="kbd">X</span></dt><dd>Mark owned, to buy, or clear (the Shelf selection or the focused paint).</dd>
+              <dt><span class="kbd">Enter</span></dt><dd>Equivalents: show the matches for a palette colour.</dd>
+              <dt><span class="kbd">Esc</span></dt><dd>Close a drawer, sheet or menu. On the Shelf, clear the selection.</dd>
             </dl>
-            <p class="fine" style="margin:4px 0 0">Shown only on a device with a keyboard.</p>
-          </div>
+          </details>
+          <p class="fine" style="margin:4px 0 0">Always present, but closed by default. A web page cannot detect a keyboard.</p>
           <div class="isnew" style="margin-top:16px">
             <h5 style="margin-top:0">Your data on this device</h5>
-            <p>Back up first if you may want it again.</p>
-            <button class="dbtn" type="button">Delete my data on this device…</button>
+            <p>Back up first if you want to keep it.</p>
+            <button class="dbtn" type="button"><span class="warn" aria-hidden="true">⚠ </span>Delete your data on this device…</button>
           </div>
           <p class="fine isnew" style="margin-top:16px;display:inline-block">Palette Studio v1.9.0 · data 1.6.0</p>
         </div>
       </div>
-      <p class="ann"><b>Delete</b> asks first, offers a backup, and lists what goes: owned, to buy, settings. In the iOS app this is
-        the only way to remove your data short of deleting the app, because the app restores it from its own storage.</p>
+      <p class="ann"><b>Delete</b> asks first, offers a backup, and lists what it removes: owned, to buy, settings. In the iOS app,
+        this is the only way to remove your data without deleting the app. The app restores your data from its own storage.</p>
     </figure>
 
     <figure>
-      <figcaption><b>Dark theme, empty shelf.</b> The hint line says why Use my paints does nothing yet.</figcaption>
+      <figcaption><b>Dark theme, empty shelf.</b> The hint says why Use my paints does nothing yet. The slot keeps its height.</figcaption>
       <div class="phone short dark">
         <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<button class="dots" aria-label="Settings">⋯</button></div>
           <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div></div>
         <div class="smenu" role="dialog" aria-label="Settings (example)">
+          <div class="shead"><b>Settings</b><button class="sdone" type="button">Done</button></div>
           <div class="sgrp"><div class="srow"><span class="sl">Use my paints</span>
             <div class="sseg"><button aria-pressed="false">Off</button><button aria-pressed="true">Prefer</button><button aria-pressed="false">Only</button></div>
-            <p class="shint">You own no paints yet. <button class="lnk">Open Shelf</button></p></div></div>
+            <div class="hslot"><p class="shint">You own no paints yet.</p><button class="sfull" type="button">Open Shelf</button></div></div></div>
           <div class="sgrp"><div class="srow"><span class="sl">Your data</span>
             <div class="sbtns"><button>Back up</button><button>Restore…</button></div></div></div>
         </div>
@@ -645,63 +667,117 @@
   </div>
 
   <h3 class="lab">Desktop — the same rows, label left (the grid the menu uses today)</h3>
-  <div class="desk desk2" style="height:470px">
+  <div class="desk desk2" style="height:500px">
     <div class="apph"><span class="r1" style="display:flex;gap:8px;align-items:center"><span class="logo">P</span>Palette Studio</span>
       <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div>
       <button class="dots" aria-label="Settings" aria-expanded="true">⋯</button></div>
     <div class="smenu wide" role="dialog" aria-label="Settings (desktop example)">
       <div class="sgrp">
-        <div class="srow inline"><span class="sl">Theme</span><button class="tswb" role="switch" aria-checked="false" aria-label="Dark theme"><span class="tsw" aria-hidden="true"></span></button></div>
+        <div class="srow inline"><span class="sl" aria-hidden="true">Theme</span><button class="tswb" role="switch" aria-checked="false" aria-label="Dark theme"><span class="tsw" aria-hidden="true"></span></button></div>
         <div class="srow"><span class="sl">Language</span><div class="sseg"><button aria-pressed="false">English (UK)</button><button aria-pressed="true">English (US)</button></div></div>
         <div class="srow isnew"><span class="sl">Use my paints</span><div class="sseg"><button aria-pressed="false">Off</button><button aria-pressed="true">Prefer</button><button aria-pressed="false">Only</button></div>
-          <p class="shint">Paints you own rank first · 23 owned</p></div>
+          <div class="hslot"><p class="shint">Your paints rank first in the palette, Plan and Export list. Equivalents shows all brands.</p></div></div>
       </div>
       <div class="sgrp">
         <div class="srow"><span class="sl">Scheme</span><div class="sbtns"><button class="pri">Export list</button><button>Share link</button></div></div>
         <div class="srow isnew"><span class="sl">Your data</span><div class="sbtns"><button>Back up</button><button>Restore…</button></div>
-          <p class="shint">One file with your shelf and settings.</p></div>
+          <p class="shint">Back up saves one file (.json) to your downloads. Restore… opens that file.</p></div>
       </div>
       <div class="sgrp"><div class="srow"><span class="sl">More</span><div class="sbtns"><button>About &amp; data</button><button class="isnew">Help</button></div></div></div>
     </div>
   </div>
+  <p class="ann" style="max-width:76ch">On desktop there is no Done button. Esc, a click outside, or ⋯ closes the menu.</p>
 
   <h3 class="lab">Fix the container first (problems in the menu today)</h3>
   <ul class="notes">
     <li><b>It says “menu”, but it is not one.</b> The panel is <code>role="menu"</code> and ⋯ says <code>aria-haspopup="menu"</code>
-      (<code>index.html</code>), but it holds a switch, segmented groups and buttons, not menu items. A screen reader then expects a
-      list of commands that you move through with the arrow keys. It becomes a non-modal <b>dialog</b> named “Settings”, with
-      <code>aria-haspopup="dialog"</code>. Focus moves into it when it opens and returns to ⋯ when it closes.</li>
-    <li><b>Touch targets are too small.</b> Export list, Share link and About &amp; data use <code>.btn.sm</code>, a fixed 32px.
-      §3.6 asks for 44px on touch. Every control uses <code>--tap</code> instead.</li>
+      (<code>index.html</code>), but it holds a switch, segmented groups and buttons. A screen reader then expects a list of commands
+      that you move through with the arrow keys. It becomes a non-modal <b>dialog</b> named “Settings”, with
+      <code>aria-haspopup="dialog"</code>.</li>
+    <li><b>Focus has no rules.</b> When the menu opens, focus moves into it. When it closes, focus returns to the control that opened
+      it: ⋯, or the matching note. When an action closes the menu (Export list, Share link), focus returns to ⋯. When About &amp; data
+      closes, focus returns to ⋯. On a phone, a <b>Done</b> button closes it, because a phone has no Esc key.</li>
+    <li><b>Touch targets are too small.</b> Export list, Share link and About &amp; data are 32px (<code>.btn.sm</code>). The Language
+      buttons are 30px (34px on a phone). The theme switch is 30px tall. Every control gets <code>min-height: var(--tap)</code>, and
+      the switch gets a 44px button around it. Note: <code>--tap</code> is 44px only at ≤520px, so an iPad gets 38px (see the open questions).</li>
+    <li><b>The focus ring cannot be seen.</b> <code>--focus</code> is a 3px ring in <code>--accent-weak</code>: about 1.1:1 against the
+      surface in both themes. WCAG 1.4.11 needs 3:1. This is an app-wide problem, with its own suggested task. The menu uses the fixed ring.</li>
     <li><b>It cannot scroll.</b> <code>.popover</code> has no height limit, so a taller menu runs off a short screen. The menu gets a
-      <code>max-height</code> and scrolls inside itself.</li>
-    <li><b>Wrong shadow tier.</b> It uses <code>--shadow</code> (in-page). §3.4 gives floating overlays <code>--shadow-pop</code>.</li>
-    <li><b>Labels are not localised.</b> Theme, Language, Scheme, More and the button labels have no <code>data-i18n</code>.
-      Every row, old and new, gets one (§4 i18n).</li>
+      <code>max-height</code> at every width and scrolls inside itself.</li>
+    <li><b>Wrong shadow, radius and padding.</b> It uses <code>--shadow</code> (in-page). §3.4 gives floating overlays
+      <code>--shadow-pop</code>. It is a panel of grouped controls, like About and the Filters sheet, so its radius becomes
+      <code>--r-card</code> and its padding 16px (§3.5).</li>
+    <li><b>Labels are not localised.</b> Theme, Language, Scheme, More and the button labels have no <code>data-i18n</code>. Every row,
+      old and new, gets one (§4 i18n).</li>
+    <li><b>A backup can replace your shelf without a question.</b> Today, Import… (Shelf and Paints drawer) also accepts a
+      <code>.json</code> backup and replaces the shelf and settings at once. After the build there is one rule: every
+      <code>.json</code> backup, from Restore… or from Import…, goes through the same confirm step.</li>
+  </ul>
+
+  <h3 class="lab">Notes for the build</h3>
+  <ul class="notes">
+    <li><b>Back up</b> downloads <code>store.exportJSON()</code> as <code>palette-studio-backup-YYYY-MM-DD.json</code>. The file gets a
+      <code>saved</code> date, so the confirm can show it. A backup without that date shows no date.</li>
+    <li><b>Restore</b> reads the file with a new <code>store.inspectJSON()</code>. It checks the shape and counts the paints, but does not
+      apply anything. The confirm shows the counts. <code>store.importJSON()</code> runs only after <b>Replace</b>.</li>
+    <li><b>The settings in a backup</b> are theme, language, Use my paints, tone ladder and Include Contrast. Remove the
+      <code>fill</code> key from <code>PREF_DEFAULTS</code>: the app never reads it (Ideal | Real lives in the link).</li>
+    <li><b>A restored theme or language of “none”</b> means “follow the device”. Apply it at once, without saving it.</li>
+    <li><b>Delete</b> goes through a new <code>store.clear()</code>. It removes <code>ps-state</code>, the old <code>ps-owned</code> and
+      <code>ps-theme</code> keys, and the iOS copy of the data. If only <code>ps-state</code> is removed, the next start brings the data
+      back. Update <code>privacy.html</code> and <code>support.html</code> in the same change.</li>
+    <li><b>The version line</b> reads the app version from one constant in <code>src/</code>. <code>check-docs.mjs</code> fails when it
+      does not match <code>package.json</code>. The data version comes from <code>paints.json</code>.</li>
+    <li><b>Build with the real components</b> (<code>.seg</code>, <code>.btn</code>, <code>.btn.primary</code>, <code>.themesw</code>). Add a
+      <code>--scrim</code> token (the About backdrop value) for the confirm, About and the Shelf sheet. Add a §3.5 line for the
+      destructive button: a secondary button, 1px <code>--danger</code> border, label in <code>--text</code>, ⚠ hidden from screen readers.</li>
+    <li><b>The hint</b> changes only when you change Use my paints or open the menu, never on a store update. So marking paints on the
+      Shelf does not make a screen reader repeat it. “Open Shelf” is outside the live region.</li>
+    <li><b>Undo on the Shelf.</b> Today Ctrl/⌘ Z also works on the Shelf, where it changes the Studio palette that you cannot see.
+      Make it work only in the Studio.</li>
+  </ul>
+
+  <h3 class="lab">The rule, and the §3.6 change</h3>
+  <ul class="notes">
+    <li><b>Which settings go to ⋯.</b> A setting moves to ⋯ when it is saved for the device, changes more than one stage, and changes
+      the matches in a way that you cannot see. Use my paints meets all three. Include Contrast only adds a paint type, and each
+      Contrast paint shows its finish icon, so you can see it. It stays in the Plan.</li>
+    <li><b>Draft wording for §3.6</b> (it goes in the same commit as the build): “The header holds only the Studio / Shelf switch and a
+      ⋯ settings dialog (non-modal, not a menu) in three groups. <i>This device:</i> theme; language; Use my paints (off · prefer ·
+      only), a saved preference that ranks the live palette, the Plan, the Export list and the Accessibility swap, never Equivalents.
+      The live palette shows the matching note while it is on. <i>Actions:</i> Export list / Share link, the whole-scheme output
+      actions; Back up / Restore…, the whole-device backup of the <code>store.js</code> state (Restore confirms before it replaces).
+      <i>Information:</i> About &amp; data, and Help (<code>support.html</code>). Delete your data, keyboard shortcuts and the version
+      live in About &amp; data. Don’t move per-scheme or in-stage controls into the header. The only header actions are the
+      whole-scheme Export/Share and the whole-device Back up/Restore.” Also add the settings dialog and the confirm to the
+      <code>--shadow-pop</code> list in §3.4.</li>
   </ul>
 
   <h3 class="lab">Not in the menu, and why</h3>
   <table class="where">
     <tr><th>Candidate</th><th>Where it goes</th><th>Why</th></tr>
-    <tr><td>Include Contrast</td><td>Stays in Plan</td><td>It decides how a role gets painted (one-coat base), and that thinking happens in the Plan. A Contrast paint in the palette already shows its finish icon, so it is not silent.</td></tr>
+    <tr><td>Include Contrast</td><td>Stays in Plan</td><td>It adds a paint type, and each Contrast paint shows its finish icon. So it does not change the matches in a way that you cannot see (the rule above).</td></tr>
     <tr><td>Tone ladder</td><td>Stays in Plan</td><td>Its rungs show on the Plan cards, next to the control. Apple and Android both say: keep task options on the screen they affect.</td></tr>
     <tr><td>Ideal | Real</td><td>Stays on the palette</td><td>It belongs to one scheme and travels in share links (<code>f=1</code>). §3.6 keeps per-scheme controls out of the header.</td></tr>
-    <tr><td>CSV import / export</td><td>Stays on the Shelf and in the Paints drawer</td><td>It is the paintRack bridge for stocking the shelf, and it is already in two places. Back up covers the whole device.</td></tr>
-    <tr><td>Delete my data · keyboard shortcuts · version</td><td>About &amp; data</td><td>Rare, or risky next to Theme. About is the help and info screen already.</td></tr>
-    <tr><td>Privacy link</td><td>Stays in About &amp; data</td><td>App Store rule 5.1.1(i) (“within the app in an easily accessible manner”) is already met there. Help links to it too.</td></tr>
+    <tr><td>CSV import / export</td><td>Stays on the Shelf and in the Paints drawer</td><td>It is the paintRack bridge for stocking the shelf, and it is already in two places. A <code>.json</code> file picked there goes through the Restore confirm.</td></tr>
+    <tr><td>Delete your data · keyboard shortcuts · version</td><td>About &amp; data</td><td>They are rare, or risky next to Theme. About is the help and information screen already.</td></tr>
+    <tr><td>Privacy link</td><td>Stays in About &amp; data</td><td>App Store rule 5.1.1(i) (“within the app in an easily accessible manner”) is met there already. Help links to it too.</td></tr>
     <tr><td>Install the app</td><td>Not now</td><td>The install prompt event works only in Chromium browsers (MDN). iPhone has no such event, so the row could only show instructions.</td></tr>
-    <tr><td>Brands I use</td><td>Not now</td><td>PLAN backlog 8 puts a brand limit on the substitute finder, as a choice you make at that moment. A hidden app-wide filter is the same silent-matching problem the note fixes.</td></tr>
-    <tr><td>Reduce motion switch</td><td>Dropped</td><td>The app already follows the phone’s setting. Apple: “don’t include redundant versions” of system settings. WCAG 2.3.3 is AAA, and the media query alone meets it.</td></tr>
-    <tr><td>“Match device” theme</td><td>Not added</td><td>Apple’s HIG advises against app-specific appearance settings. After today’s fix, the app follows the phone until you pick a theme.</td></tr>
+    <tr><td>Brands I use</td><td>Not now</td><td>PLAN backlog 8 puts a brand limit on the substitute finder, as a choice you make at that time. A hidden app-wide filter is the same problem that the matching note fixes.</td></tr>
+    <tr><td>Reduce motion switch</td><td>Dropped</td><td>The app follows the phone’s setting already. Apple: “don’t include redundant versions” of system settings. WCAG 2.3.3 is AAA, and the media query alone meets it.</td></tr>
   </table>
 
   <h3 class="lab">Open questions for you</h3>
   <ul class="notes">
-    <li><b>Help in ⋯.</b> Two judges want a Help button next to About &amp; data. The third measured that two new buttons (Privacy and
-      Help) pushed the old menu off a 360px screen. With the new phone layout, one Help button fits. Keep it?</li>
-    <li><b>Contrast in the matching note.</b> Should the note under the palette also show when Include Contrast is on (for example
+    <li><b>Help in ⋯.</b> Two views want a Help button next to About &amp; data. The third view measured the old menu: two new buttons
+      (Privacy and Help) made it too wide for a 360px screen. With the new phone layout, one Help button fits. Keep it?</li>
+    <li><b>Contrast in the matching note.</b> Must the note under the palette also show when Include Contrast is on (for example
       “Contrast paints included”), not only when Use my paints is on?</li>
-    <li><b>Keyboard shortcuts.</b> Show that section only on a device with a keyboard (as drawn), or always?</li>
+    <li><b>A way back to “follow the phone”.</b> After today’s fix, the app follows the phone until you tap the theme switch. Then it
+      keeps your choice, and no control lets you follow the phone again (only Delete your data). Add one, for example a “Use phone
+      setting” link under the switch that shows only when you have picked a theme?</li>
+    <li><b>44px on every touch screen.</b> <code>--tap</code> is 44px only at ≤520px, so an iPad or a phone turned sideways gets 38px.
+      Change it to apply on every touch screen (<code>pointer: coarse</code>)? This is a §3.6 change for the whole app.</li>
   </ul>
 </section>
 
@@ -715,8 +791,8 @@
   };
   const ROLES = [['Primary','#555E1B','#fff',''], ['Accent','#241B5E','#fff',''], ['Metal','#C8A13A','#15150F',' metal-sheen']];
   const NOTE = { prefer: ['Prefer owned', 'Your paints rank first'], only: ['Only owned', 'From your 23 owned paints'] };
-  const HINT = { off: 'Off: every paint can match.', prefer: 'Ranks the live palette and Plan. Equivalents still lists every brand.',
-    only: 'Only your owned paints can match. Equivalents still lists every brand.' };
+  const HINT = { off: 'Every paint can match.', prefer: 'Your paints rank first in the palette, Plan and Export list. Equivalents shows all brands.',
+    only: 'Only your paints can match in the palette, Plan and Export list. Equivalents shows all brands.' };
   const $ = s => document.querySelector(s);
   let mode = 'prefer', opener = null;
   function render() {
@@ -759,14 +835,16 @@
   // ---------- the full ⋯ menu frame ----------
   {
     const q = s => document.querySelector(s);
-    const HINTS = { off: 'Off: every paint can match.', prefer: n => `Paints you own rank first · ${n} owned`,
-      only: n => `Only paints you own can match · ${n} owned` };
+    const HINTS = { off: 'Every paint can match.',
+      prefer: 'Your paints rank first in the palette, Plan and Export list. Equivalents shows all brands.',
+      only: 'Only your paints can match in the palette, Plan and Export list. Equivalents shows all brands.' };
     let ump = 'prefer', owned = 23, lastFocus = null, tTimer = 0;
     const toast = msg => { const t = q('#fmToast'); t.textContent = msg; t.hidden = false; clearTimeout(tTimer); tTimer = setTimeout(() => { t.hidden = true; }, 2600); };
+    // the hint changes only on the painter's own change (or when the menu opens), never on a store update
     function hint() {
-      const h = q('#fmUmpHint');
-      if (ump !== 'off' && owned === 0) { h.innerHTML = 'You own no paints yet. <button class="lnk" type="button">Open Shelf</button>'; return; }
-      h.textContent = ump === 'off' ? HINTS.off : HINTS[ump](owned);
+      const empty = ump !== 'off' && owned === 0;
+      q('#fmUmpHint').textContent = empty ? 'You own no paints yet.' : HINTS[ump];
+      q('#fmOpenShelf').hidden = !empty;
     }
     q('#fmUmp').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; ump = b.dataset.v;
       q('#fmUmp').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); hint(); });
@@ -776,18 +854,31 @@
     q('#fmTheme').addEventListener('click', e => { const on = e.currentTarget.getAttribute('aria-checked') !== 'true';
       e.currentTarget.setAttribute('aria-checked', String(on)); q('#fmPhone').classList.toggle('dark', on); });
     q('#fmMenu').addEventListener('click', e => { const b = e.target.closest('[data-toast]'); if (b) toast(b.dataset.toast); });
-    q('#fmBackup').addEventListener('click', () => toast(`Saved palette-studio-backup-2026-10-27.json · ${owned} owned · 4 to buy · settings`));
+    q('#fmOpenShelf').addEventListener('click', () => toast('Opens the Shelf, where you mark the paints you own'));
+    const backup = () => toast('Backup downloaded: palette-studio-backup-2026-10-27.json');
+    q('#fmBackup').addEventListener('click', backup);
+    // open / close the settings dialog: focus moves in on open and returns to the opener on close
+    const menuOpen = () => !q('#fmMenu').hidden;
+    const openMenu = () => { q('#fmMenu').hidden = false; q('#fmDots').setAttribute('aria-expanded', 'true'); hint(); q('#fmTheme').focus(); };
+    const closeMenu = () => { q('#fmMenu').hidden = true; q('#fmDots').setAttribute('aria-expanded', 'false'); q('#fmDots').focus(); };
+    q('#fmDots').addEventListener('click', () => menuOpen() ? closeMenu() : openMenu());
+    q('#fmDone').addEventListener('click', closeMenu);
+    // the confirm: modal; Esc closes only the confirm; a second Esc closes Settings
     const openDlg = () => { lastFocus = document.activeElement; q('#fmDim').hidden = false; q('#fmDlgCancel').focus(); };
     const closeDlg = () => { q('#fmDim').hidden = true; (lastFocus || q('#fmRestore')).focus(); };
     q('#fmRestore').addEventListener('click', openDlg);
     q('#fmDlgCancel').addEventListener('click', closeDlg);
-    q('#fmDlgBackup').addEventListener('click', () => toast(`Saved palette-studio-backup-2026-10-27.json · ${owned} owned · 4 to buy · settings`));
-    q('#fmDlgOk').addEventListener('click', () => { closeDlg(); owned = 41; q('#fmOwnedN').textContent = '41'; hint(); toast('Shelf restored · 41 owned · 2 to buy · settings'); });
-    q('#fmDim').addEventListener('keydown', e => {
-      if (e.key === 'Escape') { e.stopPropagation(); closeDlg(); return; }
-      if (e.key !== 'Tab') return;   // keep focus inside the modal confirm
-      const f = [...q('#fmDlg').querySelectorAll('button')], i = f.indexOf(document.activeElement);
-      e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+    q('#fmDlgBackup').addEventListener('click', backup);
+    q('#fmDlgOk').addEventListener('click', () => { closeDlg(); owned = 41; q('#fmOwnedN').textContent = '41'; hint(); toast('Shelf and settings restored · 41 owned · 2 to buy'); });
+    q('#fmDim').addEventListener('click', e => { if (e.target === e.currentTarget) q('#fmDlgCancel').focus(); });   // a tap on the scrim keeps focus in the confirm
+    q('#fmPhone').addEventListener('keydown', e => {
+      if (!q('#fmDim').hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeDlg(); return; }
+        if (e.key !== 'Tab') return;   // keep focus inside the modal confirm
+        const f = [...q('#fmDlg').querySelectorAll('button')], i = f.indexOf(document.activeElement);
+        e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); return;
+      }
+      if (e.key === 'Escape' && menuOpen()) { e.preventDefault(); closeMenu(); }
     });
     hint();
   }

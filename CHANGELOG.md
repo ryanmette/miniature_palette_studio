@@ -28,7 +28,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   data · Help), a Restore confirm step, and three additions to About & data (keyboard shortcuts, Delete my
   data, the version). It also lists the fixes the menu container needs first (it is marked as a menu but
   is not one, 32px buttons, no scroll, the wrong shadow tier, labels not localised) and what stays out
-  of the menu, with the reasons.
+  of the menu, with the reasons. A second review checked the mockup against the code. It found that
+  Import… also restores a JSON backup with no confirm, that the backup has no date, which settings it
+  holds, how Delete must remove the data, and that the app-wide focus ring is almost invisible. The
+  mockup now has notes for the build, the rule for which settings go to ⋯, and draft §3.6 wording.
 - **Design exploration: Shelf landing** (`mockups/shelf-landing.html`, not shipped). On a phone the
   Shelf controls fill 62% of the first screen, and the search goes away when you scroll. Three
   directions: A, fix the jump only (shipped, see Fixed); B, a compact header with search and status
