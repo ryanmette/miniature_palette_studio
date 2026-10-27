@@ -121,8 +121,9 @@ sets below change between themes.
 
 --focus: 0 0 0 3px var(--accent-weak);   /* both themes */
 ```
-**Both themes are v1.** Light is the default; a `◐` control toggles dark and we honour
-`prefers-color-scheme` on first load. Author every rule with variables — never hardcode a hex
+**Both themes are v1.** Light is the default. We follow `prefers-color-scheme` (live, while the app is
+open) until the painter picks a theme with the `◐` control; only that pick is saved. The OS default and a
+shared link's theme are applied, never saved. Author every rule with variables — never hardcode a hex
 outside these blocks. A swatch's own colour is paint *data*, never a token.
 
 ### 3.2 Match-quality scale (ΔE 2000) — fixed mapping, reuse everywhere

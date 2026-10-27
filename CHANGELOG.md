@@ -143,6 +143,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **The theme no longer saves itself.** Before, the app saved the theme every time it applied one. So
+  your first visit saved the phone's light or dark mode, and the app then stopped following the phone.
+  Also, a dark share link saved dark as the theme of the person who opened it. Now only a tap on the
+  theme toggle saves a theme. Until you tap it, the app follows the phone's setting, also while the app
+  is open. A share link's theme still shows, but it is not saved. Note: if an older version already
+  saved a theme for you, the app keeps it, because it cannot tell that value from a real choice.
+  (CLAUDE.md §3.1 updated; service worker `ps-v45`.)
 - **Shelf on phones: the filter panel no longer stutters when it tucks or opens.** Each tuck or open
   wrote a CSS variable on the page root, and every swatch read it. So the browser restyled the whole
   page (about 6,500 elements), about 80ms each time on a mid-range phone. Now the keyboard cursor keeps

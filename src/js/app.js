@@ -1191,10 +1191,13 @@ function scheduleAnnounce() {
 }
 const renderAll = () => render('all');   // init / undo / redo
 
-function setTheme(t) {
+/** Apply a theme. Only the painter's own toggle saves it (`save`). The OS default and a shared link's
+ *  `t` are applied but never stored: storing them froze "follow the OS" at the first visit's value, and
+ *  let a dark share link overwrite the recipient's own saved choice. */
+function setTheme(t, { save = false } = {}) {
   state.theme = t === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = state.theme;
-  store.setPref('theme', state.theme);
+  if (save) store.setPref('theme', state.theme);
   const sw = document.querySelector('#themeToggle');   // keep the settings-menu theme switch in sync
   if (sw) sw.setAttribute('aria-checked', String(state.theme === 'dark'));
 }
@@ -1606,7 +1609,7 @@ function wire() {
   };
   const closeSettings = () => { sMenu.hidden = true; sBtn.setAttribute('aria-expanded', 'false'); };
   sBtn.addEventListener('click', e => { e.stopPropagation(); sMenu.hidden ? openSettings() : closeSettings(); });
-  $('#themeToggle').addEventListener('click', () => { setTheme(state.theme === 'dark' ? 'light' : 'dark'); wheelDraw(); updateUrl(); });
+  $('#themeToggle').addEventListener('click', () => { setTheme(state.theme === 'dark' ? 'light' : 'dark', { save: true }); wheelDraw(); updateUrl(); });
   $('#localeSeg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
@@ -1671,7 +1674,8 @@ async function init() {
   // stored pref > the OS. Held separately from the resolved value because applyPrefsToState() below
   // re-applies the STORED pref after hydrate, and must not outrank the link.
   const urlTheme = url.get('t') === 'dark' ? 'dark' : url.get('t') === 'light' ? 'light' : null;
-  setTheme(urlTheme || store.getPref('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  const osDark = matchMedia('(prefers-color-scheme: dark)');
+  setTheme(urlTheme || store.getPref('theme') || (osDark.matches ? 'dark' : 'light'));
 
   state.idx = await loadDataset('./data/paints.json');
   // Native shell: recover the collection if WKWebView evicted localStorage (no-op on the web). This
@@ -1715,6 +1719,13 @@ async function init() {
   setupEyedropper();
   renderAll();
   if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf
+  // Until the painter picks a theme, keep following the OS while the app is open (e.g. an automatic
+  // sunset switch). A saved choice always wins. Bound last: updateUrl() before the link is decoded
+  // would rewrite the address bar without the shared scheme.
+  osDark.addEventListener('change', e => {
+    if (store.getPref('theme')) return;
+    setTheme(e.matches ? 'dark' : 'light'); wheelDraw(); updateUrl();
+  });
 }
 
 // iOS WebKit only applies :active styles on touch when a touchstart listener exists. The touch styles
