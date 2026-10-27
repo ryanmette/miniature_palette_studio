@@ -164,6 +164,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Filters on a phone no longer opens the brand list by itself.** When the Shelf's Filters sheet opened,
+  the app moved focus to the Brand dropdown. On iOS, a dropdown that takes focus during a tap opens its
+  picker, so every tap on Filters showed the brand list. Now focus goes to the sheet's title. Tab still
+  moves to Reset, Brand, Type, Sort and Show paints, and Shift+Tab from the title stays in the sheet.
+  (CLAUDE.md §3.6 updated; service worker `ps-v46`.)
 - **The theme no longer saves itself.** Before, the app saved the theme every time it applied one. So
   your first visit saved the phone's light or dark mode, and the app then stopped following the phone.
   Also, a dark share link saved dark as the theme of the person who opened it. Now only a tap on the

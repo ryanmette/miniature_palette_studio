@@ -639,6 +639,7 @@ a.btn { text-decoration: none; }
     white-space: normal; font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); }
   .shelfmore.open .sheethead { display: flex; align-items: center; justify-content: space-between; }
   .sheethead h3 { margin: 0; font-family: var(--display); font-size: var(--fs-h2); }
+  .sheethead h3:focus { outline: none; }   /* takes the first focus on open (not operable, so no ring) */
   .shelfmore.open .sheetdone { display: inline-flex; justify-content: center; margin-top: 16px; }
   .shelfscrim { display: block; position: fixed; inset: 0; z-index: 1; background: rgba(0,0,0,.45); }   /* = the About dialog's backdrop */
 }

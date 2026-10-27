@@ -735,7 +735,10 @@ function openShelfSheet() {
   $('#shelfScrim').hidden = false;
   $('#shelfDock').classList.add('sheet-open');
   $('#shelfFiltersBtn').setAttribute('aria-expanded', 'true');
-  $('#shelfBrand').focus();
+  // Focus the sheet's title, not its first select: on iOS, focusing a <select> during a tap opens its
+  // picker at once, so every tap on Filters opened the brand list. Tab then reaches Brand (WAI-ARIA APG
+  // dialog pattern: a static element at the start may take the first focus).
+  $('#shelfMoreTitle').focus({ preventScroll: true });
 }
 function closeShelfSheet({ returnFocus = true } = {}) {
   if (!dock.sheet) return;
@@ -790,7 +793,9 @@ function setupShelfDock() {
     if (e.key !== 'Tab') return;   // keep focus inside the modal sheet
     const f = [...$('#shelfMore').querySelectorAll('button, select')];
     const first = f[0], last = f[f.length - 1];
-    if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+    // the title takes the first focus (openShelfSheet), so Shift+Tab from it must wrap too
+    const atStart = document.activeElement === first || document.activeElement === $('#shelfMoreTitle');
+    if (e.shiftKey && atStart) { last.focus(); e.preventDefault(); }
     else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
   });
 }
