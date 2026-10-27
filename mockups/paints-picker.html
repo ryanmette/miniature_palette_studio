@@ -725,13 +725,14 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '
 /** The query parser the build would put in seed.js (pure, unit-tested there). */
 function parseQuery(raw) {
   const q = raw.trim();
+  // Each hex is rebuilt from a number, so no typed text can reach the page as HTML.
+  const asHex = s => '#' + parseInt(s, 16).toString(16).toUpperCase().padStart(6, '0');
   let m = q.match(/^#\s*([0-9a-f]{6})$/i);
-  if (m) return { kind: 'hex', hex: '#' + m[1].toUpperCase(), live: true };
+  if (m) return { kind: 'hex', hex: asHex(m[1]), live: true };
   m = q.match(/^#([0-9a-f]{3})$/i);
-  if (m) return { kind: 'hex', hex: '#' + m[1].split('').map(c => c + c).join('').toUpperCase(), live: false };
+  if (m) return { kind: 'hex', hex: asHex(m[1].split('').map(c => c + c).join('')), live: false };
   m = q.match(/^([0-9a-f]{6})$/i);
-  if (m) return /\d/.test(m[1]) ? { kind: 'hex', hex: '#' + m[1].toUpperCase(), live: false }
-    : { kind: 'name', hexWord: '#' + m[1].toUpperCase() };
+  if (m) return /\d/.test(m[1]) ? { kind: 'hex', hex: asHex(m[1]), live: false } : { kind: 'name', hexWord: asHex(m[1]) };
   return { kind: 'name' };
 }
 /** The shared matcher (the Shelf would use it too): every word must match name, brand, line or type. */
@@ -837,12 +838,14 @@ function mountPicker(root, opts) {
       } else {
         const res = search(q, owned);
         html += res.length ? res.slice(0, 40).map(p => row(p, st.opts.push({ p }) - 1)).join('')
-          : `<div class="empty">No paint matches “${esc(q.trim())}”.</div>`;
+          : '<div class="empty"></div>';
         if (parsed.hexWord) { const k = st.opts.push({ hex: parsed.hexWord }) - 1; html += `<div class="ghead">Or a colour</div>` + useRow(parsed.hexWord, k, false); }
         $('[aria-live]').textContent = `${res.length} paints`;
       }
     }
     list.innerHTML = html;
+    // the typed text goes in as text, never as HTML
+    const empty = list.querySelector('.empty'); if (empty) empty.textContent = `No paint matches “${q.trim()}”.`;
     st.active = st.opts.length ? Math.min(Math.max(st.active, 0), st.opts.length - 1) : -1;
     if (q.trim() && st.active < 0 && st.opts.length) st.active = 0;
     syncActive(false);
