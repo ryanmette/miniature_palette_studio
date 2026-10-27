@@ -49,9 +49,12 @@ A phone unlocks things the web version can't do as well:
   reaches its largest detent, scrolling begins"
   ([Apple docs](https://developer.apple.com/documentation/uikit/uisheetpresentationcontroller/prefersscrollingexpandswhenscrolledtoedge)).
   First users: the paint detail sheet ([`PLAN.md`](PLAN.md) §5 backlog 7) and the Shelf's Filters sheet.
-  In the Stage-1 shell a sheet is still web content, so the choice is a web sheet with detents (shared with
-  the website, no plugin) or a native presentation at Stage 2. A native one needs a line in the
-  `CLAUDE_NATIVE.md` §4 plugin allowlist first.
+  **Decision (Ryan, 2026-10-27): a web sheet in v2.0, native later only if needed.** Build the detents in web
+  code (CSS + pointer events, no plugin), so the sheet ships with the v2.0 release and the website gets it
+  too. Apple's own sheet (`UISheetPresentationController`) would be a Stage-2 native screen, and
+  `CLAUDE_NATIVE.md` §1 keeps those out of v2.0. Its contents would also have to be native. So it replaces
+  the web sheet only if the web sheet fails a real feel test on a device. That is the §2 gate for Stage 2:
+  "an observed perf/feel failure the web layer can't fix".
 - iPad + **Apple Pencil** for the harmony wheel.
 
 ---
