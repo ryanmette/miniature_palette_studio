@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Design exploration: the lightness slider** (`mockups/lightness-slider.html`, not shipped). Ryan
+  reported that the slider under the wheel does not say what it does. It sets the lightness of your
+  colour (6–94%), and the whole scheme follows. Four working directions: A, a label and a value; B, a
+  track that shows your colour from dark to light, with end dots (Apple HIG's "left and right icons");
+  C, a 44px track with the label inside; D, seven tone steps. The page also shows three options for the
+  ↻ random button, which can read as "reload". On a phone today the slider is only 16px tall.
 - **Design exploration: the Paints picker** (`mockups/paints-picker.html`, not shipped). Ryan reported
   that the Studio's Paints drawer is redundant and confusing. On a 390px phone, the seed toolbar is 3
   rows, and the open drawer adds 4 rows of controls and shows only about 3½ paints. Its search, filters,
