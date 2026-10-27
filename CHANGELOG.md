@@ -6,6 +6,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Resizable sheets recorded for the full app release** (`IOS_APP_PLAN.md` §1, not built). Ryan asked
+  for the iOS sheet behaviour: a card at part height that grows to full height when you scroll or drag it.
+  The plan names the Apple terms (resizable sheet, detents, grabber), links Apple's primary sources, and
+  names the first users: the paint detail sheet (`PLAN.md` §5 backlog 7) and the Shelf's Filters sheet.
 - **Design exploration: where the collection setting goes** (`mockups/collection-setting.html`, not
   shipped). Ryan asked if *Use my collection* (Off · Prefer owned · Only owned) must move from the Plan
   tab to the ⋯ menu. The setting changes the live palette, the Plan and the Accessibility swap, but its

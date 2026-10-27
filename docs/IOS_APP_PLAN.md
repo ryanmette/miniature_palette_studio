@@ -40,6 +40,18 @@ A phone unlocks things the web version can't do as well:
   rather than building inventory from scratch. Positioning stays "collection-aware planner," not a
   full inventory app — see [`USE_CASES.md`](USE_CASES.md) §0.5/§10.)*
 - **Haptics on the wheel**, native **share sheet**, offline-by-default, Home-screen presence.
+- **Resizable sheets (detents)** — *requested by Ryan, 2026-10-27, for the full app release; not now.* A sheet
+  opens as a card at part height and grows to full height when you scroll its contents or drag its grabber,
+  as the iOS system sheets do. Apple's names for this: a *resizable sheet* with *detents* (`medium` ≈ half
+  height, `large` = full height) and a *grabber* ([HIG · Sheets](https://developer.apple.com/design/human-interface-guidelines/sheets)).
+  UIKit's `UISheetPresentationController.prefersScrollingExpandsWhenScrolledToEdge` is `true` by default:
+  "scrolling up in the sheet increases its detent instead of scrolling the sheet's content. After the sheet
+  reaches its largest detent, scrolling begins"
+  ([Apple docs](https://developer.apple.com/documentation/uikit/uisheetpresentationcontroller/prefersscrollingexpandswhenscrolledtoedge)).
+  First users: the paint detail sheet ([`PLAN.md`](PLAN.md) §5 backlog 7) and the Shelf's Filters sheet.
+  In the Stage-1 shell a sheet is still web content, so the choice is a web sheet with detents (shared with
+  the website, no plugin) or a native presentation at Stage 2. A native one needs a line in the
+  `CLAUDE_NATIVE.md` §4 plugin allowlist first.
 - iPad + **Apple Pencil** for the harmony wheel.
 
 ---

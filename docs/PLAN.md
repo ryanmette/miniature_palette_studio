@@ -267,6 +267,8 @@ to-buy marks) but files them *inside* the scheme output. Four routing directions
    finish, owned/to-buy toggle, its interchangeable group, closest in other brands, and *closest on your
    shelf* with an adjust direction. Reuses `equivalents()`, `nearestPaints()`, `groupMembers()` and the
    store marks — all shipped. Reversible, and it is the leaf node every other direction below needs.
+   On a phone it is a good first user of the **resizable sheet** (a part-height card that grows to full
+   height when you scroll or drag it) recorded for the full app release in `IOS_APP_PLAN.md` §1.
 8. **Substitute finder — direction C.** “I need X, what can I use?” as a mode *on* that sheet rather than
    a new surface: constrain by *only what I own* / *only these brands* (the in-store constraint) and rank
    the alternatives. The literal buying assistant; still no engine work.
