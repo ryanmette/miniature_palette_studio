@@ -22,6 +22,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   frame. **Chosen (Ryan, 2026-10-26):** A, with the label "Use my paints". Equivalents ignores the
   setting. When the shelf has no owned paints, the note says "Open Shelf" and opens the Shelf. The
   build must change CLAUDE.md §3.6 in the same commit.
+  **Part 2 (2026-10-27): the full ⋯ menu.** A menu audit (code, docs, and primary sources: Apple HIG,
+  the Android design guide, MDN, WCAG) judged every candidate for the menu. The mockup now shows the
+  result: three groups (Theme · Language · Use my paints | Scheme · Your data: Back up, Restore | About &
+  data · Help), a Restore confirm step, and three additions to About & data (keyboard shortcuts, Delete my
+  data, the version). It also lists the fixes the menu container needs first (it is marked as a menu but
+  is not one, 32px buttons, no scroll, the wrong shadow tier, labels not localised) and what stays out
+  of the menu, with the reasons.
 - **Design exploration: Shelf landing** (`mockups/shelf-landing.html`, not shipped). On a phone the
   Shelf controls fill 62% of the first screen, and the search goes away when you scroll. Three
   directions: A, fix the jump only (shipped, see Fixed); B, a compact header with search and status
