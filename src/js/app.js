@@ -434,6 +434,9 @@ function syncWheelL() {
  *             what it marked).
  */
 let renderRaf = 0;
+// dragFrame: the paint now running is a drag frame (render('drag')), so a long list may take its quick
+// form (renderEquiv). exactEquivT: the exact Equivalents list after the last frame.
+let dragFrame = false, exactEquivT = 0;
 /** `speak: false` repaints without the scheme summary in #status (a restore says its own line). */
 function render(reason = 'scheme', { speak = true, ids = null } = {}) {
   if (reason === 'settle') { updateUrl(); if (speak) announce(); return; }
@@ -458,7 +461,7 @@ function render(reason = 'scheme', { speak = true, ids = null } = {}) {
     // Coalesce the heavy repaint (nearest-paint scans + canvas + tab) to one per frame, and debounce
     // the history write + aria-live: a drag fires pointermove far faster than WebKit's replaceState
     // limit (which throws mid-drag) and far faster than a screen reader can speak.
-    if (!renderRaf) renderRaf = requestAnimationFrame(() => { renderRaf = 0; paint(); });
+    if (!renderRaf) renderRaf = requestAnimationFrame(() => { renderRaf = 0; dragFrame = true; try { paint(); } finally { dragFrame = false; } });
     scheduleUrlUpdate(); scheduleAnnounce();
     return;
   }
@@ -618,8 +621,10 @@ function renderEquiv() {
     // the seed field's hex list too). Reported ΔE stays true.
     const list = role === 'Metal'
       ? nearestPaints(state.idx, srcHex, 8, { floatTypes: new Set(['metal']), demoteTypes: new Set(FINISH_TYPES), demoteAmount: FINISH_PENALTY })
-      : closestPaints(state.idx, srcHex, 8);
+      : closestPaints(state.idx, srcHex, 8, { quick: dragFrame });
     $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, list, store.markOf);
+    // a drag frame drew the quick list: the exact one follows when the frames stop (wheel, slider or keys)
+    if (dragFrame) { clearTimeout(exactEquivT); exactEquivT = setTimeout(() => { if (state.tab === 'equiv') renderEquiv(); }, 150); }
   }
 }
 function renderA11y() {
@@ -1212,7 +1217,9 @@ function updateUrl() {
   // back over "Follows your device" after the device changed; a saved one came back over a newer saved
   // pick. Share link adds the theme on screen (shareUrl).
   const p = encodeState({ ...state, theme: linkTheme, pickHex: pickHex() });
-  history.replaceState(null, '', '?' + p.toString());
+  // WebKit throws after 100 calls in 10 seconds (a held Enter on ↻ or Roll): the address bar can wait for
+  // the next write, the undo step below cannot
+  try { history.replaceState(null, '', '?' + p.toString()); } catch { /* SecurityError */ }
   // Mid-gesture URL writes (the debounced updates while a wheel drag is still down) must NOT snapshot:
   // one drag would otherwise litter the undo stack with intermediates, so Ctrl+Z after a drag stepped
   // back to a mid-drag colour instead of the pre-drag state. The drag's settling updateUrl (pointerup/
@@ -1333,8 +1340,9 @@ function setMode(mode) {
 /** Seed from a paint: the seed field's list, or the Shelf's Use as seed. It goes into Recent. The render's
  *  announce starts with "New seed: X" (seedNews). */
 function selectPaint(id) {
+  const same = state.baseId === id && !state.customHex;   // the seed already: not news
   state.baseId = id; state.customHex = null; recentPicks = addRecent(recentPicks, id);
-  seedNews(t('newSeed', { name: baseInfo().name }));
+  seedNews(t(same ? 'seedSame' : 'newSeed', { name: baseInfo().name }));
   renderAll();
 }
 /** Change the harmony: a chip in the strip, and Roll a scheme. One path, so a roll is exactly a tap on
@@ -1793,14 +1801,16 @@ function saveBackup() {
   download(name, store.exportJSON(), 'application/json');
   return name;
 }
-const cdlg = { onOk: null, opener: null };
+const cdlg = { onOk: null, opener: null, body: null };
 /** The shared confirm (role=alertdialog, modal). Focus starts on Cancel. Esc or Cancel closes only it,
  *  and focus goes back to `opener`. "Save a backup of this shelf" changes in place to "✓ Saved", and the
  *  file name shows in a status line INSIDE the dialog, where a screen reader still hears it. */
-function openConfirm({ title, bodyHtml, okLabel, onOk, opener }) {
+/** `body()` builds the confirm's text; it runs again if another tab changes the shelf while it is open. */
+function openConfirm({ title, body, okLabel, onOk, opener }) {
   const d = $('#confirmDlg');
   $('#cdlgTitle').textContent = title;
-  $('#cdlgBody').innerHTML = bodyHtml;
+  $('#cdlgBody').innerHTML = body();
+  cdlg.body = body;
   $('#cdlgOkLbl').textContent = okLabel;
   $('#cdlgSaveLbl').textContent = t('saveBackup');
   $('#cdlgSave').removeAttribute('aria-disabled');
@@ -1812,6 +1822,7 @@ function openConfirm({ title, bodyHtml, okLabel, onOk, opener }) {
   d.showModal();
   $('#cdlgCancel').focus();
 }
+function refreshConfirm() { if ($('#confirmDlg').open && cdlg.body) $('#cdlgBody').innerHTML = cdlg.body(); }
 function setupConfirm() {
   const d = $('#confirmDlg');
   $('#cdlgCancel').addEventListener('click', () => d.close());
@@ -1844,12 +1855,16 @@ function confirmRestore(text, opener) {
   const info = store.inspectJSON(text);
   if (!info.ok) { toast(t('notBackup')); opener?.focus({ preventScroll: true }); return; }
   const date = info.saved ? new Intl.DateTimeFormat(i18n.getLocale(), { dateStyle: 'medium' }).format(new Date(info.saved)) : null;
-  const lost = info.lost ? `<p>${ui.esc(info.lost === 1 ? t('lostOne') : t('lostMany', { n: info.lost }))}</p>` : '';
   openConfirm({
     title: t('restoreTitle'),
-    bodyHtml: `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd>`
-      + `<dt>${date ? datedLabel(date) : ui.esc(t('inBackup'))}</dt><dd>${ui.esc(fmtCounts(info))}</dd></dl>`
-      + lost + `<p>${ui.esc(t('restoreWarn'))}</p>`,
+    // built from the store each time: "On this device" and the paints the backup drops follow another tab's Delete
+    body: () => {
+      const now = store.inspectJSON(text);
+      const lost = now.lost ? `<p>${ui.esc(now.lost === 1 ? t('lostOne') : t('lostMany', { n: now.lost }))}</p>` : '';
+      return `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd>`
+        + `<dt>${date ? datedLabel(date) : ui.esc(t('inBackup'))}</dt><dd>${ui.esc(fmtCounts(info))}</dd></dl>`
+        + lost + `<p>${ui.esc(t('restoreWarn'))}</p>`;
+    },
     okLabel: t('replace'), opener,
     onOk: () => {
       if (!store.importJSON(text)) { toast(t('notBackup')); return; }
@@ -1864,7 +1879,7 @@ function confirmRestore(text, opener) {
 function confirmDelete() {
   openConfirm({
     title: t('deleteTitle'),
-    bodyHtml: `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd></dl>`
+    body: () => `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd></dl>`
       + `<p>${ui.esc(t('deleteWarn'))}</p>`,
     okLabel: t('deleteBtn'), opener: $('#deleteOpen'),
     onOk: () => { store.clear(); toast(t('deleted')); afterStoreReplaced(); },
@@ -1909,8 +1924,9 @@ function setupMatchNote() {
  *  `speak: false`: the caller says the new seed itself (a live hex in the seed field). `news`: the words
  *  of the toast, which the render's announce says first (seedNews); true says "New seed: X". */
 function seedFromHex(hex, { speak = true, news = '' } = {}) {
+  const same = state.customHex === hex.toUpperCase();   // the seed already (its row says "Seed: #…"): not news
   state.customHex = hex.toUpperCase();
-  if (news && speak) seedNews(news === true ? t('newSeed', { name: baseInfo().name }) : news);
+  if (news && speak) seedNews(news === true ? t(same ? 'seedSame' : 'newSeed', { name: baseInfo().name }) : news);
   render('seed', { speak });
 }
 
@@ -2150,8 +2166,17 @@ async function init() {
   applyPrefsToState();   // hydrate may have restored theme/locale/plan prefs — apply them, don't strand them
   if (tParam) { linkTheme = tParam; setTheme(tParam); }   // ...but the link's theme still outranks the stored pref
   // Another tab saved a mark or a setting, or deleted or restored the shelf (store.js): show it here too.
+  // The marks path repaints every surface that shows a mark (the open seed list and the Shelf too), with no
+  // pop and no end of a lightness run: the colour here did not change. A changed setting is applied first.
   // This tab's link theme stays, unless the saved theme itself changed there.
-  store.onExternalChange(before => afterStoreReplaced({ keepLinkTheme: before.theme === store.getPref('theme') }));
+  store.onExternalChange(before => {
+    if (Object.keys(before).some(k => before[k] !== store.getPref(k))) {
+      applyPrefsToState({ keepLinkTheme: before.theme === store.getPref('theme') });
+      syncSettingsControls(); syncLocaleStrings();
+    }
+    render('marks');
+    refreshConfirm();   // an open Restore or Delete confirm shows the counts on this device now
+  });
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // brand and type filters: the Shelf's only (§3.6)
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();

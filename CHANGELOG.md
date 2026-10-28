@@ -433,7 +433,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - The harmony strip now centres the chip that has keyboard focus. Before, a chip at the edge stayed
     hidden: at 1280px width, 149px of "Split-complementary" was outside the strip.
   - Swatch-name tooltips now sit 7px from the swatch (was 5px), so they do not touch the ring.
-  - (CLAUDE.md §3.1 and §3.5 change too. The service worker is `ps-v57`.)
+  - (CLAUDE.md §3.1 and §3.5 change too. The service worker is `ps-v59`.)
 - **Accessibility: small text meets 4.5:1 (WCAG 1.4.3).**
   - New tokens `--success-text`, `--warning-text` and `--danger-text` give a darker shade of each state
     colour for text. The base colours stay for fills, dots and glyphs, which need 3:1. In the light
@@ -450,7 +450,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     washes and metallics down, so a flat paint further down the quick list could be cut: for `#8899F4`, Raf
     Azure Blue (ΔE 6.4) was missing, and two Poor matches took its place. Now every paint is ranked
     (`data.js` `closestPaints`): about 2 ms a search, or about 11 ms with a CPU 6× slower (a slow phone),
-    which is in the 16 ms budget (CLAUDE.md §6). The Equivalents tab's list for a role colour or a custom hex uses
+    which is in the 16 ms budget (CLAUDE.md §6) for a keystroke or a tab. A frame of a wheel or slider drag on
+    the Equivalents tab takes the old pool of 192 (`quick`), and the exact list follows 150ms after the last
+    frame, so a drag costs what it did before. The Equivalents tab's list for a role colour or a custom hex uses
     the same helper, so it is correct too. A test compares the list with a full scan for 61 colours.
   - **A search for "D&D" found 1,885 paints.** "D&D" folds to two one-letter words, and each one matched inside
     any word. Now, in a query of two or more words, a one-letter word before the last must be a whole word,
@@ -462,14 +464,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     could say "switched to the Neutral + pop scheme" about the colour Esc had just taken away, and undo could
     say a waiting note. Now a waiting note is dropped when a snapshot is put back (`app.js` `applySnap`,
     `restoreSeed`).
-  - **↻ and other quick steps could merge into the next step, or be lost by undo.** A ↻ press waited 250ms for
+  - **↻ could merge into the next step, or be lost by undo.** A ↻ press waited 250ms for
     its undo step, so a Roll or a chip in that time took both into one step, and an undo right after ↻ skipped
     a step and lost the colour. Now ↻ writes its step at once (its words still wait the usual 400ms, so a quick
     Roll says them first), undo and redo first write a step that is still waiting, and the seed field takes its undo mark after such a step (so Esc no longer keeps typed colours).
   - **Delete or Restore in one tab came undone in another open tab.** The other tab held the old shelf and
     wrote it back with its next change. Now each open tab takes a save or a Delete from another tab (the
-    browser's `storage` event; `store.js` `onExternalChange`) and repaints. A tab opened from a link keeps the
-    link's theme, unless the saved theme changed.
+    browser's `storage` event; `store.js` `onExternalChange`) and repaints its marks, as a mark made in the tab
+    does: the open seed list and an open Restore or Delete confirm follow too, and a lightness run stays open.
+    A tab opened from a link keeps the link's theme, unless the saved theme changed.
   - **The seed list's Sort could not be opened with a mouse or a tap on a short screen** (400% zoom, a phone
     turned sideways), where it scrolls with the paints: the list cancelled every press to keep focus in the
     field. A press on Sort is no longer cancelled.
@@ -478,8 +481,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **A press on another tile closed the seed list's mark menu and left focus on the page.** The list stayed
     open, and no key reached it. Now focus goes back to the field (or to the list after a touch long-press).
   - **Forced colours (Windows High Contrast) painted every swatch white:** the Browse grid, the live palette,
-    the Shelf and the Plan showed no colour. Swatches now keep their own colours (`forced-color-adjust: none`),
-    and their rings use the system Highlight colour. This was the case before this release too.
+    the Shelf and the Plan showed no colour. Swatches now keep their own colours (`forced-color-adjust: none`).
+    Their rings use the system Highlight colour, and a ring on the paint (a palette column's focus, the
+    Equivalents selection, the colour link) has a Canvas band under it, so it shows on any paint. A tooltip, a
+    mark badge or the copy button inside a swatch keeps the system colours. This was the case before this
+    release too.
+  - About and the photo dialog: the gap under the last line is the 24px padding alone (the last line's own
+    8px margin is gone).
   - **A link with `v=__proto__` crashed the app on load** (CodeQL: "Unvalidated dynamic method call"). The
     link's `v` names the output tab, and the tab's renderer was found on a plain object, so `__proto__`,
     `toString` or `constructor` found the object's own members: `__proto__` left a blank page, and
@@ -489,11 +497,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     only `t=dark` is a link theme (as `share.js` says); a `t=light` link opens as a link without `t`.
   - **Share link's last fallback** (no share sheet, no clipboard) said "Copy the link from the address bar",
     but that address can hold `m=shelf` and lacks the `t=dark` a share adds. Now it shows the link itself.
-  - Smaller items: Esc on Sort puts back a live hex, as Esc in the field does. Typing the hex that is already
+  - **↻ or Roll held down could lose undo steps in Safari.** ↻ now writes the address bar on each press, and
+    WebKit refuses more than 100 writes in 10 seconds. The write now fails quietly, and the undo step is still
+    kept (`app.js` `updateUrl`). A slider or wheel-key change still waits 250ms for its own step, as before.
+  - Smaller items: Esc on Sort puts back a live hex, as Esc in the field does, but an Esc that closes the Sort
+    dropdown closes only the dropdown. Choosing the paint or hex that is already the seed says "Seed: X", not
+    "New seed". Typing the hex that is already
     the seed no longer says "New seed", and Esc then has nothing to put back. About and the photo dialog keep
     their 24px under the last line on a touch screen. An open Shelf filter shows the open fill. The docs
     checker ran no checks (and passed) when Node kept a symlinked path (`--preserve-symlinks-main`).
-  - (CLAUDE.md §3.5 and §3.6 are updated; service worker `ps-v56`.)
+  - (CLAUDE.md §3.5 and §3.6 are updated; service worker `ps-v58`: `ps-v56` shipped with PR #39, before the
+    last of these fixes, and two other open PRs use `ps-v57`.)
 - **↻ did nothing on a black or white seed.** ↻ keeps the lightness, and at 0% or 100% every hue is black or
   white: `#000000` stayed `#000000`, and the studio stayed neutral. Near the slider's ends most ↻ presses stayed
   grey too. Now, when the new colour would be neutral (Lab C* under 14, `NEUTRAL_EXIT`), the lightness moves the smallest
