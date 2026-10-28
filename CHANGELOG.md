@@ -258,6 +258,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **The edge of every text field and select is now easy to see.** The seed field, the Shelf search and the
+  selects used `--border`, which is 1.22:1 (light) and 1.37:1 (dark) against the page. WCAG 2.1 asks 3:1 for
+  the edge that shows where to type. A new `--edge` token is 3.67:1 (light) and 3.62:1 (dark) on the surface.
+- **Dark theme: the warning colour no longer looks like the accent.** `--warning` was `#C9923A`, ΔE 2.7 from the
+  brass accent, so a "Fair" or "Loose" match looked like a selected control. It is now `#E0803A` (ΔE 14.8 from
+  the brass, 16.4 from `--danger`, 6.15:1 on the surface).
 - **The seed field replaces the ☰ Paints drawer and the # hex box** (the Paints picker build;
   `mockups/paints-picker.html` "Recommended"; Ryan, 2026-10-28). One field, "Paint or #hex", takes a
   paint name, brand, line, type or finish words ("vallejo red", "citadel metallic", "dawnstone (layer)")

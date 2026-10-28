@@ -28,6 +28,9 @@
   --bg: #FBFBFE; --surface: #FFFFFF; --surface-2: #F1F2FF;
   --border: #E6E7F8; --border-strong: #D3D5F0;
   --text: #20223A; --text-muted: #626583; --text-faint: #A2A6C4;   /* muted: 4.8:1+ on every light surface and weak tint */
+  /* The visible edge of a text field or a select: 3.67:1 on --surface, 3.55:1 on --bg (WCAG 1.4.11 asks 3:1
+     for the edge that shows where to type). --border is 1.22:1, so it stays for rules and button edges only. */
+  --edge: #8A857B;
   --accent: #7C3AED; --accent-weak: #F0EAFE; --on-accent: #FFFFFF;
   /* Accent-fill = the painted surface of solid accent elements (buttons, logo plaque, role badges).
      Light keeps the flat accent (purple reads fine flat); only dark gets metallic dimension. The
@@ -49,6 +52,7 @@
   --bg: #141110; --surface: #1C1815; --surface-2: #251F1A;
   --border: #3A302A; --border-strong: #4D4138;
   --text: #ECE3D8; --text-muted: #A8998A; --text-faint: #7C6F62;
+  --edge: #7C6F62;   /* field edge: 3.62:1 on --surface, 3.85:1 on --bg (--border is 1.37:1) */
   --accent: #C2912F; --accent-weak: #2C2113; --on-accent: #15100A;
   /* Polished brass: a vertical light→dark gradient (struck metal) + a diagonal specular sheen, a 1px
      darker cast edge, and an inset bevel (bright top lip, shadowed bottom). Adds dimension without
@@ -60,7 +64,9 @@
   --accent-bevel: inset 0 1px 0 rgba(255,245,220,.4), inset 0 -1px 1px rgba(0,0,0,.3);
   --buy: #5E93C9; --buy-weak: #16242F; --on-buy: #0E1620;   /* cold steel-blue cart, distinct from the brass accent */
   --success: #86A559; --success-weak: #232A16; --on-success: #14190A;   /* white fails 3:1 on the moss green — glyphs go dark */
-  --warning: #C9923A; --warning-weak: #2E2412;
+  /* --warning was #C9923A, ΔE 2.7 from the brass accent: a Fair tag looked like a selected control (§3.5
+     single-meaning). #E0803A is ΔE 14.8 from the brass and 16.4 from --danger; 6.15:1 on --surface. */
+  --warning: #E0803A; --warning-weak: #2E1D12;
   --danger: #D2563F;  --danger-weak: #2E1A14;
   /* success + warning already clear 4.5:1 as text here; danger is lifted (it read 4.0:1 on --surface-2) */
   --success-text: var(--success); --warning-text: var(--warning); --danger-text: #D86C58;

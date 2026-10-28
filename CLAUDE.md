@@ -93,6 +93,7 @@ sets below change between themes.
 /* LIGHT — "Playful Bright" (default, :root) */
 --bg:#FBFBFE; --surface:#FFFFFF; --surface-2:#F1F2FF;
 --border:#E6E7F8; --border-strong:#D3D5F0;
+--edge:#8A857B;   /* the edge of a text field or a select: 3.67:1 on surface, 3.55:1 on bg (WCAG 1.4.11; --border is 1.22:1, for rules and button edges only) */
 --text:#20223A; --text-muted:#626583; --text-faint:#A2A6C4;   /* muted: 4.8:1+ on every light surface and weak tint (was #6E7293, 4.2:1 on surface-2) */
 --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
 --accent-fill:var(--accent); --accent-edge:var(--accent); --accent-bevel:0 0 0 rgba(0,0,0,0);  /* solid-accent surfaces stay flat in light; dimension is dark-only */
@@ -107,6 +108,7 @@ sets below change between themes.
 /* DARK — "Grimdark Tabletop" ([data-theme="dark"]) */
 --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
 --border:#3A302A; --border-strong:#4D4138;
+--edge:#7C6F62;   /* field edge: 3.62:1 on surface, 3.85:1 on bg */
 --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
 --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
 /* Polished brass: solid-accent surfaces (buttons, logo plaque, role badges) get metallic dimension —
@@ -116,7 +118,7 @@ sets below change between themes.
 --accent-edge:#8C6516; --accent-bevel:inset 0 1px 0 rgba(255,245,220,.4), inset 0 -1px 1px rgba(0,0,0,.3);
 --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;   /* cold steel-blue cart, distinct from the brass accent */
 --success:#86A559; --success-weak:#232A16; --on-success:#14190A;  /* white fails 3:1 on the moss green */
---warning:#C9923A; --warning-weak:#2E2412;
+--warning:#E0803A; --warning-weak:#2E1D12;   /* was #C9923A, ΔE 2.7 from the brass accent (a Fair tag read as selected); now ΔE 14.8 from brass, 16.4 from danger, 6.15:1 on surface */
 --danger:#D2563F;  --danger-weak:#2E1A14;
 --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58;   /* success/warning already pass as text; danger read 4.0:1 on surface-2 */
 --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 18px 50px rgba(0,0,0,.5);

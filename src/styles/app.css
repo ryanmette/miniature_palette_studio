@@ -156,7 +156,7 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-tem
   color: var(--warning-text); background: var(--surface); border: 1px solid var(--warning); border-radius: var(--r-pill); padding: 0 7px; margin-right: 5px; }
 .sharednote .br { color: var(--text-faint); }
 
-input[type="search"], select { height: var(--tap); border: 1px solid var(--border); border-radius: var(--r-ctrl);
+input[type="search"], select { height: var(--tap); border: 1px solid var(--edge); border-radius: var(--r-ctrl);
   background: var(--surface); color: var(--text); padding: 0 10px; font-family: inherit; font-size: 13px; width: 100%; }
 input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
 /* z-index lifts the whole toolbar (and the seed field's list) above the sticky .studio (its own stacking
@@ -172,7 +172,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
    input inside it has neither (a second ring doubled it). The field shrinks before the row wraps (a basis of
    0, up to 440px), and the input keeps 100px for its placeholder: below that, Compare wraps to a second row. */
 .seedfield { flex: 1 1 0; max-width: 440px; min-width: calc(100px + 10px + var(--tap) + 2px); display: flex; align-items: center; height: var(--tap);
-  background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-ctrl); }
+  background: var(--surface); border: 1px solid var(--edge); border-radius: var(--r-ctrl); }
 .seedfield:focus-within { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
 /* width 0: an input's own width (size=20, 192px at 16px) set the toolbar's least width, and the page
    scrolled sideways at 320px. It grows with flex. The field's 1px border would leave the input and Browse
