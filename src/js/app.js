@@ -937,7 +937,7 @@ function clampTip(c) {
   // or in the Shelf the filter dock, which paints over the grid. Then it flips below the cell.
   let roof = $('header').getBoundingClientRect().bottom;
   if (state.mode === 'shelf') roof = Math.max(roof, $('#shelfDock').getBoundingClientRect().bottom);
-  tip.classList.toggle('below', r.top - 5 - h < roof + 4);
+  tip.classList.toggle('below', r.top - 7 - h < roof + 4);   // 7 = .celltip's offset in app.css
 }
 function rangeIds(aId, bId) {
   const list = shelf.viewIds || shelfPaints().map(p => p.id);   // the order renderShelf last drew
@@ -1404,12 +1404,12 @@ function rollScheme() {
     { transform: 'translateY(-5px) rotate(200deg) scale(.9)', offset: 0.45 },
     { transform: 'translateY(0) rotate(360deg) scale(1)' }], { duration: 320, easing: 'cubic-bezier(.34,1.56,.64,1)' });
 }
-/** Centre the active harmony chip in the scrollable strip — horizontal only (no page jump). The strip is
+/** Centre a harmony chip (by default the active one) in the scrollable strip — horizontal only (no page jump). The strip is
  *  position: relative (app.css), so a chip's offsetLeft is measured from the strip itself: the Roll
  *  button before it does not shift the centre. */
-function scrollHarmonyActive() {
-  const seg = $('#seg'), el = seg && seg.querySelector('button[aria-pressed="true"]');
-  if (el) seg.scrollLeft = el.offsetLeft - (seg.clientWidth - el.offsetWidth) / 2;
+function scrollHarmonyActive(el = $('#seg')?.querySelector('button[aria-pressed="true"]')) {
+  const seg = $('#seg');
+  if (seg && el) seg.scrollLeft = el.offsetLeft - (seg.clientWidth - el.offsetWidth) / 2;
 }
 function syncTabs(focusActive = false) {
   const tabs = $('#tabs');
@@ -2033,6 +2033,9 @@ function wire() {
     if (b.getAttribute('aria-disabled') === 'true') { $('#status').textContent = b.title; return; }   // announce the why, change nothing
     setHarmony(b.dataset.h, { trigger: b });
   });
+  // Keyboard focus centres its chip too: the browser left a half-visible chip (and its focus ring) cut off
+  // at the strip's edge. Keyboard only — a mouse press must not slide the chip out from under itself.
+  $('#seg').addEventListener('focusin', e => { if (e.target.matches('button:focus-visible')) scrollHarmonyActive(e.target); });
   $('#rollScheme').addEventListener('click', rollScheme);
   // Quick pops (neutral mode): each chip just moves the wheel's pop node — not a second system.
   $('#pops').addEventListener('click', e => {
@@ -2236,7 +2239,7 @@ document.addEventListener('touchstart', () => {}, { passive: true });
 init().catch(err => {
   // err.message is not under the app's control (fetch/parse errors can echo response bodies) — the
   // ONE innerHTML sink that must escape (every other render path goes through ui.js esc()).
-  $('main').innerHTML = `<p style="padding:24px;color:var(--danger);max-width:60ch">Couldn't load the paint data: ${ui.esc(err.message)}.
+  $('main').innerHTML = `<p style="padding:24px;color:var(--danger-text);max-width:60ch">Couldn't load the paint data: ${ui.esc(err.message)}.
     Serve the app from a local web server (e.g. <code class="mono">python3 -m http.server</code> in <code class="mono">src/</code>)
     so the browser can fetch <code class="mono">data/paints.json</code>.</p>`;
 });

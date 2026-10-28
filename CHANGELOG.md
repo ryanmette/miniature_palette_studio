@@ -416,6 +416,33 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Accessibility: focus rings that a paint, a neighbour or the header could hide (WCAG 2.1 AA, 2.4.7
+  and 1.4.11).** The `--focus` ring from this release shows well on chrome. In some places, the colour
+  next to the ring was not chrome:
+  - On a paint swatch, the ring now uses the swatch's ink colour, not the accent. `textOn` picks the ink
+    for contrast with the paint, so the ring shows on every paint. On the Equivalents tab, the 3px
+    selection ring covered the ring of the selected swatch. Now the ring sits inside it.
+  - New token `--focus-inset` draws the ring inside the control. The live palette's buttons use it,
+    because outside them is paint. The seed dock uses it, because an outer ring ran 1px from the
+    column's colour-link outline. The Shelf handle uses it, because the header covered the top of an
+    outer ring when the dock tucked up under the header.
+  - A pressed Equivalents chip lost its focus ring, because the pressed rule came later in the CSS.
+  - The tab panels and the links on the info pages used the browser's default ring. That ring is dark,
+    so it disappeared on the dark theme. A baseline `:focus-visible` rule now gives them an accent
+    outline. Browse in the seed field gets an inset outline, so you can see which part has focus.
+  - The harmony strip now centres the chip that has keyboard focus. Before, a chip at the edge stayed
+    hidden: at 1280px width, 149px of "Split-complementary" was outside the strip.
+  - Swatch-name tooltips now sit 7px from the swatch (was 5px), so they do not touch the ring.
+  - (CLAUDE.md §3.1 and §3.5 change too. The service worker is `ps-v59`.)
+- **Accessibility: small text meets 4.5:1 (WCAG 1.4.3).**
+  - New tokens `--success-text`, `--warning-text` and `--danger-text` give a darker shade of each state
+    colour for text. The base colours stay for fills, dots and glyphs, which need 3:1. In the light
+    theme, "✓ owned" goes from 2.96:1 to 4.82:1, "approx" from 3.62:1 to 5.69:1, and the metallic pill
+    from 3.09:1 to 4.86:1. The ΔE labels and the Accessibility tab's verdicts use the new tokens too.
+  - In the dark theme, the "Poor" label and "Fails AA" used `--danger` as text at 3.99:1 to 4.32:1.
+    There, `--danger-text` is `#D86C58` (4.81:1 or more).
+  - The light `--text-muted` is now `#626583` (was `#6E7293`). On `--surface-2`, the ΔE badges and the
+    Equivalents chips go from 4.20:1 to 5.09:1. The dark `--text-muted` does not change.
 - **Fixes from the final review of this release's work** (one browser test agent and five code reviewers;
   each finding was checked again by a second agent that tried to refute it):
   - **The seed field's "Closest paints" for a hex left out closer paints.** The list took only the 64 paints
