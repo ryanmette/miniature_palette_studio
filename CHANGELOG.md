@@ -441,8 +441,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     Roll says them first), undo and redo first write a step that is still waiting, and the seed field takes its undo mark after such a step (so Esc no longer keeps typed colours).
   - **Delete or Restore in one tab came undone in another open tab.** The other tab held the old shelf and
     wrote it back with its next change. Now each open tab takes a save or a Delete from another tab (the
-    browser's `storage` event; `store.js` `onExternalChange`) and repaints. A tab opened from a link keeps the
-    link's theme, unless the saved theme changed.
+    browser's `storage` event; `store.js` `onExternalChange`) and repaints its marks, as a mark made in the tab
+    does: the open seed list and an open Restore or Delete confirm follow too, and a lightness run stays open.
+    A tab opened from a link keeps the link's theme, unless the saved theme changed.
   - **The seed list's Sort could not be opened with a mouse or a tap on a short screen** (400% zoom, a phone
     turned sideways), where it scrolls with the paints: the list cancelled every press to keep focus in the
     field. A press on Sort is no longer cancelled.

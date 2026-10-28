@@ -1793,14 +1793,16 @@ function saveBackup() {
   download(name, store.exportJSON(), 'application/json');
   return name;
 }
-const cdlg = { onOk: null, opener: null };
+const cdlg = { onOk: null, opener: null, body: null };
 /** The shared confirm (role=alertdialog, modal). Focus starts on Cancel. Esc or Cancel closes only it,
  *  and focus goes back to `opener`. "Save a backup of this shelf" changes in place to "✓ Saved", and the
  *  file name shows in a status line INSIDE the dialog, where a screen reader still hears it. */
-function openConfirm({ title, bodyHtml, okLabel, onOk, opener }) {
+/** `body()` builds the confirm's text; it runs again if another tab changes the shelf while it is open. */
+function openConfirm({ title, body, okLabel, onOk, opener }) {
   const d = $('#confirmDlg');
   $('#cdlgTitle').textContent = title;
-  $('#cdlgBody').innerHTML = bodyHtml;
+  $('#cdlgBody').innerHTML = body();
+  cdlg.body = body;
   $('#cdlgOkLbl').textContent = okLabel;
   $('#cdlgSaveLbl').textContent = t('saveBackup');
   $('#cdlgSave').removeAttribute('aria-disabled');
@@ -1812,6 +1814,7 @@ function openConfirm({ title, bodyHtml, okLabel, onOk, opener }) {
   d.showModal();
   $('#cdlgCancel').focus();
 }
+function refreshConfirm() { if ($('#confirmDlg').open && cdlg.body) $('#cdlgBody').innerHTML = cdlg.body(); }
 function setupConfirm() {
   const d = $('#confirmDlg');
   $('#cdlgCancel').addEventListener('click', () => d.close());
@@ -1844,12 +1847,16 @@ function confirmRestore(text, opener) {
   const info = store.inspectJSON(text);
   if (!info.ok) { toast(t('notBackup')); opener?.focus({ preventScroll: true }); return; }
   const date = info.saved ? new Intl.DateTimeFormat(i18n.getLocale(), { dateStyle: 'medium' }).format(new Date(info.saved)) : null;
-  const lost = info.lost ? `<p>${ui.esc(info.lost === 1 ? t('lostOne') : t('lostMany', { n: info.lost }))}</p>` : '';
   openConfirm({
     title: t('restoreTitle'),
-    bodyHtml: `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd>`
-      + `<dt>${date ? datedLabel(date) : ui.esc(t('inBackup'))}</dt><dd>${ui.esc(fmtCounts(info))}</dd></dl>`
-      + lost + `<p>${ui.esc(t('restoreWarn'))}</p>`,
+    // built from the store each time: "On this device" and the paints the backup drops follow another tab's Delete
+    body: () => {
+      const now = store.inspectJSON(text);
+      const lost = now.lost ? `<p>${ui.esc(now.lost === 1 ? t('lostOne') : t('lostMany', { n: now.lost }))}</p>` : '';
+      return `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd>`
+        + `<dt>${date ? datedLabel(date) : ui.esc(t('inBackup'))}</dt><dd>${ui.esc(fmtCounts(info))}</dd></dl>`
+        + lost + `<p>${ui.esc(t('restoreWarn'))}</p>`;
+    },
     okLabel: t('replace'), opener,
     onOk: () => {
       if (!store.importJSON(text)) { toast(t('notBackup')); return; }
@@ -1864,7 +1871,7 @@ function confirmRestore(text, opener) {
 function confirmDelete() {
   openConfirm({
     title: t('deleteTitle'),
-    bodyHtml: `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd></dl>`
+    body: () => `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd></dl>`
       + `<p>${ui.esc(t('deleteWarn'))}</p>`,
     okLabel: t('deleteBtn'), opener: $('#deleteOpen'),
     onOk: () => { store.clear(); toast(t('deleted')); afterStoreReplaced(); },
@@ -2147,8 +2154,17 @@ async function init() {
   applyPrefsToState();   // hydrate may have restored theme/locale/plan prefs — apply them, don't strand them
   if (tParam) { linkTheme = tParam; setTheme(tParam); }   // ...but the link's theme still outranks the stored pref
   // Another tab saved a mark or a setting, or deleted or restored the shelf (store.js): show it here too.
+  // The marks path repaints every surface that shows a mark (the open seed list and the Shelf too), with no
+  // pop and no end of a lightness run: the colour here did not change. A changed setting is applied first.
   // This tab's link theme stays, unless the saved theme itself changed there.
-  store.onExternalChange(before => afterStoreReplaced({ keepLinkTheme: before.theme === store.getPref('theme') }));
+  store.onExternalChange(before => {
+    if (Object.keys(before).some(k => before[k] !== store.getPref(k))) {
+      applyPrefsToState({ keepLinkTheme: before.theme === store.getPref('theme') });
+      syncSettingsControls(); syncLocaleStrings();
+    }
+    render('marks');
+    refreshConfirm();   // an open Restore or Delete confirm shows the counts on this device now
+  });
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // brand and type filters: the Shelf's only (§3.6)
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
