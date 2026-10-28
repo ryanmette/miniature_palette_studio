@@ -287,7 +287,7 @@
         <li><b>Small phones open scrolled down.</b> At 360px and 375px wide, the page loads part of the way down. The offset depends
           on the viewport height, for example 401px at 360×640, 384px at 375×667 and 239px at 375×812. The cause is <code>syncTabs()</code> in
           <code>app.js</code>: its <code>scrollIntoView</code> on the active tab also scrolls the page. At 390px wide the tabs fit, so
-          the page does not move.</li>
+          the page does not move. <b>Fixed on 2026-10-28</b>, as a separate change: the app now scrolls only the tab strip.</li>
         <li><b>A tap on ☰ Paints raises the keyboard.</b> It always focuses the search, so the keyboard covers the paints.</li>
         <li><b>A pasted <code>#9A1115</code> does nothing.</b> The hex box keeps 6 characters, so it holds <code>9A111</code>.</li>
         <li><b>A paint name in the hex box makes a colour.</b> “Abaddon Black” seeds <code>#ABADDB</code>.</li>
@@ -510,8 +510,6 @@
     <li>The list exists only while it is open: one tab stop instead of 3,232. It is built when it opens, from the current pick,
       so a wheel drag cannot leave it out of date. There is no rebuild of 3,225 buttons on each seed change.</li>
     <li>One <code>render('marks')</code> path: a mark anywhere updates the hero, the palette, the open list and the Shelf.</li>
-    <li>The small-phone load scroll (<code>syncTabs()</code> in <code>app.js</code>, the <code>scrollIntoView</code> on the active
-      tab). You can also fix it now, on its own.</li>
   </ul>
 
   <h3 class="lab">Constitution and docs (same commit as the build)</h3>

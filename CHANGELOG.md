@@ -174,6 +174,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Small phones open at the top of the page again.** On a 360px or 375px phone, the app opened
+  scrolled down by 240 to 400px. The output tabs do not fit across these screens, so the app scrolls the
+  tab strip to show the active tab. It used `scrollIntoView`, which also scrolled the page down to the
+  tabs. Now the app scrolls only the strip. A shared link to a tab, a tap on a tab and the arrow keys
+  still show the active tab. (Service worker `ps-v47`.)
 - **Filters on a phone no longer opens the brand list by itself.** When the Shelf's Filters sheet opened,
   the app moved focus to the Brand dropdown. On iOS, a dropdown that takes focus during a tap opens its
   picker, so every tap on Filters showed the brand list. Now focus goes to the sheet's title. Tab still

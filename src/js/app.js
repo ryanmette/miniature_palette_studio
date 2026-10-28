@@ -1243,8 +1243,12 @@ function syncTabs(focusActive = false) {
     b.setAttribute('aria-selected', String(sel));
     b.tabIndex = sel ? 0 : -1;        // roving tabindex (WAI-ARIA tabs pattern)
     if (sel && focusActive) b.focus();
-    // On narrow screens the tab strip scrolls horizontally — keep the active tab in view.
-    if (sel && tabs.scrollWidth > tabs.clientWidth) b.scrollIntoView({ inline: 'center', block: 'nearest' });
+    // On narrow screens the tab strip scrolls horizontally — centre the active tab in the strip.
+    // Scroll the strip only: scrollIntoView also scrolled the page down to the tabs on load (small phones).
+    if (sel && tabs.scrollWidth > tabs.clientWidth) {
+      const tr = tabs.getBoundingClientRect(), br = b.getBoundingClientRect();
+      tabs.scrollLeft += (br.left + br.width / 2) - (tr.left + tr.width / 2);
+    }
   }
   for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== state.tab;
 }
