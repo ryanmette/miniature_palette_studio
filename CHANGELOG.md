@@ -136,7 +136,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **Most were washes and other finishes:** 12 of the 13 are wash, ink, contrast or effect paints. The cut
     kept nearer flats, and the penalty then put those flats after same-finish paints that the cut removed.
   - **Cost:** about 3 ms a call (budget 16 ms, CLAUDE.md §6). A new test compares the list with a full scan
-    of the real dataset. `CACHE` → `ps-v54`.
+    of the real dataset. `CACHE` → `ps-v55`.
 - **Shelf on phones: the filter panel no longer stutters when it tucks or opens.** Each tuck or open
   wrote a CSS variable on the page root, and every swatch read it. So the browser restyled the whole
   page (about 6,500 elements), about 80ms each time on a mid-range phone. Now the keyboard cursor keeps
