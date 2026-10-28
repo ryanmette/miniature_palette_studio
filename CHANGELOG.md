@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Design exploration: pin a paint to a role** (`mockups/pin-a-paint.html`, not shipped). Ryan asked: “I use Death
+  Guard Green and want Balthasar Gold — what else is recommended?” Today the app cannot do this: for that green the Metal
+  rule gives gunmetal, and no control pins a paint to a role. The page shows four directions with real engine numbers
+  (projected numbers carry a ◇ mark): A, a 📌 pin on the Plan role card; B, a “Paints I'm using” strip; C, a Metal choice;
+  D, pins on the wheel. Three judges scored A first (49 of 60; C 40, B 35, D 32). The recommendation is A, with the
+  metal-family shortcuts from C and the “harmony's own pick” line from B. Open questions for Ryan are on the page.
 - **Roll a scheme: a d6 that rolls a random harmony** (`mockups/random-die.html`, direction B; Ryan,
   2026-10-28: “Keep ↻, add the Roll a scheme d6”). ↻ stays where it is, with the same job (see Fixed for black
   and white).

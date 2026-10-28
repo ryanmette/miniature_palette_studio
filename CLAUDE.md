@@ -239,6 +239,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── paints-picker.html     ← 4-way exploration: the redundant phone Paints drawer — judged; built (2026-10-28): one seed field + a list that only picks
 │   ├── lightness-slider.html  ← 4-way exploration: labelling the wheel's lightness slider — judged; built: the colour-ramp track + a label (visible on a phone; the Random button: random-die.html)
 │   ├── random-die.html        ← the wheel's Random control: today's ↻, a die-glyph study (the d6 chosen; a d20 maybe later) and 3 directions, judged; chosen (Ryan, 2026-10-28): keep ↻ + a “Roll a scheme” d6 (built)
+│   ├── pin-a-paint.html       ← UC-3 “complete a scheme I started” (Death Guard Green + Balthasar Gold): 4 directions to pin a paint to a role, judged; recommended: A, a 📌 pin on the Plan role card (not built)
 │   ├── studio-layouts.html    ← 5-way Studio layout exploration (scroll-reduction) + judge ranking
 │   ├── layouts/               ← the 5 standalone layout mocks embedded by studio-layouts.html
 │   │   ├── split-sticky-studio.html · cockpit-3col.html · instrument-band.html

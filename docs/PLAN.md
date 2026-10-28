@@ -372,9 +372,11 @@ checks need a real device or a real screen reader. The build used Playwright (Ch
     a small random group with the Roll chip.
 26. **Pin a paint to a role (UC-3 “Complete a scheme I started”).** A Death Guard player uses Death Guard Green and
     wants Balthasar Gold as the metal. Today `metalIdeal()` gives gunmetal for that green (its hue is 74°, outside the
-    warm range under 70°), so Balthasar Gold never shows, and no control pins a paint to a role. Mockup in progress:
-    `mockups/pin-a-paint.html` (four directions: pin on the role card, a “Paints I'm using” strip, a Metal choice, pins
-    on the wheel).
+    warm range under 70°), so Balthasar Gold never shows, and no control pins a paint to a role. Mockup done
+    (`mockups/pin-a-paint.html`, 2026-10-28): judges chose **A, a 📌 pin on the Plan role card** (49/60), with C's metal
+    families and B's “harmony's own pick” line. A pin is a paint, never ΔE 0: the card shows its distance from the
+    harmony's pick. Waits for Ryan's answers (all roles or Metal first; the word and icon; bronze in Auto; a pin on the
+    seed's role).
 27. **Telling paints apart on the Shelf.** Without logos or names, the grid is a wall of colour; a phone shows no names
     at all. Ideas: section headers by brand and line (sticky) with a jump index; a peek bar on a phone that names the
     last paint touched; a density setting (colours · with names · list); text brand monograms; generic pot or dropper
