@@ -374,6 +374,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Chrome on a Mac: a dropdown list now opens under its button.** Before, Chrome on macOS drew the system menu
+  on top of the button and moved it to the left, and its arrow sat tight on the edge. Now, with a mouse, the Shelf's
+  brand, type and sort filters and the seed list's Sort open the app's own list under the button. Each label lines up
+  with the button's text, and the ✓ is at the end of the row. The chevron sits 12px from the edge and points up while
+  the list is open. This uses customizable select (`appearance: base-select`, Chrome and Edge 135+, Safari 27+). Phones
+  keep the system picker. Other browsers keep their own list, which already looked right. (CLAUDE.md §3.5 has a new
+  "Select" line; service worker `ps-v52`.)
 - **The old Paints drawer's bugs** (`mockups/paints-picker.html`, "Today"). The seed field fixes them:
   - A tap on ☰ Paints raised the phone keyboard over the paints. Browse never takes focus.
   - A pasted "#9A1115" did nothing: the hex box kept 6 characters. Now it seeds.
