@@ -6,6 +6,35 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Roll a scheme: a d6 that rolls a random harmony** (`mockups/random-die.html`, direction B; Ryan,
+  2026-10-28: “Keep ↻, add the Roll a scheme d6”). ↻ stays where it is, with the same job (see Fixed for black
+  and white).
+  - The button is at the start of the harmony strip's row, outside the strip's group of options. It stays in
+    place while the strip scrolls. It shows the d6 and “Roll a scheme” where the row is 460px or wider. Where the
+    row is narrower, it shows the d6 and “Roll”, for example on a phone and in the studio column on a screen from
+    1025px to about 1160px wide. Its accessible name is always “Roll a scheme”. Its tooltip is “Roll a scheme:
+    a random harmony for this colour”. It is 44px tall on a touch screen.
+  - It changes only the harmony. Your paint stays the seed, in the same role. The lightness, the locked and added
+    colours and the pop do not change. It never picks Custom or the harmony you have now. A seed with a hue rolls
+    from the 9 rule harmonies; a neutral seed rolls only from Neutral + pop, Duotone, Warm / cool and Shades
+    (`harmony.js` `rollHarmony`, CLAUDE.md §7).
+  - It uses the same path as a tap on a harmony chip: one ↶ step, the chip moves to the centre of the strip, and
+    the hero swatch pops. The live region says “Rolled: Compound.” before the scheme summary, and the summary
+    then does not say the harmony again (“Rolled: Compound. Alga Green, plan view.”). News that waits for its
+    announcement (↻'s “Lightness moved to 8%”) is said first, not lost.
+  - The control that you press stays where it is on the screen. Over 1024px, with the page scrolled, the sticky
+    studio column rests on the bottom of the workspace, and a new harmony that changes the output column's height
+    moved the studio (with the strip and Roll) by 30–90px, so the next press missed. Now the page scrolls by that
+    amount (a harmony chip too). At the very bottom of the page there can be no room to scroll, so the control
+    can still move once there.
+  - On a press the die turns once (320ms, transform only). The scheme changes at the press, not after the turn.
+    With reduced motion the die does not turn.
+  - The Help page says what Roll a scheme and ↻ do. Every new string is in `i18n.js`. Tooltips can now be
+    translated (`data-i18n-title`).
+  - (CLAUDE.md §3.4, §3.6 (the harmony strip, Roll a scheme, the wheel module), §4 and §7 are updated; service
+    worker `ps-v53`.)
+- Tests for the roll's pool (never the current harmony, never Custom, the neutral pool, every harmony in the pool
+  can come up) and for ↻'s lightness on black, white, `#050505`, `#FAFAFA` and a mid colour: 232 tests.
 - **Design exploration: the Random control** (`mockups/random-die.html`, not shipped). Ryan asked for a mockup of
   the d20 and to keep ↻. The page shows today's ↻ beside ↶ and ↷, a study of five die glyphs at 16–28px, and three
   directions you can try: A, ↻ with a die that rolls on a tap; B, ↻ plus a new “Roll a scheme” die; C, the die replaces
@@ -381,6 +410,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **↻ did nothing on a black or white seed.** ↻ keeps the lightness, and at 0% or 100% every hue is black or
+  white: `#000000` stayed `#000000`, and the studio stayed neutral. Near the slider's ends most ↻ presses stayed
+  grey too. Now, when the new colour would be neutral (Lab C* under 14, `NEUTRAL_EXIT`), the lightness moves the smallest
+  whole per cent toward 50% that lets the colour show (`color.js` `lightnessForHue`). A toast and the live region
+  say so: “New colour. Lightness moved to 7% so the colour can show.” A mid colour keeps its lightness, as before.
+- **The harmony strip centres the chosen chip from its own edge.** It measured from the studio card, and the
+  strip's scroll snap hid the error. With the Roll button before the strip, the error became a chip's width.
+- **The hero line keeps its height when its “neutral” pill goes.** The pill was 2px taller than the text beside
+  it. When neutral mode ended (for example, ↻ on black), the wheel, ↻ and the strip moved up 1–3px on a phone. At
+  414–430px the hero line can still lose a line there (`docs/PLAN.md` §5 item 33).
+- **A harmony chip said an old mode note.** When a slider move or ↻ crossed the neutral boundary and you then
+  tapped a chip before the announcement, the live region said “back to the complementary scheme” with the chip's
+  harmony. Now the note keeps only the news of the change of mode (“Seed has a hue again.”).
 - **Chrome on a Mac: a dropdown list now opens under its button.** Before, Chrome on macOS drew the system menu
   on top of the button and moved it to the left, and its arrow sat tight on the edge. Now, with a mouse, the Shelf's
   brand, type and sort filters and the seed list's Sort open the app's own list under the button. Each label lines up

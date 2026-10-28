@@ -11,9 +11,9 @@
 // which the app calls for discrete changes (the seed field, harmony), and `endLightnessRun`.
 
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn,
-         lightnessInput, lightnessBand } from './color.js';
+         lightnessInput, lightnessBand, lightnessForHue } from './color.js';
 import { HARMONY_OFFSETS, isHueHarmony, isNeutralHarmony, POP_MIN_S } from './harmony.js';
-import { pickForSchemeBase } from './seed.js';
+import { pickForSchemeBase, schemeBaseOf } from './seed.js';
 import { nearestPaint } from './data.js';
 import * as ui from './ui.js';
 import { t } from './i18n.js';
@@ -23,7 +23,7 @@ const $ = sel => document.querySelector(sel);
 /**
  * Bind the wheel canvas. `ctx` supplies the app's state and the operations the wheel triggers:
  *   state · render(reason) · pickHex() · schemeBase() · activePop() · matchOpts() · basePaint()
- *   wheelRoleGlyphs() · addFreeNode() · removeFreeNode() · collapseBanner() · setDragging(bool)
+ *   wheelRoleGlyphs() · addFreeNode() · removeFreeNode() · collapseBanner() · seedNews(msg) · setDragging(bool)
  * `setDragging` exists because the app gates mid-drag history snapshots on it — a drag must produce
  * ONE undo entry, not one per frame.
  * @returns {{ draw: () => void, endLightnessRun: () => void }} the redraw (canvas + slider paint), and
@@ -32,7 +32,7 @@ const $ = sel => document.querySelector(sel);
  */
 export function setupWheel(app) {
   const { state, render, pickHex, schemeBase, activePop, matchOpts, basePaint,
-          wheelRoleGlyphs, addFreeNode, removeFreeNode, collapseBanner, setDragging } = app;
+          wheelRoleGlyphs, addFreeNode, removeFreeNode, collapseBanner, seedNews, setDragging } = app;
   const cv = $('#wheel'), ctx = cv.getContext('2d');
   const COARSE = matchMedia('(pointer:coarse)').matches;
   const NODE = COARSE ? { base: 15, part: 12, hit: 26 } : { base: 11, part: 8, hit: 18 };  // hit: used in S4
@@ -287,7 +287,24 @@ export function setupWheel(app) {
     wl.style.setProperty('--wl-ring', textOn(pick));
     sliderText();
   }
-  $('#wrand').addEventListener('click', () => setBase(Math.random() * 360, 0.5 + Math.random() * 0.45));
+  // ↻: a random hue and strength (50–95%) for the scheme base, at the wheel's lightness. Near black or
+  // white every hue is grey there, so ↻ changed nothing (#000000 stayed #000000) and the studio could stay
+  // neutral. Then the lightness moves the smallest step toward mid that lets the colour show (C* of
+  // NEUTRAL_EXIT or more, so neutral mode ends), and the toast and the live region say so (§3.6).
+  $('#wrand').addEventListener('click', () => {
+    const h = Math.random() * 360, s = 0.5 + Math.random() * 0.45;
+    // the chroma that counts is the scheme base's as setBase will store it (accent-seed: the pick 180° away)
+    const role = state.seedRole;
+    const fit = lightnessForHue(h, s, state.wheelL,
+      { hexOf: (hh, ss, ll) => schemeBaseOf(pickForSchemeBase(rgbToHex(hslToRgb([hh, ss, ll])), role), role) });
+    if (fit.moved) {
+      state.wheelL = fit.l;
+      wl.value = Math.round(fit.l * 100);
+      seedNews(t('randLightMoved', { pct: Math.round(fit.l * 100) }));
+    }
+    endLightnessRun();   // the slider's next move starts a new run from the new colour (lightnessInput)
+    setBase(h, s);
+  });
   measure();
   draw();
   let rtimer = 0;   // re-measure + redraw when the responsive canvas box changes (resize / orientation / stack)

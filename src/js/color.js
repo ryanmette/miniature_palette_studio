@@ -258,6 +258,26 @@ export function lightnessInput(run, { v, pick, custom, wheelL, min, max }) {
   return { run: { ...run, wrote: hex }, custom: hex, wheelL: v / 100 };
 }
 
+/**
+ * The lightness for ↻ (a random hue and strength at the wheel's lightness, CLAUDE.md §3.6). Near black
+ * or white every hue is grey, so ↻ changed nothing there: on #000000 it gave #000000 again. When the
+ * colour at `l` is neutral (Lab C* < `min`, NEUTRAL_EXIT, the chroma that ends neutral mode), this
+ * gives the nearest whole per cent toward 50% where the colour has that chroma: the smallest move.
+ * Otherwise `l` does not change. A colour with no chroma at any lightness (a grey `s`) keeps `l` too.
+ * `hexOf(h, s, l)` gives the colour whose chroma counts: by default the HSL colour itself. The wheel
+ * passes the scheme base as the app will store it (in accent-seed mode, the pick turned back 180°).
+ * @returns {{ l: number, moved: boolean }}
+ */
+export function lightnessForHue(h, s, l, { min = NEUTRAL_EXIT, hexOf = (hh, ss, ll) => rgbToHex(hslToRgb([hh, ss, ll])) } = {}) {
+  if (labChroma(hexOf(h, s, l)) >= min) return { l, moved: false };
+  const up = l < 0.5, step = up ? 1 : -1;
+  // whole per cents, strictly toward 50% from l, up to and including 50%
+  for (let p = up ? Math.floor(l * 100) + 1 : Math.ceil(l * 100) - 1; up ? p <= 50 : p >= 50; p += step) {
+    if (labChroma(hexOf(h, s, p / 100)) >= min) return { l: p / 100, moved: true };
+  }
+  return { l, moved: false };
+}
+
 /** The word a screen reader says after the slider's per cent ("24%, dark"), as a band id that the
  *  UI translates. Upper bounds are inclusive: very dark ≤ 15 · dark ≤ 35 · mid ≤ 65 · light ≤ 85. */
 export const lightnessBand = v =>

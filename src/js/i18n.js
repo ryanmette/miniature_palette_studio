@@ -78,6 +78,15 @@ const LOCALES = {
     wlMid: 'mid',
     wlLight: 'light',
     wlVeryLight: 'very light',
+    // ↻ when every hue is grey at the wheel's lightness (near black or white): the toast and the lead of
+    // the scheme summary. {pct} is the new lightness.
+    randLightMoved: 'New colour. Lightness moved to {pct}% so the colour can show',
+    // Roll a scheme: the d6 at the start of the harmony strip. The visible word is "Roll" where the row is
+    // narrow; the name is always "Roll a scheme" (it holds the visible word, WCAG 2.5.3).
+    rollScheme: 'Roll a scheme',
+    roll: 'Roll',
+    rollTitle: 'Roll a scheme: a random harmony for this colour',
+    rolled: 'Rolled: {name}',
 
     // ⋯ Settings (index.html #settingsMenu). The row order is the menu's order.
     settings: 'Settings',
@@ -176,6 +185,8 @@ const LOCALES = {
   },
   'en-US': {
     colourScheme: 'Color scheme',
+    randLightMoved: 'New color. Lightness moved to {pct}% so the color can show',
+    rollTitle: 'Roll a scheme: a random harmony for this color',
     seedName: 'Paint name, brand or hex color',
     pkOrColour: 'Or a color',
     pkSeedLiveSub: 'The scheme uses this color now.',
@@ -217,7 +228,8 @@ export const t = (key, vars) => {
 };
 
 /**
- * Swap textContent of [data-i18n] elements and placeholders of [data-i18n-ph]. Call after render, and
+ * Swap textContent of [data-i18n] elements, placeholders of [data-i18n-ph], accessible names of
+ * [data-i18n-aria] and tooltips of [data-i18n-title]. Call after render, and
  * on any language change. Static chrome is marked up in the HTML rather than built in JS, so this
  * walks the DOM instead of the template layer; dynamic strings go through t() at build time.
  * Also sets <html lang>, which is what screen readers use to pick a pronunciation.
@@ -228,6 +240,7 @@ export function apply(root = document) {
   root.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
   root.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
   root.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+  root.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
   document.documentElement.lang = locale;
 }
 

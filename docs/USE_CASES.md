@@ -155,7 +155,7 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 - **UC-8 — Free-drag the wheel.** *Trigger:* idle tinkering. *Flow:* drag the base node around the wheel; hue/saturation change; every harmony node + its nearest paint updates **live**. *Out:* serendipity. *Feat:* interactive wheel, real-time recompute.
 - **UC-9 — Flip harmony types live.** *Trigger:* curiosity. *Flow:* toggle complementary↔triadic↔… and watch nodes rearrange. *Feat:* wheel, harmonies.
 - **UC-10 — Lock a paint, spin the rest.** *Trigger:* "Keep this red, surprise me with the rest." *Flow:* pin one node; others move around it. *Feat:* node locking.
-- **UC-11 — Randomise / shuffle.** *Trigger:* "Inspire me." *Flow:* one tap reseeds within constraints. *Feat:* randomiser.
+- **UC-11 — Randomise / shuffle.** *Trigger:* "Inspire me." *Flow:* one tap reseeds within constraints. *Feat:* randomiser. *Status:* ✅ built, two controls. **↻** (under the lightness slider; beside it on a phone) gives a random hue and strength and keeps the lightness; on black or white it moves the lightness the smallest step that lets the colour show, and says so (a neutral seed then gets a hue harmony back). **Roll a scheme** (the d6 at the start of the harmony strip) gives a random harmony for the colour now and keeps your paint as the seed (never Custom or the current harmony; a neutral seed rolls only its own schemes). Each is one ↶ step.
 - **UC-12 — Push saturation/lightness.** *Trigger:* "What if it were grimdark / pastel?" *Flow:* S/L sliders shift the whole scheme; matches re-resolve. *Feat:* HSL controls.
 - **UC-13 — Save / share a find.** *Trigger:* "Don't lose this." *Flow:* state→URL; copy/share. *Feat:* URL encoding.
 

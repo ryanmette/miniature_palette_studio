@@ -2,7 +2,7 @@
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
 import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
-  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop } from './harmony.js';
+  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
 import { encodeState, decodeState, shareUrl } from './share.js';   // the share-link contract (state ⇄ URL)
@@ -297,16 +297,24 @@ function setPopHex(hex) {
  *  and pop chips. Cheap when nothing changed, so the wheel's per-frame commit() can call it. */
 let lastNeutral = null, preNeutralHarmony = null, preNeutralSeedRole = null;
 let modeNote = '';   // set by ensureHarmonyMode on a real mode change; consumed once by announce()
-/** The news of a new seed ("New seed: X") for the next announce(): it leads the scheme summary. A say()
- *  after the render wrote over that announce, so the mode note and the §2 "your pick is excluded" note
- *  were never spoken. Set by seedNews(); consumed once, as modeNote. */
-let seedLead = '';
+/** The sentence of a pending modeNote that names the harmony the mode change chose ("back to the
+ *  complementary scheme"), and the same news without that harmony. A chip or a roll before that announce
+ *  replaces the harmony, so setHarmony puts the short form in its place. */
+let modeHarmonyNote = null;   // { full, short } or null
+/** The news of a change for the next announce(): it leads the scheme summary. A new seed ("New seed: X"),
+ *  a roll ("Rolled: Compound"), or ↻ that moved the lightness. A say() after the render wrote over that
+ *  announce, so the mode note and the §2 "your pick is excluded" note were never spoken. Set by seedNews()
+ *  and setHarmony(); consumed once, as modeNote. */
+let newsLead = '';
+/** True when newsLead names the harmony ("Rolled: Compound"): announce() then leaves "{harmony} scheme"
+ *  out of the summary, so the harmony is said once. */
+let newsNamesHarmony = false;
 /** Show the news of a new seed as a toast (what you see) and let the render that follows say it, in its
  *  one announce. Call it just before a render that speaks. */
-function seedNews(msg) { seedLead = msg; toast(msg, { speak: false }); }
+function seedNews(msg) { newsLead = msg; toast(msg, { speak: false }); }
 /** A live hex in the seed field renders without speaking: the field's list says the new seed, and takes
  *  the mode note here, so the note is never spoken later, on a render that did not cause it. */
-function takeModeNote() { const n = modeNote; modeNote = ''; return n; }
+function takeModeNote() { const n = modeNote; modeNote = ''; modeHarmonyNote = null; return n; }
 /**
  * Can a parked accent role be handed back yet? Restoring flips schemeBase() 180°, and Lab chroma is
  * NOT identical across hues, so restoring on a seed that has only just cleared the threshold could
@@ -329,13 +337,16 @@ function ensureHarmonyMode() {
   lastNeutral = n;
 
   const notes = [];
+  let harmonyNote = null;
   if (!legal) {
     state.dropOffsets = [];
     if (n) { preNeutralHarmony = state.harmony; state.harmony = 'neutral-pop'; }
     else { state.harmony = validHarmony(preNeutralHarmony) && !isNeutralHarmony(preNeutralHarmony) ? preNeutralHarmony : 'complementary'; preNeutralHarmony = null; }
-    notes.push(n
-      ? 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.'
-      : `Seed has a hue again — back to the ${state.harmony} scheme.`);
+    harmonyNote = n
+      ? { full: 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.',
+          short: 'Neutral seed — hue harmonies are unavailable for a neutral.' }
+      : { full: `Seed has a hue again — back to the ${state.harmony} scheme.`, short: 'Seed has a hue again.' };
+    notes.push(harmonyNote.full);
   }
   // The seed role parks and restores SYMMETRICALLY with the harmony above. A neutral seed always
   // holds Primary (a neutral accent has no complement to build from), but before this a drag that
@@ -352,7 +363,7 @@ function ensureHarmonyMode() {
   // Hand the notes to announce() rather than writing #status here: they used to land in the live
   // region and be overwritten a statement later by the caller's own announce(), so the one thing a
   // screen-reader user needed to hear — the scheme changed under them — was never spoken.
-  if (notes.length) modeNote = notes.join(' ');
+  if (notes.length) { modeNote = notes.join(' '); modeHarmonyNote = harmonyNote; }
 
   setNeutralUi(n);
   syncSeg(); renderPops();
@@ -1178,11 +1189,12 @@ function announce() {
   const subTxt = sub ? ` Note: your pick ${sub.substituted.name} is ${sub.substituted.why}; nearest eligible paint shown.` : '';
   // A pending mode-change note leads (it's the news), then the standing summary. Consumed once — the
   // switch is announced on the render that caused it, not on every later one.
-  const note = modeNote; modeNote = '';
-  // A new seed's news (seedLead) comes before the mode note: what happened, then what it changed.
-  const lead = seedLead; seedLead = '';
+  const note = modeNote; modeNote = ''; modeHarmonyNote = null;
+  // The news (newsLead) comes before the mode note: what happened, then what it changed. A lead that
+  // names the harmony ("Rolled: Compound") replaces "compound scheme" in the summary: one name, said once.
+  const lead = newsLead, named = newsNamesHarmony; newsLead = ''; newsNamesHarmony = false;
   $('#status').textContent = (lead ? lead + '. ' : '') + (note ? note + ' ' : '')
-    + `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.` + subTxt;
+    + `${baseInfo().name}, ${named ? '' : state.harmony + ' scheme, '}${state.tab} view.` + subTxt;
 }
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
@@ -1310,7 +1322,68 @@ function selectPaint(id) {
   seedNews(t('newSeed', { name: baseInfo().name }));
   renderAll();
 }
-/** Centre the active harmony chip in the scrollable strip — horizontal only (no page jump). */
+/** Change the harmony: a chip in the strip, and Roll a scheme. One path, so a roll is exactly a tap on
+ *  its chip: one ↶ step, the chip centres, the hero pops, and one announce. `lead` is the news that
+ *  leads that announce ("Rolled: Compound"); it names the harmony, so the summary does not say it again.
+ *  `trigger`: the control that was pressed, which stays where it was on the screen (holdInPlace). */
+function setHarmony(h, { lead = '', trigger = null } = {}) {
+  state.harmony = h;
+  state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
+  for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
+  scrollHarmonyActive();
+  // The painter chose this harmony, so a pending note that names the harmony a mode change chose is out of
+  // date (↻ on black, then Roll before the debounced announce: "back to the complementary scheme" was said
+  // with "analogous scheme"). Its short form keeps the news of the mode change.
+  if (modeHarmonyNote) { modeNote = modeNote.replace(modeHarmonyNote.full, modeHarmonyNote.short); modeHarmonyNote = null; }
+  // Add to news that waits for its announce (↻'s "Lightness moved to 12%" is debounced): do not replace it.
+  if (lead) { newsLead = newsLead ? newsLead + '. ' + lead : lead; newsNamesHarmony = true; }
+  holdInPlace(trigger, () => render('scheme'));
+}
+/**
+ * Run `change`, then scroll the page so `el` is where it was on the screen (§3.4). Over 1024px the studio
+ * column is sticky: with the page scrolled, it rests on the bottom edge of the workspace, so a new harmony
+ * that changes the output column's height moved the whole studio (the strip and Roll with it) by 30–90px,
+ * and the next press at the same place missed. Elsewhere `el` does not move, and nothing scrolls. At the
+ * very bottom of the page there can be no room to scroll, so `el` can still move once there.
+ */
+function holdInPlace(el, change) {
+  if (!el || !el.isConnected) { change(); return; }
+  const y0 = el.getBoundingClientRect().top;
+  change();
+  const dy = el.getBoundingClientRect().top - y0;
+  if (Math.abs(dy) < 0.5) return;
+  let d = dy;
+  const studio = el.closest('.studio');
+  if (studio && getComputedStyle(studio).position === 'sticky') {
+    // The studio top that puts el back at y0. Above the sticky top, the studio rests on the workspace's
+    // bottom edge (top = that edge − its height), so scroll that edge to the place, in one step: also when
+    // a taller output lifted the studio off the edge, where a scroll of dy alone leaves it stuck at the top.
+    const s = studio.getBoundingClientRect(), target = y0 - (el.getBoundingClientRect().top - s.top);
+    if (target < parseFloat(getComputedStyle(studio).top)) d = studio.parentElement.getBoundingClientRect().bottom - s.height - target;
+  }
+  window.scrollBy(0, d);
+}
+/** Roll a scheme (the d6, §3.6/§7): a random harmony for the colour now. The pick, its role, the
+ *  lightness, the locked and added colours and the pop stay. Never Custom or the current harmony, and a
+ *  neutral seed rolls only from the harmonies it can use (rollHarmony), so "Rolled: X" is always true. */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+function rollScheme() {
+  const h = rollHarmony(state.harmony, { neutral: neutralSeed() }, Math.random);
+  setHarmony(h, { lead: t('rolled', { name: ui.harmonyLabel(h) }), trigger: $('#rollScheme') });
+  // The die turns once (§3.4). The scheme changed above, at the press: nothing waits for the turn. The
+  // CSS reduced-motion rule does not stop element.animate(), so the check is here.
+  const die = $('#rollScheme .d6');
+  if (!die || reduceMotion.matches || !die.animate) return;
+  die.getAnimations().forEach(a => a.cancel());   // a fast second press starts the turn again
+  // The same function list in every keyframe: lists that differ interpolate as matrices, and 200° → 360°
+  // then turned back the short way instead of on to a full turn.
+  die.animate([{ transform: 'translateY(0) rotate(0deg) scale(1)' },
+    { transform: 'translateY(-5px) rotate(200deg) scale(.9)', offset: 0.45 },
+    { transform: 'translateY(0) rotate(360deg) scale(1)' }], { duration: 320, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+}
+/** Centre the active harmony chip in the scrollable strip — horizontal only (no page jump). The strip is
+ *  position: relative (app.css), so a chip's offsetLeft is measured from the strip itself: the Roll
+ *  button before it does not shift the centre. */
 function scrollHarmonyActive() {
   const seg = $('#seg'), el = seg && seg.querySelector('button[aria-pressed="true"]');
   if (el) seg.scrollLeft = el.offsetLeft - (seg.clientWidth - el.offsetWidth) / 2;
@@ -1923,12 +1996,9 @@ function wire() {
   $('#seg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.getAttribute('aria-disabled') === 'true') { $('#status').textContent = b.title; return; }   // announce the why, change nothing
-    state.harmony = b.dataset.h;
-    state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
-    for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
-    scrollHarmonyActive();
-    render('scheme');
+    setHarmony(b.dataset.h, { trigger: b });
   });
+  $('#rollScheme').addEventListener('click', rollScheme);
   // Quick pops (neutral mode): each chip just moves the wheel's pop node — not a second system.
   $('#pops').addEventListener('click', e => {
     const b = e.target.closest('[data-pop]'); if (b) setPopHex(b.dataset.pop);
@@ -2082,7 +2152,7 @@ async function init() {
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
   ({ draw: wheelDraw, endLightnessRun } = setupWheel({
     state, render, pickHex, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs,
-    addFreeNode, removeFreeNode, collapseBanner,
+    addFreeNode, removeFreeNode, collapseBanner, seedNews,
     setDragging: v => { wheelDragging = v; },   // gates mid-drag history snapshots (one undo entry per drag)
   }));
   setupEyedropper();

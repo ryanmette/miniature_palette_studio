@@ -126,3 +126,47 @@ test('clampPop enforces the minimum pop chroma on any entry path', async () => {
   assert.ok(rgbToHsl(hexToRgb(clamped))[1] >= POP_MIN_S - 0.01, 'clamped pop meets POP_MIN_S');
   assert.notEqual(clamped, '#888888');
 });
+
+/* ---- Roll a scheme (CLAUDE.md §7): the pool and the pick ---- */
+test('rollHarmony: a seed with a hue rolls from the 9 rule harmonies, never Custom', async () => {
+  const { ROLL_TYPES, rollPool } = await import('../src/js/harmony.js');
+  assert.deepEqual([...ROLL_TYPES], ['complementary', 'analogous', 'triadic', 'split-complementary', 'tetradic',
+    'square', 'compound', 'shades', 'monochromatic']);
+  assert.ok(!ROLL_TYPES.includes('custom'));
+  for (const t of ROLL_TYPES) assert.ok(isHarmony(t) && !isNeutralHarmony(t), t);
+  assert.equal(rollPool('custom').length, 9);   // from Custom, every rule harmony can come
+});
+
+test('rollHarmony: a neutral seed rolls only from the harmonies it can use', async () => {
+  const { ROLL_NEUTRAL_TYPES, rollPool } = await import('../src/js/harmony.js');
+  assert.deepEqual([...ROLL_NEUTRAL_TYPES], ['neutral-pop', 'duotone', 'warm-cool', 'shades']);
+  for (const t of ROLL_NEUTRAL_TYPES) assert.ok(NEUTRAL_HARMONY_TYPES.includes(t), t);
+  assert.deepEqual(rollPool('neutral-pop', { neutral: true }), ['duotone', 'warm-cool', 'shades']);
+});
+
+test('rollHarmony: never the current harmony, never Custom, from any random number', async () => {
+  const { rollHarmony, ROLL_TYPES, ROLL_NEUTRAL_TYPES } = await import('../src/js/harmony.js');
+  // the edges of [0, 1) and points between them
+  const rs = [0, 1e-9, 0.1, 0.25, 0.5, 0.75, 0.9, 0.999999, 1 - Number.EPSILON];
+  for (const neutral of [false, true]) {
+    const pool = neutral ? ROLL_NEUTRAL_TYPES : ROLL_TYPES;
+    for (const cur of [...pool, 'custom']) for (const r of rs) {
+      const h = rollHarmony(cur, { neutral }, () => r);
+      assert.notEqual(h, cur, `${cur} → ${h}`);
+      assert.notEqual(h, 'custom');
+      assert.ok(pool.includes(h), `${h} is in the ${neutral ? 'neutral' : 'hue'} pool`);
+    }
+  }
+});
+
+test('rollHarmony: every harmony in the pool can come up', async () => {
+  const { rollHarmony, rollPool, ROLL_TYPES, ROLL_NEUTRAL_TYPES } = await import('../src/js/harmony.js');
+  for (const neutral of [false, true]) {
+    for (const cur of neutral ? ROLL_NEUTRAL_TYPES : ROLL_TYPES) {
+      const pool = rollPool(cur, { neutral }), seen = new Set();
+      // one random number in the middle of each pool slot reaches each harmony once
+      pool.forEach((_, i) => seen.add(rollHarmony(cur, { neutral }, () => (i + 0.5) / pool.length)));
+      assert.deepEqual([...seen].sort(), [...pool].sort(), `${cur}${neutral ? ' (neutral)' : ''}`);
+    }
+  }
+});

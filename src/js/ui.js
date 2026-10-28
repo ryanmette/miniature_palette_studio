@@ -8,6 +8,8 @@ import { FINISH_WORDS } from './data.js';   // the finish words: the tag shows t
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const LABELS = { 'neutral-pop': 'Neutral + pop', 'warm-cool': 'Warm / cool' };   // neutral harmonies read as phrases
 const label = t => LABELS[t] || t.charAt(0).toUpperCase() + t.slice(1); // sentence case (§3.3)
+/** A harmony's name as the strip shows it ("Split-complementary", "Neutral + pop"): for "Rolled: …". */
+export const harmonyLabel = label;
 
 // Defence-in-depth: any colour interpolated into an inline style must be a literal #hex.
 // Inputs are already validated upstream (rgbToHex output, URL/-input regex, dataset QA), but we

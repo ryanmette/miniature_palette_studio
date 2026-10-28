@@ -256,3 +256,43 @@ test('lightness slider: value-text bands (very dark ≤15, dark ≤35, mid ≤65
     66: 'light', 85: 'light', 86: 'veryLight', 94: 'veryLight' };
   for (const [v, band] of Object.entries(cases)) assert.equal(lightnessBand(+v), band, `${v}%`);
 });
+
+/* ---- ↻ on black and white (CLAUDE.md §3.6): lightnessForHue ---- */
+test('↻ lightness: a mid colour keeps its lightness', async () => {
+  const { lightnessForHue } = await import('../src/js/color.js');
+  for (const [h, s, l] of [[200, 0.6, 0.45], [10, 0.95, 0.3], [120, 0.5, 0.7], [60, 0.8, 0.5]]) {
+    assert.deepEqual(lightnessForHue(h, s, l), { l, moved: false }, `hsl(${h}, ${s}, ${l})`);
+  }
+});
+
+test('↻ lightness: black, white, #050505 and #FAFAFA move the smallest step toward mid', async () => {
+  const { lightnessForHue, NEUTRAL_EXIT } = await import('../src/js/color.js');
+  const C = (h, s, l) => labChroma(rgbToHex(hslToRgb([h, s, l])));
+  for (const hex of ['#000000', '#FFFFFF', '#050505', '#FAFAFA']) {
+    const l0 = rgbToHsl(hexToRgb(hex))[2], up = l0 < 0.5;
+    // every whole hue, at the ↻ strengths (50% to 95%)
+    for (let h = 0; h < 360; h += 5) for (const s of [0.5, 0.72, 0.95]) {
+      const r = lightnessForHue(h, s, l0), at = `${hex} hsl(${h}, ${s})`;
+      assert.equal(r.moved, true, at);
+      assert.ok(up ? r.l > l0 && r.l <= 0.5 : r.l < l0 && r.l >= 0.5, `${at}: toward mid (${r.l})`);
+      assert.ok(Math.abs(r.l * 100 - Math.round(r.l * 100)) < 1e-9, `${at}: a whole per cent`);
+      assert.ok(C(h, s, r.l) >= NEUTRAL_EXIT, `${at}: the colour shows at ${r.l}`);
+      // the smallest move: one per cent less, and the colour is still neutral (unless that is the start)
+      const back = r.l - (up ? 0.01 : -0.01);
+      if (up ? back > l0 : back < l0) assert.ok(C(h, s, back) < NEUTRAL_EXIT, `${at}: ${back} is still grey`);
+    }
+  }
+  // black: the colour was #000000 at every hue, so ↻ gave black again
+  assert.equal(rgbToHex(hslToRgb([0, 0.95, 0])), '#000000');
+  assert.notEqual(rgbToHex(hslToRgb([0, 0.95, lightnessForHue(0, 0.95, 0).l])), '#000000');
+});
+
+test('↻ lightness: no chroma at any lightness keeps the lightness; hexOf decides which colour counts', async () => {
+  const { lightnessForHue } = await import('../src/js/color.js');
+  assert.deepEqual(lightnessForHue(0, 0, 0), { l: 0, moved: false });   // a grey strength: nothing helps
+  // hexOf: the wheel passes the scheme base as it will be stored. Here it is always grey, so nothing moves.
+  const seen = [];
+  const r = lightnessForHue(30, 0.9, 0.5, { hexOf: (h, s, l) => { seen.push(l); return '#808080'; } });
+  assert.deepEqual(r, { l: 0.5, moved: false });
+  assert.deepEqual(seen, [0.5]);
+});

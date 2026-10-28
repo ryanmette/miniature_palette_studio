@@ -193,7 +193,14 @@
             <span class="wkey-i"><i class="wk-badge">2</i><span data-i18n="roleSecondary">Secondary</span></span>
           </div>
         </div>
-        <div class="seg harmscroll" id="seg" role="group" aria-label="Harmony type"></div>
+        <!-- Roll a scheme (the d6): an action, so it sits before the strip's group of options, not in it. It
+             stays put while the strip scrolls. The name is always "Roll a scheme"; the visible words are
+             "Roll" where the row is narrow (app.css). -->
+        <div class="harmrow">
+          <button type="button" class="btn rollbtn" id="rollScheme" aria-label="Roll a scheme" data-i18n-aria="rollScheme"
+            title="Roll a scheme: a random harmony for this colour" data-i18n-title="rollTitle"><svg class="d6" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true" focusable="false"><g transform="rotate(-12 12 12)"><rect x="4" y="4" width="16" height="16" rx="3.6" stroke-width="1.8"/><g fill="currentColor" stroke="none"><circle cx="8.4" cy="8.4" r="1.65"/><circle cx="15.6" cy="8.4" r="1.65"/><circle cx="12" cy="12" r="1.65"/><circle cx="8.4" cy="15.6" r="1.65"/><circle cx="15.6" cy="15.6" r="1.65"/></g></g></svg><span class="rolltx" data-i18n="rollScheme">Roll a scheme</span><span class="rolltx-s" data-i18n="roll">Roll</span></button>
+          <div class="seg harmscroll" id="seg" role="group" aria-label="Harmony type"></div>
+        </div>
         <div class="palhead">
           <div class="micro">Live palette → nearest paint</div>
           <div class="palctl">

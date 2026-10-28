@@ -358,13 +358,15 @@ checks need a real device or a real screen reader. The build used Playwright (Ch
 23. **The first letter after Browse** costs about 55ms at a 4× slower CPU: removing the 3,225 tiles of the
     grid is about 17ms of it. Fix direction: empty the grid in the next frame.
 
-### Raised by Ryan on 2026-10-28 (not yet built)
+### Raised by Ryan on 2026-10-28 (24 is built; the others are not yet built)
 
-24. **“Roll a scheme” d6 — chosen, next to build.** Keep ↻. Add a d6 button that rolls a random harmony for the
+24. **“Roll a scheme” d6 — built** (`[Unreleased]`). ↻ stays. A d6 button rolls a random harmony for the
     current colour (`mockups/random-die.html`, direction B). The roll keeps the picked paint as the seed, never picks
     Custom or the current harmony, and is one ↶ step. Placement: the start of the harmony strip (the harmonies it picks
-    from), because the new seed toolbar has no room on a phone. Fix in the same build: ↻ does nothing on a black or white
-    seed.
+    from), outside the strip's group of options, because the new seed toolbar has no room on a phone. Visible words:
+    “Roll a scheme” where the row is 460px or wider, else “Roll” (a phone, and the studio column from 1025px to about
+    1160px). Fixed in the same build: ↻ did nothing on a black or white seed; now it moves the lightness the smallest
+    step that lets the colour show, and says so. Follow-ups: 30–33.
 25. **Move ↻ away from the lightness slider.** Next to the slider, ↻ reads as “random lightness”, but it keeps the
     lightness and changes the hue and strength. Options: beside the hero colour, on the wheel, a word (“New colour”), or
     a small random group with the Roll chip.
@@ -385,6 +387,25 @@ checks need a real device or a real screen reader. The build used Playwright (Ch
     (§5), and bump the dataset minor version.
 29. **The seed search matches inside words.** “vallejo red” also finds Hammered Copper (“hammeRED”), in the last
     group. Fix direction: a query word of 3 letters or less matches only at the start of a word.
+
+### Follow-ups from the Roll a scheme build (noted 2026-10-28, not yet scheduled)
+
+Roll a scheme and the ↻ fix (item 24) are in `[Unreleased]`. The build used Playwright (Chromium) only, so these
+checks need a real device, another browser or a real screen reader.
+
+30. **A screen-reader pass of Roll and ↻** (VoiceOver on iOS and macOS, TalkBack, NVDA): the name “Roll a scheme”
+    where the button shows “Roll”, the “Rolled: Compound.” lead (the summary then leaves out the harmony), and ↻'s
+    “Lightness moved to 8% so the colour can show”, alone and with a roll pressed before it is said.
+31. **Safari, Firefox and the iOS app (WKWebView):** the container query that picks “Roll a scheme” or “Roll” (a
+    browser without it shows “Roll”), the die's turn (`element.animate()` on an inline SVG), the page scroll that
+    keeps a pressed chip or Roll in place over 1024px, and the service worker update to `ps-v53`.
+32. **Forced colours** (Windows High Contrast): the Roll button's border and focus ring, and the d6 in
+    `currentColor`.
+33. **The hero line can lose a line when the “neutral” pill goes** (§3.4). At 414–430px (a large phone), a custom
+    colour's hero fits on one line without the pill and needs two with it, so ↻ on black moves the wheel, ↻ and the
+    strip up about 29px, and the next tap at the same place can miss ↻. The 1–3px change at other widths is fixed.
+    Older than this build (↻ on a grey seed did the same), and the same cause as item 13 (b). Fix direction: as
+    13 (b), keep the hero on a fixed number of lines (an ellipsis on the name, or a reserved slot for the pill).
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
