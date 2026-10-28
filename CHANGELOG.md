@@ -258,6 +258,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **The dock on the live palette is easier to read.** The column with your paint shows a "✓ Your paint" tag
+  in place of a cut-off copy of the paint's name (the name is in the column's footer). The "Make this your
+  paint" dock on the other column uses readable text (it was 2.4:1).
+- **Minor actions are text actions.** On the Shelf, "Import…" and "Save my shelf (CSV)" are now text actions,
+  so the shelf's search reads as the main control.
 - **One name for one thing.** The app used several names for the same thing. Now each has one:
   - The paint you start from is **your paint** (or **your colour** for a typed hex). "Seed", "base colour" and
     "seed here" are gone. The dock button is "Make this your paint", and ↻ is "Pick a colour for me".
@@ -505,6 +510,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Hints and labels are readable.** The Shelf help line, the Recipe's labels ("Nearest pot", the ladder
+  captions, the role weights), the empty-filter message, the compare header, the footer note and "no close
+  paint" used `--text-faint` (2.4:1 on the light page, under WCAG AA). They now use `--text-muted`
+  (5.76:1 or more). `--text-faint` stays for decoration only: the → arrow and the logo's tagline.
 - **Every small control has a 44px touch target.** On a touch screen and on a phone, Undo, Redo, + and −, the
   output tabs and the Equivalents source chips are now 44px tall. The live palette's column buttons are 32px
   and 44px apart. The seed docks, the buy buttons, the "equivalents" jump, the hex-copy button and the footer

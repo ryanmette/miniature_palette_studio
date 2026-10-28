@@ -256,7 +256,7 @@ const buyBtn = (id, mark) => mark === 'owned' ? '' :
 
 /** Render a nearest-paint match (or a graceful empty state). `markOf(id)` adds owned/adjust + a buy toggle. */
 export function matchChip(m, markOf) {
-  if (!m) return '<div class="br" style="color:var(--text-faint)">no close paint — consider mixing</div>';
+  if (!m) return '<div class="br" style="color:var(--text-muted)">no close paint — consider mixing</div>';
   const p = m.paint, q = m.quality;
   const mark = markOf ? markOf(p.id) : 'none';
   // "Boost owned, but honest" (#6): flag what you own + how to nudge it, never hiding the ΔE gap.
@@ -472,7 +472,8 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // ("my pick seeds this role"); the dashed dock on the other eligible column is the control.
     // Every column reserves the row so switching never changes the bar's height (§3.4).
     const dock = c.dock && c.dock.type === 'chip'
-      ? `<span class="seedchip" title="Your paint — it sets the ${esc(tag)} role"><span class="scsw" style="background-color:${safeColor(c.dock.hex)}"></span><span class="scnm">${esc(c.dock.name)}</span><span class="scanchor" aria-hidden="true">${icon('anchor')}</span></span>`
+      // A tag, not the paint's name: the name is already in the column's footer (UX 7). The title keeps it.
+      ? `<span class="seedchip" title="${esc(c.dock.name)} is your paint — it sets the ${esc(tag)} role">${icon('check')}Your paint</span>`
       : c.dock && c.dock.type === 'switch'
         ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with your paint as the ${esc(tag)}"`} aria-label="Make this your paint: ${esc(tag)}">${icon('anchor')}Make this your paint</button>`
         : '';
