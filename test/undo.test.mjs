@@ -10,7 +10,7 @@ const hexOf = (n, wheelL = 0.5) => rgbToHex(hslToRgb([n.h, n.s, n.l ?? wheelL]))
 const S = (over = {}) => ({
   customHex: '#9A1115', baseId: 'citadel-base-mephiston-red', harmony: 'complementary', seedRole: 'main',
   showReal: false, popHex: null, neutral: false, preNeutral: null, preSeedRole: null,
-  extraNodes: [], dropOffsets: [], ...over,
+  extraNodes: [], dropOffsets: [], wheelL: 0.35, ...over,
 });
 
 test('an added swatch comes back exactly after an undo: the second + on #9A1115', () => {
@@ -44,7 +44,7 @@ test('state → snapshot → state → snapshot gives the same string (pushHisto
       customHex: i % 2 ? '#2D567C' : null, seedRole: i % 3 ? 'main' : 'accent', showReal: i % 5 === 0,
       popHex: i % 4 ? null : '#9C1626', neutral: [true, false, null][i % 3], preNeutral: i % 2 ? 'triadic' : null,
       extraNodes: Array.from({ length: i % 7 }, () => ({ h: rand() * 360, s: rand(), ...(rand() < 0.8 ? { l: rand() } : {}) })),
-      dropOffsets: i % 2 ? [180] : [],
+      dropOffsets: i % 2 ? [180] : [], wheelL: i % 9 ? 0.06 + rand() * 0.88 : null,
     });
     const snap = snapPalette(s);
     const o = readSnap(snap);
@@ -73,11 +73,11 @@ test('a swatch that was unlocked comes back with no lock flag', () => {
 
 test('the seed and the neutral-mode holders come back as they went in', () => {
   const o = readSnap(snapPalette(S({ customHex: null, seedRole: 'accent', showReal: true, popHex: '#0F6B6E',
-    neutral: true, preNeutral: 'triadic', preSeedRole: 'accent', dropOffsets: [120, 240] })));
+    neutral: true, preNeutral: 'triadic', preSeedRole: 'accent', dropOffsets: [120, 240], wheelL: 0.42 })));
   assert.deepEqual(o, {
     customHex: null, baseId: 'citadel-base-mephiston-red', harmony: 'complementary', seedRole: 'accent',
     showReal: true, popHex: '#0F6B6E', neutral: true, preNeutral: 'triadic', preSeedRole: 'accent',
-    extraNodes: [], dropOffsets: [120, 240],
+    extraNodes: [], dropOffsets: [120, 240], wheelL: 0.42,
   });
   // A custom hex wins over the paint id, as on screen; a mode not held yet stays null
   const c = readSnap(snapPalette(S({ neutral: null })));
@@ -94,4 +94,30 @@ test('the snapshot holds its own copy: a later edit of the state does not change
   o.extraNodes[0].locked = true; o.dropOffsets.push(240);   // what lockSwatch / detachPartner do to `state`
   assert.deepEqual(readSnap(snap).extraNodes, [{ h: 10, s: 0.5, l: 0.5 }]);
   assert.deepEqual(readSnap(snap).dropOffsets, [180]);
+});
+
+test('the wheel\'s lightness comes back exactly, so a swatch with no lightness keeps its colour', () => {
+  // ?x=90.40 (an old link): the swatch shows hsl(90, 0.40, wheelL). On #9A1115 the slider shows 34%; one
+  // step up gives 35% and the seed #A11216. That hex reads back as L 0.3510, and from it the old undo
+  // showed the swatch as #5A7D36, not #597D36.
+  const n = { h: 90, s: 0.4 };
+  const seedL = rgbToHsl(hexToRgb('#A11216'))[2];
+  assert.equal(hexOf(n, 0.35), '#597D36');
+  assert.equal(hexOf(n, seedL), '#5A7D36');   // the case the old undo got wrong
+  const o = readSnap(snapPalette(S({ customHex: '#A11216', extraNodes: [n], wheelL: 0.35 })));
+  assert.equal(o.wheelL, 0.35);
+  assert.equal(hexOf(o.extraNodes[0], o.wheelL), '#597D36');
+  let seed = 3;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 5000; i++) {
+    const wheelL = 0.06 + rand() * 0.88, m = { h: rand() * 360, s: rand() };
+    const back = readSnap(snapPalette(S({ extraNodes: [m], wheelL })));
+    assert.equal(hexOf(back.extraNodes[0], back.wheelL), hexOf(m, wheelL));
+  }
+});
+
+test('a snapshot from before the wheel had a lightness reads back null (the caller takes the seed\'s)', () => {
+  assert.equal(readSnap(snapPalette(S({ wheelL: null }))).wheelL, null);
+  assert.equal(readSnap(snapPalette(S({ wheelL: undefined }))).wheelL, null);
+  assert.equal(readSnap('{"customHex":"#9A1115"}').wheelL, null);   // a snapshot made before this field
 });

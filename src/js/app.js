@@ -438,8 +438,11 @@ let renderRaf = 0;
 // dragFrame: the paint now running is a drag frame (render('drag')), so a long list may take its quick
 // form (renderEquiv). exactEquivT: the exact Equivalents list after the last frame.
 let dragFrame = false, exactEquivT = 0;
-/** `speak: false` repaints without the scheme summary in #status (a restore says its own line). */
-function render(reason = 'scheme', { speak = true, ids = null } = {}) {
+/** `speak: false` repaints without the scheme summary in #status (a restore says its own line).
+ *  `keepWheelL: true` keeps the wheel's lightness. Undo, redo and Esc in the seed field put a snapshot back
+ *  with its own lightness; a shelf Restore or Delete does not change the seed. None of them is a new seed from
+ *  outside the wheel, so the slider must not move (see syncWheelL). */
+function render(reason = 'scheme', { speak = true, ids = null, keepWheelL = false } = {}) {
   if (reason === 'settle') { updateUrl(); if (speak) announce(); return; }
   if (reason === 'marks') { renderMarks(ids); return; }
 
@@ -448,7 +451,7 @@ function render(reason = 'scheme', { speak = true, ids = null } = {}) {
   // ('pop', or a pop dragged on the wheel) does not change the base colour, so the run stays open.
   if (reason === 'seed' || reason === 'all' || reason === 'scheme') endLightnessRun();
   ensureHarmonyMode();   // the seed may have crossed the neutral boundary (picker, hex, drag, undo)
-  if (reason === 'seed' || reason === 'all') syncWheelL();
+  if ((reason === 'seed' || reason === 'all') && !keepWheelL) syncWheelL();
 
   if (reason === 'palette') { drawStudio(); updateUrl(); return; }
 
@@ -1180,7 +1183,7 @@ function restoreSeed(pick, mark = null) {
   } else if (pick.id && state.idx.byId.has(pick.id)) { state.baseId = pick.id; state.customHex = null; }
   else state.customHex = pick.hex;
   seedNews(t('seedBack', { name: baseInfo().name }));
-  render(same ? 'all' : 'seed');   // one announce: the news, any mode note, the scheme
+  render(same ? 'all' : 'seed', { keepWheelL: same });   // one announce: the news, any mode note, the scheme
   HIST.busy = false; syncHistBtns();
 }
 /** Seed-role switch (docked in the live palette): rebuild the scheme around the pick as `role`. */
@@ -1259,7 +1262,8 @@ function applySnap(json) {
   state.popHex = o.popHex;
   state.extraNodes = o.extraNodes;
   state.dropOffsets = o.dropOffsets;
-  state.wheelL = rgbToHsl(hexToRgb(schemeBase()))[2];
+  // the slider's own value, not the seed's lightness: an added colour with no lightness follows it
+  state.wheelL = o.wheelL ?? rgbToHsl(hexToRgb(schemeBase()))[2];
   neutralMode = o.neutral;   // restore the hysteresis holder with the snapshot
   preNeutralHarmony = o.preNeutral;
   preNeutralSeedRole = o.preSeedRole;   // parked seed role travels with the snapshot too
@@ -1271,8 +1275,8 @@ function applySnap(json) {
 }
 // A step still waiting for its debounced write goes on the stack first, so undo steps back from it (it
 // was skipped, and its colour lost) and redo does not drop it.
-function undo() { if (urlTimer) updateUrl(); if (HIST.i > 0) { HIST.i--; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
-function redo() { if (urlTimer) updateUrl(); if (HIST.i < HIST.stack.length - 1) { HIST.i++; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
+function undo() { if (urlTimer) updateUrl(); if (HIST.i > 0) { HIST.i--; HIST.busy = true; applySnap(HIST.stack[HIST.i]); render('all', { keepWheelL: true }); HIST.busy = false; syncHistBtns(); } }
+function redo() { if (urlTimer) updateUrl(); if (HIST.i < HIST.stack.length - 1) { HIST.i++; HIST.busy = true; applySnap(HIST.stack[HIST.i]); render('all', { keepWheelL: true }); HIST.busy = false; syncHistBtns(); } }
 function syncHistBtns() { const u = $('#undo'), r = $('#redo'); if (u) u.disabled = HIST.i <= 0; if (r) r.disabled = HIST.i >= HIST.stack.length - 1; }
 
 /** Debounced URL write for rapid-fire updates (wheel/slider drag); see setBase(). */
@@ -1285,7 +1289,7 @@ function scheduleAnnounce() {
   if (announceTimer) clearTimeout(announceTimer);
   announceTimer = setTimeout(announce, 400);
 }
-const renderAll = () => render('all');   // init / undo / redo
+const renderAll = () => render('all');   // init / a paint pick
 /** The device's light/dark setting. The app follows it, live, until the painter picks a theme (§3.1). */
 const osDark = matchMedia('(prefers-color-scheme: dark)');
 const deviceTheme = () => (osDark.matches ? 'dark' : 'light');
@@ -1569,7 +1573,8 @@ function applyPrefsToState({ keepLinkTheme = false } = {}) {
 function afterStoreReplaced({ keepLinkTheme = false } = {}) {
   applyPrefsToState({ keepLinkTheme });
   syncSettingsControls();
-  render('all', { speak: false });   // the caller says what happened; the scheme summary would only bury it
+  // the caller says what happened, so no scheme summary. The seed did not change, so the slider stays.
+  render('all', { speak: false, keepWheelL: true });
   if (state.mode === 'shelf') renderShelf();
   renderMatchNote();
   syncLocaleStrings();
