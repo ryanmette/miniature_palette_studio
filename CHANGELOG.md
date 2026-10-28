@@ -258,6 +258,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **No more cards.** The seed toolbar, the studio, the output and the Shelf sit on the page. Thin rules and space
+  separate them, and the Plan's role cards, the Equivalents rows and the contrast pairs are rows under a rule, not
+  boxes inside a box. Nothing in the page casts a shadow. Overlays (the seed list, menus, sheets, dialogs, toasts)
+  have one crisp shadow. The pinned Shelf filter bar shows a rule under it, not a shadow.
 - **Smaller, fewer corner radii, and square tags.** Controls are 4px, panels and overlays 6px, swatches 3px and
   tags 2px (they were 10px, 14px and fully round). Pills with a pale fill are now square tags with a coloured
   border and no fill. The segmented controls (Studio / Shelf, the harmonies, the tone ladder, Ideal / Real, the

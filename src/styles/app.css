@@ -84,7 +84,7 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 .themesw::before { content: ""; position: absolute; left: 0; right: 0; top: calc(14px - var(--tap) / 2); bottom: calc(14px - var(--tap) / 2); }
 .themesw:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
 .themesw-thumb { position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
-  background: var(--surface); box-shadow: var(--shadow); display: grid; place-items: center; color: var(--text);
+  background: var(--surface); box-shadow: inset 0 0 0 1px var(--border-strong); display: grid; place-items: center; color: var(--text);
   transition: transform .22s cubic-bezier(.34,1.56,.64,1); }
 .themesw[aria-checked="true"] .themesw-thumb { transform: translateX(22px); }
 .themesw .ts-i { grid-area: 1 / 1; transition: opacity .16s ease; }
@@ -136,8 +136,12 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 /* Single column: the paint picker is the seed field's list, an overlay from the seed toolbar, so the
    workspace spans the full (bumped) width — more room for the wheel + the 2-up plan. */
 main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); box-shadow: var(--shadow); }
-.pad { padding: 18px; }
+/* Regions (Workbench, §3.5): no cards. The seed toolbar, the studio, the output and the Shelf sit on the
+   page; a 1px --border rule and space separate them (the audit counted a card on every region, and cards in
+   cards, among the "made by AI" signs). .card stays as the region hook for the reveal motion (§3.4). */
+.card { background: none; border: 0; border-radius: 0; box-shadow: none; }
+.pad { padding: 0; }
+.seedtoolbar { padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 .workspace { display: grid; gap: 16px; }
 .sw { border-radius: var(--r-sw); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); flex: none; }   /* the §3.5 swatch spec, verbatim */
 /* metallic sheen — a non-tinting specular overlay so metallics don't read as flat colour (§3.5).
@@ -158,7 +162,7 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-tem
 .finish-metal { border-color: currentColor; color: var(--warning-text); }
 .finish-contrast { border-color: currentColor; color: var(--accent); }
 /* shared-paint note — when a limited collection reuses one paint across roles (scheme.js distinct assignment) */
-.slot.is-shared { border-color: var(--warning); }
+.slot.is-shared { border-top-color: var(--warning); }
 .sharednote { margin-top: 10px; font-size: 11.5px; color: var(--text-muted); background: var(--warning-weak);
   border-radius: var(--r-ctrl); padding: 7px 10px; line-height: 1.45; }
 .warnpill { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
@@ -297,7 +301,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
    and the pill re-expands it. Both are buttons (keyboard collapse/expand). */
 .noverlay { position: absolute; top: 0; left: 0; right: 0; z-index: 5; display: flex; justify-content: center; pointer-events: none; }
 .nbanner { pointer-events: auto; display: flex; align-items: flex-start; gap: 9px; text-align: left; cursor: pointer;
-  background: var(--accent-weak); border: 1px solid var(--accent); box-shadow: var(--shadow);
+  background: var(--accent-weak); border: 1px solid var(--accent); box-shadow: var(--shadow-pop);
   border-radius: var(--r-ctrl); padding: 8px 12px; font-size: 12.5px; color: var(--text); line-height: 1.45;
   font-family: var(--font); max-width: 520px; animation: mh-rise .32s cubic-bezier(.2,.7,.2,1) both; }
 .nbanner:focus-visible, .npill:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
@@ -305,7 +309,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .nbanner strong { color: var(--accent); }
 .npill { pointer-events: auto; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
   margin-right: auto;   /* collapsed state parks at the LEFT of the wheel area (banner stays centred) */
-  background: var(--accent-weak); border: 1px solid var(--accent); color: var(--accent); box-shadow: var(--shadow);
+  background: var(--accent-weak); border: 1px solid var(--accent); color: var(--accent); box-shadow: var(--shadow-pop);
   border-radius: var(--r-tag); padding: 4px 10px; font-size: 11.5px; font-weight: 600; font-family: var(--font);
   animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }
 
@@ -344,8 +348,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 [data-panel] { animation: mh-fade .22s ease both; padding-top: 14px; }   /* breathing room below the tab strip */
 @keyframes mh-fade { from { opacity: 0; } to { opacity: 1; } }
 /* role slots (ideal vs actual) */
-.slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 14px; }
-.slot { border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px; background: var(--surface); }
+.slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0 24px; margin-top: 14px; }
+.slot { border-top: 1px solid var(--border); padding: 14px 0; }   /* a role is a row under a rule, not a card in a card */
 .slot .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .slot .role { font-family: var(--display); font-weight: 600; font-size: 18px; }
 .slot .wt { font-size: 11px; color: var(--text-faint); }
@@ -403,8 +407,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .eqjump:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
 
 /* generic chips/rows reused by equivalents + a11y */
-.eq { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 14px; }
-.eqc { display: flex; gap: 9px; align-items: center; border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 9px; }
+.eq { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: 24px; margin-top: 14px; }
+.eqc { display: flex; gap: 9px; align-items: center; border-bottom: 1px solid var(--border); padding: 9px 0; }
 .eqc .sw { width: 38px; height: 38px; }
 .placeholder { color: var(--text-faint); font-size: 13px; padding: 24px 4px; }
 
@@ -413,11 +417,11 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 /* the seed toolbar: the field, then From photo and Compare beside it (one row; Compare wraps on a narrow phone) */
 .seedtoolbar .seedbar { margin-bottom: 0; }
 .herowrap { min-width: 0; }
-.wsplit { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
+.wsplit { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
 /* top = the sticky header's live height + 16px. --hdr-h (app.js) follows the header when --tap grows on
    a touch screen and when a safe-area inset pads it, so the studio never slides under the header. */
 .studio { position: sticky; top: calc(var(--hdr-h) + 16px); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.output { min-width: 0; }
+.output { min-width: 0; padding-left: 24px; border-left: 1px solid var(--border); align-self: stretch; }
 .wheelcol { position: relative; display: flex; flex-direction: column; align-items: center; }   /* anchors the neutral overlay */
 .wcanvas { touch-action: none; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -567,7 +571,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .crow .clab { font-size: 12px; font-weight: 500; }
 .cstrip { display: flex; gap: 5px; }
 .ctr { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; }
-.ctrbox { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 12px; }
+.ctrbox { border-top: 1px solid var(--border); padding: 12px 0; }
 .ctrbox .pair { display: flex; gap: 7px; margin: 8px 0; }
 .ratio { font-size: 24px; font-weight: 600; font-family: var(--display); }
 .collide { margin-top: 16px; font-size: 12.5px; background: var(--warning-weak); color: var(--warning-text); border-radius: var(--r-ctrl); padding: 10px 12px; }
@@ -580,7 +584,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .cmplab { font-size: 12px; min-width: 180px; }
 .cmppal { display: flex; flex: 1; min-width: 160px; height: 22px; border-radius: var(--r-sw); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
 .cmppal span { flex: 1; }
-.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 16px; border-radius: var(--r-ctrl); font-size: 13px; font-weight: 500; box-shadow: var(--shadow); z-index: 70;   /* above the popovers (60) */
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 16px; border-radius: var(--r-ctrl); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-pop); z-index: 70;   /* above the popovers (60) */
   width: max-content; max-width: calc(100vw - 32px); text-align: center; }   /* left: 50% alone left it half the screen to wrap in */
 
 /* shelf (collection) — top-level mode beside Studio */
@@ -608,9 +612,9 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
    and never hides. --hdr-h is the header's live height, set by app.js. */
 :root { --hdr-h: 63px; }
 .shelfsentinel { height: 0; }
-.shelfdock { position: sticky; top: var(--hdr-h); z-index: 19; background: var(--surface);
-  margin: 0 -18px 12px; padding: 10px 18px; }
-.shelfdock.stuck { box-shadow: var(--shadow); }
+.shelfdock { position: sticky; top: var(--hdr-h); z-index: 19; background: var(--bg);
+  margin: 0 0 12px; padding: 10px 0; }
+.shelfdock.stuck { box-shadow: 0 1px 0 var(--border); }   /* pinned: a rule under it, not a shadow (a box-shadow, so pinning moves nothing) */
 .shelfdock.sheet-open { z-index: 30; }   /* the phone sheet + scrim sit above the header while open */
 /* The card rise (§3.4) must not leave a transform behind: any transform on an ancestor makes it the box
    that position:fixed children (the phone sheet + scrim) are placed in, instead of the screen. */
@@ -896,6 +900,7 @@ a.btn { text-decoration: none; }
 /* responsive */
 @media (max-width: 1024px) {
   .wsplit { grid-template-columns: 1fr; }   /* studio stacks above the output; both span the full width */
+  .output { padding-left: 0; border-left: 0; padding-top: 16px; border-top: 1px solid var(--border); }
   .studio { position: static; }
 }
 @media (max-width: 860px) {
