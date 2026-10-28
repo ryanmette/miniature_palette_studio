@@ -479,8 +479,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     the seed no longer says "New seed", and Esc then has nothing to put back. About and the photo dialog keep
     their 24px under the last line on a touch screen. An open Shelf filter shows the open fill. The docs
     checker ran no checks (and passed) when Node kept a symlinked path (`--preserve-symlinks-main`).
-  - (CLAUDE.md §3.5 and §3.6 are updated; service worker `ps-v56`, after the merge with the Equivalents fix
-    below, which used `ps-v55`.)
+  - (CLAUDE.md §3.5 and §3.6 are updated; service worker `ps-v57`: `ps-v56` shipped with PR #39, before the
+    last of these fixes.)
 - **↻ did nothing on a black or white seed.** ↻ keeps the lightness, and at 0% or 100% every hue is black or
   white: `#000000` stayed `#000000`, and the studio stayed neutral. Near the slider's ends most ↻ presses stayed
   grey too. Now, when the new colour would be neutral (Lab C* under 14, `NEUTRAL_EXIT`), the lightness moves the smallest
