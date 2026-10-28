@@ -9,93 +9,120 @@
 //      file in the app-critical dirs appears in the tree (the tree's own rule: same-commit index).
 //   4. CHANGELOG has an [Unreleased] heading, no duplicated section headings inside it, a heading
 //      for the current package.json version, and no placeholder (example.com) links.
+//   5. The app's own version constant (src/js/version.js, shown in About & data) matches package.json.
 // Prose freshness (feature descriptions, statuses) can't be machine-checked — that's §9 item 7.
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, realpathSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = new URL('..', import.meta.url).pathname;
-const read = p => readFileSync(join(root, p), 'utf8');
-const problems = [];
-const fail = msg => problems.push(msg);
+/** Check 5, pure so the tests can call it: the APP_VERSION in version.js's source against package.json's
+ *  version. @returns {string|null} the problem, or null when they agree */
+export function appVersionProblem(pkgVersion, versionSrc) {
+  const m = /export const APP_VERSION = '([^']+)'/.exec(versionSrc || '');
+  if (!m) return 'src/js/version.js: no `export const APP_VERSION = \'x.y.z\'` found — About & data reads the version from it.';
+  if (m[1] !== pkgVersion)
+    return `src/js/version.js: APP_VERSION is ${m[1]} but package.json is ${pkgVersion} — bump both in the release (§8).`;
+  return null;
+}
 
-/* 1+2 — README claims */
-const pkg = JSON.parse(read('package.json'));
-const readme = read('README.md');
-if (!readme.includes(`**v${pkg.version}**`))
-  fail(`README.md: version claim **v${pkg.version}** (package.json) not found — refresh the Status section.`);
+// Imported by the tests for appVersionProblem only: the checks below run when this is the script.
+// Node gives the module its real path (symlinks resolved) but argv[1] as typed, so compare real paths:
+// under a symlinked folder (macOS /tmp is /private/tmp) a plain compare skipped every check and exited 0.
+if (isMain()) main();
+function isMain() {
+  if (!process.argv[1]) return false;
+  try { return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url); } catch { return false; }
+}
 
-const dataset = JSON.parse(read('src/data/paints.json'));
-const paintCount = dataset.paints.length;
-const brandCount = new Set(dataset.paints.map(p => p.brand)).size;
-const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-const claim = `**${fmt(paintCount)} paints across ${brandCount} brands**`;
-if (!readme.includes(claim))
-  fail(`README.md: dataset claim ${claim} not found — the repo map must state the real counts.`);
+function main() {
+  const root = new URL('..', import.meta.url).pathname;
+  const read = p => readFileSync(join(root, p), 'utf8');
+  const problems = [];
+  const fail = msg => problems.push(msg);
 
-/* 3 — CLAUDE.md §4 tree ↔ disk */
-const constitution = read('CLAUDE.md');
-const treeMatch = constitution.match(/```\n\/\n([\s\S]*?)```/);
-if (!treeMatch) fail('CLAUDE.md: could not locate the §4 file tree code block.');
-const tree = treeMatch ? treeMatch[1] : '';
+  /* 1+2 — README claims */
+  const pkg = JSON.parse(read('package.json'));
+  const readme = read('README.md');
+  if (!readme.includes(`**v${pkg.version}**`))
+    fail(`README.md: version claim **v${pkg.version}** (package.json) not found — refresh the Status section.`);
 
-// all repo files (skip the heavy/derived dirs)
-const SKIP = new Set(['.git', 'node_modules', '.ds-sync', '.design-sync']);
-const repoFiles = [];
-(function walk(dir) {
-  for (const e of readdirSync(join(root, dir))) {
-    if (SKIP.has(e)) continue;
-    const rel = dir ? `${dir}/${e}` : e;
-    if (statSync(join(root, rel)).isDirectory()) walk(rel);
-    else repoFiles.push(rel);
+  const dataset = JSON.parse(read('src/data/paints.json'));
+  const paintCount = dataset.paints.length;
+  const brandCount = new Set(dataset.paints.map(p => p.brand)).size;
+  const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const claim = `**${fmt(paintCount)} paints across ${brandCount} brands**`;
+  if (!readme.includes(claim))
+    fail(`README.md: dataset claim ${claim} not found — the repo map must state the real counts.`);
+
+  /* 3 — CLAUDE.md §4 tree ↔ disk */
+  const constitution = read('CLAUDE.md');
+  const treeMatch = constitution.match(/```\n\/\n([\s\S]*?)```/);
+  if (!treeMatch) fail('CLAUDE.md: could not locate the §4 file tree code block.');
+  const tree = treeMatch ? treeMatch[1] : '';
+
+  // all repo files (skip the heavy/derived dirs)
+  const SKIP = new Set(['.git', 'node_modules', '.ds-sync', '.design-sync']);
+  const repoFiles = [];
+  (function walk(dir) {
+    for (const e of readdirSync(join(root, dir))) {
+      if (SKIP.has(e)) continue;
+      const rel = dir ? `${dir}/${e}` : e;
+      if (statSync(join(root, rel)).isDirectory()) walk(rel);
+      else repoFiles.push(rel);
+    }
+  })('');
+
+  // forward: every file-looking token in the tree must exist somewhere in the repo
+  const tokens = tree.split('\n').flatMap(line => {
+    const body = line.replace(/[│├└─]/g, ' ').split('←')[0];
+    return body.split('·').map(t => t.trim()).filter(t => /^[\w.@-]+\.[\w]+$/.test(t));   // files only (name.ext)
+  });
+  for (const t of new Set(tokens)) {
+    if (!repoFiles.some(f => f === t || f.endsWith('/' + t)))
+      fail(`CLAUDE.md §4 tree names "${t}" but no such file exists in the repo.`);
   }
-})('');
 
-// forward: every file-looking token in the tree must exist somewhere in the repo
-const tokens = tree.split('\n').flatMap(line => {
-  const body = line.replace(/[│├└─]/g, ' ').split('←')[0];
-  return body.split('·').map(t => t.trim()).filter(t => /^[\w.@-]+\.[\w]+$/.test(t));   // files only (name.ext)
-});
-for (const t of new Set(tokens)) {
-  if (!repoFiles.some(f => f === t || f.endsWith('/' + t)))
-    fail(`CLAUDE.md §4 tree names "${t}" but no such file exists in the repo.`);
-}
-
-// reverse: files in the app-critical dirs must be indexed in the tree (the tree's same-commit rule)
-const INDEXED_DIRS = ['src/js', 'src/styles', 'src/data', 'docs', 'scripts', '.github/workflows'];
-for (const dir of INDEXED_DIRS) {
-  for (const f of repoFiles.filter(f => f.startsWith(dir + '/'))) {
-    const base = relative(dir, f);
-    if (base.includes('/')) continue;                       // only the dir's direct children are itemised
-    if (!tree.includes(base))
-      fail(`CLAUDE.md §4 tree is missing "${f}" — the tree is the authoritative index (add it in the same commit).`);
+  // reverse: files in the app-critical dirs must be indexed in the tree (the tree's same-commit rule)
+  const INDEXED_DIRS = ['src/js', 'src/styles', 'src/data', 'docs', 'scripts', '.github/workflows'];
+  for (const dir of INDEXED_DIRS) {
+    for (const f of repoFiles.filter(f => f.startsWith(dir + '/'))) {
+      const base = relative(dir, f);
+      if (base.includes('/')) continue;                       // only the dir's direct children are itemised
+      if (!tree.includes(base))
+        fail(`CLAUDE.md §4 tree is missing "${f}" — the tree is the authoritative index (add it in the same commit).`);
+    }
   }
-}
 
-/* 4 — CHANGELOG hygiene */
-const changelog = read('CHANGELOG.md');
-const unrel = changelog.match(/## \[Unreleased\]([\s\S]*?)(?=\n## \[|$)/);
-if (!unrel) fail('CHANGELOG.md: no [Unreleased] section.');
-else {
-  const heads = [...unrel[1].matchAll(/^### (\w+)/gm)].map(m => m[1]);
-  for (const h of new Set(heads))
-    if (heads.filter(x => x === h).length > 1)
-      fail(`CHANGELOG.md [Unreleased]: "### ${h}" appears ${heads.filter(x => x === h).length}× — merge into one (Keep a Changelog).`);
-}
-if (!changelog.includes(`## [${pkg.version}]`))
-  fail(`CHANGELOG.md: no heading for the current version ${pkg.version} — cut the release section (§8 checklist).`);
-// Placeholder-link check: parse the footer link definitions and compare the real hostname (not a
-// substring — this is a freshness check, but do it the URL-correct way).
-for (const [, label, href] of changelog.matchAll(/^\[([^\]]+)\]:\s+(\S+)/gm)) {
-  let host = null;
-  try { host = new URL(href).hostname; } catch { /* not a URL */ }
-  if (host === null || host === 'example.com' || host.endsWith('.example.com'))
-    fail(`CHANGELOG.md: link definition [${label}] points at a placeholder or invalid URL (${href}) — point at the real repo.`);
-}
+  /* 4 — CHANGELOG hygiene */
+  const changelog = read('CHANGELOG.md');
+  const unrel = changelog.match(/## \[Unreleased\]([\s\S]*?)(?=\n## \[|$)/);
+  if (!unrel) fail('CHANGELOG.md: no [Unreleased] section.');
+  else {
+    const heads = [...unrel[1].matchAll(/^### (\w+)/gm)].map(m => m[1]);
+    for (const h of new Set(heads))
+      if (heads.filter(x => x === h).length > 1)
+        fail(`CHANGELOG.md [Unreleased]: "### ${h}" appears ${heads.filter(x => x === h).length}× — merge into one (Keep a Changelog).`);
+  }
+  if (!changelog.includes(`## [${pkg.version}]`))
+    fail(`CHANGELOG.md: no heading for the current version ${pkg.version} — cut the release section (§8 checklist).`);
+  // Placeholder-link check: parse the footer link definitions and compare the real hostname (not a
+  // substring — this is a freshness check, but do it the URL-correct way).
+  for (const [, label, href] of changelog.matchAll(/^\[([^\]]+)\]:\s+(\S+)/gm)) {
+    let host = null;
+    try { host = new URL(href).hostname; } catch { /* not a URL */ }
+    if (host === null || host === 'example.com' || host.endsWith('.example.com'))
+      fail(`CHANGELOG.md: link definition [${label}] points at a placeholder or invalid URL (${href}) — point at the real repo.`);
+  }
 
-/* verdict */
-if (problems.length) {
-  console.error(`check-docs: ${problems.length} freshness failure(s)\n` + problems.map(p => '  ✗ ' + p).join('\n'));
-  process.exit(1);
+  /* 5 — the app's version constant */
+  const vp = appVersionProblem(pkg.version, read('src/js/version.js'));
+  if (vp) fail(vp);
+
+  /* verdict */
+  if (problems.length) {
+    console.error(`check-docs: ${problems.length} freshness failure(s)\n` + problems.map(p => '  ✗ ' + p).join('\n'));
+    process.exit(1);
+  }
+  console.log(`check-docs: PASS ✓  (v${pkg.version} · ${fmt(paintCount)} paints / ${brandCount} brands · tree + CHANGELOG consistent · APP_VERSION matches)`);
 }
-console.log(`check-docs: PASS ✓  (v${pkg.version} · ${fmt(paintCount)} paints / ${brandCount} brands · tree + CHANGELOG consistent)`);

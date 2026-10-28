@@ -100,3 +100,33 @@ test('decodeOffsets ignores junk', () => {
   assert.deepEqual(decodeOffsets('180.x.240'), [180, 240]);
   assert.deepEqual(decodeOffsets(''), []);
 });
+
+test('shareUrl drops m (a link shared from the Shelf opens the Studio) and keeps everything else', async () => {
+  const { shareUrl } = await import('../src/js/share.js');
+  const href = 'https://palette.ryanmette.com/?p=citadel-red&c=9A1115&h=triadic&m=shelf&v=equiv&t=dark';
+  const out = new URL(shareUrl(href));
+  assert.equal(out.searchParams.get('m'), null);
+  assert.equal(out.searchParams.get('v'), 'equiv');   // the tab travels
+  assert.equal(out.searchParams.get('p'), 'citadel-red');
+  assert.equal(out.searchParams.get('t'), 'dark');
+  assert.equal(out.origin + out.pathname, 'https://palette.ryanmette.com/');
+  // a Studio link is unchanged
+  const studio = 'https://palette.ryanmette.com/?p=citadel-red&c=9A1115&h=triadic';
+  assert.equal(shareUrl(studio), studio);
+});
+
+test('encodeState: no theme → no t (a theme that only follows the device stays out of the address bar)', () => {
+  const p = encodeState({ baseId: 'citadel-red', pickHex: '#9A1115', harmony: 'triadic', theme: null });
+  assert.equal(p.get('t'), null);
+  assert.equal(encodeState({ pickHex: '#9A1115', theme: 'dark' }).get('t'), 'dark');
+});
+
+test('shareUrl carries the theme on screen: t=dark when dark, no t when light, the address bar t when none is given', async () => {
+  const { shareUrl } = await import('../src/js/share.js');
+  const bare = 'https://palette.ryanmette.com/?p=citadel-red&c=9A1115&h=triadic';
+  // following a dark device: the address bar has no t, the shared link still opens dark
+  assert.equal(new URL(shareUrl(bare, 'dark')).searchParams.get('t'), 'dark');
+  assert.equal(new URL(shareUrl(bare + '&t=dark', 'light')).searchParams.get('t'), null);
+  assert.equal(new URL(shareUrl(bare + '&t=dark')).searchParams.get('t'), 'dark');
+  assert.equal(shareUrl(bare, 'light'), bare);
+});

@@ -176,3 +176,119 @@ test('hydrate: no-op on the web, restores from the native mirror after eviction'
   assert.ok(mirror.get('ps-state').includes('"web"'), 'mirror refreshed from the authoritative localStorage');
   delete globalThis.Capacitor;
 });
+
+/* ---- the backup file: ⋯ → Back up / Restore…, and About & data → Delete (CLAUDE.md §3.6) ---- */
+
+test('exportJSON writes a `saved` date that importJSON ignores', async () => {
+  const { store } = await freshStore();
+  store.setMark('a', 'owned');
+  const json = store.exportJSON({ now: new Date('2026-09-30T10:00:00Z') });
+  const o = JSON.parse(json);
+  assert.equal(o.saved, '2026-09-30T10:00:00.000Z');
+  assert.deepEqual(o.owned, ['a']);
+  const { store: s2, ls } = await freshStore();
+  assert.equal(s2.importJSON(json), true);
+  assert.equal(JSON.parse(ls.getItem('ps-state')).saved, undefined, 'the date is about the file, not the stored state');
+});
+
+test('a backup carries exactly theme, locale, collection, ladder and contrast (no dead `fill`)', async () => {
+  const seed = { 'ps-state': JSON.stringify({ v: 1, owned: [], want: [], prefs: { fill: 'real', theme: 'dark', bogus: 1 } }) };
+  const { store } = await freshStore(seed);
+  const prefs = JSON.parse(store.exportJSON()).prefs;
+  assert.deepEqual(Object.keys(prefs).sort(), ['collection', 'contrast', 'ladder', 'locale', 'theme']);
+  assert.equal(prefs.theme, 'dark');
+  assert.equal(store.getPref('fill'), undefined);
+});
+
+test('inspectJSON counts a backup and applies nothing', async () => {
+  const { store } = await freshStore();
+  store.setMarks(['a', 'b', 'c'], 'owned');
+  store.setMarks(['w1', 'w2'], 'want');
+  const backup = JSON.stringify({ v: 1, owned: ['a', 'x', 'y'], want: ['b'], prefs: { theme: 'light' }, saved: '2026-09-30T10:00:00.000Z' });
+  const info = store.inspectJSON(backup);
+  assert.deepEqual(info, { ok: true, owned: 3, want: 1, saved: '2026-09-30T10:00:00.000Z', lost: 3 });   // c, w1, w2 have no mark there
+  assert.deepEqual(store.counts(), { owned: 3, want: 2 }, 'nothing applied');
+  assert.equal(store.getPref('theme'), null);
+});
+
+test('inspectJSON: no date → saved null; a bad date → null; not a backup → ok false', async () => {
+  const { store } = await freshStore();
+  assert.equal(store.inspectJSON(JSON.stringify({ owned: ['a'] })).saved, null);
+  assert.equal(store.inspectJSON(JSON.stringify({ owned: ['a'], saved: 'last tuesday' })).saved, null);
+  assert.deepEqual(store.inspectJSON('[]'), { ok: false });
+  assert.deepEqual(store.inspectJSON('not json'), { ok: false });
+  assert.deepEqual(store.inspectJSON(JSON.stringify({ version: '1.6.0', paints: [] })), { ok: false });   // paints.json picked by mistake
+});
+
+test('inspectJSON and importJSON agree on a paint listed as both owned and to buy (owned wins)', async () => {
+  const { store } = await freshStore();
+  const backup = JSON.stringify({ owned: ['a', 'a'], want: ['a', 'b'] });
+  assert.deepEqual(store.inspectJSON(backup), { ok: true, owned: 1, want: 1, saved: null, lost: 0 });
+  store.importJSON(backup);
+  assert.equal(store.markOf('a'), 'owned');
+  assert.deepEqual(store.counts(), { owned: 1, want: 1 });
+});
+
+test('importJSON: a restored theme or locale of null stays null (follow the device)', async () => {
+  const { store } = await freshStore();
+  store.setPref('theme', 'dark'); store.setPref('locale', 'en-US');
+  assert.equal(store.importJSON(JSON.stringify({ owned: [], prefs: { theme: null, locale: null, collection: 'only' } })), true);
+  assert.equal(store.getPref('theme'), null);
+  assert.equal(store.getPref('locale'), null);
+  assert.equal(store.getPref('collection'), 'only');
+});
+
+test('clear() removes ps-state, the legacy keys and the iOS mirror, so the next start stays empty', async () => {
+  const mirror = new Map();
+  globalThis.Capacitor = { isNativePlatform: () => true, Plugins: { Preferences: {
+    get: async ({ key }) => ({ value: mirror.get(key) ?? null }),
+    set: async ({ key, value }) => { mirror.set(key, value); },
+    remove: async ({ key }) => { mirror.delete(key); },
+  } } };
+  const { store, ls } = await freshStore({ 'ps-owned': JSON.stringify(['legacy']), 'ps-theme': 'dark' });
+  store.setMark('a', 'owned'); store.setPref('collection', 'prefer');
+  assert.ok(mirror.has('ps-state'));
+  store.clear();
+  await new Promise(r => setTimeout(r));   // the mirror's remove() is async
+  assert.equal(ls.getItem('ps-state'), null);
+  assert.equal(ls.getItem('ps-owned'), null);
+  assert.equal(ls.getItem('ps-theme'), null);
+  assert.equal(mirror.has('ps-state'), false);
+  assert.deepEqual(store.counts(), { owned: 0, want: 0 });
+  assert.equal(store.getPref('collection'), 'off');
+  assert.equal(store.getPref('theme'), null);
+  // the next start: nothing in localStorage, nothing in the mirror → an empty shelf, not the old one
+  const { store: next } = await import(`../src/js/store.js?t=${seq++}`).then(m => ({ store: m }));
+  assert.equal(await next.hydrate(), false);
+  assert.deepEqual(next.counts(), { owned: 0, want: 0 });
+  delete globalThis.Capacitor;
+});
+
+test('a pref value it may not have gets the default on load, and is not restored from a backup (B2)', async () => {
+  const junk = { theme: 'Dark', locale: 'fr-FR', collection: 'yes', ladder: 7, contrast: 'no' };
+  // on load: every junk value falls back to its default
+  const { store } = await freshStore({ 'ps-state': JSON.stringify({ v: 1, owned: [], want: [], prefs: junk }) });
+  assert.deepEqual(JSON.parse(store.exportJSON()).prefs, { theme: null, ladder: 'wash', locale: null, collection: 'off', contrast: false });
+  // on restore: a junk value counts as not carried, so this device's own value stays
+  store.setPref('theme', 'dark'); store.setPref('collection', 'prefer'); store.setPref('contrast', true);
+  assert.equal(store.importJSON(JSON.stringify({ owned: ['a'], prefs: junk })), true);
+  assert.equal(store.getPref('theme'), 'dark');
+  assert.equal(store.getPref('collection'), 'prefer');
+  assert.equal(store.getPref('contrast'), true);
+  assert.equal(store.getPref('ladder'), 'wash');
+  assert.equal(store.getPref('locale'), null);
+  // ...and the junk never reaches the next backup
+  assert.doesNotMatch(store.exportJSON(), /fr-FR|"Dark"|"yes"/);
+});
+
+test('store accepts exactly the locales i18n.js has', async () => {
+  const { store } = await freshStore();
+  const { LOCALE_IDS } = await import('../src/js/i18n.js');
+  assert.ok(LOCALE_IDS.length >= 2);
+  for (const l of LOCALE_IDS) {
+    assert.equal(store.importJSON(JSON.stringify({ owned: [], prefs: { locale: l } })), true);
+    assert.equal(store.getPref('locale'), l, `${l} is kept`);
+  }
+  store.importJSON(JSON.stringify({ owned: [], prefs: { locale: 'xx-XX' } }));
+  assert.equal(store.getPref('locale'), LOCALE_IDS[LOCALE_IDS.length - 1], 'an unknown locale is not restored');
+});

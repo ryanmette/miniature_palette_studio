@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, segmented, hero, paintStrip, popChips } from '../src/js/ui.js';
+import { livePalette, roleSlots, segmented, hero, paintStrip, popChips, matchNote, planControls } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -152,4 +152,59 @@ test('value-harmony columns get a tone label, not a meaningless "0°"', async ()
   assert.doesNotMatch(html, />0°</, 'no bare 0° tags');
   assert.match(html, /class="lctag">Darker</);
   assert.match(html, /class="lctag">Lighter</);
+});
+
+/* ---- the matching note under the live palette (CLAUDE.md §3.6) ---- */
+const T = { noteUmp: 'Use my paints: {mode}', umpPrefer: 'Prefer', umpOnly: 'Only', noteUmpPrefer: 'yours win when close',
+  noteUmpOnly: 'from the {n} you own', noteUmpEmpty: 'none marked as owned yet', change: 'Change', openShelf: 'Open Shelf',
+  noteContrast: 'Contrast and speed paints included', notePlan: 'Plan' };
+const tt = (k, v) => (T[k] || k).replace(/\{(\w+)\}/g, (m, x) => (v && x in v ? String(v[x]) : m));
+const text = html => html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+/** Each line's accessible name: its text without the aria-hidden glyph (the ✓, ○ or finish icon). */
+const names = html => html.split('</button>').filter(Boolean)
+  .map(b => text(b.replace(/<span[^>]*aria-hidden="true">.*?<\/span>/, '')));
+
+test('matchNote: nothing at all when both settings are off', () => {
+  assert.equal(matchNote({ collection: 'off', owned: 23, contrast: false }, tt), '');
+});
+
+test('matchNote: one line per active setting, each a button to its own control', () => {
+  const html = matchNote({ collection: 'only', owned: 23, contrast: true, expanded: true }, tt);
+  assert.equal((html.match(/<button /g) || []).length, 2);
+  assert.match(html, /data-note="ump" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="true"/);
+  assert.match(html, /data-note="contrast"/);
+  assert.doesNotMatch(html.slice(html.indexOf('data-note="contrast"')), /aria-haspopup/);   // it goes to the Plan, not a dialog
+  // the visible words ARE the accessible name; the dash before the target word is for screen readers only
+  assert.deepEqual(names(html), ['Use my paints: Only · from the 23 you own — Change', 'Contrast and speed paints included — Plan']);
+});
+
+test('matchNote: Prefer says what it really does', () => {
+  assert.deepEqual(names(matchNote({ collection: 'prefer', owned: 4 }, tt)), ['Use my paints: Prefer · yours win when close — Change']);
+});
+
+test('matchNote: an empty shelf says so and goes to the Shelf, not to ⋯', () => {
+  const html = matchNote({ collection: 'prefer', owned: 0 }, tt);
+  assert.match(html, /data-note="shelf"/);
+  assert.doesNotMatch(html, /aria-haspopup/);
+  assert.deepEqual(names(html), ['Use my paints: Prefer · none marked as owned yet — Open Shelf']);
+});
+
+test('matchNote: the Contrast line wears the Contrast finish icon, not ✓', () => {
+  const html = matchNote({ contrast: true }, tt);
+  assert.match(html, /class="nk nk-contrast" aria-hidden="true"><svg/);
+  assert.doesNotMatch(html, /✓/);
+});
+
+test('planControls: Use my paints is no longer in the Plan tab (it is in ⋯)', () => {
+  const html = planControls('wash', false, 3);
+  assert.doesNotMatch(html, /data-collection|Use my collection/);
+  assert.match(html, /data-ladder="wash" aria-pressed="true"/);
+  assert.match(html, /id="inclContrast" aria-pressed="false"/);
+});
+
+test('matchNote: the "·" ends the bold head (no-break space), so a wrapped explanation never starts with it', () => {
+  for (const html of [matchNote({ collection: 'only', owned: 3 }, tt), matchNote({ collection: 'prefer', owned: 0 }, tt)]) {
+    assert.match(html, /<\/b> · <span class="mt">[^·]/);
+    assert.doesNotMatch(html, /class="mt">·/);
+  }
 });

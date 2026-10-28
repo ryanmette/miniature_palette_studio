@@ -10,8 +10,10 @@
 //   h   harmony id                              r   'accent' when the pick seeds the Accent role
 //   x   added swatches, h.s.l with '!' = locked d   harmony offsets detached by lock/edit
 //   pp  neutral mode's pop accent               f   '1' = live palette filled with real paint
-//   v   active output tab (omitted for 'plan')  m   'shelf' = deep-link to the Shelf
-//   t   'dark' theme
+//   v   active output tab (omitted for 'plan')  m   'shelf' = deep-link to the Shelf (address bar only,
+//                                                     never in a shared link — see shareUrl)
+//   t   'dark' theme. The address bar has it only for a link's theme (app.js updateUrl); a shared
+//       link has it whenever the scheme shows dark (shareUrl).
 
 import { normHex } from './color.js';
 import { clampPop } from './harmony.js';
@@ -46,6 +48,22 @@ export function encodeState(s) {
   if (s.dropOffsets && s.dropOffsets.length) p.set('d', s.dropOffsets.join('.'));
   if (s.popHex) p.set('pp', s.popHex.replace('#', ''));
   return p;
+}
+
+/**
+ * The link that Share link hands out: the address-bar URL without `m`. `m=shelf` keeps a refresh on
+ * the Shelf, but a friend who opens a shared link wants the SCHEME, so a link shared from the Shelf
+ * must open the Studio. Everything else stays, the output tab (`v`) too.
+ * `theme` is the theme on screen. A shared scheme carries the theme it was made in, so `t=dark` goes
+ * in when it is dark, also when the address bar has no `t` (the address bar has `t` only for a link's
+ * theme, see app.js updateUrl). Leave it out to keep the address bar's `t`.
+ */
+export function shareUrl(href, theme) {
+  const u = new URL(href);
+  u.searchParams.delete('m');
+  if (theme === 'dark') u.searchParams.set('t', 'dark');
+  else if (theme) u.searchParams.delete('t');
+  return u.href;
 }
 
 /** Parse the `x` param back into added swatches. Malformed entries are dropped, never thrown on —

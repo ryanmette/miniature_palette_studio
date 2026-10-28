@@ -6,6 +6,67 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **⋯ Settings: the full menu** (Ryan, 2026-10-26 and 2026-10-28; `mockups/collection-setting.html`:
+  direction A, "The full ⋯ menu" and its design critique). ⋯ opens a dialog named Settings, in four groups:
+  - **Use my paints** (Off · Prefer · Only), **Theme** and **Language**;
+  - **Scheme:** Save shopping list and Share link;
+  - **Backup:** Back up and Restore…;
+  - **Help & info:** Help (a link to the Help page) and About & data.
+
+  On a phone or a touch screen, Settings is a modal sheet. It has a title row with Done, each label above
+  its control, 44px controls, and a fade at the bottom while more rows are below. With a mouse, it is a
+  popover under ⋯. Esc, a click outside, ⋯ or a Tab out of it closes it. When it opens, focus goes to the
+  selected Use my paints option. When it closes, focus goes back to ⋯, or to the note line that opened it.
+  Every label, hint and message is in `i18n.js`.
+  - On a short screen (for example 400% zoom, or a phone turned sideways), Settings covers the header,
+    so you can scroll to every row (WCAG 1.4.10). Before, a 200px minimum height put rows below the
+    screen at 320×256.
+  - A control that Tab scrolls into view, and the "✓ Saved …" line after Back up, stop above the
+    bottom fade.
+  - With large text, a button label wraps. Before, "Save shopping list" pushed "Share link" out of the sheet.
+  - The title row has a rule under it, as in About. "Equivalents still lists every paint." sits right
+    under the Use my paints hint.
+  - A focused segment shows its whole focus ring. Before, the next segment covered its right edge.
+- **The matching note under the live palette.** It has one line for each setting that changes the
+  matches. Each line is a button to its control:
+  - "✓ Use my paints: Prefer · yours win when close — Change", or "… Only · from the 23 you own —
+    Change". It opens ⋯ at Use my paints.
+  - With no owned paints: "Use my paints: Prefer · none marked as owned yet — Open Shelf". It opens the
+    Shelf.
+  - "Contrast and speed paints included — Plan", with the Contrast icon. It opens the Plan tab at
+    Include Contrast.
+
+  Nothing shows while both settings are off. A line shows or goes only when you change a setting. On
+  the hover and open fill, the explanation is `--text`: `--text-muted` is 4.20:1 there, under AA.
+- **A way back to the device's theme** (Ryan's answer 3). After you pick a theme, the Theme row shows
+  **Use device setting**. It clears your choice, and the app follows the device again. Before you pick,
+  the same place says "Follows your device". Both share one reserved slot, so nothing moves. Use device
+  setting also shows when a shared link's theme is not the device's theme.
+- **Back up and Restore…** (⋯ → Backup). Back up saves your shelf and settings to
+  `palette-studio-backup-YYYY-MM-DD.json`, with the date of the backup in the file. The row then shows
+  the file name. Restore… reads a backup and shows a confirm before it changes anything:
+  - the counts on this device and in the backup, with the backup's date;
+  - how many paints marked here are not in the backup;
+  - that your settings change too, and that you cannot undo this;
+  - "Save a backup of this shelf", which changes to "✓ Saved" and names the file inside the dialog;
+  - Cancel (focus starts here) and Replace.
+
+  Esc closes only the confirm. A file that is not a backup changes nothing. (`store.inspectJSON()`.)
+  A setting with a value it cannot have (for example `contrast: "no"` or `theme: "Dark"`) is not
+  restored. On load, such a value gets its default.
+- **Delete my shelf and settings…** (About & data). It asks first and offers a backup. Then it removes
+  every copy on this device: `ps-state`, the old `ps-owned` and `ps-theme` keys, and the iOS app's copy.
+  If only `ps-state` goes, the next start brings the data back. (`store.clear()`.)
+- **The version in About & data:** "Palette Studio 1.9.0 · paint data 1.6.0". The app version comes from
+  one constant, `src/js/version.js`. `check-docs.mjs` fails when it differs from `package.json`.
+- **The Help page** (`support.html`, now "Help and support") has two new sections: "How the matching
+  works" (ΔE 2000, the quality labels, and Prefer: a paint you own counts as about ΔE 6 closer) and
+  "Keyboard shortcuts". The questions now say how to move your shelf (Back up, then Restore…), how to
+  delete it, and that the shelf is kept only in this browser. About & data links to both new sections.
+- Tests for `store.inspectJSON()`, `store.clear()`, the backup's `saved` date, the pref list, `shareUrl()`,
+  the matching note, the version check (`test/version.test.mjs`), the pref values a backup may carry,
+  and the theme in a shared link: 184 tests.
+  `check-docs.mjs` also runs its checks when you start it through a symlinked folder.
 - **Design exploration: the lightness slider** (`mockups/lightness-slider.html`, not shipped). Ryan
   reported that the slider under the wheel does not say what it does. It sets the lightness of your
   colour (6–94%), and the harmony colours follow it. Four working directions: A, a label and a value; B,
@@ -108,6 +169,52 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **"Use my collection" moves from the Plan tab to ⋯ and is now "Use my paints"** (Off · Prefer · Only).
+  It changes the live palette, the Plan, the shopping list and the Accessibility swap, so it does not
+  belong to one tab. The setting and its saved value do not change. The hint under it says what each
+  option does. With an empty shelf, it says "No paints marked as owned yet" and offers Open Shelf.
+- **"Export list" is now "Save shopping list"**, a secondary button. The solid accent button drew the
+  eye before the settings did.
+- **About & data:** a "Your shelf on this device" block with Delete, links to the Help page, and the
+  version line. Its padding is on the spacing scale (16px; 24px at the bottom). The fine print is `--text-muted` (`--text-faint` was 2.39:1, under AA). Its "colour"
+  text has an en-US version.
+- **A JSON backup picked through Import… (Shelf or Paints drawer) goes through the Restore confirm.**
+  Before, it replaced the shelf and settings at once.
+- **A restored or deleted theme or language of "none" follows the device.** It is applied, not saved.
+- **Undo and redo (Ctrl/⌘ Z) work only in the Studio.** On the Shelf, they changed a palette you could
+  not see.
+- **A backup no longer carries `fill`**, a pref the app never read (Ideal | Real lives in the link). A
+  backup carries the theme, the language, Use my paints, the tone ladder and Include Contrast.
+- A backup that lists one paint as owned and as to buy restores it as owned.
+- A toast uses the width of the screen. Before, it wrapped at half the width.
+- (CLAUDE.md §3.1, §3.4, §3.5, §3.6, §4 and §8 are updated: the "Sheets and dialogs", "Text action" and
+  "Destructive button" lines, what ⋯ holds, the sheet and popover layouts, and the matching note.
+  Service worker `ps-v50`.)
+- **Touch: segmented controls and small buttons are 44px on every touch screen** (Ryan, 2026-10-28,
+  answer 4 in `mockups/collection-setting.html` #critique). Before, `--tap` grew to 44px on touch, but
+  the controls with a fixed size did not.
+  - Every segmented control is `--tap` tall on a touch screen and on a phone: the Studio / Shelf switch,
+    the harmony chips, the tone ladder, Ideal / Real, the language control and the Shelf status filter.
+    Before, they were 30px (34px on a phone).
+  - Small buttons (`.btn.sm`) are `--tap` tall on a touch screen and on a phone. They stay 32px only with
+    a mouse above 520px. Examples: Import…, Export CSV, Include Contrast, + Add N to buy.
+  - The theme switch keeps its 52×30 look. A `::before` gives it a `--tap` tall hit area, as on the Shelf
+    handle, so its focus ring stays in the centre.
+  - The header grows with the controls: 113px → 123px on a 360px or 390px phone, and 69px → 75px on a
+    touch tablet. The sticky studio column and the Shelf dock follow it (`--hdr-h`). Measured at
+    360×640, 390×844, 768×1024 and 1025×800 with touch: the studio column and the dock still sit
+    directly under the header.
+  - (`docs/PLAN.md` follow-up 12 lists the small controls that are still under 44px.)
+- **Overlays: one scrim token, and About floats.** A new `--scrim` token (§3.1) is the dimmed page
+  behind a modal. It replaces the two copies of `rgba(0,0,0,.45)` (the About dialog's backdrop and the
+  phone Filters sheet's scrim). The About dialog uses `--shadow-pop`, the shadow for floating overlays
+  (§3.4). Before, it used the in-page `--shadow`.
+- **Toasts show above the menus and in open dialogs.** A toast is now above the ⋯ menu and the
+  right-click menus (z-index 70; was 50, under the menus' 60). While a modal dialog is open, the toast
+  goes inside it. Before, it was behind the dialog's backdrop, and a screen reader skipped it.
+- **The open ⋯ button has a fill.** While the settings menu is open, ⋯ shows a `--surface-2` fill. The
+  focus ring is for focus only.
+- (CLAUDE.md §3.1, §3.4, §3.5 and §3.6 are updated; service worker `ps-v49`.)
 - **Studio: the lightness slider shows what it does** (Ryan, 2026-10-28: "B, fixed" in
   `mockups/lightness-slider.html`). Before, the slider next to the wheel had no visible name. Ryan reported that it
   was not clear what it does.
@@ -194,6 +301,57 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **A theme that follows the device stays out of the address bar.** Before, a dark device wrote `t=dark`
+  into the address bar. After a reload on a light device, the page stayed dark, and the Theme row said
+  "Follows your device". Now the address bar has `t` only for a shared link's theme: a saved theme comes
+  back from the settings, and a device theme from the device. Share link still adds `t=dark` when the
+  scheme shows dark.
+- **A screen reader hears every toast.** A toast was a new live region with its text already in it,
+  which screen readers do not announce reliably. Now its words go into a live region that is already
+  there: the open dialog's own, the ⋯ menu's, or the page's. A live region is written only when its
+  words change, so a language change does not read the Use my paints hint again. After Restore, you
+  hear "Shelf and settings restored" first, not the scheme summary.
+- **Small caps labels are readable** (the Plan's "Tone ladder", the Shelf counts). They were
+  `--text-faint`: 2.39:1 on the light surface, under AA. Now they are `--text-muted` (4.68:1).
+- **The right-click menu shows a focus ring.** It showed only a `--surface-2` fill (about 1.1:1), with
+  `outline: none`.
+- **Windows High Contrast mode:** only the selected output tab has a line under it. Before, every tab
+  had one. Text actions (Done, Use device setting) show as links, and the open ⋯ and note line have a
+  Highlight outline.
+- **Share link from the Shelf shared the Shelf** (critique finding usability-6). The link held `m=shelf`,
+  so a friend opened your Shelf, not the scheme. Share link now removes `m` and keeps the tab (`v`). The
+  address bar keeps `m`, so a refresh stays on the Shelf.
+- **The ⋯ panel said it was a menu.** It was `role="menu"`, but it holds a switch, segmented controls and
+  buttons, so a screen reader expected arrow-key commands. It is a dialog named "Settings" now
+  (`aria-haspopup="dialog"`).
+- **The focus ring is visible in the whole app** (critique finding a11y-4). The `--focus` ring was a
+  3px `--accent-weak` ring: 1.17:1 against the surface in the light theme and 1.12:1 in the dark theme.
+  WCAG 1.4.11 needs 3:1.
+  - Now `--focus` is a 2px `--surface` gap and a 2px `--accent` ring. The ring is 5.70:1 (light) and
+    6.20:1 (dark) against the surface, and 5.12:1 or more on `--bg` and `--surface-2`.
+  - Windows High Contrast mode removes box-shadows. So each rule that draws the ring also sets a
+    transparent 2px outline, and the browser paints that outline in a system colour.
+  - The ring is one ring. The accent border that some controls also got on focus is gone, because
+    under the new ring it read as a second ring.
+  - The copy button on the live palette had its own copy of this ring. It uses the token now.
+  - In the scroll boxes, the ring had its edges cut off. The harmony strip and the Paints strip get 4px
+    of padding for it, and the harmony strip drops its edge fade while a chip has keyboard focus. The
+    output tabs draw the ring inside the tab, above the selected underline.
+  - The hex field showed a second ring inside its box. Now only the box has the ring.
+- **Segmented controls: you can read every label and see which one is selected** (critique findings
+  a11y-1 and a11y-2). The fault was in every segmented control: the Studio / Shelf switch, the harmony
+  strip, the tone ladder, Use my collection (now Use my paints in ⋯), Ideal / Real, the language control
+  and the Shelf status filter.
+  - The labels that were not selected used `--text-muted`: 4.20:1 on the track in the light theme. WCAG
+    1.4.3 needs 4.5:1. Now every label uses `--text`: 13.98:1 (light) and 12.83:1 (dark).
+  - The selected segment was a white pill on a pale track: 1.11:1 (light) and 1.08:1 (dark). Now the
+    selected segment also has a 2px `--accent` bar inside it, as the selected output tab has an
+    underline. The bar is 5.70:1 (light) and 6.20:1 (dark) against the pill.
+  - The bar is an `::after`, and the label weight does not change. So a change of selection moves
+    nothing. Measured in the harmony strip and the tone ladder at five sizes: each chip's box is the same
+    before and after a change.
+  - In Windows High Contrast mode, each segment has a system outline. The selected segment has a
+    Highlight outline and a Highlight bar.
 - **Studio: a lightness round trip gives back the same colour.** Before, a move to 6% and back changed
   the colour. For example, `#555E1B` → 6% → 24% gave `#535F1C`. Step by step with the arrow keys,
   `#6B5B4B` came back as `#6C4B4B`. Its hue moved from 30° to 0°, so a brown became a red.

@@ -5,7 +5,7 @@ import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
   isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex } from './seed.js';   // the pick ↔ scheme-base frame
-import { encodeState, decodeState } from './share.js';   // the share-link contract (state ⇄ URL)
+import { encodeState, decodeState, shareUrl } from './share.js';   // the share-link contract (state ⇄ URL)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf } from './data.js';
@@ -14,6 +14,9 @@ import { csvToMarks, marksToCsv } from './collection-io.js';   // collection por
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
+import { APP_VERSION } from './version.js';   // the one app-version constant (check-docs.mjs holds it to package.json)
+
+const t = i18n.t;
 
 const $ = sel => document.querySelector(sel);
 const state = {
@@ -63,7 +66,7 @@ const POPS = [
   { hex: '#9C1626', name: 'Crimson' }, { hex: '#0F6B6E', name: 'Teal' }, { hex: '#C4581A', name: 'Ember' },
   { hex: '#C2912F', name: 'Gold' }, { hex: '#5B3B8C', name: 'Purple' }, { hex: '#3E6B2F', name: 'Moss' },
 ];
-/** Match/scheme options from the single "use my collection" control: off · prefer (boost) · only (filter). */
+/** Match/scheme options from the single "Use my paints" setting (⋯): off · prefer (boost) · only (filter). */
 function matchOpts() {
   const o = { ladder: state.ladder };
   const owned = store.ownedIds();
@@ -134,7 +137,7 @@ function renderPlan() {
   const addable = gaps.filter(g => store.markOf(g.paint.id) !== 'want').length;
   // No overview colour bar here — the role-labelled live palette (beside the wheel) is now the single
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
-  $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.collection, state.includeContrast, addable)
+  $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
     + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus the selected tone ladder</div>'
     + ui.roleSlots(state.scheme, store.markOf);
 }
@@ -415,7 +418,8 @@ function syncWheelL() {
  *   'settle'  a drag ended: commit the URL and speak; everything is already painted
  */
 let renderRaf = 0;
-function render(reason = 'scheme') {
+/** `speak: false` repaints without the scheme summary in #status (a restore says its own line). */
+function render(reason = 'scheme', { speak = true } = {}) {
   if (reason === 'settle') { updateUrl(); announce(); return; }
 
   // A pick, a typed hex, undo/redo, a share link or a harmony/seed-role change ends a lightness run.
@@ -443,7 +447,7 @@ function render(reason = 'scheme') {
     return;
   }
   paint();
-  updateUrl(); announce();
+  updateUrl(); if (speak) announce();
 }
 const MAX_FREE = 6;   // bounds URL length + per-frame nearest-paint scans (S5 micro-decision)
 /** Add a colour "along the line": extend the base's value ramp (alternating lighter/darker tints &
@@ -1088,7 +1092,7 @@ function closePaintMenu() { if (paintMenuOpen) { $('#paintMenu').hidden = true; 
 function markPaint(id, mark) {
   if (!['owned', 'want', 'none'].includes(mark)) return;
   store.setMark(id, mark);
-  renderList(); renderLive(); renderActive();
+  renderList(); renderLive(); renderActive(); renderMatchNote();
   if (state.mode === 'shelf') renderShelf();
   const p = state.idx.byId.get(id);                  // announce the state change for screen readers (§3.5)
   if (p) $('#status').textContent = `${ui.pname(p)}, ${ui.markLabel(mark)}.`;
@@ -1138,7 +1142,11 @@ function announce() {
 }
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
-  const p = encodeState({ ...state, pickHex: pickHex() });   // the link carries the PICK, role in `r` (share.js)
+  // The link carries the PICK, role in `r` (share.js). The address bar carries `t` only for a link's
+  // theme, the one theme a reload cannot get back from anywhere else. A device theme written as `t` came
+  // back over "Follows your device" after the device changed; a saved one came back over a newer saved
+  // pick. Share link adds the theme on screen (shareUrl).
+  const p = encodeState({ ...state, theme: linkTheme, pickHex: pickHex() });
   history.replaceState(null, '', '?' + p.toString());
   // Mid-gesture URL writes (the debounced updates while a wheel drag is still down) must NOT snapshot:
   // one drag would otherwise litter the undo stack with intermediates, so Ctrl+Z after a drag stepped
@@ -1206,6 +1214,13 @@ function scheduleAnnounce() {
   announceTimer = setTimeout(announce, 400);
 }
 const renderAll = () => render('all');   // init / undo / redo
+/** The device's light/dark setting. The app follows it, live, until the painter picks a theme (§3.1). */
+const osDark = matchMedia('(prefers-color-scheme: dark)');
+const deviceTheme = () => (osDark.matches ? 'dark' : 'light');
+/** The theme a link's `t` applied, or null. It is shown, never saved; the address bar keeps it, so a
+ *  refresh shows the link's theme again. A saved pick, Use device setting, a device change or a restore
+ *  clears it. */
+let linkTheme = null;
 
 /** Apply a theme. Only the painter's own toggle saves it (`save`). The OS default and a shared link's
  *  `t` are applied but never stored: storing them froze "follow the OS" at the first visit's value, and
@@ -1216,6 +1231,7 @@ function setTheme(t, { save = false } = {}) {
   if (save) store.setPref('theme', state.theme);
   const sw = document.querySelector('#themeToggle');   // keep the settings-menu theme switch in sync
   if (sw) sw.setAttribute('aria-checked', String(state.theme === 'dark'));
+  syncThemeSlot();
 }
 function syncLocaleSeg() {                            // reflect the active locale in the settings-menu control
   const cur = i18n.getLocale(), seg = $('#localeSeg');
@@ -1238,7 +1254,7 @@ function setMode(mode) {
     Object.assign(dock, { open: true, acc: 0, lastY: 0, stuck: false }); applyDock();
     $('#shelfGrid').focus({ preventScroll: true });
   }
-  else { renderList(); }   // refresh the drawer's owned state in case the shelf changed it
+  else { renderList(); renderMatchNote(); }   // the shelf may have changed the drawer's marks and the note's count
   updateUrl();
 }
 function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = pickHex().replace('#', ''); renderAll(); }
@@ -1289,18 +1305,31 @@ function setLadder(v) {                          // #7 — tone-ladder style (pe
   state.ladder = v; store.setPref('ladder', v);
   renderActive();
 }
-function setCollection(v) {                      // #6 — off · prefer (boost) · only (filter); persisted
+/** ⋯ → Use my paints (#6): off · prefer (boost) · only (filter); saved for the device. The menu's hint
+ *  and the matching note follow — the hint only here and on open, never on a mark change (its live
+ *  region would repeat itself while you stock the shelf). */
+function setCollection(v) {
   if (!['off', 'prefer', 'only'].includes(v)) return;
   state.collection = v; store.setPref('collection', v);
-  renderLive(); renderActive();
+  syncCollectionSeg(); syncUmpHint();
+  renderLive(); renderActive(); renderMatchNote();
 }
 function toggleContrast() {                       // include Contrast paints in harmony suggestions (persisted)
   state.includeContrast = !state.includeContrast; store.setPref('contrast', state.includeContrast);
-  renderLive(); renderActive();
+  renderLive(); renderActive(); renderMatchNote();
 }
 function toast(msg) {
-  const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('role', 'status');
-  document.body.appendChild(d); setTimeout(() => d.remove(), 1700);
+  // The toast is what you see; say() is what a screen reader hears. A live region inserted with its text
+  // already in it is not announced reliably, so the words go into a region that is already there.
+  const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('aria-hidden', 'true');
+  // An open modal <dialog> is in the top layer, above any z-index, so while one is open the toast goes
+  // inside the top one, where you can see it.
+  const modal = [...document.querySelectorAll('dialog[open]')].reverse().find(isModal);
+  (modal || document.body).appendChild(d); setTimeout(() => d.remove(), 1700);
+  say(msg);
+}
+function isModal(el) {
+  try { return el.matches(':modal'); } catch { return false; }   // :modal is Chrome 105+, Safari 15.6+
 }
 /** Click-to-copy for any [data-copy] element (hero hex, palette blocks). Best-effort + graceful fallback. */
 function copyText(val) {
@@ -1319,20 +1348,20 @@ function doExport() {
   }
   t += '\nHex values are approximate; ΔE = perceptual distance to the ideal colour.\n';
   download('palette-shopping-list.txt', t);
-  toast('Shopping list exported');   // download is the artefact — no silent clipboard write (native-share direction)
+  toast(i18n.t('listSaved'));   // download is the artefact — no silent clipboard write (native-share direction)
 }
 /** Share the current scheme URL. Prefers the native share sheet (Web Share → OS sheet under Capacitor),
  *  then clipboard, then a visible-URL prompt. No silent clipboard side-effects. */
 async function doShare() {
-  const url = location.href;
+  const url = shareUrl(location.href, state.theme);   // without m=shelf (a friend gets the scheme, not your Shelf), with the theme on screen
   if (navigator.share) {
     try { await navigator.share({ title: 'Palette Studio for Miniatures', url }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }   // user dismissed the sheet
   }
   if (navigator.clipboard) {
-    try { await navigator.clipboard.writeText(url); toast('Share link copied'); return; } catch { /* fall through */ }
+    try { await navigator.clipboard.writeText(url); toast(t('linkCopied')); return; } catch { /* fall through */ }
   }
-  toast('Copy the URL from the address bar');
+  toast(t('copyFromBar'));
 }
 function download(filename, text, type = 'text/plain') {
   const a = document.createElement('a');
@@ -1347,26 +1376,22 @@ function exportCollectionCsv() {
   download('my-paint-shelf.csv', marksToCsv(state.idx, store.ownedIds(), store.wantIds()), 'text/csv');
   toast(`Exported ${n.owned} owned · ${n.want} to buy`);
 }
-/** Import a paintRack CSV (merges) or a Palette Studio JSON backup (restores) (#27). */
-function importCollectionFile(file) {
+/** Import a paintRack CSV (merges) or a Palette Studio JSON backup (#27). A backup REPLACES the shelf
+ *  and settings, so it goes through the same confirm as ⋯ → Restore… — one rule for every .json. */
+function importCollectionFile(file, opener) {
   const reader = new FileReader();
   reader.onload = () => {
     const text = String(reader.result || '');
-    if (/\.json$/i.test(file.name) || /^\s*[{[]/.test(text)) {
-      const ok = store.importJSON(text);
-      toast(ok ? 'Collection restored from JSON backup' : 'That file is not a Palette Studio backup — nothing was changed');
-      if (ok) applyRestoredPrefs();   // the backup's theme/locale/plan prefs must reach the RUNNING UI, not just storage
-    } else {
-      const { matched, added, changed, unmatched } = applyCsv(text);
-      // say what the merge DID — an import that silently rewrites existing marks (owned → to-buy
-      // via a wishlist row) must at least be visible in the toast
-      const bits = [`${added} new`, changed ? `${changed} changed` : '', unmatched.length ? `${unmatched.length} unmatched` : ''].filter(Boolean);
-      toast(`Imported ${matched} paint${matched === 1 ? '' : 's'} · ${bits.join(' · ')}`);
-    }
+    if (/\.json$/i.test(file.name) || /^\s*[{[]/.test(text)) { confirmRestore(text, opener); return; }
+    const { matched, added, changed, unmatched } = applyCsv(text);
+    // say what the merge DID — an import that silently rewrites existing marks (owned → to-buy
+    // via a wishlist row) must at least be visible in the toast
+    const bits = [`${added} new`, changed ? `${changed} changed` : '', unmatched.length ? `${unmatched.length} unmatched` : ''].filter(Boolean);
+    toast(`Imported ${matched} paint${matched === 1 ? '' : 's'} · ${bits.join(' · ')}`);
     if (state.mode === 'shelf') renderShelf();
-    renderList(); renderLive(); renderActive();
+    renderList(); renderLive(); renderActive(); renderMatchNote();
   };
-  reader.onerror = () => toast('Could not read that file');
+  reader.onerror = () => toast(t('readFail'));
   reader.readAsText(file);
 }
 function applyCsv(text) {
@@ -1387,17 +1412,357 @@ function applyCsv(text) {
   return { ...res, added, changed };
 }
 /** Pull every pref out of the store into live state + chrome. No rendering, so it's safe at init —
- *  where the seed isn't resolved yet and renderHero() would have nothing to draw. */
+ *  where the seed isn't resolved yet and renderHero() would have nothing to draw. A theme or locale of
+ *  null means "follow the device": it is applied, never saved (a restored backup, Delete, a first run). */
 function applyPrefsToState() {
-  const th = store.getPref('theme'); if (th === 'light' || th === 'dark') setTheme(th);
-  const lo = store.getPref('locale'); if (lo) { i18n.setLocale(lo); syncLocaleSeg(); }
-  const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
-  const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
+  const th = store.getPref('theme');
+  linkTheme = null;   // a restored or deleted theme wins over a link's (init applies the link's after this)
+  setTheme(th === 'light' || th === 'dark' ? th : deviceTheme());
+  i18n.applyLocale(store.getPref('locale')); syncLocaleSeg();
+  const lp = store.getPref('ladder'); state.ladder = ['wash', 'tone', 'both'].includes(lp) ? lp : 'wash';
+  const cp = store.getPref('collection'); state.collection = ['off', 'prefer', 'only'].includes(cp) ? cp : 'off';
   state.includeContrast = !!store.getPref('contrast');
 }
-/** After a JSON restore: apply the prefs the backup carried AND repaint what shows them — without
- *  this the restored theme/locale/plan settings only took effect after a full reload. */
-function applyRestoredPrefs() { applyPrefsToState(); renderHero(); wheelDraw(); }
+/** The shelf and settings were replaced (Restore) or deleted: apply the new prefs at once and repaint
+ *  everything that shows a mark or a setting. Without this they took effect only after a reload. */
+function afterStoreReplaced() {
+  applyPrefsToState();
+  syncSettingsControls();
+  render('all', { speak: false });   // the caller says what happened; the scheme summary would only bury it
+  if (state.mode === 'shelf') renderShelf();
+  renderMatchNote();
+  syncLocaleStrings();
+}
+
+/* ---- ⋯ Settings (§3.6; mockups/collection-setting.html #fullmenu, corrected by #critique) ----
+   One <dialog> for both layouts. SHEET is the same query app.css lays the rows out with, so the layout
+   and the modality never disagree: a phone or a touch screen gets a MODAL sheet (showModal: the page
+   behind is inert, Done closes it); a mouse gets a non-modal popover that Esc, a click outside, ⋯ or
+   focus leaving it closes. Focus: in on the pressed Use my paints segment; out to whatever opened it. */
+const SHEET = matchMedia('(max-width: 520px), (pointer: coarse)');
+const settings = { opener: 'button', ret: 'opener', btnDown: false };   // opener: 'button' (⋯) | 'note'
+const sMenu = () => $('#settingsMenu');
+const settingsOpen = () => sMenu().open;
+const UMP_WORD = { off: 'umpOff', prefer: 'umpPrefer', only: 'umpOnly' };
+const UMP_HINT = { off: 'umpHintOff', prefer: 'umpHintPrefer', only: 'umpHintOnly' };
+const umpHintHtml = v => `<b>${ui.esc(t(UMP_WORD[v]))}</b> · ${ui.esc(t(UMP_HINT[v]))}`;
+/** The file name a backup saves as today (local date). */
+function backupName(d = new Date()) {
+  const p2 = n => String(n).padStart(2, '0');
+  return `palette-studio-backup-${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}.json`;
+}
+/** Speak a short status. While a modal dialog is open the page behind it is inert, so #status there is
+ *  never read out — the line goes to the open dialog's own live region instead (each has a [data-say]).
+ *  The same words twice in a row get a trailing no-break space: a region whose text does not change
+ *  says nothing. */
+function say(msg) {
+  const modal = [...document.querySelectorAll('dialog[open]')].reverse().find(isModal);
+  const el = (modal && modal.querySelector('[data-say]')) || (settingsOpen() ? $('#setStatus') : null) || $('#status');
+  el.textContent = el.textContent === msg ? msg + '\u00a0' : msg;
+}
+
+function syncCollectionSeg() {
+  for (const b of $('#collectionSeg').children) b.setAttribute('aria-pressed', String(b.dataset.collection === state.collection));
+}
+/** The Use my paints hint (a live region). Called only when the painter changes the setting and just
+ *  before the menu opens, never on a store update. With Prefer or Only but no owned paints, it says
+ *  so and offers Open Shelf (outside the live region). */
+function syncUmpHint() {
+  const empty = state.collection !== 'off' && !store.counts().owned;
+  const el = $('#umpHint'), html = empty ? ui.esc(t('umpHintEmpty')) : umpHintHtml(state.collection);
+  // Write only a change: every write to a live region is read out again, the same words too (a language
+  // change with the same hint, a restore that keeps the setting).
+  if (el.innerHTML !== html) el.innerHTML = html;
+  $('#umpOpenShelf').hidden = !empty;
+}
+/** The theme row's reserved slot: "Follows your device" (text) until the painter picks a theme, then
+ *  a "Use device setting" text action. Both live in one cell, so swapping them moves nothing. */
+function syncThemeSlot() {
+  const slot = $('#themeSlot'); if (!slot) return;
+  // Not following when a theme is saved, or when a link's theme differs from the device's. Testing only
+  // the saved pref said "Follows your device" over a dark link on a light device.
+  const follows = !store.getPref('theme') && state.theme === deviceTheme();
+  slot.classList.toggle('saved', !follows);
+  const sw = $('#themeToggle');
+  if (follows) sw.setAttribute('aria-describedby', 'themeFollows'); else sw.removeAttribute('aria-describedby');
+}
+/** The hidden copies that hold each reserved slot open at its largest state (app.css .fixslot). Rebuilt
+ *  on a language change, since the words set the size. */
+function buildSlotSizers() {
+  const fill = (slot, htmls) => {
+    slot.querySelectorAll('.fixsize').forEach(x => x.remove());
+    for (const h of htmls) slot.insertAdjacentHTML('afterbegin', h);
+  };
+  const size = (inner, cls = '') => `<div class="fixsize${cls}" aria-hidden="true">${inner}</div>`;
+  // each Use my paints sizer is a hint state plus the shared line under it, as the live column is
+  const shared = `<p class="sethint umpshared">${ui.esc(t('umpShared'))}</p>`;
+  fill($('#umpSlot'), [
+    ...['off', 'prefer', 'only'].map(v => size(`<div class="umpnow"><p class="sethint">${umpHintHtml(v)}</p></div>${shared}`)),
+    size(`<div class="umpnow"><p class="sethint">${ui.esc(t('umpHintEmpty'))}</p><span class="btn">${ui.esc(t('openShelf'))}</span></div>${shared}`),
+  ]);
+  fill($('#backupSlot'), [t('backupHint'), t('backupSaved', { file: backupName() })]
+    .map(x => size(`<p class="sethint">${ui.esc(x)}</p>`)));
+}
+/** Every settings control from the current state — before the menu shows, so nothing is announced. */
+function syncSettingsControls() {
+  syncCollectionSeg(); syncUmpHint(); syncThemeSlot(); syncLocaleSeg();
+}
+/** The Backup row's status line goes back to its hint. Only while the menu is closed (on open and on
+ *  close): it is a live region, and a reset while you can hear it would read the hint out again. */
+const resetBackupNow = () => { $('#backupNow').textContent = t('backupHint'); };
+/** ⋯ and the note's Use my paints line both say whether the menu is open (aria-expanded). */
+function setSettingsExpanded(open) {
+  $('#settingsBtn').setAttribute('aria-expanded', String(open));
+  renderMatchNote();
+}
+function placeSettings() {
+  const m = sMenu(), b = $('#settingsBtn').getBoundingClientRect();
+  let top = Math.round($('header').getBoundingClientRect().bottom + 6);
+  // A short screen (a phone turned sideways, or 400% zoom: 1280×1024 is 320×256) leaves little room
+  // under the header, which grows with zoom. A fixed dialog cannot be scrolled into view, so a height
+  // floor put the lower rows off the screen for good (WCAG 1.4.10). Then the menu covers the header
+  // instead: 8px from the top. The modal sheet makes the header inert anyway, and the popover still
+  // closes with Esc or a click outside.
+  if (innerHeight - top - 8 < 240) top = 8;
+  const cw = document.documentElement.clientWidth;
+  m.style.top = top + 'px';
+  // under ⋯, right-aligned to it, and never closer than 8px to either screen edge
+  m.style.right = Math.max(8, Math.min(Math.round(cw - b.right), cw - 8 - m.offsetWidth)) + 'px';
+  m.style.maxHeight = (innerHeight - top - 8) + 'px';
+  syncSettingsFade();
+}
+/** The bottom fade shows while more rows are below the visible part. */
+function syncSettingsFade() {
+  const b = $('#settingsBody');
+  sMenu().classList.toggle('more', b.scrollTop + b.clientHeight < b.scrollHeight - 2);
+}
+function openSettings(opener = 'button') {
+  const m = sMenu(); if (m.open) return;
+  settings.opener = opener; settings.ret = 'opener';
+  closePaints();
+  syncSettingsControls(); resetBackupNow();
+  if (SHEET.matches) m.showModal(); else m.show();
+  placeSettings();
+  $('#settingsBody').scrollTop = 0; syncSettingsFade();
+  setSettingsExpanded(true);
+  $('#collectionSeg [aria-pressed="true"]').focus();   // the first control (WAI-ARIA dialog pattern)
+}
+/** `ret`: where focus goes — 'opener' (⋯ or the note line), 'button' (⋯: an action that closes the menu,
+ *  such as Save shopping list), or null (focus is already going somewhere else). */
+function closeSettings(ret = 'opener') {
+  if (!settingsOpen()) return;
+  settings.ret = ret;
+  sMenu().close();   // → the 'close' handler (also reached by the native Esc of the modal sheet)
+  setSettingsExpanded(false);   // now, not a task later when 'close' fires
+}
+function onSettingsClosed() {
+  setSettingsExpanded(false);
+  resetBackupNow();   // reset while hidden, so the status line is not read out
+  const ret = settings.ret; settings.ret = 'opener';
+  if (ret === null) return;
+  const el = ret === 'opener' && settings.opener === 'note' ? $('#matchnote [data-note="ump"]') : null;
+  (el || $('#settingsBtn')).focus({ preventScroll: true });
+}
+function setupSettings() {
+  const m = sMenu(), sBtn = $('#settingsBtn');
+  buildSlotSizers();
+  sBtn.addEventListener('click', e => { e.stopPropagation(); settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('button'); });
+  $('#settingsDone').addEventListener('click', () => closeSettings());
+  m.addEventListener('close', onSettingsClosed);
+  $('#settingsBody').addEventListener('scroll', syncSettingsFade, { passive: true });
+  addEventListener('resize', () => { if (settingsOpen()) placeSettings(); });
+  // The layout and the modality come from one query: if it flips while open (a rotation), close.
+  SHEET.addEventListener('change', () => closeSettings(null));
+  // Popover only (the modal sheet has the native Esc, and the page behind it is inert). The listener is
+  // on the menu, not the document, so an Esc in the Restore confirm (another dialog) never reaches it.
+  m.addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || isModal(m)) return;
+    e.preventDefault(); e.stopPropagation(); closeSettings();
+  });
+  // A tap on the sheet's backdrop closes it. The dialog box itself is also the event target for a tap
+  // on its own padding, so test the point, not the target.
+  m.addEventListener('click', e => {
+    if (!isModal(m) || e.target !== m) return;
+    const r = m.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeSettings();
+  });
+  // Popover: a click outside closes it — not one on ⋯ or the note (their own click toggles it), and not
+  // one in another open dialog (the Restore confirm opens over it).
+  document.addEventListener('pointerdown', e => {
+    if (e.target.closest('#settingsBtn, #matchnote [data-note="ump"]')) { settings.btnDown = true; return; }   // cleared by their click (or the pointerup below)
+    if (!settingsOpen() || isModal(m) || m.contains(e.target) || e.target.closest('dialog[open]')) return;
+    closeSettings(null);
+  }, true);
+  document.addEventListener('pointerup', () => { if (settings.btnDown) setTimeout(() => { settings.btnDown = false; }); }, true);
+  // Popover: focus leaving it closes it (Tab past the end, Shift+Tab out). A null relatedTarget is the
+  // window losing focus — the Restore file picker — so it stays open for the confirm.
+  m.addEventListener('focusout', e => {
+    const to = e.relatedTarget;
+    if (!settingsOpen() || isModal(m) || !to || settings.btnDown || m.contains(to) || to.closest('dialog[open]')) return;
+    closeSettings(null);
+  });
+
+  // Use my paints
+  $('#collectionSeg').addEventListener('click', e => { const b = e.target.closest('[data-collection]'); if (b) setCollection(b.dataset.collection); });
+  $('#umpOpenShelf').addEventListener('click', () => { closeSettings(null); setMode('shelf'); });
+  // Theme: the switch saves a choice; "Use device setting" clears it and follows the device again
+  $('#themeToggle').addEventListener('click', () => { linkTheme = null; setTheme(state.theme === 'dark' ? 'light' : 'dark', { save: true }); wheelDraw(); updateUrl(); });
+  $('#themeUseDevice').addEventListener('click', () => {
+    store.setPref('theme', null); linkTheme = null;   // a saved pick and a link's theme both give way
+    setTheme(deviceTheme()); wheelDraw(); updateUrl();
+    $('#themeToggle').focus();   // the button it was on is now the "Follows your device" text
+    say(t('themeFollowsSaid'));
+  });
+  $('#localeSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
+    syncLocaleSeg(); syncLocaleStrings(); syncUmpHint();
+    renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
+    wheelDraw();                        // …and the lightness slider's spoken value
+  });
+  // Scheme: both actions act on the finished scheme and close the menu; focus goes back to ⋯
+  $('#export').addEventListener('click', () => { closeSettings('button'); doExport(); });
+  $('#share').addEventListener('click', () => { closeSettings('button'); doShare(); });
+  // Backup
+  $('#backupBtn').addEventListener('click', () => {
+    const name = saveBackup(), now = $('#backupNow');
+    now.textContent = t('backupSaved', { file: name });
+    // On a short phone the line can sit under the bottom fade: bring it into view (.setbody's
+    // scroll-padding stops it above the fade)
+    now.scrollIntoView({ block: 'nearest' });
+    syncSettingsFade();
+  });
+  $('#restoreBtn').addEventListener('click', () => $('#restoreFile').click());
+  $('#restoreFile').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => confirmRestore(String(reader.result || ''), $('#restoreBtn'));
+    reader.onerror = () => toast(t('readFail'));
+    reader.readAsText(f);
+  });
+  // Help & info
+  $('#aboutOpenMenu').addEventListener('click', () => { closeSettings(null); openAbout($('#settingsBtn')); });
+}
+
+/* ---- Back up / Restore / Delete ---- */
+/** Download the backup file (store.exportJSON, with its `saved` date). @returns the file name */
+function saveBackup() {
+  const name = backupName();
+  download(name, store.exportJSON(), 'application/json');
+  return name;
+}
+const cdlg = { onOk: null, opener: null };
+/** The shared confirm (role=alertdialog, modal). Focus starts on Cancel. Esc or Cancel closes only it,
+ *  and focus goes back to `opener`. "Save a backup of this shelf" changes in place to "✓ Saved", and the
+ *  file name shows in a status line INSIDE the dialog, where a screen reader still hears it. */
+function openConfirm({ title, bodyHtml, okLabel, onOk, opener }) {
+  const d = $('#confirmDlg');
+  $('#cdlgTitle').textContent = title;
+  $('#cdlgBody').innerHTML = bodyHtml;
+  $('#cdlgOkLbl').textContent = okLabel;
+  $('#cdlgSaveLbl').textContent = t('saveBackup');
+  $('#cdlgSave').removeAttribute('aria-disabled');
+  $('#cdlgSaved').textContent = '';
+  const slot = $('#cdlgSaveSlot');
+  slot.querySelector('.fixsize')?.remove();
+  slot.insertAdjacentHTML('afterbegin', `<div class="fixsize" aria-hidden="true"><p class="sethint">${ui.esc(t('savedFile', { file: backupName() }))}</p></div>`);
+  cdlg.onOk = onOk; cdlg.opener = opener;
+  d.showModal();
+  $('#cdlgCancel').focus();
+}
+function setupConfirm() {
+  const d = $('#confirmDlg');
+  $('#cdlgCancel').addEventListener('click', () => d.close());
+  $('#cdlgOk').addEventListener('click', () => { const fn = cdlg.onOk; cdlg.onOk = null; d.close(); fn?.(); });
+  $('#cdlgSave').addEventListener('click', () => {
+    if ($('#cdlgSave').getAttribute('aria-disabled') === 'true') return;   // saved already; focus stays here
+    const name = saveBackup();
+    $('#cdlgSaveLbl').textContent = t('savedShort');
+    $('#cdlgSave').setAttribute('aria-disabled', 'true');
+    $('#cdlgSaved').textContent = t('savedFile', { file: name });
+  });
+  d.addEventListener('close', () => {
+    cdlg.onOk = null;
+    // the opener can have gone from view (the Paints drawer closed); fall back to a control that stays
+    const o = cdlg.opener && cdlg.opener.isConnected && cdlg.opener.getClientRects().length ? cdlg.opener
+      : settingsOpen() ? $('#restoreBtn') : $('#settingsBtn');
+    o.focus({ preventScroll: true });
+  });
+}
+const fmtCounts = c => t('counts', { owned: c.owned, want: c.want });
+/** "In the backup (30 Sept 2026):" with the date, and the brackets and colon around it, in one piece:
+ *  on a phone only "In the backup" may wrap, never inside the date. */
+function datedLabel(date) {
+  const mark = '\u0001';
+  return ui.esc(t('inBackupDated', { date: mark }))
+    .replace(new RegExp(`\\(?${mark}\\)?:?`), m => `<span class="nw">${m.replace(mark, ui.esc(date))}</span>`);
+}
+/** Restore… and a .json through Import…: read the file, show what Replace would do, apply nothing yet. */
+function confirmRestore(text, opener) {
+  const info = store.inspectJSON(text);
+  if (!info.ok) { toast(t('notBackup')); opener?.focus({ preventScroll: true }); return; }
+  const date = info.saved ? new Intl.DateTimeFormat(i18n.getLocale(), { dateStyle: 'medium' }).format(new Date(info.saved)) : null;
+  const lost = info.lost ? `<p>${ui.esc(info.lost === 1 ? t('lostOne') : t('lostMany', { n: info.lost }))}</p>` : '';
+  openConfirm({
+    title: t('restoreTitle'),
+    bodyHtml: `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd>`
+      + `<dt>${date ? datedLabel(date) : ui.esc(t('inBackup'))}</dt><dd>${ui.esc(fmtCounts(info))}</dd></dl>`
+      + lost + `<p>${ui.esc(t('restoreWarn'))}</p>`,
+    okLabel: t('replace'), opener,
+    onOk: () => {
+      if (!store.importJSON(text)) { toast(t('notBackup')); return; }
+      // The confirm is closed by now, so this shows in the menu or on the page. It goes first: a screen
+      // reader then hears the news, and after it the Use my paints hint if the backup changed it.
+      toast(t('restored'));
+      afterStoreReplaced();
+    },
+  });
+}
+/** About & data → Delete my shelf and settings…: offers a backup first, then removes every copy. */
+function confirmDelete() {
+  openConfirm({
+    title: t('deleteTitle'),
+    bodyHtml: `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd></dl>`
+      + `<p>${ui.esc(t('deleteWarn'))}</p>`,
+    okLabel: t('deleteBtn'), opener: $('#deleteOpen'),
+    onOk: () => { store.clear(); toast(t('deleted')); afterStoreReplaced(); },
+  });
+}
+
+/* ---- About & data ---- */
+let aboutOpener = null;
+function openAbout(opener) { aboutOpener = opener; $('#about').showModal(); }
+/** Strings built in JS that follow the language: the version line and the slot sizes. */
+function syncLocaleStrings() {
+  $('#aboutVersion').textContent = t('versionLine', { app: APP_VERSION, data: (state.idx && state.idx.version) || '—' });
+  buildSlotSizers();
+  renderMatchNote();
+}
+
+/* ---- the matching note under the live palette (ui.js matchNote) ---- */
+let noteHtml = null;
+function renderMatchNote() {
+  const el = $('#matchnote'); if (!el) return;
+  const html = ui.matchNote({ collection: state.collection, owned: store.counts().owned,
+    contrast: state.includeContrast, expanded: settingsOpen() }, t);
+  if (html !== noteHtml) { el.innerHTML = html; noteHtml = html; }   // unchanged → keep the DOM (and focus)
+}
+function setupMatchNote() {
+  $('#matchnote').addEventListener('click', e => {
+    const b = e.target.closest('[data-note]'); if (!b) return;
+    const k = b.dataset.note;
+    if (k === 'ump') { settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('note'); }
+    else if (k === 'shelf') setMode('shelf');
+    else if (k === 'contrast') {
+      setTab('plan');
+      const c = $('#inclContrast'); if (!c) return;
+      c.focus({ preventScroll: true });
+      const r = c.getBoundingClientRect();
+      if (r.top < headerH() + 8 || r.bottom > innerHeight - 8) c.scrollIntoView({ block: 'center' });
+    }
+  });
+}
 
 /** Seed the scheme from an arbitrary hex (shared by the hex field + the photo eyedropper). */
 function seedFromHex(hex) {
@@ -1499,14 +1864,18 @@ function wire() {
     $('#list').querySelector(`.pchip[data-id="${CSS.escape(id)}"]`)?.focus();   // return focus to the marked chip
   });
   $('#paintsBtn').addEventListener('click', e => { e.stopPropagation(); togglePaints(); });
-  $('#importPaints').addEventListener('click', () => $('#importFile').click());
+  // Import… is in two places (the Paints drawer, the Shelf) over one file input; remember which one
+  // opened it, so the Restore confirm can hand focus back to it.
+  let importOpener = null;
+  $('#importPaints').addEventListener('click', e => { importOpener = e.currentTarget; $('#importFile').click(); });
   $('#exportPaints').addEventListener('click', exportCollectionCsv);
   document.addEventListener('keydown', e => {                            // Esc closes the menu, then the drawer
-    if (e.key !== 'Escape') return;
+    if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;   // a dialog in front takes its own Esc
     if (paintMenuOpen) { closePaintMenu(); $('#list').focus(); }
     else if (paintsOpen) { closePaints(); $('#paintsBtn').focus(); }
   });
   document.addEventListener('pointerdown', e => {                        // click-outside closes the drawer / its menu
+    if (e.target.closest('dialog')) return;   // a click in the Restore confirm (opened from the drawer's Import…)
     if (paintMenuOpen && !e.target.closest('#paintMenu')) closePaintMenu();
     // the drawer's right-click menu lives outside #paintsDrawer — don't let interacting with it close the drawer
     if (paintsOpen && !e.target.closest('#paintsDrawer') && !e.target.closest('#paintsBtn') && !e.target.closest('#paintMenu')) closePaints();
@@ -1529,7 +1898,6 @@ function wire() {
     }
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
-    const col = e.target.closest('[data-collection]'); if (col) { setCollection(col.dataset.collection); return; }
     const mv = e.target.closest('[data-move]'); if (mv) { e.stopPropagation(); const [i, dir] = mv.dataset.move.split(':').map(Number); moveFreeNode(i, i + dir); return; }  // reorder (keyboard/touch path)
     const lk = e.target.closest('[data-lock]'); if (lk) { e.stopPropagation(); lockSwatch(lk.dataset.lock); return; }              // lock / unlock a swatch
     const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openSwatchEditor(ed.dataset.edit); return; }        // edit a swatch's hex
@@ -1596,6 +1964,8 @@ function wire() {
   lp.addEventListener('dragend', () => lp.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging')));
   document.addEventListener('keydown', e => {                                  // ⌘/Ctrl+Z undo · ⇧ or Ctrl+Y redo
     if (!(e.metaKey || e.ctrlKey) || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    // Studio only: on the Shelf it changed a palette you cannot see. Not while a dialog is in front.
+    if (state.mode !== 'studio' || document.querySelector('dialog[open]')) return;
     const k = e.key.toLowerCase();
     if (k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
     else if (k === 'y') { e.preventDefault(); redo(); }
@@ -1616,29 +1986,7 @@ function wire() {
     else { const s = currentScheme(); state.compareA = { base: schemeBase(), harmony: state.harmony, colors: s.roles.map(r => r.idealHex) }; $('#compare').setAttribute('aria-pressed', 'true'); setTab('plan'); toast('Pinned A — change the scheme to compare'); }
     if (state.tab === 'plan') renderPlan();
   });
-  $('#export').addEventListener('click', () => { doExport(); closeSettings(); });   // Export/Share live in the ⋯ menu now
-  $('#share').addEventListener('click', () => { doShare(); closeSettings(); });
-
-  // settings menu (theme lives here now) — toggle, theme control, click-outside / Esc close
-  const sMenu = $('#settingsMenu'), sBtn = $('#settingsBtn');
-  const openSettings = () => {
-    sMenu.hidden = false; sBtn.setAttribute('aria-expanded', 'true');
-    const r = sBtn.getBoundingClientRect();
-    sMenu.style.left = Math.min(r.left, innerWidth - sMenu.offsetWidth - 8) + 'px';
-    sMenu.style.top = (r.bottom + 6) + 'px';
-  };
-  const closeSettings = () => { sMenu.hidden = true; sBtn.setAttribute('aria-expanded', 'false'); };
-  sBtn.addEventListener('click', e => { e.stopPropagation(); sMenu.hidden ? openSettings() : closeSettings(); });
-  $('#themeToggle').addEventListener('click', () => { setTheme(state.theme === 'dark' ? 'light' : 'dark', { save: true }); wheelDraw(); updateUrl(); });
-  $('#localeSeg').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
-    syncLocaleSeg();
-    renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
-    wheelDraw();                        // …and the lightness slider's spoken value
-  });
-  document.addEventListener('pointerdown', e => { if (!sMenu.hidden && !e.target.closest('#settingsMenu') && !e.target.closest('#settingsBtn')) closeSettings(); }, true);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sMenu.hidden) { closeSettings(); sBtn.focus(); } });
+  setupSettings(); setupConfirm(); setupMatchNote();   // ⋯ Settings, the Restore/Delete confirm, the matching note
 
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
@@ -1674,19 +2022,21 @@ function wire() {
     $('#shelfHint').textContent = shelfHint();
   });
   $('#exportColl').addEventListener('click', exportCollectionCsv);
-  $('#importColl').addEventListener('click', () => $('#importFile').click());
-  $('#importFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importCollectionFile(f); e.target.value = ''; });
+  $('#importColl').addEventListener('click', e => { importOpener = e.currentTarget; $('#importFile').click(); });
+  $('#importFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importCollectionFile(f, importOpener); e.target.value = ''; });
   document.addEventListener('pointerdown', e => { if (menuOpen && !e.target.closest('#shelfMenu')) closeMenu(); }, true);
   document.addEventListener('keydown', shelfKeydown);
   setupShelf();
   setupShelfDock();
 
-  // About & data modal — native <dialog> handles Esc + focus trap; close on backdrop click.
+  // About & data modal — native <dialog> handles Esc + focus trap; close on backdrop click. It opens
+  // from the footer or from ⋯ (which closes first), so focus goes back by hand to whichever it was.
   const about = $('#about');
-  $('#aboutOpen').addEventListener('click', () => about.showModal());
-  $('#aboutOpenMenu').addEventListener('click', () => { closeSettings(); about.showModal(); });   // second path from the ⋯ menu
+  $('#aboutOpen').addEventListener('click', e => openAbout(e.currentTarget));
   $('#aboutClose').addEventListener('click', () => about.close());
   about.addEventListener('click', e => { if (e.target === about) about.close(); });   // click outside the panel
+  about.addEventListener('close', () => { (aboutOpener || $('#aboutOpen')).focus({ preventScroll: true }); aboutOpener = null; });
+  $('#deleteOpen').addEventListener('click', confirmDelete);
 }
 
 async function init() {
@@ -1694,18 +2044,17 @@ async function init() {
   // Theme precedence: the link's `t` (a shared scheme carries the theme it was designed in) > the
   // stored pref > the OS. Held separately from the resolved value because applyPrefsToState() below
   // re-applies the STORED pref after hydrate, and must not outrank the link.
-  const urlTheme = url.get('t') === 'dark' ? 'dark' : url.get('t') === 'light' ? 'light' : null;
-  const osDark = matchMedia('(prefers-color-scheme: dark)');
-  setTheme(urlTheme || store.getPref('theme') || (osDark.matches ? 'dark' : 'light'));
+  const tParam = url.get('t') === 'dark' ? 'dark' : url.get('t') === 'light' ? 'light' : null;
+  setTheme(tParam || store.getPref('theme') || deviceTheme());
 
   state.idx = await loadDataset('./data/paints.json');
   // Native shell: recover the collection if WKWebView evicted localStorage (no-op on the web). This
   // ran TWICE — the second call was byte-identical dead work — and neither re-applied what it
   // restored, so on a shell whose storage had been evicted the recovered theme/locale sat in state
-  // while the DOM kept the pre-hydrate one. applyRestoredPrefs() exists for exactly that.
+  // while the DOM kept the pre-hydrate one. applyPrefsToState() below applies it.
   await store.hydrate();
   applyPrefsToState();   // hydrate may have restored theme/locale/plan prefs — apply them, don't strand them
-  if (urlTheme) setTheme(urlTheme);   // ...but the link's theme still outranks the stored pref
+  if (tParam) { linkTheme = tParam; setTheme(tParam); }   // ...but the link's theme still outranks the stored pref
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
   $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // the Shelf filters brand the same way the drawer does
@@ -1729,7 +2078,7 @@ async function init() {
   syncTabs();
   wire();
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
-  syncLocaleSeg();
+  syncLocaleSeg(); syncLocaleStrings(); syncSettingsControls();
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
   ({ draw: wheelDraw, endLightnessRun } = setupWheel({
@@ -1744,7 +2093,8 @@ async function init() {
   // sunset switch). A saved choice always wins. Bound last: updateUrl() before the link is decoded
   // would rewrite the address bar without the shared scheme.
   osDark.addEventListener('change', e => {
-    if (store.getPref('theme')) return;
+    if (store.getPref('theme')) return;   // a saved choice wins; ⋯ → Use device setting clears it
+    linkTheme = null;   // the device changed: follow it, over a link's theme too
     setTheme(e.matches ? 'dark' : 'light'); wheelDraw(); updateUrl();
   });
 }

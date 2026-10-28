@@ -29,6 +29,8 @@ const STAR = '<svg viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"
 const FINISHES = { metal: ['metallic', GEM], contrast: ['contrast', DROP], wash: ['wash', DROP], shade: ['shade', DROP], ink: ['ink', DROP], glaze: ['glaze', DROP], effect: ['effect', STAR] };
 /** Small finish pill (icon + label) flagging non-flat paints (metallic/contrast/wash/…); '' for flat paints. */
 export const finishTag = type => { const f = FINISHES[type]; return f ? `<span class="finish finish-${type}">${f[1]}${f[0]}</span>` : ''; };
+/** The finish icon alone (aria-hidden SVG), for a surface that names the finish in its own words. */
+export const finishGlyph = type => (FINISHES[type] ? FINISHES[type][1] : '');
 
 /** Display name for a dataset paint — dname carries the line when (brand, name) is ambiguous
  *  ("Dawnstone (Layer)" vs "Dawnstone (Dry)"). Use wherever the line isn't otherwise visible —
@@ -214,21 +216,54 @@ export function matchChip(m, markOf) {
     + ownTag + buyBtn(p.id, mark) + `</div>`;
 }
 
-/** Plan-tab controls (#5/#6/#7): tone-ladder style · how-to-use-collection tri-state · "add gaps to buy".
- *  `collection` ∈ 'off' | 'prefer' (soft boost) | 'only' (hard filter) — one control, no overlap. */
-export function planControls(ladder, collection, includeContrast, gapCount) {
+/** Plan-tab controls (#5/#7): tone-ladder style · Include Contrast · "add gaps to buy". Use my paints
+ *  (off · prefer · only) is in ⋯ now: it changes more than the Plan (the live palette too), and the
+ *  matching note under the live palette shows it while it is on (matchNote). */
+export function planControls(ladder, includeContrast, gapCount) {
   const lad = [['wash', 'Wash · base · highlight'], ['tone', 'Shadow · mid · highlight'], ['both', 'Both']]
     .map(([v, l]) => `<button data-ladder="${v}" aria-pressed="${v === ladder}">${esc(l)}</button>`).join('');
-  const col = [['off', 'Off'], ['prefer', 'Prefer owned'], ['only', 'Only owned']]
-    .map(([v, l]) => `<button data-collection="${v}" aria-pressed="${v === collection}">${esc(l)}</button>`).join('');
   return `<div class="planctl">`
     + `<div class="ctlgrp"><span class="micro">Tone ladder</span><div class="seg ladsel" role="group" aria-label="Tone ladder">${lad}</div></div>`
-    + `<div class="ctlgrp"><span class="micro">Use my collection</span><div class="seg colsel" role="group" aria-label="Use my collection" title="Off · prefer paints you own (boost, still honest) · only paints you own (filter)">${col}</div></div>`
     + `<button class="btn sm incl-contrast" id="inclContrast" aria-pressed="${!!includeContrast}" title="Washes, shades and effects are kept out of suggestions; tick to include Contrast paints (used as one-coat base colours)">Include Contrast</button>`
     + (gapCount > 0
       ? `<button class="btn sm primary" id="addGaps">+ Add ${gapCount} to buy</button>`
       : `<span class="micro nogaps">Nothing new to buy for this scheme</span>`)
     + `</div>`;
+}
+
+/**
+ * The matching note under the live palette (mockups/collection-setting.html, direction A + the
+ * critique): ONE LINE PER SETTING THAT IS ON, each a full-width button that goes to its control.
+ *  - Use my paints (prefer/only) opens ⋯ (data-note="ump"); with no owned paints, the line says so
+ *    and opens the Shelf instead (data-note="shelf"), where you mark them.
+ *  - Include Contrast goes to its control in the Plan tab (data-note="contrast"). It wears the Contrast
+ *    finish icon, not ✓: it adds a paint type, it does not limit the matches.
+ * Which lines show depends on the settings only, so a mark change elsewhere can change a line's words
+ * (the count) but never add or remove a line. '' when both are off: nothing shows, nothing moves.
+ * The accessible name is the visible words; the dash before the target word is for screen readers.
+ * `t` is i18n.t, passed in so this module stays pure.
+ */
+export function matchNote({ collection = 'off', owned = 0, contrast = false, expanded = false } = {}, t = k => k) {
+  const go = word => `<span class="ngo"><span class="sr-only"> — </span>${esc(word)}</span>`;
+  const lines = [];
+  if (collection === 'prefer' || collection === 'only') {
+    // The "·" ends the head, held to it by a no-break space: when the explanation wraps on a phone, the
+    // second line starts with words, not with the dot.
+    const head = `<b>${esc(t('noteUmp', { mode: t(collection === 'only' ? 'umpOnly' : 'umpPrefer') }))}</b>\u00a0·`;
+    if (!owned) {
+      lines.push(`<button type="button" class="mnote" data-note="shelf"><span class="nk off" aria-hidden="true">○</span>`
+        + `<span class="ntx">${head} <span class="mt">${esc(t('noteUmpEmpty'))}</span></span>${go(t('openShelf'))}</button>`);
+    } else {
+      const why = collection === 'only' ? t('noteUmpOnly', { n: owned }) : t('noteUmpPrefer');
+      lines.push(`<button type="button" class="mnote" data-note="ump" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="${!!expanded}">`
+        + `<span class="nk" aria-hidden="true">✓</span><span class="ntx">${head} <span class="mt">${esc(why)}</span></span>${go(t('change'))}</button>`);
+    }
+  }
+  if (contrast) {
+    lines.push(`<button type="button" class="mnote" data-note="contrast"><span class="nk nk-contrast" aria-hidden="true">${finishGlyph('contrast')}</span>`
+      + `<span class="ntx"><b>${esc(t('noteContrast'))}</b></span>${go(t('notePlan'))}</button>`);
+  }
+  return lines.join('');
 }
 
 /** Role slots: each role's ideal → nearest real paint, plus the selected tone ladder(s) (#7). Each slot

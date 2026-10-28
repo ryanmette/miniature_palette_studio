@@ -289,10 +289,14 @@ Found by the review of the "B, fixed" slider build. Not changed in that build: e
 
 12. **Touch targets: the fixed-size controls are still smaller than 44px.** `--tap` is now 44px on every
     touch screen (CLAUDE.md §3.6), so the controls that use it grew. Controls with a fixed size did not.
-    Measured with a touch tablet and a 390px phone: the live palette's ↶ ↷ + − (30px) and its copy and
-    column buttons (20–21px), `.btn.sm` (32px), the harmony chips (30px; 34px on a phone), the output
-    tabs (40px), the seed docks and buy buttons (26px), and the Studio / Shelf switch (30px; 34px on a phone). WCAG 2.1
-    AA does not require 44px (2.5.5 is AAA), so this is §3.6's own rule, not an AA failure.
+    **Partly done (2026-10-28, the ⋯ menu foundations):** every segmented control (the Studio / Shelf
+    switch, the harmony chips, the tone ladder, Ideal / Real, language, the Shelf status filter) and every
+    `.btn.sm` is now `--tap` tall on touch and on a phone (44px; was 30–34px and 32px), and the theme
+    switch has a 44px hit area. **Still open,** measured with a 390px phone and a 768px touch tablet: the
+    live palette's ↶ ↷ + − (30px) and its copy and column buttons (20–21px), the output tabs (40px), the
+    seed docks and buy buttons (26px), the Plan cards' "equivalents" jump (20px), the hero's copy-hex
+    button (19px), the Equivalents source chips (30px) and the footer's "About & data" link (20px). WCAG
+    2.1 AA does not require 44px (2.5.5 is AAA), so this is §3.6's own rule, not an AA failure.
 13. **Neutral mode and the slider at widths over 1024px.** When a slider move enters neutral mode
     (§7, by design), two older behaviours get in the way. (a) The neutral explainer overlay covers the
     top 37px of the slider at 1180px (56px at 1025px with a mouse), with "Lighter" and the thumb at 94%, until it
@@ -301,6 +305,34 @@ Found by the review of the "B, fixed" slider build. Not changed in that build: e
     during the drag (§3.4). Fix direction: keep the overlay inside the wheel's box, not the gutter, and
     keep the hero on one line (an ellipsis on the name, or a reserved slot for the pill). Ryan decides
     neutral-mode behaviour, so this waits for him.
+
+### Follow-ups from the ⋯ menu build (noted 2026-10-28, not yet scheduled)
+
+The ⋯ Settings build (`mockups/collection-setting.html`, direction A, the full menu and its design
+critique) is in `[Unreleased]`. The critique marked these "Not now". They are recorded here so that they
+are not lost.
+
+14. **Undo after Restore** (critique usability-1). Restore cannot be undone. The confirm shows both
+    counts, the paints that would lose their mark, and offers "Save a backup of this shelf" first, so the
+    risk is visible. An Undo toast that puts the old state back is the next step.
+15. **"Settings" names a panel that is mostly actions** (usability-5). The title stays, because §3.6 uses
+    it and a screen reader reads each row when the panel opens.
+16. **On a phone, a change to Use my paints has no visible effect while the sheet is open**
+    (usability-10). The sheet covers the live palette. The hint says what changes, a screen reader hears
+    it, and the matching note shows the setting when the sheet closes.
+17. **Two rows that wait for a reason:** an "Install the app" row (the install prompt event exists only
+    in Chromium browsers; an iPhone can only show instructions) and "Brands I use" (backlog 8 puts a
+    brand limit on the substitute finder as a choice you make at that time; a hidden app-wide filter is
+    the problem the matching note fixes).
+18. **`--text-faint` is still used for text you must read** (WCAG 1.4.3). It is 2.39:1 on the light
+    surface (AA needs 4.5:1). The ⋯ menu review found three faults; this build fixed them: the `.micro`
+    labels (the Plan's "Tone ladder", the Shelf counts) are `--text-muted` now (4.68:1 on the surface,
+    4.53:1 on `--bg`); the right-click menu shows the `--focus` ring (it showed a `--surface-2` fill,
+    about 1.1:1, with `outline: none`); in forced colours only the selected output tab has a line.
+    **Still open:** about 15 other rules use `--text-faint` as a text colour, for example the footer note,
+    the logo's "for miniatures", the hex field's "#", `.hint`, `.count`, `.ttl`, `.ladcap`, `.cmphead`,
+    `.shelfhint` and "no close paint — consider mixing". Fix direction: `--text-muted` for each, or a
+    darker `--text-faint` value in §3.1 (a token change, so Ryan decides).
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
