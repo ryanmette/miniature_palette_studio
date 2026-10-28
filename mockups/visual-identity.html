@@ -56,7 +56,9 @@ code { font:12.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace; background:var(--
 .thumbs img { display:block; height:150px; width:auto; border:1px solid var(--pg-line); }
 .pass { color:#0A7D2C; font-weight:600; } .fail { color:#C0122C; font-weight:600; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pass { color:#6FD38E; } :root:not([data-theme="light"]) .fail { color:#FF8A8A; } }
-.row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+.row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; max-width:100%; overflow-x:auto; }
+.figure { min-width:0; max-width:100%; }
+#iconSheet { overflow-x:auto; }
 .cap { font-size:13px; color:var(--pg-mute); margin:6px 0 0; }
 .figure { margin:0 0 24px; }
 .ph-toggle { margin:8px 0; }
@@ -396,6 +398,26 @@ kbd { display:inline-grid; place-items:center; min-width:20px; height:20px; padd
 .pchip { display:inline-flex; align-items:center; gap:8px; height:var(--tap); padding:0 12px 0 6px; border:1px solid var(--ctrl-line); border-radius:var(--r-ctrl); background:var(--surface); font-size:13px; }
 .pchip .sw { width:28px; height:28px; }
 
+
+/* ---------- Present: one frame set at a time, scaled to fit, never clipped ---------- */
+#present { margin-top:24px; }
+.pbar { position:sticky; top:41px; z-index:40; background:var(--pg-bg); border-bottom:1px solid var(--pg-line); padding:8px 0; display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; }
+.pgrp { display:flex; flex-wrap:wrap; gap:0; align-items:center; }
+.pgrp > span { font-size:12px; color:var(--pg-mute); margin-right:8px; }
+.pgrp button { font:inherit; font-size:14px; min-height:40px; padding:0 12px; border:1px solid var(--pg-line); background:var(--pg-bg); color:var(--pg-fg); margin-left:-1px; cursor:pointer; }
+.pgrp button:first-of-type { margin-left:0; }
+.pgrp button[aria-pressed="true"] { background:var(--pg-fg); color:var(--pg-bg); border-color:var(--pg-fg); }
+.pgrp button:disabled { opacity:.4; cursor:not-allowed; }
+.pgrp button:focus-visible { outline:2px solid var(--pg-link); outline-offset:2px; position:relative; z-index:1; }
+.pinfo { display:flex; flex-wrap:wrap; gap:4px 16px; align-items:baseline; margin:12px 0 8px; }
+.pinfo strong { font-size:18px; }
+.pinfo span { color:var(--pg-mute); font-size:14px; }
+.pstage { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; justify-content:center; padding:8px 0 24px; }
+.pcell { display:grid; gap:6px; justify-items:center; min-width:0; }
+.pcell .cap { margin:0; }
+.pscale { overflow:hidden; }
+.pscale > .fr { transform-origin:0 0; }
+.pscale > .fr.ph.scroll { height:auto; overflow:visible; }
 @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
 /* Forced colours: paint is data, so swatches keep their colour; pressed and selected states get a system
    outline (box-shadow and background are removed in this mode). */
@@ -441,7 +463,7 @@ kbd { display:inline-grid; place-items:center; min-width:20px; height:20px; padd
 </svg>
 
 <nav class="toc" aria-label="Sections">
-  <a href="#audit">1 Audit</a><a href="#workbench">2a Workbench</a><a href="#chamfer">2b Chamfer</a><a href="#pot">2c Paint pot</a>
+  <a href="#present">Present</a><a href="#audit">1 Audit</a><a href="#workbench">2a Workbench</a><a href="#chamfer">2b Chamfer</a><a href="#pot">2c Paint pot</a>
   <a href="#shared">2d Shared parts</a><a href="#ux">3 UX pass</a><a href="#scores">4 Scores</a><a href="#verdict">Verdict</a>
 </nav>
 
@@ -452,6 +474,23 @@ kbd { display:inline-grid; place-items:center; min-width:20px; height:20px; padd
   <div class="status"><strong>Status: the judges have scored. Waiting for Ryan to pick (see the <a href="#verdict">verdict</a>).</strong> Nothing in <code>src/</code> changes until Ryan picks a direction (Part 5 of the brief). The branch starts from the head of PR #39 (<code>claude/nice-ptolemy-wstdsl</code>), because PR #39 is still open.</div>
   <p class="ph-toggle"><label><input type="checkbox" id="fullLen"> Show the phone frames at full length (they scroll inside an 844px screen by default)</label></p>
 </header>
+
+<section id="present" aria-labelledby="presentTitle">
+<h2 id="presentTitle" style="margin-top:24px">Present the directions</h2>
+<p class="lead">Pick a direction, a screen, a device and a theme. The frames show at full length and scale to fit your window, so nothing is cut off. Use "All three" to compare the directions side by side.</p>
+<div class="pbar" role="group" aria-label="What to show">
+  <div class="pgrp" role="group" aria-label="Direction"><span aria-hidden="true">Direction</span>
+    <button type="button" data-p="dir" data-v="wb" aria-pressed="true">Workbench</button><button type="button" data-p="dir" data-v="pot" aria-pressed="false">Paint pot</button><button type="button" data-p="dir" data-v="ch" aria-pressed="false">Chamfer</button><button type="button" data-p="dir" data-v="all" aria-pressed="false">All three</button></div>
+  <div class="pgrp" role="group" aria-label="Screen"><span aria-hidden="true">Screen</span>
+    <button type="button" data-p="scr" data-v="studio" aria-pressed="true">Studio</button><button type="button" data-p="scr" data-v="shelf" aria-pressed="false">Shelf</button><button type="button" data-p="scr" data-v="first" aria-pressed="false">First run</button><button type="button" data-p="scr" data-v="states" aria-pressed="false">Empty states</button><button type="button" data-p="scr" data-v="parts" aria-pressed="false">Parts</button></div>
+  <div class="pgrp" role="group" aria-label="Device"><span aria-hidden="true">Device</span>
+    <button type="button" data-p="dev" data-v="ph" aria-pressed="true">Phone</button><button type="button" data-p="dev" data-v="dt" aria-pressed="false">Desktop</button></div>
+  <div class="pgrp" role="group" aria-label="Theme"><span aria-hidden="true">Theme</span>
+    <button type="button" data-p="thm" data-v="both" aria-pressed="true">Both</button><button type="button" data-p="thm" data-v="light" aria-pressed="false">Light</button><button type="button" data-p="thm" data-v="dark" aria-pressed="false">Dark</button></div>
+</div>
+<div class="pinfo" id="pInfo" aria-live="polite"></div>
+<div class="pstage" id="pStage"></div>
+</section>
 
 <!-- ======================================================================================= AUDIT -->
 <section id="audit">
@@ -880,6 +919,67 @@ $$('[data-frames]').forEach(function (el) {
 // the frames are pictures of an app; their controls must not be in the page's tab order (except the kit's "Tab to me" row)
 $$('.fr button, .fr .txt').forEach(function (b) { if (!b.closest('.krow') || !/Tab|Then|And here/.test(b.textContent)) b.setAttribute('tabindex', '-1'); });
 $('#fullLen').addEventListener('change', function (e) { document.body.classList.toggle('fulllen', e.target.checked); });
+/* ---------- Present ---------- */
+(function () {
+  var P = { dir: 'wb', scr: 'studio', dev: 'ph', thm: 'both' };
+  try { var saved = JSON.parse(localStorage.getItem('vi-present') || 'null'); if (saved) for (var k in P) if (saved[k]) P[k] = saved[k]; } catch (e) { /* storage blocked: defaults */ }
+  var INFO = {
+    wb: ['Workbench', 'Small radii, thin rules in place of cards, condensed headings. Judges: 58 of 80 (recommended).'],
+    pot: ['Paint pot', 'Round pot-lid swatches, square controls, label bands. Judges: 49 of 80.'],
+    ch: ['Chamfer', 'Cut corners on controls and plates. Judges: 39 of 80.']
+  };
+  var one = function (html) { var t = document.createElement('div'); t.innerHTML = html; return t.querySelector('.fr'); };
+  function build(dir, theme) {
+    var ph = P.dev === 'ph';
+    if (P.scr === 'studio') return one(ph ? studioPhone(dir, theme) : studioDesk(dir, theme));
+    if (P.scr === 'shelf') return one(ph ? shelfPhone(dir, theme) : shelfDesk(dir, theme));
+    if (P.scr === 'first') return one(firstRun(dir, theme));
+    if (P.scr === 'states') return one(states(dir, theme));
+    var t = document.createElement('div'); t.innerHTML = kit(dir);
+    return t.querySelectorAll('.fr')[theme === 'dark' ? 1 : 0];
+  }
+  var stage = $('#pStage');
+  function render() {
+    var phoneOnly = P.scr === 'first' || P.scr === 'states' || P.scr === 'parts';
+    $$('.pbar button').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(P[b.dataset.p] === b.dataset.v));
+      if (b.dataset.p === 'dev') b.disabled = phoneOnly && b.dataset.v === 'dt';
+    });
+    var dirs = P.dir === 'all' ? ['wb', 'pot', 'ch'] : [P.dir];
+    var themes = P.thm === 'both' ? ['light', 'dark'] : [P.thm];
+    $('#pInfo').innerHTML = P.dir === 'all' ? '<strong>All three directions</strong><span>Left to right: Workbench (58), Paint pot (49), Chamfer (39).</span>'
+      : '<strong>' + INFO[P.dir][0] + '</strong><span>' + INFO[P.dir][1] + '</span>';
+    stage.innerHTML = '';
+    var cells = [];
+    dirs.forEach(function (d) { themes.forEach(function (t) {
+      var f = build(d, t); f.classList.remove('scroll'); f.removeAttribute('role');
+      f.querySelectorAll('button, .txt').forEach(function (b) { b.setAttribute('tabindex', '-1'); });
+      var cell = document.createElement('figure'); cell.className = 'pcell figure';
+      var box = document.createElement('div'); box.className = 'pscale'; box.appendChild(f);
+      var cap = document.createElement('figcaption'); cap.className = 'cap'; cap.textContent = NAME[d] + ' · ' + t;
+      cell.appendChild(box); cell.appendChild(cap); stage.appendChild(cell); cells.push(box);
+    }); });
+    fit();
+    try { localStorage.setItem('vi-present', JSON.stringify(P)); } catch (e) { /* storage blocked */ }
+  }
+  // Scale every frame by one factor so the row fits the stage; a phone frame never grows past 100%.
+  function fit() {
+    var boxes = $$('.pscale', stage); if (!boxes.length) return;
+    var W = stage.clientWidth, gap = 16, n = boxes.length;
+    var nat = boxes.map(function (b) { var f = b.firstChild; f.style.transform = ''; return { w: f.offsetWidth, h: f.offsetHeight }; });
+    var per = Math.min(n, Math.max(1, Math.floor((W + gap) / (Math.min.apply(null, nat.map(function (x) { return x.w; })) * .55 + gap))));
+    var avail = (W - gap * (per - 1)) / per;
+    boxes.forEach(function (b, i) {
+      var k = Math.min(1, avail / nat[i].w);
+      b.firstChild.style.transform = k < 1 ? 'scale(' + k + ')' : '';
+      b.style.width = Math.floor(nat[i].w * k) + 'px'; b.style.height = Math.ceil(nat[i].h * k) + 'px';
+    });
+  }
+  $$('.pbar button').forEach(function (b) { b.addEventListener('click', function () { P[b.dataset.p] = b.dataset.v; if ((P.scr === 'first' || P.scr === 'states' || P.scr === 'parts') && P.dev === 'dt') P.dev = 'ph'; render(); }); });
+  if ('ResizeObserver' in window) new ResizeObserver(function () { fit(); }).observe(stage); else addEventListener('resize', fit);
+  render();
+})();
+
 
 /* ---------- the icon sheet ---------- */
 var ICONS = [['menu', '☰', 'Filters / list'], ['more', '⋯', 'Settings'], ['reroll', '↻', 'Pick a colour for me'], ['check', '✓', 'Owned'], ['anchor', '⚓', 'Your paint (seed dock)'], ['warning', '⚠', 'Warning'], ['empty', '○', 'Not marked'], ['search', '⌕', 'Search'], ['close', '✕', 'Close'], ['undo', '↶', 'Undo'], ['redo', '↷', 'Redo'], ['swap', '⇄', 'Other brands'], ['cart', '+ buy', 'To buy'], ['camera', '—', 'From photo'], ['grid', '—', 'Browse'], ['eye', '—', 'Colour check'], ['info', '—', 'Matching note'], ['brush', 'new', 'Recipe'], ['pot', 'new', 'Shelf / pot'], ['drop', 'new', 'Wash / ink'], ['d6', '(svg)', 'Roll a scheme'], ['d20', 'new', 'Roll (later)']];
