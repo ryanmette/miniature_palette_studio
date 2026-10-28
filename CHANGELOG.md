@@ -416,6 +416,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Undo and redo changed added colours a little.** Each undo step kept the hue of an added colour to 0.1° and
+  its saturation to 0.001. After an undo or a redo, a channel could be 1 sRGB unit off: the second **+** on
+  `#9A1115` gave `#630B0D`, and an undo gave `#630B0E`. A check of 200,000 random colours found this in 6.6% of
+  them. Now the undo step keeps the exact numbers. JSON writes each number with the shortest digits that read
+  back as the same number, so the same state always gives the same text. A tab or a theme change thus still
+  adds no undo step. The step keeps hue, saturation and lightness, not a hex: a hex loses the hue of a grey
+  (its place on the wheel). The new pure module `undo.js` holds the snapshot. A browser check added colours,
+  moved the lightness and moved nodes for 25 steps, then did undo and redo. Before the fix, 2 of 3 runs showed a
+  different hex. After the fix, every step showed the same hexes. This was the case before this release too.
+- Tests for the undo snapshot (exact colours, the same text after a round trip, no step for a tab or the theme,
+  greys and colours with no lightness): 254 tests. (CLAUDE.md §4 is updated; service worker `ps-v61`.)
 - **A reload or a share link changed the harmony of a seed that is almost neutral.** Neutral mode starts under
   Lab C\* 10 and stops at 14 or more (CLAUDE.md §7). Between the two, a live change keeps the mode that the seed
   has. The link does not carry the mode, so a load always started such a seed in hue mode. For example,
