@@ -690,6 +690,7 @@ function renderActive() {
 
 /* ---- shelf (collection) — Finder-style bulk stocking, wired to store.setMark ---- */
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
+const CAN_SHARE = COARSE && typeof navigator.share === 'function';   // the share sheet on touch only
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
 const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false, viewIds: null };   // ids; selection is transient (not persisted); viewIds = the drawn order (set by renderShelf)
 const shelfPaints = () => {
@@ -1342,10 +1343,6 @@ function setTheme(t, { save = false } = {}) {
   if (sw) sw.setAttribute('aria-checked', String(state.theme === 'dark'));
   syncThemeSlot();
 }
-function syncLocaleSeg() {                            // reflect the active locale in the settings-menu control
-  const cur = i18n.getLocale(), seg = $('#localeSeg');
-  if (seg) for (const x of seg.children) x.setAttribute('aria-pressed', String(x.dataset.locale === cur));
-}
 function setMode(mode) {
   state.mode = mode === 'shelf' ? 'shelf' : 'studio';
   const on = state.mode === 'shelf';
@@ -1529,7 +1526,9 @@ function doExport() {
  *  then clipboard, then a visible-URL prompt. No silent clipboard side-effects. */
 async function doShare() {
   const url = shareUrl(location.href, state.theme);   // without m=shelf (a friend gets the scheme, not your Shelf), with the theme on screen
-  if (navigator.share) {
+  // The share sheet is a phone's way to send a link. With a mouse, Safari on a Mac has it too, but there
+  // the expected action is a copy (Ryan, 2026-10-28), so the button says Copy link and copies.
+  if (CAN_SHARE) {
     try { await navigator.share({ title: 'Palette Studio for Miniatures', url }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }   // user dismissed the sheet
   }
@@ -1596,7 +1595,6 @@ function applyPrefsToState({ keepLinkTheme = false } = {}) {
     linkTheme = null;   // a restored or deleted theme wins over a link's (init applies the link's after this)
     setTheme(th === 'light' || th === 'dark' ? th : deviceTheme());
   }
-  i18n.applyLocale(store.getPref('locale')); syncLocaleSeg();
   const lp = store.getPref('ladder'); state.ladder = ['wash', 'tone', 'both'].includes(lp) ? lp : 'wash';
   const cp = store.getPref('collection'); state.collection = ['off', 'prefer', 'only'].includes(cp) ? cp : 'off';
   state.includeContrast = !!store.getPref('contrast');
@@ -1684,7 +1682,7 @@ function buildSlotSizers() {
 }
 /** Every settings control from the current state — before the menu shows, so nothing is announced. */
 function syncSettingsControls() {
-  syncCollectionSeg(); syncUmpHint(); syncThemeSlot(); syncLocaleSeg();
+  syncCollectionSeg(); syncUmpHint(); syncThemeSlot();
 }
 /** The Backup row's status line goes back to its hint. Only while the menu is closed (on open and on
  *  close): it is a live region, and a reset while you can hear it would read the hint out again. */
@@ -1792,10 +1790,10 @@ function setupSettings() {
     $('#themeToggle').focus();   // the button it was on is now the "Follows your device" text
     say(t('themeFollowsSaid'));
   });
-  $('#localeSeg').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
-    syncLocaleSeg(); syncLocaleStrings(); syncUmpHint();
+  // The language follows the device (no ⋯ row). A change while the app is open applies at once.
+  addEventListener('languagechange', () => {
+    i18n.followDevice();
+    syncLocaleStrings(); syncUmpHint();
     renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
     wheelDraw();                        // …and the lightness slider's spoken value
   });
@@ -2248,8 +2246,9 @@ async function init() {
   if (!state.customHex) recentPicks = addRecent([], state.baseId);   // the paint the visit starts on is the first Recent pick
   syncTabs();
   wire();
+  $('#share').dataset.i18n = CAN_SHARE ? 'shareLink' : 'copyLinkBtn';   // Share link… on touch, Copy link with a mouse
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
-  syncLocaleSeg(); syncLocaleStrings(); syncSettingsControls();
+  syncLocaleStrings(); syncSettingsControls();
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
   ({ draw: wheelDraw, endLightnessRun } = setupWheel({

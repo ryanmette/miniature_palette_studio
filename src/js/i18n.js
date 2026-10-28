@@ -1,9 +1,8 @@
 // i18n.js — lightweight UI-string localization (no library, per §6). Chrome strings ONLY; paint NAMES
-// are data and never translate. Locale auto-detected from the device (navigator.language), overridable
-// via store prefs (⋯ → Language). en-GB is canonical; en-US is a sparse spelling-override layer.
+// are data and never translate. The locale follows the device (navigator.language); there is no setting.
+// en-GB is canonical; en-US is a sparse spelling-override layer.
 // Adding a language = add a sparse override object below; keys missing from it fall back to en-GB.
 
-import * as store from './store.js';
 
 /**
  * The string table. en-GB is CANONICAL — it holds every key — and every other locale is a sparse
@@ -106,11 +105,10 @@ const LOCALES = {
     themeFollows: 'Follows your device',
     themeUseDevice: 'Use device setting',
     themeFollowsSaid: 'Theme follows your device',
-    language: 'Language',
-    langUK: 'English (UK)', langUS: 'English (US)',
     scheme: 'Scheme',
     saveList: 'Save the shopping list',
-    shareLink: 'Share link',
+    shareLink: 'Share link…',
+    copyLinkBtn: 'Copy link',
     backup: 'Backup',
     backUp: 'Back up everything',
     restore: 'Restore…',
@@ -209,19 +207,12 @@ const LOCALES = {
 };
 
 /**
- * Which locale to start in: an explicit choice the painter saved, else the device's language, else
- * en-GB. Read once at import time (see `locale` below) — the app is a single page, and a language
- * change re-applies through setLocale() rather than by re-detecting.
+ * The language follows the device (Ryan, 2026-10-28: a global setting the device already knows, so ⋯
+ * has no Language row). A locale saved by an older build, or in a backup, is ignored.
  */
 /** The device's language, as one of ours: en-US for a US device, else en-GB (the app's origin). */
 export const deviceLocale = () => (/^en-US$/i.test(globalThis.navigator?.language || '') ? 'en-US' : 'en-GB');
-function detect() {
-  const pref = store.getPref('locale');
-  if (pref && LOCALES[pref]) return pref;
-  return deviceLocale();
-}
-
-let locale = detect();
+let locale = deviceLocale();
 
 export const getLocale = () => locale;
 /** The locales the app has. store.js keeps the same list to check a restored locale (see its PREF_OK). */
@@ -255,18 +246,8 @@ export function apply(root = document) {
   document.documentElement.lang = locale;
 }
 
-/** The painter picked a language (⋯ → Language): use it and save it. */
-export function setLocale(l) {
-  if (!LOCALES[l]) return;
-  locale = l;
-  store.setPref('locale', l);
-  apply();
-}
-
-/** Use a saved locale, or the device's when it is null — and save nothing. For a restored backup and
- *  for Delete: a locale of null there means "follow the device", and saving the device's language
- *  would turn it into a choice the painter never made. */
-export function applyLocale(l) {
-  locale = l && LOCALES[l] ? l : deviceLocale();
+/** Follow the device's language again (it changed while the app was open). Saves nothing. */
+export function followDevice() {
+  locale = deviceLocale();
   apply();
 }

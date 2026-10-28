@@ -263,6 +263,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **The language follows your device.** ⋯ no longer has a Language row. A US device shows US spelling
+  ("color"), every other device UK spelling, and a change of the device's language applies at once.
+- **Copy link with a mouse, Share link… on touch.** On a Mac, Safari opened Apple's share menu from ⋯ → Share
+  link. With a mouse the button is now "Copy link": it copies the link and says so. Touch screens keep the
+  system share sheet.
 - **Empty and error states say what happened and what to do next** (UX 4):
   - A Shelf filter with no paints shows a heading, one sentence and one action ("Show all paints", or "Clear
     the search and filters"). The Owned filter with nothing owned, and an empty shopping list, have their own
