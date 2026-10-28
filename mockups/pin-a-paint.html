@@ -2392,6 +2392,10 @@ return E;
   if (!PIN || !PIN.ui || !root) return;
   var U = PIN.ui, E = PIN.engine, esc = U.esc, safe = U.safe, pname = U.pname;
   var ROLES = ['Primary', 'Secondary', 'Accent', 'Metal'];
+  // A button's data-* value goes into the state and then into markup. Take the matching entry of a fixed list
+  // (or null), so the text in the markup is always this page's own constant, never text read from the page.
+  var oneOf = function (list, v) { var i = list.indexOf(v); return i < 0 ? null : list[i]; };
+  var LADDERS = ['wash', 'tone', 'both'];
   var FINISH = new Set(PIN.FINISH_TYPES);
   var FWORD = { metal: 'metallic', wash: 'wash', shade: 'shade', ink: 'ink', contrast: 'contrast', glaze: 'glaze', effect: 'effect' };
   // the sample Shelf (owned marks) for the Use my paints demo — 30 Citadel paints a Death Guard player might own
@@ -2708,7 +2712,7 @@ return E;
     if (opt) { pick(F, +opt.getAttribute('data-k')); return; }
     var b = e.target.closest('button');
     if (!b || !F.el.contains(b) || b.disabled) return;
-    var a = b.getAttribute('data-a'), role = b.getAttribute('data-role');
+    var a = b.getAttribute('data-a'), role = oneOf(ROLES, b.getAttribute('data-role'));
     if (a === 'open') openSheet(F, role, b.getAttribute('data-a-key'));
     else if (a === 'close') closeSheet(F, true);
     else if (a === 'unpin') unpin(F, role);
@@ -2718,10 +2722,12 @@ return E;
       announce(F, 'Your pick now seeds ' + F.m.seedRole + '. The scheme is rebuilt around it. ' + pinsSaid(F.m), '⚓ ' + pname(F.m.seed) + ' seeds ' + F.m.seedRole);
     } else if (a === 'undo' || a === 'redo') travel(F, a, a);
     else if (a === 'harm') {
-      F.st.harmony = b.getAttribute('data-v'); push(F); render(F, 'harm:' + F.st.harmony);
+      var hv = oneOf(PIN.harmonies.concat(PIN.neutralHarmonies), b.getAttribute('data-v')); if (!hv) return;
+      F.st.harmony = hv; push(F); render(F, 'harm:' + F.st.harmony);
       announce(F, U.hlabel(F.st.harmony) + '. ' + pinsSaid(F.m) + ' Pins stay when the harmony changes.');
     } else if (a === 'ladder') {
-      F.st.ladder = b.getAttribute('data-v'); render(F, 'ladder:' + F.st.ladder);
+      var lv = oneOf(LADDERS, b.getAttribute('data-v')); if (!lv) return;
+      F.st.ladder = lv; render(F, 'ladder:' + F.st.ladder);
     }
   }
   // one undo or redo step; focusKey: the control to focus after the redraw (the ↶ / ↷ button, or where the key was pressed)
@@ -3231,6 +3237,9 @@ return E;
   var host = document.getElementById('dir-B');
   if (!host || !window.PIN || !PIN.ui) return;
   var U = PIN.ui, E = PIN.engine, C = PIN.color, esc = U.esc, f1 = function (x) { return x.toFixed(1); };
+  // A button's data-* value goes into the state and then into markup: take the matching entry of a fixed list
+  // (or null), so the markup only holds this page's own constants. Typed text goes in with .value/textContent.
+  var oneOf = function (list, v) { var i = list.indexOf(v); return i < 0 ? null : list[i]; };
 
   // ---------- slots: the four roles, the wash and highlight rungs of each role, and Extras ----------
   var ROLES = ['Primary', 'Secondary', 'Accent', 'Metal'];
@@ -3410,7 +3419,7 @@ return E;
     inst.rows = r.rows;
     if (inst.act >= r.rows.length) inst.act = 0;
     var head = r.head ? '<div class="ghead" role="presentation">' + esc(r.head) + '</div>' : '';
-    if (!r.rows.length) return head + (r.head && !inst.q ? '' : '<p class="hint b-none">' + (PIN.parseQuery(inst.q).kind === 'partial' ? 'Type six hex digits after #.' : 'No paint matches “' + esc(inst.q) + '”.') + '</p>');
+    if (!r.rows.length) return head + (r.head && !inst.q ? '' : '<p class="hint b-none">' + (PIN.parseQuery(inst.q).kind === 'partial' ? 'Type six hex digits after #.' : 'No paint matches “<span data-k="nq"></span>”.') + '</p>');
     return head + r.rows.map(function (p, i) {
       var dup = inList(m.st, p.id), slot = dup ? null : place(m.st, p).slot;
       var to = dup ? 'Already in your list' : 'Goes to ' + slotName(slot, m.neutral);
@@ -3423,8 +3432,8 @@ return E;
   }
   function panelHtml(inst, m) {
     return '<div class="picklist b-panel" data-k="panel"><div class="seedfield b-field"><input type="text" data-k="q" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="'
-      + inst.id + '-lb" aria-activedescendant="' + inst.id + '-o' + (inst.act || 0) + '" aria-label="Add a paint: name, brand words or hex" placeholder="Paint or #hex" autocomplete="off" spellcheck="false" value="'
-      + esc(inst.q || '') + '"><button type="button" class="browse" data-a="close" aria-label="Close the list">✕</button></div>'
+      + inst.id + '-lb" aria-activedescendant="' + inst.id + '-o' + (inst.act || 0) + '" aria-label="Add a paint: name, brand words or hex" placeholder="Paint or #hex" autocomplete="off" spellcheck="false">'
+      + '<button type="button" class="browse" data-a="close" aria-label="Close the list">✕</button></div>'
       + '<div class="b-lb" role="listbox" id="' + inst.id + '-lb" aria-label="Paints">' + optionsHtml(inst, m) + '</div></div>';
   }
 
@@ -3656,7 +3665,14 @@ return E;
     row.classList.toggle('b-fl', row.scrollLeft > 1);
     row.classList.toggle('b-fr', row.scrollLeft + row.clientWidth < row.scrollWidth - 1);
   }
+  /** Put the typed query into the field and the "No paint matches" line after each redraw (never through the markup). */
+  function putQuery(inst) {
+    var qi = inst.app.querySelector('input[data-k="q"]');
+    if (qi && qi.value !== inst.q) qi.value = inst.q || '';
+    [].forEach.call(inst.app.querySelectorAll('[data-k="nq"]'), function (el) { el.textContent = inst.q || ''; });
+  }
   function sync(inst, m) {
+    putQuery(inst);
     var why = inst.app.querySelector('.b-why'), act = inst.app.querySelector('.b-whyact');
     if (why.textContent !== inst.msg.text) why.textContent = inst.msg.text;   // write a live region only when its words change
     var hadFocus = document.activeElement === act;
@@ -3759,11 +3775,14 @@ return E;
       else if (a === 'close') closeOverlays(inst, 'add');
       else if (a === 'opt') { var p = inst.rows[+t.getAttribute('data-i')]; if (p) addPaint(inst, p); }
       else if (a === 'chip') openMenu(inst, t.getAttribute('data-id'));
-      else if (a === 'mv') movePaint(inst, inst.menu, t.getAttribute('data-s'));
+      else if (a === 'mv') {
+        var mp = PIN.get(inst.menu), ms = mp && oneOf(allowed(kindOf(mp), inst.st), t.getAttribute('data-s'));
+        if (ms) movePaint(inst, inst.menu, ms);
+      }
       else if (a === 'rm') removePaint(inst, inst.menu);
       else if (a === 'harm') {
-        var h = t.getAttribute('data-h');
-        if (h === inst.st.harmony) return;
+        var h = oneOf(E.HARMONY_TYPES.concat(E.NEUTRAL_HARMONY_TYPES), t.getAttribute('data-h'));
+        if (!h || h === inst.st.harmony) return;
         inst.st.harmony = h; inst.adding = false; inst.menu = null;
         commit(inst, 'changed the harmony to ' + U.hlabel(h), { text: U.hlabel(h) + '. Your paints keep their places. The free roles follow the harmony.' }, 'h:' + h);
       }
@@ -3785,7 +3804,7 @@ return E;
       if (e.target.getAttribute('data-k') !== 'q') return;
       inst.q = e.target.value; inst.act = 0;
       var lb = part(inst, 'ov').querySelector('.b-lb');
-      lb.innerHTML = optionsHtml(inst, lite(inst.st));
+      lb.innerHTML = optionsHtml(inst, lite(inst.st)); putQuery(inst);
       if (inst.rows.length) e.target.setAttribute('aria-activedescendant', inst.id + '-o0'); else e.target.removeAttribute('aria-activedescendant');
     });
     app.addEventListener('keydown', function (e) {
@@ -4468,7 +4487,9 @@ return E;
             + '<span class="tx"><b>' + esc(U.pname(p)) + (SHELF_SET.has(p.id) ? '<span class="ownmini">✓ owned</span>' : '') + '</b><span>'
             + esc(p.brand + ' · ' + p.line + now) + '</span></span>' + right + '</div>';
         }).join('') + '</div>';
-    }).join('') + (note ? '<p class="c-empty">' + esc(note) + '</p>' : '');
+    }).join('');
+    // the note can hold the typed words, so it goes in as text, never through the markup
+    if (note) { var pe = document.createElement('p'); pe.className = 'c-empty'; pe.textContent = note; sh.list.appendChild(pe); }
     sh.items = items; sh.cur = -1;
     sh.input.removeAttribute('aria-activedescendant');
     if (q.trim() && items.length) this.setCur(0);
@@ -5043,6 +5064,9 @@ return E;
   so there the fit is the full ΔE to the role's ideal. Custom has no rule, so it has no fit. */
  var FIT = 3.5, NEAR = 10, SNAP = 3, MAXC = 2;
  var COLOUR_ROLES = ['Primary', 'Secondary', 'Accent'];
+ // A data-* value read back from the page goes into the state and then into markup: take the matching entry
+ // of a fixed list (or null), so the markup only holds this page's own constants.
+ var oneOf = (list, v) => { var i = list.indexOf(v); return i < 0 ? null : list[i]; };
  var LET = { Primary: 'P', Secondary: '2', Accent: 'A', Metal: 'M' };
  var wrapH = h => ((h % 360) + 360) % 360;
  var dHue = (a, b) => ((a - b) % 360 + 540) % 360 - 180;
@@ -5404,7 +5428,7 @@ return E;
   return out.join('');
  }
  function statics() {
-  [].forEach.call(root.querySelectorAll('[data-d-mk]'), el => { el.innerHTML = fmark(el.getAttribute('data-d-mk')); });
+  [].forEach.call(root.querySelectorAll('[data-d-mk]'), el => { el.innerHTML = fmark(oneOf(['fit', 'near'], el.getAttribute('data-d-mk'))); });
   [].forEach.call(root.querySelectorAll('[data-d-proj]'), el => { el.innerHTML = U.projTag(); });
   put('ex1', U.phone(studioHtml(build(mkState('dg', { pins: [] })), { phone: true, size: 300, ring: 34, only: 'Metal', callouts: { well: 1, strip: 2, plan: 3 } }), { theme: 'dark', height: 'auto' }));
   put('metal', metalTable());
@@ -5599,7 +5623,7 @@ return E;
    if (pick && e.target.closest('[data-d-opt]')) e.preventDefault();   // keep the focus in the field
    var w = e.target.closest('.d-wheel'); if (!w) return;
    var it = e.target.closest('[data-d-role]');
-   if (it) { cur = it.getAttribute('data-d-role'); chose = true; paint(['wheel', 'act'], true); say(roleText(b, cur)); return; }
+   if (it) { cur = oneOf(COLOUR_ROLES, it.getAttribute('data-d-role')); chose = true; paint(['wheel', 'act'], true); say(roleText(b, cur)); return; }
    if (b.g.neutral || b.g.kind !== 'hue') return;
    drag = { w: w, a0: angleAt(w, e), t0: st.turn, moved: false, id: e.pointerId };
    w.setPointerCapture(e.pointerId);
@@ -5628,8 +5652,8 @@ return E;
    var t = e.target.closest('button'); if (!t || !app.contains(t)) return;
    if (t.getAttribute('aria-disabled') === 'true') { if (t.hasAttribute('data-d-pin')) say('Two colour pins at most. Unpin one first.'); return; }
    var a = n => t.getAttribute('data-d-' + n);
-   if (a('h') != null) setHarmony(a('h'));
-   else if (a('pin') != null) openPick('colour', a('pin') || null, 'pin');
+   if (a('h') != null) { var hv = oneOf(P.harmonies.concat(P.neutralHarmonies), a('h')); if (hv) setHarmony(hv); }
+   else if (a('pin') != null) openPick('colour', oneOf(COLOUR_ROLES, a('pin')), 'pin');
    else if (t.hasAttribute('data-d-well')) openPick('metal', null, 'well');
    else if (a('unpin') != null) unpin(a('unpin'));
    else if (t.hasAttribute('data-d-turn')) toggleTurn();
