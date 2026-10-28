@@ -268,6 +268,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **⋯ says what each group acts on.** "Scheme" is now **Share this palette** ("The colours on screen now."),
+  and "Backup" is **Your shelf on this device** ("Owned paints, your shopping list and settings, in one
+  file."). The groups stay on one screen, with no submenus.
 - **The language follows your device.** ⋯ no longer has a Language row. A US device shows US spelling
   ("color"), every other device UK spelling, and a change of the device's language applies at once.
 - **Copy link with a mouse, Share link… on touch.** On a Mac, Safari opened Apple's share menu from ⋯ → Share

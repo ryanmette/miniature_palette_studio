@@ -119,25 +119,30 @@
     </div>
     <div class="setgrp">
       <div class="setrow">
-        <span class="setlbl" aria-hidden="true" data-i18n="scheme">Scheme</span>
-        <div class="setctl setbtns" role="group" aria-label="Scheme" data-i18n-aria="scheme">
-          <button type="button" class="btn" id="export" data-i18n="saveList">Save the shopping list</button>
-          <button type="button" class="btn" id="share" data-i18n="shareLink">Share link</button>
+        <span class="setlbl" aria-hidden="true" data-i18n="scheme">Share this palette</span>
+        <div class="setctl">
+          <!-- What these act on, in words (Ryan, 2026-10-28: "Scheme" did not say it): the palette on screen.
+               The Backup group below acts on everything this device keeps. -->
+          <div class="setbtns" role="group" aria-label="Share this palette" data-i18n-aria="scheme" aria-describedby="shareHint">
+            <button type="button" class="btn" id="share" data-i18n="shareLink">Share link…</button>
+            <button type="button" class="btn" id="export" data-i18n="saveList">Save the shopping list</button>
+          </div>
+          <p class="sethint" id="shareHint" data-i18n="shareHint">The colours on screen now.</p>
         </div>
       </div>
     </div>
     <div class="setgrp">
       <div class="setrow">
-        <span class="setlbl" aria-hidden="true" data-i18n="backup">Backup</span>
+        <span class="setlbl" aria-hidden="true" data-i18n="backup">Your shelf on this device</span>
         <div class="setctl">
-          <div class="setbtns" role="group" aria-label="Backup" data-i18n-aria="backup" aria-describedby="backupNow">
+          <div class="setbtns" role="group" aria-label="Your shelf on this device" data-i18n-aria="backup" aria-describedby="backupNow">
             <button type="button" class="btn" id="backupBtn" data-i18n="backUp">Back up everything</button>
             <button type="button" class="btn" id="restoreBtn" aria-haspopup="dialog" data-i18n="restore">Restore…</button>
           </div>
           <input id="restoreFile" type="file" accept=".json,application/json" hidden />
           <!-- fixed slot: the hint, or the name of the file a backup just saved -->
           <div class="fixslot" id="backupSlot">
-            <p class="sethint" id="backupNow" role="status">Saves your shelf and settings to a file.</p>
+            <p class="sethint" id="backupNow" role="status">Owned paints, your shopping list and settings, in one file.</p>
           </div>
         </div>
       </div>
