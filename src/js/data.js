@@ -222,7 +222,11 @@ export function equivalents(indexed, paint, { n = 6 } = {}) {
  *  further, so it shows only when it is clearly closer. Each match reports its TRUE ΔE (§2, §7). The seed
  *  field lists these under "Seed: #…"; the Equivalents tab uses them for a role colour or a custom hex. */
 export function closestPaints(indexed, hex, n = 6) {
-  return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY });
+  // Every paint is a candidate (keep). The cheap Euclidean prefilter ranks by Lab distance alone, but the
+  // finish penalty moves washes and metallics down, so a flat paint ranked 79th by Lab distance (Raf Azure
+  // Blue for #8899F4, ΔE 6.4) was cut before the ranking and two Poor matches took its place. A full pool
+  // costs about 2 ms, once per keystroke or tab render.
+  return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, keep: indexed.paints.length });
 }
 
 /* ---- the paint search: ONE matcher for the seed field and the Shelf search ---- */
@@ -260,11 +264,18 @@ export function warmPaintSearch(indexed) { for (const p of indexed.paints) foldO
 
 /** Does a paint match a search? Every word of the query must be in the paint's words (part of a word is
  *  enough: "stone" finds Dawnstone). "vallejo red", "citadel metallic" and "dawnstone (layer)" all narrow
- *  the list. Returns a test for one paint, or null when the query has no words (no filter). */
+ *  the list. In a query of two or more words, a one-letter word is not "part of any word": "D&D" folds to
+ *  "d d", and two d's anywhere matched 1,885 paints. Returns a test for one paint, or null when the query has
+ *  no words (no filter). */
 export function paintMatcher(query) {
   const words = queryWords(query);
   if (!words.length) return null;
-  return p => { const h = foldOf(p).hay; return words.every(w => h.includes(w)); };
+  // The hay has a space at each end, so " d " finds the whole word d and " b" a word that starts with b. A
+  // one-letter word before the last is a whole word ("d&d"); the last one is the word being typed, so it
+  // starts a word ("abaddon b" on the way to "abaddon black"); one letter alone matches inside words.
+  const last = words.length - 1;
+  const pats = words.map((w, i) => (w.length > 1 || !last ? w : i < last ? ` ${w} ` : ` ${w}`));
+  return p => { const h = foldOf(p).hay; return pats.every(w => h.includes(w)); };
 }
 
 /** The seed field's search: the paints that match, best first. Four groups, in this order: the name or the

@@ -361,6 +361,32 @@ test('search: accents and apostrophes fold the same way in the query and the nam
   assert.ok(tigers.length >= 2);   // the dataset spells it with ' and with ’
 });
 
+test('search "d&d": a one-letter word in a longer query is a whole word', () => {
+  // "D&D" folds to "d d"; as parts of words, two d's matched 1,885 paints
+  for (const q of ['d&d', 'army painter d&d', 'D & D']) {
+    const res = searchPaints(real, q);
+    assert.equal(res.length, 20, q);
+    for (const p of res) assert.equal(p.line, 'D&D', `${q}: ${p.id}`);
+  }
+  // one letter alone still matches inside words, on the way to a longer word
+  assert.ok(searchPaints(real, 'd').some(p => p.id === 'citadel-layer-dawnstone'));
+});
+
+test('search as you type: every paint is found by every prefix of its own name', () => {
+  // a one-letter last word is the word being typed: "abaddon b" must still find Abaddon Black
+  let misses = 0, first = '';
+  for (const p of real.paints) {
+    const name = p.dname || p.name;
+    for (let i = 1; i <= name.length; i++) {
+      const m = paintMatcher(name.slice(0, i));
+      if (m && !m(p)) { misses++; if (!first) first = `${p.id} at "${name.slice(0, i)}"`; }
+    }
+  }
+  assert.equal(misses, 0, first);
+  for (const q of ['abaddon b', 'army p', 'citadel b', 'vallejo m', 'dawnstone (l'])
+    assert.ok(searchPaints(real, q).length > 0, q);
+});
+
 test('paintMatcher: no words, no filter; the Shelf finds the display name too', () => {
   assert.equal(paintMatcher(''), null);
   assert.equal(paintMatcher('  ( ) '), null);
@@ -388,6 +414,20 @@ test('closestPaints: ranks a flat colour as Equivalents does, and reports the TR
   assert.deepEqual(res.map(m => m.paint.id), ['flat', 'wash', 'far']);
   assert.ok(Math.abs(res[1].deltaE - dWash) < 1e-9);            // the wash's own ΔE, not ΔE + 4
   assert.equal(res[0].quality.label, matchQuality(dFlat).label);
+});
+
+test('closestPaints: the same list as a full scan with the same rule (no paint is cut by the prefilter)', () => {
+  // The rule: ΔE 2000, plus FINISH_PENALTY for a finish or a metallic. A cheap Lab-distance prefilter of 64
+  // cut Raf Azure Blue (ΔE 6.4, a flat layer) for #8899F4 and showed two Poor matches in its place.
+  const demoted = new Set([...FINISH_TYPES, 'metal']);
+  const score = (hex, p, d = deltaE2000Hex(hex, p.hex)) => +(d + (demoted.has(p.type) ? FINISH_PENALTY : 0)).toFixed(6);
+  assert.equal(closestPaints(real, '#8899F4', 6)[1].paint.name, 'Raf Azure Blue');
+  for (let i = 0; i < 61; i++) {
+    const hex = i === 0 ? '#8899F4' : '#' + (((i * 2654435761) >>> 8) & 0xFFFFFF).toString(16).padStart(6, '0');
+    const full = real.paints.map(p => score(hex, p)).sort((a, b) => a - b).slice(0, 6);
+    // compare the scores, not the ids: twins share a hex, and either order of a tie is right
+    assert.deepEqual(closestPaints(real, hex, 6).map(m => score(hex, m.paint, m.deltaE)), full, hex);
+  }
 });
 
 /* ---- the seed field's browse orders (its Sort control) ---- */
