@@ -452,8 +452,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **A press on another tile closed the seed list's mark menu and left focus on the page.** The list stayed
     open, and no key reached it. Now focus goes back to the field (or to the list after a touch long-press).
   - **Forced colours (Windows High Contrast) painted every swatch white:** the Browse grid, the live palette,
-    the Shelf and the Plan showed no colour. Swatches now keep their own colours (`forced-color-adjust: none`),
-    and their rings use the system Highlight colour. This was the case before this release too.
+    the Shelf and the Plan showed no colour. Swatches now keep their own colours (`forced-color-adjust: none`).
+    Their rings use the system Highlight colour, and a ring on the paint (a palette column's focus, the
+    Equivalents selection, the colour link) has a Canvas band under it, so it shows on any paint. A tooltip, a
+    mark badge or the copy button inside a swatch keeps the system colours. This was the case before this
+    release too.
+  - About and the photo dialog: the gap under the last line is the 24px padding alone (the last line's own
+    8px margin is gone).
   - **A link with `v=__proto__` crashed the app on load** (CodeQL: "Unvalidated dynamic method call"). The
     link's `v` names the output tab, and the tab's renderer was found on a plain object, so `__proto__`,
     `toString` or `constructor` found the object's own members: `__proto__` left a blank page, and
