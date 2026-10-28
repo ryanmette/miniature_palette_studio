@@ -8,7 +8,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const OUT = process.argv[2];
-const BASE = 'http://127.0.0.1:8765/';
+const BASE = process.env.BASE || 'http://127.0.0.1:8765/';
 fs.mkdirSync(OUT, { recursive: true });
 const SIZES = [
   { w: 360, h: 640, touch: true }, { w: 390, h: 844, touch: true }, { w: 768, h: 1024, touch: true },
