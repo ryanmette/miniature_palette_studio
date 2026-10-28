@@ -452,6 +452,9 @@ export function setupPicker(app) {
   sortEl.addEventListener('change', () => { st.sort = sortEl.value; body.scrollTop = 0; render(); });
   sortEl.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
+    // an open dropdown (a customizable select) takes this Esc to close itself: the list and the seed stay
+    let dropdown = false; try { dropdown = sortEl.matches(':open'); } catch { /* no :open, no dropdown of ours */ }
+    if (dropdown) return;
     e.preventDefault(); e.stopPropagation(); restoreLive(); close(); input.focus({ preventScroll: true });
   });
   // a press in the list never takes focus out of the field. Not on Sort: on a short screen it scrolls with

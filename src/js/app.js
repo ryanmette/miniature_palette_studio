@@ -434,6 +434,9 @@ function syncWheelL() {
  *             what it marked).
  */
 let renderRaf = 0;
+// dragFrame: the paint now running is a drag frame (render('drag')), so a long list may take its quick
+// form (renderEquiv). exactEquivT: the exact Equivalents list after the last frame.
+let dragFrame = false, exactEquivT = 0;
 /** `speak: false` repaints without the scheme summary in #status (a restore says its own line). */
 function render(reason = 'scheme', { speak = true, ids = null } = {}) {
   if (reason === 'settle') { updateUrl(); if (speak) announce(); return; }
@@ -458,7 +461,7 @@ function render(reason = 'scheme', { speak = true, ids = null } = {}) {
     // Coalesce the heavy repaint (nearest-paint scans + canvas + tab) to one per frame, and debounce
     // the history write + aria-live: a drag fires pointermove far faster than WebKit's replaceState
     // limit (which throws mid-drag) and far faster than a screen reader can speak.
-    if (!renderRaf) renderRaf = requestAnimationFrame(() => { renderRaf = 0; paint(); });
+    if (!renderRaf) renderRaf = requestAnimationFrame(() => { renderRaf = 0; dragFrame = true; try { paint(); } finally { dragFrame = false; } });
     scheduleUrlUpdate(); scheduleAnnounce();
     return;
   }
@@ -618,8 +621,10 @@ function renderEquiv() {
     // the seed field's hex list too). Reported ΔE stays true.
     const list = role === 'Metal'
       ? nearestPaints(state.idx, srcHex, 8, { floatTypes: new Set(['metal']), demoteTypes: new Set(FINISH_TYPES), demoteAmount: FINISH_PENALTY })
-      : closestPaints(state.idx, srcHex, 8);
+      : closestPaints(state.idx, srcHex, 8, { quick: dragFrame });
     $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, list, store.markOf);
+    // a drag frame drew the quick list: the exact one follows when the frames stop (wheel, slider or keys)
+    if (dragFrame) { clearTimeout(exactEquivT); exactEquivT = setTimeout(() => { if (state.tab === 'equiv') renderEquiv(); }, 150); }
   }
 }
 function renderA11y() {
@@ -1212,7 +1217,9 @@ function updateUrl() {
   // back over "Follows your device" after the device changed; a saved one came back over a newer saved
   // pick. Share link adds the theme on screen (shareUrl).
   const p = encodeState({ ...state, theme: linkTheme, pickHex: pickHex() });
-  history.replaceState(null, '', '?' + p.toString());
+  // WebKit throws after 100 calls in 10 seconds (a held Enter on ↻ or Roll): the address bar can wait for
+  // the next write, the undo step below cannot
+  try { history.replaceState(null, '', '?' + p.toString()); } catch { /* SecurityError */ }
   // Mid-gesture URL writes (the debounced updates while a wheel drag is still down) must NOT snapshot:
   // one drag would otherwise litter the undo stack with intermediates, so Ctrl+Z after a drag stepped
   // back to a mid-drag colour instead of the pre-drag state. The drag's settling updateUrl (pointerup/
@@ -1333,8 +1340,9 @@ function setMode(mode) {
 /** Seed from a paint: the seed field's list, or the Shelf's Use as seed. It goes into Recent. The render's
  *  announce starts with "New seed: X" (seedNews). */
 function selectPaint(id) {
+  const same = state.baseId === id && !state.customHex;   // the seed already: not news
   state.baseId = id; state.customHex = null; recentPicks = addRecent(recentPicks, id);
-  seedNews(t('newSeed', { name: baseInfo().name }));
+  seedNews(t(same ? 'seedSame' : 'newSeed', { name: baseInfo().name }));
   renderAll();
 }
 /** Change the harmony: a chip in the strip, and Roll a scheme. One path, so a roll is exactly a tap on
@@ -1916,8 +1924,9 @@ function setupMatchNote() {
  *  `speak: false`: the caller says the new seed itself (a live hex in the seed field). `news`: the words
  *  of the toast, which the render's announce says first (seedNews); true says "New seed: X". */
 function seedFromHex(hex, { speak = true, news = '' } = {}) {
+  const same = state.customHex === hex.toUpperCase();   // the seed already (its row says "Seed: #…"): not news
   state.customHex = hex.toUpperCase();
-  if (news && speak) seedNews(news === true ? t('newSeed', { name: baseInfo().name }) : news);
+  if (news && speak) seedNews(news === true ? t(same ? 'seedSame' : 'newSeed', { name: baseInfo().name }) : news);
   render('seed', { speak });
 }
 
