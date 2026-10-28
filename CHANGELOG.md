@@ -6,6 +6,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **A sharp link preview.** A shared link showed the 180px home-screen icon stretched to fill the card in
+  iMessage, and Discord had no image to show. The page now has Open Graph tags and a 1200 × 630 card
+  (`src/og-image.png`): the mark, the name, one line on what the app does, and a real four-paint scheme. The
+  card is the same for every link: the preview bots do not run JavaScript, so a card per scheme would need a
+  server.
 - **A first-run guide.** On a first visit (nothing saved on this device, and no paint in the link), a "Start
   a scheme" band under the paint field says what to do: one sentence, four starter paints (Mephiston Red,
   Macragge Blue, Caliban Green, Retributor Armour), three steps, and "I own paints — mark my shelf first". The
