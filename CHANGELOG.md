@@ -456,8 +456,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **A link with `v=__proto__` crashed the app on load** (CodeQL: "Unvalidated dynamic method call"). The
     link's `v` names the output tab, and the tab's renderer was found on a plain object, so `__proto__`,
     `toString` or `constructor` found the object's own members: `__proto__` left a blank page, and
-    `toString` showed no tab. The renderers are now in a `Map`, so only `plan`, `equiv` and `a11y` count; any
-    other name opens the Plan tab. This was the case before this release too.
+    `toString` showed no tab. Now only `plan`, `equiv` and `a11y` count (a fixed list, and the tab's renderer is
+    chosen by plain comparisons); any other name opens the Plan tab. This was the case before this release too.
   - **A `t=light` link changed theme on its first reload,** because the address bar keeps only `t=dark`. Now
     only `t=dark` is a link theme (as `share.js` says); a `t=light` link opens as a link without `t`.
   - **Share link's last fallback** (no share sheet, no clipboard) said "Copy the link from the address bar",

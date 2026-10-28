@@ -666,10 +666,15 @@ function renderA11y() {
   }
   $('#panel-a11y').innerHTML = ui.a11yPanel({ names, sims, contrasts, collision });
 }
-// A Map, not an object: a link's v= names the tab, and on an object a name such as __proto__ or toString
-// found the prototype's member (?v=__proto__ crashed the app on load; ?v=toString showed no tab).
-const renderers = new Map([['plan', renderPlan], ['equiv', renderEquiv], ['a11y', renderA11y]]);
-function renderActive() { (renderers.get(state.tab) || renderPlan)(); }
+// A fixed list and plain comparisons, never a function looked up by the link's v= name: on an object a
+// name such as __proto__ or toString found the prototype's member (?v=__proto__ crashed the app on load;
+// ?v=toString showed no tab).
+const TABS = ['plan', 'equiv', 'a11y'];
+function renderActive() {
+  if (state.tab === 'equiv') renderEquiv();
+  else if (state.tab === 'a11y') renderA11y();
+  else renderPlan();
+}
 
 /* ---- shelf (collection) — Finder-style bulk stocking, wired to store.setMark ---- */
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
@@ -2154,7 +2159,7 @@ async function init() {
   // old link still opens on the fallbacks. `t`/`m` are read separately: theme applies before this
   // point, and the Shelf deep-link is applied after the first render.
   Object.assign(state, decodeState(url, {
-    validHarmony, hasPaint: id => state.idx.byId.has(id), validTab: t => renderers.has(t), maxFree: MAX_FREE,
+    validHarmony, hasPaint: id => state.idx.byId.has(id), validTab: t => TABS.includes(t), maxFree: MAX_FREE,
   }));
   if (!state.customHex && !state.baseId) state.baseId = state.idx.paints[0].id;   // no usable seed in the link
 
