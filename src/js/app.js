@@ -6,6 +6,7 @@ import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
 import { encodeState, decodeState, shareUrl } from './share.js';   // the share-link contract (state ⇄ URL)
+import { snapPalette, readSnap } from './undo.js';   // the undo snapshot (palette state ⇄ JSON, exact)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
 import { createMarkMenu, isMenuKey } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
@@ -1171,7 +1172,7 @@ function restoreSeed(pick, mark = null) {
   // A note still waiting from the live hex ("switched to Neutral + pop") is about the change Esc undoes
   takeModeNote();
   const i0 = mark == null ? -1 : mark - HIST.dropped, snap = i0 >= 0 && i0 < HIST.i ? HIST.stack[i0] : null;
-  const o = snap ? JSON.parse(snap) : null;
+  const o = snap ? readSnap(snap) : null;
   const same = !!o && (pick.id ? o.baseId === pick.id && !o.customHex : o.customHex === pick.hex);
   if (same) {
     HIST.i = i0; HIST.stack.length = i0 + 1;
@@ -1235,17 +1236,8 @@ const HIST = { stack: [], i: -1, busy: false, dropped: 0 };
  *  mark is the palette on screen and Esc does not keep the typed colours. */
 const histMark = () => { if (urlTimer && !wheelDragging) updateUrl(); return HIST.i + HIST.dropped; };
 function paletteSnap() {
-  return JSON.stringify({
-    customHex: state.customHex || null,
-    baseId: state.customHex ? null : state.baseId,
-    harmony: state.harmony, seedRole: state.seedRole, showReal: state.showReal, popHex: state.popHex || null,
-    // the hysteresis holder + parked harmony are palette state too: without them, undoing to a seed in
-    // the 10–14 chroma deadband is re-classified with the CURRENT mode and the restored harmony is
-    // forced away (and the parked hue harmony is lost when undoing across a neutral entry)
-    neutral: neutralMode, preNeutral: preNeutralHarmony, preSeedRole: preNeutralSeedRole,
-    extraNodes: state.extraNodes.map(n => ({ h: Math.round(n.h * 10) / 10, s: Math.round(n.s * 1000) / 1000, l: n.l ?? null, locked: !!n.locked })),
-    dropOffsets: [...state.dropOffsets],
-  });
+  // The neutral-mode holders live outside `state`, so they go in beside it (undo.js)
+  return snapPalette({ ...state, neutral: neutralMode, preNeutral: preNeutralHarmony, preSeedRole: preNeutralSeedRole });
 }
 function pushHistory() {
   if (HIST.busy) return;
@@ -1259,18 +1251,18 @@ function pushHistory() {
 function applySnap(json) {
   // News and a mode note still waiting to be said are about the change this snapshot reverses: drop them
   takeModeNote(); newsLead = ''; newsNamesHarmony = false;
-  const o = JSON.parse(json);
+  const o = readSnap(json);
   state.customHex = o.customHex; state.baseId = o.baseId;
   state.harmony = validHarmony(o.harmony) ? o.harmony : state.harmony;
-  state.seedRole = o.seedRole === 'accent' ? 'accent' : 'main';
-  state.showReal = !!o.showReal;
-  state.popHex = o.popHex || null;
-  state.extraNodes = (o.extraNodes || []).map(n => ({ h: n.h, s: n.s, ...(n.l != null ? { l: n.l } : {}), ...(n.locked ? { locked: true } : {}) }));
-  state.dropOffsets = [...(o.dropOffsets || [])];
+  state.seedRole = o.seedRole;
+  state.showReal = o.showReal;
+  state.popHex = o.popHex;
+  state.extraNodes = o.extraNodes;
+  state.dropOffsets = o.dropOffsets;
   state.wheelL = rgbToHsl(hexToRgb(schemeBase()))[2];
-  neutralMode = typeof o.neutral === 'boolean' ? o.neutral : null;   // restore the hysteresis holder with the snapshot
-  preNeutralHarmony = o.preNeutral ?? null;
-  preNeutralSeedRole = o.preSeedRole ?? null;   // parked seed role travels with the snapshot too
+  neutralMode = o.neutral;   // restore the hysteresis holder with the snapshot
+  preNeutralHarmony = o.preNeutral;
+  preNeutralSeedRole = o.preSeedRole;   // parked seed role travels with the snapshot too
   lastNeutral = null;   // force ensureHarmonyMode (via refreshStudio) to re-sync banner/strip/pops for the restored seed
   syncSeg();
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));

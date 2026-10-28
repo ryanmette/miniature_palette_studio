@@ -259,7 +259,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ├── .github/
 │   ├── workflows/             ← deploy.yml (publish src/ to GitHub Pages, M9) · test.yml (node --test + data/docs validators on push/PR) · tag-release.yml (dispatchable release-tag creator, §8)
 │   └── dependabot.yml         ← keep workflow actions current (github-actions ecosystem only; no npm)
-├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/scheme/a11y/data/seed/share/store/ui/collection-io/shelf-dock/markmenu/version)
+├── test/                      ← unit tests — `node --test`, dev-only (color/harmony/scheme/a11y/data/seed/share/undo/store/ui/collection-io/shelf-dock/markmenu/version)
 └── src/                       ← the app (✓ M1–M8: data, engine, shell, all feature UI)
     ├── index.html             ← (M3)
     ├── privacy.html · support.html  ← privacy policy + Help and support (how the matching works, keyboard shortcuts, backup FAQ): the App Store Connect URLs, linked from ⋯ (Help) and About & data (CLAUDE_NATIVE.md §8)
@@ -276,6 +276,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── js/a11y.js             ← colour-blindness sim + WCAG contrast + CVD collision (M2/M7)
     ├── js/seed.js             ← the seed FRAME: pick ↔ scheme base (accent-seed is 180° away); the seed field's query parser (name or hex) and its Recent picks. Pure.
     ├── js/share.js            ← the share-link contract: palette state ⇄ URL query. Pure.
+    ├── js/undo.js             ← the undo snapshot: palette state ⇄ one JSON string, exact (no rounding). Pure.
     ├── js/wheel.js            ← the interactive wheel (canvas draw + hit-test + drag/keys); app injected
     ├── js/markmenu.js         ← the ONE mark menu (long-press · right-click · Shift+F10): its gestures, place and keys; app injected
     ├── js/picker.js           ← the seed field and its list (APG combobox: browse grid · search rows · hex rows); app injected
