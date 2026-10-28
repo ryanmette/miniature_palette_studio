@@ -802,9 +802,9 @@ function revealShelfResults() {
 function syncShelfFilterUi() {
   const sum = ui.shelfFilterSummary({ q: state.shelfQ, mark: state.shelfMark, brand: state.shelfBrand, type: state.shelfType });
   const chip = $('#shelfChip');
-  chip.textContent = sum.text;
+  $('#shelfChipTx').textContent = sum.text;
   chip.classList.toggle('on', sum.any);
-  $('#shelfHandle').setAttribute('aria-label', 'Search and filters' + (sum.any ? ` — ${sum.text.replace('⌕ ', '')}` : ''));
+  $('#shelfHandle').setAttribute('aria-label', 'Search and filters' + (sum.any ? ` — ${sum.text}` : ''));
   const badge = $('#shelfFBadge');
   badge.hidden = !sum.sheet;
   badge.textContent = sum.sheet || '';

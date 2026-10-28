@@ -258,6 +258,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **One icon set in place of Unicode symbols.** The app used symbols from different fonts (⋯ ↻ ↶ ↷ ✓ ○ ⚓ ⚠ ⌕
+  ✕ ✎ 🔒 ◎ ⇄ ◐), so each platform drew them in a different size, weight and style. The icons are now one SVG set
+  on a 20px grid with one stroke (1.75px, square ends), in the colour of the text. The set is an inline sprite in
+  `index.html`, so it adds no request. Every icon is hidden from screen readers, because each control already has
+  a name. The sources are in `src/assets/icons/`. The service-worker cache is `ps-v64`.
 - **No more cards.** The seed toolbar, the studio, the output and the Shelf sit on the page. Thin rules and space
   separate them, and the Plan's role cards, the Equivalents rows and the contrast pairs are rows under a rule, not
   boxes inside a box. Nothing in the page casts a shadow. Overlays (the seed list, menus, sheets, dialogs, toasts)

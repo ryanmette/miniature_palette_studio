@@ -13,6 +13,32 @@
 <meta name="theme-color" content="#141110" />
 </head>
 <body>
+<!-- The icon set (§3.5; the sources are src/assets/icons/*.svg): a 20px grid, one stroke (1.75px, square ends,
+     mitred joins, set in app.css .ic), currentColor, no fill. A dot is a zero-length stroke. ui.js icon(id)
+     draws <svg class="ic"><use href="#i-id"/></svg>; every use is aria-hidden (the control has a name). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-more" viewBox="0 0 20 20"><path d="M4.5 10h.01M10 10h.01M15.5 10h.01" stroke-width="2.8"/></symbol>
+  <symbol id="i-reroll" viewBox="0 0 20 20"><path d="M16 10a6 6 0 1 1-1.76-4.24"/><path d="M14.5 2.75v3.5H11"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 20 20"><path d="M7 4.5L3.5 8 7 11.5"/><path d="M3.5 8h8.25a4.75 4.75 0 0 1 0 9.5H8"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 20 20"><path d="M13 4.5L16.5 8 13 11.5"/><path d="M16.5 8H8.25a4.75 4.75 0 0 0 0 9.5H12"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 20 20"><path d="M10 4.5v11M4.5 10h11"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 20 20"><path d="M4.5 10h11"/></symbol>
+  <symbol id="i-anchor" viewBox="0 0 20 20"><circle cx="10" cy="4.5" r="1.75"/><path d="M10 6.25V17M6.5 9h7M3.75 11.5a6.25 6.25 0 0 0 12.5 0"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 20 20"><path d="M3.5 7h12l-3-3M16.5 13h-12l3 3"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 20 20"><path d="M4 16l.9-3.6 8.6-8.6 2.7 2.7-8.6 8.6zM11.6 5.7l2.7 2.7"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 20 20"><path d="M5 9h10v8H5zM7.25 9V6.75a2.75 2.75 0 0 1 5.5 0V9"/></symbol>
+  <symbol id="i-unlock" viewBox="0 0 20 20"><path d="M5 9h10v8H5zM7.25 9V6.75a2.75 2.75 0 0 1 5.3-1"/></symbol>
+  <symbol id="i-target" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6"/><path d="M10 10h.01" stroke-width="3"/></symbol>
+  <symbol id="i-close" viewBox="0 0 20 20"><path d="M5 5l10 10M15 5L5 15"/></symbol>
+  <symbol id="i-warning" viewBox="0 0 20 20"><path d="M10 3.25l7.25 13H2.75z"/><path d="M10 8.25v3.5M10 14h.01"/></symbol>
+  <symbol id="i-search" viewBox="0 0 20 20"><circle cx="8.75" cy="8.75" r="5.25"/><path d="M12.6 12.6l4.4 4.4"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4"/></symbol>
+  <symbol id="i-chevl" viewBox="0 0 20 20"><path d="M12 5l-5 5 5 5"/></symbol>
+  <symbol id="i-chevr" viewBox="0 0 20 20"><path d="M8 5l5 5-5 5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 20 20"><path d="M4 10.5l3.75 3.75L16 6"/></symbol>
+  <symbol id="i-empty" viewBox="0 0 20 20"><circle cx="10" cy="10" r="5.5"/></symbol>
+  <symbol id="i-half" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.25"/><path d="M10 3.75a6.25 6.25 0 0 0 0 12.5z" fill="currentColor" stroke="none"/></symbol>
+</svg>
 <header>
   <div class="bar">
     <div class="logo"><span class="mark">P</span><span class="t">Palette Studio<small data-i18n="tagline">for miniatures</small></span></div>
@@ -21,7 +47,7 @@
       <button data-mode="shelf" aria-pressed="false" data-i18n="shelf">Shelf</button>
     </div>
     <div class="spacer"></div>
-    <button class="btn icon" id="settingsBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="settingsMenu" aria-label="Settings" data-i18n-aria="settings" title="Settings">⋯</button>
+    <button class="btn icon" id="settingsBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="settingsMenu" aria-label="Settings" data-i18n-aria="settings" title="Settings"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-more"/></svg></button>
   </div>
 </header>
 
@@ -140,7 +166,7 @@
             autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" />
           <!-- tabindex -1: the field is the one tab stop (Down or Alt+Down opens the list), as in the APG combobox -->
           <button type="button" class="seedbrowse" id="seedBrowse" tabindex="-1" aria-label="Browse paints" data-i18n-aria="browsePaints"
-            title="Browse paints" aria-expanded="false" aria-controls="pkGrid"><svg class="sbic" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 0h5v5H9z"/></svg><span class="sbtx" data-i18n="browse">Browse</span><span class="sbcaret" aria-hidden="true">▾</span></button>
+            title="Browse paints" aria-expanded="false" aria-controls="pkGrid"><svg class="sbic" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 0h5v5H9z"/></svg><span class="sbtx" data-i18n="browse">Browse</span><span class="sbcaret" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></span></button>
         </div>
         <div class="pkpop" id="pkPop" hidden>
           <div class="pkbody lpress" id="pkBody" tabindex="-1">
@@ -173,9 +199,9 @@
         </div>
         <div class="wheelcol">
           <div class="noverlay" id="neutralOverlay" hidden>
-            <button type="button" class="nbanner" id="neutralBanner" aria-controls="neutralPill" title="Collapse this note"><span class="nb-ic" aria-hidden="true">◐</span>
+            <button type="button" class="nbanner" id="neutralBanner" aria-controls="neutralPill" title="Collapse this note"><span class="nb-ic" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-half"/></svg></span>
               <span><strong data-i18n="neutralHead">Neutral seed</strong> — <span data-i18n="neutralBody">hue harmonies can't move a colour with no hue, so these schemes are built for neutrals. Your colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.</span></span></button>
-            <button type="button" class="npill" id="neutralPill" aria-expanded="false" aria-controls="neutralBanner" title="Neutral seed — schemes adapted. Click for details." hidden><span aria-hidden="true">◐</span> <span data-i18n="neutralPill">neutral seed</span></button>
+            <button type="button" class="npill" id="neutralPill" aria-expanded="false" aria-controls="neutralBanner" title="Neutral seed — schemes adapted. Click for details." hidden><span aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-half"/></svg></span> <span data-i18n="neutralPill">neutral seed</span></button>
           </div>
           <div class="wheelrow">
             <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
@@ -184,7 +210,7 @@
               <span class="wl-end" aria-hidden="true" data-i18n="lighter">Lighter</span>
               <input id="wl" class="wl-range" type="range" min="6" max="94" step="1" />
               <span class="wl-end" aria-hidden="true" data-i18n="darker">Darker</span>
-              <button class="btn icon" id="wrand" title="Generate a random base colour" aria-label="Generate a random base colour">↻</button>
+              <button class="btn icon" id="wrand" title="Generate a random base colour" aria-label="Generate a random base colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-reroll"/></svg></button>
             </div>
           </div>
           <div class="wkey">
@@ -204,10 +230,10 @@
         <div class="palhead">
           <div class="micro">Live palette → nearest paint</div>
           <div class="palctl">
-            <button class="btn" id="undo" aria-label="Undo" title="Undo (Ctrl/⌘+Z)" disabled>↶</button>
-            <button class="btn" id="redo" aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)" disabled>↷</button>
-            <button class="btn" id="addnode" aria-label="Add a colour" title="Add a colour">+</button>
-            <button class="btn" id="delnode" aria-label="Remove the last added colour" title="Remove the last added colour">−</button>
+            <button class="btn" id="undo" aria-label="Undo" title="Undo (Ctrl/⌘+Z)" disabled><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-undo"/></svg></button>
+            <button class="btn" id="redo" aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)" disabled><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-redo"/></svg></button>
+            <button class="btn" id="addnode" aria-label="Add a colour" title="Add a colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
+            <button class="btn" id="delnode" aria-label="Remove the last added colour" title="Remove the last added colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg></button>
             <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">
               <button data-fill="ideal" aria-pressed="true">Ideal</button>
               <button data-fill="real" aria-pressed="false">Real</button>
@@ -280,7 +306,7 @@
         </div>
       </div>
       <button class="shelfhandle" id="shelfHandle" aria-controls="shelfPanel" aria-expanded="true" aria-label="Search and filters">
-        <span class="hpill" aria-hidden="true"></span><span class="hchip" id="shelfChip" aria-hidden="true">⌕ Search</span>
+        <span class="hpill" aria-hidden="true"></span><span class="hchip" id="shelfChip" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-search"/></svg><span id="shelfChipTx">Search</span></span>
       </button>
     </div>
     <div class="shelfgrid lpress" id="shelfGrid" role="listbox" aria-multiselectable="true"
@@ -297,7 +323,7 @@
 <dialog id="about" class="about" aria-labelledby="aboutTitle">
   <div class="abouthead sheethead">
     <h2 id="aboutTitle" data-i18n="aboutTitle">About Palette Studio</h2>
-    <button class="iconbtn" id="aboutClose" aria-label="Close" data-i18n-aria="close">✕</button>
+    <button class="iconbtn" id="aboutClose" aria-label="Close" data-i18n-aria="close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
   </div>
   <div class="aboutbody">
     <p data-i18n-html="aboutIntroHtml">A single-page tool for miniature painters: pick or explore a colour and get colour harmonies
@@ -333,7 +359,7 @@
     <div class="aboutshelf">
       <h3 data-i18n="yourShelfHead">Your shelf on this device</h3>
       <p data-i18n="yourShelfBody">Your owned and to-buy paints and your settings are kept only in this browser. To keep a copy, use ⋯ → Back up.</p>
-      <button type="button" class="btn danger" id="deleteOpen" aria-haspopup="dialog"><span class="dangerglyph" aria-hidden="true">⚠</span><span data-i18n="deleteOpen">Delete my shelf and settings…</span></button>
+      <button type="button" class="btn danger" id="deleteOpen" aria-haspopup="dialog"><span class="dangerglyph" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-warning"/></svg></span><span data-i18n="deleteOpen">Delete my shelf and settings…</span></button>
     </div>
 
     <p class="aboutfine">Paint names and brands are trademarks of their respective owners and are used
@@ -352,7 +378,7 @@
   <div class="fixslot" id="cdlgSaveSlot"><p class="sethint" id="cdlgSaved" role="status"></p></div>
   <div class="cdlgacts">
     <button type="button" class="btn" id="cdlgCancel" data-i18n="cancel">Cancel</button>
-    <button type="button" class="btn danger" id="cdlgOk"><span class="dangerglyph" aria-hidden="true">⚠</span><span id="cdlgOkLbl"></span></button>
+    <button type="button" class="btn danger" id="cdlgOk"><span class="dangerglyph" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-warning"/></svg></span><span id="cdlgOkLbl"></span></button>
   </div>
   <p class="sr-only" role="status" data-say></p>
 </dialog>
@@ -360,7 +386,7 @@
 <dialog id="eyedropper" class="about eyedrop" aria-labelledby="edTitle">
   <div class="abouthead sheethead">
     <h2 id="edTitle">Pick a colour from a photo</h2>
-    <button class="iconbtn" id="edClose" aria-label="Close">✕</button>
+    <button class="iconbtn" id="edClose" aria-label="Close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
   </div>
   <div class="aboutbody">
     <div class="edstage" id="edStage">

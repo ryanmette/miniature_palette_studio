@@ -131,9 +131,12 @@ export function shelfGrid(paints, markOf, selected = new Set()) {
 const cartGlyph = `<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">`
   + `<path fill="currentColor" d="M1 1h2l.6 2H15l-1.7 6.2a1.4 1.4 0 0 1-1.35 1H5.4a1.4 1.4 0 0 1-1.36-1L2.2 2.4 1.9 1.3 1 1zm4.7 12.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm6 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>`;
 
+/** An icon from the sprite in index.html (§3.5): decoration only, so always aria-hidden. */
+export const icon = id => `<svg class="ic" aria-hidden="true" focusable="false"><use href="#i-${id}"/></svg>`;
+
 /** State badge for a paint's mark — owned ✓ / to-buy cart / nothing. Shared by the grid + in-place updates. */
 export const markBadge = mark =>
-  mark === 'owned' ? `<span class="cbadge owned" aria-hidden="true">✓</span>`
+  mark === 'owned' ? `<span class="cbadge owned" aria-hidden="true">${icon('check')}</span>`
     : mark === 'want' ? `<span class="cbadge want" aria-hidden="true">${cartGlyph}</span>`
       : '';
 
@@ -156,7 +159,7 @@ export function shelfBar(count) {
 export function shelfFilterSummary({ q = '', mark = '', brand = '', type = '' } = {}) {
   const query = q.trim();
   const filters = [mark, brand, type].filter(Boolean).length;
-  const text = `⌕ ${query ? `“${query}”` : 'Search'}` + (filters ? ` · ${filters} filter${filters === 1 ? '' : 's'}` : '');
+  const text = `${query ? `“${query}”` : 'Search'}` + (filters ? ` · ${filters} filter${filters === 1 ? '' : 's'}` : '');
   return { text, filters, sheet: [brand, type].filter(Boolean).length, any: !!query || filters > 0 };
 }
 
@@ -181,7 +184,7 @@ export function compareBar(a, b) {
 
 /** Owned/to-buy affordance for a real paint chip — owned tick or a buy toggle. `mark` ∈ owned|want|none. */
 const ownOrBuy = (id, mark) => mark === 'owned'
-  ? '<span class="owntag">✓ owned</span>'
+  ? `<span class="owntag">${icon('check')}owned</span>`
   : buyBtn(id, mark);
 
 /** Base-paint hero — a single compact identity line: swatch chip · name · hex · seed-role pill · meta · buy.
@@ -249,7 +252,7 @@ const tierText = t => `var(--${t}-text)`;
 const buyBtn = (id, mark) => mark === 'owned' ? '' :
   `<button type="button" class="buybtn${mark === 'want' ? ' on' : ''}" data-buy="${esc(id)}" aria-pressed="${mark === 'want'}"`
   + ` title="${mark === 'want' ? 'On your buy list — click to remove' : 'Add to your buy list'}">`
-  + `${mark === 'want' ? '✓ on buy list' : '+ buy'}</button>`;
+  + `${mark === 'want' ? `${icon('check')}on buy list` : `${icon('plus')}buy`}</button>`;
 
 /** Render a nearest-paint match (or a graceful empty state). `markOf(id)` adds owned/adjust + a buy toggle. */
 export function matchChip(m, markOf) {
@@ -258,7 +261,7 @@ export function matchChip(m, markOf) {
   const mark = markOf ? markOf(p.id) : 'none';
   // "Boost owned, but honest" (#6): flag what you own + how to nudge it, never hiding the ΔE gap.
   const ownTag = mark === 'owned'
-    ? `<div class="ownline"><span class="owntag">✓ owned</span>${m.adjust ? `<span class="adjust">${esc(m.adjust)}</span>` : ''}</div>`
+    ? `<div class="ownline"><span class="owntag">${icon('check')}owned</span>${m.adjust ? `<span class="adjust">${esc(m.adjust)}</span>` : ''}</div>`
     : '';
   return swatch(p.hex, 'act' + fxCls(p))
     + `<div style="min-width:0"><div class="ttl">Nearest real paint</div>`
@@ -305,12 +308,12 @@ export function matchNote({ collection = 'off', owned = 0, contrast = false, exp
     // second line starts with words, not with the dot.
     const head = `<b>${esc(t('noteUmp', { mode: t(collection === 'only' ? 'umpOnly' : 'umpPrefer') }))}</b>\u00a0·`;
     if (!owned) {
-      lines.push(`<button type="button" class="mnote" data-note="shelf"><span class="nk off" aria-hidden="true">○</span>`
+      lines.push(`<button type="button" class="mnote" data-note="shelf"><span class="nk off" aria-hidden="true">${icon('empty')}</span>`
         + `<span class="ntx">${head} <span class="mt">${esc(t('noteUmpEmpty'))}</span></span>${go(t('openShelf'))}</button>`);
     } else {
       const why = collection === 'only' ? t('noteUmpOnly', { n: owned }) : t('noteUmpPrefer');
       lines.push(`<button type="button" class="mnote" data-note="ump" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="${!!expanded}">`
-        + `<span class="nk" aria-hidden="true">✓</span><span class="ntx">${head} <span class="mt">${esc(why)}</span></span>${go(t('change'))}</button>`);
+        + `<span class="nk" aria-hidden="true">${icon('check')}</span><span class="ntx">${head} <span class="mt">${esc(why)}</span></span>${go(t('change'))}</button>`);
     }
   }
   if (contrast) {
@@ -349,7 +352,7 @@ export function roleSlots(scheme, markOf) {
     : '';
   return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}" data-hex="${safeColor(r.idealHex)}">`
     + `<div class="shead"><span class="role">${esc(r.role)}</span>`
-    +   `<span class="sheadr"><button type="button" class="eqjump" data-goequiv="${safeColor(r.idealHex)}" title="Show this colour's cross-brand equivalents" aria-label="Show equivalents for ${esc(r.role)}">⇄ equivalents</button><span class="wt">${esc(r.weight)}</span></span></div>`
+    +   `<span class="sheadr"><button type="button" class="eqjump" data-goequiv="${safeColor(r.idealHex)}" title="Show this colour's cross-brand equivalents" aria-label="Show equivalents for ${esc(r.role)}">${icon('swap')}equivalents</button><span class="wt">${esc(r.weight)}</span></span></div>`
     + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match, markOf)}</div>`
     + subNote(r)
     + sharedNote(r)
@@ -441,7 +444,7 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // metallic sheen (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
     const fx = real && m ? fxCls(m.paint).trim() : (isMetal ? 'metal' : '');
     const foot = m
-      ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ' <span class="ownmini">✓ owned</span>' : ''}</span>`
+      ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
         + `<span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span>`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
@@ -453,12 +456,12 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // Metal + the pinned accent are display-only (no wheel node of their own to drive); every other
     // column keeps its edit/lock/add controls.
     const acts = (isMetal || isPin) ? '' : `<div class="lcact">`
-      +   ((isBase || canDetach) ? `<button type="button" class="lcbtn" data-edit="${sw}" title="Edit colour" aria-label="Edit ${esc(tag)} colour">✎</button>` : '')
-      +   (canDetach ? `<button type="button" class="lcbtn${lockOn ? ' on' : ''}" data-lock="${sw}" title="${lockOn ? 'Unlock' : 'Lock'} colour" aria-label="${lockOn ? 'Unlock' : 'Lock'} ${esc(tag)}" aria-pressed="${lockOn}">${lockOn ? '🔒' : '🔓'}</button>` : '')
-      +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:-1"${fi === 0 ? ' disabled' : ''} title="Move earlier" aria-label="Move ${esc(tag)} earlier">◂</button>` : '')
-      +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:1"${fi === freeCount - 1 ? ' disabled' : ''} title="Move later" aria-label="Move ${esc(tag)} later">▸</button>` : '')
-      +   `<button type="button" class="lcbtn" data-setbase="${cHex}" title="Use as base colour" aria-label="Use ${esc(tag)} as the base colour">◎</button>`
-      +   (isFree ? `<button type="button" class="lcbtn" data-delnode="${c.id.slice(1)}" title="Remove this colour" aria-label="Remove ${esc(tag)}">✕</button>` : '')
+      +   ((isBase || canDetach) ? `<button type="button" class="lcbtn" data-edit="${sw}" title="Edit colour" aria-label="Edit ${esc(tag)} colour">${icon('edit')}</button>` : '')
+      +   (canDetach ? `<button type="button" class="lcbtn${lockOn ? ' on' : ''}" data-lock="${sw}" title="${lockOn ? 'Unlock' : 'Lock'} colour" aria-label="${lockOn ? 'Unlock' : 'Lock'} ${esc(tag)}" aria-pressed="${lockOn}">${icon(lockOn ? 'lock' : 'unlock')}</button>` : '')
+      +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:-1"${fi === 0 ? ' disabled' : ''} title="Move earlier" aria-label="Move ${esc(tag)} earlier">${icon('chevl')}</button>` : '')
+      +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:1"${fi === freeCount - 1 ? ' disabled' : ''} title="Move later" aria-label="Move ${esc(tag)} later">${icon('chevr')}</button>` : '')
+      +   `<button type="button" class="lcbtn" data-setbase="${cHex}" title="Use as base colour" aria-label="Use ${esc(tag)} as the base colour">${icon('target')}</button>`
+      +   (isFree ? `<button type="button" class="lcbtn" data-delnode="${c.id.slice(1)}" title="Remove this colour" aria-label="Remove ${esc(tag)}">${icon('close')}</button>` : '')
       + `</div>`;
     // Swatch is a plain div now; copying moved to its own button beside the hex (so the swatch-click stays
     // free for the Equivalents drill-down). The drill-down makes the swatch a role="button" only on that tab
@@ -467,9 +470,9 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // ("my pick seeds this role"); the dashed dock on the other eligible column is the control.
     // Every column reserves the row so switching never changes the bar's height (§3.4).
     const dock = c.dock && c.dock.type === 'chip'
-      ? `<span class="seedchip" title="Your pick — it seeds the ${esc(tag)} role"><span class="scsw" style="background-color:${safeColor(c.dock.hex)}"></span><span class="scnm">${esc(c.dock.name)}</span><span class="scanchor" aria-hidden="true">⚓</span></span>`
+      ? `<span class="seedchip" title="Your pick — it seeds the ${esc(tag)} role"><span class="scsw" style="background-color:${safeColor(c.dock.hex)}"></span><span class="scnm">${esc(c.dock.name)}</span><span class="scanchor" aria-hidden="true">${icon('anchor')}</span></span>`
       : c.dock && c.dock.type === 'switch'
-        ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with your pick as the ${esc(tag)}"`} aria-label="Seed as ${esc(tag)}">⚓ seed here</button>`
+        ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with your pick as the ${esc(tag)}"`} aria-label="Seed as ${esc(tag)}">${icon('anchor')}seed here</button>`
         : '';
     return `<div class="lcol${lockOn ? ' locked' : ''}${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
       + `<div class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}">`
