@@ -312,7 +312,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
   margin-right: auto;   /* collapsed state parks at the LEFT of the wheel area (banner stays centred) */
   background: var(--accent-weak); border: 1px solid var(--accent); color: var(--accent); box-shadow: var(--shadow-pop);
   border-radius: var(--r-tag); padding: 4px 10px; font-size: 11.5px; font-weight: 600; font-family: var(--font);
-  animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }
+  animation: mh-fade .18s ease both; }   /* a fade, no bounce: the painter did nothing, the note only folded away (§3.4) */
 
 /* Quick pops (neutral mode): shortcuts that move the wheel's pop node. */
 .pops { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }

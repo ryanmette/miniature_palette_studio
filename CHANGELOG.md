@@ -258,6 +258,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **The neutral note no longer bounces when it folds away.** The ◐ pill now fades in (180ms). Only an action
+  of the painter bounces. The service-worker cache is `ps-v66`.
 - **A new logo: a dropper whose colour lands as a round pot lid** (`mockups/logo.html`, 4a; Ryan chose it). It
   replaces the "P" in a rounded square, which the audit counted among the "made by AI" signs.
   - The header draws the mark with no tile. The bottle is the text colour and the lid is the accent, so it
