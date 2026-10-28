@@ -194,6 +194,19 @@
       </div>
       <p class="sr-only" id="seedKeys" data-i18n="seedKeys">The down arrow opens the list. The arrow keys move in it. Enter picks a paint. Shift+F10 opens the mark menu. Escape closes the list.</p>
     </div>
+    <!-- First run (UX 1): shown only when this device has nothing saved and the link names no paint. The
+         first change to the scheme (a pick, a hex, a drag, a harmony) ends it for good (app.js firstRun). -->
+    <section class="firstrun" id="firstRun" aria-labelledby="firstRunTitle" hidden>
+      <h2 id="firstRunTitle">Start a scheme</h2>
+      <p>Pick one paint you want on the model: type it in the field above, or start from one of these. The app builds a scheme around it and finds the pots to buy.</p>
+      <div class="frpicks" id="firstRunPicks" role="group" aria-label="Start from a paint"></div>
+      <ol class="frsteps">
+        <li>Pick a paint, or drag the wheel.</li>
+        <li>Pick a harmony, or roll one.</li>
+        <li>Add the pots you do not have to your shopping list.</li>
+      </ol>
+      <button type="button" class="textact" id="firstRunShelf">I own paints — mark my shelf first</button>
+    </section>
     <div class="wsplit">
       <div class="card pad studio">
         <div class="herowrap">

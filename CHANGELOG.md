@@ -6,6 +6,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **A first-run guide.** On a first visit (nothing saved on this device, and no paint in the link), a "Start
+  a scheme" band under the paint field says what to do: one sentence, four starter paints (Mephiston Red,
+  Macragge Blue, Caliban Green, Retributor Armour), three steps, and "I own paints — mark my shelf first". The
+  first change to the scheme (a pick, a hex, a drag or a harmony) removes it for good. Delete my shelf and
+  settings makes the next visit a first visit again.
 - **Design exploration: a visual identity that does not look "made by AI"** (`mockups/visual-identity.html`, not
   shipped). Ryan said that parts of the design look "AI", for example the radius and the padding of the buttons.
   - The audit took 288 screenshots of PR #39 (24 surfaces, 6 sizes, light and dark) and measured the computed

@@ -445,6 +445,7 @@ let dragFrame = false, exactEquivT = 0;
 function render(reason = 'scheme', { speak = true, ids = null, keepWheelL = false } = {}) {
   if (reason === 'settle') { updateUrl(); if (speak) announce(); return; }
   if (reason === 'marks') { renderMarks(ids); return; }
+  endFirstRun();   // the painter changed the scheme: the first-run block has done its job
 
   // A pick, a typed hex, undo/redo, a share link or a harmony/seed-role change ends a lightness run.
   // Wheel drags and ↻ render as 'drag': the slider sees their new pick for itself. A pop change
@@ -1305,6 +1306,23 @@ function scheduleAnnounce() {
   announceTimer = setTimeout(announce, 400);
 }
 const renderAll = () => render('all');   // init / a paint pick
+/* ---- First run (UX 1) ---- */
+const FIRST_PICKS = ['citadel-base-mephiston-red', 'citadel-base-macragge-blue', 'citadel-base-caliban-green', 'citadel-base-retributor-armour'];
+let firstRun = false;   // the block shows; set in init, after the first render
+function startFirstRun() {
+  const picks = FIRST_PICKS.map(id => state.idx.byId.get(id)).filter(Boolean);
+  $('#firstRunPicks').innerHTML = picks.map(p => `<button type="button" class="btn frpick" data-firstpick="${ui.esc(p.id)}">`
+    + `${ui.swatch(p.hex, ui.fxCls(p).trim())}${ui.esc(p.name)}</button>`).join('');
+  $('#firstRun').hidden = false;
+  firstRun = true;
+}
+/** The first change to the scheme ends the block, and saving makes the next visit a return visit. */
+function endFirstRun() {
+  if (!firstRun) return;
+  firstRun = false;
+  $('#firstRun').hidden = true;
+  store.keep();
+}
 /** The device's light/dark setting. The app follows it, live, until the painter picks a theme (§3.1). */
 const osDark = matchMedia('(prefers-color-scheme: dark)');
 const deviceTheme = () => (osDark.matches ? 'dark' : 'light');
@@ -2144,6 +2162,8 @@ function wire() {
     shelfFilterChanged();
   });
   $('#shelfType').addEventListener('change', e => { state.shelfType = e.target.value; shelfFilterChanged(); });
+  $('#firstRunPicks').addEventListener('click', e => { const b = e.target.closest('[data-firstpick]'); if (b) selectPaint(b.dataset.firstpick); });
+  $('#firstRunShelf').addEventListener('click', () => { endFirstRun(); setMode('shelf'); });
   $('#shelfEmpty').addEventListener('click', e => { if (e.target.closest('[data-shelfclear]')) clearShelfFilters(); });
   // Sorting doesn't change which paints are shown, so keep the selection — just re-render in the new order.
   $('#shelfSort').addEventListener('change', e => { state.shelfSort = e.target.value; renderShelf(); revealShelfResults(); });
@@ -2190,7 +2210,7 @@ async function init() {
   // ran TWICE — the second call was byte-identical dead work — and neither re-applied what it
   // restored, so on a shell whose storage had been evicted the recovered theme/locale sat in state
   // while the DOM kept the pre-hydrate one. applyPrefsToState() below applies it.
-  await store.hydrate();
+  const restored = await store.hydrate();
   applyPrefsToState();   // hydrate may have restored theme/locale/plan prefs — apply them, don't strand them
   if (tParam) { linkTheme = tParam; setTheme(tParam); }   // ...but the link's theme still outranks the stored pref
   // Another tab saved a mark or a setting, or deleted or restored the shelf (store.js): show it here too.
@@ -2249,6 +2269,9 @@ async function init() {
     coarse: () => COARSE, phone: () => PHONE.matches,
   });
   renderAll();
+  // A first visit with no paint in the link: show "Start a scheme" (after the first render, so that
+  // render does not end it). A native shell that restored a shelf is not a first visit.
+  if (store.firstVisit && !restored && !url.get('p') && !url.get('c')) startFirstRun();
   if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf
   // The first search letter would fold all 3,225 paints at once (about 70ms on a slow phone): do it now,
   // while the browser has nothing else to do.

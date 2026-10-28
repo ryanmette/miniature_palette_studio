@@ -53,6 +53,12 @@ function normalise(s) {
   return { v: VERSION, owned, want, prefs };
 }
 
+/** True when this device had nothing saved when the app loaded (no state, no legacy keys): a first
+ *  visit, or the first one after Delete. Read before anything is written. The first-run block uses it. */
+export const firstVisit = (() => {
+  try { return !localStorage.getItem(KEY) && !LEGACY_KEYS.some(k => localStorage.getItem(k)); } catch { return false; }
+})();
+
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
@@ -126,6 +132,8 @@ export const counts = () => ({ owned: owned.size, want: want.size });
 
 /* ---- prefs ---- */
 export const getPref = k => state.prefs[k];
+/** Save the state as it is, so the next visit is not a first visit (the first-run block has done its job). */
+export function keep() { persist(); }
 export function setPref(k, v) { state.prefs[k] = v; persist(); }
 
 /* ---- portability: the backup file (⋯ → Back up / Restore…) and the basis for future sync ---- */
