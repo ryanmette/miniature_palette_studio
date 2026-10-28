@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, segmented, hero, paintStrip, popChips, matchNote, planControls } from '../src/js/ui.js';
+import { livePalette, roleSlots, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -48,17 +48,61 @@ test('hero badges the picked paint with its seed role (main/accent)', () => {
   assert.doesNotMatch(hero(base, false, () => 'none'), /seedbadge/);
 });
 
-test('paintStrip renders chips with id, selection, and owned/to-buy badges', () => {
-  const paints = [
-    { id: 'a', hex: '#9A1115', name: 'Red', brand: 'Citadel', line: 'Base', type: 'base' },
-    { id: 'b', hex: '#11979A', name: 'Teal', brand: 'Vallejo', line: '—', type: 'layer' },
-  ];
-  const html = paintStrip(paints, 'a', id => (id === 'a' ? 'owned' : id === 'b' ? 'want' : 'none'));
-  assert.match(html, /class="pchip"[^>]*data-id="a"[^>]*aria-selected="true"/);
-  assert.match(html, /data-id="b"[^>]*aria-selected="false"/);
-  assert.match(html, /cbadge owned/);    // owned state badge on a
-  assert.match(html, /cbadge want/);     // to-buy state badge on b
-  assert.match(html, /class="pchip-nm">Red</);
+// the seed field's list (picker.js): the tiles of the browse grid, the rows of a search, the hex row
+const tk = (k, v) => (v ? `${k}:${Object.values(v).join('|')}` : k);   // a stand-in for i18n.t: shows the key
+const RED = { id: 'a', hex: '#9A1115', name: 'Red', dname: 'Red', brand: 'Citadel', line: 'Base', type: 'base' };
+const TWIN = { id: 'd', hex: '#697068', name: 'Dawnstone', dname: 'Dawnstone (Layer)', brand: 'Citadel', line: 'Layer', type: 'layer' };
+const LEAD = { id: 'm', hex: '#969696', name: 'Leadbelcher', dname: 'Leadbelcher', brand: 'Citadel', line: 'Base', type: 'metal' };
+
+test('pickTile: a grid cell with the swatch, the display name, the brand and the mark badge', () => {
+  const html = pickTile(TWIN, { id: 'pko3', k: 3, mark: 'owned' }, tk);
+  assert.match(html, /^<div class="pkt" role="gridcell" id="pko3" data-k="3"/);
+  assert.match(html, /class="pkn">Dawnstone \(Layer\)</);   // twins stay apart: the name carries the line
+  assert.match(html, /cbadge owned/);
+  // the display name already has the line, so the spoken name does not say it twice
+  assert.match(html, /aria-label="Dawnstone \(Layer\), Citadel, owned"/);
+  assert.doesNotMatch(html, /aria-selected/);   // only the active option gets aria-selected (picker.js)
+});
+
+test('pickTile: your pick has the pick ring and says so; a metallic has its overlay and finish icon', () => {
+  const cur = pickTile(RED, { id: 'pko0', k: 0, current: true }, tk);
+  assert.match(cur, /class="pkt cur"/);
+  assert.match(cur, /aria-label="Red, Citadel Base, pkCurrentSaid"/);   // "not owned" is left out: it is most paints
+  const metal = pickTile(LEAD, { id: 'pko1', k: 1, mark: 'want' }, tk);
+  assert.match(metal, /class="sw metal"/);
+  assert.match(metal, /class="pkb"><svg/);                  // the finish icon before the brand (§2)
+  assert.match(metal, /Leadbelcher, Citadel Base, metallic, to buy/);
+  assert.match(metal, /cbadge want/);
+});
+
+test('pickRow: an option row with brand · line · mark and the finish tag; a hex match shows the TRUE ΔE', () => {
+  const plain = pickRow(TWIN, { id: 'pko5', k: 5, mark: 'want' }, tk);
+  assert.match(plain, /role="option" id="pko5" data-k="5" aria-selected="false"/);
+  assert.match(plain, /<b>Dawnstone<\/b><span class="pksub">Citadel · Layer · to buy /);   // the row shows the line
+  assert.doesNotMatch(plain, /pkde/);
+  const m = { deltaE: 2.44, quality: { label: 'Good', tier: 'success' } };
+  const hex = pickRow(LEAD, { id: 'pko6', k: 6, current: true, match: m }, tk);
+  assert.match(hex, /class="pkcur">pkCurrent</);
+  assert.match(hex, /class="finish finish-metal"/);
+  assert.match(hex, /<span class="badge">ΔE 2\.4<\/span>/);
+  assert.match(hex, /aria-label="Leadbelcher, Citadel Base, metallic, pkCurrentSaid, pkMatchSaid:Good\|2\.4"/);
+});
+
+test('pickUseRow: "Seed:" while the live hex is the seed, else "Use … as seed"; the colour is re-minted', () => {
+  assert.match(pickUseRow('#9a1115', { id: 'pko0', k: 0, live: true }, tk), /<b>pkSeedLive:#9A1115<\/b><span class="pksub">pkSeedLiveSub</);
+  assert.match(pickUseRow('#DECADE', { id: 'pko9', k: 9, coarse: true }, tk), /pkUseHex:#DECADE.*pkUseHexTap/);
+  assert.match(pickUseRow('#DECADE', { id: 'pko9', k: 9 }, tk), /pkUseHexClick/);
+  // a hex that is not one cannot reach the inline style (safeColor)
+  const bad = pickUseRow('red;background:url(x)', { id: 'x', k: 0 }, tk);
+  assert.doesNotMatch(bad, /url\(x\)/);
+  assert.match(bad, /background-color:#000000/);
+});
+
+test('pickGroup: an APG listbox group named by its presentation title; menuTitle names a paint once', () => {
+  assert.equal(pickGroup('pkgC', 'Closest paints', '<i></i>'),
+    '<div role="group" aria-labelledby="pkgC"><div class="pkhead" role="presentation" id="pkgC">Closest paints</div><i></i></div>');
+  assert.equal(menuTitle(RED), 'Red · Citadel Base');
+  assert.equal(menuTitle(TWIN), 'Dawnstone (Layer) · Citadel');
 });
 
 test('segmented marks exactly one harmony active', () => {

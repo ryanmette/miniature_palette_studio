@@ -192,7 +192,8 @@ Push for "back in stock" much later. Out (still): accounts, server, payments, so
 with on-device text recognition (Vision on iOS) and fuzzy-matching it against the 2,508 names already in
 `paints.json` needs **no new data at all**, keeps the no-backend rule (§1), and answers the same in-store
 question: *what is this pot, do I already own it, what is it close to?* It also degrades gracefully — a
-bad read just drops its text into the search field instead of failing. Treat barcode as the nicer UX to
+bad read just drops its text into the Shelf search instead of failing (the seed field's matcher, so brand and
+line words narrow it too). Treat barcode as the nicer UX to
 reach **if** a mapping ever exists, and OCR as the shipping path. Sketched in
 [`mockups/buying-assistant.html`](../mockups/buying-assistant.html) §Cross-cutting.
 

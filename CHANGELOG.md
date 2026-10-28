@@ -6,6 +6,29 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **One mark menu, and Use as seed on the Shelf** (the Paints picker build;
+  `mockups/paints-picker.html` "Recommended"; Ryan, 2026-10-28). The new `markmenu.js` holds the menu's
+  gestures, its place on the screen and its keys. The Shelf uses it now. The seed field's list uses the
+  same menu.
+  - The Shelf's menu has **Use as seed** on top. With one paint selected, it starts the Studio from that
+    paint. With 0 or 2+ selected, it stays in the menu but is off, and it says why. There is no pick
+    mode: a tap on the Shelf still marks.
+  - **Shift+F10** or the **ContextMenu** key opens the menu at the Shelf's cursor cell. With no cursor
+    and no selection, a screen reader hears how to go to a paint.
+  - The menu has a title line: the paint's name, or "3 paints selected". Its items are 44px tall on a
+    touch screen. It has the floating-overlay shadow (`--shadow-pop`). The arrow keys, Home and End move
+    in it; Esc and Tab close it, and focus goes back to the grid.
+  - The Help page lists Shift+F10. Every new string is in `i18n.js`.
+- **The seed field's query parser and the shared paint search** (pure, unit-tested). `seed.js`
+  `parseSeedQuery` reads a paint name or a hex: "#" and 6 digits seed as you type, a bare `9a1115` or
+  `#9A1` needs Enter, and "Abaddon Black" is never a colour. `data.js` `searchPaints` ranks the names
+  that are the query or start with it first; in each group, the paints you own come first. `closestPaints`
+  lists the paints nearest a colour, ranked as the Equivalents tab ranks a flat colour. The app folds the
+  paint names for the search while the browser is idle, so the first letter you type is not slow.
+- Tests for the Paints picker build: the mark menu's keys, place and guards (`test/markmenu.test.mjs`),
+  `parseSeedQuery`, `paintMatcher` and `searchPaints` (the cases "metallic", "citadel metallic",
+  "dawnstone (layer)", "decade", "Abaddon Black", "vallejo red" and a word start), `closestPaints`,
+  `browseOrder`, `addRecent`, and the list's tiles and rows in `ui.js`: 225 tests.
 - **⋯ Settings: the full menu** (Ryan, 2026-10-26 and 2026-10-28; `mockups/collection-setting.html`:
   direction A, "The full ⋯ menu" and its design critique). ⋯ opens a dialog named Settings, in four groups:
   - **Use my paints** (Off · Prefer · Only), **Theme** and **Language**;
@@ -65,7 +88,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   delete it, and that the shelf is kept only in this browser. About & data links to both new sections.
 - Tests for `store.inspectJSON()`, `store.clear()`, the backup's `saved` date, the pref list, `shareUrl()`,
   the matching note, the version check (`test/version.test.mjs`), the pref values a backup may carry,
-  and the theme in a shared link: 184 tests.
+  and the theme in a shared link.
   `check-docs.mjs` also runs its checks when you start it through a symlinked folder.
 - **Design exploration: the lightness slider** (`mockups/lightness-slider.html`, not shipped). Ryan
   reported that the slider under the wheel does not say what it does. It sets the lightness of your
@@ -125,7 +148,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   plus a mix of the two. It has live frames, close-ups, and pixel notes from four independent reviews.
 - **Two new brands: AK Interactive and AMMO by Mig — dataset 1.6.0 (3,225 paints, 10 brands).** Both
   come from the same MIT-licensed source as the other brands (Arcturus5404/miniature-paints, `AK.md`
-  and `Mig.md`). The new paints show in the Shelf, the Paints drawer, the brand filters and the
+  and `Mig.md`). The new paints show in the Shelf, the seed field's list, the brand filters and the
   cross-brand matches.
   - **AK Interactive (467):** the current 3rd Gen acrylics only — Standard, AFV, Air, Figures,
     Intense, Pastel, Metallic and Ink. The older 2nd Gen sets are not included, because 3rd Gen
@@ -169,6 +192,56 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **The seed field replaces the ☰ Paints drawer and the # hex box** (the Paints picker build;
+  `mockups/paints-picker.html` "Recommended"; Ryan, 2026-10-28). One field, "Paint or #hex", takes a
+  paint name, brand, line, type or finish words ("vallejo red", "citadel metallic", "dawnstone (layer)")
+  or a hex.
+  - **Browse** ("Browse ▾", or a grid icon on a phone) opens the list. It does not raise the phone
+    keyboard. A tap on the field raises the keyboard.
+  - Browse shows a colour grid. Your **Recent** picks come first (this visit only, not saved), then every
+    paint. **Sort** orders the grid by Hue, Closest to your pick, Owned first or Name. In the grid, the
+    arrow keys move in two directions.
+  - A search shows rows with the brand and the line. Names that are the text or start with it come first.
+    In each group, the paints you own come first.
+  - "#" and 6 digits change the seed as you type, also when you paste them. The live region says the new
+    seed, and a change of scheme that it makes. **Esc** closes the list and puts back the seed from before
+    you typed. The colours you typed leave the undo history, so ↶ does not bring them back. A bare `9A1115` or `#9A1`
+    needs Enter. A hex word in letters only, such as "decade", searches names first, and "Use #DECADE as
+    seed" is the last row. Under a hex, the 6 closest paints show with ΔE and its label. They rank as the
+    Equivalents tab ranks a flat colour.
+  - **A tap or Enter only picks.** To mark a paint, press and hold it, right-click it, or press Shift+F10:
+    this is the Shelf's mark menu. The badge changes at once, and the list stays open. After a press and
+    hold, focus goes to the list (not the field, so the iOS keyboard stays down).
+  - A pick shows "New seed: …" and the screen reader hears it first, then a change of scheme (for example
+    to Neutral + pop) and the scheme. A pick that the matches cannot use still says why ("your pick … is a
+    shade"). Use as seed on the Shelf does the same.
+  - After a tap pick on a touch screen, focus goes to the hero line, and the keyboard goes down. After
+    Enter (a tablet keyboard too) or a click, focus stays in the field, and Ctrl/⌘+Z undoes the pick: the
+    empty field has no text to undo.
+  - A tap on a field that still holds text opens the list again with its results.
+  - In the grid, a name can take three lines, so twins such as "Opal Skin (Warpaints Fanatic)" show
+    whole. Ctrl+End and a fast run of Page Down keep the whole cursor tile in view.
+  - The list floats over the Studio with the floating-overlay shadow (`--shadow-pop`), so nothing moves
+    when it opens. It fades in (200ms); with reduced motion it just appears. Its height follows the visual
+    viewport, so the iOS keyboard does not cover its end.
+  - On a short screen (400% zoom: 320×256, or a phone turned sideways), the open list covers the header,
+    as the ⋯ menu does, and Sort scrolls with the paints. Before, at 320×256 the grid showed no paint.
+  - The seed toolbar is one row while the field keeps 100px for its text: from 375px up. At 360px and
+    below, Compare goes to a second row. The page does not scroll sideways at 280px or wider. On a phone,
+    From photo is a 44px camera button, and its name is still "From photo". On a touch screen, the field
+    and Browse are 44px tall.
+  - The brand and type filters, the 7-way sort, and CSV Import… / Export CSV leave the Studio. They stay
+    on the Shelf. The Shelf's Import… still takes a `.json` backup through the Restore confirm. The hero
+    line is the one readout of the colour.
+  - The new `picker.js` holds the field and its list. `data.js` `browseOrder` gives the grid's orders:
+    "Hue" goes round the wheel in 15° bands, light to dark in each band, with the greys last. `seed.js`
+    `addRecent` keeps the Recent picks. Every new string is in `i18n.js`. The Help page lists the new keys.
+- **The Shelf search finds more.** It uses the seed field's matcher. Each word must match the name, the
+  display name, the brand, the line, the type or the finish word. So "vallejo red" and "citadel metallic"
+  now find paints ("dawnstone (layer)" still works). Before, the whole text had to be in one of these, so
+  "vallejo red" found nothing. Accents and apostrophes do not matter: "resedagrun" finds Resedagrün.
+- **On a long-press, the Shelf's menu opens under the swatch**, or over it when there is no room. Before,
+  it opened under the finger. A right-click still opens it at the pointer.
 - **"Use my collection" moves from the Plan tab to ⋯ and is now "Use my paints"** (Off · Prefer · Only).
   It changes the live palette, the Plan, the shopping list and the Accessibility swap, so it does not
   belong to one tab. The setting and its saved value do not change. The hint under it says what each
@@ -178,7 +251,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **About & data:** a "Your shelf on this device" block with Delete, links to the Help page, and the
   version line. Its padding is on the spacing scale (16px; 24px at the bottom). The fine print is `--text-muted` (`--text-faint` was 2.39:1, under AA). Its "colour"
   text has an en-US version.
-- **A JSON backup picked through Import… (Shelf or Paints drawer) goes through the Restore confirm.**
+- **A JSON backup picked through the Shelf's Import… goes through the Restore confirm.**
   Before, it replaced the shelf and settings at once.
 - **A restored or deleted theme or language of "none" follows the device.** It is applied, not saved.
 - **Undo and redo (Ctrl/⌘ Z) work only in the Studio.** On the Shelf, they changed a palette you could
@@ -265,7 +338,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     - This happens however the panel opened. It does not happen just after the panel pins, and it
       is off while the Filters sheet is open.
     - Note: `--shadow-pop` is violet-tinted in light mode. Over the first row of paints it adds a
-      light violet haze (up to about ΔE 5), the same as the Paints drawer does. In dark, the shadow
+      light violet haze (up to about ΔE 5), the same as the seed field's list does. In dark, the shadow
       cannot be seen on the background, but it darkens the first row of paints under the panel (a
       peach reads as tan). A neutral shadow would be a §3.1 token change.
   - Keyboard and screen reader: the handle is a button with `aria-expanded`. The sheet is a modal
@@ -301,6 +374,23 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **The old Paints drawer's bugs** (`mockups/paints-picker.html`, "Today"). The seed field fixes them:
+  - A tap on ☰ Paints raised the phone keyboard over the paints. Browse never takes focus.
+  - A pasted "#9A1115" did nothing: the hex box kept 6 characters. Now it seeds.
+  - "Abaddon Black" in the hex box seeded #ABADDB. A paint name is now always a search.
+  - The drawer held 3,225 buttons (3,232 tab stops) and built all of them again on each seed change,
+    also while it was closed. The list is now one tab stop, and it exists only while it is open.
+  - After a wheel drag, the drawer still showed the old paint as the pick, and "Closest to base" kept the
+    old order. The list is now built on open, from the pick at that time.
+- **A mark updates every surface at once** (one path, `render('marks')`). Before, a mark on the Shelf left
+  the Studio's hero, live palette, Plan and Equivalents on the old state until the next full render. With
+  Use my paints on, the matches could be old too. A mark in the Paints drawer did not update the hero's buy
+  toggle. A Plan buy toggle now keeps the focus after its repaint.
+- **The Shelf's menu.** The arrow keys moved the grid cursor behind the open menu; now they move in the
+  menu. A tap on another swatch while the menu was open also marked that swatch; now it only closes the
+  menu. On a touch screen the items were 32px tall; now they are 44px. A tap that marks a swatch now says
+  the new mark to a screen reader. A click on an item less than 350ms after a right-click did nothing;
+  that guard is now for a finger or a pen only (the lift at the end of a press and hold).
 - **A theme that follows the device stays out of the address bar.** Before, a dark device wrote `t=dark`
   into the address bar. After a reload on a light device, the page stayed dark, and the Theme row said
   "Follows your device". Now the address bar has `t` only for a shared link's theme: a saved theme comes

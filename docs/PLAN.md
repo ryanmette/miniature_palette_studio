@@ -262,11 +262,14 @@ computes every answer P3 needs (ΔE matching, cross-brand equivalents, interchan
 to-buy marks) but files them *inside* the scheme output. Four routing directions explored in
 [`mockups/buying-assistant.html`](../mockups/buying-assistant.html); none needs new engine work.
 
-7. **Paint detail sheet — direction B** (recommended first). One component: tap any paint anywhere
-   (Shelf cell, drawer chip, live-palette column, ladder rung, equivalents row) → a sheet with identity,
+7. **Paint detail sheet — direction B** (recommended first). One component: open it from any paint
+   anywhere → a sheet with identity,
    finish, owned/to-buy toggle, its interchangeable group, closest in other brands, and *closest on your
    shelf* with an adjust direction. Reuses `equivalents()`, `nearestPaints()`, `groupMembers()` and the
    store marks — all shipped. Reversible, and it is the leaf node every other direction below needs.
+   The doorways: a **Details** item in the mark menu (`markmenu.js`), on the Shelf and in the seed field's
+   list, where a tap already marks or picks; a tap on the other paints (live-palette column, ladder rung,
+   equivalents row).
    On a phone it is a good first user of the **resizable sheet** (a part-height card that grows to full
    height when you scroll or drag it) recorded for the full app release in `IOS_APP_PLAN.md` §1.
 8. **Substitute finder — direction C.** “I need X, what can I use?” as a mode *on* that sheet rather than
@@ -280,8 +283,9 @@ to-buy marks) but files them *inside* the scheme output. Four routing directions
 11. **In-store pot identification (v2, native).** Barcode was already parked in `IOS_APP_PLAN.md` §5 with
     the right blocker — no EAN/UPC column exists and no open dataset supplies one. The way around it is
     **label OCR**: read the printed name on the pot, fuzzy-match against the 2,508 names we already hold.
-    No new data, no backend, and it degrades to “put the text in the search field”. Barcode stays the
-    nicer UX *if* a mapping ever exists — a data-sourcing project, not a UI one.
+    No new data, no backend, and it degrades to “put the text in the Shelf search” (the question in a shop
+    is “do I own it?”, and the Shelf is where a tap marks it; the Studio's seed field takes the same words).
+    Barcode stays the nicer UX *if* a mapping ever exists — a data-sourcing project, not a UI one.
 
 ### Follow-ups from the lightness-slider build (noted 2026-10-28, not yet scheduled)
 
@@ -329,10 +333,30 @@ are not lost.
     labels (the Plan's "Tone ladder", the Shelf counts) are `--text-muted` now (4.68:1 on the surface,
     4.53:1 on `--bg`); the right-click menu shows the `--focus` ring (it showed a `--surface-2` fill,
     about 1.1:1, with `outline: none`); in forced colours only the selected output tab has a line.
-    **Still open:** about 15 other rules use `--text-faint` as a text colour, for example the footer note,
-    the logo's "for miniatures", the hex field's "#", `.hint`, `.count`, `.ttl`, `.ladcap`, `.cmphead`,
-    `.shelfhint` and "no close paint — consider mixing". Fix direction: `--text-muted` for each, or a
+    **Still open:** about 13 other rules use `--text-faint` as a text colour, for example the footer note,
+    the logo's "for miniatures", `.hint`, `.ttl`, `.ladcap`, `.cmphead`, `.shelfhint` and "no close
+    paint — consider mixing". (The Paints picker build removed two: the hex field's "#" and `.count`.) Fix direction: `--text-muted` for each, or a
     darker `--text-faint` value in §3.1 (a token change, so Ryan decides).
+
+### Follow-ups from the Paints picker build (noted 2026-10-28, not yet scheduled)
+
+The seed field and its list (`mockups/paints-picker.html` "Recommended") are in `[Unreleased]`. These
+checks need a real device or a real screen reader. The build used Playwright (Chromium) only.
+
+19. **The list's height on a real iPhone.** The open list takes its height from `visualViewport`, because
+    iOS does not make the layout viewport smaller for the keyboard. Test it with the keyboard up, in
+    Safari and in the iOS app (WKWebView), on a small phone (375×667) and turned sideways. Also check that
+    a tap on Browse does not raise the keyboard, and that the page does not zoom when the field takes focus.
+20. **A screen-reader pass of the field and its list** (VoiceOver on iOS and macOS, TalkBack, NVDA): the
+    combobox, the browse grid (rows, two-way arrows), the search listbox and its groups, the live hex
+    messages, the mark menu after a double-tap-and-hold, and where focus lands after a pick and a mark.
+21. **Forced colours** (Windows High Contrast): the cursor ring on a tile and a row, the pick ring, and
+    the open Browse button.
+22. **A tile shows the full name only on three lines.** About 67 names (for example "Barbarian Flesh
+    (Warpaints Fanatic)") and about 400 brand names are still cut in a 390px grid. The mark menu's title
+    and a search row show them whole. Fix direction: a readout of the name of the cursor tile.
+23. **The first letter after Browse** costs about 55ms at a 4× slower CPU: removing the 3,225 tiles of the
+    grid is about 17ms of it. Fix direction: empty the grid in the next frame.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
@@ -350,8 +374,9 @@ Ordered, with the reasoning rather than just the list:
 
 **Explicitly NOT tomorrow:** direction D (held, above) · the scanner (needs the Stage-1 native shell to
 exist first) · TD5 dataset provenance (a data-sourcing job needing manufacturer values, not a code task) ·
-splitting the Shelf/drawer out of `app.js` (internal quality, no user-visible value — it can wait behind
-work that changes what the tool does).
+splitting the Shelf out of `app.js` (internal quality, no user-visible value — it can wait behind work
+that changes what the tool does). The Paints drawer is gone: its successor, the seed field and its list,
+lives in `picker.js`.
 
 ---
 

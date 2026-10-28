@@ -128,44 +128,48 @@
 <main>
   <section class="workspace">
     <div class="card pad seedtoolbar">
+      <!-- The seed field (§3.6; mockups/paints-picker.html "Recommended"): ONE field takes a paint name,
+           brand, line, type or finish words, or a hex. Browse opens the list without the phone keyboard.
+           The list (#pkPop) floats over the Studio and exists only while it is open (picker.js): a colour
+           grid to browse, rows for a search. A tap or Enter only picks; the mark menu marks (markmenu.js). -->
       <div class="seedbar">
-        <button class="btn paints-btn" id="paintsBtn" aria-haspopup="true" aria-expanded="false" aria-controls="paintsDrawer" title="Browse and pick a paint">☰&nbsp;Paints <span class="caret" aria-hidden="true">▾</span></button>
-        <div class="hexin" title="Type any hex to seed a scheme"><span>#</span><input id="hex" maxlength="6" inputmode="text" aria-label="Hex colour" /></div>
-        <button class="btn" id="fromPhoto" title="Pick a colour from a photo (processed on your device)">From photo</button>
-        <input id="photoFile" type="file" accept="image/*" hidden />
-        <button class="btn" id="compare" aria-pressed="false" title="Pin this scheme, then compare">Compare</button>
-      </div>
-      <!-- Paint picker as a drawer that drops from the header bar (overlay → no reflow). Horizontal list,
-           full filters/sort + import/export; right-click a swatch to mark owned/to-buy (P/U/X by keyboard). -->
-      <div class="pdrawer" id="paintsDrawer" role="group" aria-label="Paint picker" hidden>
-        <div class="pdrawer-controls">
-          <label class="sr-only" for="q">Search paints</label>
-          <input id="q" type="search" placeholder="Search paints…" data-i18n-ph="searchPaints" autocomplete="off" />
-          <label class="sr-only" for="brand">Filter by brand</label>
-          <select id="brand"><option value="" data-i18n="allBrands">All brands</option></select>
-          <label class="sr-only" for="ptype">Filter by type</label>
-          <select id="ptype"><option value="">All types</option></select>
-          <label class="sr-only" for="psort">Sort paints</label>
-          <select id="psort">
-            <option value="">Default order</option>
-            <option value="name">Sort: name</option>
-            <option value="brand">Sort: brand</option>
-            <option value="hue">Sort: hue</option>
-            <option value="light">Sort: lightness</option>
-            <option value="de">Sort: closest to base</option>
-            <option value="owned">Sort: owned first</option>
-          </select>
-          <button class="btn sm" id="importPaints" title="Import a paintRack CSV or a Palette Studio JSON backup">Import…</button>
-          <button class="btn sm" id="exportPaints" title="Download your collection as CSV">Export CSV</button>
+        <div class="seedfield" id="seedField">
+          <label class="sr-only" for="seedQ" data-i18n="seedName">Paint name, brand or hex colour</label>
+          <input id="seedQ" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="grid"
+            aria-controls="pkGrid" aria-describedby="seedKeys" placeholder="Paint or #hex" data-i18n-ph="seedPh"
+            autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" />
+          <!-- tabindex -1: the field is the one tab stop (Down or Alt+Down opens the list), as in the APG combobox -->
+          <button type="button" class="seedbrowse" id="seedBrowse" tabindex="-1" aria-label="Browse paints" data-i18n-aria="browsePaints"
+            title="Browse paints" aria-expanded="false" aria-controls="pkGrid"><svg class="sbic" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 0h5v5H9z"/></svg><span class="sbtx" data-i18n="browse">Browse</span><span class="sbcaret" aria-hidden="true">▾</span></button>
         </div>
-        <div class="list pstrip" id="list" role="listbox" aria-label="Paints — click to pick; right-click or P/U/X to mark owned/to-buy" tabindex="0"></div>
-        <div class="count" id="count"></div>
+        <div class="pkpop" id="pkPop" hidden>
+          <div class="pkbody lpress" id="pkBody" tabindex="-1">
+            <p class="pkhint" id="pkHint" hidden></p>
+            <div role="grid" id="pkGrid" class="pkgrid" aria-label="Paints" data-i18n-aria="pkGridName" hidden></div>
+            <div role="listbox" id="pkList" class="pklist" aria-label="Matching paints" data-i18n-aria="pkListName" hidden></div>
+            <p class="pkempty" id="pkEmpty" hidden></p>
+          </div>
+          <div class="pkfoot" id="pkFoot" hidden>
+            <span class="pkcount" id="pkCount"></span>
+            <span class="pksort"><label for="pkSort" data-i18n="pkSort">Sort</label>
+              <select id="pkSort">
+                <option value="hue" data-i18n="pkSortHue">Hue</option>
+                <option value="closest" data-i18n="pkSortClosest">Closest to your pick</option>
+                <option value="owned" data-i18n="pkSortOwned">Owned first</option>
+                <option value="name" data-i18n="pkSortName">Name</option>
+              </select></span>
+          </div>
+        </div>
+        <button class="btn photobtn" id="fromPhoto" title="Pick a colour from a photo (processed on your device)"><svg class="phic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg><span class="phtx" data-i18n="fromPhoto">From photo</span></button>
+        <input id="photoFile" type="file" accept="image/*" hidden />
+        <button class="btn cmpbtn" id="compare" aria-pressed="false" title="Pin this scheme, then compare">Compare</button>
       </div>
+      <p class="sr-only" id="seedKeys" data-i18n="seedKeys">The down arrow opens the list. The arrow keys move in it. Enter picks a paint. Shift+F10 opens the mark menu. Escape closes the list.</p>
     </div>
     <div class="wsplit">
       <div class="card pad studio">
         <div class="herowrap">
-          <div class="hero" id="hero"></div>
+          <div class="hero" id="hero" tabindex="-1"></div>
         </div>
         <div class="wheelcol">
           <div class="noverlay" id="neutralOverlay" hidden>
@@ -272,8 +276,8 @@
         <span class="hpill" aria-hidden="true"></span><span class="hchip" id="shelfChip" aria-hidden="true">⌕ Search</span>
       </button>
     </div>
-    <div class="shelfgrid" id="shelfGrid" role="listbox" aria-multiselectable="true"
-         aria-label="Paints — select swatches, then press P for owned, U for to buy, X to clear" tabindex="0"></div>
+    <div class="shelfgrid lpress" id="shelfGrid" role="listbox" aria-multiselectable="true"
+         aria-label="Paints — select swatches, then press P for owned, U for to buy, X to clear, or Shift+F10 for the menu" data-i18n-aria="shelfGridName" tabindex="0"></div>
     <div class="shelfbar" id="shelfBar"></div>
   </section>
 </main>
@@ -364,15 +368,11 @@
   <p class="sr-only" role="status" data-say></p>
 </dialog>
 
-<div id="shelfMenu" class="menu" role="menu" aria-label="Mark selection" hidden>
-  <button role="menuitem" data-act="owned">Mark owned</button>
-  <button role="menuitem" data-act="want">Mark to buy</button>
-  <button role="menuitem" data-act="none">Clear mark</button>
-</div>
-<div id="paintMenu" class="menu" role="menu" aria-label="Mark paint" hidden>
-  <button role="menuitem" data-act="owned">Mark owned</button>
-  <button role="menuitem" data-act="want">Mark to buy</button>
-  <button role="menuitem" data-act="none">Clear mark</button>
+<!-- The one mark menu (markmenu.js, §3.5): the Shelf's, and the seed field's list. A long-press, a
+     right-click, or Shift+F10 / the ContextMenu key opens it; its items are built on each open. -->
+<div id="markMenu" class="menu" hidden>
+  <p class="mh" id="markMenuHead"></p>
+  <div role="menu" id="markMenuList" aria-labelledby="markMenuHead"></div>
 </div>
 
 <div id="status" class="sr-only" aria-live="polite"></div>

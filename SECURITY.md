@@ -24,8 +24,9 @@ acknowledged and triaged on a best-effort basis, and credit is given to reporter
 ## Scope
 
 **In scope**
-- Cross-site scripting (XSS) or HTML/CSS injection via any user-controlled input: the hex field,
-  the share-URL parameters (`c`, `h`, `x`, `m`, …), imported collection data, or the paint dataset.
+- Cross-site scripting (XSS) or HTML/CSS injection via any user-controlled input: the seed field
+  (a paint search or a hex), the Shelf search, the share-URL parameters (`c`, `h`, `x`, `m`, …),
+  imported collection data, or the paint dataset.
 - Anything that could execute code or exfiltrate data from a visitor's browser.
 
 User input is escaped (`esc()`), colours interpolated into styles are re-validated to literal hex

@@ -33,7 +33,7 @@ what's next.
 | [`mockups/index.html`](mockups/index.html) | Design-reference mockup (open in a browser). Not the app. |
 | [`src/data/paints.json`](src/data/paints.json) · [`SOURCES.md`](src/data/SOURCES.md) | The imported paint dataset — **3,225 paints across 10 brands** — + provenance. |
 | `scripts/` | `build-dataset.mjs` (assemble dataset) · `validate-data.mjs` (data QA) · `check-docs.mjs` (doc-freshness QA) — dev-only, all run in CI. |
-| `src/` | The app — `index.html`, `styles/`, `js/` (color · harmony · seed · a11y · data · scheme · share · wheel · ui · app · store · collection-io · i18n · version), `data/`, PWA files, and the Help and privacy pages. |
+| `src/` | The app — `index.html`, `styles/`, `js/` (color · harmony · seed · a11y · data · scheme · share · wheel · markmenu · picker · ui · app · store · collection-io · i18n · infopage · version), `data/`, PWA files, and the Help and privacy pages. |
 
 ## Run, test, deploy
 - **App:** `cd src && python3 -m http.server`, then open the printed `localhost` URL (the app fetches `data/paints.json` over http, so a file:// open won't work).

@@ -8,7 +8,7 @@
 //
 // Everything it needs from the app is injected, so this file has no opinion about how state is
 // stored or what else re-renders: `setupWheel(ctx)` binds the canvas once and returns its `draw`,
-// which the app calls for discrete changes (picker, hex field, harmony), and `endLightnessRun`.
+// which the app calls for discrete changes (the seed field, harmony), and `endLightnessRun`.
 
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn,
          lightnessInput, lightnessBand } from './color.js';
@@ -153,7 +153,6 @@ export function setupWheel(app) {
     // pointer — in accent-seed mode that's 180° away, and writing the raw colour made the whole
     // scheme jump the moment you grabbed a node.
     state.customHex = pickForSchemeBase(rgbToHex(hslToRgb([h, s, state.wheelL])), state.seedRole);
-    $('#hex').value = state.customHex.replace('#', '');
     commit();
   }
   const pointerXY = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height)]; };
@@ -252,7 +251,6 @@ export function setupWheel(app) {
     lrun = step.run;
     state.customHex = step.custom;
     state.wheelL = step.wheelL;
-    $('#hex').value = pickHex().replace('#', '');
     // The spoken value must be current when the input event ends; the paint can wait for the frame.
     sliderText();
     commit();
