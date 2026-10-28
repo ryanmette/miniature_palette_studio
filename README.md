@@ -10,15 +10,19 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
-**v1.9.0** — the correctness + structure release, live. Everything through v1.8 (engine, wheel,
-ideal-vs-actual roles, equivalents, accessibility, Shelf/PWA, photo eyedropper, editable live
-palette, neutral-seed schemes) plus: **pick your equivalents source** from any scheme colour,
-**metal-first cross-brand matching**, and a full-codebase review closing **all 15 findings** —
-most usefully, the output tabs no longer sit on a stale colour through a wheel drag, and the
-wheel now draws the scheme it is actually building (it disagreed with the palette by 180° in
-accent-seed mode). Under that: one **`render(reason)`** chokepoint, a tested pick ↔ scheme-base
-frame (`seed.js`), a tested share-link contract (`share.js`), the wheel extracted to its own
-module, and a dataset validator whose warnings mean something again. See
+**v1.11.0** — the UX pass, live. It makes the app easier to read and to use: one name for one thing
+("your paint", Recipe, Target / Pot, Other brands, the shopping list), a first-run guide, empty and
+error states that say what to do, 44px touch targets on every control, a shorter Studio on a phone,
+tone ladders that show their pots, a ⋯ menu whose groups say what they act on, a language that
+follows the device, and a sharp link-preview card.
+
+**v1.10.0** — the Workbench+ release. It gives the app a look of its own: a warm "Workbench"
+light theme with a real paint as its accent (Citadel Sotek Green), a flat brass dark theme, Barlow
+Condensed and IBM Plex Sans (self-hosted), small radii, thin rules in place of cards, one SVG icon
+set, and a new mark (a dropper whose colour lands as a round pot lid). Since v1.9.0 it also has the
+paint field (one field for a name, a brand word or a hex), one mark menu, Roll a scheme, the full ⋯
+menu (Use my paints, Back up, Restore, Delete), the matching note, and two new brands, AK
+Interactive and AMMO by Mig (3,225 paints, 10 brands). See
 [`CHANGELOG.md`](CHANGELOG.md) for the full history and [`docs/PLAN.md`](docs/PLAN.md) §5 for
 what's next.
 

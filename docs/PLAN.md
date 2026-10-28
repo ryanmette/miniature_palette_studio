@@ -103,20 +103,17 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.8.0** — the neutral + polish release: neutral-seed scheme engine (pop harmonies, hysteresis, wheel-overlay explainer), studio redesign (Paints drawer, condensed hero, role badges, seed **docks** replacing the Main|Accent toggle), temperature/NMM/wash-media ladders, pick fidelity + `dname` disambiguation, accent-seed pinning, Equivalents drill-down, dark-theme brass + animated theme switch, doc-freshness CI gate, a 38-finding adversarial-review hardening pass, mobile no-overspill pass, and Stage-1 native groundwork (safe areas, Preferences persistence, icon/splash set).
 
 - **v1.9.0** — the correctness + structure release: Equivalents source chips (pick which scheme colour's cross-brand matches you see), metal-first equivalents + dataset 1.5.0 single-finish groups, the Shelf's brand dropdown, and a full-codebase review closing **all 15 findings** — the output tabs no longer sit on a stale colour through a wheel drag, and the wheel draws the scheme it is building (it disagreed with the palette by 180° in accent-seed mode). Structurally: one `render(reason)` chokepoint, `seed.js` (the tested pick ↔ scheme-base frame), `share.js` (the tested share-link contract), `wheel.js` extracted from `app.js` (1,729 → 1,510 lines), the CSV/search/SW/equivalents performance batch, and a dataset validator whose SOFT warnings are actionable again (640 lines of noise → 0 new).
-### Current status (2026-08-11)
-**v1.9.0 released** — the web app is feature-complete and hardened. A second full-codebase review
-found 15 findings and all 15 are fixed, along with the structural debt behind them: render order and
-the pick ↔ scheme-base frame each caused a cluster of findings and are now single, documented
-mechanisms rather than conventions. `app.js` is down to 1,510 lines with `seed.js`, `share.js` and
-`wheel.js` split out; unit tests are at 135. **Monetization direction chosen: A (affiliate links) +
-B (audience funnel)** — see [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files
-retailer applications (§9). **Next planned work: the native app, Stage 1 (v2.0)** — the kickoff
-checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork shipped in v1.8, and the native-track
-constitution is drafted (`CLAUDE_NATIVE.md`, dormant until kickoff). The two decisions that had been
-queued in §5's follow-ups (accent-seed across the neutral boundary; the per-module comment pass) both
-shipped in PR #32 and sit in `[Unreleased]`; §5's live backlog is now the buying-assistant plan (items 7–11).
-Still outside this repo: the Mac/Xcode build, a designer for the asset library, and the optional
-palette-from-photo enhancement.
+- **v1.10.0** — the Workbench+ release (visual identity, release 1; `mockups/visual-identity.html`): the Workbench light theme with a Sotek Green accent and flat dark brass, Barlow Condensed + IBM Plex Sans, a small radius set and square tags, regions under hairline rules in place of cards, one SVG icon set, the dropper-and-lid mark, and the 3:1 field edge. Also since v1.9.0: the paint field (it replaced the Paints drawer), one mark menu, Roll a scheme, the full ⋯ menu with Back up / Restore / Delete, the matching note, and dataset 1.6.0 (AK Interactive and AMMO by Mig; 3,225 paints, 10 brands).
+- **v1.11.0** — the UX pass (visual identity, release 2): one name for one thing (Recipe, Target / Pot, Other brands, "your paint", the shopping list), the first-run guide, empty and error states, 44px targets for the small controls (follow-up 12), the neutral note kept on the wheel (follow-up 13), a shorter phone Studio with sticky tabs, ladder steps that show their pots, readable hints (`--text-muted`), the ⋯ groups named by what they act on, the language from the device, Copy link with a mouse, and the Open Graph preview card.
+### Current status (2026-10-28)
+**v1.11.0 released** — the visual identity is done: v1.10.0 is the look (Workbench+) and v1.11.0 the
+UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funnel)** — see
+[`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
+**Next planned work: the native app, Stage 1 (v2.0)** — the kickoff checklist is
+`IOS_APP_PLAN.md` §4b, and the native-track constitution is drafted (`CLAUDE_NATIVE.md`, dormant until
+kickoff). §5's live backlog is the buying-assistant plan (items 7–11) and the pin-a-paint direction
+(`mockups/pin-a-paint.html`). Still outside this repo: the Mac/Xcode build, a designer for the asset
+library, and the optional palette-from-photo enhancement.
 
 ### Native Stage-1 kickoff — greenlit (2026-07-09)
 Ryan has **authorised Stage-1 (v2.0) kickoff**: enrolled in the Apple Developer Program (paid), a
