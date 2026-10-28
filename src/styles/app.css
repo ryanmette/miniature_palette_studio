@@ -9,6 +9,9 @@ body {
 }
 h1, h2, h3 { margin: 0; font-weight: 600; font-family: var(--display); letter-spacing: -.01em; }
 button { font-family: var(--font); cursor: pointer; }
+/* Baseline focus for anything without a rule of its own (the tab panels, links on the info pages). The
+   browser's default ring is dark, so it disappears on the dark theme. Component rules below replace it. */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .mono { font-family: var(--mono); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .micro { font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); }   /* --text-faint was 2.39:1 on the surface, under AA; --text-muted is 4.68:1 (4.53:1 on --bg) */
@@ -139,26 +142,18 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-tem
 .sw.fx-gloss, .cell.fx-gloss, .lctop.fx-gloss { background-image: radial-gradient(ellipse 58% 42% at 34% 26%, rgba(255,255,255,.82), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 52%, rgba(0,0,0,.34)); }
 .sw.fx-slime, .cell.fx-slime, .lctop.fx-slime { background-image: radial-gradient(ellipse 34% 26% at 30% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 60%), radial-gradient(ellipse 22% 18% at 66% 62%, rgba(255,255,255,.5), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 55%, rgba(0,0,0,.30)); }
 .sw.fx-texture, .cell.fx-texture, .lctop.fx-texture { background-image: radial-gradient(rgba(255,255,255,.12) .5px, transparent 1.2px), radial-gradient(rgba(0,0,0,.34) .5px, transparent 1.2px), linear-gradient(160deg, rgba(255,255,255,.05), rgba(0,0,0,.12)); background-size: 4px 4px, 5px 5px, 100% 100%; background-position: 0 0, 2px 2px, 0 0; }
-/* Forced colours (Windows High Contrast) paint every background in the system Canvas colour, so every
-   paint went white: the Browse grid, the live palette, the Shelf and the Plan showed no colour. A swatch's
-   colour is paint data, not chrome (§2), so swatches keep their own colours, finish overlays and inset edge.
-   Their interaction rings take the system Highlight, as the picker's cursor does. */
-@media (forced-colors: active) {
-  .sw, .cell, .lctop, .scsw, .cmppal span { forced-color-adjust: none; }
-  .cell[aria-selected="true"], .cell.cursor, .cell:focus-visible, .lctop:focus-visible { outline-color: Highlight; }
-}
 /* finish pill — flags non-flat paints (metallic/contrast/wash/…) so a suggestion isn't mistaken for flat */
 .finish { display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; padding: 1px 6px;
   border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); white-space: nowrap; vertical-align: 1px; }
 .finish svg { width: 10px; height: 10px; }
-.finish-metal { background: var(--warning-weak); color: var(--warning); }
+.finish-metal { background: var(--warning-weak); color: var(--warning-text); }
 .finish-contrast { background: var(--accent-weak); color: var(--accent); }
 /* shared-paint note — when a limited collection reuses one paint across roles (scheme.js distinct assignment) */
 .slot.is-shared { border-color: var(--warning); }
 .sharednote { margin-top: 10px; font-size: 11.5px; color: var(--text-muted); background: var(--warning-weak);
   border-radius: var(--r-ctrl); padding: 7px 10px; line-height: 1.45; }
 .warnpill { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
-  color: var(--warning); background: var(--surface); border: 1px solid var(--warning); border-radius: var(--r-pill); padding: 0 7px; margin-right: 5px; }
+  color: var(--warning-text); background: var(--surface); border: 1px solid var(--warning); border-radius: var(--r-pill); padding: 0 7px; margin-right: 5px; }
 .sharednote .br { color: var(--text-faint); }
 
 input[type="search"], select { height: var(--tap); border: 1px solid var(--border); border-radius: var(--r-ctrl);
@@ -193,6 +188,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
   gap: 4px; padding: 0 12px; border: 1px solid transparent; border-left-color: var(--border); border-radius: 0 var(--r-ctrl) var(--r-ctrl) 0;
   background: none; background-clip: padding-box; color: var(--text); font: inherit; font-size: 13.5px; font-weight: 500; }
 .seedbrowse:hover { background: var(--surface-2); }
+/* Inset: the field's wrapper draws the outer ring; this one marks Browse, not the text, as the focused part. */
+.seedbrowse:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
 .seedbrowse[aria-expanded="true"] { background: var(--surface-2); }   /* open is a fill; the ring means focus only (§3.5) */
 .seedbrowse .sbic { display: none; }
 .seedbrowse .sbcaret { color: var(--text-muted); font-size: 12px; }
@@ -275,7 +272,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .hero .herochip { width: 28px; height: 28px; border-radius: 8px; flex: none; }
 .heroname { font-size: 16px; }
 .herometa { color: var(--text-muted); font-size: 12.5px; min-width: 0; }
-.herometa .approx { color: var(--warning); }
+.herometa .approx { color: var(--warning-text); }
 .herobuy { margin-left: auto; }
 /* Seed-role pill (state, §3.5): the picked paint's Main/Accent role, inline in the hero line. */
 .seedbadge { font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
@@ -359,7 +356,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .ladder .step .cap { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 .ladder .step .pn { font-size: 10.5px; font-weight: 500; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .steptag { font-size: 9.5px; line-height: 1.3; }
-.steptag.dilute { color: var(--warning); font-weight: 600; }
+.steptag.dilute { color: var(--warning-text); font-weight: 600; }
 .nmmcap { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 12px; }
 .ladcap { font-size: 10px; font-weight: 600; letter-spacing: .03em; color: var(--text-faint); margin-top: 12px; text-transform: capitalize; }
 
@@ -372,9 +369,9 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 
 /* owned / adjust / buy affordances on match chips (#5/#6) */
 .ownline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; }
-.owntag { font-size: 11px; font-weight: 600; color: var(--success); }
+.owntag { font-size: 11px; font-weight: 600; color: var(--success-text); }
 .adjust { font-size: 11px; color: var(--text-muted); font-style: italic; }
-.ownmini { font-size: 10px; font-weight: 600; color: var(--success); }
+.ownmini { font-size: 10px; font-weight: 600; color: var(--success-text); }
 .buybtn { margin-top: 6px; height: 26px; padding: 0 11px; border-radius: var(--r-pill); border: 1px solid var(--border-strong);
   background: var(--surface); color: var(--buy); font-weight: 600; font-size: 11.5px; cursor: pointer; }
 .buybtn:hover { background: var(--buy-weak); border-color: var(--buy); }
@@ -387,8 +384,9 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
   border-radius: var(--r-pill); padding: 4px 12px 4px 5px; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; }
 .eqchip .sw { width: 20px; height: 20px; }
 .eqchip:hover { border-color: var(--border-strong); color: var(--text); }
-.eqchip:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
 .eqchip[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: var(--surface); box-shadow: 0 0 0 1px var(--accent); }
+/* after [aria-pressed]: the same specificity, so the later rule wins, and the focus ring must */
+.eqchip:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
 .sheadr { display: inline-flex; align-items: center; gap: 10px; }
 .eqjump { border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); border-radius: var(--r-pill);
   padding: 2px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
@@ -498,7 +496,10 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 }
 .lctop { flex: 1; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 8px 9px; border: none; width: 100%; cursor: default; text-align: left; font: inherit; }
 .lctop[role="button"] { cursor: pointer; }   /* only the Equivalents tab makes the swatch a drill-down button */
-.lctop:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+/* On a paint colour the ring is the swatch's ink (currentColor): textOn picks it for contrast with the paint,
+   so it shows on any paint, where the accent can match a purple or brass one. -6px keeps it inside the
+   column's 3px Equivalents selection ring (.lcol.eqsel), which covered it at -3px. */
+.lctop:focus-visible { outline: 2px solid currentColor; outline-offset: -6px; }
 /* Copy button beside the hex: currentColor icon (inherits the swatch's legible ink) on a faint tinted chip. */
 .lchexrow { display: flex; align-items: center; gap: 6px; }
 .lccopy { display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border: none; border-radius: 6px;
@@ -507,7 +508,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .lccopy:active { transform: scale(.9); }
 .lccopy.light { background: rgba(255,255,255,.18); }
 .lccopy.light:hover { background: rgba(255,255,255,.32); }
-.lccopy:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+.lccopy:focus-visible { opacity: 1; outline: 2px solid currentColor; outline-offset: 1px; }   /* ink on paint, as .lctop */
 /* per-swatch hover actions (Adobe-style) — overlay so revealing them never reflows the palette (§3.4) */
 .lcact { position: absolute; top: 6px; right: 6px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px;
   max-width: calc(100% - 12px); opacity: 0; transition: opacity .12s ease; pointer-events: none; }
@@ -515,7 +516,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .lcbtn { width: 21px; height: 21px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px;
   border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 12px; line-height: 1; cursor: pointer; box-shadow: var(--shadow); }
 .lcbtn:hover { background: var(--surface-2); }
-.lcbtn:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+/* inset: outside these buttons is paint, which an accent ring can match */
+.lcbtn:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus-inset), var(--shadow); }
 .lcbtn:disabled { opacity: .35; cursor: default; }
 .lcbtn.on { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 .lcol.locked { box-shadow: inset 0 0 0 2px var(--accent); }   /* a locked swatch survives Generate + harmony changes */
@@ -532,7 +534,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .dockbtn { width: 100%; min-height: 26px; border: 1.5px dashed var(--border-strong); background: transparent;
   color: var(--text-faint); font-size: 10.5px; font-weight: 600; border-radius: 8px; cursor: pointer; }
 .dockbtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-weak); }
-.dockbtn:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+/* inset: an outer ring ran 1px from the column's colour-link outline (.lcol.linkhi) */
+.dockbtn:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus-inset); }
 .dockbtn[aria-disabled="true"] { opacity: .38; cursor: not-allowed; }
 .lcol[draggable="true"] .lctop { cursor: grab; }
 .lcol.dragging { opacity: .5; }
@@ -558,8 +561,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .ctrbox { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 12px; }
 .ctrbox .pair { display: flex; gap: 7px; margin: 8px 0; }
 .ratio { font-size: 20px; font-weight: 600; font-family: var(--display); }
-.collide { margin-top: 16px; font-size: 12.5px; background: var(--warning-weak); color: var(--warning); border-radius: var(--r-ctrl); padding: 10px 12px; }
-.collide.ok { background: var(--success-weak); color: var(--success); }
+.collide { margin-top: 16px; font-size: 12.5px; background: var(--warning-weak); color: var(--warning-text); border-radius: var(--r-ctrl); padding: 10px 12px; }
+.collide.ok { background: var(--success-weak); color: var(--success-text); }
 
 /* compare + toast (M8) */
 .compare { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 10px 12px; margin: 4px 0 10px; background: var(--surface-2); }
@@ -580,7 +583,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelftools { display: flex; gap: 8px; }
 .shelfhead h2 { font-size: var(--fs-h1); }
 .shelfstats { color: var(--text-muted); }
-.shelfstats .s-owned { color: var(--success); }
+.shelfstats .s-owned { color: var(--success-text); }
 .shelfstats .s-want { color: var(--buy); }
 .shelfhint { margin: 0; font-size: 12.5px; color: var(--text-faint); }
 /* Shelf filter bar: search + status + brand + type + sort on one wrapping row (search grows, controls
@@ -637,11 +640,11 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
    app.js clampTip() sets --tipdx so an edge cell's name shifts back inside the screen instead of
    clipping, and flips it below the cell (.below) when the header or the Shelf's filter dock leaves no room
    above; the .12s fade-in keeps the §3.4 hover timing (animation, since display can't transition). */
-.celltip { position: absolute; left: 50%; bottom: calc(100% + 5px); transform: translateX(calc(-50% + var(--tipdx, 0px)));
+.celltip { position: absolute; left: 50%; bottom: calc(100% + 7px); transform: translateX(calc(-50% + var(--tipdx, 0px)));
   background: var(--text); color: var(--bg); font-size: 11.5px; font-weight: 500; white-space: nowrap;
   padding: 4px 8px; border-radius: 7px; pointer-events: none; display: none;
   z-index: 5; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-.celltip.below { bottom: auto; top: calc(100% + 5px); }
+.celltip.below { bottom: auto; top: calc(100% + 7px); }   /* 7px: clear of the 4px focus ring and the cursor outline */
 .cell:hover .celltip, .cell:focus-visible .celltip, .cell.cursor .celltip,
 .step:hover .celltip, .step:focus-visible .celltip { display: block; animation: tipfade .12s ease; }
 @keyframes tipfade { from { opacity: 0; } }
@@ -841,6 +844,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
    header on touch (a 44px ✕) pushed the body past the dialog, and its 24px bottom padding was clipped. */
 .about[open] { display: flex; flex-direction: column; }
 .aboutbody { flex: 1 1 auto; min-height: 0; padding: 16px 16px 24px; overflow: auto; }
+.aboutbody > :last-child { margin-bottom: 0; }   /* the 24px padding is the whole gap under the last line */
 .aboutbody h3 { font-family: var(--display); font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
 .aboutbody p { margin: 0 0 8px; font-size: 13px; line-height: 1.6; color: var(--text); }
 .aboutbody a { color: var(--accent); font-weight: 500; }
@@ -996,7 +1000,8 @@ a.btn { text-decoration: none; }
     touch-action: none; visibility: hidden; }
   .shelfhandle::before { content: ""; position: absolute; left: 0; right: 0; top: 0; bottom: -20px; }
   .shelfdock.stuck .shelfhandle { visibility: visible; }
-  .shelfhandle:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); border-radius: var(--r-ctrl); }
+  /* inset: when the dock is tucked, the header covers an outer ring's top edge and the dock's fade its bottom */
+  .shelfhandle:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus-inset); border-radius: var(--r-ctrl); }
   .hpill { width: 38px; height: 5px; border-radius: var(--r-pill); background: var(--text-muted); }   /* 4.5:1+ (WCAG 1.4.11) */
   .hchip { position: absolute; right: 0; max-width: calc(50% - 30px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; line-height: 18px; padding: 0 8px;
@@ -1094,4 +1099,22 @@ header { padding-top: env(safe-area-inset-top, 0px); }
     /* Forced colours: the system control, as the lightness slider does. */
     @media (forced-colors: active) { select, select::picker(select) { appearance: auto; } }
   }
+}
+
+/* Forced colours (Windows High Contrast) paint every background in the system Canvas colour, so every
+   paint went white: the Browse grid, the live palette, the Shelf and the Plan showed no colour. A swatch's
+   colour is paint data, not chrome (§2), so swatches keep their own colours, finish overlays and inset edge.
+   Last in the file: the rings' own rules above have the same weight, and the later rule wins.
+   - chrome inside a swatch (a tooltip, a mark badge, the copy button) keeps the system colours;
+   - a ring round a swatch takes Highlight, on the Canvas outside the paint;
+   - a ring drawn on the paint gets a Canvas band under it, so Highlight never meets the paint. */
+@media (forced-colors: active) {
+  .sw, .cell, .lctop, .scsw, .cmppal span { forced-color-adjust: none; }
+  .celltip, .cbadge, .lccopy { forced-color-adjust: auto; }
+  .cell[aria-selected="true"], .cell.cursor, .cell:focus-visible, .pkt.cur .sw, .pko.cur .sw { outline-color: Highlight; }
+  .lcol.linkhi, .lcol.eqsel { outline-color: Highlight; }
+  .lcol.linkhi .lctop, .lcol.eqsel .lctop { box-shadow: inset 0 0 0 5px Canvas; }
+  /* after, and as heavy as, the line above. The ring's place is set here, 4–6px in (inside the column's 3px
+     selection ring), so the band to 8px holds it whatever offset the normal rule uses */
+  .lctop:focus-visible, .lcol .lctop:focus-visible { outline: 2px solid Highlight; outline-offset: -4px; box-shadow: inset 0 0 0 8px Canvas; }
 }
