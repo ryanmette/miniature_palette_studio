@@ -2,7 +2,10 @@
    One component system; only the colour set changes between the two themes. */
 :root {
   /* shared, theme-independent */
-  --r-card: 14px; --r-ctrl: 10px; --r-pill: 999px;
+  /* Radii (Workbench, §3.4): small and few. --r-card is the overlay and panel radius, --r-ctrl a control's,
+     --r-sw a swatch's, --r-tag a tag's. --r-pill is only for the round things: the theme switch, the slider
+     thumb's track, the Shelf handle and a scrollbar thumb. */
+  --r-card: 6px; --r-ctrl: 4px; --r-sw: 3px; --r-tag: 2px; --r-pill: 999px;
   --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   /* Barlow Condensed is narrow, so headings run a step larger than a wide face would (the type scale below);
      the fallback "Arial Narrow" keeps the narrow width if the webfont fails to load. */

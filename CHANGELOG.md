@@ -258,6 +258,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **Smaller, fewer corner radii, and square tags.** Controls are 4px, panels and overlays 6px, swatches 3px and
+  tags 2px (they were 10px, 14px and fully round). Pills with a pale fill are now square tags with a coloured
+  border and no fill. The segmented controls (Studio / Shelf, the harmonies, the tone ladder, Ideal / Real, the
+  settings) are joined toolbars: the segments share their borders, and the pressed one has a pale accent fill and
+  an accent bar along its bottom. A press no longer shrinks a segment.
+- **The main action of each stage is larger than the others.** A primary button (for example "+ Add 15 to buy")
+  is 6px taller and semibold. A button that starts with an icon has less space on the icon side.
 - **New type: Barlow Condensed for headings and IBM Plex Sans for the rest.** They replace Space Grotesk and
   Inter, which the visual-identity audit counted among the "made by AI" signs. Both are under the SIL Open Font
   License 1.1, are served from this site (no outside request), and their licence files are in `src/assets/fonts/`.
