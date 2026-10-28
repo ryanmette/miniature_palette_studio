@@ -424,8 +424,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   harmony in the link (Neutral + pop, Duotone, Warm / cool) starts neutral mode in the band (`harmony.js`
   `startsNeutral`). Live changes keep the hysteresis rule. Shades and Custom can be in either mode. They start in
   hue mode, with the same colours. This was the case before this release too.
-- Tests for `startsNeutral` and for the 10–14 band through a link: 242 tests. (CLAUDE.md §7 is updated;
-  service worker `ps-v57`.)
+- **Added colours changed a little after a reload.** The link kept each added colour as hue, saturation and
+  lightness in whole numbers (`x=131.37.39`). After a reload, a channel could be up to 3 sRGB units off: `#3E874B`
+  became `#3F884C`. Now the link keeps the hex of each added colour (`x=3E874B-18331D-4EAA5F`, with `!` after a
+  locked colour), and a reload shows the same colours. The tokens are also shorter: 6 characters, not up to 11.
+  An old link with `h.s.l` tokens still opens with its colours, and the address bar then shows the hex form. Tests
+  check 5,000 random colours. A one-time check of all 16,777,216 sRGB colours found no difference. This was the
+  case before this release too.
+- Tests for `startsNeutral`, for the 10–14 band through a link, and for the hex swatch tokens (exact colours, old
+  links, malformed tokens): 246 tests. (CLAUDE.md §7 is updated; service worker `ps-v57`.)
 - **Fixes from the final review of this release's work** (one browser test agent and five code reviewers;
   each finding was checked again by a second agent that tried to refute it):
   - **The seed field's "Closest paints" for a hex left out closer paints.** The list took only the 64 paints

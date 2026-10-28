@@ -1,8 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { encodeState, decodeState, decodeNodes, decodeOffsets } from '../src/js/share.js';
-import { labChroma } from '../src/js/color.js';
+import { hslToRgb, rgbToHex, rgbToHsl, hexToRgb, labChroma } from '../src/js/color.js';
 import { startsNeutral } from '../src/js/harmony.js';
+
+/** The colour an added swatch shows on screen (app.js paletteNodes). */
+const hexOf = (n, wheelL = 0.5) => rgbToHex(hslToRgb([n.h, n.s, n.l ?? wheelL]));
 
 const V = { validHarmony: h => ['complementary', 'triadic', 'shades', 'neutral-pop'].includes(h),
             hasPaint: id => ['citadel-red', 'vallejo-blue'].includes(id),
@@ -41,7 +44,9 @@ test('full round trip preserves every palette field', () => {
   assert.equal(back.mode, 'shelf');
   assert.equal(back.popHex, '#9C1626');
   assert.deepEqual(back.dropOffsets, [180, 240]);
-  assert.deepEqual(back.extraNodes, [{ h: 120, s: 0.5, l: 0.4 }, { h: 300, s: 0.8, l: 0.6, locked: true }]);
+  // the added swatches have the same colours after the round trip, and the lock
+  assert.deepEqual(back.extraNodes.map(n => hexOf(n)), s.extraNodes.map(n => hexOf(n)));
+  assert.deepEqual(back.extraNodes.map(n => !!n.locked), [false, true]);
 });
 
 test('defaults are omitted from the link (short, pasteable URLs)', () => {
@@ -52,8 +57,50 @@ test('defaults are omitted from the link (short, pasteable URLs)', () => {
 
 test('an added swatch without its own lightness falls back to the wheel slider on encode', () => {
   const p = encodeState({ pickHex: '#000000', extraNodes: [{ h: 90, s: 0.4 }], wheelL: 0.33 });
-  assert.equal(p.get('x'), '90.40.33');
-  assert.deepEqual(decodeNodes('90.40.33'), [{ h: 90, s: 0.4, l: 0.33 }]);
+  assert.equal(p.get('x'), '547632');   // hsl(90, 40%, 33%)
+  assert.equal(hexOf(decodeNodes('547632')[0]), '#547632');
+});
+
+test('added swatches are written as their hex, so a reload gives back the same colours', () => {
+  // The PR #39 regression test: #2B5D34, + three times. The old whole-number h.s.l token
+  // (131.37.39-131.37.15-131.37.49) decoded as #3F884C,#18341D,#4FAB60.
+  const [h, s, l] = rgbToHsl(hexToRgb('#2B5D34'));
+  const nodes = [{ h, s, l: l + 0.12 }, { h, s, l: l - 0.12 }, { h, s, l: l + 0.22 }];
+  assert.deepEqual(nodes.map(n => hexOf(n)), ['#3E874B', '#18331D', '#4EAA5F']);
+  const p = encodeState({ pickHex: '#2D6237', harmony: 'triadic', extraNodes: nodes, wheelL: 0.29 });
+  assert.equal(p.get('x'), '3E874B-18331D-4EAA5F');
+  const back = decodeState(new URLSearchParams(p.toString()), V);
+  assert.deepEqual(back.extraNodes.map(n => hexOf(n)), ['#3E874B', '#18331D', '#4EAA5F']);
+  // a reload writes the same link again
+  assert.equal(encodeState({ pickHex: '#2D6237', harmony: 'triadic', extraNodes: back.extraNodes }).toString(), p.toString());
+});
+
+test('the hex round trip is exact for any added swatch, and keeps the lock', () => {
+  let seed = 1;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;   // fixed sequence: a failure repeats
+  for (let i = 0; i < 5000; i++) {
+    const n = { h: rand() * 360, s: rand(), l: rand(), ...(rand() < 0.3 ? { locked: true } : {}) };
+    const [d] = decodeNodes(encodeState({ pickHex: '#000000', extraNodes: [n] }).get('x'));
+    assert.equal(hexOf(d), hexOf(n), JSON.stringify(n));
+    assert.equal(!!d.locked, !!n.locked);
+    assert.ok(d.s >= 0 && d.s <= 1 && d.l >= 0 && d.l <= 1 && d.h >= 0 && d.h < 360);   // the old path's ranges
+  }
+});
+
+test('an old link\'s h.s.l swatches still decode, also beside hex swatches', () => {
+  assert.deepEqual(decodeNodes('131.37.39-131.37.15!-131.37.49'),
+    [{ h: 131, s: 0.37, l: 0.39 }, { h: 131, s: 0.37, l: 0.15, locked: true }, { h: 131, s: 0.37, l: 0.49 }]);
+  assert.deepEqual(decodeNodes('90.40'), [{ h: 90, s: 0.4 }]);   // no lightness: follows the wheel slider
+  const mixed = decodeNodes('120.50.40-3e874b!-18331D');           // the decoder takes lower-case hex too
+  assert.deepEqual(mixed[0], { h: 120, s: 0.5, l: 0.4 });
+  assert.deepEqual(mixed.slice(1).map(n => [hexOf(n), !!n.locked]), [['#3E874B', true], ['#18331D', false]]);
+});
+
+test('a malformed hex swatch is dropped, not thrown on', () => {
+  assert.deepEqual(decodeNodes('3E874'), []);    // 5 digits
+  assert.deepEqual(decodeNodes('GGGGGG'), []);
+  assert.deepEqual(decodeNodes('3E874B4'), []);  // 7 digits
+  assert.equal(decodeNodes('GGGGGG-3E874B').length, 1);
 });
 
 test('a neutral-only harmony on a seed in the 10–14 band survives the link', () => {
