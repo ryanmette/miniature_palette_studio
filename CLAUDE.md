@@ -246,7 +246,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── pin-a-paint.html       ← UC-3 “complete a scheme I started” (Death Guard Green + Balthasar Gold): 4 directions to pin a paint to a role, judged; recommended: A, a 📌 pin on the Plan role card (not built)
 │   ├── visual-identity.html   ← "does not look made by AI": the audit, 3 directions (Workbench · Chamfer · Paint pot) on real Studio/Shelf frames, the UX pass, 4 judges + verdict; Ryan chose Workbench+ (2026-10-28); a Present view and the pot-lid study
 │   ├── visual-identity/       ← its evidence: audit/*.jpg (36 screenshots of PR #39) · capture.cjs (dev-only Playwright capture of 24 surfaces × 6 sizes × 2 themes)
-│   ├── logo.html              ← the mark: 4 rounds (7 ideas → the dropper), each in every place the logo lives (header, 16 px tab, app icons, circle crop, splash, one colour), 2 judges; recommended: a dropper whose colour lands as a round pot lid
+│   ├── logo.html              ← the mark: 4 rounds (7 ideas → the dropper), each in every place the logo lives (header, 16 px tab, app icons, circle crop, splash, one colour), 2 judges; chosen (Ryan, 2026-10-28): 4a, a dropper whose colour lands as a round pot lid (built)
 │   ├── fonts/                 ← candidate OFL webfonts for the mockups only (Barlow Condensed, Chakra Petch, Fraunces, IBM Plex Sans, Atkinson Hyperlegible, Public Sans) + each *.OFL.txt
 │   ├── studio-layouts.html    ← 5-way Studio layout exploration (scroll-reduction) + judge ranking
 │   ├── layouts/               ← the 5 standalone layout mocks embedded by studio-layouts.html
@@ -269,7 +269,8 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── index.html             ← (M3)
     ├── privacy.html · support.html  ← privacy policy + Help and support (how the matching works, keyboard shortcuts, backup FAQ): the App Store Connect URLs, linked from ⋯ (Help) and About & data (CLAUDE_NATIVE.md §8)
     ├── CNAME · .nojekyll       ← GitHub Pages: custom domain (palette.ryanmette.com) + disable Jekyll (M9)
-    ├── manifest.webmanifest · sw.js · icon.svg  ← PWA: installable + offline app shell (collection branch)
+    ├── manifest.webmanifest · sw.js  ← PWA: installable + offline app shell (collection branch)
+    ├── icon.svg · icon-app.svg · apple-touch-icon.png  ← the mark (mockups/logo.html 4a): the tab icon (follows the device theme) · the installed-app icon (white on Sotek Green, inside the maskable safe zone) · its 180px PNG for iOS
     ├── styles/fonts.css       ← @font-face for the self-hosted webfonts (§3.3/§6)
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)

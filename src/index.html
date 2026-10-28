@@ -10,7 +10,9 @@
 <link rel="stylesheet" href="styles/app.css" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="icon" href="icon.svg" type="image/svg+xml" />
-<meta name="theme-color" content="#141110" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="theme-color" content="#F6F5F2" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#141110" media="(prefers-color-scheme: dark)" />
 </head>
 <body>
 <!-- The icon set (§3.5; the sources are src/assets/icons/*.svg): a 20px grid, one stroke (1.75px, square ends,
@@ -41,7 +43,7 @@
 </svg>
 <header>
   <div class="bar">
-    <div class="logo"><span class="mark">P</span><span class="t">Palette Studio<small data-i18n="tagline">for miniatures</small></span></div>
+    <div class="logo"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><g transform="translate(20.27 10.91) rotate(-140) scale(0.7)"><rect x="-1.25" y="-15" width="2.5" height="2.4" fill="currentColor"/><path d="M-1.6 -12.8h3.2L4.2 -4.6h-8.4z" fill="currentColor"/><rect x="-6.5" y="-5" width="13" height="17" rx="3" fill="currentColor"/><circle cx="0" cy="-23.6" r="6" class="lid"/></g></svg><span class="t">Palette Studio<small data-i18n="tagline">for miniatures</small></span></div>
     <div class="seg modenav" id="modeNav" role="group" aria-label="View">
       <button data-mode="studio" aria-pressed="true" data-i18n="studio">Studio</button>
       <button data-mode="shelf" aria-pressed="false" data-i18n="shelf">Shelf</button>

@@ -11,9 +11,9 @@
 // fresh index.html (the v1.3.0 bug). 'reload' always hits the origin and refreshes the HTTP cache.
 // Bump CACHE on any shell/asset change. skipWaiting + clients.claim hand control to the new SW promptly.
 
-const CACHE = 'ps-v64';
+const CACHE = 'ps-v65';
 const ASSETS = [
-  './', './index.html', './manifest.webmanifest', './icon.svg',
+  './', './index.html', './manifest.webmanifest', './icon.svg', './icon-app.svg', './apple-touch-icon.png',
   './privacy.html', './support.html', './js/infopage.js',
   './styles/fonts.css', './styles/tokens.css', './styles/app.css',
   './js/app.js', './js/color.js', './js/harmony.js', './js/data.js', './js/a11y.js',

@@ -35,9 +35,10 @@ button { font-family: var(--font); cursor: pointer; }
 header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--border); }
 .bar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; flex-wrap: wrap; max-width: 1440px; margin: 0 auto; }
 .logo { display: flex; align-items: center; gap: 9px; margin-right: 4px; }
-.logo .mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-fill); border: 1px solid var(--accent-edge);
-  box-shadow: var(--accent-bevel); display: grid; place-items: center;
-  color: var(--on-accent); font-family: var(--display); font-weight: 700; font-size: 15px; }
+/* The mark (mockups/logo.html, 4a): a dropper whose colour lands as a round pot lid. No tile: the ink is the
+   text colour and the lid the accent, so it follows the theme, and forced colours draw the ink as text. */
+.logo .mark { width: 28px; height: 28px; flex: none; color: var(--text); }
+.logo .mark .lid { fill: var(--accent); }
 .logo .t { font-family: var(--display); font-weight: 700; font-size: 21px; letter-spacing: .01em; }
 .logo .t small { color: var(--text-faint); font-weight: 500; font-size: 12px; margin-left: 5px; font-family: var(--font); }
 .spacer { flex: 1; }

@@ -258,6 +258,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **A new logo: a dropper whose colour lands as a round pot lid** (`mockups/logo.html`, 4a; Ryan chose it). It
+  replaces the "P" in a rounded square, which the audit counted among the "made by AI" signs.
+  - The header draws the mark with no tile. The bottle is the text colour and the lid is the accent, so it
+    follows the theme.
+  - The browser tab icon (`icon.svg`) follows the device theme. The installed app has its own icon
+    (`icon-app.svg`): the mark in white on Sotek Green, small enough to stay inside any round crop. iOS gets a
+    180px PNG (`apple-touch-icon.png`).
+  - The native icon and the two launch screens in `native/assets/` are drawn again from the same mark.
+  - The browser bar colour now follows the device theme (light `#F6F5F2`, dark `#141110`). It was dark only.
+  - The service-worker cache is `ps-v65`.
 - **One icon set in place of Unicode symbols.** The app used symbols from different fonts (⋯ ↻ ↶ ↷ ✓ ○ ⚓ ⚠ ⌕
   ✕ ✎ 🔒 ◎ ⇄ ◐), so each platform drew them in a different size, weight and style. The icons are now one SVG set
   on a 20px grid with one stroke (1.75px, square ends), in the colour of the text. The set is an inline sprite in
