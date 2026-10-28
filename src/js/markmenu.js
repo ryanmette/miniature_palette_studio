@@ -73,7 +73,7 @@ export function createMarkMenu({ box, head, list }) {
         + (it.disabled ? ' aria-disabled="true"' : '')
         // the hint is the description, not part of the name: the name stays "Use as seed"
         + (it.hint ? ` aria-describedby="markMenuHint${i}"` : '') + '>'
-        + (radio ? '<span class="mck" aria-hidden="true">✓</span>' : '')
+        + (radio ? '<span class="mck" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span>' : '')
         + `<span class="mtx"><span class="mlab">${esc(it.label)}</span>`
         + (it.hint ? `<span class="mhint" id="markMenuHint${i}" aria-hidden="true">${esc(it.hint)}</span>` : '')
         + '</span></button>').join('');

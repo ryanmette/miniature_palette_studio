@@ -179,6 +179,7 @@ const LOCALES = {
     aboutMoreHtml: 'The Help page explains <a href="support.html#matching">how the matching works</a> in plain words, and lists the <a href="support.html#shortcuts">keyboard shortcuts</a>.',
     aboutPrivacyHtml: 'Runs entirely in your browser — no accounts, no server, no tracking, and no external requests. Your shelf (owned and to-buy paints) and your settings stay on this device. Read the full <a href="privacy.html">privacy policy</a>.',
     aboutSupportHtml: 'A question, a missing paint, or something not working? See <a href="support.html">Help and support</a>.',
+    aboutFontsHtml: 'Type: <strong>Barlow Condensed</strong> (Jeremy Tribby) and <strong>IBM Plex Sans</strong> (IBM), both under the SIL Open Font License 1.1 and served from this site.',
     yourShelfHead: 'Your shelf on this device',
     yourShelfBody: 'Your owned and to-buy paints and your settings are kept only in this browser. To keep a copy, use ⋯ → Back up.',
     deleteOpen: 'Delete my shelf and settings…',

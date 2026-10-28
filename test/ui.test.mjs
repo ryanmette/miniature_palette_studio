@@ -243,10 +243,10 @@ test('matchNote: an empty shelf says so and goes to the Shelf, not to ⋯', () =
   assert.deepEqual(names(html), ['Use my paints: Prefer · none marked as owned yet — Open Shelf']);
 });
 
-test('matchNote: the Contrast line wears the Contrast finish icon, not ✓', () => {
+test('matchNote: the Contrast line wears the Contrast finish icon, not the check', () => {
   const html = matchNote({ contrast: true }, tt);
   assert.match(html, /class="nk nk-contrast" aria-hidden="true"><svg/);
-  assert.doesNotMatch(html, /✓/);
+  assert.doesNotMatch(html, /#i-check/);
 });
 
 test('planControls: Use my paints is no longer in the Plan tab (it is in ⋯)', () => {

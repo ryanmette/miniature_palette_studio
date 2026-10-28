@@ -6,6 +6,30 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Design exploration: a visual identity that does not look "made by AI"** (`mockups/visual-identity.html`, not
+  shipped). Ryan said that parts of the design look "AI", for example the radius and the padding of the buttons.
+  - The audit took 288 screenshots of PR #39 (24 surfaces, 6 sizes, light and dark) and measured the computed
+    styles. It found all twelve known causes. Examples: 8 different soft radii, one button size for main and minor
+    actions, the Tailwind violet-600 accent, 14 micro-caps labels, 20 pill badges, cards in cards, and Unicode
+    icons from different fonts.
+  - It also found two problems that are not style. In dark, the brass accent is ΔE 2.7 from `--warning`, so the
+    two look the same. The edges of the text fields are 1.22:1 (light) and 1.37:1 (dark), under WCAG 1.4.11.
+  - The page shows three directions on real Studio and Shelf frames, phone and desktop, light and dark:
+    "Workbench" (small radii and hairline rules), "Chamfer" (cut corners) and "Paint pot" (round swatches,
+    square controls). Each has a real-paint light accent and an open-licence font pair.
+  - The page also has a UX pass (first run, the length of the Studio on a phone, one main action per stage, empty
+    and error states, one name for one thing, PLAN follow-ups 12 and 13, motion), four judges' scores and a
+    recommendation. Nothing in the app changes until Ryan picks a direction.
+  - New files: a proposed icon set in `src/assets/icons/` (20px, one stroke, original work; the app does not use
+    it yet), candidate fonts in `mockups/fonts/` (SIL OFL 1.1, with each licence), and the audit screenshots and
+    the capture script in `mockups/visual-identity/`. (CLAUDE.md §4 is updated.)
+  - Ryan chose **Workbench+** with the Sotek Green light accent, and two releases (the look first, then the
+    UX pass). The page has a **Present** view: one direction, screen, device and theme at a time, at full length
+    and scaled to fit. Its **Swatches: Pot lids · Squares** switch and a new section show what round pot-lid
+    swatches touch (13 surfaces; a real paint is round, a target colour stays square).
+- **Design exploration: the logo** (`mockups/logo.html`, not shipped). Four rounds: seven ideas from the bench, then
+  refinements, scored by a painter judge and a brand judge. The recommendation is a dropper bottle whose colour lands
+  as a round pot lid (no droplet). A version with a drop is shown beside it.
 - **Design exploration: pin a paint to a role** (`mockups/pin-a-paint.html`, not shipped). Ryan asked: “I use Death
   Guard Green and want Balthasar Gold — what else is recommended?” Today the app cannot do this: for that green the Metal
   rule gives gunmetal, and no control pins a paint to a role. The page shows four directions with real engine numbers
@@ -234,6 +258,52 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **A new logo: a dropper whose colour lands as a round pot lid** (`mockups/logo.html`, 4a; Ryan chose it). It
+  replaces the "P" in a rounded square, which the audit counted among the "made by AI" signs.
+  - The header draws the mark with no tile. The bottle is the text colour and the lid is the accent, so it
+    follows the theme.
+  - The browser tab icon (`icon.svg`) follows the device theme. The installed app has its own icon
+    (`icon-app.svg`): the mark in white on Sotek Green, small enough to stay inside any round crop. iOS gets a
+    180px PNG (`apple-touch-icon.png`).
+  - The native icon and the two launch screens in `native/assets/` are drawn again from the same mark.
+  - The browser bar colour now follows the device theme (light `#F6F5F2`, dark `#141110`). It was dark only.
+  - The service-worker cache is `ps-v65`.
+- **One icon set in place of Unicode symbols.** The app used symbols from different fonts (⋯ ↻ ↶ ↷ ✓ ○ ⚓ ⚠ ⌕
+  ✕ ✎ 🔒 ◎ ⇄ ◐), so each platform drew them in a different size, weight and style. The icons are now one SVG set
+  on a 20px grid with one stroke (1.75px, square ends), in the colour of the text. The set is an inline sprite in
+  `index.html`, so it adds no request. Every icon is hidden from screen readers, because each control already has
+  a name. The sources are in `src/assets/icons/`. The service-worker cache is `ps-v64`.
+- **No more cards.** The seed toolbar, the studio, the output and the Shelf sit on the page. Thin rules and space
+  separate them, and the Plan's role cards, the Equivalents rows and the contrast pairs are rows under a rule, not
+  boxes inside a box. Nothing in the page casts a shadow. Overlays (the seed list, menus, sheets, dialogs, toasts)
+  have one crisp shadow. The pinned Shelf filter bar shows a rule under it, not a shadow.
+- **Smaller, fewer corner radii, and square tags.** Controls are 4px, panels and overlays 6px, swatches 3px and
+  tags 2px (they were 10px, 14px and fully round). Pills with a pale fill are now square tags with a coloured
+  border and no fill. The segmented controls (Studio / Shelf, the harmonies, the tone ladder, Ideal / Real, the
+  settings) are joined toolbars: the segments share their borders, and the pressed one has a pale accent fill and
+  an accent bar along its bottom. A press no longer shrinks a segment.
+- **The main action of each stage is larger than the others.** A primary button (for example "+ Add 15 to buy")
+  is 6px taller and semibold. A button that starts with an icon has less space on the icon side.
+- **New type: Barlow Condensed for headings and IBM Plex Sans for the rest.** They replace Space Grotesk and
+  Inter, which the visual-identity audit counted among the "made by AI" signs. Both are under the SIL Open Font
+  License 1.1, are served from this site (no outside request), and their licence files are in `src/assets/fonts/`.
+  About & data credits them. The five files are about 116 KB, as before. Barlow Condensed is narrow, so the
+  heading sizes go up one step (32 / 26 / 20 px). The service-worker cache is `ps-v63`.
+- **A new light theme, "Workbench"** (Ryan chose the Workbench+ direction in `mockups/visual-identity.html`).
+  - The light greys are warm and almost without colour, so they do not lean towards the accent and paint
+    reads true. The old greys were tinted lavender.
+  - The light accent is a real paint, Citadel Sotek Green (`#0B6371`), in place of the violet `#7C3AED`. It is
+    6.91:1 on the surface, and white text on it is 6.91:1. It is ΔE 23.9 or more from every state colour.
+  - Small state text has its own darker colours so that it is 4.5:1 or more on every light ground:
+    `--success-text` (now `#0F7334`) and a new `--buy-text` (`#1D4ED8`) for the "+ buy" buttons and the Shelf
+    count.
+  - The dark theme keeps its brass, but flat: the gradient and the bevel are gone.
+- **The edge of every text field and select is now easy to see.** The seed field, the Shelf search and the
+  selects used `--border`, which is 1.22:1 (light) and 1.37:1 (dark) against the page. WCAG 2.1 asks 3:1 for
+  the edge that shows where to type. A new `--edge` token is 3.67:1 (light) and 3.62:1 (dark) on the surface.
+- **Dark theme: the warning colour no longer looks like the accent.** `--warning` was `#C9923A`, ΔE 2.7 from the
+  brass accent, so a "Fair" or "Loose" match looked like a selected control. It is now `#E0803A` (ΔE 14.8 from
+  the brass, 16.4 from `--danger`, 6.15:1 on the surface).
 - **The seed field replaces the ☰ Paints drawer and the # hex box** (the Paints picker build;
   `mockups/paints-picker.html` "Recommended"; Ryan, 2026-10-28). One field, "Paint or #hex", takes a
   paint name, brand, line, type or finish words ("vallejo red", "citadel metallic", "dawnstone (layer)")

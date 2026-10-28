@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Palette Studio">
-  <rect width="512" height="512" fill="#C2912F"/>
-  <text x="256" y="284" font-family="'Space Grotesk', system-ui, sans-serif" font-size="320" font-weight="700" fill="#15100A" text-anchor="middle">P</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Palette Studio">
+  <!-- The mark (mockups/logo.html, 4a): a dropper bottle whose colour lands as a round pot lid. The browser tab
+       follows the device theme: ink and Sotek Green in light, parchment and brass in dark (CLAUDE.md §3.1). -->
+  <style>.i{fill:#1D1C19}.l{fill:#0B6371}@media (prefers-color-scheme:dark){.i{fill:#ECE3D8}.l{fill:#C2912F}}</style>
+  <g transform="translate(20.27 10.91) rotate(-140) scale(0.7)"><rect x="-1.25" y="-15" width="2.5" height="2.4" class="i"/><path d="M-1.6 -12.8h3.2L4.2 -4.6h-8.4z" class="i"/><rect x="-6.5" y="-5" width="13" height="17" rx="3" class="i"/><circle cx="0" cy="-23.6" r="6" class="l"/></g>
 </svg>

@@ -3,16 +3,16 @@ import assert from 'node:assert/strict';
 import { shelfFilterSummary, dockStep, DOCK_TUCK, DOCK_REVEAL } from '../src/js/ui.js';
 
 test('shelfFilterSummary: the chip always says search, even with nothing on', () => {
-  assert.deepEqual(shelfFilterSummary({}), { text: '⌕ Search', filters: 0, sheet: 0, any: false });
+  assert.deepEqual(shelfFilterSummary({}), { text: 'Search', filters: 0, sheet: 0, any: false });
 });
 
 test('shelfFilterSummary: query and filter count; sort is not counted', () => {
   const s = shelfFilterSummary({ q: ' green ', mark: 'owned', brand: 'AK Interactive', type: '' });
-  assert.equal(s.text, '⌕ “green” · 2 filters');
+  assert.equal(s.text, '“green” · 2 filters');
   assert.equal(s.filters, 2);
   assert.equal(s.sheet, 1);   // only brand/type live in the sheet → the Filters badge
   assert.equal(s.any, true);
-  assert.equal(shelfFilterSummary({ type: 'metal' }).text, '⌕ Search · 1 filter');
+  assert.equal(shelfFilterSummary({ type: 'metal' }).text, 'Search · 1 filter');
 });
 
 test('dockStep: a small scroll down tucks the open panel', () => {
