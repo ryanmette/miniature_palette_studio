@@ -199,18 +199,16 @@ export function nearestPaints(indexed, hex, n = 5, opts = {}) {
 export function equivalents(indexed, paint, { n = 6 } = {}) {
   const lab = paint.lab || hexToLab(paint.hex);
   const isMetal = paint.type === 'metal';
-  // Through the same cheap prefilter every other search uses (§6): this scanned + sorted the WHOLE
-  // dataset — ~2,200 ΔE2000 calls and a 2,200-element sort — to return 6-8 rows, and the Equivalents
-  // tab re-runs it on every source-chip click. candidatePool already understands excludeBrands, and
-  // floatTypes keeps the metal tier below from being pruned out of existence.
-  // keep=192, not the default 64: this returns a LIST, and a short pool let a marginally worse paint
-  // take a tail slot. Measured over all 2,508 paints against a full-dataset reference — rank 1 is
-  // identical either way; 192 cuts the differing tail rows from 94 to 10 (of ~20,000) and is still
-  // ~5.5× faster than the full scan it replaces.
-  const opts = { excludeBrands: new Set([paint.brand]), keep: 192, ...(isMetal ? { floatTypes: new Set(['metal']) } : {}) };
+  // Rank every paint of another brand, with no prefilter (candidatePool). The prefilter keeps the paints
+  // nearest by plain Lab distance, and FINISH_PENALTY changes the order after that cut. So a paint after the
+  // cut can belong in the list: for a wash, a wash that is further away than many flats. Measured on dataset
+  // 1.6.0 (3,225 paints) against a full scan, a pool of 192 gave 13 paints a worse paint in their top 8, by
+  // up to 1.34 ΔE of ranking score. It also put two paints with the same score in another order for 228
+  // more (a full scan keeps dataset order). A call takes about 3 ms, and the Equivalents tab makes one
+  // call per source-chip click (budget 16 ms, §6).
   const tier = isMetal ? (p => p.type === 'metal' ? 0 : 1) : () => 0;
   const cls = finishClass(paint.type);
-  return candidatePool(indexed, lab, opts)
+  return indexed.paints.filter(p => p.brand !== paint.brand)
     .map(p => { const deltaE = deltaE2000(lab, p.lab); return { paint: p, deltaE, score: deltaE + (finishClass(p.type) === cls ? 0 : FINISH_PENALTY) }; })
     .sort((a, b) => tier(a.paint) - tier(b.paint) || a.score - b.score)
     .slice(0, n)

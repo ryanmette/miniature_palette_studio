@@ -466,7 +466,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     the seed no longer says "New seed", and Esc then has nothing to put back. About and the photo dialog keep
     their 24px under the last line on a touch screen. An open Shelf filter shows the open fill. The docs
     checker ran no checks (and passed) when Node kept a symlinked path (`--preserve-symlinks-main`).
-  - (CLAUDE.md §3.5 and §3.6 are updated; service worker `ps-v54`.)
+  - (CLAUDE.md §3.5 and §3.6 are updated; service worker `ps-v56`.)
 - **↻ did nothing on a black or white seed.** ↻ keeps the lightness, and at 0% or 100% every hue is black or
   white: `#000000` stayed `#000000`, and the studio stayed neutral. Near the slider's ends most ↻ presses stayed
   grey too. Now, when the new colour would be neutral (Lab C* under 14, `NEUTRAL_EXIT`), the lightness moves the smallest
@@ -604,6 +604,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   is open. A share link's theme still shows, but it is not saved. Note: if an older version already
   saved a theme for you, the app keeps it, because it cannot tell that value from a real choice.
   (CLAUDE.md §3.1 updated; service worker `ps-v45`.)
+- **Equivalents: the list for a picked paint is now the true top 8.** `equivalents()` kept only the 192
+  paints nearest by plain Lab distance, and then ranked them with `FINISH_PENALTY`. The penalty changes
+  the order after that cut, so a paint after the cut can belong in the list. Now it ranks every paint of
+  another brand, and the list is the same as a full scan for every paint.
+  - **Measured** on all 3,225 paints against a full scan: 13 paints had a worse paint in their top 8, by
+    up to 1.34 ΔE of ranking score. 228 more paints showed two paints with the same score in another order.
+  - **Most were washes and other finishes:** 12 of the 13 are wash, ink, contrast or effect paints. The cut
+    kept nearer flats, and the penalty then put those flats after same-finish paints that the cut removed.
+  - **Cost:** about 3 ms a call (budget 16 ms, CLAUDE.md §6). A new test compares the list with a full scan
+    of the real dataset. `CACHE` → `ps-v55`.
 - **Shelf on phones: the filter panel no longer stutters when it tucks or opens.** Each tuck or open
   wrote a CSS variable on the page root, and every swatch read it. So the browser restyled the whole
   page (about 6,500 elements), about 80ms each time on a mid-range phone. Now the keyboard cursor keeps
