@@ -287,6 +287,11 @@
   table.where { border-collapse:collapse; font-size:12.5px; width:100%; max-width:900px; }
   table.where th, table.where td { text-align:left; padding:6px 12px 6px 0; border-bottom:1px solid var(--border); vertical-align:top; }
   table.where th { font-weight:500; color:var(--text-muted); }
+  .scrollx { overflow-x:auto; max-width:100%; }
+  .scrollx:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  ol.notes { margin:0; padding-left:18px; font-size:12.5px; color:var(--text-muted); max-width:80ch; }
+  ol.notes li + li { margin-top:4px; }
+  ol.notes b { color:var(--text); }
   @media (prefers-reduced-motion: no-preference) {
     .smenu:not([hidden]), .cdim:not([hidden]) .cdlg { animation:pop .2s cubic-bezier(.2,.7,.2,1); }
   }
@@ -767,19 +772,153 @@
     <tr><td>Reduce motion switch</td><td>Dropped</td><td>The app follows the phone’s setting already. Apple: “don’t include redundant versions” of system settings. WCAG 2.3.3 is AAA, and the media query alone meets it.</td></tr>
   </table>
 
-  <h3 class="lab">Open questions for you</h3>
+  <h3 class="lab">Open questions — answered (Ryan, 2026-10-28)</h3>
   <ul class="notes">
     <li><b>Help in ⋯.</b> Two views want a Help button next to About &amp; data. The third view measured the old menu: two new buttons
-      (Privacy and Help) made it too wide for a 360px screen. With the new phone layout, one Help button fits. Keep it?</li>
+      (Privacy and Help) made it too wide for a 360px screen. With the new phone layout, one Help button fits. Keep it?
+      <b>Answer: yes.</b></li>
     <li><b>Contrast in the matching note.</b> Must the note under the palette also show when Include Contrast is on (for example
-      “Contrast paints included”), not only when Use my paints is on?</li>
+      “Contrast paints included”), not only when Use my paints is on? <b>Answer: yes.</b></li>
     <li><b>A way back to “follow the phone”.</b> After today’s fix, the app follows the phone until you tap the theme switch. Then it
       keeps your choice, and no control lets you follow the phone again (only Delete your data). Add one, for example a “Use phone
-      setting” link under the switch that shows only when you have picked a theme?</li>
+      setting” link under the switch that shows only when you have picked a theme? <b>Answer: yes.</b></li>
     <li><b>44px on every touch screen.</b> <code>--tap</code> is 44px only at ≤520px, so an iPad or a phone turned sideways gets 38px.
-      Change it to apply on every touch screen (<code>pointer: coarse</code>)? This is a §3.6 change for the whole app.</li>
+      Change it to apply on every touch screen (<code>pointer: coarse</code>)? This is a §3.6 change for the whole app.
+      <b>Answer: yes.</b></li>
   </ul>
+  <p class="verdict">The design critique below shows where each answer goes in the menu.</p>
 </section>
+
+<!-- ============================================================ CRITIQUE -->
+<section class="full recd" id="critique">
+  <h2>Design critique of the full menu <span class="rec">2026-10-28 · before the build</span></h2>
+  <p class="why"><b>How we did it.</b> Ryan asked for a design critique before the build. Five reviewers each used one lens:
+  first impression and visual hierarchy; usability and the order of the menu; consistency with the design system; accessibility;
+  and the painter and the words. Each reviewer opened this page at 360×640, 390×844 and 1280×800, in both themes, and used the
+  menu. Then a second reviewer for each lens tried to prove each finding wrong. <b>64 findings: 58 held</b> (20 as written,
+  38 with a correction) and <b>6 were wrong</b>. After the check: 2 critical, 21 moderate and 35 minor. Below, findings about the
+  same problem share one row.</p>
+
+  <h3 class="lab">First impression</h3>
+  <p class="why">Calm, tidy and clearly “Settings”: a bold title, 44px rows and the same soft card as the rest of the app, in
+  both themes. But the eye goes first to the solid accent <b>Export list</b> button, not to a setting. And <b>Use my paints</b>,
+  the reason for this change, is the third row. Its label is quieter than its own hint.</p>
+
+  <h3 class="lab">What works</h3>
+  <ul class="notes">
+    <li><b>One phone layout for every row.</b> The label is above a full-width control, and every control is 44px tall. It reads
+      as one list. Today’s popover is a tight grid, and “English (UK)” wraps to two lines at 360px.</li>
+    <li><b>The hint slot keeps the rows still on a phone.</b> At 360px the Use my paints row stays 122px tall in all four states.</li>
+    <li><b>The empty shelf is honest.</b> Prefer stays selected, the hint says why nothing changes, and “Open Shelf” is the way on.</li>
+    <li><b>It is a floating overlay.</b> <code>--shadow-pop</code>, <code>--r-card</code> and 16px padding, as on the Filters sheet.</li>
+    <li><b>Both themes have the same shape.</b> Only the colour changes (the §3 rule). Dark looks on-brand.</li>
+    <li><b>The Restore confirm is careful.</b> A clear title, both counts, “You cannot undo this”, and focus starts on Cancel.
+      The first Esc closes only the confirm.</li>
+    <li><b>The danger button is serious, not loud.</b> Its text stays <code>--text</code>; a 1px <code>--danger</code> border shows
+      the risk (4.76:1 light, 4.32:1 dark).</li>
+    <li><b>The Tab order is the visual order.</b></li>
+  </ul>
+
+  <h3 class="lab">Priority changes</h3>
+  <ol class="notes">
+    <li><b>Make every segmented control readable, and show which segment is selected</b> (the two critical findings). This is a
+      fault in the whole app today, not only in the menu. So the fix goes into the shared <code>.seg</code>.</li>
+    <li><b>Fix the focus ring once, in the <code>--focus</code> token</b> (§3.1), so that focus looks the same inside and
+      outside the menu.</li>
+    <li><b>Give each line of the matching note its own target.</b> Answer 2 adds Contrast to the note, but Contrast lives in the
+      Plan, not in ⋯.</li>
+    <li><b>Reserve the space for answer 3 on the Theme row,</b> so the “Use device setting” button does not push the menu down.</li>
+    <li><b>Make the phone menu a modal sheet,</b> with a sticky title and Done, and a fade when there is more below.</li>
+    <li><b>Say what Prefer really does,</b> and use one word for one thing (“shelf”, “owned”).</li>
+    <li><b>Show what Restore will remove,</b> and keep the backup result inside the confirm.</li>
+  </ol>
+
+  <h3 class="lab">Where Ryan’s four answers go</h3>
+  <table class="where">
+    <tr><th>Answer</th><th>Where</th><th>Why there</th></tr>
+    <tr><td>1 · Help in ⋯</td><td>The last row, renamed “Help &amp; info”: <b>Help</b> first, then About &amp; data. Help is a link to the
+      Help page.</td><td>A painter who is stuck looks for Help. Two half-width buttons fit at 360px (151px each).</td></tr>
+    <tr><td>2 · Contrast in the note</td><td>Its own line in the note under the palette: “Contrast and speed paints included · Plan”.
+      It opens the Plan and goes to Include Contrast. The line shows the Contrast finish icon, not ✓.</td><td>Include Contrast stays in
+      the Plan. A note that opens ⋯ would go to a menu without that control.</td></tr>
+    <tr><td>3 · A way back to the phone’s theme</td><td>A reserved slot on the Theme row, left of the switch. Before you pick a theme:
+      “Follows your device” (text). After: a <b>Use device setting</b> button. It clears your choice, keeps focus on the switch, and
+      a screen reader hears “Theme follows your device”.</td><td>A line that shows after a pick would push every row down under your
+      finger (§3.4). “Device”, because the same menu is on a computer and an iPad. Ryan’s “Use phone setting” was an example.</td></tr>
+    <tr><td>4 · 44px on every touch screen</td><td><code>--tap</code> is 44px on <code>(pointer: coarse)</code> too. The shared segmented
+      controls, small buttons and the theme switch follow it on touch. The phone layout of the menu (sheet, title, Done) also uses
+      <code>pointer: coarse</code>.</td><td>A phone turned sideways or an iPad otherwise gets 44px rows in the desktop popover, with no
+      Done.</td></tr>
+  </table>
+
+  <h3 class="lab">Every finding, and what the build does</h3>
+  <div class="scrollx" tabindex="0" role="region" aria-label="All findings">
+  <table class="where">
+    <tr><th>Severity</th><th>Finding</th><th>What the reviewers found</th><th>In the build</th></tr>
+    <tr><td>Critical</td><td><code>a11y-1</code></td><td>Unselected segment labels are 4.20:1 in the light theme (WCAG 1.4.3 needs 4.5:1). The same fault is in today’s Language, Tone ladder and Shelf filters.</td><td>All <code>.seg</code> labels use <code>--text</code> (13.98:1 light, 12.83:1 dark). App-wide.</td></tr>
+    <tr><td>Critical</td><td><code>a11y-2</code></td><td>You cannot see which segment is selected: the white pill is 1.11:1 against the track (1.08:1 dark). Forced colours remove it.</td><td>The selected segment gets a 2px <code>--accent</code> bar inside it, like the selected output tab. Forced colours get a <code>Highlight</code> outline. App-wide.</td></tr>
+    <tr><td>Moderate</td><td><code>a11y-3 · usability-15</code></td><td>On a phone the “non-modal” panel covers the screen, but Tab and VoiceOver still reach the page under it.</td><td>A modal sheet on phones and touch screens (<code>showModal()</code>, the <code>--scrim</code> backdrop, Done). A non-modal popover with a mouse.</td></tr>
+    <tr><td>Moderate</td><td><code>a11y-4 · consistency-1</code></td><td>The focus ring is fixed only in the menu. The shared <code>--focus</code> ring is about 1.1:1 and forced colours remove it.</td><td>Fix the <code>--focus</code> token for the whole app: a 2px surface gap and a 2px <code>--accent</code> ring (5.70:1 light, 6.20:1 dark), plus a transparent outline for forced colours.</td></tr>
+    <tr><td>Moderate</td><td><code>a11y-6</code></td><td>In the build, one Esc in the Restore confirm also closes Settings, and focus is lost.</td><td>The settings Esc handler does nothing while a dialog is open. Esc closes only the confirm, and focus goes back to Restore….</td></tr>
+    <tr><td>Moderate</td><td><code>a11y-7</code></td><td>“Back up first” in the confirm shows a toast outside the dialog. A screen reader does not hear it.</td><td>The result shows inside the confirm: the button changes to “✓ Saved” and a status line names the file.</td></tr>
+    <tr><td>Moderate</td><td><code>consistency-2</code></td><td>The 44px touch sizes come from menu-only copies. The shared <code>.seg</code>, small buttons and the theme switch stay 30–34px on touch.</td><td>The shared components follow <code>--tap</code> on touch: segments and small buttons are 44px, and the theme switch gets a 44px hit area.</td></tr>
+    <tr><td>Moderate</td><td><code>consistency-3 · usability-8 · a11y-12</code></td><td>The “fixed” hint slot changes height between Off, Prefer and Only on desktop and with large text, so the rows below move.</td><td>The three hints share one grid cell, and only the current one is visible. The slot is always as tall as the longest hint.</td></tr>
+    <tr><td>Moderate</td><td><code>consistency-14 · painter-4 · usability-2</code></td><td>Answer 2 (Contrast in the note) has nowhere to go: the note’s “Change” opens ⋯, and ⋯ has no Contrast control.</td><td>The note gets one line for each active setting. The Use my paints line opens ⋯. The Contrast line opens the Plan and goes to Include Contrast.</td></tr>
+    <tr><td>Moderate</td><td><code>impression-4 · usability-7</code></td><td>At 360×640, 57px of the menu is below the edge with no sign. Help and About &amp; data are hidden.</td><td>The title and Done stay at the top. A fade shows when there is more below. The backup hint is one line.</td></tr>
+    <tr><td>Moderate</td><td><code>impression-6</code></td><td>The current Use my paints value is the hardest thing to see, most of all in dark.</td><td>The hint starts with the value in bold (“<b>Prefer</b> · …”), and the selected segment gets the accent bar.</td></tr>
+    <tr><td>Moderate</td><td><code>painter-1 · usability-9</code></td><td>“Your paints rank first” is not true for Prefer. A much closer paint that you do not own still wins.</td><td>New words: “Paints you own win when they’re close.” The shared line says: “Equivalents still lists every paint.”</td></tr>
+    <tr><td>Moderate</td><td><code>painter-2</code></td><td>Back up does not say what it saves, where the file goes, or why it matters.</td><td>Hint: “Saves your shelf and settings to a file.” After a backup, the slot shows the file name. The Help page says that the shelf is kept only in this browser.</td></tr>
+    <tr><td>Moderate</td><td><code>painter-5 · usability-11 · a11y-9</code></td><td>Answer 3 as drawn (a link that shows after a pick) makes the menu jump. “Phone” is the wrong word on a desktop.</td><td>A reserved slot on the Theme row. Before a pick: “Follows your device”. After a pick: a “Use device setting” button. Nothing moves.</td></tr>
+    <tr><td>Moderate</td><td><code>painter-6 · impression-8</code></td><td>In the Restore confirm, the before and after counts are in one long sentence. “Back up first” is not clear.</td><td>Two rows: “On this device” and “In the backup (date)”. A “Save a backup of this shelf” button that changes in place to “✓ Saved”.</td></tr>
+    <tr><td>Moderate</td><td><code>usability-1</code></td><td>Restore cannot be undone, and the totals hide what you lose.</td><td>The confirm counts the marked paints that the backup does not have, and says that your settings change too. Not now: an Undo after Restore.</td></tr>
+    <tr><td>Moderate</td><td><code>usability-6</code></td><td>Share link on the Shelf shares a Shelf link, not the scheme. This bug is in the app today.</td><td>Share link removes <code>m=shelf</code> from the link that it shares.</td></tr>
+    <tr><td>Minor</td><td><code>a11y-5</code></td><td>On touch, Done goes off the screen when the menu scrolls, and wider touch screens do not have it.</td><td>The title row is sticky. Done shows on every touch screen (the same <code>pointer: coarse</code> rule as <code>--tap</code>).</td></tr>
+    <tr><td>Minor</td><td><code>a11y-8</code></td><td>Restore has no drawn error state for a file that is not a backup.</td><td>Keep today’s message (“That file is not a Palette Studio backup — nothing was changed”). The toast now shows above the menu.</td></tr>
+    <tr><td>Minor</td><td><code>a11y-10 · consistency-10</code></td><td>Help is drawn as a button but goes to a page. About &amp; data does not say that it opens a dialog.</td><td>Help is a link that looks like a button (<code>a.btn</code>). About &amp; data gets <code>aria-haspopup="dialog"</code>. The Help page heading becomes “Help and support”.</td></tr>
+    <tr><td>Minor</td><td><code>a11y-11</code></td><td>The note says it opens a menu, and it does not report open or closed.</td><td><code>aria-haspopup="dialog"</code> and <code>aria-expanded</code>. Its name starts with the words on the screen.</td></tr>
+    <tr><td>Minor</td><td><code>a11y-13</code></td><td>The title is not a heading.</td><td>The title is an <code>&lt;h2&gt;</code>. The groups get no hidden names, because sighted users do not see names.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-4 · impression-3</code></td><td>Settings and the Filters sheet use two styles. Row labels and hints look the same.</td><td>One sheet header (<code>.sheethead</code>, title at 16px). Row labels use the Filters sheet’s small-caps label. Hints use 12.5px muted text. A §3.5 “Sheets and dialogs” line.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-5</code></td><td>There are three styles for a text-only action.</td><td>One §3.5 “text action” line (accent, weight 500, <code>--tap</code> tall on touch), used for Done and “Use device setting”.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-6</code></td><td>The danger button gives <code>--danger</code> a second meaning.</td><td>The §3.5 line says that <code>--danger</code> means “failing or destructive”. Focus uses the fixed ring.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-7</code></td><td>About keeps the in-page shadow, and the backdrop colour is not a token.</td><td>About and the confirm use <code>--shadow-pop</code>. A new <code>--scrim</code> token (§3.1) replaces the three backdrop values.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-8</code></td><td>The open ⋯ button looks the same as a focused one.</td><td>Open shows as a <code>--surface-2</code> fill. The ring is for focus only.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-9</code></td><td>The 44px wrapper puts the theme switch’s focus ring off centre.</td><td>A <code>::before</code> hit area, as on the Shelf handle. The ring stays on the switch.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-11</code></td><td>The draft §3.6 uses group names that the menu does not show.</td><td>§3.6 uses the real row names. The PR lists every CLAUDE.md line that changes.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-12</code></td><td>About’s key caps and disclosures use values off the scale. The fine print is 2.39:1.</td><td>Key caps on the spacing scale. Disclosures are <code>aria-expanded</code> buttons. The fine print uses <code>--text-muted</code> (4.68:1).</td></tr>
+    <tr><td>Minor</td><td><code>impression-1</code></td><td>Export list, an action, is the strongest thing in a settings panel.</td><td>Export list becomes a secondary button.</td></tr>
+    <tr><td>Minor</td><td><code>impression-2</code></td><td>Use my paints is the third row.</td><td>Use my paints is the first row. Then Theme, then Language.</td></tr>
+    <tr><td>Minor</td><td><code>impression-7 · painter-3</code></td><td>“Data” means two things: your shelf and the paint data.</td><td>The row is “Backup”. About’s block is “Your shelf on this device”. New words use “shelf” and “owned”, not “collection” or “data”.</td></tr>
+    <tr><td>Minor</td><td><code>impression-9</code></td><td>“More” does not say what the row holds.</td><td>The row is “Help &amp; info”, with Help first.</td></tr>
+    <tr><td>Minor</td><td><code>impression-11 (frame only)</code></td><td>The tall phone frame hides the fold problem.</td><td>The build is measured at 360×640 and 390×664.</td></tr>
+    <tr><td>Minor</td><td><code>painter-7</code></td><td>The empty-shelf hint says something false: the app knows your marks, not what you own.</td><td>“No paints marked as owned yet.” with Open Shelf.</td></tr>
+    <tr><td>Minor</td><td><code>painter-8</code></td><td>The note does not use the control’s words.</td><td>The note says “Use my paints: Prefer”, and its name uses the same words.</td></tr>
+    <tr><td>Minor</td><td><code>painter-9</code></td><td>“Export list” hides the shopping list behind a technical word.</td><td>The button is “Save shopping list” (§3.6 updated).</td></tr>
+    <tr><td>Minor</td><td><code>painter-10 · usability-4</code></td><td>The Help page sends painters to CSV to move their shelf to a new device.</td><td>The Help page says: use Back up and Restore to move your shelf. Use CSV for paintRack.</td></tr>
+    <tr><td>Minor</td><td><code>painter-11</code></td><td>About copy: “strength” is a paint word; “colour” needs en-US versions; the version line is not clear.</td><td>“Saturation (how vivid)”, en-US overrides, and “Palette Studio 1.9.0 · paint data 1.6.0”.</td></tr>
+    <tr><td>Minor</td><td><code>usability-3</code></td><td>Help goes to a contact page, but the how-to text is in About.</td><td>The Help page gets “How the matching works” and “Keyboard shortcuts”. About links to them.</td></tr>
+    <tr><td>Minor</td><td><code>usability-5</code></td><td>The title “Settings” names a panel that is mostly actions.</td><td>Not now. The name “Settings” stays (§3.6 uses it). A screen reader reads each row when the menu opens.</td></tr>
+    <tr><td>Minor</td><td><code>usability-10</code></td><td>On a phone, a change to Use my paints has no visible effect while the menu is open.</td><td>Not now. The hint says what changes, a screen reader hears it, and the note under the palette shows the setting.</td></tr>
+  </table>
+  </div>
+
+  <h3 class="lab">Findings that were wrong (6)</h3>
+  <ul class="notes">
+    <li><code>impression-5</code> “Settings does not match its sibling sheets”: the sizes were the frame’s 12px drawing scale, and the
+      Filters sheet’s first-focus rule is about iOS and a <code>&lt;select&gt;</code>, which this menu does not have.</li>
+    <li><code>impression-10</code> “The dark scrim barely separates the confirm”: a darker scrim does not change the result (1.13:1).
+      The confirm’s edge already reads above the dimmed menu.</li>
+    <li><code>usability-12</code> “Delete is split from Back up”: Delete is in About on purpose (rare, and risky next to Theme), and its
+      confirm offers a backup.</li>
+    <li><code>usability-13</code> “Focus must not start on the theme switch”: the WAI-ARIA dialog pattern starts on the first control,
+      and the dialog name “Settings” is read first.</li>
+    <li><code>usability-14</code> “Done is tied to width”: the mockup sets no breakpoint, and a tap outside or ⋯ closes the popover.
+      (The build still uses <code>pointer: coarse</code> for the phone layout; see answer 4.)</li>
+    <li><code>consistency-13</code> “The frames draw lookalikes”: the page says that the build uses the real components.</li>
+  </ul>
+  <p class="verdict"><b>Next:</b> the build applies the “In the build” column. Screenshots of the result replace these frames as
+  the reference.</p>
+</section>
+
 
 <script>
   // The interactive frame only. Values were read from the running app (Alga Green complementary scheme,
