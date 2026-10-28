@@ -2,25 +2,30 @@
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
 import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
-  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop } from './harmony.js';
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, hexToLab, deltaE2000, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex } from './color.js';
-import { schemeBaseOf, pickForSchemeBase, swatchKeyHex } from './seed.js';   // the pick ↔ scheme-base frame
-import { encodeState, decodeState } from './share.js';   // the share-link contract (state ⇄ URL)
+  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony } from './harmony.js';
+import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex } from './color.js';
+import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
+import { encodeState, decodeState, shareUrl } from './share.js';   // the share-link contract (state ⇄ URL)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
+import { createMarkMenu, isMenuKey } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
+import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, equivalents, nearestPaints, nearestPaint, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf } from './data.js';
+import { loadDataset, equivalents, nearestPaints, nearestPaint, closestPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
+import { APP_VERSION } from './version.js';   // the one app-version constant (check-docs.mjs holds it to package.json)
+
+const t = i18n.t;
 
 const $ = sel => document.querySelector(sel);
 const state = {
   idx: null, scheme: null,
   baseId: null, customHex: null,
   harmony: 'complementary',
-  q: '', brand: '', ptype: '', psort: '', seedRole: 'main', tab: 'plan', theme: 'light',
+  seedRole: 'main', tab: 'plan', theme: 'light',
   compareA: null, wheelL: null, hiHex: null,   // hiHex = the colour link-highlighted across wheel/plan/live palette
 
   extraNodes: [], showReal: false,   // editable swatches [{h,s,l?,locked?}] (S5); live-palette ideal↔real fill
@@ -34,8 +39,8 @@ const OWNED_BOOST = 6;   // ΔE the soft owned-boost is "worth" — owned paints
 const METAL_DEMOTE = 4;  // ΔE handicap on metallics for COLOUR roles (they read differently on the model); the
                          // Metal role's all-metal pool demotes every candidate equally, so it's unaffected (§7)
 
-/** The colour the painter PICKED. Its identity only — the hero, the seed badge, the hex field and the
- *  share URL. Anything that renders, hit-tests or resolves a swatch key uses schemeBase() (see seed.js). */
+/** The colour the painter PICKED. Its identity only — the hero, the seed badge, the seed field's list and
+ *  the share URL. Anything that renders, hit-tests or resolves a swatch key uses schemeBase() (see seed.js). */
 const pickHex = () => state.customHex || state.idx.byId.get(state.baseId)?.hex;
 /** Entry mode C: when the seed is the *accent*, build the scheme around its complement. */
 const schemeBase = () => schemeBaseOf(pickHex(), state.seedRole);
@@ -63,7 +68,7 @@ const POPS = [
   { hex: '#9C1626', name: 'Crimson' }, { hex: '#0F6B6E', name: 'Teal' }, { hex: '#C4581A', name: 'Ember' },
   { hex: '#C2912F', name: 'Gold' }, { hex: '#5B3B8C', name: 'Purple' }, { hex: '#3E6B2F', name: 'Moss' },
 ];
-/** Match/scheme options from the single "use my collection" control: off · prefer (boost) · only (filter). */
+/** Match/scheme options from the single "Use my paints" setting (⋯): off · prefer (boost) · only (filter). */
 function matchOpts() {
   const o = { ladder: state.ladder };
   const owned = store.ownedIds();
@@ -97,29 +102,17 @@ function currentScheme() {
   return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop(), seed, accentHex: accentPin() });
 }
 
-function filteredPaints() {
-  const q = state.q.toLowerCase();
-  const list = state.idx.paints.filter(p =>
-    (!state.brand || p.brand === state.brand) &&
-    (!state.ptype || p.type === state.ptype) &&
-    (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
-       || (p.line && p.line !== '—' && p.line.toLowerCase().includes(q))       // same fields as the Shelf search — the two surfaces must not answer differently
-       || (p.dname && p.dname.toLowerCase().includes(q))));   // the displayed "(Line)" name is searchable too
-  return sortPaints(list);
-}
-/** Sort a paint list by `key` (stable copy; '' keeps dataset order). Shared by the picker (state.psort)
- *  and the shelf (state.shelfSort). */
-function sortPaints(list, key = state.psort) {
+/** Sort the Shelf's paints by `key` (state.shelfSort; a stable copy, '' keeps dataset order). The seed
+ *  field's browse grid has its own orders (data.js browseOrder). */
+function sortPaints(list, key = '') {
   // numeric sorts decorate–sort–undecorate: the key computes ONCE per paint, not once per comparison
-  // (hue/light ran ~2·n·log n HSL conversions per sort; 'de' the same in ΔE2000)
+  // (hue/light ran ~2·n·log n HSL conversions per sort)
   const by = fn => list.map(p => [fn(p), p]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
   switch (key) {
     case 'name': return list.slice().sort((a, b) => a.name.localeCompare(b.name));
     case 'brand': return list.slice().sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
     case 'hue': return by(p => rgbToHsl(hexToRgb(p.hex))[0]);
     case 'light': return by(p => rgbToHsl(hexToRgb(p.hex))[2]);
-    case 'de': { const bl = hexToLab(pickHex()); return by(p => deltaE2000(bl, p.lab)); }
-    case 'owned': return list.slice().sort((a, b) => (store.isOwned(b.id) - store.isOwned(a.id)) || a.name.localeCompare(b.name));
     default: return list;   // dataset order
   }
 }
@@ -134,11 +127,15 @@ function renderPlan() {
   const addable = gaps.filter(g => store.markOf(g.paint.id) !== 'want').length;
   // No overview colour bar here — the role-labelled live palette (beside the wheel) is now the single
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
-  $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.collection, state.includeContrast, addable)
+  $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
     + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus the selected tone ladder</div>'
     + ui.roleSlots(state.scheme, store.markOf);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
+// Set by setupWheel() too. render() calls it when something other than the lightness slider changes
+// the colour, the harmony or the seed role, so the slider's next move starts a new run from the colour
+// now (wheel.js).
+let endLightnessRun = () => {};
 /** node ideal-hex (UPPER) → role glyph (P/A/2) for the current scheme. Keyed off schemeBase() so it's
  *  correct in accent-seed mode (the base node is then the Accent); Metal has no wheel node. */
 function wheelRoleGlyphs() {
@@ -292,7 +289,7 @@ function renderPops() {
 function setPopHex(hex) {
   const h = normHex(hex); if (!h) return;
   state.popHex = clampPop(h);
-  render('scheme');
+  render('pop');
 }
 /** The neutral-mode chokepoint — call whenever the seed may have changed class. Keeps the harmony
  *  legal for the seed (parking/restoring the painter's hue harmony across the boundary), forces the
@@ -300,6 +297,24 @@ function setPopHex(hex) {
  *  and pop chips. Cheap when nothing changed, so the wheel's per-frame commit() can call it. */
 let lastNeutral = null, preNeutralHarmony = null, preNeutralSeedRole = null;
 let modeNote = '';   // set by ensureHarmonyMode on a real mode change; consumed once by announce()
+/** The sentence of a pending modeNote that names the harmony the mode change chose ("back to the
+ *  complementary scheme"), and the same news without that harmony. A chip or a roll before that announce
+ *  replaces the harmony, so setHarmony puts the short form in its place. */
+let modeHarmonyNote = null;   // { full, short } or null
+/** The news of a change for the next announce(): it leads the scheme summary. A new seed ("New seed: X"),
+ *  a roll ("Rolled: Compound"), or ↻ that moved the lightness. A say() after the render wrote over that
+ *  announce, so the mode note and the §2 "your pick is excluded" note were never spoken. Set by seedNews()
+ *  and setHarmony(); consumed once, as modeNote. */
+let newsLead = '';
+/** True when newsLead names the harmony ("Rolled: Compound"): announce() then leaves "{harmony} scheme"
+ *  out of the summary, so the harmony is said once. */
+let newsNamesHarmony = false;
+/** Show the news of a new seed as a toast (what you see) and let the render that follows say it, in its
+ *  one announce. Call it just before a render that speaks. */
+function seedNews(msg) { newsLead = msg; toast(msg, { speak: false }); }
+/** A live hex in the seed field renders without speaking: the field's list says the new seed, and takes
+ *  the mode note here, so the note is never spoken later, on a render that did not cause it. */
+function takeModeNote() { const n = modeNote; modeNote = ''; modeHarmonyNote = null; return n; }
 /**
  * Can a parked accent role be handed back yet? Restoring flips schemeBase() 180°, and Lab chroma is
  * NOT identical across hues, so restoring on a seed that has only just cleared the threshold could
@@ -322,13 +337,16 @@ function ensureHarmonyMode() {
   lastNeutral = n;
 
   const notes = [];
+  let harmonyNote = null;
   if (!legal) {
     state.dropOffsets = [];
     if (n) { preNeutralHarmony = state.harmony; state.harmony = 'neutral-pop'; }
     else { state.harmony = validHarmony(preNeutralHarmony) && !isNeutralHarmony(preNeutralHarmony) ? preNeutralHarmony : 'complementary'; preNeutralHarmony = null; }
-    notes.push(n
-      ? 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.'
-      : `Seed has a hue again — back to the ${state.harmony} scheme.`);
+    harmonyNote = n
+      ? { full: 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.',
+          short: 'Neutral seed — hue harmonies are unavailable for a neutral.' }
+      : { full: `Seed has a hue again — back to the ${state.harmony} scheme.`, short: 'Seed has a hue again.' };
+    notes.push(harmonyNote.full);
   }
   // The seed role parks and restores SYMMETRICALLY with the harmony above. A neutral seed always
   // holds Primary (a neutral accent has no complement to build from), but before this a drag that
@@ -345,7 +363,7 @@ function ensureHarmonyMode() {
   // Hand the notes to announce() rather than writing #status here: they used to land in the live
   // region and be overwritten a statement later by the caller's own announce(), so the one thing a
   // screen-reader user needed to hear — the scheme changed under them — was never spoken.
-  if (notes.length) modeNote = notes.join(' ');
+  if (notes.length) { modeNote = notes.join(' '); modeHarmonyNote = harmonyNote; }
 
   setNeutralUi(n);
   syncSeg(); renderPops();
@@ -380,7 +398,7 @@ function collapseBanner() {
 /** Repaint the always-visible studio column (wheel + live palette + pop chips). */
 function drawStudio() { wheelDraw(); renderLive(); renderPops(); }
 /** Re-derive the wheel's lightness from the seed. Only needed when the seed changed from OUTSIDE the
- *  wheel (paint pick, hex field, undo, init) — during a drag the slider is already the source. */
+ *  wheel (a paint pick, a typed hex, undo, init) — during a drag the slider is already the source. */
 function syncWheelL() {
   state.wheelL = rgbToHsl(hexToRgb(schemeBase()))[2];
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
@@ -400,24 +418,37 @@ function syncWheelL() {
  *   5. ONE announce, composing any mode-change note instead of overwriting it.
  *
  * Reasons:
- *   'all'     init / undo / redo — everything, including the paint drawer
- *   'seed'    the pick changed (paint, hex field, photo, "use as base")
- *   'scheme'  harmony · seed role · pop changed; the seed itself did not
+ *   'all'     init / undo / redo — everything
+ *   'seed'    the pick changed (a paint or a hex in the seed field, a photo, "use as base")
+ *   'scheme'  harmony · seed role changed; the seed itself did not
+ *   'pop'     a quick-pop chip changed the pop: as 'scheme', but an open lightness run stays open
+ *             (the pop is not the base colour, so the slider can still go back to its start colour)
  *   'palette' added/locked/reordered swatches — studio only, exactly as before
- *   'drag'    a live wheel frame: coalesced to one repaint per frame, URL + speech debounced
+ *   'drag'    a live wheel or lightness-slider frame: coalesced to one repaint per frame, URL +
+ *             speech debounced
  *   'settle'  a drag ended: commit the URL and speak; everything is already painted
+ *   'marks'   a mark changed (owned · to buy · clear), anywhere: the ONE path that repaints everything
+ *             that shows a mark or ranks by the owned set (renderMarks). `ids`: the paints whose mark
+ *             changed, or null for many (an import). The colour and the scheme did not change, so: no
+ *             end of a lightness run, no undo step, no URL write, and no scheme summary (the caller says
+ *             what it marked).
  */
 let renderRaf = 0;
-function render(reason = 'scheme') {
-  if (reason === 'settle') { updateUrl(); announce(); return; }
+/** `speak: false` repaints without the scheme summary in #status (a restore says its own line). */
+function render(reason = 'scheme', { speak = true, ids = null } = {}) {
+  if (reason === 'settle') { updateUrl(); if (speak) announce(); return; }
+  if (reason === 'marks') { renderMarks(ids); return; }
 
+  // A pick, a typed hex, undo/redo, a share link or a harmony/seed-role change ends a lightness run.
+  // Wheel drags and ↻ render as 'drag': the slider sees their new pick for itself. A pop change
+  // ('pop', or a pop dragged on the wheel) does not change the base colour, so the run stays open.
+  if (reason === 'seed' || reason === 'all' || reason === 'scheme') endLightnessRun();
   ensureHarmonyMode();   // the seed may have crossed the neutral boundary (picker, hex, drag, undo)
   if (reason === 'seed' || reason === 'all') syncWheelL();
 
   if (reason === 'palette') { drawStudio(); updateUrl(); return; }
 
   const paint = () => {
-    if (reason === 'all' || reason === 'seed') renderList();
     drawStudio();
     renderHero(reason !== 'drag');   // no pop animation mid-drag
     renderActive();                  // the output tabs follow the scheme — mid-drag included
@@ -432,8 +463,51 @@ function render(reason = 'scheme') {
     return;
   }
   paint();
-  updateUrl(); announce();
+  updateUrl(); if (speak) announce();
 }
+/* ---- marks: one path for every mark change (render('marks')) ----
+   Each writer used to repaint its own list of surfaces, and the lists disagreed: a mark on the Shelf left
+   the Studio's live palette and Plan on the old state, a mark in the old Paints drawer left the hero's buy
+   toggle stale, and with Use my paints on even the matches could be stale until the next full render.
+   What shows a mark, or ranks by the owned set:
+     Studio — the seed field's list while it is open (picker.js refresh) · the wheel and the live palette
+              (Use my paints ranks them) · the hero (✓ owned or its buy toggle) · the active tab (the Plan's
+              buy toggles and gaps, the Equivalents badges, the Accessibility swap) · the matching note
+              ("from the N you own").
+     Shelf  — the cells' badges, the stats line, and the status filter (a paint can leave the view).
+   The hidden mode repaints when it shows: the Studio through studioMarksStale, the Shelf because
+   setMode('shelf') rebuilds its grid. The ⋯ Use my paints hint does not follow marks (§3.6). */
+let studioMarksStale = false;
+function renderMarks(ids) {
+  if (state.mode === 'shelf') { renderShelfMarks(ids); studioMarksStale = true; return; }
+  paintStudioMarks(ids);
+}
+function paintStudioMarks(ids = null) {
+  studioMarksStale = false;
+  // A mark re-renders the control that made it (a buy toggle in the Plan or the hero, Add gaps to buy):
+  // focus goes back to the new one, in the same place.
+  const ae = document.activeElement, aeId = ae?.id, buyId = ae?.dataset?.buy;
+  const region = buyId ? ae.closest('#hero, [data-panel], #livepal') : null;
+  picker.refresh(ids);   // the seed field's list, while it is open (closed, it is built from scratch on open)
+  drawStudio();
+  renderHero(false);   // no pop: the colour did not change
+  renderActive();
+  renderMatchNote();
+  if (region) region.querySelector(`[data-buy="${CSS.escape(buyId)}"]`)?.focus({ preventScroll: true });
+  else if (aeId && !ae.isConnected) document.getElementById(aeId)?.focus({ preventScroll: true });
+}
+function renderShelfMarks(ids) {
+  // An Owned or To buy filter no longer shows a paint whose new mark differs: it leaves the view, and the
+  // selection and the cursor let go of it.
+  const gone = new Set(state.shelfMark && ids ? ids.filter(id => store.markOf(id) !== state.shelfMark) : []);
+  if (gone.size) {
+    const keep = id => (id && !gone.has(id) ? id : null);
+    setSelection([...shelf.sel].filter(id => !gone.has(id)), { anchor: keep(shelf.anchor), cursor: keep(shelf.cursor) });
+  }
+  if (!ids || gone.size) renderShelf();   // many paints (an import), or the view changed: rebuild
+  else { for (const id of ids) { const c = cellEl(id); if (c) updateCell(c, store.markOf(id)); } renderShelfStats(); }
+}
+
 const MAX_FREE = 6;   // bounds URL length + per-frame nearest-paint scans (S5 micro-decision)
 /** Add a colour "along the line": extend the base's value ramp (alternating lighter/darker tints &
  *  shades, stepping outward) rather than inventing a new hue. New swatches are draggable + editable. */
@@ -540,10 +614,12 @@ function renderEquiv() {
     const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
     // The Metal column's matches float true metallics first — a flat near the hex isn't an equivalent (§7).
     // Any other colour is a flat target (the Plan matches roles with finishes excluded), so washes, contrasts,
-    // texture paints and metals rank FINISH_PENALTY further, as for a picked flat paint. Reported ΔE stays true.
-    const srcOpts = role === 'Metal' ? { floatTypes: new Set(['metal']), demoteTypes: new Set(FINISH_TYPES), demoteAmount: FINISH_PENALTY }
-      : { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY };
-    $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, nearestPaints(state.idx, srcHex, 8, srcOpts), store.markOf);
+    // texture paints and metals rank FINISH_PENALTY further, as for a picked flat paint (data.js closestPaints,
+    // the seed field's hex list too). Reported ΔE stays true.
+    const list = role === 'Metal'
+      ? nearestPaints(state.idx, srcHex, 8, { floatTypes: new Set(['metal']), demoteTypes: new Set(FINISH_TYPES), demoteAmount: FINISH_PENALTY })
+      : closestPaints(state.idx, srcHex, 8);
+    $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, list, store.markOf);
   }
 }
 function renderA11y() {
@@ -590,22 +666,29 @@ function renderA11y() {
   }
   $('#panel-a11y').innerHTML = ui.a11yPanel({ names, sims, contrasts, collision });
 }
-const renderers = { plan: renderPlan, equiv: renderEquiv, a11y: renderA11y };
-function renderActive() { renderers[state.tab](); }
+// A fixed list and plain comparisons, never a function looked up by the link's v= name: on an object a
+// name such as __proto__ or toString found the prototype's member (?v=__proto__ crashed the app on load;
+// ?v=toString showed no tab).
+const TABS = ['plan', 'equiv', 'a11y'];
+function renderActive() {
+  if (state.tab === 'equiv') renderEquiv();
+  else if (state.tab === 'a11y') renderA11y();
+  else renderPlan();
+}
 
 /* ---- shelf (collection) — Finder-style bulk stocking, wired to store.setMark ---- */
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
 const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false, viewIds: null };   // ids; selection is transient (not persisted); viewIds = the drawn order (set by renderShelf)
 const shelfPaints = () => {
-  const q = state.shelfQ.trim().toLowerCase();
+  // The seed field's matcher (data.js paintMatcher): every word must match the name, the display name
+  // ("dawnstone (layer)"), the brand, the line, the type or the finish word. The Shelf keeps its own order.
+  const match = paintMatcher(state.shelfQ);
   const list = state.idx.paints.filter(p =>
     (!state.shelfBrand || p.brand === state.shelfBrand) &&
     (!state.shelfMark || store.markOf(p.id) === state.shelfMark) &&   // status filter: '' (all) | owned | want
     (!state.shelfType || p.type === state.shelfType) &&               // type filter (base/layer/shade/metal/…)
-    (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
-       || (p.line && p.line !== '—' && p.line.toLowerCase().includes(q))
-       || (p.dname && p.dname.toLowerCase().includes(q))));   // the displayed "(Line)" name is searchable too
+    (!match || match(p)));
   return sortPaints(list, state.shelfSort);
 };
 const cellEl = id => document.getElementById('sc-' + id);
@@ -735,7 +818,10 @@ function openShelfSheet() {
   $('#shelfScrim').hidden = false;
   $('#shelfDock').classList.add('sheet-open');
   $('#shelfFiltersBtn').setAttribute('aria-expanded', 'true');
-  $('#shelfBrand').focus();
+  // Focus the sheet's title, not its first select: on iOS, focusing a <select> during a tap opens its
+  // picker at once, so every tap on Filters opened the brand list. Tab then reaches Brand (WAI-ARIA APG
+  // dialog pattern: a static element at the start may take the first focus).
+  $('#shelfMoreTitle').focus({ preventScroll: true });
 }
 function closeShelfSheet({ returnFocus = true } = {}) {
   if (!dock.sheet) return;
@@ -790,7 +876,9 @@ function setupShelfDock() {
     if (e.key !== 'Tab') return;   // keep focus inside the modal sheet
     const f = [...$('#shelfMore').querySelectorAll('button, select')];
     const first = f[0], last = f[f.length - 1];
-    if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+    // the title takes the first focus (openShelfSheet), so Shift+Tab from it must wrap too
+    const atStart = document.activeElement === first || document.activeElement === $('#shelfMoreTitle');
+    if (e.shiftKey && atStart) { last.focus(); e.preventDefault(); }
     else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
   });
 }
@@ -859,18 +947,14 @@ function applyMark(mark) {
   if (!ids.length) { const f = shelf.cursor || shelf.hover; if (f) ids = [f]; }
   if (!ids.length) return;
   store.setMarks(ids, mark);   // ONE persist — 500 setMark calls would serialise the whole state 500×
-  const cells = [];
-  for (const id of ids) {
-    const c = cellEl(id); if (c) { updateCell(c, mark); c.classList.remove('flash'); cells.push(c); }
-  }
+  render('marks', { ids });    // the cells, the stats, a status filter; the Studio when it shows next
   // restart the confirm-flash with a SINGLE forced layout — write→read→write per cell was one full
   // grid layout per selected paint (a 500-cell mark froze the main thread for seconds on mobile)
+  const cells = ids.map(cellEl).filter(Boolean);
+  for (const c of cells) c.classList.remove('flash');
   if (cells.length) { void cells[0].offsetWidth; for (const c of cells) c.classList.add('flash'); }
-  renderShelfStats();
   const verb = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'cleared';
   announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} marked ${verb}.`);
-  // If a status filter is active and these paints no longer match it, drop them from view.
-  if (state.shelfMark && state.shelfMark !== mark) { setSelection([], { anchor: null, cursor: null }); renderShelf(); }
 }
 function updateCell(c, mark) {
   c.dataset.mark = mark;
@@ -892,33 +976,25 @@ function setupShelf() {
   grid.addEventListener('pointerout', e => { if (!e.relatedTarget || !grid.contains(e.relatedTarget)) shelf.hover = null; });
   grid.addEventListener('focusin', e => { const c = e.target.closest('.cell'); if (c) clampTip(c); });
 
+  // The mark menu's gestures (markmenu.js): a right-click everywhere; a long-press on a touch screen, as
+  // before. Bound first, so the handlers below can ask it whether a press is already used.
+  shelfMenuSurface = markMenu.attach({ container: grid, item: el => el.closest('.cell'), longPress: COARSE, onOpen: openShelfMenu });
+
   if (COARSE) {                                  // touch: tap-to-cycle, or Select-mode multi-select; long-press → menu
-    let lpTimer = null, sx = 0, sy = 0, suppressTap = false;
-    const cancelLP = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } };
-    grid.addEventListener('pointerdown', e => {
-      const c = e.target.closest('.cell'); if (!c) return;
-      sx = e.clientX; sy = e.clientY; suppressTap = false;
-      lpTimer = setTimeout(() => {               // long-press → context menu for this cell (any mode)
-        lpTimer = null; suppressTap = true;
-        if (!shelf.sel.has(c.dataset.id)) setSelection([c.dataset.id], { anchor: c.dataset.id, cursor: c.dataset.id });
-        openMenu(e.clientX, e.clientY);
-      }, 500);
-    });
-    grid.addEventListener('pointermove', e => { if (lpTimer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancelLP(); });
-    grid.addEventListener('pointerup', cancelLP);
-    grid.addEventListener('pointercancel', cancelLP);
     grid.addEventListener('click', e => {
       const c = e.target.closest('.cell'); if (!c) return;
-      if (suppressTap) { suppressTap = false; return; }   // long-press already handled this tap
+      if (shelfMenuSurface.ignorePress()) return;   // a long-press opened the menu, or this tap only closed it
       if (shelf.selectMode) {                    // tap toggles selection (bulk-mark via the action bar)
         const s = new Set(shelf.sel); s.has(c.dataset.id) ? s.delete(c.dataset.id) : s.add(c.dataset.id);
         setSelection(s, { anchor: c.dataset.id, cursor: c.dataset.id });
       } else {                                    // tap cycles this swatch's mark (approach C)
-        const next = { none: 'owned', owned: 'want', want: 'none' }[c.dataset.mark || 'none'];
-        store.setMark(c.dataset.id, next); updateCell(c, next);
-        c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
-        renderShelfStats();
-        if (state.shelfMark && state.shelfMark !== next) renderShelf();   // dropped out of the active status filter
+        const id = c.dataset.id, next = { none: 'owned', owned: 'want', want: 'none' }[c.dataset.mark || 'none'];
+        store.setMark(id, next);
+        render('marks', { ids: [id] });          // the cell and the stats; it leaves an Owned / To buy view
+        const cc = cellEl(id);
+        if (cc) { cc.classList.remove('flash'); void cc.offsetWidth; cc.classList.add('flash'); }
+        const p = state.idx.byId.get(id);
+        announceShelf(`${ui.pname(p)}, ${ui.markLabel(next)}.`);   // the new state, for a screen reader too (§3.5)
       }
     });
     return;
@@ -927,6 +1003,7 @@ function setupShelf() {
   let down = null, marquee = null, base = null, moved = false, dragRects = null;
   grid.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;                   // left button only (right-click → context menu)
+    if (shelfMenuSurface.ignorePress()) return;   // this click only closed the menu: no selection change
     // On macOS, Ctrl+click IS the system secondary-click (fires contextmenu) — so use ⌘ (meta) as the
     // multi-select toggle there, and Ctrl elsewhere. Avoids a Ctrl+click both toggling AND opening the menu.
     const toggle = IS_MAC ? e.metaKey : e.ctrlKey;
@@ -986,44 +1063,74 @@ function setupShelf() {
     }
     down = null; base = null;
   });
+}
 
-  // right-click context menu → mark the selection (selecting the target first if it's outside the selection)
-  grid.addEventListener('contextmenu', e => {
-    const c = e.target.closest('.cell'); if (!c) return;
-    e.preventDefault();
-    if (!shelf.sel.has(c.dataset.id)) setSelection([c.dataset.id], { anchor: c.dataset.id, cursor: c.dataset.id });
-    openMenu(e.clientX, e.clientY);
+/* ---- the Shelf's menu: the shared mark menu (markmenu.js) with Use as seed on top ---- */
+let markMenu = null, shelfMenuSurface = null;   // made in wire(); setupShelf() binds the grid's gestures
+/** Open the menu for a cell. Right-click, long-press and Shift+F10 select the cell first when it is not in
+ *  the selection (Finder). The marks act on the whole selection; Use as seed needs exactly one paint. */
+function openShelfMenu(c, how = 'key', point = null) {
+  const id = c.dataset.id;
+  if (!shelf.sel.has(id)) setSelection([id], { anchor: id, cursor: id });
+  const ids = [...shelf.sel], n = ids.length, one = n === 1 ? state.idx.byId.get(ids[0]) : null;
+  markMenu.open({
+    header: one ? ui.menuTitle(one) : t('nSelected', { n }),
+    items: [
+      { value: 'seed', label: t('useAsSeed'), disabled: n !== 1,
+        hint: n === 1 ? '' : n ? t('useSeedMany') : t('useSeedNone'),
+        why: n ? t('useSeedManySaid', { n }) : t('useSeedNoneSaid') },
+      { sep: true },
+      { value: 'owned', label: t('markOwned') },
+      { value: 'want', label: t('markWant') },
+      { value: 'none', label: t('clearMark') },
+    ],
+    anchor: c, point: how === 'mouse' ? point : null, back: $('#shelfGrid'),
+    onChoose: v => { if (v === 'seed') useAsSeed(ids[0]); else applyMark(v); },
+    onDisabled: it => say(it.why),
+    onClose: () => $('#shelfGrid').classList.remove('menuopen'),
   });
+  $('#shelfGrid').classList.add('menuopen');   // its title names the paint: no cell tip under the menu
 }
-
-let menuOpen = false, menuOpenedAt = 0;
-function openMenu(x, y) {
-  const m = $('#shelfMenu'); m.hidden = false; menuOpen = true; menuOpenedAt = performance.now();
-  const w = m.offsetWidth, h = m.offsetHeight;
-  m.style.left = Math.min(x, innerWidth - w - 8) + 'px';
-  m.style.top = Math.min(y, innerHeight - h - 8) + 'px';
-  m.querySelector('button')?.focus();
+/** Shelf menu → Use as seed: the Studio starts from this paint. The Shelf has no pick mode: a tap there
+ *  still marks; this is the one way from the Shelf to a new scheme. */
+function useAsSeed(id) {
+  const p = state.idx.byId.get(id); if (!p) return;
+  setMode('studio');
+  selectPaint(id);
+  window.scrollTo(0, 0);
+  // Focus goes to the Studio tab of the switch, as when you change the mode by hand. Not the seed field:
+  // on a phone, its keyboard would cover the new scheme.
+  $('#modeNav [data-mode="studio"]').focus({ preventScroll: true });
 }
-function closeMenu() { if (menuOpen) { $('#shelfMenu').hidden = true; menuOpen = false; $('#shelfGrid').focus(); } }
 
 /** Lightroom-style keyboard triage; active only in shelf mode, ignored while typing in a field. */
 function shelfKeydown(e) {
   if (state.mode !== 'shelf') return;
   const ae = document.activeElement;
   // act only when the grid (or nothing) has focus — never hijack keys from chips, nav, or a text field.
-  // The context menu counts as "in the grid": openMenu moves focus onto its first button, and without
-  // this Escape (and P/U/X) would dead-end there — no keyboard way back out of the menu.
-  if (ae && ae !== document.body && ae.id !== 'shelfGrid' && !ae.closest('#shelfGrid') && !ae.closest('#shelfMenu')) return;
+  // The mark menu counts as "in the grid": it takes focus when it opens, and P/U/X still work there. The
+  // menu's own keys (arrows, Esc, Tab) stop in the menu (markmenu.js), so they never reach this.
+  if (ae && ae !== document.body && ae.id !== 'shelfGrid' && !ae.closest('#shelfGrid') && !markMenu.contains(ae)) return;
   // Never hijack a browser/OS chord: ⌘P (print), Ctrl+U (view source) and Ctrl+X (cut) all collide
-  // with the P/U/X triage keys. Shift is NOT excluded — Shift+Arrow extends the selection.
+  // with the P/U/X triage keys. Shift is NOT excluded — Shift+Arrow extends the selection, Shift+F10
+  // opens the menu.
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   $('#shelfGrid').dataset.input = 'key';   // the keyboard cursor's tooltip wins again (one tooltip at a time)
   const k = e.key.toLowerCase();
-  if (k === 'p') { applyMark('owned'); e.preventDefault(); }
-  else if (k === 'u') { applyMark('want'); e.preventDefault(); }
-  else if (k === 'x') { applyMark('none'); e.preventDefault(); }
-  else if (e.key === 'Escape') { if (menuOpen) closeMenu(); else setSelection([], { anchor: null }); e.preventDefault(); }
+  const mark = { p: 'owned', u: 'want', x: 'none' }[k];
+  if (mark) { markMenu.close(); applyMark(mark); e.preventDefault(); }
+  else if (isMenuKey(e)) { e.preventDefault(); if (!markMenu.isOpen()) openShelfMenuFromKeys(); }
+  else if (e.key === 'Escape') { setSelection([], { anchor: null }); e.preventDefault(); }
   else if (e.key.startsWith('Arrow')) { moveCursor(e.key, e.shiftKey); e.preventDefault(); }
+}
+/** Shift+F10 / the ContextMenu key: the menu opens at the cursor cell (USE_CASES §10.2). With no cursor,
+ *  at the first selected paint; with neither, it says how to choose one. */
+function openShelfMenuFromKeys() {
+  const id = shelf.cursor && cellEl(shelf.cursor) ? shelf.cursor : [...shelf.sel].find(x => cellEl(x));
+  if (!id) { announceShelf(t('menuNoPaint')); return; }
+  const c = cellEl(id);
+  revealCell(c);
+  openShelfMenu(c, 'key');
 }
 function moveCursor(key, extend) {
   const list = shelf.viewIds || shelfPaints().map(p => p.id); if (!list.length) return;   // cached — no re-filter+sort per keypress
@@ -1039,62 +1146,36 @@ function moveCursor(key, extend) {
   announceShelf(`${ui.pname(p)}, ${p.brand}, ${ui.markLabel(store.markOf(id))}.`);
 }
 
-/* ---- chrome ---- */
-function renderList() {
-  const items = filteredPaints();
-  $('#list').innerHTML = ui.paintStrip(items, state.customHex ? null : state.baseId, store.markOf);
-  $('#count').textContent = `${items.length} of ${state.idx.paints.length} paints${store.counts().owned ? ` · ${store.counts().owned} owned` : ''}`;
-}
-/* ---- paint drawer: the picker as a tray that drops from the seed toolbar (overlay → no reflow, §3.4) ---- */
-let paintsOpen = false, paintMenuOpen = false, paintMenuId = null;
-function openPaints() {
-  paintsOpen = true;
-  const d = $('#paintsDrawer'); d.hidden = false; void d.offsetWidth; d.classList.add('open');   // reflow → the CSS reveal runs
-  $('#paintsBtn').setAttribute('aria-expanded', 'true');
-  $('#q').focus();
-}
-function closePaints() {
-  if (!paintsOpen) return;
-  paintsOpen = false; closePaintMenu();
-  const d = $('#paintsDrawer'); d.classList.remove('open'); d.hidden = true;   // exit is instant; the drop animates on open
-  $('#paintsBtn').setAttribute('aria-expanded', 'false');
-}
-function togglePaints() { paintsOpen ? closePaints() : openPaints(); }
-function openPaintMenu(x, y) {
-  const m = $('#paintMenu'); m.hidden = false; paintMenuOpen = true;
-  const w = m.offsetWidth, h = m.offsetHeight;
-  m.style.left = Math.min(x, innerWidth - w - 8) + 'px';
-  m.style.top = Math.min(y, innerHeight - h - 8) + 'px';
-  m.querySelector('button')?.focus();
-}
-function closePaintMenu() { if (paintMenuOpen) { $('#paintMenu').hidden = true; paintMenuOpen = false; } }
-/** Mark a paint (owned/want/none) from the drawer's right-click menu or P/U/X; matches depend on the owned set. */
+/* ---- the seed field (picker.js): what it needs from the app ---- */
+let picker = { close() {}, refresh() {}, isOpen: () => false };   // setupPicker() in init() replaces it
+/** Recent picks for the seed field's browse grid, newest first: this visit only, in memory (seed.js
+ *  addRecent). Not saved: no new data to back up, restore or delete. */
+let recentPicks = [];
+/** Mark one paint from the seed field's list (its mark menu); the matches depend on the owned set. */
 function markPaint(id, mark) {
   if (!['owned', 'want', 'none'].includes(mark)) return;
   store.setMark(id, mark);
-  renderList(); renderLive(); renderActive();
-  if (state.mode === 'shelf') renderShelf();
-  const p = state.idx.byId.get(id);                  // announce the state change for screen readers (§3.5)
-  if (p) $('#status').textContent = `${ui.pname(p)}, ${ui.markLabel(mark)}.`;
+  render('marks', { ids: [id] });
+  const p = state.idx.byId.get(id);                  // the new state, for a screen reader too (§3.5)
+  if (p) say(`${ui.pname(p)}, ${ui.markLabel(mark)}.`);
 }
-function paintListKeydown(e) {
-  if (e.metaKey || e.ctrlKey || e.altKey) return;   // same chord guard as the Shelf (⌘P / Ctrl+U / Ctrl+X)
-  const chips = [...$('#list').querySelectorAll('.pchip')]; if (!chips.length) return;
-  const cur = document.activeElement.closest ? document.activeElement.closest('.pchip') : null;
-  let i = cur ? chips.indexOf(cur) : -1;
-  const move = j => { j = Math.max(0, Math.min(chips.length - 1, j)); chips[j].focus(); chips[j].scrollIntoView({ inline: 'nearest', block: 'nearest' }); };
-  const k = e.key.toLowerCase();
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { move(i < 0 ? 0 : i + 1); e.preventDefault(); }
-  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { move(i < 0 ? 0 : i - 1); e.preventDefault(); }
-  else if (e.key === 'Home') { move(0); e.preventDefault(); }
-  else if (e.key === 'End') { move(chips.length - 1); e.preventDefault(); }
-  else if (e.key === 'Escape') { closePaints(); $('#paintsBtn').focus(); e.preventDefault(); }
-  else if (cur && (k === 'p' || k === 'u' || k === 'x')) {
-    const id = cur.dataset.id;
-    markPaint(id, k === 'p' ? 'owned' : k === 'u' ? 'want' : 'none');
-    $('#list').querySelector(`.pchip[data-id="${CSS.escape(id)}"]`)?.focus();   // keep keyboard place after re-render
-    e.preventDefault();
-  }
+/** Esc after a live hex in the seed field: the pick from before the typing comes back. Esc means "never
+ *  mind", so the colours typed since `mark` (histMark() when the typing began) leave the undo history:
+ *  the palette at the mark comes back whole, and no new step goes on top of the cancelled ones. */
+function restoreSeed(pick, mark = null) {
+  // A note still waiting from the live hex ("switched to Neutral + pop") is about the change Esc undoes
+  takeModeNote();
+  const i0 = mark == null ? -1 : mark - HIST.dropped, snap = i0 >= 0 && i0 < HIST.i ? HIST.stack[i0] : null;
+  const o = snap ? JSON.parse(snap) : null;
+  const same = !!o && (pick.id ? o.baseId === pick.id && !o.customHex : o.customHex === pick.hex);
+  if (same) {
+    HIST.i = i0; HIST.stack.length = i0 + 1;
+    HIST.busy = true; applySnap(snap);
+  } else if (pick.id && state.idx.byId.has(pick.id)) { state.baseId = pick.id; state.customHex = null; }
+  else state.customHex = pick.hex;
+  seedNews(t('seedBack', { name: baseInfo().name }));
+  render(same ? 'all' : 'seed');   // one announce: the news, any mode note, the scheme
+  HIST.busy = false; syncHistBtns();
 }
 /** Seed-role switch (docked in the live palette): rebuild the scheme around the pick as `role`. */
 function setSeedRole(role) {
@@ -1117,12 +1198,20 @@ function announce() {
   const subTxt = sub ? ` Note: your pick ${sub.substituted.name} is ${sub.substituted.why}; nearest eligible paint shown.` : '';
   // A pending mode-change note leads (it's the news), then the standing summary. Consumed once — the
   // switch is announced on the render that caused it, not on every later one.
-  const note = modeNote; modeNote = '';
-  $('#status').textContent = (note ? note + ' ' : '') + `${baseInfo().name}, ${state.harmony} scheme, ${state.tab} view.` + subTxt;
+  const note = modeNote; modeNote = ''; modeHarmonyNote = null;
+  // The news (newsLead) comes before the mode note: what happened, then what it changed. A lead that
+  // names the harmony ("Rolled: Compound") replaces "compound scheme" in the summary: one name, said once.
+  const lead = newsLead, named = newsNamesHarmony; newsLead = ''; newsNamesHarmony = false;
+  $('#status').textContent = (lead ? lead + '. ' : '') + (note ? note + ' ' : '')
+    + `${baseInfo().name}, ${named ? '' : state.harmony + ' scheme, '}${state.tab} view.` + subTxt;
 }
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
-  const p = encodeState({ ...state, pickHex: pickHex() });   // the link carries the PICK, role in `r` (share.js)
+  // The link carries the PICK, role in `r` (share.js). The address bar carries `t` only for a link's
+  // theme, the one theme a reload cannot get back from anywhere else. A device theme written as `t` came
+  // back over "Follows your device" after the device changed; a saved one came back over a newer saved
+  // pick. Share link adds the theme on screen (shareUrl).
+  const p = encodeState({ ...state, theme: linkTheme, pickHex: pickHex() });
   history.replaceState(null, '', '?' + p.toString());
   // Mid-gesture URL writes (the debounced updates while a wheel drag is still down) must NOT snapshot:
   // one drag would otherwise litter the undo stack with intermediates, so Ctrl+Z after a drag stepped
@@ -1132,7 +1221,12 @@ function updateUrl() {
 }
 
 /* ---- undo / redo: snapshot the palette at each settled change (updateUrl is the single chokepoint) ---- */
-const HIST = { stack: [], i: -1, busy: false };
+// `dropped`: the steps that fell off the bottom of the stack, so a mark (histMark) stays right
+const HIST = { stack: [], i: -1, busy: false, dropped: 0 };
+/** Where the undo history is now. The seed field takes it when the typing begins (restoreSeed). A step
+ *  still waiting for its debounced write (a slider or ↻ change in the last 250ms) is written first, so the
+ *  mark is the palette on screen and Esc does not keep the typed colours. */
+const histMark = () => { if (urlTimer && !wheelDragging) updateUrl(); return HIST.i + HIST.dropped; };
 function paletteSnap() {
   return JSON.stringify({
     customHex: state.customHex || null,
@@ -1152,10 +1246,12 @@ function pushHistory() {
   if (HIST.stack[HIST.i] === s) return;            // view-only change (tab/theme) → no new palette entry
   HIST.stack.length = HIST.i + 1;                  // a fresh edit drops the redo branch
   HIST.stack.push(s); HIST.i++;
-  if (HIST.stack.length > 100) { HIST.stack.shift(); HIST.i--; }
+  if (HIST.stack.length > 100) { HIST.stack.shift(); HIST.i--; HIST.dropped++; }
   syncHistBtns();
 }
 function applySnap(json) {
+  // News and a mode note still waiting to be said are about the change this snapshot reverses: drop them
+  takeModeNote(); newsLead = ''; newsNamesHarmony = false;
   const o = JSON.parse(json);
   state.customHex = o.customHex; state.baseId = o.baseId;
   state.harmony = validHarmony(o.harmony) ? o.harmony : state.harmony;
@@ -1171,12 +1267,13 @@ function applySnap(json) {
   lastNeutral = null;   // force ensureHarmonyMode (via refreshStudio) to re-sync banner/strip/pops for the restored seed
   syncSeg();
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
-  const hx = $('#hex'); if (hx) hx.value = pickHex().replace('#', '');
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
   syncNodeBtns();
 }
-function undo() { if (HIST.i > 0) { HIST.i--; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
-function redo() { if (HIST.i < HIST.stack.length - 1) { HIST.i++; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
+// A step still waiting for its debounced write goes on the stack first, so undo steps back from it (it
+// was skipped, and its colour lost) and redo does not drop it.
+function undo() { if (urlTimer) updateUrl(); if (HIST.i > 0) { HIST.i--; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
+function redo() { if (urlTimer) updateUrl(); if (HIST.i < HIST.stack.length - 1) { HIST.i++; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
 function syncHistBtns() { const u = $('#undo'), r = $('#redo'); if (u) u.disabled = HIST.i <= 0; if (r) r.disabled = HIST.i >= HIST.stack.length - 1; }
 
 /** Debounced URL write for rapid-fire updates (wheel/slider drag); see setBase(). */
@@ -1190,13 +1287,24 @@ function scheduleAnnounce() {
   announceTimer = setTimeout(announce, 400);
 }
 const renderAll = () => render('all');   // init / undo / redo
+/** The device's light/dark setting. The app follows it, live, until the painter picks a theme (§3.1). */
+const osDark = matchMedia('(prefers-color-scheme: dark)');
+const deviceTheme = () => (osDark.matches ? 'dark' : 'light');
+/** The theme a link's `t` applied, or null. It is shown, never saved; the address bar keeps it, so a
+ *  refresh shows the link's theme again. A saved pick, Use device setting, a device change or a restore
+ *  clears it. */
+let linkTheme = null;
 
-function setTheme(t) {
+/** Apply a theme. Only the painter's own toggle saves it (`save`). The OS default and a shared link's
+ *  `t` are applied but never stored: storing them froze "follow the OS" at the first visit's value, and
+ *  let a dark share link overwrite the recipient's own saved choice. */
+function setTheme(t, { save = false } = {}) {
   state.theme = t === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = state.theme;
-  store.setPref('theme', state.theme);
+  if (save) store.setPref('theme', state.theme);
   const sw = document.querySelector('#themeToggle');   // keep the settings-menu theme switch in sync
   if (sw) sw.setAttribute('aria-checked', String(state.theme === 'dark'));
+  syncThemeSlot();
 }
 function syncLocaleSeg() {                            // reflect the active locale in the settings-menu control
   const cur = i18n.getLocale(), seg = $('#localeSeg');
@@ -1205,7 +1313,7 @@ function syncLocaleSeg() {                            // reflect the active loca
 function setMode(mode) {
   state.mode = mode === 'shelf' ? 'shelf' : 'studio';
   const on = state.mode === 'shelf';
-  closePaints();   // the paint drawer is a Studio control; never leave it open across a mode switch
+  picker.close();   // the seed field's list is a Studio control: never left open across a mode switch
   document.querySelector('main').dataset.mode = state.mode;
   document.body.dataset.mode = state.mode;   // the phone header drops its rule in Shelf mode (app.css)
   if (!on) closeShelfSheet({ returnFocus: false });
@@ -1219,11 +1327,78 @@ function setMode(mode) {
     Object.assign(dock, { open: true, acc: 0, lastY: 0, stuck: false }); applyDock();
     $('#shelfGrid').focus({ preventScroll: true });
   }
-  else { renderList(); }   // refresh the drawer's owned state in case the shelf changed it
+  else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows
   updateUrl();
 }
-function selectPaint(id) { state.baseId = id; state.customHex = null; $('#hex').value = pickHex().replace('#', ''); renderAll(); }
-/** Centre the active harmony chip in the scrollable strip — horizontal only (no page jump). */
+/** Seed from a paint: the seed field's list, or the Shelf's Use as seed. It goes into Recent. The render's
+ *  announce starts with "New seed: X" (seedNews). */
+function selectPaint(id) {
+  state.baseId = id; state.customHex = null; recentPicks = addRecent(recentPicks, id);
+  seedNews(t('newSeed', { name: baseInfo().name }));
+  renderAll();
+}
+/** Change the harmony: a chip in the strip, and Roll a scheme. One path, so a roll is exactly a tap on
+ *  its chip: one ↶ step, the chip centres, the hero pops, and one announce. `lead` is the news that
+ *  leads that announce ("Rolled: Compound"); it names the harmony, so the summary does not say it again.
+ *  `trigger`: the control that was pressed, which stays where it was on the screen (holdInPlace). */
+function setHarmony(h, { lead = '', trigger = null } = {}) {
+  state.harmony = h;
+  state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
+  for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
+  scrollHarmonyActive();
+  // The painter chose this harmony, so a pending note that names the harmony a mode change chose is out of
+  // date (↻ on black, then Roll before the debounced announce: "back to the complementary scheme" was said
+  // with "analogous scheme"). Its short form keeps the news of the mode change.
+  if (modeHarmonyNote) { modeNote = modeNote.replace(modeHarmonyNote.full, modeHarmonyNote.short); modeHarmonyNote = null; }
+  // Add to news that waits for its announce (↻'s "Lightness moved to 12%" is debounced): do not replace it.
+  if (lead) { newsLead = newsLead ? newsLead + '. ' + lead : lead; newsNamesHarmony = true; }
+  holdInPlace(trigger, () => render('scheme'));
+}
+/**
+ * Run `change`, then scroll the page so `el` is where it was on the screen (§3.4). Over 1024px the studio
+ * column is sticky: with the page scrolled, it rests on the bottom edge of the workspace, so a new harmony
+ * that changes the output column's height moved the whole studio (the strip and Roll with it) by 30–90px,
+ * and the next press at the same place missed. Elsewhere `el` does not move, and nothing scrolls. At the
+ * very bottom of the page there can be no room to scroll, so `el` can still move once there.
+ */
+function holdInPlace(el, change) {
+  if (!el || !el.isConnected) { change(); return; }
+  const y0 = el.getBoundingClientRect().top;
+  change();
+  const dy = el.getBoundingClientRect().top - y0;
+  if (Math.abs(dy) < 0.5) return;
+  let d = dy;
+  const studio = el.closest('.studio');
+  if (studio && getComputedStyle(studio).position === 'sticky') {
+    // The studio top that puts el back at y0. Above the sticky top, the studio rests on the workspace's
+    // bottom edge (top = that edge − its height), so scroll that edge to the place, in one step: also when
+    // a taller output lifted the studio off the edge, where a scroll of dy alone leaves it stuck at the top.
+    const s = studio.getBoundingClientRect(), target = y0 - (el.getBoundingClientRect().top - s.top);
+    if (target < parseFloat(getComputedStyle(studio).top)) d = studio.parentElement.getBoundingClientRect().bottom - s.height - target;
+  }
+  window.scrollBy(0, d);
+}
+/** Roll a scheme (the d6, §3.6/§7): a random harmony for the colour now. The pick, its role, the
+ *  lightness, the locked and added colours and the pop stay. Never Custom or the current harmony, and a
+ *  neutral seed rolls only from the harmonies it can use (rollHarmony), so "Rolled: X" is always true. */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+function rollScheme() {
+  const h = rollHarmony(state.harmony, { neutral: neutralSeed() }, Math.random);
+  setHarmony(h, { lead: t('rolled', { name: ui.harmonyLabel(h) }), trigger: $('#rollScheme') });
+  // The die turns once (§3.4). The scheme changed above, at the press: nothing waits for the turn. The
+  // CSS reduced-motion rule does not stop element.animate(), so the check is here.
+  const die = $('#rollScheme .d6');
+  if (!die || reduceMotion.matches || !die.animate) return;
+  die.getAnimations().forEach(a => a.cancel());   // a fast second press starts the turn again
+  // The same function list in every keyframe: lists that differ interpolate as matrices, and 200° → 360°
+  // then turned back the short way instead of on to a full turn.
+  die.animate([{ transform: 'translateY(0) rotate(0deg) scale(1)' },
+    { transform: 'translateY(-5px) rotate(200deg) scale(.9)', offset: 0.45 },
+    { transform: 'translateY(0) rotate(360deg) scale(1)' }], { duration: 320, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+}
+/** Centre the active harmony chip in the scrollable strip — horizontal only (no page jump). The strip is
+ *  position: relative (app.css), so a chip's offsetLeft is measured from the strip itself: the Roll
+ *  button before it does not shift the centre. */
 function scrollHarmonyActive() {
   const seg = $('#seg'), el = seg && seg.querySelector('button[aria-pressed="true"]');
   if (el) seg.scrollLeft = el.offsetLeft - (seg.clientWidth - el.offsetWidth) / 2;
@@ -1235,8 +1410,12 @@ function syncTabs(focusActive = false) {
     b.setAttribute('aria-selected', String(sel));
     b.tabIndex = sel ? 0 : -1;        // roving tabindex (WAI-ARIA tabs pattern)
     if (sel && focusActive) b.focus();
-    // On narrow screens the tab strip scrolls horizontally — keep the active tab in view.
-    if (sel && tabs.scrollWidth > tabs.clientWidth) b.scrollIntoView({ inline: 'center', block: 'nearest' });
+    // On narrow screens the tab strip scrolls horizontally — centre the active tab in the strip.
+    // Scroll the strip only: scrollIntoView also scrolled the page down to the tabs on load (small phones).
+    if (sel && tabs.scrollWidth > tabs.clientWidth) {
+      const tr = tabs.getBoundingClientRect(), br = b.getBoundingClientRect();
+      tabs.scrollLeft += (br.left + br.width / 2) - (tr.left + tr.width / 2);
+    }
   }
   for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== state.tab;
 }
@@ -1249,35 +1428,46 @@ function setTab(tab, focusActive = false) {
 function toggleBuy(id) {
   if (store.isOwned(id)) return;
   store.setMark(id, store.isWant(id) ? 'none' : 'want');
-  renderLive(); renderActive(); renderHero();   // hero may show the same paint's buy state
-  if (state.mode === 'shelf') renderShelf();
+  render('marks', { ids: [id] });   // the hero and the Plan can both show this paint's toggle
 }
 /** One click: flag every paint this scheme needs (that you don't own) as to-buy (#5). */
 function addGapsToBuy() {
-  let n = 0;
-  for (const g of schemeGaps(state.scheme, store.ownedIds())) {
-    if (store.markOf(g.paint.id) !== 'want') { store.setMark(g.paint.id, 'want'); n++; }
-  }
+  const ids = [...new Set(schemeGaps(state.scheme, store.ownedIds()).map(g => g.paint.id))].filter(id => store.markOf(id) !== 'want');
+  const n = ids.length;
+  if (n) { store.setMarks(ids, 'want'); render('marks', { ids }); }   // one write, one repaint
   toast(n ? `Added ${n} paint${n > 1 ? 's' : ''} to your buy list` : 'Nothing new to add');
-  renderLive(); renderActive();
 }
 function setLadder(v) {                          // #7 — tone-ladder style (persisted)
   if (!['wash', 'tone', 'both'].includes(v)) return;
   state.ladder = v; store.setPref('ladder', v);
   renderActive();
 }
-function setCollection(v) {                      // #6 — off · prefer (boost) · only (filter); persisted
+/** ⋯ → Use my paints (#6): off · prefer (boost) · only (filter); saved for the device. The menu's hint
+ *  and the matching note follow — the hint only here and on open, never on a mark change (its live
+ *  region would repeat itself while you stock the shelf). */
+function setCollection(v) {
   if (!['off', 'prefer', 'only'].includes(v)) return;
   state.collection = v; store.setPref('collection', v);
-  renderLive(); renderActive();
+  syncCollectionSeg(); syncUmpHint();
+  renderLive(); renderActive(); renderMatchNote();
 }
 function toggleContrast() {                       // include Contrast paints in harmony suggestions (persisted)
   state.includeContrast = !state.includeContrast; store.setPref('contrast', state.includeContrast);
-  renderLive(); renderActive();
+  renderLive(); renderActive(); renderMatchNote();
 }
-function toast(msg) {
-  const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('role', 'status');
-  document.body.appendChild(d); setTimeout(() => d.remove(), 1700);
+/** `speak: false`: only the toast shows; the caller's render says the words (seedNews). */
+function toast(msg, { speak = true } = {}) {
+  // The toast is what you see; say() is what a screen reader hears. A live region inserted with its text
+  // already in it is not announced reliably, so the words go into a region that is already there.
+  const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('aria-hidden', 'true');
+  // An open modal <dialog> is in the top layer, above any z-index, so while one is open the toast goes
+  // inside the top one, where you can see it.
+  const modal = [...document.querySelectorAll('dialog[open]')].reverse().find(isModal);
+  (modal || document.body).appendChild(d); setTimeout(() => d.remove(), 1700);
+  if (speak) say(msg);
+}
+function isModal(el) {
+  try { return el.matches(':modal'); } catch { return false; }   // :modal is Chrome 105+, Safari 15.6+
 }
 /** Click-to-copy for any [data-copy] element (hero hex, palette blocks). Best-effort + graceful fallback. */
 function copyText(val) {
@@ -1296,20 +1486,21 @@ function doExport() {
   }
   t += '\nHex values are approximate; ΔE = perceptual distance to the ideal colour.\n';
   download('palette-shopping-list.txt', t);
-  toast('Shopping list exported');   // download is the artefact — no silent clipboard write (native-share direction)
+  toast(i18n.t('listSaved'));   // download is the artefact — no silent clipboard write (native-share direction)
 }
 /** Share the current scheme URL. Prefers the native share sheet (Web Share → OS sheet under Capacitor),
  *  then clipboard, then a visible-URL prompt. No silent clipboard side-effects. */
 async function doShare() {
-  const url = location.href;
+  const url = shareUrl(location.href, state.theme);   // without m=shelf (a friend gets the scheme, not your Shelf), with the theme on screen
   if (navigator.share) {
     try { await navigator.share({ title: 'Palette Studio for Miniatures', url }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }   // user dismissed the sheet
   }
   if (navigator.clipboard) {
-    try { await navigator.clipboard.writeText(url); toast('Share link copied'); return; } catch { /* fall through */ }
+    try { await navigator.clipboard.writeText(url); toast(t('linkCopied')); return; } catch { /* fall through */ }
   }
-  toast('Copy the URL from the address bar');
+  // the link itself, not the address bar: that one can carry m=shelf, and lacks the t=dark a share adds
+  try { prompt(t('copyLink'), url); } catch { toast(url); }
 }
 function download(filename, text, type = 'text/plain') {
   const a = document.createElement('a');
@@ -1324,26 +1515,21 @@ function exportCollectionCsv() {
   download('my-paint-shelf.csv', marksToCsv(state.idx, store.ownedIds(), store.wantIds()), 'text/csv');
   toast(`Exported ${n.owned} owned · ${n.want} to buy`);
 }
-/** Import a paintRack CSV (merges) or a Palette Studio JSON backup (restores) (#27). */
-function importCollectionFile(file) {
+/** Import a paintRack CSV (merges) or a Palette Studio JSON backup (#27). A backup REPLACES the shelf
+ *  and settings, so it goes through the same confirm as ⋯ → Restore… — one rule for every .json. */
+function importCollectionFile(file, opener) {
   const reader = new FileReader();
   reader.onload = () => {
     const text = String(reader.result || '');
-    if (/\.json$/i.test(file.name) || /^\s*[{[]/.test(text)) {
-      const ok = store.importJSON(text);
-      toast(ok ? 'Collection restored from JSON backup' : 'That file is not a Palette Studio backup — nothing was changed');
-      if (ok) applyRestoredPrefs();   // the backup's theme/locale/plan prefs must reach the RUNNING UI, not just storage
-    } else {
-      const { matched, added, changed, unmatched } = applyCsv(text);
-      // say what the merge DID — an import that silently rewrites existing marks (owned → to-buy
-      // via a wishlist row) must at least be visible in the toast
-      const bits = [`${added} new`, changed ? `${changed} changed` : '', unmatched.length ? `${unmatched.length} unmatched` : ''].filter(Boolean);
-      toast(`Imported ${matched} paint${matched === 1 ? '' : 's'} · ${bits.join(' · ')}`);
-    }
-    if (state.mode === 'shelf') renderShelf();
-    renderList(); renderLive(); renderActive();
+    if (/\.json$/i.test(file.name) || /^\s*[{[]/.test(text)) { confirmRestore(text, opener); return; }
+    const { matched, added, changed, unmatched } = applyCsv(text);
+    // say what the merge DID — an import that silently rewrites existing marks (owned → to-buy
+    // via a wishlist row) must at least be visible in the toast
+    const bits = [`${added} new`, changed ? `${changed} changed` : '', unmatched.length ? `${unmatched.length} unmatched` : ''].filter(Boolean);
+    toast(`Imported ${matched} paint${matched === 1 ? '' : 's'} · ${bits.join(' · ')}`);
+    render('marks');   // many paints at once: the Shelf rebuilds, the Studio repaints where it shows
   };
-  reader.onerror = () => toast('Could not read that file');
+  reader.onerror = () => toast(t('readFail'));
   reader.readAsText(file);
 }
 function applyCsv(text) {
@@ -1364,23 +1550,368 @@ function applyCsv(text) {
   return { ...res, added, changed };
 }
 /** Pull every pref out of the store into live state + chrome. No rendering, so it's safe at init —
- *  where the seed isn't resolved yet and renderHero() would have nothing to draw. */
-function applyPrefsToState() {
-  const th = store.getPref('theme'); if (th === 'light' || th === 'dark') setTheme(th);
-  const lo = store.getPref('locale'); if (lo) { i18n.setLocale(lo); syncLocaleSeg(); }
-  const lp = store.getPref('ladder'); if (['wash', 'tone', 'both'].includes(lp)) state.ladder = lp;
-  const cp = store.getPref('collection'); if (['off', 'prefer', 'only'].includes(cp)) state.collection = cp;
+ *  where the seed isn't resolved yet and renderHero() would have nothing to draw. A theme or locale of
+ *  null means "follow the device": it is applied, never saved (a restored backup, Delete, a first run). */
+function applyPrefsToState({ keepLinkTheme = false } = {}) {
+  const th = store.getPref('theme');
+  if (keepLinkTheme && linkTheme) setTheme(linkTheme);
+  else {
+    linkTheme = null;   // a restored or deleted theme wins over a link's (init applies the link's after this)
+    setTheme(th === 'light' || th === 'dark' ? th : deviceTheme());
+  }
+  i18n.applyLocale(store.getPref('locale')); syncLocaleSeg();
+  const lp = store.getPref('ladder'); state.ladder = ['wash', 'tone', 'both'].includes(lp) ? lp : 'wash';
+  const cp = store.getPref('collection'); state.collection = ['off', 'prefer', 'only'].includes(cp) ? cp : 'off';
   state.includeContrast = !!store.getPref('contrast');
 }
-/** After a JSON restore: apply the prefs the backup carried AND repaint what shows them — without
- *  this the restored theme/locale/plan settings only took effect after a full reload. */
-function applyRestoredPrefs() { applyPrefsToState(); renderHero(); wheelDraw(); }
+/** The shelf and settings were replaced (Restore) or deleted: apply the new prefs at once and repaint
+ *  everything that shows a mark or a setting. Without this they took effect only after a reload. */
+function afterStoreReplaced({ keepLinkTheme = false } = {}) {
+  applyPrefsToState({ keepLinkTheme });
+  syncSettingsControls();
+  render('all', { speak: false });   // the caller says what happened; the scheme summary would only bury it
+  if (state.mode === 'shelf') renderShelf();
+  renderMatchNote();
+  syncLocaleStrings();
+}
 
-/** Seed the scheme from an arbitrary hex (shared by the hex field + the photo eyedropper). */
-function seedFromHex(hex) {
+/* ---- ⋯ Settings (§3.6; mockups/collection-setting.html #fullmenu, corrected by #critique) ----
+   One <dialog> for both layouts. SHEET is the same query app.css lays the rows out with, so the layout
+   and the modality never disagree: a phone or a touch screen gets a MODAL sheet (showModal: the page
+   behind is inert, Done closes it); a mouse gets a non-modal popover that Esc, a click outside, ⋯ or
+   focus leaving it closes. Focus: in on the pressed Use my paints segment; out to whatever opened it. */
+const SHEET = matchMedia('(max-width: 520px), (pointer: coarse)');
+const settings = { opener: 'button', ret: 'opener', btnDown: false };   // opener: 'button' (⋯) | 'note'
+const sMenu = () => $('#settingsMenu');
+const settingsOpen = () => sMenu().open;
+const UMP_WORD = { off: 'umpOff', prefer: 'umpPrefer', only: 'umpOnly' };
+const UMP_HINT = { off: 'umpHintOff', prefer: 'umpHintPrefer', only: 'umpHintOnly' };
+const umpHintHtml = v => `<b>${ui.esc(t(UMP_WORD[v]))}</b> · ${ui.esc(t(UMP_HINT[v]))}`;
+/** The file name a backup saves as today (local date). */
+function backupName(d = new Date()) {
+  const p2 = n => String(n).padStart(2, '0');
+  return `palette-studio-backup-${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}.json`;
+}
+/** Speak a short status. While a modal dialog is open the page behind it is inert, so #status there is
+ *  never read out — the line goes to the open dialog's own live region instead (each has a [data-say]).
+ *  The same words twice in a row get a trailing no-break space: a region whose text does not change
+ *  says nothing. */
+function say(msg) {
+  const modal = [...document.querySelectorAll('dialog[open]')].reverse().find(isModal);
+  const el = (modal && modal.querySelector('[data-say]')) || (settingsOpen() ? $('#setStatus') : null) || $('#status');
+  el.textContent = el.textContent === msg ? msg + '\u00a0' : msg;
+}
+
+function syncCollectionSeg() {
+  for (const b of $('#collectionSeg').children) b.setAttribute('aria-pressed', String(b.dataset.collection === state.collection));
+}
+/** The Use my paints hint (a live region). Called only when the painter changes the setting and just
+ *  before the menu opens, never on a store update. With Prefer or Only but no owned paints, it says
+ *  so and offers Open Shelf (outside the live region). */
+function syncUmpHint() {
+  const empty = state.collection !== 'off' && !store.counts().owned;
+  const el = $('#umpHint'), html = empty ? ui.esc(t('umpHintEmpty')) : umpHintHtml(state.collection);
+  // Write only a change: every write to a live region is read out again, the same words too (a language
+  // change with the same hint, a restore that keeps the setting).
+  if (el.innerHTML !== html) el.innerHTML = html;
+  $('#umpOpenShelf').hidden = !empty;
+}
+/** The theme row's reserved slot: "Follows your device" (text) until the painter picks a theme, then
+ *  a "Use device setting" text action. Both live in one cell, so swapping them moves nothing. */
+function syncThemeSlot() {
+  const slot = $('#themeSlot'); if (!slot) return;
+  // Not following when a theme is saved, or when a link's theme differs from the device's. Testing only
+  // the saved pref said "Follows your device" over a dark link on a light device.
+  const follows = !store.getPref('theme') && state.theme === deviceTheme();
+  slot.classList.toggle('saved', !follows);
+  const sw = $('#themeToggle');
+  if (follows) sw.setAttribute('aria-describedby', 'themeFollows'); else sw.removeAttribute('aria-describedby');
+}
+/** The hidden copies that hold each reserved slot open at its largest state (app.css .fixslot). Rebuilt
+ *  on a language change, since the words set the size. */
+function buildSlotSizers() {
+  const fill = (slot, htmls) => {
+    slot.querySelectorAll('.fixsize').forEach(x => x.remove());
+    for (const h of htmls) slot.insertAdjacentHTML('afterbegin', h);
+  };
+  const size = (inner, cls = '') => `<div class="fixsize${cls}" aria-hidden="true">${inner}</div>`;
+  // each Use my paints sizer is a hint state plus the shared line under it, as the live column is
+  const shared = `<p class="sethint umpshared">${ui.esc(t('umpShared'))}</p>`;
+  fill($('#umpSlot'), [
+    ...['off', 'prefer', 'only'].map(v => size(`<div class="umpnow"><p class="sethint">${umpHintHtml(v)}</p></div>${shared}`)),
+    size(`<div class="umpnow"><p class="sethint">${ui.esc(t('umpHintEmpty'))}</p><span class="btn">${ui.esc(t('openShelf'))}</span></div>${shared}`),
+  ]);
+  fill($('#backupSlot'), [t('backupHint'), t('backupSaved', { file: backupName() })]
+    .map(x => size(`<p class="sethint">${ui.esc(x)}</p>`)));
+}
+/** Every settings control from the current state — before the menu shows, so nothing is announced. */
+function syncSettingsControls() {
+  syncCollectionSeg(); syncUmpHint(); syncThemeSlot(); syncLocaleSeg();
+}
+/** The Backup row's status line goes back to its hint. Only while the menu is closed (on open and on
+ *  close): it is a live region, and a reset while you can hear it would read the hint out again. */
+const resetBackupNow = () => { $('#backupNow').textContent = t('backupHint'); };
+/** ⋯ and the note's Use my paints line both say whether the menu is open (aria-expanded). */
+function setSettingsExpanded(open) {
+  $('#settingsBtn').setAttribute('aria-expanded', String(open));
+  renderMatchNote();
+}
+function placeSettings() {
+  const m = sMenu(), b = $('#settingsBtn').getBoundingClientRect();
+  let top = Math.round($('header').getBoundingClientRect().bottom + 6);
+  // A short screen (a phone turned sideways, or 400% zoom: 1280×1024 is 320×256) leaves little room
+  // under the header, which grows with zoom. A fixed dialog cannot be scrolled into view, so a height
+  // floor put the lower rows off the screen for good (WCAG 1.4.10). Then the menu covers the header
+  // instead: 8px from the top. The modal sheet makes the header inert anyway, and the popover still
+  // closes with Esc or a click outside.
+  if (innerHeight - top - 8 < 240) top = 8;
+  const cw = document.documentElement.clientWidth;
+  m.style.top = top + 'px';
+  // under ⋯, right-aligned to it, and never closer than 8px to either screen edge
+  m.style.right = Math.max(8, Math.min(Math.round(cw - b.right), cw - 8 - m.offsetWidth)) + 'px';
+  m.style.maxHeight = (innerHeight - top - 8) + 'px';
+  syncSettingsFade();
+}
+/** The bottom fade shows while more rows are below the visible part. */
+function syncSettingsFade() {
+  const b = $('#settingsBody');
+  sMenu().classList.toggle('more', b.scrollTop + b.clientHeight < b.scrollHeight - 2);
+}
+function openSettings(opener = 'button') {
+  const m = sMenu(); if (m.open) return;
+  settings.opener = opener; settings.ret = 'opener';
+  picker.close();
+  syncSettingsControls(); resetBackupNow();
+  if (SHEET.matches) m.showModal(); else m.show();
+  placeSettings();
+  $('#settingsBody').scrollTop = 0; syncSettingsFade();
+  setSettingsExpanded(true);
+  $('#collectionSeg [aria-pressed="true"]').focus();   // the first control (WAI-ARIA dialog pattern)
+}
+/** `ret`: where focus goes — 'opener' (⋯ or the note line), 'button' (⋯: an action that closes the menu,
+ *  such as Save shopping list), or null (focus is already going somewhere else). */
+function closeSettings(ret = 'opener') {
+  if (!settingsOpen()) return;
+  settings.ret = ret;
+  sMenu().close();   // → the 'close' handler (also reached by the native Esc of the modal sheet)
+  setSettingsExpanded(false);   // now, not a task later when 'close' fires
+}
+function onSettingsClosed() {
+  setSettingsExpanded(false);
+  resetBackupNow();   // reset while hidden, so the status line is not read out
+  const ret = settings.ret; settings.ret = 'opener';
+  if (ret === null) return;
+  const el = ret === 'opener' && settings.opener === 'note' ? $('#matchnote [data-note="ump"]') : null;
+  (el || $('#settingsBtn')).focus({ preventScroll: true });
+}
+function setupSettings() {
+  const m = sMenu(), sBtn = $('#settingsBtn');
+  buildSlotSizers();
+  sBtn.addEventListener('click', e => { e.stopPropagation(); settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('button'); });
+  $('#settingsDone').addEventListener('click', () => closeSettings());
+  m.addEventListener('close', onSettingsClosed);
+  $('#settingsBody').addEventListener('scroll', syncSettingsFade, { passive: true });
+  addEventListener('resize', () => { if (settingsOpen()) placeSettings(); });
+  // The layout and the modality come from one query: if it flips while open (a rotation), close.
+  SHEET.addEventListener('change', () => closeSettings(null));
+  // Popover only (the modal sheet has the native Esc, and the page behind it is inert). The listener is
+  // on the menu, not the document, so an Esc in the Restore confirm (another dialog) never reaches it.
+  m.addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || isModal(m)) return;
+    e.preventDefault(); e.stopPropagation(); closeSettings();
+  });
+  // A tap on the sheet's backdrop closes it. The dialog box itself is also the event target for a tap
+  // on its own padding, so test the point, not the target.
+  m.addEventListener('click', e => {
+    if (!isModal(m) || e.target !== m) return;
+    const r = m.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeSettings();
+  });
+  // Popover: a click outside closes it — not one on ⋯ or the note (their own click toggles it), and not
+  // one in another open dialog (the Restore confirm opens over it).
+  document.addEventListener('pointerdown', e => {
+    if (e.target.closest('#settingsBtn, #matchnote [data-note="ump"]')) { settings.btnDown = true; return; }   // cleared by their click (or the pointerup below)
+    if (!settingsOpen() || isModal(m) || m.contains(e.target) || e.target.closest('dialog[open]')) return;
+    closeSettings(null);
+  }, true);
+  document.addEventListener('pointerup', () => { if (settings.btnDown) setTimeout(() => { settings.btnDown = false; }); }, true);
+  // Popover: focus leaving it closes it (Tab past the end, Shift+Tab out). A null relatedTarget is the
+  // window losing focus — the Restore file picker — so it stays open for the confirm.
+  m.addEventListener('focusout', e => {
+    const to = e.relatedTarget;
+    if (!settingsOpen() || isModal(m) || !to || settings.btnDown || m.contains(to) || to.closest('dialog[open]')) return;
+    closeSettings(null);
+  });
+
+  // Use my paints
+  $('#collectionSeg').addEventListener('click', e => { const b = e.target.closest('[data-collection]'); if (b) setCollection(b.dataset.collection); });
+  $('#umpOpenShelf').addEventListener('click', () => { closeSettings(null); setMode('shelf'); });
+  // Theme: the switch saves a choice; "Use device setting" clears it and follows the device again
+  $('#themeToggle').addEventListener('click', () => { linkTheme = null; setTheme(state.theme === 'dark' ? 'light' : 'dark', { save: true }); wheelDraw(); updateUrl(); });
+  $('#themeUseDevice').addEventListener('click', () => {
+    store.setPref('theme', null); linkTheme = null;   // a saved pick and a link's theme both give way
+    setTheme(deviceTheme()); wheelDraw(); updateUrl();
+    $('#themeToggle').focus();   // the button it was on is now the "Follows your device" text
+    say(t('themeFollowsSaid'));
+  });
+  $('#localeSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
+    syncLocaleSeg(); syncLocaleStrings(); syncUmpHint();
+    renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
+    wheelDraw();                        // …and the lightness slider's spoken value
+  });
+  // Scheme: both actions act on the finished scheme and close the menu; focus goes back to ⋯
+  $('#export').addEventListener('click', () => { closeSettings('button'); doExport(); });
+  $('#share').addEventListener('click', () => { closeSettings('button'); doShare(); });
+  // Backup
+  $('#backupBtn').addEventListener('click', () => {
+    const name = saveBackup(), now = $('#backupNow');
+    now.textContent = t('backupSaved', { file: name });
+    // On a short phone the line can sit under the bottom fade: bring it into view (.setbody's
+    // scroll-padding stops it above the fade)
+    now.scrollIntoView({ block: 'nearest' });
+    syncSettingsFade();
+  });
+  $('#restoreBtn').addEventListener('click', () => $('#restoreFile').click());
+  $('#restoreFile').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => confirmRestore(String(reader.result || ''), $('#restoreBtn'));
+    reader.onerror = () => toast(t('readFail'));
+    reader.readAsText(f);
+  });
+  // Help & info
+  $('#aboutOpenMenu').addEventListener('click', () => { closeSettings(null); openAbout($('#settingsBtn')); });
+}
+
+/* ---- Back up / Restore / Delete ---- */
+/** Download the backup file (store.exportJSON, with its `saved` date). @returns the file name */
+function saveBackup() {
+  const name = backupName();
+  download(name, store.exportJSON(), 'application/json');
+  return name;
+}
+const cdlg = { onOk: null, opener: null };
+/** The shared confirm (role=alertdialog, modal). Focus starts on Cancel. Esc or Cancel closes only it,
+ *  and focus goes back to `opener`. "Save a backup of this shelf" changes in place to "✓ Saved", and the
+ *  file name shows in a status line INSIDE the dialog, where a screen reader still hears it. */
+function openConfirm({ title, bodyHtml, okLabel, onOk, opener }) {
+  const d = $('#confirmDlg');
+  $('#cdlgTitle').textContent = title;
+  $('#cdlgBody').innerHTML = bodyHtml;
+  $('#cdlgOkLbl').textContent = okLabel;
+  $('#cdlgSaveLbl').textContent = t('saveBackup');
+  $('#cdlgSave').removeAttribute('aria-disabled');
+  $('#cdlgSaved').textContent = '';
+  const slot = $('#cdlgSaveSlot');
+  slot.querySelector('.fixsize')?.remove();
+  slot.insertAdjacentHTML('afterbegin', `<div class="fixsize" aria-hidden="true"><p class="sethint">${ui.esc(t('savedFile', { file: backupName() }))}</p></div>`);
+  cdlg.onOk = onOk; cdlg.opener = opener;
+  d.showModal();
+  $('#cdlgCancel').focus();
+}
+function setupConfirm() {
+  const d = $('#confirmDlg');
+  $('#cdlgCancel').addEventListener('click', () => d.close());
+  $('#cdlgOk').addEventListener('click', () => { const fn = cdlg.onOk; cdlg.onOk = null; d.close(); fn?.(); });
+  $('#cdlgSave').addEventListener('click', () => {
+    if ($('#cdlgSave').getAttribute('aria-disabled') === 'true') return;   // saved already; focus stays here
+    const name = saveBackup();
+    $('#cdlgSaveLbl').textContent = t('savedShort');
+    $('#cdlgSave').setAttribute('aria-disabled', 'true');
+    $('#cdlgSaved').textContent = t('savedFile', { file: name });
+  });
+  d.addEventListener('close', () => {
+    cdlg.onOk = null;
+    // the opener can have gone from view (the Shelf hidden); fall back to a control that stays
+    const o = cdlg.opener && cdlg.opener.isConnected && cdlg.opener.getClientRects().length ? cdlg.opener
+      : settingsOpen() ? $('#restoreBtn') : $('#settingsBtn');
+    o.focus({ preventScroll: true });
+  });
+}
+const fmtCounts = c => t('counts', { owned: c.owned, want: c.want });
+/** "In the backup (30 Sept 2026):" with the date, and the brackets and colon around it, in one piece:
+ *  on a phone only "In the backup" may wrap, never inside the date. */
+function datedLabel(date) {
+  const mark = '\u0001';
+  return ui.esc(t('inBackupDated', { date: mark }))
+    .replace(new RegExp(`\\(?${mark}\\)?:?`), m => `<span class="nw">${m.replace(mark, ui.esc(date))}</span>`);
+}
+/** Restore… and a .json through Import…: read the file, show what Replace would do, apply nothing yet. */
+function confirmRestore(text, opener) {
+  const info = store.inspectJSON(text);
+  if (!info.ok) { toast(t('notBackup')); opener?.focus({ preventScroll: true }); return; }
+  const date = info.saved ? new Intl.DateTimeFormat(i18n.getLocale(), { dateStyle: 'medium' }).format(new Date(info.saved)) : null;
+  const lost = info.lost ? `<p>${ui.esc(info.lost === 1 ? t('lostOne') : t('lostMany', { n: info.lost }))}</p>` : '';
+  openConfirm({
+    title: t('restoreTitle'),
+    bodyHtml: `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd>`
+      + `<dt>${date ? datedLabel(date) : ui.esc(t('inBackup'))}</dt><dd>${ui.esc(fmtCounts(info))}</dd></dl>`
+      + lost + `<p>${ui.esc(t('restoreWarn'))}</p>`,
+    okLabel: t('replace'), opener,
+    onOk: () => {
+      if (!store.importJSON(text)) { toast(t('notBackup')); return; }
+      // The confirm is closed by now, so this shows in the menu or on the page. It goes first: a screen
+      // reader then hears the news, and after it the Use my paints hint if the backup changed it.
+      toast(t('restored'));
+      afterStoreReplaced();
+    },
+  });
+}
+/** About & data → Delete my shelf and settings…: offers a backup first, then removes every copy. */
+function confirmDelete() {
+  openConfirm({
+    title: t('deleteTitle'),
+    bodyHtml: `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd></dl>`
+      + `<p>${ui.esc(t('deleteWarn'))}</p>`,
+    okLabel: t('deleteBtn'), opener: $('#deleteOpen'),
+    onOk: () => { store.clear(); toast(t('deleted')); afterStoreReplaced(); },
+  });
+}
+
+/* ---- About & data ---- */
+let aboutOpener = null;
+function openAbout(opener) { aboutOpener = opener; $('#about').showModal(); }
+/** Strings built in JS that follow the language: the version line and the slot sizes. */
+function syncLocaleStrings() {
+  $('#aboutVersion').textContent = t('versionLine', { app: APP_VERSION, data: (state.idx && state.idx.version) || '—' });
+  buildSlotSizers();
+  renderMatchNote();
+}
+
+/* ---- the matching note under the live palette (ui.js matchNote) ---- */
+let noteHtml = null;
+function renderMatchNote() {
+  const el = $('#matchnote'); if (!el) return;
+  const html = ui.matchNote({ collection: state.collection, owned: store.counts().owned,
+    contrast: state.includeContrast, expanded: settingsOpen() }, t);
+  if (html !== noteHtml) { el.innerHTML = html; noteHtml = html; }   // unchanged → keep the DOM (and focus)
+}
+function setupMatchNote() {
+  $('#matchnote').addEventListener('click', e => {
+    const b = e.target.closest('[data-note]'); if (!b) return;
+    const k = b.dataset.note;
+    if (k === 'ump') { settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('note'); }
+    else if (k === 'shelf') setMode('shelf');
+    else if (k === 'contrast') {
+      setTab('plan');
+      const c = $('#inclContrast'); if (!c) return;
+      c.focus({ preventScroll: true });
+      const r = c.getBoundingClientRect();
+      if (r.top < headerH() + 8 || r.bottom > innerHeight - 8) c.scrollIntoView({ block: 'center' });
+    }
+  });
+}
+
+/** Seed the scheme from an arbitrary hex (the seed field, the photo eyedropper, the base column).
+ *  `speak: false`: the caller says the new seed itself (a live hex in the seed field). `news`: the words
+ *  of the toast, which the render's announce says first (seedNews); true says "New seed: X". */
+function seedFromHex(hex, { speak = true, news = '' } = {}) {
   state.customHex = hex.toUpperCase();
-  $('#hex').value = state.customHex.replace('#', '');
-  render('seed');
+  if (news && speak) seedNews(news === true ? t('newSeed', { name: baseInfo().name }) : news);
+  render('seed', { speak });
 }
 
 /** Photo eyedropper (#v2): pick a colour from a local image — drawn to a canvas, sampled (3×3 average),
@@ -1441,53 +1972,15 @@ function setupEyedropper() {
     img.onerror = () => toast("Couldn't read that image");
     img.src = URL.createObjectURL(f);
   });
-  useBtn.addEventListener('click', () => { if (pick) { dlg.close(); seedFromHex(pick); toast(`Seeded from photo ${pick}`); } });
+  useBtn.addEventListener('click', () => { if (pick) { dlg.close(); seedFromHex(pick, { news: `Seeded from photo ${pick}` }); } });
   $('#edClose').addEventListener('click', () => dlg.close());
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });   // backdrop click
 }
 
 function wire() {
-  // Same 140ms debounce the Shelf search already had: every keystroke otherwise re-ran
-  // filteredPaints() + sortPaints() over 2,508 paints and replaced the whole chip strip's innerHTML,
-  // so typing a paint name cost nine full parse+layout cycles — type-lag on phones.
-  let qTimer = 0;
-  $('#q').addEventListener('input', e => {
-    clearTimeout(qTimer);
-    qTimer = setTimeout(() => { state.q = e.target.value; renderList(); }, 140);
-  });
-  $('#brand').addEventListener('change', e => { state.brand = e.target.value; renderList(); });
-  $('#ptype').addEventListener('change', e => { state.ptype = e.target.value; renderList(); });
-  $('#psort').addEventListener('change', e => { state.psort = e.target.value; renderList(); });
-  // Paint-list chips: click picks the paint (and closes the drawer); right-click / P·U·X mark it.
-  $('#list').addEventListener('click', e => {
-    const c = e.target.closest('.pchip'); if (!c) return;
-    selectPaint(c.dataset.id); closePaints();
-    if (e.detail === 0) $('#paintsBtn').focus();   // keyboard activation (Enter/Space) → return focus to the trigger
-  });
-  $('#list').addEventListener('contextmenu', e => {
-    const c = e.target.closest('.pchip'); if (!c) return;
-    e.preventDefault(); paintMenuId = c.dataset.id; openPaintMenu(e.clientX, e.clientY);
-  });
-  $('#list').addEventListener('keydown', paintListKeydown);
-  $('#paintMenu').addEventListener('click', e => {
-    const b = e.target.closest('[data-act]'); if (!b || !paintMenuId) return;
-    const id = paintMenuId;
-    markPaint(id, b.dataset.act); closePaintMenu();
-    $('#list').querySelector(`.pchip[data-id="${CSS.escape(id)}"]`)?.focus();   // return focus to the marked chip
-  });
-  $('#paintsBtn').addEventListener('click', e => { e.stopPropagation(); togglePaints(); });
-  $('#importPaints').addEventListener('click', () => $('#importFile').click());
-  $('#exportPaints').addEventListener('click', exportCollectionCsv);
-  document.addEventListener('keydown', e => {                            // Esc closes the menu, then the drawer
-    if (e.key !== 'Escape') return;
-    if (paintMenuOpen) { closePaintMenu(); $('#list').focus(); }
-    else if (paintsOpen) { closePaints(); $('#paintsBtn').focus(); }
-  });
-  document.addEventListener('pointerdown', e => {                        // click-outside closes the drawer / its menu
-    if (paintMenuOpen && !e.target.closest('#paintMenu')) closePaintMenu();
-    // the drawer's right-click menu lives outside #paintsDrawer — don't let interacting with it close the drawer
-    if (paintsOpen && !e.target.closest('#paintsDrawer') && !e.target.closest('#paintsBtn') && !e.target.closest('#paintMenu')) closePaints();
-  }, true);
+  // The Shelf's Import… (a paintRack CSV, or a .json backup through the Restore confirm): remember the
+  // button, so the confirm can hand focus back to it.
+  let importOpener = null;
   // Plan-ladder step tips reuse the Shelf's clamped tooltip — an edge step's full name must not
   // clip at the viewport (§3.4); clampTip measures + shifts it on every show path.
   $('main').addEventListener('mouseover', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
@@ -1506,7 +1999,6 @@ function wire() {
     }
     const buy = e.target.closest('[data-buy]'); if (buy) { e.stopPropagation(); toggleBuy(buy.dataset.buy); return; }
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
-    const col = e.target.closest('[data-collection]'); if (col) { setCollection(col.dataset.collection); return; }
     const mv = e.target.closest('[data-move]'); if (mv) { e.stopPropagation(); const [i, dir] = mv.dataset.move.split(':').map(Number); moveFreeNode(i, i + dir); return; }  // reorder (keyboard/touch path)
     const lk = e.target.closest('[data-lock]'); if (lk) { e.stopPropagation(); lockSwatch(lk.dataset.lock); return; }              // lock / unlock a swatch
     const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openSwatchEditor(ed.dataset.edit); return; }        // edit a swatch's hex
@@ -1520,20 +2012,12 @@ function wire() {
     if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
   });
-  $('#hex').addEventListener('input', e => {
-    const v = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6).toUpperCase();
-    e.target.value = v;
-    if (v.length === 6) seedFromHex('#' + v);
-  });
   $('#seg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.getAttribute('aria-disabled') === 'true') { $('#status').textContent = b.title; return; }   // announce the why, change nothing
-    state.harmony = b.dataset.h;
-    state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
-    for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
-    scrollHarmonyActive();
-    render('scheme');
+    setHarmony(b.dataset.h, { trigger: b });
   });
+  $('#rollScheme').addEventListener('click', rollScheme);
   // Quick pops (neutral mode): each chip just moves the wheel's pop node — not a second system.
   $('#pops').addEventListener('click', e => {
     const b = e.target.closest('[data-pop]'); if (b) setPopHex(b.dataset.pop);
@@ -1572,7 +2056,12 @@ function wire() {
   lp.addEventListener('drop', e => { const tgt = e.target.closest('[data-dragidx]'); if (!tgt) return; e.preventDefault(); moveFreeNode(+e.dataTransfer.getData('text/plain'), +tgt.dataset.dragidx); });
   lp.addEventListener('dragend', () => lp.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging')));
   document.addEventListener('keydown', e => {                                  // ⌘/Ctrl+Z undo · ⇧ or Ctrl+Y redo
-    if (!(e.metaKey || e.ctrlKey) || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    // A text field keeps its own undo. Not the seed field when it is empty and its list is closed (after a
+    // pick, focus stays there): it has no text to undo, so the keys undo the scheme.
+    const tg = e.target, seedIdle = tg.id === 'seedQ' && !tg.value && !picker.isOpen();
+    if (!(e.metaKey || e.ctrlKey) || (/^(INPUT|TEXTAREA|SELECT)$/.test(tg.tagName) && !seedIdle)) return;
+    // Studio only: on the Shelf it changed a palette you cannot see. Not while a dialog is in front.
+    if (state.mode !== 'studio' || document.querySelector('dialog[open]')) return;
     const k = e.key.toLowerCase();
     if (k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
     else if (k === 'y') { e.preventDefault(); redo(); }
@@ -1593,28 +2082,7 @@ function wire() {
     else { const s = currentScheme(); state.compareA = { base: schemeBase(), harmony: state.harmony, colors: s.roles.map(r => r.idealHex) }; $('#compare').setAttribute('aria-pressed', 'true'); setTab('plan'); toast('Pinned A — change the scheme to compare'); }
     if (state.tab === 'plan') renderPlan();
   });
-  $('#export').addEventListener('click', () => { doExport(); closeSettings(); });   // Export/Share live in the ⋯ menu now
-  $('#share').addEventListener('click', () => { doShare(); closeSettings(); });
-
-  // settings menu (theme lives here now) — toggle, theme control, click-outside / Esc close
-  const sMenu = $('#settingsMenu'), sBtn = $('#settingsBtn');
-  const openSettings = () => {
-    sMenu.hidden = false; sBtn.setAttribute('aria-expanded', 'true');
-    const r = sBtn.getBoundingClientRect();
-    sMenu.style.left = Math.min(r.left, innerWidth - sMenu.offsetWidth - 8) + 'px';
-    sMenu.style.top = (r.bottom + 6) + 'px';
-  };
-  const closeSettings = () => { sMenu.hidden = true; sBtn.setAttribute('aria-expanded', 'false'); };
-  sBtn.addEventListener('click', e => { e.stopPropagation(); sMenu.hidden ? openSettings() : closeSettings(); });
-  $('#themeToggle').addEventListener('click', () => { setTheme(state.theme === 'dark' ? 'light' : 'dark'); wheelDraw(); updateUrl(); });
-  $('#localeSeg').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
-    syncLocaleSeg();
-    renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
-  });
-  document.addEventListener('pointerdown', e => { if (!sMenu.hidden && !e.target.closest('#settingsMenu') && !e.target.closest('#settingsBtn')) closeSettings(); }, true);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sMenu.hidden) { closeSettings(); sBtn.focus(); } });
+  setupSettings(); setupConfirm(); setupMatchNote();   // ⋯ Settings, the Restore/Delete confirm, the matching note
 
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
@@ -1637,12 +2105,6 @@ function wire() {
     if (b.dataset.act === 'deselect') setSelection([], { anchor: null });
     else applyMark(b.dataset.act);
   });
-  $('#shelfMenu').addEventListener('click', e => {
-    // A long-press opens the menu under the fingertip with a button focused — the click some browsers
-    // synthesize at finger-lift would instantly activate it before the user ever saw the menu.
-    if (performance.now() - menuOpenedAt < 350) return;
-    const b = e.target.closest('[data-act]'); if (b) { applyMark(b.dataset.act); closeMenu(); }
-  });
   $('#shelfSelect').addEventListener('click', () => {       // touch: toggle multi-select mode
     shelf.selectMode = !shelf.selectMode;
     $('#shelfSelect').setAttribute('aria-pressed', String(shelf.selectMode));
@@ -1650,71 +2112,96 @@ function wire() {
     $('#shelfHint').textContent = shelfHint();
   });
   $('#exportColl').addEventListener('click', exportCollectionCsv);
-  $('#importColl').addEventListener('click', () => $('#importFile').click());
-  $('#importFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importCollectionFile(f); e.target.value = ''; });
-  document.addEventListener('pointerdown', e => { if (menuOpen && !e.target.closest('#shelfMenu')) closeMenu(); }, true);
+  $('#importColl').addEventListener('click', e => { importOpener = e.currentTarget; $('#importFile').click(); });
+  $('#importFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) importCollectionFile(f, importOpener); e.target.value = ''; });
   document.addEventListener('keydown', shelfKeydown);
+  markMenu = createMarkMenu({ box: $('#markMenu'), head: $('#markMenuHead'), list: $('#markMenuList') });
   setupShelf();
   setupShelfDock();
 
-  // About & data modal — native <dialog> handles Esc + focus trap; close on backdrop click.
+  // About & data modal — native <dialog> handles Esc + focus trap; close on backdrop click. It opens
+  // from the footer or from ⋯ (which closes first), so focus goes back by hand to whichever it was.
   const about = $('#about');
-  $('#aboutOpen').addEventListener('click', () => about.showModal());
-  $('#aboutOpenMenu').addEventListener('click', () => { closeSettings(); about.showModal(); });   // second path from the ⋯ menu
+  $('#aboutOpen').addEventListener('click', e => openAbout(e.currentTarget));
   $('#aboutClose').addEventListener('click', () => about.close());
   about.addEventListener('click', e => { if (e.target === about) about.close(); });   // click outside the panel
+  about.addEventListener('close', () => { (aboutOpener || $('#aboutOpen')).focus({ preventScroll: true }); aboutOpener = null; });
+  $('#deleteOpen').addEventListener('click', confirmDelete);
 }
 
 async function init() {
   const url = new URLSearchParams(location.search);
   // Theme precedence: the link's `t` (a shared scheme carries the theme it was designed in) > the
   // stored pref > the OS. Held separately from the resolved value because applyPrefsToState() below
-  // re-applies the STORED pref after hydrate, and must not outrank the link.
-  const urlTheme = url.get('t') === 'dark' ? 'dark' : url.get('t') === 'light' ? 'light' : null;
-  setTheme(urlTheme || store.getPref('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  // re-applies the STORED pref after hydrate, and must not outrank the link. Only t=dark (share.js): the
+  // address bar never writes t=light, so a t=light link changed theme on its first reload.
+  const tParam = url.get('t') === 'dark' ? 'dark' : null;
+  setTheme(tParam || store.getPref('theme') || deviceTheme());
 
   state.idx = await loadDataset('./data/paints.json');
   // Native shell: recover the collection if WKWebView evicted localStorage (no-op on the web). This
   // ran TWICE — the second call was byte-identical dead work — and neither re-applied what it
   // restored, so on a shell whose storage had been evicted the recovered theme/locale sat in state
-  // while the DOM kept the pre-hydrate one. applyRestoredPrefs() exists for exactly that.
+  // while the DOM kept the pre-hydrate one. applyPrefsToState() below applies it.
   await store.hydrate();
   applyPrefsToState();   // hydrate may have restored theme/locale/plan prefs — apply them, don't strand them
-  if (urlTheme) setTheme(urlTheme);   // ...but the link's theme still outranks the stored pref
+  if (tParam) { linkTheme = tParam; setTheme(tParam); }   // ...but the link's theme still outranks the stored pref
+  // Another tab saved a mark or a setting, or deleted or restored the shelf (store.js): show it here too.
+  // This tab's link theme stays, unless the saved theme itself changed there.
+  store.onExternalChange(before => afterStoreReplaced({ keepLinkTheme: before.theme === store.getPref('theme') }));
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
-  $('#brand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));
-  $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // the Shelf filters brand the same way the drawer does
+  $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // brand and type filters: the Shelf's only (§3.6)
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
   const typeOpts = types.map(t => `<option value="${ui.esc(t)}">${ui.esc(t.charAt(0).toUpperCase() + t.slice(1))}</option>`).join('');
-  $('#ptype').insertAdjacentHTML('beforeend', typeOpts);
   $('#shelfType').insertAdjacentHTML('beforeend', typeOpts);
 
   // One decoder (share.js), validators injected — anything this build no longer has is dropped so an
   // old link still opens on the fallbacks. `t`/`m` are read separately: theme applies before this
   // point, and the Shelf deep-link is applied after the first render.
   Object.assign(state, decodeState(url, {
-    validHarmony, hasPaint: id => state.idx.byId.has(id), validTab: t => !!renderers[t], maxFree: MAX_FREE,
+    validHarmony, hasPaint: id => state.idx.byId.has(id), validTab: t => TABS.includes(t), maxFree: MAX_FREE,
   }));
   if (!state.customHex && !state.baseId) state.baseId = state.idx.paints[0].id;   // no usable seed in the link
 
   ensureHarmonyMode();   // seed is now known: sync the strip (incl. neutral mode) + banner + pops
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   syncNodeBtns();
-  $('#hex').value = pickHex().replace('#', '');
+  if (!state.customHex) recentPicks = addRecent([], state.baseId);   // the paint the visit starts on is the first Recent pick
   syncTabs();
   wire();
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
-  syncLocaleSeg();
+  syncLocaleSeg(); syncLocaleStrings(); syncSettingsControls();
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
-  wheelDraw = setupWheel({
-    state, render, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs,
-    addFreeNode, removeFreeNode, collapseBanner,
+  ({ draw: wheelDraw, endLightnessRun } = setupWheel({
+    state, render, pickHex, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs,
+    addFreeNode, removeFreeNode, collapseBanner, seedNews,
     setDragging: v => { wheelDragging = v; },   // gates mid-drag history snapshots (one undo entry per drag)
-  });
+  }));
   setupEyedropper();
+  picker = setupPicker({
+    state, t, say, markMenu,
+    getPick: () => ({ id: state.customHex ? null : state.baseId, hex: pickHex() }),
+    recent: () => recentPicks,
+    markOf: store.markOf, ownedIds: store.ownedIds,
+    seedPaint: selectPaint,
+    seedHex: (hex, { live } = {}) => seedFromHex(hex, live ? { speak: false } : { news: true }),
+    restoreSeed, markPaint, histMark, takeModeNote,
+    coarse: () => COARSE, phone: () => PHONE.matches,
+  });
   renderAll();
   if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf
+  // The first search letter would fold all 3,225 paints at once (about 70ms on a slow phone): do it now,
+  // while the browser has nothing else to do.
+  (window.requestIdleCallback || (f => setTimeout(f, 300)))(() => warmPaintSearch(state.idx));
+  // Until the painter picks a theme, keep following the OS while the app is open (e.g. an automatic
+  // sunset switch). A saved choice always wins. Bound last: updateUrl() before the link is decoded
+  // would rewrite the address bar without the shared scheme.
+  osDark.addEventListener('change', e => {
+    if (store.getPref('theme')) return;   // a saved choice wins; ⋯ → Use device setting clears it
+    linkTheme = null;   // the device changed: follow it, over a link's theme too
+    setTheme(e.matches ? 'dark' : 'light'); wheelDraw(); updateUrl();
+  });
 }
 
 // iOS WebKit only applies :active styles on touch when a touchstart listener exists. The touch styles

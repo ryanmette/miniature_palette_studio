@@ -307,3 +307,207 @@ test('equivalents: a wash source lists washes before flats that are only slightl
   assert.equal(eq[0].paint.id, 'wash-mid');
   assert.ok(eq[0].deltaE > eq[1].deltaE);
 });
+
+/* ---- the shared paint search (the seed field + the Shelf search) ---- */
+import { readFileSync } from 'node:fs';
+import { paintMatcher, searchPaints, foldText, closestPaints, warmPaintSearch, FINISH_WORDS, FINISH_PENALTY } from '../src/js/data.js';
+import { deltaE2000Hex } from '../src/js/color.js';
+
+const real = indexDataset(JSON.parse(readFileSync(new URL('../src/data/paints.json', import.meta.url), 'utf8')));
+const ids = list => list.map(p => p.id);
+
+test('foldText: no accents, lower case, no apostrophes, punctuation as spaces', () => {
+  assert.equal(foldText('Dawnstone (Layer)'), 'dawnstone layer');
+  assert.equal(foldText('Ral 6011 Resedagrün'), 'ral 6011 resedagrun');
+  assert.equal(foldText('Tiger’s Eye Skin'), 'tigers eye skin');
+  assert.equal(foldText("Tiger's Eye Skin"), 'tigers eye skin');
+  assert.equal(foldText('  Green-grey  '), 'green grey');
+});
+
+test('search "metallic": the finish word finds every metal paint', () => {
+  const res = searchPaints(real, 'metallic');
+  const metals = real.paints.filter(p => p.type === 'metal');
+  assert.ok(metals.length > 100);
+  const got = new Set(ids(res));
+  for (const p of metals) assert.ok(got.has(p.id), p.id);
+  // and nothing that does not say "metallic" somewhere
+  for (const p of res) assert.ok(p.type === 'metal' || /metallic/i.test(`${p.name} ${p.line} ${p.brand}`), p.id);
+});
+
+test('search "citadel metallic": every word narrows the list', () => {
+  const res = searchPaints(real, 'citadel metallic');
+  assert.ok(res.length > 10);
+  for (const p of res) assert.equal(p.brand, 'Citadel', p.id);
+  for (const p of res) assert.equal(p.type, 'metal', p.id);
+  assert.ok(ids(res).includes('citadel-base-leadbelcher'));
+});
+
+test('search "dawnstone (layer)": the display name finds one twin, first', () => {
+  const res = searchPaints(real, 'dawnstone (layer)');
+  assert.deepEqual(ids(res), ['citadel-layer-dawnstone']);
+  // "dawnstone" finds both twins, A to Z by display name: Dawnstone (Dry), then Dawnstone (Layer)
+  assert.deepEqual(ids(searchPaints(real, 'dawnstone')), ['citadel-dry-dawnstone', 'citadel-layer-dawnstone']);
+});
+
+test('search: in each group, the paints you own come first', () => {
+  const owned = new Set(['citadel-layer-dawnstone']);
+  assert.deepEqual(ids(searchPaints(real, 'dawnstone', { ownedIds: owned })), ['citadel-layer-dawnstone', 'citadel-dry-dawnstone']);
+});
+
+test('search "Abaddon Black": the paint, first (never a colour)', () => {
+  assert.equal(searchPaints(real, 'Abaddon Black')[0].id, 'citadel-base-abaddon-black');
+  assert.equal(searchPaints(real, 'abaddon')[0].id, 'citadel-base-abaddon-black');
+});
+
+test('search "decade": the names that start with it come first', () => {
+  const res = searchPaints(real, 'decade');
+  assert.ok(res.length >= 1);
+  assert.ok(foldText(res[0].name).startsWith('decade'), res[0].name);
+});
+
+test('search "vallejo red": one brand, and names with a "red" word first', () => {
+  const res = searchPaints(real, 'vallejo red');
+  assert.ok(res.length > 5);
+  for (const p of res) assert.equal(p.brand, 'Vallejo', p.id);
+  assert.ok(foldText(res[0].name).split(' ').some(w => w.startsWith('red')), res[0].name);
+});
+
+test('search "stone": a word that starts with it comes before "stone" inside a word', () => {
+  const res = searchPaints(real, 'stone');
+  const wordStart = p => (' ' + foldText(p.name)).includes(' stone');
+  const firstInside = res.findIndex(p => !wordStart(p));
+  assert.ok(firstInside > 0, 'some names have a word that starts with "stone"');
+  assert.ok(res.slice(firstInside).every(p => !wordStart(p)), 'no word start after the first match inside a word');
+  assert.ok(ids(res).includes('citadel-layer-dawnstone'));   // inside a word still matches
+});
+
+test('warmPaintSearch: folding ahead of time does not change a result', () => {
+  const before = ids(searchPaints(real, 'r'));
+  const fresh = indexDataset(JSON.parse(readFileSync(new URL('../src/data/paints.json', import.meta.url), 'utf8')));
+  warmPaintSearch(fresh);
+  assert.deepEqual(ids(searchPaints(fresh, 'r')), before);
+});
+
+test('search: accents and apostrophes fold the same way in the query and the name', () => {
+  assert.deepEqual(ids(searchPaints(real, 'resedagrün')), ids(searchPaints(real, 'resedagrun')));
+  const tigers = searchPaints(real, "tiger's eye");
+  assert.ok(tigers.length >= 2);   // the dataset spells it with ' and with ’
+});
+
+test('search "d&d": a one-letter word in a longer query is a whole word', () => {
+  // "D&D" folds to "d d"; as parts of words, two d's matched 1,885 paints
+  for (const q of ['d&d', 'army painter d&d', 'D & D']) {
+    const res = searchPaints(real, q);
+    assert.equal(res.length, 20, q);
+    for (const p of res) assert.equal(p.line, 'D&D', `${q}: ${p.id}`);
+  }
+  // one letter alone still matches inside words, on the way to a longer word
+  assert.ok(searchPaints(real, 'd').some(p => p.id === 'citadel-layer-dawnstone'));
+});
+
+test('search as you type: every paint is found by every prefix of its own name', () => {
+  // a one-letter last word is the word being typed: "abaddon b" must still find Abaddon Black
+  let misses = 0, first = '';
+  for (const p of real.paints) {
+    const name = p.dname || p.name;
+    for (let i = 1; i <= name.length; i++) {
+      const m = paintMatcher(name.slice(0, i));
+      if (m && !m(p)) { misses++; if (!first) first = `${p.id} at "${name.slice(0, i)}"`; }
+    }
+  }
+  assert.equal(misses, 0, first);
+  for (const q of ['abaddon b', 'army p', 'citadel b', 'vallejo m', 'dawnstone (l'])
+    assert.ok(searchPaints(real, q).length > 0, q);
+});
+
+test('paintMatcher: no words, no filter; the Shelf finds the display name too', () => {
+  assert.equal(paintMatcher(''), null);
+  assert.equal(paintMatcher('  ( ) '), null);
+  assert.deepEqual(searchPaints(real, ''), []);
+  const m = paintMatcher('dawnstone (layer)');
+  assert.equal(m(real.byId.get('citadel-layer-dawnstone')), true);
+  assert.equal(m(real.byId.get('citadel-dry-dawnstone')), false);
+  assert.equal(paintMatcher('stone')(real.byId.get('citadel-dry-dawnstone')), true);   // part of a word is enough
+});
+
+test('FINISH_WORDS: the finish tag shows the word the search finds', async () => {
+  const { finishTag } = await import('../src/js/ui.js');
+  for (const [type, word] of Object.entries(FINISH_WORDS)) assert.ok(finishTag(type).endsWith(`${word}</span>`), type);
+});
+
+test('closestPaints: ranks a flat colour as Equivalents does, and reports the TRUE ΔE', () => {
+  const fx = indexDataset({ paints: [
+    { id: 'wash', brand: 'A', line: 'Shade', name: 'Red wash', hex: '#9A1216', type: 'wash' },     // nearest
+    { id: 'flat', brand: 'B', line: 'Base', name: 'Red flat', hex: '#A2181C', type: 'base' },      // a little further
+    { id: 'far', brand: 'C', line: 'Base', name: 'Blue', hex: '#2D567C', type: 'base' },
+  ] });
+  const res = closestPaints(fx, '#9A1115', 3);
+  const dWash = deltaE2000Hex('#9A1115', '#9A1216'), dFlat = deltaE2000Hex('#9A1115', '#A2181C');
+  assert.ok(dWash < dFlat && dFlat < dWash + FINISH_PENALTY);   // the fixture is the case the penalty decides
+  assert.deepEqual(res.map(m => m.paint.id), ['flat', 'wash', 'far']);
+  assert.ok(Math.abs(res[1].deltaE - dWash) < 1e-9);            // the wash's own ΔE, not ΔE + 4
+  assert.equal(res[0].quality.label, matchQuality(dFlat).label);
+});
+
+test('closestPaints: the same list as a full scan with the same rule (no paint is cut by the prefilter)', () => {
+  // The rule: ΔE 2000, plus FINISH_PENALTY for a finish or a metallic. A cheap Lab-distance prefilter of 64
+  // cut Raf Azure Blue (ΔE 6.4, a flat layer) for #8899F4 and showed two Poor matches in its place.
+  const demoted = new Set([...FINISH_TYPES, 'metal']);
+  const score = (hex, p, d = deltaE2000Hex(hex, p.hex)) => +(d + (demoted.has(p.type) ? FINISH_PENALTY : 0)).toFixed(6);
+  assert.equal(closestPaints(real, '#8899F4', 6)[1].paint.name, 'Raf Azure Blue');
+  for (let i = 0; i < 61; i++) {
+    const hex = i === 0 ? '#8899F4' : '#' + (((i * 2654435761) >>> 8) & 0xFFFFFF).toString(16).padStart(6, '0');
+    const full = real.paints.map(p => score(hex, p)).sort((a, b) => a - b).slice(0, 6);
+    // compare the scores, not the ids: twins share a hex, and either order of a tie is right
+    assert.deepEqual(closestPaints(real, hex, 6).map(m => score(hex, m.paint, m.deltaE)), full, hex);
+  }
+});
+
+/* ---- the seed field's browse orders (its Sort control) ---- */
+import { browseOrder, BROWSE_SORTS, GREY_CHROMA } from '../src/js/data.js';
+import { rgbToHsl, hexToRgb } from '../src/js/color.js';
+
+test('browseOrder: every paint, once, in each order; the dataset is not changed', () => {
+  const first = real.paints[0].id;
+  for (const key of BROWSE_SORTS) {
+    const res = browseOrder(real, key, { pickHex: '#9A1115', ownedIds: new Set([first]) });
+    assert.equal(res.length, real.paints.length, key);
+    assert.equal(new Set(ids(res)).size, real.paints.length, key);
+  }
+  assert.equal(real.paints[0].id, first);
+  assert.deepEqual(BROWSE_SORTS, ['hue', 'closest', 'owned', 'name']);   // the Sort control's order
+});
+
+test('browseOrder "hue": round the wheel in 15° bands, light to dark in a band, the greys last', () => {
+  const res = browseOrder(real, 'hue');
+  const chroma = p => Math.hypot(p.lab[1], p.lab[2]);
+  const firstGrey = res.findIndex(p => chroma(p) < GREY_CHROMA);
+  assert.ok(firstGrey > 0);
+  assert.ok(res.slice(firstGrey).every(p => chroma(p) < GREY_CHROMA));        // no colour after the greys
+  const band = p => Math.floor(rgbToHsl(hexToRgb(p.hex))[0] / 15);
+  const colours = res.slice(0, firstGrey);
+  for (let i = 1; i < colours.length; i++) {
+    const a = colours[i - 1], b = colours[i];
+    assert.ok(band(a) < band(b) || (band(a) === band(b) && a.lab[0] >= b.lab[0]), `${a.id} → ${b.id}`);
+  }
+  const greys = res.slice(firstGrey);
+  for (let i = 1; i < greys.length; i++) assert.ok(greys[i - 1].lab[0] >= greys[i].lab[0]);
+});
+
+test('browseOrder "closest": by ΔE 2000 to the pick, the pick itself first', () => {
+  const pick = real.paints.find(p => p.name === 'Mephiston Red');
+  const res = browseOrder(real, 'closest', { pickHex: pick.hex });
+  assert.equal(deltaE2000Hex(pick.hex, res[0].hex), 0);
+  for (let i = 1; i < 50; i++) assert.ok(deltaE2000Hex(pick.hex, res[i - 1].hex) <= deltaE2000Hex(pick.hex, res[i].hex) + 1e-9);
+  // no pick: the colour-wheel order
+  assert.deepEqual(ids(browseOrder(real, 'closest')), ids(browseOrder(real, 'hue')));
+});
+
+test('browseOrder "owned" and "name": owned first, then A to Z by display name (twins apart)', () => {
+  const owned = new Set(real.paints.filter(p => p.brand === 'Citadel').slice(0, 3).map(p => p.id));
+  const res = browseOrder(real, 'owned', { ownedIds: owned });
+  assert.deepEqual(new Set(ids(res.slice(0, 3))), owned);
+  const byName = browseOrder(real, 'name').map(p => p.dname || p.name);
+  for (let i = 1; i < byName.length; i++) assert.ok(byName[i - 1].localeCompare(byName[i]) <= 0);
+  assert.ok(byName.indexOf('Dawnstone (Dry)') < byName.indexOf('Dawnstone (Layer)'));
+});

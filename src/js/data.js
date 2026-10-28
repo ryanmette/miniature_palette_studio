@@ -1,7 +1,7 @@
 // data.js — load + index the paint dataset and search it by perceptual distance.
 // Pure search functions (testable); only loadDataset() touches the network.
 
-import { hexToLab, deltaE2000, adjustDirection } from './color.js';
+import { hexToLab, hexToRgb, rgbToHsl, deltaE2000, adjustDirection } from './color.js';
 
 /** Fixed ΔE2000 → quality mapping (CLAUDE.md §3.2). */
 export function matchQuality(dE) {
@@ -213,6 +213,142 @@ export function equivalents(indexed, paint, { n = 6 } = {}) {
     .sort((a, b) => tier(a.paint) - tier(b.paint) || a.score - b.score)
     .slice(0, n)
     .map(({ paint, deltaE }) => ({ paint, deltaE, quality: matchQuality(deltaE) }));
+}
+
+/** The paints closest to a typed colour, best first. They rank as the Equivalents tab ranks a flat colour:
+ *  a paint of another finish class (a wash, a contrast, an effect, a metallic) ranks FINISH_PENALTY ΔE
+ *  further, so it shows only when it is clearly closer. Each match reports its TRUE ΔE (§2, §7). The seed
+ *  field lists these under "Seed: #…"; the Equivalents tab uses them for a role colour or a custom hex. */
+export function closestPaints(indexed, hex, n = 6) {
+  // Every paint is a candidate (keep). The cheap Euclidean prefilter ranks by Lab distance alone, but the
+  // finish penalty moves washes and metallics down, so a flat paint ranked 79th by Lab distance (Raf Azure
+  // Blue for #8899F4, ΔE 6.4) was cut before the ranking and two Poor matches took its place. A full pool
+  // costs about 2 ms, once per keystroke or tab render.
+  return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, keep: indexed.paints.length });
+}
+
+/* ---- the paint search: ONE matcher for the seed field and the Shelf search ---- */
+
+/** The finish word each type shows on a swatch's finish tag (ui.js finishTag reads these). A search for
+ *  a finish word finds the paints that show it: "metallic" finds the metal type. */
+export const FINISH_WORDS = { metal: 'metallic', contrast: 'contrast', wash: 'wash', shade: 'shade', ink: 'ink', glaze: 'glaze', effect: 'effect' };
+
+/** Text for matching: no accents, lower case, no apostrophes, any other punctuation as a space.
+ *  "Dawnstone (Layer)" → "dawnstone layer" · "Resedagrün" → "resedagrun" · "Tiger’s Eye" → "tigers eye". */
+export const foldText = s => String(s ?? '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .replace(/['’‘`]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+
+// The folded words of each paint, worked out once per paint object (a search runs on every keystroke).
+// A WeakMap, so the paint objects keep their shape and nothing is stored with the data.
+const folded = new WeakMap();
+function foldOf(p) {
+  let f = folded.get(p);
+  if (!f) {
+    const line = p.line && p.line !== '—' ? p.line : '';
+    // Every word a swatch or a row shows: name, display name ("Dawnstone (Layer)"), brand, line, type and
+    // the finish word. Spaces at both ends, so a word can be matched at the start of the text too.
+    const name = foldText(p.name);
+    // words: the name with a space before each word, so " w" finds a word that starts with w (no split per search)
+    f = { hay: ` ${foldText(`${p.name} ${p.dname || ''} ${p.brand} ${line} ${p.type || ''} ${FINISH_WORDS[p.type] || ''}`)} `,
+      name, dname: foldText(p.dname || p.name), words: ` ${name}` };
+    folded.set(p, f);
+  }
+  return f;
+}
+const queryWords = q => foldText(q).split(' ').filter(Boolean);
+/** Fold every paint now, so the first keystroke after the page loads does not pay for 3,225 folds. The app
+ *  calls it when the browser is idle. */
+export function warmPaintSearch(indexed) { for (const p of indexed.paints) foldOf(p); }
+
+/** Does a paint match a search? Every word of the query must be in the paint's words (part of a word is
+ *  enough: "stone" finds Dawnstone). "vallejo red", "citadel metallic" and "dawnstone (layer)" all narrow
+ *  the list. In a query of two or more words, a one-letter word is not "part of any word": "D&D" folds to
+ *  "d d", and two d's anywhere matched 1,885 paints. Returns a test for one paint, or null when the query has
+ *  no words (no filter). */
+export function paintMatcher(query) {
+  const words = queryWords(query);
+  if (!words.length) return null;
+  // The hay has a space at each end, so " d " finds the whole word d and " b" a word that starts with b. A
+  // one-letter word before the last is a whole word ("d&d"); the last one is the word being typed, so it
+  // starts a word ("abaddon b" on the way to "abaddon black"); one letter alone matches inside words.
+  const last = words.length - 1;
+  const pats = words.map((w, i) => (w.length > 1 || !last ? w : i < last ? ` ${w} ` : ` ${w}`));
+  return p => { const h = foldOf(p).hay; return pats.every(w => h.includes(w)); };
+}
+
+/** The seed field's search: the paints that match, best first. Four groups, in this order: the name or the
+ *  display name is the query ("dawnstone (layer)"); the name starts with it; a word of the name starts with
+ *  a word of the query; the rest. In each group, the paints in `ownedIds` come first, then A to Z by display
+ *  name. [] for an empty query. */
+export function searchPaints(indexed, query, { ownedIds } = {}) {
+  const match = paintMatcher(query);
+  if (!match) return [];
+  const n = queryWords(query).join(' '), starts = n.split(' ').map(w => ' ' + w);
+  const group = p => {
+    const f = foldOf(p);
+    if (f.name === n || f.dname === n) return 0;
+    if (f.name.startsWith(n) || f.dname.startsWith(n)) return 1;
+    return starts.some(w => f.words.includes(w)) ? 2 : 3;
+  };
+  const own = p => (ownedIds && ownedIds.has(p.id) ? 0 : 1);
+  return indexed.paints.filter(match)
+    .map(p => ({ p, g: group(p), o: own(p), name: p.dname || p.name }))
+    .sort((a, b) => a.g - b.g || a.o - b.o || a.name.localeCompare(b.name))
+    .map(x => x.p);
+}
+
+/* ---- the seed field's browse grid: the orders of its Sort control ---- */
+
+/** The browse grid's orders, in the Sort control's order: colour wheel · closest to your pick · owned
+ *  first · name. */
+export const BROWSE_SORTS = ['hue', 'closest', 'owned', 'name'];
+/** Below this Lab chroma a paint reads as grey, so the colour-wheel order puts it after the colours. Lower
+ *  than the neutral-seed threshold (NEUTRAL_CHROMA, 10): the paints between 6 and 10 are blue-greys and
+ *  olive drabs, and they read as tinted in a grid. */
+export const GREY_CHROMA = 6;
+/** The width of one hue band in the colour-wheel order (degrees). */
+const HUE_BAND = 15;
+
+// The colour-wheel order depends on the dataset only, so it is worked out once per dataset.
+const wheelOrders = new WeakMap();
+function wheelOrder(paints) {
+  let order = wheelOrders.get(paints);
+  if (!order) {
+    // A plain hue sort put a dark red next to a pale pink next to a dark red: noise in a grid. So the
+    // wheel is cut into 15° bands, and in each band the paints go from light to dark. HSL hue, as on the
+    // wheel; Lab lightness and chroma, as the matching uses. Greys have no hue to sort by: they come
+    // last, from light to dark.
+    const keyed = paints.map(p => {
+      const grey = Math.hypot(p.lab[1], p.lab[2]) < GREY_CHROMA;
+      return { p, grey, band: grey ? 0 : Math.floor(rgbToHsl(hexToRgb(p.hex))[0] / HUE_BAND), light: p.lab[0] };
+    });
+    keyed.sort((a, b) => a.grey - b.grey || a.band - b.band || b.light - a.light);
+    order = keyed.map(x => x.p);
+    wheelOrders.set(paints, order);
+  }
+  return order;
+}
+
+/**
+ * Every paint in a Sort order of the seed field's browse grid. A new array; the dataset is not changed.
+ *   'hue'      the colour wheel: 15° hue bands from red, light to dark in each band, then the greys
+ *   'closest'  by ΔE 2000 to `pickHex` (the colour wheel order when there is no pick)
+ *   'owned'    the paints in `ownedIds` first, then A to Z by display name
+ *   'name'     A to Z by display name ("Dawnstone (Dry)" before "Dawnstone (Layer)")
+ */
+export function browseOrder(indexed, key = 'hue', { pickHex = null, ownedIds = null } = {}) {
+  const ps = indexed.paints, name = p => p.dname || p.name;
+  if (key === 'closest' && pickHex) {
+    const t = hexToLab(pickHex);
+    // decorate–sort–undecorate: one ΔE 2000 per paint, not one per comparison
+    return ps.map(p => [deltaE2000(t, p.lab), p]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  }
+  if (key === 'owned') {
+    const own = p => (ownedIds && ownedIds.has(p.id) ? 0 : 1);
+    return ps.slice().sort((a, b) => own(a) - own(b) || name(a).localeCompare(name(b)));
+  }
+  if (key === 'name') return ps.slice().sort((a, b) => name(a).localeCompare(name(b)));
+  return wheelOrder(ps).slice();
 }
 
 /** Fetch + index the dataset (browser). Tests use indexDataset() with a fixture instead. */

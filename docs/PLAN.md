@@ -262,11 +262,16 @@ computes every answer P3 needs (ΔE matching, cross-brand equivalents, interchan
 to-buy marks) but files them *inside* the scheme output. Four routing directions explored in
 [`mockups/buying-assistant.html`](../mockups/buying-assistant.html); none needs new engine work.
 
-7. **Paint detail sheet — direction B** (recommended first). One component: tap any paint anywhere
-   (Shelf cell, drawer chip, live-palette column, ladder rung, equivalents row) → a sheet with identity,
+7. **Paint detail sheet — direction B** (recommended first). One component: open it from any paint
+   anywhere → a sheet with identity,
    finish, owned/to-buy toggle, its interchangeable group, closest in other brands, and *closest on your
    shelf* with an adjust direction. Reuses `equivalents()`, `nearestPaints()`, `groupMembers()` and the
    store marks — all shipped. Reversible, and it is the leaf node every other direction below needs.
+   The doorways: a **Details** item in the mark menu (`markmenu.js`), on the Shelf and in the seed field's
+   list, where a tap already marks or picks; a tap on the other paints (live-palette column, ladder rung,
+   equivalents row).
+   On a phone it is a good first user of the **resizable sheet** (a part-height card that grows to full
+   height when you scroll or drag it) recorded for the full app release in `IOS_APP_PLAN.md` §1.
 8. **Substitute finder — direction C.** “I need X, what can I use?” as a mode *on* that sheet rather than
    a new surface: constrain by *only what I own* / *only these brands* (the in-store constraint) and rank
    the alternatives. The literal buying assistant; still no engine work.
@@ -277,9 +282,132 @@ to-buy marks) but files them *inside* the scheme output. Four routing directions
     person's usage over a few weeks is a signal, not a mandate. Revisit after 7/8 have been lived with.
 11. **In-store pot identification (v2, native).** Barcode was already parked in `IOS_APP_PLAN.md` §5 with
     the right blocker — no EAN/UPC column exists and no open dataset supplies one. The way around it is
-    **label OCR**: read the printed name on the pot, fuzzy-match against the 2,508 names we already hold.
-    No new data, no backend, and it degrades to “put the text in the search field”. Barcode stays the
-    nicer UX *if* a mapping ever exists — a data-sourcing project, not a UI one.
+    **label OCR**: read the printed name on the pot, fuzzy-match against the names of the 3,225 paints we already hold.
+    No new data, no backend, and it degrades to “put the text in the Shelf search” (the question in a shop
+    is “do I own it?”, and the Shelf is where a tap marks it; the Studio's seed field takes the same words).
+    Barcode stays the nicer UX *if* a mapping ever exists — a data-sourcing project, not a UI one.
+
+### Follow-ups from the lightness-slider build (noted 2026-10-28, not yet scheduled)
+
+Found by the review of the "B, fixed" slider build. Not changed in that build: each is older than it.
+
+12. **Touch targets: the fixed-size controls are still smaller than 44px.** `--tap` is now 44px on every
+    touch screen (CLAUDE.md §3.6), so the controls that use it grew. Controls with a fixed size did not.
+    **Partly done (2026-10-28, the ⋯ menu foundations):** every segmented control (the Studio / Shelf
+    switch, the harmony chips, the tone ladder, Ideal / Real, language, the Shelf status filter) and every
+    `.btn.sm` is now `--tap` tall on touch and on a phone (44px; was 30–34px and 32px), and the theme
+    switch has a 44px hit area. **Still open,** measured with a 390px phone and a 768px touch tablet: the
+    live palette's ↶ ↷ + − (30px) and its copy and column buttons (20–21px), the output tabs (40px), the
+    seed docks and buy buttons (26px), the Plan cards' "equivalents" jump (20px), the hero's copy-hex
+    button (19px), the Equivalents source chips (30px) and the footer's "About & data" link (20px). WCAG
+    2.1 AA does not require 44px (2.5.5 is AAA), so this is §3.6's own rule, not an AA failure.
+13. **Neutral mode and the slider at widths over 1024px.** When a slider move enters neutral mode
+    (§7, by design), two older behaviours get in the way. (a) The neutral explainer overlay covers the
+    top 37px of the slider at 1180px (56px at 1025px with a mouse), with "Lighter" and the thumb at 94%, until it
+    collapses to its pill after about 7 s. A tap there lands on the overlay. (b) The hero line wraps when
+    its "neutral seed" pill shows in the 398px studio column, so the wheel row moves down about 29px
+    during the drag (§3.4). Fix direction: keep the overlay inside the wheel's box, not the gutter, and
+    keep the hero on one line (an ellipsis on the name, or a reserved slot for the pill). Ryan decides
+    neutral-mode behaviour, so this waits for him.
+
+### Follow-ups from the ⋯ menu build (noted 2026-10-28, not yet scheduled)
+
+The ⋯ Settings build (`mockups/collection-setting.html`, direction A, the full menu and its design
+critique) is in `[Unreleased]`. The critique marked these "Not now". They are recorded here so that they
+are not lost.
+
+14. **Undo after Restore** (critique usability-1). Restore cannot be undone. The confirm shows both
+    counts, the paints that would lose their mark, and offers "Save a backup of this shelf" first, so the
+    risk is visible. An Undo toast that puts the old state back is the next step.
+15. **"Settings" names a panel that is mostly actions** (usability-5). The title stays, because §3.6 uses
+    it and a screen reader reads each row when the panel opens.
+16. **On a phone, a change to Use my paints has no visible effect while the sheet is open**
+    (usability-10). The sheet covers the live palette. The hint says what changes, a screen reader hears
+    it, and the matching note shows the setting when the sheet closes.
+17. **Two rows that wait for a reason:** an "Install the app" row (the install prompt event exists only
+    in Chromium browsers; an iPhone can only show instructions) and "Brands I use" (backlog 8 puts a
+    brand limit on the substitute finder as a choice you make at that time; a hidden app-wide filter is
+    the problem the matching note fixes).
+18. **`--text-faint` is still used for text you must read** (WCAG 1.4.3). It is 2.39:1 on the light
+    surface (AA needs 4.5:1). The ⋯ menu review found three faults; this build fixed them: the `.micro`
+    labels (the Plan's "Tone ladder", the Shelf counts) are `--text-muted` now (4.68:1 on the surface,
+    4.53:1 on `--bg`); the right-click menu shows the `--focus` ring (it showed a `--surface-2` fill,
+    about 1.1:1, with `outline: none`); in forced colours only the selected output tab has a line.
+    **Still open:** about 13 other rules use `--text-faint` as a text colour, for example the footer note,
+    the logo's "for miniatures", `.hint`, `.ttl`, `.ladcap`, `.cmphead`, `.shelfhint` and "no close
+    paint — consider mixing". (The Paints picker build removed two: the hex field's "#" and `.count`.) Fix direction: `--text-muted` for each, or a
+    darker `--text-faint` value in §3.1 (a token change, so Ryan decides).
+
+### Follow-ups from the Paints picker build (noted 2026-10-28, not yet scheduled)
+
+The seed field and its list (`mockups/paints-picker.html` "Recommended") are in `[Unreleased]`. These
+checks need a real device or a real screen reader. The build used Playwright (Chromium) only.
+
+19. **The list's height on a real iPhone.** The open list takes its height from `visualViewport`, because
+    iOS does not make the layout viewport smaller for the keyboard. Test it with the keyboard up, in
+    Safari and in the iOS app (WKWebView), on a small phone (375×667) and turned sideways. Also check that
+    a tap on Browse does not raise the keyboard, and that the page does not zoom when the field takes focus.
+20. **A screen-reader pass of the field and its list** (VoiceOver on iOS and macOS, TalkBack, NVDA): the
+    combobox, the browse grid (rows, two-way arrows), the search listbox and its groups, the live hex
+    messages, the mark menu after a double-tap-and-hold, and where focus lands after a pick and a mark.
+21. **Forced colours** (Windows High Contrast): the cursor ring on a tile and a row, the pick ring, and
+    the open Browse button.
+22. **A tile shows the full name only on three lines.** About 67 names (for example "Barbarian Flesh
+    (Warpaints Fanatic)") and about 400 brand names are still cut in a 390px grid. The mark menu's title
+    and a search row show them whole. Fix direction: a readout of the name of the cursor tile.
+23. **The first letter after Browse** costs about 55ms at a 4× slower CPU: removing the 3,225 tiles of the
+    grid is about 17ms of it. Fix direction: empty the grid in the next frame.
+
+### Raised by Ryan on 2026-10-28 (24 is built; the others are not yet built)
+
+24. **“Roll a scheme” d6 — built** (`[Unreleased]`). ↻ stays. A d6 button rolls a random harmony for the
+    current colour (`mockups/random-die.html`, direction B). The roll keeps the picked paint as the seed, never picks
+    Custom or the current harmony, and is one ↶ step. Placement: the start of the harmony strip (the harmonies it picks
+    from), outside the strip's group of options, because the new seed toolbar has no room on a phone. Visible words:
+    “Roll a scheme” where the row is 460px or wider, else “Roll” (a phone, and the studio column from 1025px to about
+    1160px). Fixed in the same build: ↻ did nothing on a black or white seed; now it moves the lightness the smallest
+    step that lets the colour show, and says so. Follow-ups: 30–33.
+25. **Move ↻ away from the lightness slider.** Next to the slider, ↻ reads as “random lightness”, but it keeps the
+    lightness and changes the hue and strength. Options: beside the hero colour, on the wheel, a word (“New colour”), or
+    a small random group with the Roll chip.
+26. **Pin a paint to a role (UC-3 “Complete a scheme I started”).** A Death Guard player uses Death Guard Green and
+    wants Balthasar Gold as the metal. Today `metalIdeal()` gives gunmetal for that green (its hue is 74°, outside the
+    warm range under 70°), so Balthasar Gold never shows, and no control pins a paint to a role. Mockup done
+    (`mockups/pin-a-paint.html`, 2026-10-28): judges chose **A, a 📌 pin on the Plan role card** (49/60), with C's metal
+    families and B's “harmony's own pick” line. A pin is a paint, never ΔE 0: the card shows its distance from the
+    harmony's pick. Waits for Ryan's answers (all roles or Metal first; the word and icon; bronze in Auto; a pin on the
+    seed's role).
+27. **Telling paints apart on the Shelf.** Without logos or names, the grid is a wall of colour; a phone shows no names
+    at all. Ideas: section headers by brand and line (sticky) with a jump index; a peek bar on a phone that names the
+    last paint touched; a density setting (colours · with names · list); text brand monograms; generic pot or dropper
+    shapes; names when a filter leaves few paints; a “New” badge. Mockup when Ryan asks.
+28. **Citadel / Warhammer Colour data refresh — soon.** Dataset 1.6.0 has 259 Citadel paints (35 Contrast, 16 Shade).
+    It does not have the seven newer Shades (Mortarion Grime, Berserker Bloodshade, Kroak Green, Poxwalker, Soulblight
+    Grey, Targor Rageshade, Tyran Blue) or most of the Contrast expansion. It still lists the gloss Shades that left the
+    range as current. Add Games Workshop's 2026 paints (Ryan to share the release), mark the retired ones as
+    discontinued, add “Warhammer Colour” (the new range name) as a search word, record every source in `SOURCES.md`
+    (§5), and bump the dataset minor version.
+29. **The seed search matches inside words.** “vallejo red” also finds Hammered Copper (“hammeRED”), in the last
+    group. Fix direction: a query word of 3 letters or less matches only at the start of a word.
+
+### Follow-ups from the Roll a scheme build (noted 2026-10-28, not yet scheduled)
+
+Roll a scheme and the ↻ fix (item 24) are in `[Unreleased]`. The build used Playwright (Chromium) only, so these
+checks need a real device, another browser or a real screen reader.
+
+30. **A screen-reader pass of Roll and ↻** (VoiceOver on iOS and macOS, TalkBack, NVDA): the name “Roll a scheme”
+    where the button shows “Roll”, the “Rolled: Compound.” lead (the summary then leaves out the harmony), and ↻'s
+    “Lightness moved to 8% so the colour can show”, alone and with a roll pressed before it is said.
+31. **Safari, Firefox and the iOS app (WKWebView):** the container query that picks “Roll a scheme” or “Roll” (a
+    browser without it shows “Roll”), the die's turn (`element.animate()` on an inline SVG), the page scroll that
+    keeps a pressed chip or Roll in place over 1024px, and the service worker update to `ps-v53`.
+32. **Forced colours** (Windows High Contrast): the Roll button's border and focus ring, and the d6 in
+    `currentColor`.
+33. **The hero line can lose a line when the “neutral” pill goes** (§3.4). At 414–430px (a large phone), a custom
+    colour's hero fits on one line without the pill and needs two with it, so ↻ on black moves the wheel, ↻ and the
+    strip up about 29px, and the next tap at the same place can miss ↻. The 1–3px change at other widths is fixed.
+    Older than this build (↻ on a grey seed did the same), and the same cause as item 13 (b). Fix direction: as
+    13 (b), keep the hero on a fixed number of lines (an ellipsis on the name, or a reserved slot for the pill).
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
@@ -297,8 +425,9 @@ Ordered, with the reasoning rather than just the list:
 
 **Explicitly NOT tomorrow:** direction D (held, above) · the scanner (needs the Stage-1 native shell to
 exist first) · TD5 dataset provenance (a data-sourcing job needing manufacturer values, not a code task) ·
-splitting the Shelf/drawer out of `app.js` (internal quality, no user-visible value — it can wait behind
-work that changes what the tool does).
+splitting the Shelf out of `app.js` (internal quality, no user-visible value — it can wait behind work
+that changes what the tool does). The Paints drawer is gone: its successor, the seed field and its list,
+lives in `picker.js`.
 
 ---
 

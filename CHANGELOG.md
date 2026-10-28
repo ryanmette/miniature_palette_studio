@@ -6,6 +6,179 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Design exploration: pin a paint to a role** (`mockups/pin-a-paint.html`, not shipped). Ryan asked: “I use Death
+  Guard Green and want Balthasar Gold — what else is recommended?” Today the app cannot do this: for that green the Metal
+  rule gives gunmetal, and no control pins a paint to a role. The page shows four directions with real engine numbers
+  (projected numbers carry a ◇ mark): A, a 📌 pin on the Plan role card; B, a “Paints I'm using” strip; C, a Metal choice;
+  D, pins on the wheel. Three judges scored A first (49 of 60; C 40, B 35, D 32). The recommendation is A, with the
+  metal-family shortcuts from C and the “harmony's own pick” line from B. Open questions for Ryan are on the page.
+- **Roll a scheme: a d6 that rolls a random harmony** (`mockups/random-die.html`, direction B; Ryan,
+  2026-10-28: “Keep ↻, add the Roll a scheme d6”). ↻ stays where it is, with the same job (see Fixed for black
+  and white).
+  - The button is at the start of the harmony strip's row, outside the strip's group of options. It stays in
+    place while the strip scrolls. It shows the d6 and “Roll a scheme” where the row is 460px or wider. Where the
+    row is narrower, it shows the d6 and “Roll”, for example on a phone and in the studio column on a screen from
+    1025px to about 1160px wide. Its accessible name is always “Roll a scheme”. Its tooltip is “Roll a scheme:
+    a random harmony for this colour”. It is 44px tall on a touch screen.
+  - It changes only the harmony. Your paint stays the seed, in the same role. The lightness, the locked and added
+    colours and the pop do not change. It never picks Custom or the harmony you have now. A seed with a hue rolls
+    from the 9 rule harmonies; a neutral seed rolls only from Neutral + pop, Duotone, Warm / cool and Shades
+    (`harmony.js` `rollHarmony`, CLAUDE.md §7).
+  - It uses the same path as a tap on a harmony chip: one ↶ step, the chip moves to the centre of the strip, and
+    the hero swatch pops. The live region says “Rolled: Compound.” before the scheme summary, and the summary
+    then does not say the harmony again (“Rolled: Compound. Alga Green, plan view.”). News that waits for its
+    announcement (↻'s “Lightness moved to 8%”) is said first, not lost.
+  - The control that you press stays where it is on the screen. Over 1024px, with the page scrolled, the sticky
+    studio column rests on the bottom of the workspace, and a new harmony that changes the output column's height
+    moved the studio (with the strip and Roll) by 30–90px, so the next press missed. Now the page scrolls by that
+    amount (a harmony chip too). At the very bottom of the page there can be no room to scroll, so the control
+    can still move once there.
+  - On a press the die turns once (320ms, transform only). The scheme changes at the press, not after the turn.
+    With reduced motion the die does not turn.
+  - The Help page says what Roll a scheme and ↻ do. Every new string is in `i18n.js`. Tooltips can now be
+    translated (`data-i18n-title`).
+  - (CLAUDE.md §3.4, §3.6 (the harmony strip, Roll a scheme, the wheel module), §4 and §7 are updated; service
+    worker `ps-v53`.)
+- Tests for the roll's pool (never the current harmony, never Custom, the neutral pool, every harmony in the pool
+  can come up) and for ↻'s lightness on black, white, `#050505`, `#FAFAFA` and a mid colour: 232 tests.
+- **Design exploration: the Random control** (`mockups/random-die.html`, not shipped). Ryan asked for a mockup of
+  the d20 and to keep ↻. The page shows today's ↻ beside ↶ and ↷, a study of five die glyphs at 16–28px, and three
+  directions you can try: A, ↻ with a die that rolls on a tap; B, ↻ plus a new “Roll a scheme” die; C, the die replaces
+  ↻. Three judges (the painter, the constitution and accessibility, the build) scored them. C scored highest (46 of 60),
+  and the d6 with pips was the best glyph (51 of 60, first for every judge). **Decisions (Ryan, 2026-10-28):** the die is
+  a d6 (a d20 may be an option later); keep ↻ and add the “Roll a scheme” d6 (B). The recommendation is that the roll
+  changes only the harmony, so the picked paint stays the seed.
+- **One mark menu, and Use as seed on the Shelf** (the Paints picker build;
+  `mockups/paints-picker.html` "Recommended"; Ryan, 2026-10-28). The new `markmenu.js` holds the menu's
+  gestures, its place on the screen and its keys. The Shelf uses it now. The seed field's list uses the
+  same menu.
+  - The Shelf's menu has **Use as seed** on top. With one paint selected, it starts the Studio from that
+    paint. With 0 or 2+ selected, it stays in the menu but is off, and it says why. There is no pick
+    mode: a tap on the Shelf still marks.
+  - **Shift+F10** or the **ContextMenu** key opens the menu at the Shelf's cursor cell. With no cursor
+    and no selection, a screen reader hears how to go to a paint.
+  - The menu has a title line: the paint's name, or "3 paints selected". Its items are 44px tall on a
+    touch screen. It has the floating-overlay shadow (`--shadow-pop`). The arrow keys, Home and End move
+    in it; Esc and Tab close it, and focus goes back to the grid.
+  - The Help page lists Shift+F10. Every new string is in `i18n.js`.
+- **The seed field's query parser and the shared paint search** (pure, unit-tested). `seed.js`
+  `parseSeedQuery` reads a paint name or a hex: "#" and 6 digits seed as you type, a bare `9a1115` or
+  `#9A1` needs Enter, and "Abaddon Black" is never a colour. `data.js` `searchPaints` ranks the names
+  that are the query or start with it first; in each group, the paints you own come first. `closestPaints`
+  lists the paints nearest a colour, ranked as the Equivalents tab ranks a flat colour. The app folds the
+  paint names for the search while the browser is idle, so the first letter you type is not slow.
+- Tests for the Paints picker build: the mark menu's keys, place and guards (`test/markmenu.test.mjs`),
+  `parseSeedQuery`, `paintMatcher` and `searchPaints` (the cases "metallic", "citadel metallic",
+  "dawnstone (layer)", "decade", "Abaddon Black", "vallejo red" and a word start), `closestPaints`,
+  `browseOrder`, `addRecent`, and the list's tiles and rows in `ui.js`: 225 tests.
+- **⋯ Settings: the full menu** (Ryan, 2026-10-26 and 2026-10-28; `mockups/collection-setting.html`:
+  direction A, "The full ⋯ menu" and its design critique). ⋯ opens a dialog named Settings, in four groups:
+  - **Use my paints** (Off · Prefer · Only), **Theme** and **Language**;
+  - **Scheme:** Save shopping list and Share link;
+  - **Backup:** Back up and Restore…;
+  - **Help & info:** Help (a link to the Help page) and About & data.
+
+  On a phone or a touch screen, Settings is a modal sheet. It has a title row with Done, each label above
+  its control, 44px controls, and a fade at the bottom while more rows are below. With a mouse, it is a
+  popover under ⋯. Esc, a click outside, ⋯ or a Tab out of it closes it. When it opens, focus goes to the
+  selected Use my paints option. When it closes, focus goes back to ⋯, or to the note line that opened it.
+  Every label, hint and message is in `i18n.js`.
+  - On a short screen (for example 400% zoom, or a phone turned sideways), Settings covers the header,
+    so you can scroll to every row (WCAG 1.4.10). Before, a 200px minimum height put rows below the
+    screen at 320×256.
+  - A control that Tab scrolls into view, and the "✓ Saved …" line after Back up, stop above the
+    bottom fade.
+  - With large text, a button label wraps. Before, "Save shopping list" pushed "Share link" out of the sheet.
+  - The title row has a rule under it, as in About. "Equivalents still lists every paint." sits right
+    under the Use my paints hint.
+  - A focused segment shows its whole focus ring. Before, the next segment covered its right edge.
+- **The matching note under the live palette.** It has one line for each setting that changes the
+  matches. Each line is a button to its control:
+  - "✓ Use my paints: Prefer · yours win when close — Change", or "… Only · from the 23 you own —
+    Change". It opens ⋯ at Use my paints.
+  - With no owned paints: "Use my paints: Prefer · none marked as owned yet — Open Shelf". It opens the
+    Shelf.
+  - "Contrast and speed paints included — Plan", with the Contrast icon. It opens the Plan tab at
+    Include Contrast.
+
+  Nothing shows while both settings are off. A line shows or goes only when you change a setting. On
+  the hover and open fill, the explanation is `--text`: `--text-muted` is 4.20:1 there, under AA.
+- **A way back to the device's theme** (Ryan's answer 3). After you pick a theme, the Theme row shows
+  **Use device setting**. It clears your choice, and the app follows the device again. Before you pick,
+  the same place says "Follows your device". Both share one reserved slot, so nothing moves. Use device
+  setting also shows when a shared link's theme is not the device's theme.
+- **Back up and Restore…** (⋯ → Backup). Back up saves your shelf and settings to
+  `palette-studio-backup-YYYY-MM-DD.json`, with the date of the backup in the file. The row then shows
+  the file name. Restore… reads a backup and shows a confirm before it changes anything:
+  - the counts on this device and in the backup, with the backup's date;
+  - how many paints marked here are not in the backup;
+  - that your settings change too, and that you cannot undo this;
+  - "Save a backup of this shelf", which changes to "✓ Saved" and names the file inside the dialog;
+  - Cancel (focus starts here) and Replace.
+
+  Esc closes only the confirm. A file that is not a backup changes nothing. (`store.inspectJSON()`.)
+  A setting with a value it cannot have (for example `contrast: "no"` or `theme: "Dark"`) is not
+  restored. On load, such a value gets its default.
+- **Delete my shelf and settings…** (About & data). It asks first and offers a backup. Then it removes
+  every copy on this device: `ps-state`, the old `ps-owned` and `ps-theme` keys, and the iOS app's copy.
+  If only `ps-state` goes, the next start brings the data back. (`store.clear()`.)
+- **The version in About & data:** "Palette Studio 1.9.0 · paint data 1.6.0". The app version comes from
+  one constant, `src/js/version.js`. `check-docs.mjs` fails when it differs from `package.json`.
+- **The Help page** (`support.html`, now "Help and support") has two new sections: "How the matching
+  works" (ΔE 2000, the quality labels, and Prefer: a paint you own counts as about ΔE 6 closer) and
+  "Keyboard shortcuts". The questions now say how to move your shelf (Back up, then Restore…), how to
+  delete it, and that the shelf is kept only in this browser. About & data links to both new sections.
+- Tests for `store.inspectJSON()`, `store.clear()`, the backup's `saved` date, the pref list, `shareUrl()`,
+  the matching note, the version check (`test/version.test.mjs`), the pref values a backup may carry,
+  and the theme in a shared link.
+  `check-docs.mjs` also runs its checks when you start it through a symlinked folder.
+- **Design exploration: the lightness slider** (`mockups/lightness-slider.html`, not shipped). Ryan
+  reported that the slider under the wheel does not say what it does. It sets the lightness of your
+  colour (6–94%), and the harmony colours follow it. Four working directions: A, a label and a value; B,
+  a track that shows your colour from dark to light, with end dots (Apple HIG's "left and right icons");
+  C, a 44px track with the label inside; D, seven tone steps. Three judges chose B (47 of 60). The
+  recommended design keeps B's colour track, drops the end dots, adds a visible "Lightness" label and a
+  thumb ring that contrasts at every lightness, and replaces ↻ (it reads as "redo") with a d20 "Random"
+  button. The page also lists four app bugs; for example, moving the slider to 6% and back changes the
+  colour (`#6B5B4B` comes back as `#6C4B4B`).
+- **Design exploration: the Paints picker** (`mockups/paints-picker.html`, not shipped). Ryan reported
+  that the Studio's Paints drawer is redundant and confusing. On a 390px phone, the seed toolbar is 3
+  rows, and the open drawer adds 4 rows of controls and shows only about 3½ paints. Its search, filters,
+  import and export copy the Shelf, and its search and the hex box both choose the seed. Four directions
+  were designed and judged from three views (the painter, the constitution and accessibility, the build):
+  slim the drawer (47 of 60), one search field (41), a "Choose a colour" sheet (28), and Shelf pick mode
+  (28). Recommended: one seed field for a paint name, a brand word or a hex; a ▾ Browse grid that opens
+  without the keyboard; a tap only picks; marking moves to a long-press menu; CSV stays on the Shelf; and
+  the Shelf menu gets "Use as seed". The page has an interactive demo with 134 real paints and the app's
+  ΔE 2000 code. It also lists bugs found on the way, for example that 360px and 375px phones load the
+  page part of the way down (384px at 375×667; the offset depends on the screen height). A three-view review
+  checked the page against the code, and its fixes are in (for example, the demo's list now has one tab stop).
+- **Resizable sheets recorded for the full app release** (`IOS_APP_PLAN.md` §1, not built). Ryan asked
+  for the iOS sheet behaviour: a card at part height that grows to full height when you scroll or drag it.
+  The plan names the Apple terms (resizable sheet, detents, grabber), links Apple's primary sources, and
+  names the first users: the paint detail sheet (`PLAN.md` §5 backlog 7) and the Shelf's Filters sheet.
+  **Decision (Ryan, 2026-10-27):** a web sheet with detents ships in v2.0. Apple's native sheet comes
+  later (Stage 2), and only if the web sheet fails a feel test on a device.
+- **Design exploration: where the collection setting goes** (`mockups/collection-setting.html`, not
+  shipped). Ryan asked if *Use my collection* (Off · Prefer owned · Only owned) must move from the Plan
+  tab to the ⋯ menu. The setting changes the live palette, the Plan and the Accessibility swap, but its
+  only control is in the Plan tab, and the palette shows no sign that it is on. Three directions:
+  A, a **Use my paints** row in ⋯ plus a **matching note** under the live palette when the setting is on
+  (recommended); B, the control on the palette at all times; C, the ⋯ row only. The frames use values
+  that I read from the running app with a 23-paint shelf. The mockup also has an interactive phone
+  frame. **Chosen (Ryan, 2026-10-26):** A, with the label "Use my paints". Equivalents ignores the
+  setting. When the shelf has no owned paints, the note says "Open Shelf" and opens the Shelf. The
+  build must change CLAUDE.md §3.6 in the same commit.
+  **Part 2 (2026-10-27): the full ⋯ menu.** A menu audit (code, docs, and primary sources: Apple HIG,
+  the Android design guide, MDN, WCAG) judged every candidate for the menu. The mockup now shows the
+  result: three groups (Theme · Language · Use my paints | Scheme · Your data: Back up, Restore | About &
+  data · Help), a Restore confirm step, and three additions to About & data (keyboard shortcuts, Delete my
+  data, the version). It also lists the fixes the menu container needs first (it is marked as a menu but
+  is not one, 32px buttons, no scroll, the wrong shadow tier, labels not localised) and what stays out
+  of the menu, with the reasons. A second review checked the mockup against the code. It found that
+  Import… also restores a JSON backup with no confirm, that the backup has no date, which settings it
+  holds, how Delete must remove the data, and that the app-wide focus ring is almost invisible. The
+  mockup now has notes for the build, the rule for which settings go to ⋯, and draft §3.6 wording.
 - **Design exploration: Shelf landing** (`mockups/shelf-landing.html`, not shipped). On a phone the
   Shelf controls fill 62% of the first screen, and the search goes away when you scroll. Three
   directions: A, fix the jump only (shipped, see Fixed); B, a compact header with search and status
@@ -17,7 +190,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   plus a mix of the two. It has live frames, close-ups, and pixel notes from four independent reviews.
 - **Two new brands: AK Interactive and AMMO by Mig — dataset 1.6.0 (3,225 paints, 10 brands).** Both
   come from the same MIT-licensed source as the other brands (Arcturus5404/miniature-paints, `AK.md`
-  and `Mig.md`). The new paints show in the Shelf, the Paints drawer, the brand filters and the
+  and `Mig.md`). The new paints show in the Shelf, the seed field's list, the brand filters and the
   cross-brand matches.
   - **AK Interactive (467):** the current 3rd Gen acrylics only — Standard, AFV, Air, Figures,
     Intense, Pastel, Metallic and Ink. The older 2nd Gen sets are not included, because 3rd Gen
@@ -61,6 +234,122 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **The seed field replaces the ☰ Paints drawer and the # hex box** (the Paints picker build;
+  `mockups/paints-picker.html` "Recommended"; Ryan, 2026-10-28). One field, "Paint or #hex", takes a
+  paint name, brand, line, type or finish words ("vallejo red", "citadel metallic", "dawnstone (layer)")
+  or a hex.
+  - **Browse** ("Browse ▾", or a grid icon on a phone) opens the list. It does not raise the phone
+    keyboard. A tap on the field raises the keyboard.
+  - Browse shows a colour grid. Your **Recent** picks come first (this visit only, not saved), then every
+    paint. **Sort** orders the grid by Hue, Closest to your pick, Owned first or Name. In the grid, the
+    arrow keys move in two directions.
+  - A search shows rows with the brand and the line. Names that are the text or start with it come first.
+    In each group, the paints you own come first.
+  - "#" and 6 digits change the seed as you type, also when you paste them. The live region says the new
+    seed, and a change of scheme that it makes. **Esc** closes the list and puts back the seed from before
+    you typed. The colours you typed leave the undo history, so ↶ does not bring them back. A bare `9A1115` or `#9A1`
+    needs Enter. A hex word in letters only, such as "decade", searches names first, and "Use #DECADE as
+    seed" is the last row. Under a hex, the 6 closest paints show with ΔE and its label. They rank as the
+    Equivalents tab ranks a flat colour.
+  - **A tap or Enter only picks.** To mark a paint, press and hold it, right-click it, or press Shift+F10:
+    this is the Shelf's mark menu. The badge changes at once, and the list stays open. After a press and
+    hold, focus goes to the list (not the field, so the iOS keyboard stays down).
+  - A pick shows "New seed: …" and the screen reader hears it first, then a change of scheme (for example
+    to Neutral + pop) and the scheme. A pick that the matches cannot use still says why ("your pick … is a
+    shade"). Use as seed on the Shelf does the same.
+  - After a tap pick on a touch screen, focus goes to the hero line, and the keyboard goes down. After
+    Enter (a tablet keyboard too) or a click, focus stays in the field, and Ctrl/⌘+Z undoes the pick: the
+    empty field has no text to undo.
+  - A tap on a field that still holds text opens the list again with its results.
+  - In the grid, a name can take three lines, so twins such as "Opal Skin (Warpaints Fanatic)" show
+    whole. Ctrl+End and a fast run of Page Down keep the whole cursor tile in view.
+  - The list floats over the Studio with the floating-overlay shadow (`--shadow-pop`), so nothing moves
+    when it opens. It fades in (200ms); with reduced motion it just appears. Its height follows the visual
+    viewport, so the iOS keyboard does not cover its end.
+  - On a short screen (400% zoom: 320×256, or a phone turned sideways), the open list covers the header,
+    as the ⋯ menu does, and Sort scrolls with the paints. Before, at 320×256 the grid showed no paint.
+  - The seed toolbar is one row while the field keeps 100px for its text: from 375px up. At 360px and
+    below, Compare goes to a second row. The page does not scroll sideways at 280px or wider. On a phone,
+    From photo is a 44px camera button, and its name is still "From photo". On a touch screen, the field
+    and Browse are 44px tall.
+  - The brand and type filters and CSV Import… / Export CSV leave the Studio. They stay on the Shelf. The
+    7-way sort goes: the list's Sort (Hue · Closest to your pick · Owned first · Name) replaces it. The Shelf's Import… still takes a `.json` backup through the Restore confirm. The hero
+    line is the one readout of the colour.
+  - The new `picker.js` holds the field and its list. `data.js` `browseOrder` gives the grid's orders:
+    "Hue" goes round the wheel in 15° bands, light to dark in each band, with the greys last. `seed.js`
+    `addRecent` keeps the Recent picks. Every new string is in `i18n.js`. The Help page lists the new keys.
+- **The Shelf search finds more.** It uses the seed field's matcher. Each word must match the name, the
+  display name, the brand, the line, the type or the finish word. So "vallejo red" and "citadel metallic"
+  now find paints ("dawnstone (layer)" still works). Before, the whole text had to be in one of these, so
+  "vallejo red" found nothing. Accents and apostrophes do not matter: "resedagrun" finds Resedagrün.
+- **On a long-press, the Shelf's menu opens under the swatch**, or over it when there is no room. Before,
+  it opened under the finger. A right-click still opens it at the pointer.
+- **"Use my collection" moves from the Plan tab to ⋯ and is now "Use my paints"** (Off · Prefer · Only).
+  It changes the live palette, the Plan, the shopping list and the Accessibility swap, so it does not
+  belong to one tab. The setting and its saved value do not change. The hint under it says what each
+  option does. With an empty shelf, it says "No paints marked as owned yet" and offers Open Shelf.
+- **"Export list" is now "Save shopping list"**, a secondary button. The solid accent button drew the
+  eye before the settings did.
+- **About & data:** a "Your shelf on this device" block with Delete, links to the Help page, and the
+  version line. Its padding is on the spacing scale (16px; 24px at the bottom). The fine print is `--text-muted` (`--text-faint` was 2.39:1, under AA). Its "colour"
+  text has an en-US version.
+- **A JSON backup picked through the Shelf's Import… goes through the Restore confirm.**
+  Before, it replaced the shelf and settings at once.
+- **A restored or deleted theme or language of "none" follows the device.** It is applied, not saved.
+- **Undo and redo (Ctrl/⌘ Z) work only in the Studio.** On the Shelf, they changed a palette you could
+  not see.
+- **A backup no longer carries `fill`**, a pref the app never read (Ideal | Real lives in the link). A
+  backup carries the theme, the language, Use my paints, the tone ladder and Include Contrast.
+- A backup that lists one paint as owned and as to buy restores it as owned.
+- A toast uses the width of the screen. Before, it wrapped at half the width.
+- (CLAUDE.md §3.1, §3.4, §3.5, §3.6, §4 and §8 are updated: the "Sheets and dialogs", "Text action" and
+  "Destructive button" lines, what ⋯ holds, the sheet and popover layouts, and the matching note.
+  Service worker `ps-v50`.)
+- **Touch: segmented controls and small buttons are 44px on every touch screen** (Ryan, 2026-10-28,
+  answer 4 in `mockups/collection-setting.html` #critique). Before, `--tap` grew to 44px on touch, but
+  the controls with a fixed size did not.
+  - Every segmented control is `--tap` tall on a touch screen and on a phone: the Studio / Shelf switch,
+    the harmony chips, the tone ladder, Ideal / Real, the language control and the Shelf status filter.
+    Before, they were 30px (34px on a phone).
+  - Small buttons (`.btn.sm`) are `--tap` tall on a touch screen and on a phone. They stay 32px only with
+    a mouse above 520px. Examples: Import…, Export CSV, Include Contrast, + Add N to buy.
+  - The theme switch keeps its 52×30 look. A `::before` gives it a `--tap` tall hit area, as on the Shelf
+    handle, so its focus ring stays in the centre.
+  - The header grows with the controls: 113px → 123px on a 360px or 390px phone, and 69px → 75px on a
+    touch tablet. The sticky studio column and the Shelf dock follow it (`--hdr-h`). Measured at
+    360×640, 390×844, 768×1024 and 1025×800 with touch: the studio column and the dock still sit
+    directly under the header.
+  - (`docs/PLAN.md` follow-up 12 lists the small controls that are still under 44px.)
+- **Overlays: one scrim token, and About floats.** A new `--scrim` token (§3.1) is the dimmed page
+  behind a modal. It replaces the two copies of `rgba(0,0,0,.45)` (the About dialog's backdrop and the
+  phone Filters sheet's scrim). The About dialog uses `--shadow-pop`, the shadow for floating overlays
+  (§3.4). Before, it used the in-page `--shadow`.
+- **Toasts show above the menus and in open dialogs.** A toast is now above the ⋯ menu and the
+  right-click menus (z-index 70; was 50, under the menus' 60). While a modal dialog is open, the toast
+  goes inside it. Before, it was behind the dialog's backdrop, and a screen reader skipped it.
+- **The open ⋯ button has a fill.** While the settings menu is open, ⋯ shows a `--surface-2` fill. The
+  focus ring is for focus only.
+- (CLAUDE.md §3.1, §3.4, §3.5 and §3.6 are updated; service worker `ps-v49`.)
+- **Studio: the lightness slider shows what it does** (Ryan, 2026-10-28: "B, fixed" in
+  `mockups/lightness-slider.html`). Before, the slider next to the wheel had no visible name. Ryan reported that it
+  was not clear what it does.
+  - The track shows your colour from dark to light. It uses the hue and the saturation of your pick,
+    from 6% to 94% lightness.
+  - The thumb shows the colour now. Its ring is black or white, whichever has more contrast with the
+    colour (the §7 text-on-swatch rule). So the thumb stays visible at each lightness.
+  - On a phone, the label "Lightness" is above the slider. On a wider screen, the slider is in the
+    narrow gutter next to the wheel. There, "Lighter" and "Darker" mark its two ends.
+  - A screen reader says the value and a word, for example "Lightness, 24%, dark". The slider has one
+    name now, its label. Before, it also had an `aria-label`.
+  - The slider stops at 6% and 94%. For a colour past an end, the screen reader says the colour's own
+    value. For example, white is "100%, very light", not "94%".
+  - It is still a native range. The arrow keys, Page Up, Page Down, Home and End work as before. Undo
+    and share links also work as before.
+  - In Windows High Contrast mode, the browser shows its own system slider.
+  - The ↻ button does not change. The gaps are on the spacing scale now: 12px between the wheel and the
+    slider (was 14px), and 8px between the slider and ↻ on a phone (was 10px).
+  - (CLAUDE.md §3.5 has a new "Slider" line, and §3.6 updates the wheel module; service worker
+    `ps-v48`.)
 - **Equivalents rank by finish** (Ryan, 2026-10-26; a §7 ranking change). The tab used to rank only by
   ΔE, so a flat paint's "closest in other brands" often held washes, contrasts or texture paints. For
   example, Scale75's "Dust in Summertime" texture paint showed for Citadel Death Guard Green. Now a paint
@@ -91,7 +380,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     - This happens however the panel opened. It does not happen just after the panel pins, and it
       is off while the Filters sheet is open.
     - Note: `--shadow-pop` is violet-tinted in light mode. Over the first row of paints it adds a
-      light violet haze (up to about ΔE 5), the same as the Paints drawer does. In dark, the shadow
+      light violet haze (up to about ΔE 5), the same as the seed field's list does. In dark, the shadow
       cannot be seen on the background, but it darkens the first row of paints under the panel (a
       peach reads as tan). A neutral shadow would be a §3.1 token change.
   - Keyboard and screen reader: the handle is a button with `aria-expanded`. The sheet is a modal
@@ -127,6 +416,194 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Fixes from the final review of this release's work** (one browser test agent and five code reviewers;
+  each finding was checked again by a second agent that tried to refute it):
+  - **The seed field's "Closest paints" for a hex left out closer paints.** The list took only the 64 paints
+    nearest by a quick Lab distance, then ranked those by ΔE 2000 with the finish penalty. The penalty moves
+    washes and metallics down, so a flat paint further down the quick list could be cut: for `#8899F4`, Raf
+    Azure Blue (ΔE 6.4) was missing, and two Poor matches took its place. Now every paint is ranked
+    (`data.js` `closestPaints`): about 2 ms a search, or about 11 ms with a CPU 6× slower (a slow phone),
+    which is in the 16 ms budget (CLAUDE.md §6). The Equivalents tab's list for a role colour or a custom hex uses
+    the same helper, so it is correct too. A test compares the list with a full scan for 61 colours.
+  - **A search for "D&D" found 1,885 paints.** "D&D" folds to two one-letter words, and each one matched inside
+    any word. Now, in a query of two or more words, a one-letter word before the last must be a whole word,
+    and a one-letter last word (the word you are typing) must start a word. So "d&d" and "army painter d&d"
+    find the 20 D&D paints, and "abaddon b" still finds Abaddon Black (`data.js` `paintMatcher`). One letter
+    alone still matches inside words. A test types every paint's name, letter by letter, and checks that the
+    paint is found at each step.
+  - **Undo, redo and Esc said news from the change they reversed.** Esc within half a second of a live hex
+    could say "switched to the Neutral + pop scheme" about the colour Esc had just taken away, and undo could
+    say a waiting note. Now a waiting note is dropped when a snapshot is put back (`app.js` `applySnap`,
+    `restoreSeed`).
+  - **↻ and other quick steps could merge into the next step, or be lost by undo.** A ↻ press waited 250ms for
+    its undo step, so a Roll or a chip in that time took both into one step, and an undo right after ↻ skipped
+    a step and lost the colour. Now ↻ writes its step at once (its words still wait the usual 400ms, so a quick
+    Roll says them first), undo and redo first write a step that is still waiting, and the seed field takes its undo mark after such a step (so Esc no longer keeps typed colours).
+  - **Delete or Restore in one tab came undone in another open tab.** The other tab held the old shelf and
+    wrote it back with its next change. Now each open tab takes a save or a Delete from another tab (the
+    browser's `storage` event; `store.js` `onExternalChange`) and repaints. A tab opened from a link keeps the
+    link's theme, unless the saved theme changed.
+  - **The seed list's Sort could not be opened with a mouse or a tap on a short screen** (400% zoom, a phone
+    turned sideways), where it scrolls with the paints: the list cancelled every press to keep focus in the
+    field. A press on Sort is no longer cancelled.
+  - **↓ in the seed field, with the field scrolled out of view, left the field and the list off the screen.**
+    Now the field comes back to just under the header.
+  - **A press on another tile closed the seed list's mark menu and left focus on the page.** The list stayed
+    open, and no key reached it. Now focus goes back to the field (or to the list after a touch long-press).
+  - **Forced colours (Windows High Contrast) painted every swatch white:** the Browse grid, the live palette,
+    the Shelf and the Plan showed no colour. Swatches now keep their own colours (`forced-color-adjust: none`),
+    and their rings use the system Highlight colour. This was the case before this release too.
+  - **A link with `v=__proto__` crashed the app on load** (CodeQL: "Unvalidated dynamic method call"). The
+    link's `v` names the output tab, and the tab's renderer was found on a plain object, so `__proto__`,
+    `toString` or `constructor` found the object's own members: `__proto__` left a blank page, and
+    `toString` showed no tab. Now only `plan`, `equiv` and `a11y` count (a fixed list, and the tab's renderer is
+    chosen by plain comparisons); any other name opens the Plan tab. This was the case before this release too.
+  - **A `t=light` link changed theme on its first reload,** because the address bar keeps only `t=dark`. Now
+    only `t=dark` is a link theme (as `share.js` says); a `t=light` link opens as a link without `t`.
+  - **Share link's last fallback** (no share sheet, no clipboard) said "Copy the link from the address bar",
+    but that address can hold `m=shelf` and lacks the `t=dark` a share adds. Now it shows the link itself.
+  - Smaller items: Esc on Sort puts back a live hex, as Esc in the field does. Typing the hex that is already
+    the seed no longer says "New seed", and Esc then has nothing to put back. About and the photo dialog keep
+    their 24px under the last line on a touch screen. An open Shelf filter shows the open fill. The docs
+    checker ran no checks (and passed) when Node kept a symlinked path (`--preserve-symlinks-main`).
+  - (CLAUDE.md §3.5 and §3.6 are updated; service worker `ps-v56`.)
+- **↻ did nothing on a black or white seed.** ↻ keeps the lightness, and at 0% or 100% every hue is black or
+  white: `#000000` stayed `#000000`, and the studio stayed neutral. Near the slider's ends most ↻ presses stayed
+  grey too. Now, when the new colour would be neutral (Lab C* under 14, `NEUTRAL_EXIT`), the lightness moves the smallest
+  whole per cent toward 50% that lets the colour show (`color.js` `lightnessForHue`). A toast and the live region
+  say so: “New colour. Lightness moved to 7% so the colour can show.” A mid colour keeps its lightness, as before.
+- **The harmony strip centres the chosen chip from its own edge.** It measured from the studio card, and the
+  strip's scroll snap hid the error. With the Roll button before the strip, the error became a chip's width.
+- **The hero line keeps its height when its “neutral” pill goes.** The pill was 2px taller than the text beside
+  it. When neutral mode ended (for example, ↻ on black), the wheel, ↻ and the strip moved up 1–3px on a phone. At
+  414–430px the hero line can still lose a line there (`docs/PLAN.md` §5 item 33).
+- **A harmony chip said an old mode note.** When a slider move or ↻ crossed the neutral boundary and you then
+  tapped a chip before the announcement, the live region said “back to the complementary scheme” with the chip's
+  harmony. Now the note keeps only the news of the change of mode (“Seed has a hue again.”).
+- **Chrome on a Mac: a dropdown list now opens under its button.** Before, Chrome on macOS drew the system menu
+  on top of the button and moved it to the left, and its arrow sat tight on the edge. Now, with a mouse, the Shelf's
+  brand, type and sort filters and the seed list's Sort open the app's own list under the button. Each label lines up
+  with the button's text, and the ✓ is at the end of the row. The chevron sits 12px from the edge and points up while
+  the list is open. This uses customizable select (`appearance: base-select`, Chrome and Edge 135+, Safari 27+). Phones
+  keep the system picker. Other browsers keep their own list, which already looked right. (CLAUDE.md §3.5 has a new
+  "Select" line; service worker `ps-v52`.)
+- **The old Paints drawer's bugs** (`mockups/paints-picker.html`, "Today"). The seed field fixes them:
+  - A tap on ☰ Paints raised the phone keyboard over the paints. Browse never takes focus.
+  - A pasted "#9A1115" did nothing: the hex box kept 6 characters. Now it seeds.
+  - "Abaddon Black" in the hex box seeded #ABADDB. A paint name is now always a search.
+  - The drawer held 3,225 buttons (3,232 tab stops) and built all of them again on each seed change,
+    also while it was closed. The list is now one tab stop, and it exists only while it is open.
+  - After a wheel drag, the drawer still showed the old paint as the pick, and "Closest to base" kept the
+    old order. The list is now built on open, from the pick at that time.
+- **A mark updates every surface at once** (one path, `render('marks')`). Before, a mark on the Shelf left
+  the Studio's hero, live palette, Plan and Equivalents on the old state until the next full render. With
+  Use my paints on, the matches could be old too. A mark in the Paints drawer did not update the hero's buy
+  toggle. A Plan buy toggle now keeps the focus after its repaint.
+- **The Shelf's menu.** The arrow keys moved the grid cursor behind the open menu; now they move in the
+  menu. A tap on another swatch while the menu was open also marked that swatch; now it only closes the
+  menu. On a touch screen the items were 32px tall; now they are 44px. A tap that marks a swatch now says
+  the new mark to a screen reader. A click on an item less than 350ms after a right-click did nothing;
+  that guard is now for a finger or a pen only (the lift at the end of a press and hold).
+- **A theme that follows the device stays out of the address bar.** Before, a dark device wrote `t=dark`
+  into the address bar. After a reload on a light device, the page stayed dark, and the Theme row said
+  "Follows your device". Now the address bar has `t` only for a shared link's theme: a saved theme comes
+  back from the settings, and a device theme from the device. Share link still adds `t=dark` when the
+  scheme shows dark.
+- **A screen reader hears every toast.** A toast was a new live region with its text already in it,
+  which screen readers do not announce reliably. Now its words go into a live region that is already
+  there: the open dialog's own, the ⋯ menu's, or the page's. A live region is written only when its
+  words change, so a language change does not read the Use my paints hint again. After Restore, you
+  hear "Shelf and settings restored" first, not the scheme summary.
+- **Small caps labels are readable** (the Plan's "Tone ladder", the Shelf counts). They were
+  `--text-faint`: 2.39:1 on the light surface, under AA. Now they are `--text-muted` (4.68:1).
+- **The right-click menu shows a focus ring.** It showed only a `--surface-2` fill (about 1.1:1), with
+  `outline: none`.
+- **Windows High Contrast mode:** only the selected output tab has a line under it. Before, every tab
+  had one. Text actions (Done, Use device setting) show as links, and the open ⋯ and note line have a
+  Highlight outline.
+- **Share link from the Shelf shared the Shelf** (critique finding usability-6). The link held `m=shelf`,
+  so a friend opened your Shelf, not the scheme. Share link now removes `m` and keeps the tab (`v`). The
+  address bar keeps `m`, so a refresh stays on the Shelf.
+- **The ⋯ panel said it was a menu.** It was `role="menu"`, but it holds a switch, segmented controls and
+  buttons, so a screen reader expected arrow-key commands. It is a dialog named "Settings" now
+  (`aria-haspopup="dialog"`).
+- **The focus ring is visible in the whole app** (critique finding a11y-4). The `--focus` ring was a
+  3px `--accent-weak` ring: 1.17:1 against the surface in the light theme and 1.12:1 in the dark theme.
+  WCAG 1.4.11 needs 3:1.
+  - Now `--focus` is a 2px `--surface` gap and a 2px `--accent` ring. The ring is 5.70:1 (light) and
+    6.20:1 (dark) against the surface, and 5.12:1 or more on `--bg` and `--surface-2`.
+  - Windows High Contrast mode removes box-shadows. So each rule that draws the ring also sets a
+    transparent 2px outline, and the browser paints that outline in a system colour.
+  - The ring is one ring. The accent border that some controls also got on focus is gone, because
+    under the new ring it read as a second ring.
+  - The copy button on the live palette had its own copy of this ring. It uses the token now.
+  - In the scroll boxes, the ring had its edges cut off. The harmony strip and the Paints strip get 4px
+    of padding for it, and the harmony strip drops its edge fade while a chip has keyboard focus. The
+    output tabs draw the ring inside the tab, above the selected underline.
+  - The hex field showed a second ring inside its box. Now only the box has the ring.
+- **Segmented controls: you can read every label and see which one is selected** (critique findings
+  a11y-1 and a11y-2). The fault was in every segmented control: the Studio / Shelf switch, the harmony
+  strip, the tone ladder, Use my collection (now Use my paints in ⋯), Ideal / Real, the language control
+  and the Shelf status filter.
+  - The labels that were not selected used `--text-muted`: 4.20:1 on the track in the light theme. WCAG
+    1.4.3 needs 4.5:1. Now every label uses `--text`: 13.98:1 (light) and 12.83:1 (dark).
+  - The selected segment was a white pill on a pale track: 1.11:1 (light) and 1.08:1 (dark). Now the
+    selected segment also has a 2px `--accent` bar inside it, as the selected output tab has an
+    underline. The bar is 5.70:1 (light) and 6.20:1 (dark) against the pill.
+  - The bar is an `::after`, and the label weight does not change. So a change of selection moves
+    nothing. Measured in the harmony strip and the tone ladder at five sizes: each chip's box is the same
+    before and after a change.
+  - In Windows High Contrast mode, each segment has a system outline. The selected segment has a
+    Highlight outline and a Highlight bar.
+- **Studio: a lightness round trip gives back the same colour.** Before, a move to 6% and back changed
+  the colour. For example, `#555E1B` → 6% → 24% gave `#535F1C`. Step by step with the arrow keys,
+  `#6B5B4B` came back as `#6C4B4B`. Its hue moved from 30° to 0°, so a brown became a red.
+  - Cause: on each step, the slider read the hue and the saturation again from the rounded hex.
+  - Now one run keeps the hue and the saturation of the start colour. A run is one drag, or one
+    series of key presses. When the slider is back on its start value, the colour is the start colour
+    exactly.
+  - Back on the start value, a picked paint is that paint again. Before, the hero showed "Custom", the
+    share link lost the paint, and the Plan could show a different paint with the same hex.
+  - A pick, a typed hex, undo, redo, ↻, a wheel drag, a share link, a harmony change or a seed-role
+    change starts a new run from the colour at that time. A new pop does not start a new run, because
+    it does not change your colour.
+  - Neutral mode does not change. At the ends of the slider, a colour can still go into neutral mode
+    (CLAUDE.md §7).
+  - Unit tests cover the round trip in one jump and step by step, and the start and the end of a run
+    (`test/color.test.mjs`).
+- **Studio: the lightness slider's focus ring is visible.** It used the app-wide `--focus` ring: 1.17:1
+  against the card in the light theme and 1.12:1 in the dark theme. Now it uses a 2px `--accent`
+  outline, as the wheel does: 5.7:1 in the light theme and 6.2:1 in the dark theme.
+- **Touch screens wider than 520px get 44px `--tap` controls.** Before, `--tap` was 44px only on screens
+  of 520px or less. So a touch tablet got 38px buttons and a 26px-wide lightness slider. Now `--tap` is
+  44px on all touch screens (`pointer: coarse`) too.
+  - The controls that use `--tap` are 44px on a touch screen: the buttons in the header and in the seed
+    toolbar, the fields and selects, ↻ and the lightness slider (its box is `--tap` wide).
+  - Some small controls have a fixed size and are still smaller than 44px. Examples are the live
+    palette's ↶ ↷ + − and copy buttons, the seed docks and the output tabs. This was also true on
+    phones before. `docs/PLAN.md` §5 records it as follow-up 12.
+  - At 1025px the wheel row is 340 + 12 + 44 = 396px of the column's 398px.
+  - The header is 6px taller on a touch screen. The sticky studio column now follows the header's live
+    height, so it stays 16px below the header. This is also true when a safe-area inset pads the
+    header.
+  - (CLAUDE.md §3.5 and §3.6 updated.)
+- **Small phones open at the top of the page again.** On a 360px or 375px phone, the app opened
+  scrolled down by 240 to 400px. The output tabs do not fit across these screens, so the app scrolls the
+  tab strip to show the active tab. It used `scrollIntoView`, which also scrolled the page down to the
+  tabs. Now the app scrolls only the strip. A shared link to a tab, a tap on a tab and the arrow keys
+  still show the active tab. (Service worker `ps-v47`.)
+- **Filters on a phone no longer opens the brand list by itself.** When the Shelf's Filters sheet opened,
+  the app moved focus to the Brand dropdown. On iOS, a dropdown that takes focus during a tap opens its
+  picker, so every tap on Filters showed the brand list. Now focus goes to the sheet's title. Tab still
+  moves to Reset, Brand, Type, Sort and Show paints, and Shift+Tab from the title stays in the sheet.
+  (CLAUDE.md §3.6 updated; service worker `ps-v46`.)
+- **The theme no longer saves itself.** Before, the app saved the theme every time it applied one. So
+  your first visit saved the phone's light or dark mode, and the app then stopped following the phone.
+  Also, a dark share link saved dark as the theme of the person who opened it. Now only a tap on the
+  theme toggle saves a theme. Until you tap it, the app follows the phone's setting, also while the app
+  is open. A share link's theme still shows, but it is not saved. Note: if an older version already
+  saved a theme for you, the app keeps it, because it cannot tell that value from a real choice.
+  (CLAUDE.md §3.1 updated; service worker `ps-v45`.)
 - **Equivalents: the list for a picked paint is now the true top 8.** `equivalents()` kept only the 192
   paints nearest by plain Lab distance, and then ranked them with `FINISH_PENALTY`. The penalty changes
   the order after that cut, so a paint after the cut can belong in the list. Now it ranks every paint of

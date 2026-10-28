@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use my paints and the ⋯ menu</title>
+<style>
+  :root {
+    --bg:#FBFBFE; --surface:#FFFFFF; --surface-2:#F1F2FF;
+    --border:#E6E7F8; --border-strong:#D3D5F0;
+    --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
+    --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+    --buy:#2563EB; --buy-weak:#DBEAFE;
+    --success:#16A34A; --success-weak:#DCFCE7; --warning:#C2740B; --warning-weak:#FBEBD3; --danger:#DC2647;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px; --tap:44px;
+    --font:"Inter",system-ui,sans-serif; --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+    --shadow-pop:0 10px 40px rgba(60,50,120,.18);
+    --focus:0 0 0 3px var(--accent-weak);
+  }
+  .dark { --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62; --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --buy-weak:#16242F; --success:#86A559; --success-weak:#232A16; --warning:#C9923A; --warning-weak:#2E2412;
+    --danger:#D2563F; --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 18px 50px rgba(0,0,0,.5); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:24px 16px; }
+  h1 { font-family:var(--display); font-size:21px; margin:0 0 4px; }
+  .sub { color:var(--text-muted); max-width:80ch; margin:0 0 24px; font-size:13.5px; }
+  .sub b, .why b { color:var(--text); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow);
+    padding:16px; margin-bottom:24px; max-width:1000px; }
+  section.recd { border-color:var(--accent); }
+  h2 { font-family:var(--display); font-size:15.5px; margin:0 0 4px; }
+  h3.lab { font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:24px 0 8px; }
+  .why { color:var(--text-muted); font-size:12.5px; margin:0 0 16px; max-width:76ch; }
+  .verdict { font-size:12.5px; margin:16px 0 0; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:8px; max-width:76ch; }
+  .verdict b { color:var(--text); }
+  .rec { display:inline-block; font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase;
+    background:var(--accent-weak); color:var(--accent); border-radius:var(--r-pill); padding:0 8px; margin-left:8px; vertical-align:2px; }
+  ul.notes { margin:0; padding-left:18px; font-size:12.5px; color:var(--text-muted); max-width:80ch; }
+  ul.notes li + li { margin-top:4px; }
+  ul.notes b { color:var(--text); }
+  table.facts { border-collapse:collapse; font-size:12.5px; margin:0 0 4px; }
+  table.facts th, table.facts td { text-align:left; padding:4px 12px 4px 0; border-bottom:1px solid var(--border); vertical-align:top; }
+  table.facts th { font-weight:500; color:var(--text-muted); }
+
+  /* ---------- frames ---------- */
+  .pair { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+  figure { margin:0; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; max-width:300px; }
+  figcaption b { color:var(--text); }
+  .phone { position:relative; width:300px; height:560px; border:1px solid var(--border-strong); border-radius:22px;
+    overflow:hidden; background:var(--bg); color:var(--text); font-size:12px; }
+  .phone.short { height:420px; }
+  .scroller { position:absolute; inset:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; }
+  .scroller::-webkit-scrollbar { display:none; }
+  .ann { font-size:11.5px; color:var(--text-muted); margin:8px 0 0; max-width:300px; }
+  .ann b { color:var(--text); }
+
+  /* the app header — sticky in the real app, so the ⋯ menu opens in view from anywhere on the page */
+  .apph { position:sticky; top:0; z-index:5; background:var(--bg); padding:8px 12px; border-bottom:1px solid var(--border); }
+  .apph .r1 { display:flex; align-items:center; gap:8px; font-family:var(--display); font-weight:600; font-size:14px; }
+  .apph .logo { width:22px; height:22px; border-radius:7px; background:var(--accent); color:var(--on-accent);
+    display:grid; place-items:center; font-size:12px; }
+  .apph .dots { margin-left:auto; width:30px; height:30px; border:1px solid var(--border); border-radius:var(--r-ctrl);
+    display:grid; place-items:center; color:var(--text-muted); background:var(--surface); font:inherit; cursor:pointer; }
+  .apph .dots[aria-expanded="true"] { box-shadow:var(--focus); border-color:var(--accent); }
+  .mseg { display:flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; margin-top:8px; }
+  .mseg span { flex:1; text-align:center; padding:4px; border-radius:8px; color:var(--text-muted); }
+  .mseg span.on { background:var(--surface); color:var(--text); box-shadow:var(--shadow); font-weight:500; }
+
+  .card { margin:12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); padding:12px; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .btn { display:inline-flex; align-items:center; gap:4px; height:28px; padding:0 8px; border:1px solid var(--border);
+    border-radius:var(--r-ctrl); background:var(--surface); color:var(--text); font:inherit; font-size:11.5px; white-space:nowrap; }
+  .btn.ic { width:28px; padding:0; justify-content:center; color:var(--text-muted); }
+  .btn.pri { background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-weight:500; }
+  .field { height:30px; border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface);
+    color:var(--text-muted); display:flex; align-items:center; padding:0 8px; gap:4px; flex:1; min-width:0; font-family:var(--mono); font-size:11.5px; }
+  .seg { display:inline-flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; }
+  .seg > * { text-align:center; padding:3px 8px; border-radius:8px; color:var(--text-muted); border:0; background:none; font:inherit; font-size:11.5px; white-space:nowrap; }
+  .seg > .on, .seg > [aria-pressed="true"] { background:var(--surface); color:var(--text); box-shadow:var(--shadow); font-weight:500; }
+  .micro { font-size:10.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+
+  .hero { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .hero i { width:20px; height:20px; border-radius:6px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  .hero b { font-family:var(--display); font-size:13px; }
+  .hero .hx { font-family:var(--mono); font-size:10.5px; color:var(--text-muted); }
+  .wheel { width:150px; height:150px; border-radius:50%; margin:12px auto 8px;
+    background:radial-gradient(circle, #8a8a8a 0 4%, transparent 70%), conic-gradient(from 90deg, #e53935, #fdd835, #43a047, #00acc1, #3949ab, #8e24aa, #e53935); }
+  .harm { display:flex; gap:4px; overflow:hidden; margin-top:4px; }
+  .harm span { padding:3px 8px; border-radius:8px; color:var(--text-muted); white-space:nowrap; font-size:11px; }
+  .harm span.on { background:var(--surface); box-shadow:var(--shadow); color:var(--text); font-weight:500; }
+  .harmwrap { background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; margin-top:8px; }
+
+  /* live palette — the phone layout (rows); desktop uses columns below */
+  .palhead { margin:12px 0 8px; }
+  .palhead .row { margin-top:8px; }
+  .lrow { display:grid; grid-template-columns:84px 1fr; border-radius:var(--r-ctrl); overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.1); background:var(--surface-2); margin-bottom:8px; }
+  .lrow .blk { padding:8px; min-height:58px; display:flex; flex-direction:column; justify-content:space-between; }
+  .lrow .blk b { font-size:11px; }
+  .lrow .blk span { font-family:var(--mono); font-size:9.5px; }
+  .lrow .pt { padding:8px 10px; min-width:0; }
+  .pname { font-weight:600; font-size:12px; }
+  .pbrand { font-size:10px; color:var(--text-muted); }
+  .q { display:flex; align-items:center; gap:6px; font-size:10.5px; margin-top:2px; color:var(--text); }
+  .q i { width:7px; height:7px; border-radius:50%; flex:none; }
+  .q code { font-size:10px; color:var(--text-muted); }
+  .own { font-size:10px; font-weight:600; color:var(--success); }
+  .metal-sheen { background-image:linear-gradient(118deg,rgba(255,255,255,0) 25%,rgba(255,255,255,.35) 45%,rgba(255,255,255,0) 62%); }
+
+  /* ===== THE PROPOSAL: the matching note under the live palette =====
+     One button, full width, --tap tall (44px on touch). It is a STATE line (what the palette is doing)
+     that doubles as the way to the setting. Text is --text on --surface (14:1); the ✓ glyph is a
+     graphic in --success (3.3:1 ≥ the 3:1 non-text minimum). It shows only when the setting is on. */
+  .mnote { display:flex; align-items:center; gap:8px; width:100%; min-height:var(--tap); margin:4px 0 0; padding:6px 12px;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--r-ctrl); color:var(--text);
+    font:inherit; font-size:12px; text-align:left; cursor:pointer; }
+  .mnote .ck { color:var(--success); font-weight:700; }
+  .mnote .ck.off { color:var(--text-muted); }
+  /* the status and its explanation share one line when there is room, and wrap to two on a phone —
+     never truncated, because the explanation is the point */
+  .mnote .tx { flex:1; min-width:0; display:flex; flex-wrap:wrap; column-gap:6px; line-height:1.35; }
+  .mnote b { font-weight:600; white-space:nowrap; }
+  .mnote .mt { color:var(--text-muted); }
+  .mnote .go { color:var(--accent); font-weight:500; white-space:nowrap; }
+  .mnote:focus-visible, .mnote.ring { outline:none; box-shadow:var(--focus); border-color:var(--accent); }
+  .mnote[hidden] { display:none; }
+
+  /* the ⋯ settings popover (fixed under the sticky header in the real app) */
+  .menu { position:absolute; right:8px; top:46px; z-index:6; width:284px; background:var(--surface);
+    border:1px solid var(--border-strong); border-radius:var(--r-ctrl); box-shadow:var(--shadow-pop); padding:12px;
+    display:grid; grid-template-columns:auto 1fr; gap:10px 12px; align-items:center; font-size:12px; }
+  .menu[hidden] { display:none; }
+  .menu .sl { color:var(--text-muted); font-size:12px; white-space:nowrap; }
+  .menu .seg > * { font-size:11.5px; }
+  .menu .seg.full { display:flex; }
+  .menu .seg.full > * { flex:1; }
+  .menu .hint { grid-column:1 / -1; margin:-6px 0 0; font-size:11px; color:var(--text-muted); }
+  .menu .hint a { color:var(--accent); }
+  .menu .new { position:relative; }
+  .menu .newrow { grid-column:1 / -1; display:grid; grid-template-columns:subgrid; align-items:center; gap:10px 12px;
+    border-radius:6px; outline:1.5px dashed var(--accent); outline-offset:3px; }
+  .menu .newrow .hint { margin:0; }
+  .theme { width:44px; height:24px; border-radius:var(--r-pill); background:var(--surface-2); border:1px solid var(--border); position:relative; }
+  .theme::after { content:"☀"; position:absolute; left:2px; top:1px; width:20px; height:20px; border-radius:50%; background:var(--surface);
+    box-shadow:var(--shadow); display:grid; place-items:center; font-size:11px; color:var(--text-muted); }
+  .dark .theme::after { content:"☠"; left:20px; }
+  .menu .btn { height:26px; }
+  .menu .seg.full > [aria-pressed="true"].ring { box-shadow:var(--shadow), 0 0 0 3px var(--accent); }
+
+  /* the output tabs + Plan controls */
+  .tabs { display:flex; gap:12px; border-bottom:1px solid var(--border); margin:0 0 8px; font-size:11.5px; overflow:hidden; }
+  .tabs span { padding:4px 0 6px; color:var(--text-muted); white-space:nowrap; }
+  .tabs span.on { color:var(--text); font-weight:600; box-shadow:inset 0 -2px 0 var(--accent); }
+  .ctl { display:flex; flex-direction:column; gap:4px; margin-bottom:8px; }
+  .gone { border:1.5px dashed var(--danger); border-radius:var(--r-ctrl); padding:4px 8px; color:var(--danger); font-size:10.5px; text-align:center; margin-bottom:8px; }
+  .was { outline:1.5px dashed var(--accent); outline-offset:3px; border-radius:var(--r-ctrl); }
+  .tag { display:inline-block; font-size:10px; color:var(--accent); background:var(--accent-weak); border-radius:var(--r-pill); padding:0 8px; }
+
+  /* state strip */
+  .states { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:12px; }
+  .state { border:1px solid var(--border); border-radius:var(--r-ctrl); padding:12px; background:var(--bg); }
+  .state h4 { margin:0 0 8px; font-size:12px; }
+  .state p { margin:8px 0 0; font-size:11.5px; color:var(--text-muted); }
+  .state .none { height:var(--tap); border:1.5px dashed var(--border-strong); border-radius:var(--r-ctrl); display:grid; place-items:center;
+    color:var(--text-faint); font-size:11.5px; }
+
+  /* desktop frame */
+  .desk { position:relative; width:100%; max-width:968px; height:490px; border:1px solid var(--border-strong); border-radius:12px;
+    overflow:hidden; background:var(--bg); font-size:12px; }
+  .desk .apph { position:relative; display:flex; align-items:center; gap:12px; padding:8px 16px; }
+  .desk .apph .mseg { margin:0; width:140px; }
+  .desk .apph .dots { margin-left:auto; }
+  .dcols { display:grid; grid-template-columns:1.1fr 1fr; gap:12px; padding:12px 16px; }
+  .dcols .card { margin:0; }
+  .dcols .wheel { width:150px; height:150px; margin:8px auto; }
+  .dpal { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:8px; }
+  .dcol { border-radius:var(--r-ctrl); overflow:hidden; box-shadow:inset 0 0 0 1px rgba(0,0,0,.1); background:var(--surface-2); }
+  .dcol .blk { height:56px; padding:6px 8px; font-size:10.5px; font-weight:600; }
+  .dcol .pt { padding:6px 8px; }
+  .dhead { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:8px 0; white-space:nowrap; }
+  .dhead .row { flex-wrap:nowrap; }
+  .roles { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .rcard { border:1px solid var(--border); border-radius:var(--r-ctrl); padding:8px; }
+  .rcard b { font-family:var(--display); font-size:12px; }
+  .rcard .sw { display:flex; align-items:center; gap:6px; margin-top:6px; }
+  .rcard .sw i { width:26px; height:26px; border-radius:7px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .menu:not([hidden]) { animation:pop .2s cubic-bezier(.2,.7,.2,1); }
+    .lrow .pt, .mnote { transition:background-color .18s cubic-bezier(.2,.7,.2,1); }
+  }
+  @keyframes pop { from { opacity:0; transform:translateY(-4px); } }
+
+  /* ===== The full ⋯ menu (2026-10-27, from the menu audit; revised after review) =====
+     A non-modal settings DIALOG (not role=menu), three groups, --shadow-pop (the floating-overlay tier),
+     --r-card (a panel, §3.5), height clamped to the screen at EVERY width so it scrolls inside itself.
+     On a phone each label sits above a full-width control. Controls are --tap tall (44px at ≤520px).
+     The build uses the real components (.seg, .btn, .btn.primary, .themesw); these classes only draw them. */
+  :root { --danger-weak:#FCE4EA; }
+  .dark { --danger-weak:#2E1A14; --focus:0 0 0 3px var(--accent-weak); }
+  section.full { max-width:1100px; }
+  .smenu { position:absolute; right:8px; top:46px; z-index:6; width:calc(100% - 16px); max-height:calc(100% - 54px); overflow-y:auto;
+    overscroll-behavior:contain; background:var(--surface); color:var(--text); border:1px solid var(--border-strong);
+    border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:16px; font-size:12px; }
+  .smenu[hidden] { display:none; }
+  .smenu .shead { display:flex; align-items:center; justify-content:space-between; margin:-8px 0 4px; }
+  .smenu .shead b { font-family:var(--display); font-size:14px; }
+  .sdone { min-height:var(--tap); min-width:var(--tap); border:0; background:none; color:var(--accent); font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; }
+  .smenu .sgrp + .sgrp { border-top:1px solid var(--border); margin-top:12px; padding-top:12px; }
+  .smenu .srow + .srow { margin-top:12px; }
+  .smenu .sl { display:block; color:var(--text-muted); font-size:12px; margin-bottom:4px; }
+  .smenu .srow.inline { display:flex; align-items:center; justify-content:space-between; min-height:var(--tap); }
+  .smenu .srow.inline .sl { margin:0; }
+  .sseg { display:flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; }
+  .sseg button { flex:1; min-height:var(--tap); border:0; background:none; border-radius:8px; color:var(--text-muted);
+    font:inherit; font-size:12px; cursor:pointer; }
+  .sseg button[aria-pressed="true"] { background:var(--surface); color:var(--text); box-shadow:var(--shadow); font-weight:500; }
+  .sbtns { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .sbtns button, .sfull { min-height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface);
+    color:var(--text); font:inherit; font-size:12px; cursor:pointer; }
+  .sfull { width:100%; }
+  .sbtns button.pri { background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-weight:500; }
+  .shint { margin:4px 0 0; font-size:11px; color:var(--text-muted); }
+  /* the Use my paints hint is a fixed 44px slot: no state (off · prefer · only · empty shelf) changes its height (§3.4) */
+  .hslot { min-height:var(--tap); display:flex; align-items:center; gap:8px; margin-top:4px; }
+  .hslot .shint { margin:0; flex:1; }
+  .hslot .sfull { width:auto; padding:0 12px; flex:none; }
+  .hslot .sfull[hidden] { display:none; }
+  /* the theme switch keeps its 52×30 look; the button around it gives the 44px hit area */
+  .tswb { min-height:var(--tap); min-width:var(--tap); display:grid; place-items:center; border:0; background:none; padding:0 0 0 8px; cursor:pointer; border-radius:var(--r-pill); }
+  .tsw { width:52px; height:30px; border-radius:var(--r-pill); background:var(--surface-2); border:1px solid var(--border); position:relative; }
+  .tsw::after { content:"☀"; position:absolute; left:3px; top:3px; width:22px; height:22px; border-radius:50%; background:var(--surface);
+    box-shadow:var(--shadow); display:grid; place-items:center; font-size:12px; color:var(--text-muted); }
+  .tswb[aria-checked="true"] .tsw::after { content:"☠"; left:25px; }
+  /* A focus ring that you can see: the app's --focus (3px --accent-weak) is about 1.1:1 against the surface. This is the
+     two-ring pattern app.css already uses on .lccopy (accent vs surface: 5.7:1 light, 6.2:1 dark). */
+  .smenu button:focus-visible, .cdlg button:focus-visible, .abt summary:focus-visible { outline:none; box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+  .smenu .isnew, .abt .isnew { outline:1.5px dashed var(--accent); outline-offset:3px; border-radius:6px; }
+  /* the Restore / Delete confirm: a native <dialog>.showModal() in the build; focus starts on Cancel.
+     The scrim is the About dialog's ::backdrop value (proposed token --scrim). */
+  .cdim { position:absolute; inset:0; z-index:8; background:rgba(0,0,0,.45); display:grid; place-items:center; padding:16px; }
+  .cdim[hidden] { display:none; }
+  .cdlg { width:100%; background:var(--surface); color:var(--text); border:1px solid var(--border-strong); border-radius:var(--r-card);
+    box-shadow:var(--shadow-pop); padding:16px; font-size:12px; }
+  .cdlg h4 { font-family:var(--display); font-size:15px; margin:0 0 8px; }
+  .cdlg p { margin:0 0 8px; color:var(--text-muted); }
+  .cdlg p b { color:var(--text); }
+  .cdlg .sfull { margin-top:4px; }
+  .cdlg .sbtns { margin-top:8px; }
+  /* Destructive buttons: a secondary button with a 1px --danger border. The label stays --text (--danger as text is only
+     4.3:1 on the dark surface); the ⚠ is a decorative, aria-hidden glyph (graphics need 3:1). Needs a §3.5 line. */
+  .sbtns button.danger, .dbtn { border:1px solid var(--danger); color:var(--text); font-weight:600; }
+  .warn { color:var(--danger); }
+  .mtoast { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); z-index:9; width:max-content; max-width:calc(100% - 32px);
+    background:var(--text); color:var(--bg); border-radius:var(--r-ctrl); padding:8px 12px; font-size:11.5px; box-shadow:var(--shadow-pop); }
+  .mtoast[hidden] { display:none; }
+  .shellbg { padding:12px; opacity:.55; }
+  /* the About & data dialog: its new lower part */
+  .abt { position:absolute; inset:12px; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card);
+    box-shadow:var(--shadow-pop); padding:16px; overflow-y:auto; font-size:12px; }
+  .abt .ahead { display:flex; align-items:center; justify-content:space-between; }
+  .abt .ahead b { font-family:var(--display); font-size:15px; }
+  .abt h5 { font-family:var(--display); font-size:13px; margin:12px 0 4px; }
+  .abt p { margin:0 0 8px; color:var(--text-muted); }
+  .abt details summary { font-family:var(--display); font-size:13px; font-weight:600; min-height:var(--tap); display:flex; align-items:center; cursor:pointer; }
+  .abt dl { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; margin:0; }
+  .abt dt { font-family:var(--mono); font-size:10.5px; white-space:nowrap; }
+  .abt dd { margin:0; color:var(--text-muted); font-size:11px; }
+  .kbd { display:inline-block; border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:var(--r-ctrl); padding:0 6px;
+    background:var(--surface-2); color:var(--text); }
+  .dbtn { min-height:var(--tap); border-radius:var(--r-ctrl); background:var(--surface); font:inherit; font-size:12px; padding:0 12px; }
+  .fine { font-size:10.5px; color:var(--text-muted); }
+  /* desktop: label left, control right (the grid the menu uses today), --tap 38px; same height clamp */
+  .desk2 { --tap:38px; }
+  .smenu.wide { top:44px; right:12px; width:380px; max-height:calc(100% - 56px); }
+  .smenu.wide .srow { display:grid; grid-template-columns:96px 1fr; align-items:center; column-gap:12px; }
+  .smenu.wide .srow .sl { margin:0; }
+  .smenu.wide .srow .shint, .smenu.wide .srow .hslot { grid-column:2; }
+  .smenu.wide .srow.inline { display:grid; }
+  .smenu.wide .srow.inline .tswb { justify-self:start; padding:0; }
+  .shelfseg { margin:8px 0 0; }
+  table.where { border-collapse:collapse; font-size:12.5px; width:100%; max-width:900px; }
+  table.where th, table.where td { text-align:left; padding:6px 12px 6px 0; border-bottom:1px solid var(--border); vertical-align:top; }
+  table.where th { font-weight:500; color:var(--text-muted); }
+  .scrollx { overflow-x:auto; max-width:100%; }
+  .scrollx:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  ol.notes { margin:0; padding-left:18px; font-size:12.5px; color:var(--text-muted); max-width:80ch; }
+  ol.notes li + li { margin-top:4px; }
+  ol.notes b { color:var(--text); }
+  @media (prefers-reduced-motion: no-preference) {
+    .smenu:not([hidden]), .cdim:not([hidden]) .cdlg { animation:pop .2s cubic-bezier(.2,.7,.2,1); }
+  }
+</style>
+</head>
+<body>
+
+<h1>“Use my paints” and the ⋯ menu</h1>
+<p class="sub"><b>Part 2 (2026-10-27):</b> <a href="#fullmenu">the full ⋯ menu</a>, from a menu audit, is the last section on this page.</p>
+<p class="sub">
+  <b>The question:</b> should <i>Use my collection</i> (Off · Prefer owned · Only owned) move from the Plan tab to the
+  global <b>⋯ settings</b> menu? <b>Short answer: yes, with one condition</b> — the live palette must say when the setting is on,
+  because it changes the paints you see there.
+  <br><br>
+  <b>What the setting does today</b> (<code>matchOpts()</code> in <code>app.js</code>): <i>Prefer owned</i> ranks each
+  owned paint as if it were ΔE 6 closer (<code>OWNED_BOOST</code>; the ΔE you see stays true). <i>Only owned</i> keeps
+  only owned paints in the search. It ranks the <b>live palette</b>, the <b>Plan</b> and the <b>Accessibility</b>
+  swap. It does <b>not</b> change Equivalents. It is saved on your device (<code>store.setPref('collection')</code>),
+  and a share link does not carry it. But its only control is in the Plan tab, two screens below the palette on a phone.
+  <br><br>
+  Paint names and ΔE values in the frames come from the real dataset: the target colours are the Alga Green scheme
+  (<code>#555E1B</code> · <code>#241B5E</code> · <code>#C8A13A</code>), and the example shelf holds 23 common Citadel paints,
+  with no dark blue or purple. I read every value from the running app with that shelf, so the frames show what the app
+  really does in each state.
+</p>
+
+<!-- ============================================================ 0. TODAY -->
+<section>
+  <h2>0 · Today</h2>
+  <p class="why">The setting changes the paints in the live palette, but the palette gives no sign of it. The only place it shows
+  is a control in the Plan tab.</p>
+  <div class="pair">
+    <figure>
+      <figcaption><b>Prefer owned is on.</b> Phone, scrolled to the live palette.</figcaption>
+      <div class="phone short"><div class="scroller">
+        <div class="card" style="margin-top:12px">
+          <div class="palhead"><div class="micro">Live palette → nearest paint</div></div>
+          <div class="lrow"><div class="blk" style="background:#555E1B;color:#fff"><b>Primary</b><span>#555E1B</span></div>
+            <div class="pt"><div class="pname">Deathworld Forest <span class="own">✓ owned</span></div><div class="q"><i style="background:var(--success)"></i>Good <code>ΔE 2.9</code></div></div></div>
+          <div class="lrow"><div class="blk" style="background:#241B5E;color:#fff"><b>Accent</b><span>#241B5E</span></div>
+            <div class="pt"><div class="pname">Violet</div><div class="pbrand">Scale75</div><div class="q"><i style="background:var(--warning)"></i>Fair <code>ΔE 3.6</code></div></div></div>
+          <div class="lrow"><div class="blk metal-sheen" style="background-color:#C8A13A;color:#15150F"><b>Metal</b><span>#C8A13A</span></div>
+            <div class="pt"><div class="pname">Sigmarite <span class="own">✓ owned</span></div><div class="q"><i style="background:var(--warning)"></i>Fair <code>ΔE 4.5</code></div></div></div>
+          <p class="ann" style="margin-top:0">Nothing here says <i>why</i> Alga Green (ΔE 0.0) lost to Deathworld Forest, or why the accent
+          is still a paint you do not own.</p>
+          <div class="tabs" style="margin-top:12px"><span class="on">Plan · roles</span><span>Equivalents</span><span>Accessibility</span></div>
+          <div class="ctl"><span class="micro">Tone ladder</span><div class="seg"><span class="on">Wash · base · hl</span><span>Shadow · mid · hl</span><span>Both</span></div></div>
+          <div class="ctl was"><span class="micro">Use my collection</span><div class="seg"><span>Off</span><span class="on">Prefer owned</span><span>Only owned</span></div></div>
+          <p class="ann">↑ <b>The only place the setting shows.</b> It is in the Plan tab, but it also changes the palette above.</p>
+        </div>
+      </div></div>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ A. RECOMMENDED -->
+<section class="recd">
+  <h2>A · The setting moves to ⋯, and a note on the palette shows when it is on <span class="rec">Chosen</span></h2>
+  <p class="why">⋯ gets a <b>Use my paints</b> row (Off · Prefer · Only), next to the theme and language settings. When the
+  setting is on, a <b>matching note</b> shows below the live palette. Tap the note to open ⋯ at that row. When it is Off,
+  you see nothing new. The Plan tab no longer has the control.</p>
+
+  <div class="pair">
+    <figure>
+      <figcaption><b>Try it.</b> Tap the note under the palette, or tap ⋯, then pick Off, Prefer or Only. The palette and the
+      note change.</figcaption>
+      <div class="phone" id="demo"><div class="scroller" id="demoScroll">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio
+          <button class="dots" id="demoDots" aria-haspopup="true" aria-expanded="false" aria-controls="demoMenu" aria-label="Settings">⋯</button></div>
+          <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div></div>
+        <div class="card">
+          <div class="row"><span class="btn">☰ Paints ▾</span><span class="field"># 555E1B</span></div>
+          <div class="row" style="margin-top:8px"><span class="btn">From photo</span><span class="btn">Compare</span></div>
+        </div>
+        <div class="card">
+          <div class="hero"><i style="background:#555E1B"></i><b>Alga Green</b><span class="hx">#555E1B</span></div>
+          <div class="wheel" aria-hidden="true"></div>
+          <div class="harmwrap"><div class="harm"><span class="on">Complementary</span><span>Analogous</span><span>Triadic</span><span>Split</span></div></div>
+          <div class="palhead"><div class="micro">Live palette → nearest paint</div>
+            <div class="row"><span class="btn ic">↶</span><span class="btn ic">↷</span><span class="btn ic">+</span><span class="btn ic">−</span>
+              <span class="seg" style="margin-left:auto"><span class="on">Ideal</span><span>Real</span></span></div></div>
+          <div id="demoPal"></div>
+          <button class="mnote" id="demoNote" aria-haspopup="true" aria-controls="demoMenu"></button>
+          <div class="tabs" style="margin-top:16px"><span class="on">Plan · roles</span><span>Equivalents</span><span>Accessibility</span></div>
+          <div class="ctl"><span class="micro">Tone ladder</span><div class="seg"><span class="on">Wash · base · hl</span><span>Shadow · mid · hl</span><span>Both</span></div></div>
+          <div class="row"><span class="btn">Include Contrast</span><span class="btn pri" id="demoAdd">+ Add 11 to buy</span></div>
+          <p class="ann">The Plan tab keeps the tone ladder, Include Contrast and “+ Add to buy”. <b>Use my collection</b> is gone from here.</p>
+        </div>
+      </div>
+      <div class="menu" id="demoMenu" role="group" aria-label="Settings" hidden>
+        <span class="sl">Theme</span><span class="theme" aria-hidden="true"></span>
+        <span class="sl">Language</span><span class="seg"><span>English (UK)</span><span class="on">English (US)</span></span>
+        <div class="newrow">
+          <span class="sl" id="umpLbl">Use my paints</span>
+          <span class="seg full" role="group" aria-labelledby="umpLbl" id="demoSeg">
+            <button data-v="off" aria-pressed="false">Off</button><button data-v="prefer" aria-pressed="true">Prefer</button><button data-v="only" aria-pressed="false">Only</button>
+          </span>
+          <p class="hint" id="demoHint"></p>
+        </div>
+        <span class="sl">Scheme</span><span class="row"><span class="btn pri">Export list</span><span class="btn">Share link</span></span>
+        <span class="sl">More</span><span><span class="btn">About &amp; data</span></span>
+      </div>
+      </div>
+      <p class="ann">The header is sticky, so ⋯ opens in view from anywhere on the page. When you open it from the note,
+      <b>focus goes to the selected option</b>, and Esc returns focus to the note.</p>
+    </figure>
+
+    <figure>
+      <figcaption><b>Off</b> (the default). Nothing new to see. The palette ends where it does today.</figcaption>
+      <div class="phone short"><div class="scroller">
+        <div class="card" style="margin-top:12px">
+          <div class="palhead"><div class="micro">Live palette → nearest paint</div></div>
+          <div class="lrow"><div class="blk" style="background:#555E1B;color:#fff"><b>Primary</b><span>#555E1B</span></div>
+            <div class="pt"><div class="pname">Alga Green</div><div class="pbrand">AK Interactive</div><div class="q"><i style="background:var(--success)"></i>Indistinguishable <code>ΔE 0.0</code></div></div></div>
+          <div class="lrow"><div class="blk" style="background:#241B5E;color:#fff"><b>Accent</b><span>#241B5E</span></div>
+            <div class="pt"><div class="pname">Violet</div><div class="pbrand">Scale75</div><div class="q"><i style="background:var(--warning)"></i>Fair <code>ΔE 3.6</code></div></div></div>
+          <div class="lrow"><div class="blk metal-sheen" style="background-color:#C8A13A;color:#15150F"><b>Metal</b><span>#C8A13A</span></div>
+            <div class="pt"><div class="pname">Keleshite Gold</div><div class="pbrand">Reaper</div><div class="q"><i style="background:var(--success)"></i>Good <code>ΔE 2.9</code></div></div></div>
+          <div class="tabs" style="margin-top:16px"><span class="on">Plan · roles</span><span>Equivalents</span><span>Accessibility</span></div>
+          <div class="ctl"><span class="micro">Tone ladder</span><div class="seg"><span class="on">Wash · base · hl</span><span>Shadow · mid · hl</span><span>Both</span></div></div>
+        </div>
+      </div></div>
+      <p class="ann">If you never mark a paint as owned, you never see this feature. That is correct: it has nothing to do.</p>
+    </figure>
+
+    <figure>
+      <figcaption><b>Dark theme, Only owned.</b> The ✓ uses the moss green. The text stays in the body colour.</figcaption>
+      <div class="phone short dark"><div class="scroller">
+        <div class="card" style="margin-top:12px">
+          <div class="palhead"><div class="micro">Live palette → nearest paint</div></div>
+          <div class="lrow"><div class="blk" style="background:#555E1B;color:#fff"><b>Primary</b><span>#555E1B</span></div>
+            <div class="pt"><div class="pname">Deathworld Forest <span class="own">✓ owned</span></div><div class="q"><i style="background:var(--success)"></i>Good <code>ΔE 2.9</code></div></div></div>
+          <div class="lrow"><div class="blk" style="background:#241B5E;color:#fff"><b>Accent</b><span>#241B5E</span></div>
+            <div class="pt"><div class="pname">Macragge Blue <span class="own">✓ owned</span></div><div class="q"><i style="background:var(--danger)"></i>Poor <code>ΔE 13.1</code></div></div></div>
+          <div class="lrow"><div class="blk metal-sheen" style="background-color:#C8A13A;color:#15150F"><b>Metal</b><span>#C8A13A</span></div>
+            <div class="pt"><div class="pname">Sigmarite <span class="own">✓ owned</span></div><div class="q"><i style="background:var(--warning)"></i>Fair <code>ΔE 4.5</code></div></div></div>
+          <button class="mnote" type="button"><span class="ck">✓</span><span class="tx"><b>Only owned</b><span class="mt">From your 23 owned paints</span></span><span class="go">Change</span></button>
+          <p class="ann">Only owned can give a poor match (ΔE 13.1 here: the shelf has no dark blue). The ΔE badge still tells the truth,
+          and the note tells you why.</p>
+        </div>
+      </div></div>
+    </figure>
+  </div>
+
+  <h3 class="lab">The note, in each state</h3>
+  <div class="states">
+    <div class="state"><h4>Off (default)</h4><div class="none">no note</div><p>Nothing shows, and nothing moves. Most people
+      never see the note.</p></div>
+    <div class="state"><h4>Prefer owned</h4>
+      <button class="mnote" type="button"><span class="ck">✓</span><span class="tx"><b>Prefer owned</b><span class="mt">Your paints rank first</span></span><span class="go">Change</span></button>
+      <p>Owned paints rank as if ΔE 6 closer. A much closer paint that you do not own can still win.</p></div>
+    <div class="state"><h4>Only owned</h4>
+      <button class="mnote" type="button"><span class="ck">✓</span><span class="tx"><b>Only owned</b><span class="mt">From your 23 owned paints</span></span><span class="go">Change</span></button>
+      <p>The count shows how small the pool is, so a poor match makes sense.</p></div>
+    <div class="state"><h4>On, but your shelf is empty</h4>
+      <button class="mnote" type="button"><span class="ck off">○</span><span class="tx"><b>Prefer owned</b><span class="mt">No owned paints yet</span></span><span class="go">Open Shelf</span></button>
+      <p>Today the app ignores the setting without a word when you own nothing. The note says so, and here it opens the Shelf,
+      where you mark the paints you own. In every other state it opens ⋯.</p></div>
+  </div>
+
+  <h3 class="lab">Desktop (1280px) — the note sits in the sticky studio column</h3>
+  <div class="desk" id="desk">
+    <div class="apph"><span class="r1" style="display:flex;gap:8px;align-items:center"><span class="logo">P</span>Palette Studio</span>
+      <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div>
+      <button class="dots" aria-label="Settings" aria-expanded="false">⋯</button></div>
+    <div class="dcols">
+      <div class="card">
+        <div class="hero"><i style="background:#555E1B"></i><b>Alga Green</b><span class="hx">#555E1B</span></div>
+        <div class="wheel" aria-hidden="true"></div>
+        <div class="dhead"><span class="micro">Live palette → nearest paint</span>
+          <span class="row"><span class="btn ic">↶</span><span class="btn ic">↷</span><span class="btn ic">+</span><span class="btn ic">−</span><span class="seg"><span class="on">Ideal</span><span>Real</span></span></span></div>
+        <div class="dpal">
+          <div class="dcol"><div class="blk" style="background:#555E1B;color:#fff">Primary</div><div class="pt"><div class="pname">Deathworld Forest</div><div class="own">✓ owned</div><div class="q"><i style="background:var(--success)"></i>Good <code>2.9</code></div></div></div>
+          <div class="dcol"><div class="blk" style="background:#241B5E;color:#fff">Accent</div><div class="pt"><div class="pname">Violet</div><div class="pbrand">Scale75</div><div class="q"><i style="background:var(--warning)"></i>Fair <code>3.6</code></div></div></div>
+          <div class="dcol"><div class="blk metal-sheen" style="background-color:#C8A13A;color:#15150F">Metal</div><div class="pt"><div class="pname">Sigmarite</div><div class="own">✓ owned</div><div class="q"><i style="background:var(--warning)"></i>Fair <code>4.5</code></div></div></div>
+        </div>
+        <button class="mnote" type="button" style="margin-top:8px;--tap:36px"><span class="ck">✓</span><span class="tx"><b>Prefer owned</b><span class="mt">Your paints rank first, and ΔE stays true</span></span><span class="go">Change</span></button>
+      </div>
+      <div class="card">
+        <div class="tabs"><span class="on">Plan · roles</span><span>Equivalents</span><span>Accessibility</span></div>
+        <div class="row" style="margin-bottom:8px"><span class="micro">Tone ladder</span><span class="seg"><span class="on">Wash · base · highlight</span><span>Shadow · mid · highlight</span><span>Both</span></span></div>
+        <div class="row" style="margin-bottom:12px"><span class="btn">Include Contrast</span><span class="btn pri">+ Add 11 to buy</span><span class="tag">Use my collection row removed</span></div>
+        <div class="roles">
+          <div class="rcard"><b>Primary</b><div class="sw"><i style="background:#555E1B"></i>→<i style="background:#556229"></i><span>Deathworld Forest <span class="own">✓</span></span></div></div>
+          <div class="rcard"><b>Secondary</b><div class="sw"><i style="background:#335E1B"></i>→<i style="background:#0F702A"></i><span>Warpstone Glow <span class="own">✓</span></span></div></div>
+          <div class="rcard"><b>Accent</b><div class="sw"><i style="background:#241B5E"></i>→<i style="background:#2A1C51"></i><span>Violet</span></div></div>
+          <div class="rcard"><b>Metal</b><div class="sw"><i style="background:#C8A13A"></i>→<i style="background:#D6AC57"></i><span>Sigmarite <span class="own">✓</span></span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="ann" style="max-width:76ch">The ⋯ menu is closed here, so you can see the Plan column. The phone demo above shows the menu open. Its new row has a dashed outline in these mockups only, to mark what is new.</p>
+
+  <h3 class="lab">Why these choices</h3>
+  <ul class="notes">
+    <li><b>Why below the palette, not next to its label.</b> I put a chip after “Live palette → nearest paint” in the real app and
+      measured it. At 1280px it pushed undo, redo, + and Ideal|Real down to a second row (header height 36 → 74px). On a phone it
+      needed its own row anyway. Below the palette, it fits on one line at every width, and it sits right under the paint names it explains.</li>
+    <li><b>Why a full-width button, not a small pill.</b> It is a control as well as a status, so it must be 44px tall on touch (§3.6).
+      On desktop it uses the normal 38px <code>--tap</code>.</li>
+    <li><b>Contrast.</b> The usual badge pair, <code>--success</code> text on <code>--success-weak</code>, is only <b>3.0:1</b> in
+      the light theme. That fails WCAG AA for 12px text. So the note’s text uses <code>--text</code> on <code>--surface</code>
+      (14:1). Only the ✓ glyph is green: 3.3:1 light and 6.3:1 dark, which passes the 3:1 limit for graphics.</li>
+    <li><b>No jiggle (§3.4).</b> The note appears only after you change a setting, never on hover or select, and it can only push
+      content <i>down</i>. Changing the setting already redraws the paints, so the page does not move in a surprising way.</li>
+    <li><b>Keyboard and screen readers.</b> The note is a <code>&lt;button aria-haspopup aria-controls="settingsMenu"&gt;</code>
+      with an accessible name such as “Use my paints: prefer owned. Change”. Opening ⋯ from it moves focus to the selected option,
+      and Esc returns focus to the note, not to ⋯. A change is announced through the existing live region. In the empty-shelf
+      state the note opens the Shelf instead, so it drops <code>aria-haspopup</code> and its name says so: “Use my paints: prefer
+      owned, but you own no paints yet. Open Shelf”.</li>
+    <li><b>Nothing else changes.</b> The setting is still saved per device. A share link still does not carry it, so a friend who
+      opens your link sees matches from <i>their</i> shelf. That is correct.</li>
+    <li><b>Constitution change (§3.6).</b> The draft wording is in <a href="#fullmenu">the full ⋯ menu</a> section. It also removes
+      “the Use my collection control lives in the Plan tab”.</li>
+  </ul>
+  <p class="verdict"><b>Verdict:</b> one setting, in one place, next to the other personal settings, plus an honest sign where its
+  effect shows. Off costs nothing. On tells you why a paint you own beat a closer one.</p>
+</section>
+
+<!-- ============================================================ B. CONTROL ON THE PALETTE -->
+<section>
+  <h2>B · The control lives on the palette, and ⋯ does not have it</h2>
+  <p class="why">The Off · Prefer · Only control sits below the live palette all the time, in place of the note.</p>
+  <div class="pair">
+    <figure>
+      <figcaption>Always present, on every scheme.</figcaption>
+      <div class="phone short"><div class="scroller">
+        <div class="card" style="margin-top:12px">
+          <div class="palhead"><div class="micro">Live palette → nearest paint</div></div>
+          <div class="lrow"><div class="blk" style="background:#555E1B;color:#fff"><b>Primary</b><span>#555E1B</span></div>
+            <div class="pt"><div class="pname">Alga Green</div><div class="pbrand">AK Interactive</div><div class="q"><i style="background:var(--success)"></i>Indistinguishable <code>ΔE 0.0</code></div></div></div>
+          <div class="lrow"><div class="blk" style="background:#241B5E;color:#fff"><b>Accent</b><span>#241B5E</span></div>
+            <div class="pt"><div class="pname">Violet</div><div class="pbrand">Scale75</div><div class="q"><i style="background:var(--warning)"></i>Fair <code>ΔE 3.6</code></div></div></div>
+          <div class="lrow"><div class="blk metal-sheen" style="background-color:#C8A13A;color:#15150F"><b>Metal</b><span>#C8A13A</span></div>
+            <div class="pt"><div class="pname">Keleshite Gold</div><div class="pbrand">Reaper</div><div class="q"><i style="background:var(--success)"></i>Good <code>ΔE 2.9</code></div></div></div>
+          <div class="ctl" style="margin-top:8px"><span class="micro">Use my paints</span>
+            <div class="seg" style="display:flex"><span class="on" style="flex:1;padding:12px 8px">Off</span><span style="flex:1;padding:12px 8px">Prefer</span><span style="flex:1;padding:12px 8px">Only</span></div></div>
+        </div>
+      </div></div>
+    </figure>
+  </div>
+  <p class="verdict"><b>Pro:</b> one tap, and you see it where it acts. <b>Con:</b> a row of 44px controls stays in the studio
+  forever, also for the many people who own nothing. It also <i>looks</i> like a per-scheme choice, but it is a saved preference
+  that changes more than one stage, so no stage owns it.</p>
+</section>
+
+<!-- ============================================================ C. HIDDEN -->
+<section>
+  <h2>C · Only in ⋯, with no sign on the palette</h2>
+  <p class="why">The same ⋯ row as A, but without the note.</p>
+  <p class="verdict"><b>Pro:</b> the cleanest studio. <b>Con:</b> you turn on <i>Only owned</i> once, forget it, and a month later
+  your accent is “Loose” and nothing says why. That breaks principle 4, “Explain, don’t mystify”, and principle 2, “Honest about
+  approximation”. <b>Not recommended.</b></p>
+</section>
+
+<!-- ============================================================ DECISIONS -->
+<section class="recd">
+  <h2>Decisions (Ryan, 2026-10-26)</h2>
+  <ul class="notes">
+    <li><b>Direction A is chosen:</b> the setting moves to ⋯, and the matching note shows on the live palette when it is on.</li>
+    <li><b>The label is “Use my paints”</b> (Off · Prefer · Only). It is short enough for a phone. “Use my shelf” was not chosen,
+      because the shelf also holds to-buy paints.</li>
+    <li><b>Equivalents ignores the setting.</b> It compares brands, so it must list every brand. Owned paints already show ✓ in that list.</li>
+    <li><b>Empty shelf: the note says “Open Shelf”</b> and opens the Shelf. In every other state it says “Change” and opens ⋯.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ THE FULL ⋯ MENU (2026-10-27) -->
+<section class="full recd" id="fullmenu">
+  <h2>The full ⋯ menu <span class="rec">Proposal · from the menu audit</span></h2>
+  <p class="why">Ryan asked if other things belong in ⋯. An audit read the code and the docs. It also read primary sources:
+  Apple HIG, the Android design guide, MDN and WCAG. It judged each candidate from three views: the constitution, the painter and
+  the platform. All three views agree on this shape: <b>two new rows and one new button</b>. First, <b>fix the menu container</b>.
+  Other items stay where they are, move into About &amp; data, or wait for a later release. A second review then checked this
+  mockup against the code. Its corrections are in the lists below.</p>
+
+  <div class="pair">
+    <figure>
+      <figcaption><b>Try it (phone).</b> The menu is open. Tap the theme switch, Use my paints, Back up, Restore… or Help.
+      Tap Done to close it, and ⋯ to open it again. The new parts have a dashed outline in this mockup only.</figcaption>
+      <div class="phone" id="fmPhone" style="height:700px">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio
+          <button class="dots" id="fmDots" aria-expanded="true" aria-haspopup="dialog" aria-controls="fmMenu" aria-label="Settings">⋯</button></div>
+          <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div></div>
+        <div class="shellbg"><div class="card" style="margin:0"><div class="micro">Live palette → nearest paint</div>
+          <div class="lrow" style="margin-top:8px"><div class="blk" style="background:#555E1B;color:#fff"><b>Primary</b><span>#555E1B</span></div><div class="pt"><div class="pname">Deathworld Forest</div></div></div></div></div>
+        <div class="smenu" id="fmMenu" role="dialog" aria-labelledby="fmTitle">
+          <div class="shead"><b id="fmTitle">Settings</b><button class="sdone" id="fmDone" type="button">Done</button></div>
+          <div class="sgrp">
+            <div class="srow inline"><span class="sl" aria-hidden="true">Theme</span>
+              <button class="tswb" id="fmTheme" role="switch" aria-checked="false" aria-label="Dark theme"><span class="tsw" aria-hidden="true"></span></button></div>
+            <div class="srow"><span class="sl" id="fmLangL">Language</span>
+              <div class="sseg" role="group" aria-labelledby="fmLangL"><button aria-pressed="false">English (UK)</button><button aria-pressed="true">English (US)</button></div></div>
+            <div class="srow isnew"><span class="sl" id="fmUmpL">Use my paints</span>
+              <div class="sseg" role="group" aria-labelledby="fmUmpL" aria-describedby="fmUmpHint" id="fmUmp"><button data-v="off" aria-pressed="false">Off</button><button data-v="prefer" aria-pressed="true">Prefer</button><button data-v="only" aria-pressed="false">Only</button></div>
+              <div class="hslot"><p class="shint" id="fmUmpHint" aria-live="polite"></p><button class="sfull" id="fmOpenShelf" type="button" hidden>Open Shelf</button></div></div>
+          </div>
+          <div class="sgrp">
+            <div class="srow"><span class="sl" id="fmSchemeL">Scheme</span>
+              <div class="sbtns" role="group" aria-labelledby="fmSchemeL"><button class="pri" data-toast="Downloads the shopping list for this scheme">Export list</button><button data-toast="Copies a link to this scheme">Share link</button></div></div>
+            <div class="srow isnew"><span class="sl" id="fmDataL">Your data</span>
+              <div class="sbtns" role="group" aria-labelledby="fmDataL" aria-describedby="fmDataHint"><button id="fmBackup">Back up</button><button id="fmRestore" aria-haspopup="dialog">Restore…</button></div>
+              <p class="shint" id="fmDataHint">Back up saves one file (.json) to your downloads. Restore… opens that file.</p></div>
+          </div>
+          <div class="sgrp">
+            <div class="srow"><span class="sl" id="fmMoreL">More</span>
+              <div class="sbtns" role="group" aria-labelledby="fmMoreL"><button data-toast="Opens About &amp; data. When it closes, focus returns to ⋯">About &amp; data</button><button class="isnew" data-toast="Opens the support page. Its Back link returns to the app on the same scheme">Help</button></div></div>
+          </div>
+        </div>
+        <div class="cdim" id="fmDim" hidden>
+          <div class="cdlg" role="alertdialog" aria-modal="true" aria-labelledby="fmDlgT" aria-describedby="fmDlgD" id="fmDlg">
+            <h4 id="fmDlgT">Replace your shelf and settings?</h4>
+            <p id="fmDlgD">The backup from <b>30 Sep 2026</b> has <b>41 owned · 2 to buy</b> and its settings. It replaces your shelf
+              (<b><span id="fmOwnedN">23</span> owned · 4 to buy</b>) and your settings. You cannot undo this.</p>
+            <button class="sfull" id="fmDlgBackup" type="button">Back up first</button>
+            <div class="sbtns"><button id="fmDlgCancel">Cancel</button><button class="danger" id="fmDlgOk"><span class="warn" aria-hidden="true">⚠ </span>Replace</button></div>
+          </div>
+        </div>
+        <div class="mtoast" id="fmToast" role="status" hidden></div>
+      </div>
+      <div class="shelfseg"><span class="micro">Example shelf:</span>
+        <span class="seg" id="fmShelf"><button data-n="23" aria-pressed="true">23 owned</button><button data-n="0" aria-pressed="false">Empty</button></span></div>
+      <p class="ann">Restore… first opens the file picker. The mockup does not show the picker. It opens the confirm step. Focus starts on
+        <b>Cancel</b>. Esc closes only the confirm, and focus returns to Restore…. A second Esc closes Settings.</p>
+    </figure>
+
+    <figure>
+      <figcaption><b>About &amp; data gets three things</b> that are too rare or too risky for ⋯.</figcaption>
+      <div class="phone" style="height:640px">
+        <div class="abt" role="dialog" aria-label="About Palette Studio">
+          <div class="ahead"><b>About Palette Studio</b><span class="btn ic" aria-hidden="true">✕</span></div>
+          <p class="fine" style="margin:4px 0 0">… how the matching works · data &amp; credits …</p>
+          <h5>Privacy &amp; support</h5>
+          <p>Runs entirely in your browser. Your shelf and settings stay on this device. Read the
+            <a class="lnk" href="#">privacy policy</a> or get <a class="lnk" href="#">support</a>.</p>
+          <details class="isnew" open style="margin-top:12px">
+            <summary>Keyboard shortcuts</summary>
+            <dl>
+              <dt><span class="kbd">Ctrl</span>/<span class="kbd">⌘</span> <span class="kbd">Z</span></dt><dd>Undo a palette change. <span class="kbd">Shift</span>+<span class="kbd">Z</span> or <span class="kbd">Ctrl</span>/<span class="kbd">⌘</span> <span class="kbd">Y</span> redoes.</dd>
+              <dt><span class="kbd">←</span> <span class="kbd">→</span> <span class="kbd">↑</span> <span class="kbd">↓</span></dt><dd>Wheel: hue (← →) and strength (↑ ↓). Add <span class="kbd">Shift</span> for bigger steps.</dd>
+              <dt><span class="kbd">[</span> <span class="kbd">]</span></dt><dd>Wheel: previous or next colour.</dd>
+              <dt><span class="kbd">+</span> <span class="kbd">-</span></dt><dd>Wheel: add a colour, or remove the last one you added.</dd>
+              <dt><span class="kbd">Arrows</span></dt><dd>Shelf: move. Add <span class="kbd">Shift</span> to extend the selection. Paints: move between paints.</dd>
+              <dt><span class="kbd">P</span> <span class="kbd">U</span> <span class="kbd">X</span></dt><dd>Mark owned, to buy, or clear (the Shelf selection or the focused paint).</dd>
+              <dt><span class="kbd">Enter</span></dt><dd>Equivalents: show the matches for a palette colour.</dd>
+              <dt><span class="kbd">Esc</span></dt><dd>Close a drawer, sheet or menu. On the Shelf, clear the selection.</dd>
+            </dl>
+          </details>
+          <p class="fine" style="margin:4px 0 0">Always present, but closed by default. A web page cannot detect a keyboard.</p>
+          <div class="isnew" style="margin-top:16px">
+            <h5 style="margin-top:0">Your data on this device</h5>
+            <p>Back up first if you want to keep it.</p>
+            <button class="dbtn" type="button"><span class="warn" aria-hidden="true">⚠ </span>Delete your data on this device…</button>
+          </div>
+          <p class="fine isnew" style="margin-top:16px;display:inline-block">Palette Studio v1.9.0 · data 1.6.0</p>
+        </div>
+      </div>
+      <p class="ann"><b>Delete</b> asks first, offers a backup, and lists what it removes: owned, to buy, settings. In the iOS app,
+        this is the only way to remove your data without deleting the app. The app restores your data from its own storage.</p>
+    </figure>
+
+    <figure>
+      <figcaption><b>Dark theme, empty shelf.</b> The hint says why Use my paints does nothing yet. The slot keeps its height.</figcaption>
+      <div class="phone short dark">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<button class="dots" aria-label="Settings">⋯</button></div>
+          <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div></div>
+        <div class="smenu" role="dialog" aria-label="Settings (example)">
+          <div class="shead"><b>Settings</b><button class="sdone" type="button">Done</button></div>
+          <div class="sgrp"><div class="srow"><span class="sl">Use my paints</span>
+            <div class="sseg"><button aria-pressed="false">Off</button><button aria-pressed="true">Prefer</button><button aria-pressed="false">Only</button></div>
+            <div class="hslot"><p class="shint">You own no paints yet.</p><button class="sfull" type="button">Open Shelf</button></div></div></div>
+          <div class="sgrp"><div class="srow"><span class="sl">Your data</span>
+            <div class="sbtns"><button>Back up</button><button>Restore…</button></div></div></div>
+        </div>
+      </div>
+      <p class="ann">The menu scrolls inside itself when the screen is short, for example a phone turned sideways.</p>
+    </figure>
+  </div>
+
+  <h3 class="lab">Desktop — the same rows, label left (the grid the menu uses today)</h3>
+  <div class="desk desk2" style="height:500px">
+    <div class="apph"><span class="r1" style="display:flex;gap:8px;align-items:center"><span class="logo">P</span>Palette Studio</span>
+      <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div>
+      <button class="dots" aria-label="Settings" aria-expanded="true">⋯</button></div>
+    <div class="smenu wide" role="dialog" aria-label="Settings (desktop example)">
+      <div class="sgrp">
+        <div class="srow inline"><span class="sl" aria-hidden="true">Theme</span><button class="tswb" role="switch" aria-checked="false" aria-label="Dark theme"><span class="tsw" aria-hidden="true"></span></button></div>
+        <div class="srow"><span class="sl">Language</span><div class="sseg"><button aria-pressed="false">English (UK)</button><button aria-pressed="true">English (US)</button></div></div>
+        <div class="srow isnew"><span class="sl">Use my paints</span><div class="sseg"><button aria-pressed="false">Off</button><button aria-pressed="true">Prefer</button><button aria-pressed="false">Only</button></div>
+          <div class="hslot"><p class="shint">Your paints rank first in the palette, Plan and Export list. Equivalents shows all brands.</p></div></div>
+      </div>
+      <div class="sgrp">
+        <div class="srow"><span class="sl">Scheme</span><div class="sbtns"><button class="pri">Export list</button><button>Share link</button></div></div>
+        <div class="srow isnew"><span class="sl">Your data</span><div class="sbtns"><button>Back up</button><button>Restore…</button></div>
+          <p class="shint">Back up saves one file (.json) to your downloads. Restore… opens that file.</p></div>
+      </div>
+      <div class="sgrp"><div class="srow"><span class="sl">More</span><div class="sbtns"><button>About &amp; data</button><button class="isnew">Help</button></div></div></div>
+    </div>
+  </div>
+  <p class="ann" style="max-width:76ch">On desktop there is no Done button. Esc, a click outside, or ⋯ closes the menu.</p>
+
+  <h3 class="lab">Fix the container first (problems in the menu today)</h3>
+  <ul class="notes">
+    <li><b>It says “menu”, but it is not one.</b> The panel is <code>role="menu"</code> and ⋯ says <code>aria-haspopup="menu"</code>
+      (<code>index.html</code>), but it holds a switch, segmented groups and buttons. A screen reader then expects a list of commands
+      that you move through with the arrow keys. It becomes a non-modal <b>dialog</b> named “Settings”, with
+      <code>aria-haspopup="dialog"</code>.</li>
+    <li><b>Focus has no rules.</b> When the menu opens, focus moves into it. When it closes, focus returns to the control that opened
+      it: ⋯, or the matching note. When an action closes the menu (Export list, Share link), focus returns to ⋯. When About &amp; data
+      closes, focus returns to ⋯. On a phone, a <b>Done</b> button closes it, because a phone has no Esc key.</li>
+    <li><b>Touch targets are too small.</b> Export list, Share link and About &amp; data are 32px (<code>.btn.sm</code>). The Language
+      buttons are 30px (34px on a phone). The theme switch is 30px tall. Every control gets <code>min-height: var(--tap)</code>, and
+      the switch gets a 44px button around it. Note: <code>--tap</code> is 44px only at ≤520px, so an iPad gets 38px (see the open questions).</li>
+    <li><b>The focus ring cannot be seen.</b> <code>--focus</code> is a 3px ring in <code>--accent-weak</code>: about 1.1:1 against the
+      surface in both themes. WCAG 1.4.11 needs 3:1. This is an app-wide problem, with its own suggested task. The menu uses the fixed ring.</li>
+    <li><b>It cannot scroll.</b> <code>.popover</code> has no height limit, so a taller menu runs off a short screen. The menu gets a
+      <code>max-height</code> at every width and scrolls inside itself.</li>
+    <li><b>Wrong shadow, radius and padding.</b> It uses <code>--shadow</code> (in-page). §3.4 gives floating overlays
+      <code>--shadow-pop</code>. It is a panel of grouped controls, like About and the Filters sheet, so its radius becomes
+      <code>--r-card</code> and its padding 16px (§3.5).</li>
+    <li><b>Labels are not localised.</b> Theme, Language, Scheme, More and the button labels have no <code>data-i18n</code>. Every row,
+      old and new, gets one (§4 i18n).</li>
+    <li><b>A backup can replace your shelf without a question.</b> Today, Import… (on the Shelf; until the picker build, also in the Paints drawer) also accepts a
+      <code>.json</code> backup and replaces the shelf and settings at once. After the build there is one rule: every
+      <code>.json</code> backup, from Restore… or from Import…, goes through the same confirm step.</li>
+  </ul>
+
+  <h3 class="lab">Notes for the build</h3>
+  <ul class="notes">
+    <li><b>Back up</b> downloads <code>store.exportJSON()</code> as <code>palette-studio-backup-YYYY-MM-DD.json</code>. The file gets a
+      <code>saved</code> date, so the confirm can show it. A backup without that date shows no date.</li>
+    <li><b>Restore</b> reads the file with a new <code>store.inspectJSON()</code>. It checks the shape and counts the paints, but does not
+      apply anything. The confirm shows the counts. <code>store.importJSON()</code> runs only after <b>Replace</b>.</li>
+    <li><b>The settings in a backup</b> are theme, language, Use my paints, tone ladder and Include Contrast. Remove the
+      <code>fill</code> key from <code>PREF_DEFAULTS</code>: the app never reads it (Ideal | Real lives in the link).</li>
+    <li><b>A restored theme or language of “none”</b> means “follow the device”. Apply it at once, without saving it.</li>
+    <li><b>Delete</b> goes through a new <code>store.clear()</code>. It removes <code>ps-state</code>, the old <code>ps-owned</code> and
+      <code>ps-theme</code> keys, and the iOS copy of the data. If only <code>ps-state</code> is removed, the next start brings the data
+      back. Update <code>privacy.html</code> and <code>support.html</code> in the same change.</li>
+    <li><b>The version line</b> reads the app version from one constant in <code>src/</code>. <code>check-docs.mjs</code> fails when it
+      does not match <code>package.json</code>. The data version comes from <code>paints.json</code>.</li>
+    <li><b>Build with the real components</b> (<code>.seg</code>, <code>.btn</code>, <code>.btn.primary</code>, <code>.themesw</code>). Add a
+      <code>--scrim</code> token (the About backdrop value) for the confirm, About and the Shelf sheet. Add a §3.5 line for the
+      destructive button: a secondary button, 1px <code>--danger</code> border, label in <code>--text</code>, ⚠ hidden from screen readers.</li>
+    <li><b>The hint</b> changes only when you change Use my paints or open the menu, never on a store update. So marking paints on the
+      Shelf does not make a screen reader repeat it. “Open Shelf” is outside the live region.</li>
+    <li><b>Undo on the Shelf.</b> Today Ctrl/⌘ Z also works on the Shelf, where it changes the Studio palette that you cannot see.
+      Make it work only in the Studio.</li>
+  </ul>
+
+  <h3 class="lab">The rule, and the §3.6 change</h3>
+  <ul class="notes">
+    <li><b>Which settings go to ⋯.</b> A setting moves to ⋯ when it is saved for the device, changes more than one stage, and changes
+      the matches in a way that you cannot see. Use my paints meets all three. Include Contrast only adds a paint type, and each
+      Contrast paint shows its finish icon, so you can see it. It stays in the Plan.</li>
+    <li><b>Draft wording for §3.6</b> (it goes in the same commit as the build): “The header holds only the Studio / Shelf switch and a
+      ⋯ settings dialog (non-modal, not a menu) in three groups. <i>This device:</i> theme; language; Use my paints (off · prefer ·
+      only), a saved preference that ranks the live palette, the Plan, the Export list and the Accessibility swap, never Equivalents.
+      The live palette shows the matching note while it is on. <i>Actions:</i> Export list / Share link, the whole-scheme output
+      actions; Back up / Restore…, the whole-device backup of the <code>store.js</code> state (Restore confirms before it replaces).
+      <i>Information:</i> About &amp; data, and Help (<code>support.html</code>). Delete your data, keyboard shortcuts and the version
+      live in About &amp; data. Don’t move per-scheme or in-stage controls into the header. The only header actions are the
+      whole-scheme Export/Share and the whole-device Back up/Restore.” Also add the settings dialog and the confirm to the
+      <code>--shadow-pop</code> list in §3.4.</li>
+  </ul>
+
+  <h3 class="lab">Not in the menu, and why</h3>
+  <table class="where">
+    <tr><th>Candidate</th><th>Where it goes</th><th>Why</th></tr>
+    <tr><td>Include Contrast</td><td>Stays in Plan</td><td>It adds a paint type, and each Contrast paint shows its finish icon. So it does not change the matches in a way that you cannot see (the rule above).</td></tr>
+    <tr><td>Tone ladder</td><td>Stays in Plan</td><td>Its rungs show on the Plan cards, next to the control. Apple and Android both say: keep task options on the screen they affect.</td></tr>
+    <tr><td>Ideal | Real</td><td>Stays on the palette</td><td>It belongs to one scheme and travels in share links (<code>f=1</code>). §3.6 keeps per-scheme controls out of the header.</td></tr>
+    <tr><td>CSV import / export</td><td>Stays on the Shelf (the picker build, 2026-10-28, took it out of the Paints drawer)</td><td>It is the paintRack bridge for stocking the shelf. A <code>.json</code> file picked there goes through the Restore confirm.</td></tr>
+    <tr><td>Delete your data · keyboard shortcuts · version</td><td>About &amp; data</td><td>They are rare, or risky next to Theme. About is the help and information screen already.</td></tr>
+    <tr><td>Privacy link</td><td>Stays in About &amp; data</td><td>App Store rule 5.1.1(i) (“within the app in an easily accessible manner”) is met there already. Help links to it too.</td></tr>
+    <tr><td>Install the app</td><td>Not now</td><td>The install prompt event works only in Chromium browsers (MDN). iPhone has no such event, so the row could only show instructions.</td></tr>
+    <tr><td>Brands I use</td><td>Not now</td><td>PLAN backlog 8 puts a brand limit on the substitute finder, as a choice you make at that time. A hidden app-wide filter is the same problem that the matching note fixes.</td></tr>
+    <tr><td>Reduce motion switch</td><td>Dropped</td><td>The app follows the phone’s setting already. Apple: “don’t include redundant versions” of system settings. WCAG 2.3.3 is AAA, and the media query alone meets it.</td></tr>
+  </table>
+
+  <h3 class="lab">Open questions — answered (Ryan, 2026-10-28)</h3>
+  <ul class="notes">
+    <li><b>Help in ⋯.</b> Two views want a Help button next to About &amp; data. The third view measured the old menu: two new buttons
+      (Privacy and Help) made it too wide for a 360px screen. With the new phone layout, one Help button fits. Keep it?
+      <b>Answer: yes.</b></li>
+    <li><b>Contrast in the matching note.</b> Must the note under the palette also show when Include Contrast is on (for example
+      “Contrast paints included”), not only when Use my paints is on? <b>Answer: yes.</b></li>
+    <li><b>A way back to “follow the phone”.</b> After today’s fix, the app follows the phone until you tap the theme switch. Then it
+      keeps your choice, and no control lets you follow the phone again (only Delete your data). Add one, for example a “Use phone
+      setting” link under the switch that shows only when you have picked a theme? <b>Answer: yes.</b></li>
+    <li><b>44px on every touch screen.</b> <code>--tap</code> is 44px only at ≤520px, so an iPad or a phone turned sideways gets 38px.
+      Change it to apply on every touch screen (<code>pointer: coarse</code>)? This is a §3.6 change for the whole app.
+      <b>Answer: yes.</b></li>
+  </ul>
+  <p class="verdict">The design critique below shows where each answer goes in the menu.</p>
+</section>
+
+<!-- ============================================================ CRITIQUE -->
+<section class="full recd" id="critique">
+  <h2>Design critique of the full menu <span class="rec">2026-10-28 · before the build</span></h2>
+  <p class="why"><b>How we did it.</b> Ryan asked for a design critique before the build. Five reviewers each used one lens:
+  first impression and visual hierarchy; usability and the order of the menu; consistency with the design system; accessibility;
+  and the painter and the words. Each reviewer opened this page at 360×640, 390×844 and 1280×800, in both themes, and used the
+  menu. Then a second reviewer for each lens tried to prove each finding wrong. <b>64 findings: 58 held</b> (20 as written,
+  38 with a correction) and <b>6 were wrong</b>. After the check: 2 critical, 21 moderate and 35 minor. Below, findings about the
+  same problem share one row.</p>
+
+  <h3 class="lab">First impression</h3>
+  <p class="why">Calm, tidy and clearly “Settings”: a bold title, 44px rows and the same soft card as the rest of the app, in
+  both themes. But the eye goes first to the solid accent <b>Export list</b> button, not to a setting. And <b>Use my paints</b>,
+  the reason for this change, is the third row. Its label is quieter than its own hint.</p>
+
+  <h3 class="lab">What works</h3>
+  <ul class="notes">
+    <li><b>One phone layout for every row.</b> The label is above a full-width control, and every control is 44px tall. It reads
+      as one list. Today’s popover is a tight grid, and “English (UK)” wraps to two lines at 360px.</li>
+    <li><b>The hint slot keeps the rows still on a phone.</b> At 360px the Use my paints row stays 122px tall in all four states.</li>
+    <li><b>The empty shelf is honest.</b> Prefer stays selected, the hint says why nothing changes, and “Open Shelf” is the way on.</li>
+    <li><b>It is a floating overlay.</b> <code>--shadow-pop</code>, <code>--r-card</code> and 16px padding, as on the Filters sheet.</li>
+    <li><b>Both themes have the same shape.</b> Only the colour changes (the §3 rule). Dark looks on-brand.</li>
+    <li><b>The Restore confirm is careful.</b> A clear title, both counts, “You cannot undo this”, and focus starts on Cancel.
+      The first Esc closes only the confirm.</li>
+    <li><b>The danger button is serious, not loud.</b> Its text stays <code>--text</code>; a 1px <code>--danger</code> border shows
+      the risk (4.76:1 light, 4.32:1 dark).</li>
+    <li><b>The Tab order is the visual order.</b></li>
+  </ul>
+
+  <h3 class="lab">Priority changes</h3>
+  <ol class="notes">
+    <li><b>Make every segmented control readable, and show which segment is selected</b> (the two critical findings). This is a
+      fault in the whole app today, not only in the menu. So the fix goes into the shared <code>.seg</code>.</li>
+    <li><b>Fix the focus ring once, in the <code>--focus</code> token</b> (§3.1), so that focus looks the same inside and
+      outside the menu.</li>
+    <li><b>Give each line of the matching note its own target.</b> Answer 2 adds Contrast to the note, but Contrast lives in the
+      Plan, not in ⋯.</li>
+    <li><b>Reserve the space for answer 3 on the Theme row,</b> so the “Use device setting” button does not push the menu down.</li>
+    <li><b>Make the phone menu a modal sheet,</b> with a sticky title and Done, and a fade when there is more below.</li>
+    <li><b>Say what Prefer really does,</b> and use one word for one thing (“shelf”, “owned”).</li>
+    <li><b>Show what Restore will remove,</b> and keep the backup result inside the confirm.</li>
+  </ol>
+
+  <h3 class="lab">Where Ryan’s four answers go</h3>
+  <table class="where">
+    <tr><th>Answer</th><th>Where</th><th>Why there</th></tr>
+    <tr><td>1 · Help in ⋯</td><td>The last row, renamed “Help &amp; info”: <b>Help</b> first, then About &amp; data. Help is a link to the
+      Help page.</td><td>A painter who is stuck looks for Help. Two half-width buttons fit at 360px (151px each).</td></tr>
+    <tr><td>2 · Contrast in the note</td><td>Its own line in the note under the palette: “Contrast and speed paints included · Plan”.
+      It opens the Plan and goes to Include Contrast. The line shows the Contrast finish icon, not ✓.</td><td>Include Contrast stays in
+      the Plan. A note that opens ⋯ would go to a menu without that control.</td></tr>
+    <tr><td>3 · A way back to the phone’s theme</td><td>A reserved slot on the Theme row, left of the switch. Before you pick a theme:
+      “Follows your device” (text). After: a <b>Use device setting</b> button. It clears your choice, keeps focus on the switch, and
+      a screen reader hears “Theme follows your device”.</td><td>A line that shows after a pick would push every row down under your
+      finger (§3.4). “Device”, because the same menu is on a computer and an iPad. Ryan’s “Use phone setting” was an example.</td></tr>
+    <tr><td>4 · 44px on every touch screen</td><td><code>--tap</code> is 44px on <code>(pointer: coarse)</code> too. The shared segmented
+      controls, small buttons and the theme switch follow it on touch. The phone layout of the menu (sheet, title, Done) also uses
+      <code>pointer: coarse</code>.</td><td>A phone turned sideways or an iPad otherwise gets 44px rows in the desktop popover, with no
+      Done.</td></tr>
+  </table>
+
+  <h3 class="lab">Every finding, and what the build does</h3>
+  <div class="scrollx" tabindex="0" role="region" aria-label="All findings">
+  <table class="where">
+    <tr><th>Severity</th><th>Finding</th><th>What the reviewers found</th><th>In the build</th></tr>
+    <tr><td>Critical</td><td><code>a11y-1</code></td><td>Unselected segment labels are 4.20:1 in the light theme (WCAG 1.4.3 needs 4.5:1). The same fault is in today’s Language, Tone ladder and Shelf filters.</td><td>All <code>.seg</code> labels use <code>--text</code> (13.98:1 light, 12.83:1 dark). App-wide.</td></tr>
+    <tr><td>Critical</td><td><code>a11y-2</code></td><td>You cannot see which segment is selected: the white pill is 1.11:1 against the track (1.08:1 dark). Forced colours remove it.</td><td>The selected segment gets a 2px <code>--accent</code> bar inside it, like the selected output tab. Forced colours get a <code>Highlight</code> outline. App-wide.</td></tr>
+    <tr><td>Moderate</td><td><code>a11y-3 · usability-15</code></td><td>On a phone the “non-modal” panel covers the screen, but Tab and VoiceOver still reach the page under it.</td><td>A modal sheet on phones and touch screens (<code>showModal()</code>, the <code>--scrim</code> backdrop, Done). A non-modal popover with a mouse.</td></tr>
+    <tr><td>Moderate</td><td><code>a11y-4 · consistency-1</code></td><td>The focus ring is fixed only in the menu. The shared <code>--focus</code> ring is about 1.1:1 and forced colours remove it.</td><td>Fix the <code>--focus</code> token for the whole app: a 2px surface gap and a 2px <code>--accent</code> ring (5.70:1 light, 6.20:1 dark), plus a transparent outline for forced colours.</td></tr>
+    <tr><td>Moderate</td><td><code>a11y-6</code></td><td>In the build, one Esc in the Restore confirm also closes Settings, and focus is lost.</td><td>The settings Esc handler does nothing while a dialog is open. Esc closes only the confirm, and focus goes back to Restore….</td></tr>
+    <tr><td>Moderate</td><td><code>a11y-7</code></td><td>“Back up first” in the confirm shows a toast outside the dialog. A screen reader does not hear it.</td><td>The result shows inside the confirm: the button changes to “✓ Saved” and a status line names the file.</td></tr>
+    <tr><td>Moderate</td><td><code>consistency-2</code></td><td>The 44px touch sizes come from menu-only copies. The shared <code>.seg</code>, small buttons and the theme switch stay 30–34px on touch.</td><td>The shared components follow <code>--tap</code> on touch: segments and small buttons are 44px, and the theme switch gets a 44px hit area.</td></tr>
+    <tr><td>Moderate</td><td><code>consistency-3 · usability-8 · a11y-12</code></td><td>The “fixed” hint slot changes height between Off, Prefer and Only on desktop and with large text, so the rows below move.</td><td>The three hints share one grid cell, and only the current one is visible. The slot is always as tall as the longest hint.</td></tr>
+    <tr><td>Moderate</td><td><code>consistency-14 · painter-4 · usability-2</code></td><td>Answer 2 (Contrast in the note) has nowhere to go: the note’s “Change” opens ⋯, and ⋯ has no Contrast control.</td><td>The note gets one line for each active setting. The Use my paints line opens ⋯. The Contrast line opens the Plan and goes to Include Contrast.</td></tr>
+    <tr><td>Moderate</td><td><code>impression-4 · usability-7</code></td><td>At 360×640, 57px of the menu is below the edge with no sign. Help and About &amp; data are hidden.</td><td>The title and Done stay at the top. A fade shows when there is more below. The backup hint is one line.</td></tr>
+    <tr><td>Moderate</td><td><code>impression-6</code></td><td>The current Use my paints value is the hardest thing to see, most of all in dark.</td><td>The hint starts with the value in bold (“<b>Prefer</b> · …”), and the selected segment gets the accent bar.</td></tr>
+    <tr><td>Moderate</td><td><code>painter-1 · usability-9</code></td><td>“Your paints rank first” is not true for Prefer. A much closer paint that you do not own still wins.</td><td>New words: “Paints you own win when they’re close.” The shared line says: “Equivalents still lists every paint.”</td></tr>
+    <tr><td>Moderate</td><td><code>painter-2</code></td><td>Back up does not say what it saves, where the file goes, or why it matters.</td><td>Hint: “Saves your shelf and settings to a file.” After a backup, the slot shows the file name. The Help page says that the shelf is kept only in this browser.</td></tr>
+    <tr><td>Moderate</td><td><code>painter-5 · usability-11 · a11y-9</code></td><td>Answer 3 as drawn (a link that shows after a pick) makes the menu jump. “Phone” is the wrong word on a desktop.</td><td>A reserved slot on the Theme row. Before a pick: “Follows your device”. After a pick: a “Use device setting” button. Nothing moves.</td></tr>
+    <tr><td>Moderate</td><td><code>painter-6 · impression-8</code></td><td>In the Restore confirm, the before and after counts are in one long sentence. “Back up first” is not clear.</td><td>Two rows: “On this device” and “In the backup (date)”. A “Save a backup of this shelf” button that changes in place to “✓ Saved”.</td></tr>
+    <tr><td>Moderate</td><td><code>usability-1</code></td><td>Restore cannot be undone, and the totals hide what you lose.</td><td>The confirm counts the marked paints that the backup does not have, and says that your settings change too. Not now: an Undo after Restore.</td></tr>
+    <tr><td>Moderate</td><td><code>usability-6</code></td><td>Share link on the Shelf shares a Shelf link, not the scheme. This bug is in the app today.</td><td>Share link removes <code>m=shelf</code> from the link that it shares.</td></tr>
+    <tr><td>Minor</td><td><code>a11y-5</code></td><td>On touch, Done goes off the screen when the menu scrolls, and wider touch screens do not have it.</td><td>The title row is sticky. Done shows on every touch screen (the same <code>pointer: coarse</code> rule as <code>--tap</code>).</td></tr>
+    <tr><td>Minor</td><td><code>a11y-8</code></td><td>Restore has no drawn error state for a file that is not a backup.</td><td>Keep today’s message (“That file is not a Palette Studio backup — nothing was changed”). The toast now shows above the menu.</td></tr>
+    <tr><td>Minor</td><td><code>a11y-10 · consistency-10</code></td><td>Help is drawn as a button but goes to a page. About &amp; data does not say that it opens a dialog.</td><td>Help is a link that looks like a button (<code>a.btn</code>). About &amp; data gets <code>aria-haspopup="dialog"</code>. The Help page heading becomes “Help and support”.</td></tr>
+    <tr><td>Minor</td><td><code>a11y-11</code></td><td>The note says it opens a menu, and it does not report open or closed.</td><td><code>aria-haspopup="dialog"</code> and <code>aria-expanded</code>. Its name starts with the words on the screen.</td></tr>
+    <tr><td>Minor</td><td><code>a11y-13</code></td><td>The title is not a heading.</td><td>The title is an <code>&lt;h2&gt;</code>. The groups get no hidden names, because sighted users do not see names.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-4 · impression-3</code></td><td>Settings and the Filters sheet use two styles. Row labels and hints look the same.</td><td>One sheet header (<code>.sheethead</code>, title at 16px). Row labels use the Filters sheet’s small-caps label. Hints use 12.5px muted text. A §3.5 “Sheets and dialogs” line.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-5</code></td><td>There are three styles for a text-only action.</td><td>One §3.5 “text action” line (accent, weight 500, <code>--tap</code> tall on touch), used for Done and “Use device setting”.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-6</code></td><td>The danger button gives <code>--danger</code> a second meaning.</td><td>The §3.5 line says that <code>--danger</code> means “failing or destructive”. Focus uses the fixed ring.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-7</code></td><td>About keeps the in-page shadow, and the backdrop colour is not a token.</td><td>About and the confirm use <code>--shadow-pop</code>. A new <code>--scrim</code> token (§3.1) replaces the three backdrop values.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-8</code></td><td>The open ⋯ button looks the same as a focused one.</td><td>Open shows as a <code>--surface-2</code> fill. The ring is for focus only.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-9</code></td><td>The 44px wrapper puts the theme switch’s focus ring off centre.</td><td>A <code>::before</code> hit area, as on the Shelf handle. The ring stays on the switch.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-11</code></td><td>The draft §3.6 uses group names that the menu does not show.</td><td>§3.6 uses the real row names. The PR lists every CLAUDE.md line that changes.</td></tr>
+    <tr><td>Minor</td><td><code>consistency-12</code></td><td>About’s key caps and disclosures use values off the scale. The fine print is 2.39:1.</td><td>Key caps on the spacing scale. Disclosures are <code>aria-expanded</code> buttons. The fine print uses <code>--text-muted</code> (4.68:1).</td></tr>
+    <tr><td>Minor</td><td><code>impression-1</code></td><td>Export list, an action, is the strongest thing in a settings panel.</td><td>Export list becomes a secondary button.</td></tr>
+    <tr><td>Minor</td><td><code>impression-2</code></td><td>Use my paints is the third row.</td><td>Use my paints is the first row. Then Theme, then Language.</td></tr>
+    <tr><td>Minor</td><td><code>impression-7 · painter-3</code></td><td>“Data” means two things: your shelf and the paint data.</td><td>The row is “Backup”. About’s block is “Your shelf on this device”. New words use “shelf” and “owned”, not “collection” or “data”.</td></tr>
+    <tr><td>Minor</td><td><code>impression-9</code></td><td>“More” does not say what the row holds.</td><td>The row is “Help &amp; info”, with Help first.</td></tr>
+    <tr><td>Minor</td><td><code>impression-11 (frame only)</code></td><td>The tall phone frame hides the fold problem.</td><td>The build is measured at 360×640 and 390×664.</td></tr>
+    <tr><td>Minor</td><td><code>painter-7</code></td><td>The empty-shelf hint says something false: the app knows your marks, not what you own.</td><td>“No paints marked as owned yet.” with Open Shelf.</td></tr>
+    <tr><td>Minor</td><td><code>painter-8</code></td><td>The note does not use the control’s words.</td><td>The note says “Use my paints: Prefer”, and its name uses the same words.</td></tr>
+    <tr><td>Minor</td><td><code>painter-9</code></td><td>“Export list” hides the shopping list behind a technical word.</td><td>The button is “Save shopping list” (§3.6 updated).</td></tr>
+    <tr><td>Minor</td><td><code>painter-10 · usability-4</code></td><td>The Help page sends painters to CSV to move their shelf to a new device.</td><td>The Help page says: use Back up and Restore to move your shelf. Use CSV for paintRack.</td></tr>
+    <tr><td>Minor</td><td><code>painter-11</code></td><td>About copy: “strength” is a paint word; “colour” needs en-US versions; the version line is not clear.</td><td>“Saturation (how vivid)”, en-US overrides, and “Palette Studio 1.9.0 · paint data 1.6.0”.</td></tr>
+    <tr><td>Minor</td><td><code>usability-3</code></td><td>Help goes to a contact page, but the how-to text is in About.</td><td>The Help page gets “How the matching works” and “Keyboard shortcuts”. About links to them.</td></tr>
+    <tr><td>Minor</td><td><code>usability-5</code></td><td>The title “Settings” names a panel that is mostly actions.</td><td>Not now. The name “Settings” stays (§3.6 uses it). A screen reader reads each row when the menu opens.</td></tr>
+    <tr><td>Minor</td><td><code>usability-10</code></td><td>On a phone, a change to Use my paints has no visible effect while the menu is open.</td><td>Not now. The hint says what changes, a screen reader hears it, and the note under the palette shows the setting.</td></tr>
+  </table>
+  </div>
+
+  <h3 class="lab">Findings that were wrong (6)</h3>
+  <ul class="notes">
+    <li><code>impression-5</code> “Settings does not match its sibling sheets”: the sizes were the frame’s 12px drawing scale, and the
+      Filters sheet’s first-focus rule is about iOS and a <code>&lt;select&gt;</code>, which this menu does not have.</li>
+    <li><code>impression-10</code> “The dark scrim barely separates the confirm”: a darker scrim does not change the result (1.13:1).
+      The confirm’s edge already reads above the dimmed menu.</li>
+    <li><code>usability-12</code> “Delete is split from Back up”: Delete is in About on purpose (rare, and risky next to Theme), and its
+      confirm offers a backup.</li>
+    <li><code>usability-13</code> “Focus must not start on the theme switch”: the WAI-ARIA dialog pattern starts on the first control,
+      and the dialog name “Settings” is read first.</li>
+    <li><code>usability-14</code> “Done is tied to width”: the mockup sets no breakpoint, and a tap outside or ⋯ closes the popover.
+      (The build still uses <code>pointer: coarse</code> for the phone layout; see answer 4.)</li>
+    <li><code>consistency-13</code> “The frames draw lookalikes”: the page says that the build uses the real components.</li>
+  </ul>
+  <p class="verdict"><b>Next:</b> the build applies the “In the build” column. Screenshots of the result replace these frames as
+  the reference.</p>
+</section>
+
+
+<script>
+  // The interactive frame only. Values were read from the running app (Alga Green complementary scheme,
+  // a shelf of 23 common Citadel paints). It is a mockup, so nothing is computed here.
+  const PAL = {
+    off:    [['Alga Green','AK Interactive',0,'Indistinguishable','0.0','success'], ['Violet','Scale75',0,'Fair','3.6','warning'], ['Keleshite Gold','Reaper',0,'Good','2.9','success']],
+    prefer: [['Deathworld Forest','Citadel',1,'Good','2.9','success'], ['Violet','Scale75',0,'Fair','3.6','warning'], ['Sigmarite','Citadel',1,'Fair','4.5','warning']],
+    only:   [['Deathworld Forest','Citadel',1,'Good','2.9','success'], ['Macragge Blue','Citadel',1,'Poor','13.1','danger'], ['Sigmarite','Citadel',1,'Fair','4.5','warning']],
+  };
+  const ROLES = [['Primary','#555E1B','#fff',''], ['Accent','#241B5E','#fff',''], ['Metal','#C8A13A','#15150F',' metal-sheen']];
+  const NOTE = { prefer: ['Prefer owned', 'Your paints rank first'], only: ['Only owned', 'From your 23 owned paints'] };
+  const HINT = { off: 'Every paint can match.', prefer: 'Your paints rank first in the palette, Plan and Export list. Equivalents shows all brands.',
+    only: 'Only your paints can match in the palette, Plan and Export list. Equivalents shows all brands.' };
+  const $ = s => document.querySelector(s);
+  let mode = 'prefer', opener = null;
+  function render() {
+    $('#demoPal').innerHTML = PAL[mode].map((p, i) => {
+      const [role, hex, ink, fx] = ROLES[i];
+      return `<div class="lrow"><div class="blk${fx}" style="background-color:${hex};color:${ink}"><b>${role}</b><span>${hex}</span></div>`
+        + `<div class="pt"><div class="pname">${p[0]}${p[2] ? ' <span class="own">✓ owned</span>' : ''}</div><div class="pbrand">${p[1]}</div>`
+        + `<div class="q"><i style="background:var(--${p[5]})"></i>${p[3]} <code>ΔE ${p[4]}</code></div></div></div>`;
+    }).join('');
+    const n = $('#demoNote');
+    n.hidden = mode === 'off';
+    if (mode !== 'off') {
+      n.innerHTML = `<span class="ck">✓</span><span class="tx"><b>${NOTE[mode][0]}</b><span class="mt">${NOTE[mode][1]}</span></span><span class="go">Change</span>`;
+      n.setAttribute('aria-label', `Use my paints: ${NOTE[mode][0].toLowerCase()}. Change`);
+    }
+    $('#demoHint').textContent = HINT[mode];
+    // the real Plan button for each state, with this shelf
+    const add = $('#demoAdd');
+    add.textContent = { off: '+ Add 15 to buy', prefer: '+ Add 11 to buy', only: 'Nothing new to buy for this scheme' }[mode];
+    add.className = mode === 'only' ? 'micro' : 'btn pri';
+    document.querySelectorAll('#demoSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === mode)));
+  }
+  function openMenu(from) {
+    opener = from; $('#demoMenu').hidden = false; $('#demoDots').setAttribute('aria-expanded', 'true');
+    if (from === $('#demoNote')) $('#demoSeg [aria-pressed="true"]').focus();
+  }
+  function closeMenu() {
+    $('#demoMenu').hidden = true; $('#demoDots').setAttribute('aria-expanded', 'false');
+    if (opener && !opener.hidden) opener.focus(); else $('#demoDots').focus();
+    opener = null;
+  }
+  $('#demoNote').addEventListener('click', e => openMenu(e.currentTarget));
+  $('#demoDots').addEventListener('click', e => $('#demoMenu').hidden ? openMenu(e.currentTarget) : closeMenu());
+  $('#demoSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; mode = b.dataset.v; render(); b.focus(); });
+  $('#demo').addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#demoMenu').hidden) closeMenu(); });
+  document.addEventListener('pointerdown', e => {
+    if (!$('#demoMenu').hidden && !e.target.closest('#demoMenu') && !e.target.closest('#demoDots') && !e.target.closest('#demoNote')) closeMenu();
+  }, true);
+
+  // ---------- the full ⋯ menu frame ----------
+  {
+    const q = s => document.querySelector(s);
+    const HINTS = { off: 'Every paint can match.',
+      prefer: 'Your paints rank first in the palette, Plan and Export list. Equivalents shows all brands.',
+      only: 'Only your paints can match in the palette, Plan and Export list. Equivalents shows all brands.' };
+    let ump = 'prefer', owned = 23, lastFocus = null, tTimer = 0;
+    const toast = msg => { const t = q('#fmToast'); t.textContent = msg; t.hidden = false; clearTimeout(tTimer); tTimer = setTimeout(() => { t.hidden = true; }, 2600); };
+    // the hint changes only on the painter's own change (or when the menu opens), never on a store update
+    function hint() {
+      const empty = ump !== 'off' && owned === 0;
+      q('#fmUmpHint').textContent = empty ? 'You own no paints yet.' : HINTS[ump];
+      q('#fmOpenShelf').hidden = !empty;
+    }
+    q('#fmUmp').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; ump = b.dataset.v;
+      q('#fmUmp').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); hint(); });
+    q('#fmShelf').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; owned = +b.dataset.n;
+      q('#fmShelf').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      q('#fmOwnedN').textContent = String(owned); hint(); });
+    q('#fmTheme').addEventListener('click', e => { const on = e.currentTarget.getAttribute('aria-checked') !== 'true';
+      e.currentTarget.setAttribute('aria-checked', String(on)); q('#fmPhone').classList.toggle('dark', on); });
+    q('#fmMenu').addEventListener('click', e => { const b = e.target.closest('[data-toast]'); if (b) toast(b.dataset.toast); });
+    q('#fmOpenShelf').addEventListener('click', () => toast('Opens the Shelf, where you mark the paints you own'));
+    const backup = () => toast('Backup downloaded: palette-studio-backup-2026-10-27.json');
+    q('#fmBackup').addEventListener('click', backup);
+    // open / close the settings dialog: focus moves in on open and returns to the opener on close
+    const menuOpen = () => !q('#fmMenu').hidden;
+    const openMenu = () => { q('#fmMenu').hidden = false; q('#fmDots').setAttribute('aria-expanded', 'true'); hint(); q('#fmTheme').focus(); };
+    const closeMenu = () => { q('#fmMenu').hidden = true; q('#fmDots').setAttribute('aria-expanded', 'false'); q('#fmDots').focus(); };
+    q('#fmDots').addEventListener('click', () => menuOpen() ? closeMenu() : openMenu());
+    q('#fmDone').addEventListener('click', closeMenu);
+    // the confirm: modal; Esc closes only the confirm; a second Esc closes Settings
+    const openDlg = () => { lastFocus = document.activeElement; q('#fmDim').hidden = false; q('#fmDlgCancel').focus(); };
+    const closeDlg = () => { q('#fmDim').hidden = true; (lastFocus || q('#fmRestore')).focus(); };
+    q('#fmRestore').addEventListener('click', openDlg);
+    q('#fmDlgCancel').addEventListener('click', closeDlg);
+    q('#fmDlgBackup').addEventListener('click', backup);
+    q('#fmDlgOk').addEventListener('click', () => { closeDlg(); owned = 41; q('#fmOwnedN').textContent = '41'; hint(); toast('Shelf and settings restored · 41 owned · 2 to buy'); });
+    q('#fmDim').addEventListener('click', e => { if (e.target === e.currentTarget) q('#fmDlgCancel').focus(); });   // a tap on the scrim keeps focus in the confirm
+    q('#fmPhone').addEventListener('keydown', e => {
+      if (!q('#fmDim').hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeDlg(); return; }
+        if (e.key !== 'Tab') return;   // keep focus inside the modal confirm
+        const f = [...q('#fmDlg').querySelectorAll('button')], i = f.indexOf(document.activeElement);
+        e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); return;
+      }
+      if (e.key === 'Escape' && menuOpen()) { e.preventDefault(); closeMenu(); }
+    });
+    hint();
+  }
+  render();
+  // start the demo at the live palette, where the note is
+  const sc = $('#demoScroll'); sc.scrollTop = sc.querySelector('.palhead').offsetTop - 120;
+</script>
+</body>
+</html>

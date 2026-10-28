@@ -1,33 +1,38 @@
 // wheel.js — the interactive harmony wheel: the HSV disc, its nodes, and every way to move them
-// (pointer drag, keyboard nudge, the lightness slider, Generate). Canvas rendering and hit-testing
-// only; it owns no scheme state.
+// (pointer drag, keyboard nudge, the lightness slider, Generate). Canvas rendering and hit-testing,
+// plus the slider's paint; it owns no scheme state.
 //
-// The wheel works entirely in the SCHEME frame (seed.js): its base node is schemeBase(), not the
-// pick, and a drag writes back through pickForSchemeBase() so accent-seed mode stays 180° coherent.
+// The wheel works in the SCHEME frame (seed.js): its base node is schemeBase(), not the pick, and a
+// drag writes back through pickForSchemeBase() so accent-seed mode stays 180° coherent. The one
+// exception is the lightness slider: it works on the pick, so a round trip is exact (see its section).
 //
 // Everything it needs from the app is injected, so this file has no opinion about how state is
 // stored or what else re-renders: `setupWheel(ctx)` binds the canvas once and returns its `draw`,
-// which the app calls for discrete changes (picker, hex field, harmony).
+// which the app calls for discrete changes (the seed field, harmony), and `endLightnessRun`.
 
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn } from './color.js';
+import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn,
+         lightnessInput, lightnessBand, lightnessForHue } from './color.js';
 import { HARMONY_OFFSETS, isHueHarmony, isNeutralHarmony, POP_MIN_S } from './harmony.js';
-import { pickForSchemeBase } from './seed.js';
+import { pickForSchemeBase, schemeBaseOf } from './seed.js';
 import { nearestPaint } from './data.js';
 import * as ui from './ui.js';
+import { t } from './i18n.js';
 
 const $ = sel => document.querySelector(sel);
 
 /**
  * Bind the wheel canvas. `ctx` supplies the app's state and the operations the wheel triggers:
- *   state · render(reason) · schemeBase() · activePop() · matchOpts() · basePaint()
- *   wheelRoleGlyphs() · addFreeNode() · removeFreeNode() · collapseBanner() · setDragging(bool)
+ *   state · render(reason) · pickHex() · schemeBase() · activePop() · matchOpts() · basePaint()
+ *   wheelRoleGlyphs() · addFreeNode() · removeFreeNode() · collapseBanner() · seedNews(msg) · setDragging(bool)
  * `setDragging` exists because the app gates mid-drag history snapshots on it — a drag must produce
  * ONE undo entry, not one per frame.
- * @returns {() => void} the canvas redraw
+ * @returns {{ draw: () => void, endLightnessRun: () => void }} the redraw (canvas + slider paint), and
+ *   the hook the app calls when something other than the slider changes the colour, the harmony or
+ *   the seed role
  */
 export function setupWheel(app) {
-  const { state, render, schemeBase, activePop, matchOpts, basePaint,
-          wheelRoleGlyphs, addFreeNode, removeFreeNode, collapseBanner, setDragging } = app;
+  const { state, render, pickHex, schemeBase, activePop, matchOpts, basePaint,
+          wheelRoleGlyphs, addFreeNode, removeFreeNode, collapseBanner, seedNews, setDragging } = app;
   const cv = $('#wheel'), ctx = cv.getContext('2d');
   const COARSE = matchMedia('(pointer:coarse)').matches;
   const NODE = COARSE ? { base: 15, part: 12, hit: 26 } : { base: 11, part: 8, hit: 18 };  // hit: used in S4
@@ -39,8 +44,9 @@ export function setupWheel(app) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);     // draw in CSS px → crisp on retina
     cx = W / 2; cy = H / 2; R = W / 2 - 16;
   }
+  const wl = $('#wl');
   state.wheelL = rgbToHsl(hexToRgb(schemeBase()))[2];
-  $('#wl').value = Math.round(state.wheelL * 100);
+  wl.value = Math.round(state.wheelL * 100);
   const pos = (h, s) => [cx + Math.sin(h * Math.PI / 180) * s * R, cy - Math.cos(h * Math.PI / 180) * s * R];
   const disc = document.createElement('canvas');   // offscreen filled HSV disc, rasterised once per (size, lightness)
   let discKey = '';
@@ -121,6 +127,7 @@ export function setupWheel(app) {
     if (state.hiHex) for (const n of hitNodes()) {
       if (nodeHex(n).toUpperCase() === state.hiHex) { ctx.beginPath(); ctx.arc(n.x, n.y, NODE.base + 5, 0, 7); ctx.lineWidth = 3; ctx.strokeStyle = accent; ctx.stroke(); }
     }
+    paintSlider();
   }
   /** A node's drawn hex, matching how it's filled — the single mapping for badges/link rings/announce. */
   const nodeHex = n => n.kind === 'base' ? schemeBase() : n.kind === 'pop' ? activePop()
@@ -146,7 +153,6 @@ export function setupWheel(app) {
     // pointer — in accent-seed mode that's 180° away, and writing the raw colour made the whole
     // scheme jump the moment you grabbed a node.
     state.customHex = pickForSchemeBase(rgbToHex(hslToRgb([h, s, state.wheelL])), state.seedRole);
-    $('#hex').value = state.customHex.replace('#', '');
     commit();
   }
   const pointerXY = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height)]; };
@@ -227,11 +233,86 @@ export function setupWheel(app) {
     }
     if (handled) e.preventDefault();
   });
-  $('#wl').addEventListener('input', e => { state.wheelL = +e.target.value / 100; const [h, s] = rgbToHsl(hexToRgb(schemeBase())); setBase(h, s); });
-  $('#wrand').addEventListener('click', () => setBase(Math.random() * 360, 0.5 + Math.random() * 0.45));
+  // --- the lightness slider (CLAUDE.md §3.6) ---
+  // One run is one drag, or one run of key presses (lightnessInput, color.js). It holds the pick's
+  // hue and saturation, so a move to 6% and back gives the start colour exactly. It works on the
+  // PICK, not the scheme base: in accent-seed mode the base is the pick turned 180°, and turning it
+  // back to store it rounded the colour again. A neutral-mode switch at the slider's ends changes the
+  // harmony but not the pick, so the run stays open through it (§7).
+  let lrun = null;
+  /** Something other than the slider changed the colour, the harmony or the seed role: the next move
+   *  starts a new run. */
+  const endLightnessRun = () => { lrun = null; };
+  wl.addEventListener('input', () => {
+    // A wheel drag and ↻ write the pick through setBase, not through render('seed'). lightnessInput
+    // sees that the pick is not the one this run wrote, and starts a new run.
+    const step = lightnessInput(lrun, { v: +wl.value, pick: pickHex(), custom: state.customHex,
+      wheelL: state.wheelL, min: +wl.min, max: +wl.max });
+    lrun = step.run;
+    state.customHex = step.custom;
+    state.wheelL = step.wheelL;
+    // The spoken value must be current when the input event ends; the paint can wait for the frame.
+    sliderText();
+    commit();
+  });
+  /** "24%, dark": the per cent and a word, because a bare number means little to a painter (§2). */
+  const BAND_KEYS = { veryDark: 'wlVeryDark', dark: 'wlDark', mid: 'wlMid', light: 'wlLight', veryLight: 'wlVeryLight' };
+  function sliderText() {
+    // The slider stops at 6 and 94. A colour past an end (white, black) is spoken as its own per cent,
+    // not as the end's: "100%, very light", not "94%" (§2 honest). Inside the range the two are equal.
+    const v = +wl.value, real = Math.round(state.wheelL * 100);
+    const p = Math.min(+wl.max, Math.max(+wl.min, real)) === v ? real : v;
+    const text = `${p}%, ${t(BAND_KEYS[lightnessBand(p)])}`;
+    // draw() runs every frame of a wheel drag: write only a real change
+    if (wl.getAttribute('aria-valuetext') !== text) wl.setAttribute('aria-valuetext', text);
+  }
+  // The track shows the pick's own hue and saturation from L 6% to 94%, one stop per quarter of the
+  // slider's range, so the track under the thumb is about the thumb's colour.
+  const STOPS = [0.06, 0.28, 0.50, 0.72, 0.94];
+  let stopKey = '';
+  /** Paint the slider from the pick. Called from draw(), so a pick, a typed hex, undo, ↻ and a share
+   *  link all repaint it. Only custom properties on the input change: no layout, no animation (§3.4),
+   *  and never a property on :root, which every swatch would read (§3.6). */
+  function paintSlider() {
+    const pick = pickHex();
+    // While a run is open, its held h and s: from the 8-bit pick they would shift a little each step.
+    const [h, s] = lrun && pick === lrun.wrote ? [lrun.h, lrun.s] : rgbToHsl(hexToRgb(pick));
+    const key = h + ':' + s;
+    if (key !== stopKey) {
+      stopKey = key;
+      wl.style.setProperty('--wl-stops', STOPS.map(l => rgbToHex(hslToRgb([h, s, l]))).join(', '));
+    }
+    wl.style.setProperty('--wl-thumb', pick);
+    // the thumb's ring is near-black or white, whichever reads better on the fill (§7 text-on-swatch)
+    wl.style.setProperty('--wl-ring', textOn(pick));
+    sliderText();
+  }
+  // ↻: a random hue and strength (50–95%) for the scheme base, at the wheel's lightness. Near black or
+  // white every hue is grey there, so ↻ changed nothing (#000000 stayed #000000) and the studio could stay
+  // neutral. Then the lightness moves the smallest step toward mid that lets the colour show (C* of
+  // NEUTRAL_EXIT or more, so neutral mode ends), and the toast and the live region say so (§3.6).
+  $('#wrand').addEventListener('click', () => {
+    const h = Math.random() * 360, s = 0.5 + Math.random() * 0.45;
+    // the chroma that counts is the scheme base's as setBase will store it (accent-seed: the pick 180° away)
+    const role = state.seedRole;
+    const fit = lightnessForHue(h, s, state.wheelL,
+      { hexOf: (hh, ss, ll) => schemeBaseOf(pickForSchemeBase(rgbToHex(hslToRgb([hh, ss, ll])), role), role) });
+    if (fit.moved) {
+      state.wheelL = fit.l;
+      wl.value = Math.round(fit.l * 100);
+      seedNews(t('randLightMoved', { pct: Math.round(fit.l * 100) }));
+    }
+    endLightnessRun();   // the slider's next move starts a new run from the new colour (lightnessInput)
+    setBase(h, s);
+    // One press, not a drag: write its undo step now. Left to the debounce, a quick Roll or chip merged it
+    // into that step, and two quick presses became one. The words wait for the debounced announce: the new
+    // scheme is drawn on the next frame, and an announce now read the old pick's note.
+    render('settle', { speak: false });
+  });
   measure();
   draw();
   let rtimer = 0;   // re-measure + redraw when the responsive canvas box changes (resize / orientation / stack)
   window.addEventListener('resize', () => { clearTimeout(rtimer); rtimer = setTimeout(() => { measure(); draw(); }, 150); });
-  return draw;   // the app calls this for discrete base/harmony changes (picker, hex, harmony)
+  // the app calls draw for discrete base/harmony changes (picker, hex, harmony)
+  return { draw, endLightnessRun };
 }

@@ -40,6 +40,21 @@ A phone unlocks things the web version can't do as well:
   rather than building inventory from scratch. Positioning stays "collection-aware planner," not a
   full inventory app — see [`USE_CASES.md`](USE_CASES.md) §0.5/§10.)*
 - **Haptics on the wheel**, native **share sheet**, offline-by-default, Home-screen presence.
+- **Resizable sheets (detents)** — *requested by Ryan, 2026-10-27, for the full app release; not now.* A sheet
+  opens as a card at part height and grows to full height when you scroll its contents or drag its grabber,
+  as the iOS system sheets do. Apple's names for this: a *resizable sheet* with *detents* (`medium` ≈ half
+  height, `large` = full height) and a *grabber* ([HIG · Sheets](https://developer.apple.com/design/human-interface-guidelines/sheets)).
+  UIKit's `UISheetPresentationController.prefersScrollingExpandsWhenScrolledToEdge` is `true` by default:
+  "scrolling up in the sheet increases its detent instead of scrolling the sheet's content. After the sheet
+  reaches its largest detent, scrolling begins"
+  ([Apple docs](https://developer.apple.com/documentation/uikit/uisheetpresentationcontroller/prefersscrollingexpandswhenscrolledtoedge)).
+  First users: the paint detail sheet ([`PLAN.md`](PLAN.md) §5 backlog 7) and the Shelf's Filters sheet.
+  **Decision (Ryan, 2026-10-27): a web sheet in v2.0, native later only if needed.** Build the detents in web
+  code (CSS + pointer events, no plugin), so the sheet ships with the v2.0 release and the website gets it
+  too. Apple's own sheet (`UISheetPresentationController`) would be a Stage-2 native screen, and
+  `CLAUDE_NATIVE.md` §1 keeps those out of v2.0. Its contents would also have to be native. So it replaces
+  the web sheet only if the web sheet fails a real feel test on a device. That is the §2 gate for Stage 2:
+  "an observed perf/feel failure the web layer can't fix".
 - iPad + **Apple Pencil** for the harmony wheel.
 
 ---
@@ -174,10 +189,11 @@ Push for "back in stock" much later. Out (still): accounts, server, payments, so
 
 **Label OCR is the route that actually works today (added 2026-08-11).** The barcode blocker above is a
 *data* problem, not a camera one — and it has a way around it. Reading the **printed name** off the pot
-with on-device text recognition (Vision on iOS) and fuzzy-matching it against the 2,508 names already in
+with on-device text recognition (Vision on iOS) and fuzzy-matching it against the names of the 3,225 paints already in
 `paints.json` needs **no new data at all**, keeps the no-backend rule (§1), and answers the same in-store
 question: *what is this pot, do I already own it, what is it close to?* It also degrades gracefully — a
-bad read just drops its text into the search field instead of failing. Treat barcode as the nicer UX to
+bad read just drops its text into the Shelf search instead of failing (the seed field's matcher, so brand and
+line words narrow it too). Treat barcode as the nicer UX to
 reach **if** a mapping ever exists, and OCR as the shipping path. Sketched in
 [`mockups/buying-assistant.html`](../mockups/buying-assistant.html) §Cross-cutting.
 
