@@ -416,7 +416,10 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   "saturated" hexes like `#100000` classify correctly) has no usable hue: the studio enters **neutral
   mode** automatically (and reversibly — saturate the seed and it exits, restoring the parked harmony).
   Mode switching uses **hysteresis** (enter < 10, exit > `NEUTRAL_EXIT` = 14): a drag hovering on the
-  boundary can't flip the mode per frame. The one neutral explainer is a wheel **overlay** (never
+  boundary can't flip the mode per frame. A load (a reload or a share link) holds no mode yet, and the link
+  has no mode in it. So in the 10–14 band, a neutral-only harmony in the link (neutral-pop · duotone ·
+  warm-cool) starts neutral mode, and any other harmony starts hue mode (`harmony.js startsNeutral`). A
+  reload then keeps the link's harmony. The one neutral explainer is a wheel **overlay** (never
   reflows, §3.4) that auto-collapses to a ◐ pill; the pill re-expands it.
   Hue-rotation harmonies grey out in place (visible + tooltip'd); the neutral-native schemes are
   (`harmony.js neutralPartners`, recipes locked; partners are ordered **[secondary, accent]** by

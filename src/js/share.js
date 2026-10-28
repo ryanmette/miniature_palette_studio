@@ -8,24 +8,26 @@
 //
 //   p   paint id (omitted for a custom hex)     c   the pick's hex, always present as the fallback
 //   h   harmony id                              r   'accent' when the pick seeds the Accent role
-//   x   added swatches, h.s.l with '!' = locked d   harmony offsets detached by lock/edit
+//   x   added swatches, hex with '!' = locked   d   harmony offsets detached by lock/edit
+//       (RRGGBB, and an old link's h.s.l tokens still decode)
 //   pp  neutral mode's pop accent               f   '1' = live palette filled with real paint
 //   v   active output tab (omitted for 'plan')  m   'shelf' = deep-link to the Shelf (address bar only,
 //                                                     never in a shared link — see shareUrl)
 //   t   'dark' theme. The address bar has it only for a link's theme (app.js updateUrl); a shared
 //       link has it whenever the scheme shows dark (shareUrl).
 
-import { normHex } from './color.js';
+import { normHex, rgbToHex, hslToRgb, rgbToHsl, hexToRgb } from './color.js';
 import { clampPop } from './harmony.js';
 
 const clamp01 = n => Math.min(1, Math.max(0, n));
 const wrapHue = h => ((h % 360) + 360) % 360;
 
-/** Serialise one added swatch: hue.sat.light, with a trailing '!' when it's locked.
- *  Hues are always written already wrapped to 0-359, which is what lets '-' serve as the separator
- *  between swatches — a negative hue would split into an empty token and be dropped on the way back. */
+/** Serialise one added swatch: its hex without the '#', with a trailing '!' when it is locked.
+ *  The hex is the colour on screen, so a reload shows the same colour. The old token (hue.sat.light in
+ *  whole numbers) was up to 3 sRGB units off per channel after a reload. A hex has no '.' and no '-', so
+ *  decodeNodes never reads it as an old token, and '-' stays the separator between swatches. */
 const encodeNode = (n, wheelL) =>
-  `${Math.round(n.h)}.${Math.round(n.s * 100)}.${Math.round((n.l ?? wheelL) * 100)}${n.locked ? '!' : ''}`;
+  `${rgbToHex(hslToRgb([n.h, n.s, n.l ?? wheelL])).slice(1)}${n.locked ? '!' : ''}`;
 
 /**
  * Palette state → URLSearchParams. `s.pickHex` is the PICK (see seed.js), never the scheme base —
@@ -67,12 +69,19 @@ export function shareUrl(href, theme) {
 }
 
 /** Parse the `x` param back into added swatches. Malformed entries are dropped, never thrown on —
- *  a hand-edited or truncated link should lose a swatch, not fail to load the app. */
+ *  a hand-edited or truncated link should lose a swatch, not fail to load the app. A token is a hex
+ *  (RRGGBB) or, in an old link, hue.sat.light in whole numbers (the light can be absent). */
 export function decodeNodes(xp, maxFree = 6) {
   if (!xp) return [];
   return xp.split('-').map(tok => {
     const locked = tok.endsWith('!');
-    const [hh, sa, la] = (locked ? tok.slice(0, -1) : tok).split('.');
+    const body = locked ? tok.slice(0, -1) : tok;
+    const hex = normHex(body);
+    if (hex) {
+      const [h, s, l] = rgbToHsl(hexToRgb(hex));   // float error can make s a little more than 1
+      return { h, s: clamp01(s), l: clamp01(l), ...(locked ? { locked: true } : {}) };
+    }
+    const [hh, sa, la] = body.split('.');
     const H = +hh, S = +sa / 100, L = +la / 100;
     if (!(Number.isFinite(H) && Number.isFinite(S))) return null;
     return { h: wrapHue(H), s: clamp01(S), ...(Number.isFinite(L) ? { l: clamp01(L) } : {}), ...(locked ? { locked: true } : {}) };

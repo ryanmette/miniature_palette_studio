@@ -416,6 +416,23 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **A reload or a share link changed the harmony of a seed that is almost neutral.** Neutral mode starts under
+  Lab C\* 10 and stops at 14 or more (CLAUDE.md §7). Between the two, a live change keeps the mode that the seed
+  has. The link does not carry the mode, so a load always started such a seed in hue mode. For example,
+  `?c=F5DCD6` (C\* 9.8) opens in neutral mode. Two lightness steps down give `#F3D5CE` (C\* 11.8), and the scheme
+  stays Neutral + pop. A reload then changed it to Complementary, with different colours. Now a neutral-only
+  harmony in the link (Neutral + pop, Duotone, Warm / cool) starts neutral mode in the band (`harmony.js`
+  `startsNeutral`). Live changes keep the hysteresis rule. Shades and Custom can be in either mode. They start in
+  hue mode, with the same colours. This was the case before this release too.
+- **Added colours changed a little after a reload.** The link kept each added colour as hue, saturation and
+  lightness in whole numbers (`x=131.37.39`). After a reload, a channel could be up to 3 sRGB units off: `#3E874B`
+  became `#3F884C`. Now the link keeps the hex of each added colour (`x=3E874B-18331D-4EAA5F`, with `!` after a
+  locked colour), and a reload shows the same colours. The tokens are also shorter: 6 characters, not up to 11.
+  An old link with `h.s.l` tokens still opens with its colours, and the address bar then shows the hex form. Tests
+  check 5,000 random colours. A one-time check of all 16,777,216 sRGB colours found no difference. This was the
+  case before this release too.
+- Tests for `startsNeutral`, for the 10–14 band through a link, and for the hex swatch tokens (exact colours, old
+  links, malformed tokens): 246 tests. (CLAUDE.md §7 is updated; service worker `ps-v60`.)
 - **Accessibility: focus rings that a paint, a neighbour or the header could hide (WCAG 2.1 AA, 2.4.7
   and 1.4.11).** The `--focus` ring from this release shows well on chrome. In some places, the colour
   next to the ring was not chrome:
