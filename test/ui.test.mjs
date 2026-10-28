@@ -71,14 +71,14 @@ test('pickTile: your pick has the pick ring and says so; a metallic has its over
   const metal = pickTile(LEAD, { id: 'pko1', k: 1, mark: 'want' }, tk);
   assert.match(metal, /class="sw metal"/);
   assert.match(metal, /class="pkb"><svg/);                  // the finish icon before the brand (§2)
-  assert.match(metal, /Leadbelcher, Citadel Base, metallic, to buy/);
+  assert.match(metal, /Leadbelcher, Citadel Base, metallic, on the shopping list/);
   assert.match(metal, /cbadge want/);
 });
 
 test('pickRow: an option row with brand · line · mark and the finish tag; a hex match shows the TRUE ΔE', () => {
   const plain = pickRow(TWIN, { id: 'pko5', k: 5, mark: 'want' }, tk);
   assert.match(plain, /role="option" id="pko5" data-k="5" aria-selected="false"/);
-  assert.match(plain, /<b>Dawnstone<\/b><span class="pksub">Citadel · Layer · to buy /);   // the row shows the line
+  assert.match(plain, /<b>Dawnstone<\/b><span class="pksub">Citadel · Layer · on the shopping list /);   // the row shows the line
   assert.doesNotMatch(plain, /pkde/);
   const m = { deltaE: 2.44, quality: { label: 'Good', tier: 'success' } };
   const hex = pickRow(LEAD, { id: 'pko6', k: 6, current: true, match: m }, tk);

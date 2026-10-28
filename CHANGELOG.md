@@ -258,6 +258,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **One name for one thing.** The app used several names for the same thing. Now each has one:
+  - The paint you start from is **your paint** (or **your colour** for a typed hex). "Seed", "base colour" and
+    "seed here" are gone. The dock button is "Make this your paint", and ↻ is "Pick a colour for me".
+  - The tab of role cards is **Recipe** (was "Plan · roles"). The live palette shows **Target / Pot** (was
+    "Ideal / Real"), and a role card says "Nearest pot".
+  - Cross-brand matches are **Other brands** (was "Equivalents").
+  - Paints to buy go on the **shopping list**, and the action is **Add** (was "to buy", "buy list", "+ buy").
+  - The files: "Save my shelf (CSV)", "Save the shopping list" and "Back up everything".
+  - The Help page, the Privacy page and the screen-reader names use the same words. Links and saved data do
+    not change.
+- **Shorter help on the Shelf.** With a mouse: "Click a paint, then P owned · U shopping list · X clear.
+  Right-click for more." On touch: "Tap a paint to mark it. Hold for more." The full list of keys is still on
+  the Help page and in the grid's screen-reader name.
 - **A shorter Studio on a phone.** The live palette shows its colours side by side, three to a row, in place of
   one full-width row each, and Undo, Redo, + and − share one row with Ideal / Real. From the seed field to the
   first Plan card is now 1,294px at 390 × 844 (was 1,445px). In the one-column layout (1024px and narrower) the

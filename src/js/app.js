@@ -63,7 +63,7 @@ const validHarmony = t => isHarmony(t) || isNeutralHarmony(t);
 const NEUTRAL_OK = new Set(NEUTRAL_HARMONY_TYPES);
 const NEUTRAL_STRIP = [...NEUTRAL_HARMONY_TYPES, ...HARMONY_TYPES.filter(t => !NEUTRAL_OK.has(t))];
 const NEUTRAL_DISABLED = new Set(HARMONY_TYPES.filter(t => !NEUTRAL_OK.has(t)));
-const NEUTRAL_DISABLED_WHY = 'Needs a hue to rotate — unavailable for a neutral seed';
+const NEUTRAL_DISABLED_WHY = 'Needs a hue to rotate — unavailable for a neutral colour';
 /** Suggested pops — classic neutral pairings (locked ideal hexes, not paint hexes). */
 const POPS = [
   { hex: '#9C1626', name: 'Crimson' }, { hex: '#0F6B6E', name: 'Teal' }, { hex: '#C4581A', name: 'Ember' },
@@ -129,7 +129,7 @@ function renderPlan() {
   // No overview colour bar here — the role-labelled live palette (beside the wheel) is now the single
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
-    + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus the selected tone ladder</div>'
+    + '<div class="micro" style="margin:14px 0 0">Each role: target colour → nearest pot (ΔE 2000), plus the selected tone ladder</div>'
     + ui.roleSlots(state.scheme, store.markOf);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
@@ -195,7 +195,7 @@ function renderLive() {
     if (!switchPlaced && role === otherRoleName) {
       switchPlaced = true;
       const disabled = otherRoleName === 'Accent' && neutralSeed()
-        ? 'A neutral seed always holds Primary — pick a pop accent on the wheel instead' : null;
+        ? 'A neutral colour always holds Primary — pick a pop accent on the wheel instead' : null;
       return { type: 'switch', target: otherRoleName === 'Accent' ? 'accent' : 'main', disabled };
     }
     return null;
@@ -258,7 +258,7 @@ function applyEquivSelect() {
     const top = el.querySelector('.lctop'); if (!top) continue;
     if (on) {   // the swatch becomes a keyboard-operable "show equivalents" button — only on this tab
       top.setAttribute('role', 'button'); top.setAttribute('tabindex', '0');
-      top.setAttribute('aria-label', `Show equivalents for ${(top.querySelector('.lctag')?.textContent || el.dataset.hex).trim()}`);
+      top.setAttribute('aria-label', `Show other brands for ${(top.querySelector('.lctag')?.textContent || el.dataset.hex).trim()}`);
     } else { top.removeAttribute('role'); top.removeAttribute('tabindex'); top.removeAttribute('aria-label'); }
   }
 }
@@ -268,7 +268,7 @@ function setEquivSource(hex) {
   state.equivSource = h;
   renderEquiv();
   applyEquivSelect();
-  const st = $('#status'); if (st) st.textContent = `Showing equivalents for ${(state.roleByHex || {})[h] ? (state.roleByHex[h] + ' ') : ''}${h}`;
+  const st = $('#status'); if (st) st.textContent = `Showing other brands for ${(state.roleByHex || {})[h] ? (state.roleByHex[h] + ' ') : ''}${h}`;
 }
 /** Re-render the harmony strip for the current mode: neutral seeds get the neutral-native schemes
  *  first with the hue rotations greyed in place (visible + tooltip'd, never removed — §3.4). */
@@ -344,9 +344,9 @@ function ensureHarmonyMode() {
     if (n) { preNeutralHarmony = state.harmony; state.harmony = 'neutral-pop'; }
     else { state.harmony = validHarmony(preNeutralHarmony) && !isNeutralHarmony(preNeutralHarmony) ? preNeutralHarmony : 'complementary'; preNeutralHarmony = null; }
     harmonyNote = n
-      ? { full: 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.',
-          short: 'Neutral seed — hue harmonies are unavailable for a neutral.' }
-      : { full: `Seed has a hue again — back to the ${state.harmony} scheme.`, short: 'Seed has a hue again.' };
+      ? { full: 'Neutral colour — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.',
+          short: 'Neutral colour — hue harmonies are unavailable for a neutral.' }
+      : { full: `Your colour has a hue again — back to the ${state.harmony} scheme.`, short: 'Your colour has a hue again.' };
     notes.push(harmonyNote.full);
   }
   // The seed role parks and restores SYMMETRICALLY with the harmony above. A neutral seed always
@@ -359,7 +359,7 @@ function ensureHarmonyMode() {
   } else if (restoring) {
     state.seedRole = 'accent';
     preNeutralSeedRole = null;
-    notes.push('Your pick seeds the Accent role again.');
+    notes.push('Your paint sets the Accent role again.');
   }
   // Hand the notes to announce() rather than writing #status here: they used to land in the live
   // region and be overwritten a statement later by the caller's own announce(), so the one thing a
@@ -679,6 +679,8 @@ function renderA11y() {
 // name such as __proto__ or toString found the prototype's member (?v=__proto__ crashed the app on load;
 // ?v=toString showed no tab).
 const TABS = ['plan', 'equiv', 'a11y'];
+// what a screen reader hears for each tab: its visible name, not the code name
+const TAB_SAID = { plan: 'Recipe', equiv: 'Other brands', a11y: 'Accessibility' };
 function renderActive() {
   if (state.tab === 'equiv') renderEquiv();
   else if (state.tab === 'a11y') renderA11y();
@@ -705,13 +707,13 @@ const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComput
 
 function shelfHint() {
   if (COARSE) return shelf.selectMode
-    ? 'Select mode: tap swatches, then Owned / To buy / Clear below. Long-press a swatch for the menu.'
-    : 'Tap a swatch to cycle owned → to buy → clear · “Select” for multi · long-press for the menu.';
-  return 'Click to select · ⇧ or ⌘ for many · drag a box · then P (owned) · U (to buy) · X (clear). Right-click for options.';
+    ? 'Select mode: tap paints, then Owned, Shopping list or Clear below. Hold a paint for the menu.'
+    : 'Tap a paint to mark it. Hold for more.';
+  return 'Click a paint, then P owned · U shopping list · X clear. Right-click for more.';
 }
 function renderShelfStats() {
   const c = store.counts(), total = state.idx.paints.length;
-  $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} to buy</span> · ${total} total`;
+  $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} on the shopping list</span> · ${total} total`;
 }
 function renderShelfBar() {
   $('#shelfBar').innerHTML = ui.shelfBar(shelf.sel.size);
@@ -962,8 +964,8 @@ function applyMark(mark) {
   const cells = ids.map(cellEl).filter(Boolean);
   for (const c of cells) c.classList.remove('flash');
   if (cells.length) { void cells[0].offsetWidth; for (const c of cells) c.classList.add('flash'); }
-  const verb = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'cleared';
-  announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} marked ${verb}.`);
+  const verb = mark === 'owned' ? 'marked owned' : mark === 'want' ? 'added to the shopping list' : 'cleared';
+  announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} ${verb}.`);
 }
 function updateCell(c, mark) {
   c.dataset.mark = mark;
@@ -999,7 +1001,7 @@ function setupShelf() {
       } else {                                    // tap cycles this swatch's mark (approach C)
         const id = c.dataset.id, next = { none: 'owned', owned: 'want', want: 'none' }[c.dataset.mark || 'none'];
         store.setMark(id, next);
-        render('marks', { ids: [id] });          // the cell and the stats; it leaves an Owned / To buy view
+        render('marks', { ids: [id] });          // the cell and the stats; it leaves an Owned / Shopping list view
         const cc = cellEl(id);
         if (cc) { cc.classList.remove('flash'); void cc.offsetWidth; cc.classList.add('flash'); }
         const p = state.idx.byId.get(id);
@@ -1212,7 +1214,7 @@ function announce() {
   // names the harmony ("Rolled: Compound") replaces "compound scheme" in the summary: one name, said once.
   const lead = newsLead, named = newsNamesHarmony; newsLead = ''; newsNamesHarmony = false;
   $('#status').textContent = (lead ? lead + '. ' : '') + (note ? note + ' ' : '')
-    + `${baseInfo().name}, ${named ? '' : state.harmony + ' scheme, '}${state.tab} view.` + subTxt;
+    + `${baseInfo().name}, ${named ? '' : state.harmony + ' scheme, '}${TAB_SAID[state.tab] || state.tab} view.` + subTxt;
 }
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
@@ -1439,7 +1441,7 @@ function addGapsToBuy() {
   const ids = [...new Set(schemeGaps(state.scheme, store.ownedIds()).map(g => g.paint.id))].filter(id => store.markOf(id) !== 'want');
   const n = ids.length;
   if (n) { store.setMarks(ids, 'want'); render('marks', { ids }); }   // one write, one repaint
-  toast(n ? `Added ${n} paint${n > 1 ? 's' : ''} to your buy list` : 'Nothing new to add');
+  toast(n ? `Added ${n} paint${n > 1 ? 's' : ''} to the shopping list` : 'Nothing new to add');
 }
 function setLadder(v) {                          // #7 — tone-ladder style (persisted)
   if (!['wash', 'tone', 'both'].includes(v)) return;
@@ -1485,10 +1487,10 @@ function doExport() {
   // The accumulated to-buy collection (#5) — the SHOP output, independent of the current scheme.
   const want = [...store.wantIds()].map(id => state.idx.byId.get(id)).filter(Boolean);
   if (want.length) {
-    t += `\nYour to-buy list (${want.length}):\n`;
+    t += `\nYour shopping list (${want.length}):\n`;
     for (const p of want) t += `  ${p.name} (${p.brand}${p.line && p.line !== '—' ? ' ' + p.line : ''}) ${p.hex}\n`;
   }
-  t += '\nHex values are approximate; ΔE = perceptual distance to the ideal colour.\n';
+  t += '\nHex values are approximate; ΔE = perceptual distance to the target colour.\n';
   download('palette-shopping-list.txt', t);
   toast(i18n.t('listSaved'));   // download is the artefact — no silent clipboard write (native-share direction)
 }
@@ -1517,7 +1519,7 @@ function exportCollectionCsv() {
   const n = store.counts();
   if (!n.owned && !n.want) { toast('Your shelf is empty — nothing to export'); return; }
   download('my-paint-shelf.csv', marksToCsv(state.idx, store.ownedIds(), store.wantIds()), 'text/csv');
-  toast(`Exported ${n.owned} owned · ${n.want} to buy`);
+  toast(`Exported ${n.owned} owned · ${n.want} on the shopping list`);
 }
 /** Import a paintRack CSV (merges) or a Palette Studio JSON backup (#27). A backup REPLACES the shelf
  *  and settings, so it goes through the same confirm as ⋯ → Restore… — one rule for every .json. */
@@ -1954,7 +1956,7 @@ function setupEyedropper() {
   };
   const at = e => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * (cv.width / r.width)), Math.round((e.clientY - r.top) * (cv.height / r.height))]; };
   const inBounds = (x, y) => x >= 0 && y >= 0 && x < cv.width && y < cv.height;
-  const commit = (x, y) => {                           // lock the sampled colour in (what "Use as base colour" applies)
+  const commit = (x, y) => {                           // lock the sampled colour in (what "Use this colour" applies)
     const c = avg(x, y); if (!c) return;               // a fully-transparent spot has no colour to lock
     pick = c; chip.style.background = pick; hexEl.textContent = pick; useBtn.disabled = false;
   };
