@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
+import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -281,4 +281,21 @@ test('matchNote: the "·" ends the bold head (no-break space), so a wrapped expl
     assert.match(html, /<\/b> · <span class="mt">[^·]/);
     assert.doesNotMatch(html, /class="mt">·/);
   }
+});
+
+test('empty states: a heading, one sentence, one action that clears the filters (UX 4)', () => {
+  assert.equal(shelfGrid([], () => 'none'), '', 'an empty grid holds no fake option');
+  for (const [kind, head] of [['owned', 'No paints marked as owned yet'], ['want', 'Your shopping list is empty'], ['filter', 'No paints match']]) {
+    const html = shelfEmpty(kind, 'red');
+    assert.ok(html.startsWith(`<h3>${head}</h3><p>`), `${kind}: heading first`);
+    assert.equal((html.match(/data-shelfclear/g) || []).length, 1, `${kind}: one action`);
+  }
+  assert.match(shelfEmpty('filter', '<b>'), /&lt;b&gt;/, 'the search words are escaped');
+});
+
+test('a Poor match says what it means and what to do (UX 4)', () => {
+  const m = d => ({ paint: { id: 'x', name: 'X', brand: 'B', line: 'L', hex: '#123456', type: 'layer' }, deltaE: d, quality: { label: d > 10 ? 'Poor' : 'Loose', tier: d > 10 ? 'danger' : 'warning' } });
+  assert.match(matchChip(m(13.2)), /class="poornote"><strong>No pot within ΔE 10\.<\/strong>/);
+  assert.doesNotMatch(matchChip(m(9.9)), /poornote/, 'Loose (ΔE 10 or less) gets no note');
+  assert.match(matchChip(null), /class="poornote"><strong>No pot is close\.<\/strong>/);
 });

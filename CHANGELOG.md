@@ -258,6 +258,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **Empty and error states say what happened and what to do next** (UX 4):
+  - A Shelf filter with no paints shows a heading, one sentence and one action ("Show all paints", or "Clear
+    the search and filters"). The Owned filter with nothing owned, and an empty shopping list, have their own
+    words.
+  - A file that is not a backup, or that cannot be read, now opens a notice that stays until you close it,
+    with "Pick another file". It was a toast that went after a few seconds.
+  - A Poor match (over ΔE 10) in the Recipe now says "No pot within ΔE 10. A mix or a glaze gets closer, or
+    see Other brands." With no match at all it says "No pot is close."
 - **The dock on the live palette is easier to read.** The column with your paint shows a "✓ Your paint" tag
   in place of a cut-off copy of the paint's name (the name is in the column's footer). The "Make this your
   paint" dock on the other column uses readable text (it was 2.4:1).

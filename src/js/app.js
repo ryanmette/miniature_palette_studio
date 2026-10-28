@@ -723,6 +723,12 @@ function renderShelf() {
   for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
   const view = shelfPaints();
   $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel);
+  // Nothing to show: say why and offer the way out (UX 4). Only the status filter alone gets its own words.
+  const onlyMark = state.shelfMark && !state.shelfQ && !state.shelfBrand && !state.shelfType;
+  const kind = onlyMark && !store.counts()[state.shelfMark] ? state.shelfMark : 'filter';
+  $('#shelfEmpty').hidden = view.length > 0;
+  $('#shelfGrid').hidden = !view.length;
+  if (!view.length) $('#shelfEmpty').innerHTML = ui.shelfEmpty(kind, state.shelfQ);
   // tag each cell with a DOM id for aria-activedescendant (keyboard cursor); the empty-state
   // placeholder has no data-id and must not become "sc-undefined"
   for (const c of $('#shelfGrid').children) if (c.dataset.id) c.id = 'sc-' + c.dataset.id;
@@ -736,6 +742,13 @@ function renderShelf() {
 /** A shelf filter (brand/status/type/search) changed → membership changes, so drop the selection
  *  (its ids may no longer be visible) and re-render. Sorting uses renderShelf directly (keeps selection). */
 function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null }); renderShelf(); revealShelfResults(); }
+/** The empty state's action: clear the search and every filter, then put focus on the grid. */
+function clearShelfFilters() {
+  state.shelfQ = state.shelfMark = state.shelfBrand = state.shelfType = '';
+  $('#shelfQ').value = $('#shelfBrand').value = $('#shelfType').value = '';
+  shelfFilterChanged();
+  $('#shelfGrid').focus({ preventScroll: true });
+}
 
 /* ---- Shelf dock (§3.6; mockups/shelf-landing.html "Chosen" + its design critique) ----
    Desktop: a sticky filter bar, always open. Phone (≤520px): the bar tucks up under the header on a
@@ -1535,7 +1548,7 @@ function importCollectionFile(file, opener) {
     toast(`Imported ${matched} paint${matched === 1 ? '' : 's'} · ${bits.join(' · ')}`);
     render('marks');   // many paints at once: the Shelf rebuilds, the Studio repaints where it shows
   };
-  reader.onerror = () => toast(t('readFail'));
+  reader.onerror = () => fileNotice('readFail', opener);
   reader.readAsText(file);
 }
 function applyCsv(text) {
@@ -1786,7 +1799,7 @@ function setupSettings() {
     if (!f) return;
     const reader = new FileReader();
     reader.onload = () => confirmRestore(String(reader.result || ''), $('#restoreBtn'));
-    reader.onerror = () => toast(t('readFail'));
+    reader.onerror = () => fileNotice('readFail', $('#restoreBtn'));
     reader.readAsText(f);
   });
   // Help & info
@@ -1821,6 +1834,20 @@ function openConfirm({ title, body, okLabel, onOk, opener }) {
   d.showModal();
   $('#cdlgCancel').focus();
 }
+/** A file that is not a backup, or that could not be read (UX 4): a notice that stays until the painter
+ *  acts, in place of a toast that went after a few seconds. It is the confirm in its notice form: no
+ *  backup offer and no destructive action. "Pick another file" opens the same file picker again. */
+function fileNotice(key, opener) {
+  const d = $('#confirmDlg');
+  d.classList.add('notice');
+  $('#cdlgCancel').textContent = t('close');
+  openConfirm({
+    title: t(key === 'readFail' ? 'readFailTitle' : 'notBackupTitle'),
+    body: () => `<p>${ui.esc(t(key === 'readFail' ? 'readFailBody' : 'notBackupBody'))}</p>`,
+    okLabel: t('pickAnother'), opener,
+    onOk: () => opener?.click(),   // still inside the click: the file picker may open
+  });
+}
 function refreshConfirm() { if ($('#confirmDlg').open && cdlg.body) $('#cdlgBody').innerHTML = cdlg.body(); }
 function setupConfirm() {
   const d = $('#confirmDlg');
@@ -1835,6 +1862,7 @@ function setupConfirm() {
   });
   d.addEventListener('close', () => {
     cdlg.onOk = null;
+    if (d.classList.contains('notice')) { d.classList.remove('notice'); $('#cdlgCancel').textContent = t('cancel'); }
     // the opener can have gone from view (the Shelf hidden); fall back to a control that stays
     const o = cdlg.opener && cdlg.opener.isConnected && cdlg.opener.getClientRects().length ? cdlg.opener
       : settingsOpen() ? $('#restoreBtn') : $('#settingsBtn');
@@ -1852,7 +1880,7 @@ function datedLabel(date) {
 /** Restore… and a .json through Import…: read the file, show what Replace would do, apply nothing yet. */
 function confirmRestore(text, opener) {
   const info = store.inspectJSON(text);
-  if (!info.ok) { toast(t('notBackup')); opener?.focus({ preventScroll: true }); return; }
+  if (!info.ok) { fileNotice('notBackup', opener); return; }
   const date = info.saved ? new Intl.DateTimeFormat(i18n.getLocale(), { dateStyle: 'medium' }).format(new Date(info.saved)) : null;
   openConfirm({
     title: t('restoreTitle'),
@@ -1866,7 +1894,7 @@ function confirmRestore(text, opener) {
     },
     okLabel: t('replace'), opener,
     onOk: () => {
-      if (!store.importJSON(text)) { toast(t('notBackup')); return; }
+      if (!store.importJSON(text)) { fileNotice('notBackup', opener); return; }
       // The confirm is closed by now, so this shows in the menu or on the page. It goes first: a screen
       // reader then hears the news, and after it the Use my paints hint if the backup changed it.
       toast(t('restored'));
@@ -2116,6 +2144,7 @@ function wire() {
     shelfFilterChanged();
   });
   $('#shelfType').addEventListener('change', e => { state.shelfType = e.target.value; shelfFilterChanged(); });
+  $('#shelfEmpty').addEventListener('click', e => { if (e.target.closest('[data-shelfclear]')) clearShelfFilters(); });
   // Sorting doesn't change which paints are shown, so keep the selection — just re-render in the new order.
   $('#shelfSort').addEventListener('change', e => { state.shelfSort = e.target.value; renderShelf(); revealShelfResults(); });
   $('#shelfBar').addEventListener('click', e => {

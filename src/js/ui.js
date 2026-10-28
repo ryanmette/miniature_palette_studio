@@ -104,6 +104,19 @@ export function pickUseRow(hex, { id, k, live = false, coarse = false }, t = x =
     + `<span class="pktx"><b>${esc(head)}</b><span class="pksub">${esc(sub)}</span></span></div>`;
 }
 
+/** The Shelf with nothing to show (UX 4): a heading, one sentence and one action, outside the grid (a
+ *  listbox holds only options). kind: 'owned' (the Owned filter, nothing owned yet) · 'want' (the shopping
+ *  list is empty) · 'filter' (the search or filters match nothing). The action clears every filter. */
+export function shelfEmpty(kind, q = '') {
+  const [h, p] = kind === 'owned'
+    ? ['No paints marked as owned yet', 'Show all paints, then tap or click a paint you own to mark it.']
+    : kind === 'want'
+      ? ['Your shopping list is empty', 'Add pots from a Recipe, or mark paints here.']
+      : ['No paints match', q ? `Nothing on the shelf matches “${q}” with these filters.` : 'Nothing on the shelf matches these filters.'];
+  const act = kind === 'filter' ? 'Clear the search and filters' : 'Show all paints';
+  return `<h3>${esc(h)}</h3><p>${esc(p)}</p><button type="button" class="btn" data-shelfclear>${esc(act)}</button>`;
+}
+
 /** A labelled group of rows in the search listbox (the APG grouped listbox: the label is a presentation
  *  child the group points at). `inner` is markup from pickRow / pickUseRow. */
 export const pickGroup = (id, title, inner) =>
@@ -114,7 +127,7 @@ export const pickGroup = (id, title, inner) =>
  *  outline (interaction, §3.5) — never a border-width change, so neighbours never reflow (§3.4 no-jiggle).
  *  `markOf(id)` → 'owned'|'want'|'none'; `selected` is a Set of selected ids. */
 export function shelfGrid(paints, markOf, selected = new Set()) {
-  if (!paints.length) return `<div class="placeholder">No paints match this filter.</div>`;
+  if (!paints.length) return '';   // the grid stays empty; shelfEmpty() says why, outside the listbox
   return paints.map(p => {
     const mark = markOf(p.id), sel = selected.has(p.id);
     const badge = markBadge(mark);
@@ -256,7 +269,7 @@ const buyBtn = (id, mark) => mark === 'owned' ? '' :
 
 /** Render a nearest-paint match (or a graceful empty state). `markOf(id)` adds owned/adjust + a buy toggle. */
 export function matchChip(m, markOf) {
-  if (!m) return '<div class="br" style="color:var(--text-muted)">no close paint — consider mixing</div>';
+  if (!m) return '<div class="poornote"><strong>No pot is close.</strong> Mix it from the nearest paints, or see Other brands.</div>';
   const p = m.paint, q = m.quality;
   const mark = markOf ? markOf(p.id) : 'none';
   // "Boost owned, but honest" (#6): flag what you own + how to nudge it, never hiding the ΔE gap.
@@ -270,6 +283,8 @@ export function matchChip(m, markOf) {
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
     + `<span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
     + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
+    // Poor (over ΔE 10, §3.2): say what that means and what to do, not only the tag (UX 4)
+    + (m.deltaE > 10 ? `<div class="poornote"><strong>No pot within ΔE 10.</strong> A mix or a glaze gets closer, or see Other brands.</div>` : '')
     + ownTag + buyBtn(p.id, mark) + `</div>`;
 }
 
