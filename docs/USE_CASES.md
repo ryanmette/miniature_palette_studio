@@ -50,7 +50,7 @@ we need to power shelf-first planning.
 | **PLAN** | Seed + harmony → role-mapped scheme | Studio | ✅ v1 |
 | **RESOLVE** | Ideal → nearest real paint; **prefer owned**, show the ΔE gap + how to adjust | Recipe tab / Studio | ✅ shipped v1.1 (owned-boost, #6) |
 | **SHOP** | Collect the scheme's gaps into a **to-buy / shopping list**; export/share | Shelf + Export | ✅ shipped v1.1 (want-list ↔ Export, #5) |
-| **PAINT** | Per role: base · derived wash · highlight (or a value tone ladder) | Plan tab | ✅ shipped v1.1 (base + tone ladders, #7) |
+| **PAINT** | Per role: base · derived wash · highlight (or a value tone ladder) | Recipe tab | ✅ shipped v1.1 (base + tone ladders, #7) |
 
 > **Honesty rule carries through (CLAUDE.md §2).** Owned paints rank **higher but never silently** —
 > we always show the ΔE gap and an adjust direction, e.g. *"your Averland Sunset · ΔE 6 — lighten
