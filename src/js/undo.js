@@ -10,11 +10,15 @@
 // colour, but it loses the hue of a grey (the swatch's place on the wheel), and it would fix the
 // lightness of a swatch that has none and follows the wheel's. The old snapshot rounded the hue to 0.1°
 // and the saturation to 0.001: about 1 added swatch in 15 came back 1 sRGB unit off after an undo.
+//
+// The wheel's lightness (`wheelL`, the slider) goes in too. A swatch from an old link's h.s token has no
+// lightness and shows hsl(h, s, wheelL). After a slider move, wheelL is the slider's value, and the seed's
+// hex reads back a little off it, so taking wheelL from the restored seed moved such a swatch 1 sRGB unit.
 
 /**
- * Palette state → the snapshot string. `s` is app.js's `state`, plus the three neutral-mode holders it
- * keeps outside `state`: `neutral` (the held mode), `preNeutral` (the parked harmony) and `preSeedRole`
- * (the parked seed role). Only the palette goes in: a tab or the theme is not palette state.
+ * Palette state → the snapshot string. `s` is app.js's `state` (`wheelL` included), plus the three
+ * neutral-mode holders it keeps outside `state`: `neutral` (the held mode), `preNeutral` (the parked
+ * harmony) and `preSeedRole` (the parked seed role). Only the palette goes in: a tab or the theme is not palette state.
  */
 export function snapPalette(s) {
   return JSON.stringify({
@@ -27,13 +31,15 @@ export function snapPalette(s) {
     neutral: s.neutral ?? null, preNeutral: s.preNeutral ?? null, preSeedRole: s.preSeedRole ?? null,
     extraNodes: (s.extraNodes || []).map(n => ({ h: n.h, s: n.s, l: n.l ?? null, locked: !!n.locked })),
     dropOffsets: [...(s.dropOffsets || [])],
+    wheelL: s.wheelL ?? null,
   });
 }
 
 /**
  * The snapshot string → the palette state it holds, in `snapPalette`'s field names. The harmony is not
  * checked here (the caller knows which harmonies this build has). An added swatch with no lightness
- * gets none back, so it follows the wheel's lightness again.
+ * gets none back, so it follows the wheel's lightness again. `wheelL` is null in a snapshot taken before
+ * the wheel had a lightness: the caller then takes it from the seed.
  */
 export function readSnap(json) {
   const o = JSON.parse(json);
@@ -45,5 +51,6 @@ export function readSnap(json) {
     preNeutral: o.preNeutral ?? null, preSeedRole: o.preSeedRole ?? null,
     extraNodes: (o.extraNodes || []).map(n => ({ h: n.h, s: n.s, ...(n.l != null ? { l: n.l } : {}), ...(n.locked ? { locked: true } : {}) })),
     dropOffsets: [...(o.dropOffsets || [])],
+    wheelL: typeof o.wheelL === 'number' ? o.wheelL : null,
   };
 }
