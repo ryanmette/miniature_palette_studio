@@ -90,8 +90,8 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
   mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent); }
 #seg.harmscroll button { flex: 0 0 auto; scroll-snap-align: center; }
-/* The scroll box clips: 4px of padding holds the 4px focus ring, and the edge fade goes while a chip has
-   keyboard focus, as on the Paints strip (§3.5). */
+/* The scroll box clips: 4px of padding holds the 4px focus ring (§3.5), and the edge fade goes while a
+   chip has keyboard focus. */
 #seg.harmscroll:has(:focus-visible) { -webkit-mask-image: none; mask-image: none; }
 #seg.harmscroll::-webkit-scrollbar { height: 6px; }
 #seg.harmscroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
@@ -139,6 +139,14 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-tem
 .sw.fx-gloss, .cell.fx-gloss, .lctop.fx-gloss { background-image: radial-gradient(ellipse 58% 42% at 34% 26%, rgba(255,255,255,.82), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 52%, rgba(0,0,0,.34)); }
 .sw.fx-slime, .cell.fx-slime, .lctop.fx-slime { background-image: radial-gradient(ellipse 34% 26% at 30% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 60%), radial-gradient(ellipse 22% 18% at 66% 62%, rgba(255,255,255,.5), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 55%, rgba(0,0,0,.30)); }
 .sw.fx-texture, .cell.fx-texture, .lctop.fx-texture { background-image: radial-gradient(rgba(255,255,255,.12) .5px, transparent 1.2px), radial-gradient(rgba(0,0,0,.34) .5px, transparent 1.2px), linear-gradient(160deg, rgba(255,255,255,.05), rgba(0,0,0,.12)); background-size: 4px 4px, 5px 5px, 100% 100%; background-position: 0 0, 2px 2px, 0 0; }
+/* Forced colours (Windows High Contrast) paint every background in the system Canvas colour, so every
+   paint went white: the Browse grid, the live palette, the Shelf and the Plan showed no colour. A swatch's
+   colour is paint data, not chrome (§2), so swatches keep their own colours, finish overlays and inset edge.
+   Their interaction rings take the system Highlight, as the picker's cursor does. */
+@media (forced-colors: active) {
+  .sw, .cell, .lctop, .scsw, .cmppal span { forced-color-adjust: none; }
+  .cell[aria-selected="true"], .cell.cursor, .cell:focus-visible, .lctop:focus-visible { outline-color: Highlight; }
+}
 /* finish pill — flags non-flat paints (metallic/contrast/wash/…) so a suggestion isn't mistaken for flat */
 .finish { display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; padding: 1px 6px;
   border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); white-space: nowrap; vertical-align: 1px; }
@@ -829,7 +837,10 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   color: var(--text-muted); font-size: 14px; cursor: pointer; display: grid; place-items: center; }
 .iconbtn:hover { background: var(--surface-2); color: var(--text); }
 .iconbtn:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
-.aboutbody { padding: 16px 16px 24px; overflow: auto; max-height: calc(86vh - 60px); }
+/* A column, so the body takes the height the header leaves: with a fixed calc(86vh - 60px), the taller
+   header on touch (a 44px ✕) pushed the body past the dialog, and its 24px bottom padding was clipped. */
+.about[open] { display: flex; flex-direction: column; }
+.aboutbody { flex: 1 1 auto; min-height: 0; padding: 16px 16px 24px; overflow: auto; }
 .aboutbody h3 { font-family: var(--display); font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
 .aboutbody p { margin: 0 0 8px; font-size: 13px; line-height: 1.6; color: var(--text); }
 .aboutbody a { color: var(--accent); font-weight: 500; }
@@ -1066,7 +1077,8 @@ header { padding-top: env(safe-area-inset-top, 0px); }
       transform: translateY(-2px) rotate(45deg); transition: transform 120ms cubic-bezier(.2,.7,.2,1); }
     select:open::picker-icon { transform: translateY(2px) rotate(225deg); }
     /* Open is not focus (§3.5): the open select gets the --surface-2 fill, the ring stays for focus. */
-    select:open { background-color: var(--surface-2); }
+    /* open is not focus (§3.5): the open fill wins over the Shelf's active-filter fill too */
+    select:open, .shelffilters select.on:open { background-color: var(--surface-2); }
     select::picker(select) { margin-block: 4px; padding: 4px; border: 1px solid var(--border-strong);
       border-radius: var(--r-ctrl); background: var(--surface); color: var(--text); box-shadow: var(--shadow-pop);
       max-block-size: min(60dvh, 360px); overflow-y: auto; }

@@ -190,3 +190,22 @@ export function clear() {
   for (const k of [KEY, ...LEGACY_KEYS]) { try { localStorage.removeItem(k); } catch { /* private mode */ } }
   nativePrefs()?.remove({ key: KEY }).catch(() => { /* best effort: the next save overwrites the mirror anyway */ });
 }
+
+/* Another tab or window of the app on this device (the installed app and a browser tab, say) saved or
+ * deleted the state. Take it here too: this tab's next save wrote its old copy back, so a Delete or a
+ * Restore in the other tab came undone. The browser sends `storage` only to the OTHER tabs, and nothing
+ * here saves, so two tabs cannot answer each other in a loop. */
+let onExternal = null;
+/** Run `fn(prefsBefore)` after another tab saved or deleted the state, so the app can repaint. */
+export function onExternalChange(fn) { onExternal = fn; }
+globalThis.addEventListener?.('storage', e => {
+  if (e.key !== KEY && e.key !== null) return;   // null: localStorage.clear() in another tab
+  let s;
+  try { s = e.key === KEY && e.newValue ? normalise(JSON.parse(e.newValue)) : fresh(); } catch { return; }
+  const before = { ...state.prefs };
+  owned.clear(); s.owned.forEach(x => owned.add(x));
+  want.clear(); s.want.forEach(x => want.add(x));
+  state.owned = [...owned]; state.want = [...want];
+  state.prefs = { ...s.prefs };
+  onExternal?.(before);
+});

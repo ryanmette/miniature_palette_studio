@@ -282,7 +282,7 @@ to-buy marks) but files them *inside* the scheme output. Four routing directions
     person's usage over a few weeks is a signal, not a mandate. Revisit after 7/8 have been lived with.
 11. **In-store pot identification (v2, native).** Barcode was already parked in `IOS_APP_PLAN.md` §5 with
     the right blocker — no EAN/UPC column exists and no open dataset supplies one. The way around it is
-    **label OCR**: read the printed name on the pot, fuzzy-match against the 2,508 names we already hold.
+    **label OCR**: read the printed name on the pot, fuzzy-match against the names of the 3,225 paints we already hold.
     No new data, no backend, and it degrades to “put the text in the Shelf search” (the question in a shop
     is “do I own it?”, and the Shelf is where a tap marks it; the Studio's seed field takes the same words).
     Barcode stays the nicer UX *if* a mapping ever exists — a data-sourcing project, not a UI one.

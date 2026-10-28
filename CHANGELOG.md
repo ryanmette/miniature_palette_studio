@@ -272,8 +272,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     below, Compare goes to a second row. The page does not scroll sideways at 280px or wider. On a phone,
     From photo is a 44px camera button, and its name is still "From photo". On a touch screen, the field
     and Browse are 44px tall.
-  - The brand and type filters, the 7-way sort, and CSV Import… / Export CSV leave the Studio. They stay
-    on the Shelf. The Shelf's Import… still takes a `.json` backup through the Restore confirm. The hero
+  - The brand and type filters and CSV Import… / Export CSV leave the Studio. They stay on the Shelf. The
+    7-way sort goes: the list's Sort (Hue · Closest to your pick · Owned first · Name) replaces it. The Shelf's Import… still takes a `.json` backup through the Restore confirm. The hero
     line is the one readout of the colour.
   - The new `picker.js` holds the field and its list. `data.js` `browseOrder` gives the grid's orders:
     "Hue" goes round the wheel in 15° bands, light to dark in each band, with the greys last. `seed.js`
@@ -416,6 +416,52 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Fixes from the final review of this release's work** (one browser test agent and five code reviewers;
+  each finding was checked again by a second agent that tried to refute it):
+  - **The seed field's "Closest paints" for a hex left out closer paints.** The list took only the 64 paints
+    nearest by a quick Lab distance, then ranked those by ΔE 2000 with the finish penalty. The penalty moves
+    washes and metallics down, so a flat paint further down the quick list could be cut: for `#8899F4`, Raf
+    Azure Blue (ΔE 6.4) was missing, and two Poor matches took its place. Now every paint is ranked
+    (`data.js` `closestPaints`): about 2 ms a search, or about 11 ms with a CPU 6× slower (a slow phone),
+    which is in the 16 ms budget (CLAUDE.md §6). The Equivalents tab's list for a role colour or a custom hex uses
+    the same helper, so it is correct too. A test compares the list with a full scan for 61 colours.
+  - **A search for "D&D" found 1,885 paints.** "D&D" folds to two one-letter words, and each one matched inside
+    any word. Now, in a query of two or more words, a one-letter word before the last must be a whole word,
+    and a one-letter last word (the word you are typing) must start a word. So "d&d" and "army painter d&d"
+    find the 20 D&D paints, and "abaddon b" still finds Abaddon Black (`data.js` `paintMatcher`). One letter
+    alone still matches inside words. A test types every paint's name, letter by letter, and checks that the
+    paint is found at each step.
+  - **Undo, redo and Esc said news from the change they reversed.** Esc within half a second of a live hex
+    could say "switched to the Neutral + pop scheme" about the colour Esc had just taken away, and undo could
+    say a waiting note. Now a waiting note is dropped when a snapshot is put back (`app.js` `applySnap`,
+    `restoreSeed`).
+  - **↻ and other quick steps could merge into the next step, or be lost by undo.** A ↻ press waited 250ms for
+    its undo step, so a Roll or a chip in that time took both into one step, and an undo right after ↻ skipped
+    a step and lost the colour. Now ↻ writes its step at once (its words still wait the usual 400ms, so a quick
+    Roll says them first), undo and redo first write a step that is still waiting, and the seed field takes its undo mark after such a step (so Esc no longer keeps typed colours).
+  - **Delete or Restore in one tab came undone in another open tab.** The other tab held the old shelf and
+    wrote it back with its next change. Now each open tab takes a save or a Delete from another tab (the
+    browser's `storage` event; `store.js` `onExternalChange`) and repaints. A tab opened from a link keeps the
+    link's theme, unless the saved theme changed.
+  - **The seed list's Sort could not be opened with a mouse or a tap on a short screen** (400% zoom, a phone
+    turned sideways), where it scrolls with the paints: the list cancelled every press to keep focus in the
+    field. A press on Sort is no longer cancelled.
+  - **↓ in the seed field, with the field scrolled out of view, left the field and the list off the screen.**
+    Now the field comes back to just under the header.
+  - **A press on another tile closed the seed list's mark menu and left focus on the page.** The list stayed
+    open, and no key reached it. Now focus goes back to the field (or to the list after a touch long-press).
+  - **Forced colours (Windows High Contrast) painted every swatch white:** the Browse grid, the live palette,
+    the Shelf and the Plan showed no colour. Swatches now keep their own colours (`forced-color-adjust: none`),
+    and their rings use the system Highlight colour. This was the case before this release too.
+  - **A `t=light` link changed theme on its first reload,** because the address bar keeps only `t=dark`. Now
+    only `t=dark` is a link theme (as `share.js` says); a `t=light` link opens as a link without `t`.
+  - **Share link's last fallback** (no share sheet, no clipboard) said "Copy the link from the address bar",
+    but that address can hold `m=shelf` and lacks the `t=dark` a share adds. Now it shows the link itself.
+  - Smaller items: Esc on Sort puts back a live hex, as Esc in the field does. Typing the hex that is already
+    the seed no longer says "New seed", and Esc then has nothing to put back. About and the photo dialog keep
+    their 24px under the last line on a touch screen. An open Shelf filter shows the open fill. The docs
+    checker ran no checks (and passed) when Node kept a symlinked path (`--preserve-symlinks-main`).
+  - (CLAUDE.md §3.5 and §3.6 are updated; service worker `ps-v54`.)
 - **↻ did nothing on a black or white seed.** ↻ keeps the lightness, and at 0% or 100% every hue is black or
   white: `#000000` stayed `#000000`, and the studio stayed neutral. Near the slider's ends most ↻ presses stayed
   grey too. Now, when the new colour would be neutral (Lab C* under 14, `NEUTRAL_EXIT`), the lightness moves the smallest
@@ -529,7 +575,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - The controls that use `--tap` are 44px on a touch screen: the buttons in the header and in the seed
     toolbar, the fields and selects, ↻ and the lightness slider (its box is `--tap` wide).
   - Some small controls have a fixed size and are still smaller than 44px. Examples are the live
-    palette's ↶ ↷ + − and copy buttons, the harmony chips and the output tabs. This was also true on
+    palette's ↶ ↷ + − and copy buttons, the seed docks and the output tabs. This was also true on
     phones before. `docs/PLAN.md` §5 records it as follow-up 12.
   - At 1025px the wheel row is 340 + 12 + 44 = 396px of the column's 398px.
   - The header is 6px taller on a touch screen. The sticky studio column now follows the header's live

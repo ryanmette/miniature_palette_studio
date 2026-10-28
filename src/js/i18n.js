@@ -121,7 +121,7 @@ const LOCALES = {
     aboutData: 'About & data',
     listSaved: 'Shopping list saved',
     linkCopied: 'Share link copied',
-    copyFromBar: 'Copy the link from the address bar',
+    copyLink: 'Copy this link',
 
     // the matching note under the live palette: one line for each setting that is on
     noteUmp: 'Use my paints: {mode}',

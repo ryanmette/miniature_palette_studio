@@ -292,3 +292,33 @@ test('store accepts exactly the locales i18n.js has', async () => {
   store.importJSON(JSON.stringify({ owned: [], prefs: { locale: 'xx-XX' } }));
   assert.equal(store.getPref('locale'), LOCALE_IDS[LOCALE_IDS.length - 1], 'an unknown locale is not restored');
 });
+
+test('another tab: a save or a Delete there is taken here too, so this tab cannot write its old copy back', async () => {
+  // The browser sends `storage` to the OTHER tabs only. Catch the listener store.js adds at import.
+  let onStorage = null;
+  globalThis.addEventListener = (type, fn) => { if (type === 'storage') onStorage = fn; };
+  try {
+    const { store, ls } = await freshStore();
+    store.setMark('p1', 'owned'); store.setPref('collection', 'prefer');
+    assert.equal(typeof onStorage, 'function');
+    let calls = 0, before = null;
+    store.onExternalChange(b => { calls++; before = b; });
+    // the other tab marked p2 and set Only: this tab takes its state, and is told what the prefs were
+    onStorage({ key: 'ps-state', newValue: JSON.stringify({ v: 1, owned: ['p2'], want: [], prefs: { collection: 'only' } }) });
+    assert.equal(calls, 1);
+    assert.equal(before.collection, 'prefer');
+    assert.equal(store.isOwned('p1'), false);
+    assert.equal(store.isOwned('p2'), true);
+    assert.equal(store.getPref('collection'), 'only');
+    // the other tab deleted the shelf: this tab is fresh, and its next save does not bring p2 back
+    onStorage({ key: 'ps-state', newValue: null });
+    assert.deepEqual(store.counts(), { owned: 0, want: 0 });
+    store.setPref('ladder', 'tone');
+    assert.deepEqual(JSON.parse(ls.getItem('ps-state')).owned, []);
+    // another key, or a value that is not JSON, changes nothing
+    onStorage({ key: 'other', newValue: '{}' });
+    onStorage({ key: 'ps-state', newValue: '{not json' });
+    assert.equal(calls, 2);
+    assert.equal(store.getPref('ladder'), 'tone');
+  } finally { delete globalThis.addEventListener; }
+});

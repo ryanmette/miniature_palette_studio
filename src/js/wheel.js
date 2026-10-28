@@ -304,6 +304,10 @@ export function setupWheel(app) {
     }
     endLightnessRun();   // the slider's next move starts a new run from the new colour (lightnessInput)
     setBase(h, s);
+    // One press, not a drag: write its undo step now. Left to the debounce, a quick Roll or chip merged it
+    // into that step, and two quick presses became one. The words wait for the debounced announce: the new
+    // scheme is drawn on the next frame, and an announce now read the old pick's note.
+    render('settle', { speak: false });
   });
   measure();
   draw();

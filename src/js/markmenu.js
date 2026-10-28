@@ -143,8 +143,11 @@ export function createMarkMenu({ box, head, list }) {
   document.addEventListener('pointerdown', e => {
     press = { eaten: false, type: e.pointerType };
     if (!cur || box.contains(e.target)) return;
-    close({ restoreFocus: false });
-    if (surfaces.some(s => s.contains(e.target))) press.eaten = true;
+    // A press on the surface gives focus back to it (the seed field, or the list after a touch long-press):
+    // left on <body>, the seed list stayed open and no key reached it.
+    const onSurface = surfaces.some(s => s.contains(e.target));
+    close({ restoreFocus: onSurface });
+    if (onSurface) press.eaten = true;
   }, true);
   // A rotation or a window resize moves the item away from the menu: close it. Only a change of width:
   // a phone also fires resize when its address bar slides in or out.

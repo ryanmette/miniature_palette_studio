@@ -144,11 +144,13 @@ export function setupPicker(app) {
     } else if (q) {
       let html = '', none = '';
       if (parsed.kind === 'hex') {
-        const c = getPick(), live = st.liveHex && !c.id && c.hex === parsed.hex;   // after Esc the hex is no longer the seed
-        const k0 = add({ hex: parsed.hex, live });
+        // the hex is the seed now (typed live, or it already was): its row says so. Only a live hex is news.
+        const c = getPick(), isSeed = !c.id && c.hex === parsed.hex, live = st.liveHex && isSeed;
+        const k0 = add({ hex: parsed.hex, live: isSeed });
         const near = closestPaints(state.idx, parsed.hex, CLOSEST).map(m => add({ p: m.paint, match: m }));
         html = optHtml(k0) + ui.pickGroup('pkgC', t('pkClosest'), near.map(optHtml).join(''));
-        msg = t(live ? 'pkSaidSeed' : 'pkSaidUse', { hex: parsed.hex }) + ' ' + t('pkSaidClosest', { n: near.length });
+        msg = (live ? t('pkSaidSeed', { hex: parsed.hex }) : isSeed ? t('pkSeedLive', { hex: parsed.hex }) + '.' : t('pkSaidUse', { hex: parsed.hex }))
+          + ' ' + t('pkSaidClosest', { n: near.length });
       } else if (parsed.kind === 'partial') {
         none = msg = t('pkPartial');
       } else {
@@ -300,7 +302,10 @@ export function setupPicker(app) {
   function ensureRoom() {
     const v = visible(), f = field.getBoundingClientRect();
     const roof = st.cover ? v.top + 8 : headerBottom() + 8;
-    if (st.cover ? Math.abs(f.top - roof) < 2 : (v.bottom - f.bottom - 18 >= MIN_ROOM || f.top <= roof)) return;
+    if (st.cover) { if (Math.abs(f.top - roof) < 2) return; }
+    // a field hidden under the header (or above the screen) comes back down to the roof (a negative
+    // scrollBy); one that shows stays, with room or above the roof as before
+    else if (f.top >= headerBottom() && (v.bottom - f.bottom - 18 >= MIN_ROOM || f.top <= roof)) return;
     window.scrollBy(0, f.top - roof);
     place();
   }
@@ -345,7 +350,6 @@ export function setupPicker(app) {
     input.removeAttribute('aria-activedescendant');
     watch(false);
   }
-  /** Esc after a live hex: the seed from before the typing comes back. */
   /** Esc after a live hex: the seed from before the typing comes back, and the colours typed since then
    *  leave the undo history. The app shows and says "Seed put back: X". */
   function restoreLive() {
@@ -425,8 +429,8 @@ export function setupPicker(app) {
     // "#" and 6 digits: the seed changes as you type (decision 3). The list says the new seed.
     if (parsed.kind === 'hex' && parsed.live) {
       const c = getPick();
-      if (c.id || c.hex !== parsed.hex) seedHex(parsed.hex, { live: true });
-      st.liveHex = true;
+      // only a hex that changes the seed is live: typing the seed's own hex has nothing for Esc to put back
+      if (c.id || c.hex !== parsed.hex) { seedHex(parsed.hex, { live: true }); st.liveHex = true; }
     }
     st.active = -1; body.scrollTop = 0;   // new text: its results start at the top
     open('search');
@@ -448,10 +452,11 @@ export function setupPicker(app) {
   sortEl.addEventListener('change', () => { st.sort = sortEl.value; body.scrollTop = 0; render(); });
   sortEl.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    e.preventDefault(); e.stopPropagation(); close(); input.focus({ preventScroll: true });
+    e.preventDefault(); e.stopPropagation(); restoreLive(); close(); input.focus({ preventScroll: true });
   });
-  // a press in the list never takes focus out of the field
-  body.addEventListener('mousedown', e => e.preventDefault());
+  // a press in the list never takes focus out of the field. Not on Sort: on a short screen it scrolls with
+  // the paints, and a cancelled press could not open it.
+  body.addEventListener('mousedown', e => { if (!e.target.closest('select')) e.preventDefault(); });
   // the mark menu's gestures: a long-press (touch, pen) and a right-click, on a paint only (not a "Use #…" row)
   const surface = markMenu.attach({
     container: body,

@@ -436,7 +436,7 @@ function syncWheelL() {
 let renderRaf = 0;
 /** `speak: false` repaints without the scheme summary in #status (a restore says its own line). */
 function render(reason = 'scheme', { speak = true, ids = null } = {}) {
-  if (reason === 'settle') { updateUrl(); announce(); return; }
+  if (reason === 'settle') { updateUrl(); if (speak) announce(); return; }
   if (reason === 'marks') { renderMarks(ids); return; }
 
   // A pick, a typed hex, undo/redo, a share link or a harmony/seed-role change ends a lightness run.
@@ -1156,6 +1156,8 @@ function markPaint(id, mark) {
  *  mind", so the colours typed since `mark` (histMark() when the typing began) leave the undo history:
  *  the palette at the mark comes back whole, and no new step goes on top of the cancelled ones. */
 function restoreSeed(pick, mark = null) {
+  // A note still waiting from the live hex ("switched to Neutral + pop") is about the change Esc undoes
+  takeModeNote();
   const i0 = mark == null ? -1 : mark - HIST.dropped, snap = i0 >= 0 && i0 < HIST.i ? HIST.stack[i0] : null;
   const o = snap ? JSON.parse(snap) : null;
   const same = !!o && (pick.id ? o.baseId === pick.id && !o.customHex : o.customHex === pick.hex);
@@ -1214,8 +1216,10 @@ function updateUrl() {
 /* ---- undo / redo: snapshot the palette at each settled change (updateUrl is the single chokepoint) ---- */
 // `dropped`: the steps that fell off the bottom of the stack, so a mark (histMark) stays right
 const HIST = { stack: [], i: -1, busy: false, dropped: 0 };
-/** Where the undo history is now. The seed field takes it when the typing begins (restoreSeed). */
-const histMark = () => HIST.i + HIST.dropped;
+/** Where the undo history is now. The seed field takes it when the typing begins (restoreSeed). A step
+ *  still waiting for its debounced write (a slider or ↻ change in the last 250ms) is written first, so the
+ *  mark is the palette on screen and Esc does not keep the typed colours. */
+const histMark = () => { if (urlTimer && !wheelDragging) updateUrl(); return HIST.i + HIST.dropped; };
 function paletteSnap() {
   return JSON.stringify({
     customHex: state.customHex || null,
@@ -1239,6 +1243,8 @@ function pushHistory() {
   syncHistBtns();
 }
 function applySnap(json) {
+  // News and a mode note still waiting to be said are about the change this snapshot reverses: drop them
+  takeModeNote(); newsLead = ''; newsNamesHarmony = false;
   const o = JSON.parse(json);
   state.customHex = o.customHex; state.baseId = o.baseId;
   state.harmony = validHarmony(o.harmony) ? o.harmony : state.harmony;
@@ -1257,8 +1263,10 @@ function applySnap(json) {
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
   syncNodeBtns();
 }
-function undo() { if (HIST.i > 0) { HIST.i--; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
-function redo() { if (HIST.i < HIST.stack.length - 1) { HIST.i++; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
+// A step still waiting for its debounced write goes on the stack first, so undo steps back from it (it
+// was skipped, and its colour lost) and redo does not drop it.
+function undo() { if (urlTimer) updateUrl(); if (HIST.i > 0) { HIST.i--; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
+function redo() { if (urlTimer) updateUrl(); if (HIST.i < HIST.stack.length - 1) { HIST.i++; HIST.busy = true; applySnap(HIST.stack[HIST.i]); renderAll(); HIST.busy = false; syncHistBtns(); } }
 function syncHistBtns() { const u = $('#undo'), r = $('#redo'); if (u) u.disabled = HIST.i <= 0; if (r) r.disabled = HIST.i >= HIST.stack.length - 1; }
 
 /** Debounced URL write for rapid-fire updates (wheel/slider drag); see setBase(). */
@@ -1484,7 +1492,8 @@ async function doShare() {
   if (navigator.clipboard) {
     try { await navigator.clipboard.writeText(url); toast(t('linkCopied')); return; } catch { /* fall through */ }
   }
-  toast(t('copyFromBar'));
+  // the link itself, not the address bar: that one can carry m=shelf, and lacks the t=dark a share adds
+  try { prompt(t('copyLink'), url); } catch { toast(url); }
 }
 function download(filename, text, type = 'text/plain') {
   const a = document.createElement('a');
@@ -1536,10 +1545,13 @@ function applyCsv(text) {
 /** Pull every pref out of the store into live state + chrome. No rendering, so it's safe at init —
  *  where the seed isn't resolved yet and renderHero() would have nothing to draw. A theme or locale of
  *  null means "follow the device": it is applied, never saved (a restored backup, Delete, a first run). */
-function applyPrefsToState() {
+function applyPrefsToState({ keepLinkTheme = false } = {}) {
   const th = store.getPref('theme');
-  linkTheme = null;   // a restored or deleted theme wins over a link's (init applies the link's after this)
-  setTheme(th === 'light' || th === 'dark' ? th : deviceTheme());
+  if (keepLinkTheme && linkTheme) setTheme(linkTheme);
+  else {
+    linkTheme = null;   // a restored or deleted theme wins over a link's (init applies the link's after this)
+    setTheme(th === 'light' || th === 'dark' ? th : deviceTheme());
+  }
   i18n.applyLocale(store.getPref('locale')); syncLocaleSeg();
   const lp = store.getPref('ladder'); state.ladder = ['wash', 'tone', 'both'].includes(lp) ? lp : 'wash';
   const cp = store.getPref('collection'); state.collection = ['off', 'prefer', 'only'].includes(cp) ? cp : 'off';
@@ -1547,8 +1559,8 @@ function applyPrefsToState() {
 }
 /** The shelf and settings were replaced (Restore) or deleted: apply the new prefs at once and repaint
  *  everything that shows a mark or a setting. Without this they took effect only after a reload. */
-function afterStoreReplaced() {
-  applyPrefsToState();
+function afterStoreReplaced({ keepLinkTheme = false } = {}) {
+  applyPrefsToState({ keepLinkTheme });
   syncSettingsControls();
   render('all', { speak: false });   // the caller says what happened; the scheme summary would only bury it
   if (state.mode === 'shelf') renderShelf();
@@ -2114,8 +2126,9 @@ async function init() {
   const url = new URLSearchParams(location.search);
   // Theme precedence: the link's `t` (a shared scheme carries the theme it was designed in) > the
   // stored pref > the OS. Held separately from the resolved value because applyPrefsToState() below
-  // re-applies the STORED pref after hydrate, and must not outrank the link.
-  const tParam = url.get('t') === 'dark' ? 'dark' : url.get('t') === 'light' ? 'light' : null;
+  // re-applies the STORED pref after hydrate, and must not outrank the link. Only t=dark (share.js): the
+  // address bar never writes t=light, so a t=light link changed theme on its first reload.
+  const tParam = url.get('t') === 'dark' ? 'dark' : null;
   setTheme(tParam || store.getPref('theme') || deviceTheme());
 
   state.idx = await loadDataset('./data/paints.json');
@@ -2126,6 +2139,9 @@ async function init() {
   await store.hydrate();
   applyPrefsToState();   // hydrate may have restored theme/locale/plan prefs — apply them, don't strand them
   if (tParam) { linkTheme = tParam; setTheme(tParam); }   // ...but the link's theme still outranks the stored pref
+  // Another tab saved a mark or a setting, or deleted or restored the shelf (store.js): show it here too.
+  // This tab's link theme stays, unless the saved theme itself changed there.
+  store.onExternalChange(before => afterStoreReplaced({ keepLinkTheme: before.theme === store.getPref('theme') }));
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // brand and type filters: the Shelf's only (§3.6)
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();

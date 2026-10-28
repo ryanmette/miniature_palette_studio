@@ -189,7 +189,7 @@ Push for "back in stock" much later. Out (still): accounts, server, payments, so
 
 **Label OCR is the route that actually works today (added 2026-08-11).** The barcode blocker above is a
 *data* problem, not a camera one — and it has a way around it. Reading the **printed name** off the pot
-with on-device text recognition (Vision on iOS) and fuzzy-matching it against the 2,508 names already in
+with on-device text recognition (Vision on iOS) and fuzzy-matching it against the names of the 3,225 paints already in
 `paints.json` needs **no new data at all**, keeps the no-backend rule (§1), and answers the same in-store
 question: *what is this pot, do I already own it, what is it close to?* It also degrades gracefully — a
 bad read just drops its text into the Shelf search instead of failing (the seed field's matcher, so brand and
