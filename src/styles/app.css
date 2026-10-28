@@ -275,18 +275,73 @@ input:focus, select:focus, .hexin:focus-within { outline: none; border-color: va
 .seedtoolbar #fromPhoto { margin-left: auto; }
 .herowrap { min-width: 0; }
 .wsplit { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
-.studio { position: sticky; top: 79px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }  /* 79 = 63px sticky header + 16 */
+/* top = the sticky header's live height + 16px. --hdr-h (app.js) follows the header when --tap grows on
+   a touch screen and when a safe-area inset pads it, so the studio never slides under the header. */
+.studio { position: sticky; top: calc(var(--hdr-h) + 16px); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .output { min-width: 0; }
 .wheelcol { position: relative; display: flex; flex-direction: column; align-items: center; }   /* anchors the neutral overlay */
 .wcanvas { touch-action: none; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-/* Lightness lives in the gutter beside the wheel (a vertical slider) + a compact ↻ Generate icon — reclaims
-   the old control row's height. Falls back to a horizontal slider on phones (≤520px, below) so it doesn't
-   crush the wheel. The range stays a native, labelled, arrow-key-operable input (a11y unchanged). */
-.wheelrow { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 14px; }
-.wlcol { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.wl-vert { writing-mode: vertical-lr; direction: rtl; width: 26px; height: min(58vw, 220px); accent-color: var(--accent); }
-.wl-vert:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-pill); }
+/* The lightness slider (§3.5 Slider, §3.6 wheel module; mockups/lightness-slider.html "B, fixed"). It
+   sits in a gutter beside the wheel, vertical with Up = lighter, and the ↻ Generate button sits under it.
+   Below 520px it goes horizontal under the wheel (see the phone block), because a vertical one would
+   crush the wheel there. It stays one native range, so keys, screen readers, undo and share links work
+   as before. The track shows the pick's own colour from dark to light, so it says what it does before
+   you touch it.
+   - Name: the <label> "Lightness". It is visible on a phone. The gutter is only var(--tap) wide, too
+     narrow for the word, so there the label is visually hidden and "Lighter" / "Darker" mark the ends.
+     They are centred on the gutter and may overhang it by a pixel or two: they never widen the row.
+   - Fit at 1025px: the row is a 340px wheel + 12px + the gutter (38px with a mouse, 44px on touch),
+     in the studio column's 398px.
+   - Paint: JS writes only colours on the input (--wl-stops, --wl-thumb, --wl-ring; wheel.js
+     paintSlider), never on :root (§3.6). The gradient direction lives here, so a phone that turns
+     across 520px stays right. A value or colour change repaints only: nothing animates, nothing
+     reflows (§3.4). */
+.wheelrow { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 12px; }
+.wlcol { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; width: var(--tap); }
+/* visually hidden in the gutter (the .sr-only pattern); the phone block shows it */
+.wl-lab { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0; font-size: var(--fs-small); color: var(--text-muted); cursor: pointer; }
+.wl-end { font-size: var(--fs-micro); font-weight: 500; line-height: 16px; color: var(--text-muted); white-space: nowrap; }
+#wrand { margin-top: 8px; }   /* 12px under "Darker" with the column's 4px gap */
+/* The input box is the hit area: var(--tap) thick (44px on touch, 38px with a mouse). Logical sizes let
+   one rule set serve both orientations: block-size is the thickness, inline-size the length.
+   vertical-lr + rtl puts the minimum at the bottom, so Up = lighter. */
+.wl-range { -webkit-appearance: none; appearance: none; background: none; margin: 0; padding: 0; border: 0;
+  cursor: pointer; border-radius: var(--r-pill);
+  writing-mode: vertical-lr; direction: rtl; inline-size: min(58vw, 220px); block-size: var(--tap); }
+/* Not the app-wide input focus (var(--focus), which is --accent-weak: about 1.1:1 against the card).
+   This ring is 5.7:1 (light) and 6.2:1 (dark), as on the wheel canvas. */
+.wl-range:focus { outline: none; box-shadow: none; }
+.wl-range:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* The track: 12px, pill-shaped, the pick's own ramp (paint data) with a 1px var(--text-muted) edge, so
+   the ends show on any colour in both themes (4.68:1 light, 6.37:1 dark). Before the first paint, a
+   border-coloured stand-in. */
+.wl-range::-webkit-slider-runnable-track { box-sizing: border-box; block-size: 12px; border-radius: var(--r-pill);
+  box-shadow: inset 0 0 0 1px var(--text-muted); background: linear-gradient(to top, var(--wl-stops, var(--border), var(--border))); }
+/* The thumb: 28px, filled with the colour now. Its 3px ring is #15150F or #FFFFFF, whichever has the
+   higher contrast with the fill (§7 text-on-swatch, the wheel's base node): 4.28:1 or more against the
+   fill. Against the card (ring or fill): 4.28:1 or more in light, 4.12:1 or more in dark. The thumb
+   sticks out 8px past each side of the 12px track onto the card. The margin centres it on the track:
+   (12 − 28) / 2. */
+.wl-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; box-sizing: border-box;
+  inline-size: 28px; block-size: 28px; margin-block-start: -8px; border-radius: 50%;
+  background: var(--wl-thumb, var(--surface)); border: 3px solid var(--wl-ring, var(--text-muted)); }
+/* Firefox draws its own system slider only when no range pseudo-element has an author background or
+   border. So its paint lives in forced-colors: none, and Windows High Contrast gets the system slider. */
+@media (forced-colors: none) {
+  .wl-range::-moz-range-track { box-sizing: border-box; block-size: 12px; border-radius: var(--r-pill);
+    box-shadow: inset 0 0 0 1px var(--text-muted); background: linear-gradient(to top, var(--wl-stops, var(--border), var(--border))); }
+  .wl-range::-moz-range-progress { background: transparent; }
+  .wl-range::-moz-range-thumb { box-sizing: border-box; inline-size: 28px; block-size: 28px; border-radius: 50%;
+    background: var(--wl-thumb, var(--surface)); border: 3px solid var(--wl-ring, var(--text-muted)); }
+}
+/* Forced colours (Windows High Contrast) drop the custom track and thumb colours: give the system slider
+   back. The system thumb centres itself, so the custom thumb's offset goes too. */
+@media (forced-colors: active) {
+  .wl-range, .wl-range::-webkit-slider-thumb { -webkit-appearance: auto; appearance: auto; }
+  .wl-range::-webkit-slider-thumb { margin: 0; }
+}
 .wkey { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 12px;
   font-family: var(--font); font-weight: 500; font-size: 11.5px; line-height: 1; color: var(--text-muted); letter-spacing: .04em; }
 .wkey-i { display: inline-flex; align-items: center; gap: 6px; }
@@ -545,8 +600,12 @@ a.btn { text-decoration: none; }
 @media (max-width: 860px) {
   main { gap: 16px; }
 }
-@media (max-width: 520px) {
+/* Touch targets are 44px on every touch screen, and on any screen up to 520px (§3.6). A touch tablet
+   wider than 520px had 38px controls and a 26px-wide lightness slider. */
+@media (max-width: 520px), (pointer: coarse) {
   :root { --tap: 44px; }
+}
+@media (max-width: 520px) {
   .bar { padding: 10px 14px; gap: 8px; }
   .logo .t small { display: none; }
   .seedbar .hexin { flex: 1 1 100%; }   /* hex spans a row in the seed bar on phones */
@@ -562,10 +621,18 @@ a.btn { text-decoration: none; }
   .ctlgrp { flex-direction: column; align-items: flex-start; gap: 5px; width: 100%; }
   .hglyph { display: none; }          /* text-only harmony control on phones (no room for glyphs) */
   .nbanner { font-size: 11.5px; padding: 7px 10px; gap: 7px; }   /* compact explainer when tapped open on phones */
-  /* lightness goes back to a horizontal slider below the wheel on phones (a vertical one would crush it) */
+  /* Lightness goes back to a horizontal slider below the wheel on phones (a vertical one would crush it).
+     Its visible label sits above the track, at the left; the gutter's "Lighter" / "Darker" are not used. */
   .wheelrow { flex-direction: column; }
-  .wlcol { flex-direction: row; width: min(82vw, 340px); gap: 10px; }
-  .wl-vert { writing-mode: horizontal-tb; direction: ltr; width: auto; height: auto; flex: 1; }
+  .wlcol { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; width: min(82vw, 340px); }
+  .wl-lab { grid-column: 1 / -1; position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; white-space: normal; }
+  .wl-end { display: none; }
+  #wrand { margin-top: 0; }
+  .wl-range { writing-mode: horizontal-tb; direction: ltr; inline-size: auto; }
+  .wl-range::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--wl-stops, var(--border), var(--border))); }
+  @media (forced-colors: none) {
+    .wl-range::-moz-range-track { background: linear-gradient(to right, var(--wl-stops, var(--border), var(--border))); }
+  }
   .livepal { flex-direction: column; }            /* live palette stacks to readable rows on phones */
   .lcol { flex-direction: row; flex-wrap: wrap; }
   .lcdock { flex: 1 1 100%; order: 3; min-height: 0; justify-content: flex-start; padding: 4px 8px 7px; }

@@ -139,6 +139,10 @@ function renderPlan() {
     + ui.roleSlots(state.scheme, store.markOf);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
+// Set by setupWheel() too. render() calls it when something other than the lightness slider changes
+// the colour, the harmony or the seed role, so the slider's next move starts a new run from the colour
+// now (wheel.js).
+let endLightnessRun = () => {};
 /** node ideal-hex (UPPER) → role glyph (P/A/2) for the current scheme. Keyed off schemeBase() so it's
  *  correct in accent-seed mode (the base node is then the Accent); Metal has no wheel node. */
 function wheelRoleGlyphs() {
@@ -292,7 +296,7 @@ function renderPops() {
 function setPopHex(hex) {
   const h = normHex(hex); if (!h) return;
   state.popHex = clampPop(h);
-  render('scheme');
+  render('pop');
 }
 /** The neutral-mode chokepoint — call whenever the seed may have changed class. Keeps the harmony
  *  legal for the seed (parking/restoring the painter's hue harmony across the boundary), forces the
@@ -402,15 +406,22 @@ function syncWheelL() {
  * Reasons:
  *   'all'     init / undo / redo — everything, including the paint drawer
  *   'seed'    the pick changed (paint, hex field, photo, "use as base")
- *   'scheme'  harmony · seed role · pop changed; the seed itself did not
+ *   'scheme'  harmony · seed role changed; the seed itself did not
+ *   'pop'     a quick-pop chip changed the pop: as 'scheme', but an open lightness run stays open
+ *             (the pop is not the base colour, so the slider can still go back to its start colour)
  *   'palette' added/locked/reordered swatches — studio only, exactly as before
- *   'drag'    a live wheel frame: coalesced to one repaint per frame, URL + speech debounced
+ *   'drag'    a live wheel or lightness-slider frame: coalesced to one repaint per frame, URL +
+ *             speech debounced
  *   'settle'  a drag ended: commit the URL and speak; everything is already painted
  */
 let renderRaf = 0;
 function render(reason = 'scheme') {
   if (reason === 'settle') { updateUrl(); announce(); return; }
 
+  // A pick, a typed hex, undo/redo, a share link or a harmony/seed-role change ends a lightness run.
+  // Wheel drags and ↻ render as 'drag': the slider sees their new pick for itself. A pop change
+  // ('pop', or a pop dragged on the wheel) does not change the base colour, so the run stays open.
+  if (reason === 'seed' || reason === 'all' || reason === 'scheme') endLightnessRun();
   ensureHarmonyMode();   // the seed may have crossed the neutral boundary (picker, hex, drag, undo)
   if (reason === 'seed' || reason === 'all') syncWheelL();
 
@@ -1624,6 +1635,7 @@ function wire() {
     i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
     syncLocaleSeg();
     renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
+    wheelDraw();                        // …and the lightness slider's spoken value
   });
   document.addEventListener('pointerdown', e => { if (!sMenu.hidden && !e.target.closest('#settingsMenu') && !e.target.closest('#settingsBtn')) closeSettings(); }, true);
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sMenu.hidden) { closeSettings(); sBtn.focus(); } });
@@ -1720,11 +1732,11 @@ async function init() {
   syncLocaleSeg();
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
-  wheelDraw = setupWheel({
-    state, render, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs,
+  ({ draw: wheelDraw, endLightnessRun } = setupWheel({
+    state, render, pickHex, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs,
     addFreeNode, removeFreeNode, collapseBanner,
     setDragging: v => { wheelDragging = v; },   // gates mid-drag history snapshots (one undo entry per drag)
-  });
+  }));
   setupEyedropper();
   renderAll();
   if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf

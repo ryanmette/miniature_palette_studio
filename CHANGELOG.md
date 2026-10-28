@@ -108,6 +108,26 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **Studio: the lightness slider shows what it does** (Ryan, 2026-10-28: "B, fixed" in
+  `mockups/lightness-slider.html`). Before, the slider next to the wheel had no visible name. Ryan reported that it
+  was not clear what it does.
+  - The track shows your colour from dark to light. It uses the hue and the saturation of your pick,
+    from 6% to 94% lightness.
+  - The thumb shows the colour now. Its ring is black or white, whichever has more contrast with the
+    colour (the §7 text-on-swatch rule). So the thumb stays visible at each lightness.
+  - On a phone, the label "Lightness" is above the slider. On a wider screen, the slider is in the
+    narrow gutter next to the wheel. There, "Lighter" and "Darker" mark its two ends.
+  - A screen reader says the value and a word, for example "Lightness, 24%, dark". The slider has one
+    name now, its label. Before, it also had an `aria-label`.
+  - The slider stops at 6% and 94%. For a colour past an end, the screen reader says the colour's own
+    value. For example, white is "100%, very light", not "94%".
+  - It is still a native range. The arrow keys, Page Up, Page Down, Home and End work as before. Undo
+    and share links also work as before.
+  - In Windows High Contrast mode, the browser shows its own system slider.
+  - The ↻ button does not change. The gaps are on the spacing scale now: 12px between the wheel and the
+    slider (was 14px), and 8px between the slider and ↻ on a phone (was 10px).
+  - (CLAUDE.md §3.5 has a new "Slider" line, and §3.6 updates the wheel module; service worker
+    `ps-v48`.)
 - **Equivalents rank by finish** (Ryan, 2026-10-26; a §7 ranking change). The tab used to rank only by
   ΔE, so a flat paint's "closest in other brands" often held washes, contrasts or texture paints. For
   example, Scale75's "Dust in Summertime" texture paint showed for Citadel Death Guard Green. Now a paint
@@ -174,6 +194,38 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Studio: a lightness round trip gives back the same colour.** Before, a move to 6% and back changed
+  the colour. For example, `#555E1B` → 6% → 24% gave `#535F1C`. Step by step with the arrow keys,
+  `#6B5B4B` came back as `#6C4B4B`. Its hue moved from 30° to 0°, so a brown became a red.
+  - Cause: on each step, the slider read the hue and the saturation again from the rounded hex.
+  - Now one run keeps the hue and the saturation of the start colour. A run is one drag, or one
+    series of key presses. When the slider is back on its start value, the colour is the start colour
+    exactly.
+  - Back on the start value, a picked paint is that paint again. Before, the hero showed "Custom", the
+    share link lost the paint, and the Plan could show a different paint with the same hex.
+  - A pick, a typed hex, undo, redo, ↻, a wheel drag, a share link, a harmony change or a seed-role
+    change starts a new run from the colour at that time. A new pop does not start a new run, because
+    it does not change your colour.
+  - Neutral mode does not change. At the ends of the slider, a colour can still go into neutral mode
+    (CLAUDE.md §7).
+  - Unit tests cover the round trip in one jump and step by step, and the start and the end of a run
+    (`test/color.test.mjs`).
+- **Studio: the lightness slider's focus ring is visible.** It used the app-wide `--focus` ring: 1.17:1
+  against the card in the light theme and 1.12:1 in the dark theme. Now it uses a 2px `--accent`
+  outline, as the wheel does: 5.7:1 in the light theme and 6.2:1 in the dark theme.
+- **Touch screens wider than 520px get 44px `--tap` controls.** Before, `--tap` was 44px only on screens
+  of 520px or less. So a touch tablet got 38px buttons and a 26px-wide lightness slider. Now `--tap` is
+  44px on all touch screens (`pointer: coarse`) too.
+  - The controls that use `--tap` are 44px on a touch screen: the buttons in the header and in the seed
+    toolbar, the fields and selects, ↻ and the lightness slider (its box is `--tap` wide).
+  - Some small controls have a fixed size and are still smaller than 44px. Examples are the live
+    palette's ↶ ↷ + − and copy buttons, the harmony chips and the output tabs. This was also true on
+    phones before. `docs/PLAN.md` §5 records it as follow-up 12.
+  - At 1025px the wheel row is 340 + 12 + 44 = 396px of the column's 398px.
+  - The header is 6px taller on a touch screen. The sticky studio column now follows the header's live
+    height, so it stays 16px below the header. This is also true when a safe-area inset pads the
+    header.
+  - (CLAUDE.md §3.5 and §3.6 updated.)
 - **Small phones open at the top of the page again.** On a 360px or 375px phone, the app opened
   scrolled down by 240 to 400px. The output tabs do not fit across these screens, so the app scrolls the
   tab strip to show the active tab. It used `scrollIntoView`, which also scrolled the page down to the

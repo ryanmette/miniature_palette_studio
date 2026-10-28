@@ -214,6 +214,55 @@ export function rotateHue(hex, deg) {
   return rgbToHex(hslToRgb([h + deg, s, l]));
 }
 
+/**
+ * The wheel's lightness slider moves in "runs": one drag, or one series of key presses, from a start
+ * colour. A run holds the start colour's hue and saturation, so they cannot drift. Reading them again
+ * from each 8-bit hex lost a little on every step: #6B5B4B stepped to 6% and back came home as
+ * #6C4B4B, with the hue moved from 30° to 0° (brown to red).
+ * The slider's start position gives back the start colour itself, because a colour's own lightness is
+ * rarely a whole per cent: hsl(h, s, 24%) is not #555E1B, whose lightness is 23.7%.
+ * @param {string} hex  the colour when the run starts
+ * @param {number} v0   the slider's value (a whole per cent) when the run starts
+ */
+export function lightnessRun(hex, v0) {
+  const rgb = hexToRgb(hex), [h, s] = rgbToHsl(rgb);
+  return { h, s, v0, hex: rgbToHex(rgb) };
+}
+
+/** The colour at slider value `v` (a whole per cent) in a run from lightnessRun(). Returns a hex. */
+export const lightnessRunHex = (run, v) =>
+  v === run.v0 ? run.hex : rgbToHex(hslToRgb([run.h, run.s, v / 100]));
+
+/**
+ * One slider input event: the whole life of a run, so that it is unit-tested (wheel.js only applies
+ * the result). A run starts on the first input. It continues while the pick is the colour that it
+ * wrote last. When something else wrote the pick (a wheel drag, ↻), a new run starts from that colour.
+ * Back on the start value, the start state comes back: the start pick (a picked paint stays that paint,
+ * not a custom hex with the same value) and the wheel's start lightness, which is rarely whole.
+ * @param {object|null} run  the open run (the `run` that this function returned last time), or null
+ * @param {{v: number, pick: string, custom: string|null, wheelL: number, min: number, max: number}} now
+ *   v: the slider's value now · pick: the pick's hex · custom: the custom hex, null for a picked paint ·
+ *   wheelL: the wheel's lightness (0–1) · min, max: the slider's range
+ * @returns {{run: object, custom: string|null, wheelL: number}} the run to keep, and the new custom hex
+ *   and wheel lightness
+ */
+export function lightnessInput(run, { v, pick, custom, wheelL, min, max }) {
+  if (!run || pick !== run.wrote) {
+    // The slider showed the wheel's lightness when the run started (clamped to its range). The input
+    // event comes after the value changed, so the start value cannot be read from the slider.
+    const v0 = Math.min(max, Math.max(min, Math.round(wheelL * 100)));
+    run = { ...lightnessRun(pick, v0), pick, custom, wheelL };
+  }
+  if (v === run.v0) return { run: { ...run, wrote: run.pick }, custom: run.custom, wheelL: run.wheelL };
+  const hex = lightnessRunHex(run, v);
+  return { run: { ...run, wrote: hex }, custom: hex, wheelL: v / 100 };
+}
+
+/** The word a screen reader says after the slider's per cent ("24%, dark"), as a band id that the
+ *  UI translates. Upper bounds are inclusive: very dark ≤ 15 · dark ≤ 35 · mid ≤ 65 · light ≤ 85. */
+export const lightnessBand = v =>
+  v <= 15 ? 'veryDark' : v <= 35 ? 'dark' : v <= 65 ? 'mid' : v <= 85 ? 'light' : 'veryLight';
+
 /** Adjust lightness/saturation (deltas in 0–1), preserving hue. Returns a hex. */
 export function adjustHsl(hex, { dl = 0, ds = 0 } = {}) {
   const [h, s, l] = rgbToHsl(hexToRgb(hex));

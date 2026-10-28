@@ -30,6 +30,16 @@ const LOCALES = {
     neutralHead: 'Neutral seed',
     neutralPill: 'neutral seed',
     neutralBody: 'hue harmonies can’t move a colour with no hue, so these schemes are built for neutrals. Your colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.',
+    // the wheel's lightness slider: its name, the gutter's end words, and the bands its spoken value
+    // ends with ("24%, dark"; the band ids come from lightnessBand in color.js)
+    lightness: 'Lightness',
+    lighter: 'Lighter',
+    darker: 'Darker',
+    wlVeryDark: 'very dark',
+    wlDark: 'dark',
+    wlMid: 'mid',
+    wlLight: 'light',
+    wlVeryLight: 'very light',
   },
   'en-US': {
     colourScheme: 'Color scheme',

@@ -283,6 +283,25 @@ to-buy marks) but files them *inside* the scheme output. Four routing directions
     No new data, no backend, and it degrades to “put the text in the search field”. Barcode stays the
     nicer UX *if* a mapping ever exists — a data-sourcing project, not a UI one.
 
+### Follow-ups from the lightness-slider build (noted 2026-10-28, not yet scheduled)
+
+Found by the review of the "B, fixed" slider build. Not changed in that build: each is older than it.
+
+12. **Touch targets: the fixed-size controls are still smaller than 44px.** `--tap` is now 44px on every
+    touch screen (CLAUDE.md §3.6), so the controls that use it grew. Controls with a fixed size did not.
+    Measured with a touch tablet and a 390px phone: the live palette's ↶ ↷ + − (30px) and its copy and
+    column buttons (20–21px), `.btn.sm` (32px), the harmony chips (30px; 34px on a phone), the output
+    tabs (40px), the seed docks and buy buttons (26px), and the Studio / Shelf switch (30px; 34px on a phone). WCAG 2.1
+    AA does not require 44px (2.5.5 is AAA), so this is §3.6's own rule, not an AA failure.
+13. **Neutral mode and the slider at widths over 1024px.** When a slider move enters neutral mode
+    (§7, by design), two older behaviours get in the way. (a) The neutral explainer overlay covers the
+    top 37px of the slider at 1180px (56px at 1025px with a mouse), with "Lighter" and the thumb at 94%, until it
+    collapses to its pill after about 7 s. A tap there lands on the overlay. (b) The hero line wraps when
+    its "neutral seed" pill shows in the 398px studio column, so the wheel row moves down about 29px
+    during the drag (§3.4). Fix direction: keep the overlay inside the wheel's box, not the gutter, and
+    keep the hero on one line (an ellipsis on the name, or a reserved slot for the pill). Ryan decides
+    neutral-mode behaviour, so this waits for him.
+
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:
