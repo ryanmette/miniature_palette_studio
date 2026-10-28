@@ -159,7 +159,17 @@ const T = { noteUmp: 'Use my paints: {mode}', umpPrefer: 'Prefer', umpOnly: 'Onl
   noteUmpOnly: 'from the {n} you own', noteUmpEmpty: 'none marked as owned yet', change: 'Change', openShelf: 'Open Shelf',
   noteContrast: 'Contrast and speed paints included', notePlan: 'Plan' };
 const tt = (k, v) => (T[k] || k).replace(/\{(\w+)\}/g, (m, x) => (v && x in v ? String(v[x]) : m));
-const text = html => html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+/** The visible text of an HTML string. A character scan, not a regex replace: one pass of /<[^>]+>/ can
+ *  leave a tag behind (`<scr<b>ipt>`), which CodeQL flags as incomplete sanitisation. */
+const text = html => {
+  let out = '', inTag = false;
+  for (const ch of html) {
+    if (ch === '<') inTag = true;
+    else if (ch === '>') inTag = false;
+    else if (!inTag) out += ch;
+  }
+  return out.replace(/\s+/g, ' ').trim();
+};
 /** Each line's accessible name: its text without the aria-hidden glyph (the ✓, ○ or finish icon). */
 const names = html => html.split('</button>').filter(Boolean)
   .map(b => text(b.replace(/<span[^>]*aria-hidden="true">.*?<\/span>/, '')));
