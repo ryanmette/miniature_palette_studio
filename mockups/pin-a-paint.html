@@ -5145,10 +5145,6 @@ return E;
  var q = v => { return { deltaE: v, quality: P.quality(v) }; };
  var fmark = l => '<span class="d-fm' + (l ? ' ' + l : '') + '" aria-hidden="true">' + (l === 'fit' ? '✓' : l === 'near' ? '≈' : '') + '</span>';
  var METALW = { '#C8A13A': 'gold', '#B5B5BD': 'silver', '#6E7177': 'gunmetal' };
- var plain = html => {
-  return html.replace(/<span class="projtag"[\s\S]*?<\/span>/g, '').replace(/<span class="d-fm[^"]*"[^>]*>[^<]*<\/span>/g, '').replace(/<[^>]+>/g, '')
-   .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
- };
  /* geometry in per cent of the wheel box, so the wheel can shrink with a narrow frame */
  function G(S, B) {
   return { S: S, B: B, Rm: S / 2 - B / 2, Rd: S / 2 - B,
@@ -5225,18 +5221,21 @@ return E;
     + (l ? ' aria-label="' + esc(U.hlabel(t)) + ', ' + (l === 'fit' ? 'fits your pins' : 'near your pins') + '"' : '') + '>' + esc(U.hlabel(t)) + fmark(l) + '</button>';
   }).join('') + '</div>';
  }
- function fitText(b) {
+ /* fitText(b) is the markup on the screen; fitText(b, true) is the same words as plain text for the
+    live region. The words are built, not stripped back out of the markup, so no tag or entity is undone. */
+ function fitText(b, words) {
+  var bo = s => words ? s : '<b>' + s + '</b>', tx = s => words ? s : esc(s), fm = l => words || !l ? '' : fmark(l);
   var g = b.g, c = b.c, st = b.st, hn = U.hlabel(g.h);
-  if (!st.pins.length) return st.metal ? '<b>No colour pins.</b> ' + esc(U.pname(st.metal)) + ' is in the Metal well. A metal has no hue on the wheel, so no harmony changes.'
+  if (!st.pins.length) return st.metal ? bo('No colour pins.') + ' ' + tx(U.pname(st.metal)) + ' is in the Metal well. A metal has no hue on the wheel, so no harmony changes.'
    : 'Pin a colour paint, and the strip marks the harmonies that fit it.';
-  if (g.kind === 'custom') return '<b>Custom has no rule</b>, so it has no fit. Your pins keep their roles.';
+  if (g.kind === 'custom') return bo('Custom has no rule') + ', so it has no fit. Your pins keep their roles.';
   var pp = c.list.filter(x => x.pop)[0];
-  if (pp) return fmark('fit') + '<b>Your pin is the pop.</b> ' + esc(U.pname(pp.paint)) + ' is the Accent, and the Secondary comes from it.';
+  if (pp) return fm('fit') + bo('Your pin is the pop.') + ' ' + tx(U.pname(pp.paint)) + ' is the Accent, and the Secondary comes from it.';
   var w = worstOf(c), best = null;
   Object.keys(b.mk).forEach(t => { var k = b.mk[t]; if (t !== g.h && k.level === 'fit' && (!best || k.worst < best.w)) best = { t: t, w: k.worst }; });
   var noTurn = !g.turned && !c.level && b.bt && b.bt.w > NEAR;
-  return (c.level ? fmark(c.level) : '') + (g.turned ? 'Turned ' + sdeg(g.turn) + '. ' : '') + '<b>' + hn + (c.level === 'fit' ? ' fits your pins.' : c.level === 'near' ? ' is near your pins.' : ' does not fit your pins.')
-   + '</b> ' + esc(itemWords(w, g)) + (c.level !== 'fit' && best ? ' <b>' + U.hlabel(best.t) + ' fits.</b>' : noTurn ? ' No turn brings them near.' : '');
+  return fm(c.level) + (g.turned ? 'Turned ' + sdeg(g.turn) + '. ' : '') + bo(hn + (c.level === 'fit' ? ' fits your pins.' : c.level === 'near' ? ' is near your pins.' : ' does not fit your pins.'))
+   + ' ' + tx(itemWords(w, g)) + (c.level !== 'fit' && best ? ' ' + bo(U.hlabel(best.t) + ' fits.') : noTurn ? ' No turn brings them near.' : '');
  }
  function fitInner(b) {
   var g = b.g, bt = b.bt, lab = '';
@@ -5350,7 +5349,7 @@ return E;
   var m = openMatch(b, role);
   return role + ': open. Nearest ' + (m ? U.pname(m.paint) + ', ' + m.quality.label + ' ΔE ' + n1(m.deltaE) : 'none') + '. P pins a paint here.';
  }
- var fitSay = b => plain(fitText(b));
+ var fitSay = b => fitText(b, true).trim();
  function stripSay(b) {
   var f = Object.keys(b.mk).filter(t => b.mk[t].level === 'fit').map(U.hlabel);
   return b.st.pins.length ? (f.length ? 'Harmonies that fit: ' + f.join(', ') + '.' : 'No harmony fits your pins.') : '';
@@ -5583,7 +5582,7 @@ return E;
    else if (e.key === 'Escape') { closePick(true); say('Search closed. Nothing changed.'); }
    else { if (e.key === 'Tab') closePick(false); return; }
    e.preventDefault();
-   if (pick && pick.act >= 0 && e.key !== 'Enter') { var r = pick.rows[pick.act]; say(U.pname(r.paint) + ', ' + r.paint.brand + '. ' + plain(preview(r.paint))); }
+   if (pick && pick.act >= 0 && e.key !== 'Enter') { var r = pick.rows[pick.act]; say(U.pname(r.paint) + ', ' + r.paint.brand + '. ' + preview(r.paint)); }
   }
   function choose(i) {
    var r = pick.rows[i], p = r.paint, mode = pick.mode, role = pick.role, key = pick.key;
