@@ -258,6 +258,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **A shorter Studio on a phone.** The live palette shows its colours side by side, three to a row, in place of
+  one full-width row each, and Undo, Redo, + and − share one row with Ideal / Real. From the seed field to the
+  first Plan card is now 1,294px at 390 × 844 (was 1,445px). In the one-column layout (1024px and narrower) the
+  Plan, Equivalents and Accessibility tabs stay pinned under the header once you reach them.
 - **The neutral note no longer bounces when it folds away.** The ◐ pill now fades in (180ms). Only an action
   of the painter bounces. The service-worker cache is `ps-v66`.
 - **A new logo: a dropper whose colour lands as a round pot lid** (`mockups/logo.html`, 4a; Ryan chose it). It

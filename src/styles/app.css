@@ -914,6 +914,9 @@ a.btn { text-decoration: none; }
   .wsplit { grid-template-columns: 1fr; }   /* studio stacks above the output; both span the full width */
   .output { padding-left: 0; border-left: 0; padding-top: 16px; border-top: 1px solid var(--border); }
   .studio { position: static; }
+  /* One column: the tabs pin under the header once you reach them, so Plan · Equivalents · Accessibility
+     stay one tap away down a long tab (UX 2). The --bg fill hides the content that scrolls under them. */
+  .tabs { position: sticky; top: var(--hdr-h); z-index: 6; background: var(--bg); }
 }
 @media (max-width: 860px) {
   main { gap: 16px; }
@@ -969,13 +972,16 @@ a.btn { text-decoration: none; }
   @media (forced-colors: none) {
     .wl-range::-moz-range-track { background: linear-gradient(to right, var(--wl-stops, var(--border), var(--border))); }
   }
-  .livepal { flex-direction: column; }            /* live palette stacks to readable rows on phones */
-  .lcol { flex-direction: row; flex-wrap: wrap; }
-  .lcdock { flex: 1 1 100%; order: 3; min-height: 0; justify-content: flex-start; padding: 4px 8px 7px; }
-  .lcdock:empty { display: none; }                /* stacked rows: an empty dock line is just dead space */
-  .dockbtn { width: auto; padding: 3px 12px; }
-  .lctop { flex: 0 0 76px; min-height: 0; justify-content: center; }
-  .lcfoot { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  /* The live palette on a phone (UX 2, mockups/visual-identity.html): columns side by side, three to a row,
+     with the same subgrid as the desktop, so the colour blocks, docks and paint names line up. A fourth or
+     fifth colour wraps to a new row. Stacked full-width rows took 306px for three colours; this is about half. */
+  .livepal { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 8px; row-gap: 0; }
+  .lcol { display: grid; grid-row: span 3; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); margin-bottom: 8px; }
+  .lctop { min-height: 72px; padding: 7px 8px; }
+  .lchexrow { flex-wrap: wrap; gap: 4px; }
+  .lcact { gap: 4px 12px; }
+  /* ↶ ↷ + − and Ideal / Real share one row: Ideal / Real takes what the four buttons leave */
+  #realtoggle { width: auto; flex: 1 1 0; min-width: 0; }
   .shelfgrid { grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); }   /* fit more swatches per row on phones */
   .modenav { order: 2; }
 
