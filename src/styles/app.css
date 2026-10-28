@@ -434,7 +434,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
    a touch screen and when a safe-area inset pads it, so the studio never slides under the header. */
 .studio { position: sticky; top: calc(var(--hdr-h) + 16px); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .output { min-width: 0; padding-left: 24px; border-left: 1px solid var(--border); align-self: stretch; }
-.wheelcol { position: relative; display: flex; flex-direction: column; align-items: center; }   /* anchors the neutral overlay */
+.wheelcol { display: flex; flex-direction: column; align-items: center; }
+.wbox { position: relative; flex: none; }   /* anchors the neutral overlay to the wheel itself, not the column */
 .wcanvas { touch-action: none; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 /* The lightness slider (§3.5 Slider, §3.6 wheel module; mockups/lightness-slider.html "B, fixed"). It
@@ -1075,6 +1076,23 @@ a.btn { text-decoration: none; }
   button, .btn, .seg, [role="switch"], [role="tab"] {
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
   }
+}
+
+/* 44px touch targets for the small fixed-size controls (§3.6; PLAN §5 follow-up 12). Where the control
+   has room, it grows (the palette toolbar, the tabs, the source chips). Where a bigger box would crowd
+   its text, an invisible ::after grows only the hit area, centred on the control, as the theme switch's
+   ::before does: the look does not change. The live palette's column buttons step 44px apart, so their
+   hit areas meet but do not overlap. */
+@media (pointer: coarse), (max-width: 520px) {
+  #undo, #redo, #addnode, #delnode { width: var(--tap); height: var(--tap); }
+  .tabs button { min-height: var(--tap); }
+  .eqchip { min-height: var(--tap); }
+  .lcact { gap: 12px; }
+  .lcbtn, .lccopy { width: 32px; height: 32px; }
+  .hexline, .buybtn, .eqjump, .dockbtn, .footlink, .lcbtn, .lccopy { position: relative; }
+  .hexline::after, .buybtn::after, .eqjump::after, .dockbtn::after, .footlink::after, .lcbtn::after, .lccopy::after {
+    content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px);
+    transform: translate(-50%, -50%); }
 }
 
 /* motion — fades + gentle bounce (§3.4) */

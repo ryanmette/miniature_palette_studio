@@ -301,6 +301,12 @@ Found by the review of the "B, fixed" slider build. Not changed in that build: e
     seed docks and buy buttons (26px), the Plan cards' "equivalents" jump (20px), the hero's copy-hex
     button (19px), the Equivalents source chips (30px) and the footer's "About & data" link (20px). WCAG
     2.1 AA does not require 44px (2.5.5 is AAA), so this is §3.6's own rule, not an AA failure.
+    **Done (2026-10-28, release 2 of the visual identity):** on touch and ≤520px, ↶ ↷ + −, the output tabs
+    and the source chips are `--tap`; the column buttons are 32px, 44px apart; the docks, buy buttons,
+    "equivalents" jump, hex-copy, column copy and footer link get a 44px hit area (an invisible `::after`)
+    with no change to how they look. Checked with `elementFromPoint` at 390, 768 and 1025px: every edge of
+    every 44px area lands on its own control. One planned exception: where the column copy button's area
+    meets the seed dock under it, the visible dock wins (the copy keeps 44 × 38px).
 13. **Neutral mode and the slider at widths over 1024px.** When a slider move enters neutral mode
     (§7, by design), two older behaviours get in the way. (a) The neutral explainer overlay covers the
     top 37px of the slider at 1180px (56px at 1025px with a mouse), with "Lighter" and the thumb at 94%, until it
@@ -309,6 +315,10 @@ Found by the review of the "B, fixed" slider build. Not changed in that build: e
     during the drag (§3.4). Fix direction: keep the overlay inside the wheel's box, not the gutter, and
     keep the hero on one line (an ellipsis on the name, or a reserved slot for the pill). Ryan decides
     neutral-mode behaviour, so this waits for him.
+    **Done (2026-10-28, release 2 of the visual identity; Ryan approved the UX pass):** (a) the overlay is
+    inside a box that is exactly the wheel (`.wbox`), so it ends 12px before the gutter at every width.
+    (b) No longer happens: the pill is in the overlay, not the hero, and the hero is one line (28px) for a
+    red, a grey and a near-black seed at 1025px (mouse and touch) and 1180px, so the wheel does not move.
 
 ### Follow-ups from the ⋯ menu build (noted 2026-10-28, not yet scheduled)
 

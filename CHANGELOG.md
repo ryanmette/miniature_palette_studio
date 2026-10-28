@@ -488,6 +488,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **Every small control has a 44px touch target.** On a touch screen and on a phone, Undo, Redo, + and −, the
+  output tabs and the Equivalents source chips are now 44px tall. The live palette's column buttons are 32px
+  and 44px apart. The seed docks, the buy buttons, the "equivalents" jump, the hex-copy button and the footer
+  link keep their look but get an invisible 44px touch area (PLAN §5 follow-up 12).
+- **The neutral note no longer covers the lightness slider.** It now sits inside a box the size of the wheel,
+  so it ends before the slider at every width (PLAN §5 follow-up 13).
 - **The tone ladder shows its pots.** Each wash, base and highlight step drew an inline swatch with no size, so
   the ladder showed only words. Each step now shows the pot named under it, in the pot's own colour and with its
   finish overlay (a wash or a metallic shows as one). With no pot close enough, it shows the target colour.
