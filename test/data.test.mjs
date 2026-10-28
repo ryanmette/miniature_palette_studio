@@ -195,10 +195,10 @@ test('nearestPaints floatTypes ranks the floated type strictly first, then by sc
   assert.equal(plain[0].paint.id, 'ochre');
 });
 
-test('equivalents: a metal source keeps metals first even when the prefilter would prune them', () => {
-  // The prefilter keeps the N nearest by cheap Euclidean distance, so a metal surrounded by hundreds
-  // of near flats could have every metal pruned before the metal-first tier (§7) ever applied.
-  // Needs a dataset larger than the pool to exercise the rescue at all.
+test('equivalents: a metal source keeps metals first, even behind hundreds of nearer flats', () => {
+  // A prefilter keeps the N nearest by cheap Euclidean distance. Here it once pruned every metal before
+  // the metal-first tier (§7) could apply. equivalents() now ranks every paint, with no prefilter. The
+  // dataset stays larger than a pool, so a prefilter that comes back must still keep the metals.
   const paints = [{ id: 'src', brand: 'Citadel', line: 'Base', name: 'Gold', hex: '#C8A13A', type: 'metal' }];
   for (let i = 0; i < 400; i++)   // a dense cloud of FLATS right next to the source hex
     paints.push({ id: 'flat' + i, brand: 'Vallejo', line: 'Game', name: 'Flat ' + i,
@@ -219,6 +219,39 @@ test('equivalents: a flat source keeps pure ΔE order (no tier), ascending', () 
   const eq = equivalents(idx, idx.byId.get('citadel-red'), { n: 3 });
   assert.ok(eq.every(e => e.paint.brand !== 'Citadel'));
   for (let i = 1; i < eq.length; i++) assert.ok(eq[i].deltaE >= eq[i - 1].deltaE, 'ascending ΔE');
+});
+
+test('equivalents: the top 8 equal a full scan of the real dataset (§6, §7)', async () => {
+  // FINISH_PENALTY changes the order after a nearest-by-Lab cut, so a cut can drop a paint that belongs
+  // in the list. With a pool of 192, 241 of the 3,225 paints (dataset 1.6.0) got a different top 8.
+  // The reference ranks every other-brand paint, with the same metal tier and the same penalty.
+  const { readFileSync } = await import('node:fs');
+  const { finishClass, FINISH_PENALTY } = await import('../src/js/data.js');
+  const { deltaE2000 } = await import('../src/js/color.js');
+  const real = indexDataset(JSON.parse(readFileSync(new URL('../src/data/paints.json', import.meta.url), 'utf8')));
+  const fullScan = src => real.paints.filter(p => p.brand !== src.brand)
+    .map(p => {
+      const deltaE = deltaE2000(src.lab, p.lab);
+      return { paint: p, deltaE, tier: src.type === 'metal' && p.type !== 'metal' ? 1 : 0,
+        score: deltaE + (finishClass(p.type) === finishClass(src.type) ? 0 : FINISH_PENALTY) };
+    })
+    .sort((a, b) => a.tier - b.tier || a.score - b.score)
+    .slice(0, 8);
+  // Every 40th paint, plus the 13 paints where the pool of 192 put a WORSE paint in the list (not only
+  // two equal scores in another order). If a later dataset drops one of these ids, the stride sample stays.
+  const worse = ['scale75-fx-electric-blue', 'scale75-fx-acid-pink', 'scale75-fx-psychedelic-purple',
+    'army-painter-speedpaint-maggot-skin', 'citadel-shade-biel-tan-green', 'citadel-contrast-space-wolves-grey',
+    'citadel-contrast-snakebite-leather', 'ak-interactive-3rd-gen-ink-purple', 'army-painter-wash-radiation-glow',
+    'two-thin-coats-wave-3-fire-opal', 'army-painter-speedpaint-algae-green', 'vallejo-xpress-iceberg-grey',
+    'reaper-wash-flesh-wash'];
+  const sources = real.paints.filter((p, i) => i % 40 === 0);
+  for (const id of worse) if (real.byId.has(id)) sources.push(real.byId.get(id));
+  assert.equal(new Set(sources.map(p => finishClass(p.type))).size, 4, 'the sample has all four finish classes');
+  for (const src of sources) {
+    const got = equivalents(real, src, { n: 8 }), want = fullScan(src);
+    assert.deepEqual(got.map(e => e.paint.id), want.map(e => e.paint.id), `top 8 for ${src.id}`);
+    assert.deepEqual(got.map(e => e.deltaE), want.map(e => e.deltaE), `true ΔE for ${src.id}`);
+  }
 });
 
 test('finishClass: the four classes the equivalence groups use (§5.2)', async () => {
