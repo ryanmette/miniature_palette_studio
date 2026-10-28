@@ -23,6 +23,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - New files: a proposed icon set in `src/assets/icons/` (20px, one stroke, original work; the app does not use
     it yet), candidate fonts in `mockups/fonts/` (SIL OFL 1.1, with each licence), and the audit screenshots and
     the capture script in `mockups/visual-identity/`. (CLAUDE.md §4 is updated.)
+  - Ryan chose **Workbench+** with the Sotek Green light accent, and two releases (the look first, then the
+    UX pass). The page has a **Present** view: one direction, screen, device and theme at a time, at full length
+    and scaled to fit. Its **Swatches: Pot lids · Squares** switch and a new section show what round pot-lid
+    swatches touch (13 surfaces; a real paint is round, a target colour stays square).
+- **Design exploration: the logo** (`mockups/logo.html`, not shipped). Four rounds: seven ideas from the bench, then
+  refinements, scored by a painter judge and a brand judge. The recommendation is a dropper bottle whose colour lands
+  as a round pot lid (no droplet). A version with a drop is shown beside it.
 - **Design exploration: pin a paint to a role** (`mockups/pin-a-paint.html`, not shipped). Ryan asked: “I use Death
   Guard Green and want Balthasar Gold — what else is recommended?” Today the app cannot do this: for that green the Metal
   rule gives gunmetal, and no control pins a paint to a role. The page shows four directions with real engine numbers

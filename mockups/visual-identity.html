@@ -418,6 +418,11 @@ kbd { display:inline-grid; place-items:center; min-width:20px; height:20px; padd
 .pscale { overflow:hidden; }
 .pscale > .fr { transform-origin:0 0; }
 .pscale > .fr.ph.scroll { height:auto; overflow:visible; }
+/* Pot-lid swatches (the Present switch): a REAL PAINT is a round lid; a target colour (ideal, scheme block,
+   simulated colour) stays square. The box keeps its size, so the tap area and the grid do not change. */
+.lids .fr .pot { border-radius:50%; }
+.lids .fr .cell.pot .st { right:2%; bottom:2%; border-radius:50%; }
+.lids .fr .cell.pot.picked { outline:0; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 2px var(--bg), 0 0 0 5px var(--text); }
 @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
 /* Forced colours: paint is data, so swatches keep their colour; pressed and selected states get a system
    outline (box-shadow and background are removed in this mode). */
@@ -463,7 +468,7 @@ kbd { display:inline-grid; place-items:center; min-width:20px; height:20px; padd
 </svg>
 
 <nav class="toc" aria-label="Sections">
-  <a href="#present">Present</a><a href="#audit">1 Audit</a><a href="#workbench">2a Workbench</a><a href="#chamfer">2b Chamfer</a><a href="#pot">2c Paint pot</a>
+  <a href="#present">Present</a><a href="#lids">Pot lids</a><a href="#audit">1 Audit</a><a href="#workbench">2a Workbench</a><a href="#chamfer">2b Chamfer</a><a href="#pot">2c Paint pot</a>
   <a href="#shared">2d Shared parts</a><a href="#ux">3 UX pass</a><a href="#scores">4 Scores</a><a href="#verdict">Verdict</a>
 </nav>
 
@@ -487,9 +492,52 @@ kbd { display:inline-grid; place-items:center; min-width:20px; height:20px; padd
     <button type="button" data-p="dev" data-v="ph" aria-pressed="true">Phone</button><button type="button" data-p="dev" data-v="dt" aria-pressed="false">Desktop</button></div>
   <div class="pgrp" role="group" aria-label="Theme"><span aria-hidden="true">Theme</span>
     <button type="button" data-p="thm" data-v="both" aria-pressed="true">Both</button><button type="button" data-p="thm" data-v="light" aria-pressed="false">Light</button><button type="button" data-p="thm" data-v="dark" aria-pressed="false">Dark</button></div>
+  <div class="pgrp" role="group" aria-label="Swatches"><span aria-hidden="true">Swatches</span>
+    <button type="button" data-p="sw" data-v="lids" aria-pressed="true">Pot lids</button><button type="button" data-p="sw" data-v="square" aria-pressed="false">Squares</button></div>
 </div>
 <div class="pinfo" id="pInfo" aria-live="polite"></div>
 <div class="pstage" id="pStage"></div>
+</section>
+
+<section id="lids" aria-labelledby="lidsTitle">
+<h2 id="lidsTitle">Pot-lid swatches — what the change touches</h2>
+<p class="lead">Ryan likes the round pot lids and asked how far the change reaches. Use <strong>Swatches: Pot lids · Squares</strong> in the Present view above to flip every screen. This section lists every place in the real app that draws a swatch (from <code>src/js/ui.js</code>), and what would change.</p>
+<h3>The rule that makes the shape mean something</h3>
+<p><strong>A real paint — a pot you can buy or own — is a round lid. A target colour stays square</strong>: the ideal colour, the scheme's blocks, a custom hex, a colour from a photo, a colour-blind simulation. Then the Plan's "ideal → pot" reads as "square → circle", and a painter can tell "a colour" from "a paint" before reading a word. The hero follows the same rule: a picked paint shows a lid, a typed hex shows a square.</p>
+<div class="tw"><table class="t">
+<thead><tr><th>Surface</th><th>Code</th><th>What the swatch is</th><th>With the rule</th><th>How many</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Shelf grid</td><td><code>ui.js:122</code> <code>.cell</code></td><td>a pot</td><td><strong>round</strong></td><td class="n">3,225</td><td>The owned / to-buy badge moves onto the lid's edge. The selection ring becomes a round ring (a box-shadow, so it follows the circle in every Safari). The tap area, the marquee and the tooltips use the same square box, so nothing moves (§3.4).</td></tr>
+<tr><td>Seed list, Browse grid</td><td><code>ui.js:76</code> <code>.pkt .sw</code></td><td>a pot</td><td><strong>round</strong></td><td class="n">3,225 + Recent</td><td>The same as the Shelf.</td></tr>
+<tr><td>Seed list, search rows</td><td><code>ui.js:92</code></td><td>a pot</td><td><strong>round</strong></td><td class="n">≤ ~50</td><td>—</td></tr>
+<tr><td>Seed list, "Seed: #…" row</td><td><code>ui.js:103</code></td><td>a typed hex</td><td>square</td><td class="n">1</td><td>The square tells you it is not a paint.</td></tr>
+<tr><td>Hero chip</td><td><code>ui.js:198</code> <code>.herochip</code></td><td>your pick</td><td><strong>round</strong> for a paint; square for a hex or a photo colour</td><td class="n">1</td><td>The shape says which kind of seed you have.</td></tr>
+<tr><td>Live palette blocks</td><td><code>ui.js:473</code> <code>.lctop</code></td><td>the scheme's colours</td><td>square (no change)</td><td class="n">3–7</td><td>They are the scheme, not pots. The paint name under each block stays words.</td></tr>
+<tr><td>Wheel nodes</td><td><code>wheel.js</code></td><td>handles</td><td>no change (already round)</td><td class="n">3–7</td><td>—</td></tr>
+<tr><td>Plan: ideal → match</td><td><code>ui.js:351</code> <code>.ivsa</code></td><td>ideal, then the pot</td><td>square → <strong>round</strong></td><td class="n">4</td><td>The clearest gain: the gap between the target and the pot you buy is now also a change of shape.</td></tr>
+<tr><td>Plan: tone ladders</td><td><code>ui.js:331</code> <code>.step</code></td><td><em>today the ideal step colour</em>, labelled with the pot's name</td><td><strong>round, showing the pot</strong> (needs your yes)</td><td class="n">12–24</td><td>Today the chip is the ideal colour but the words name a pot. With lids, the chip should be the pot you buy, so chip and name agree. This changes what the colour shows, so it is your decision.</td></tr>
+<tr><td>Equivalents rows</td><td><code>ui.js:383, 396</code> <code>.eqc</code></td><td>pots</td><td><strong>round</strong></td><td class="n">6–8</td><td>—</td></tr>
+<tr><td>Equivalents source chips</td><td><code>ui.js:371</code></td><td>the role colours</td><td>square</td><td class="n">4–6</td><td>—</td></tr>
+<tr><td>Neutral "pop" chips</td><td><code>ui.js:242</code></td><td>pots</td><td><strong>round</strong></td><td class="n">≤ 6</td><td>—</td></tr>
+<tr><td>Accessibility strips and pairs</td><td><code>ui.js:486–500</code></td><td>simulated colours</td><td>square</td><td class="n">—</td><td>A colour-blind simulation is not a paint.</td></tr>
+<tr><td>Photo dialog sample</td><td><code>#edChip</code></td><td>a sampled colour</td><td>square</td><td class="n">1</td><td>—</td></tr>
+</tbody></table></div>
+<h3>What it costs</h3>
+<ul>
+<li><strong>Less paint on screen.</strong> A circle shows 78.5% of the colour of the square it sits in: 21.5% less per swatch. On a 390px phone Shelf (5 columns), a 62px lid shows 3,019 px² of paint against 3,844 px² today. Taking the Shelf gap from 8px to 4px makes each lid 65px across and brings it back to 88% of today's square.</li>
+<li><strong>The finish overlays</strong> (metallic sheen, wash and contrast satin, gloss, slime, texture) are drawn in the box and clipped by the circle. They still read (see the metallic lids in the frames). The gloss highlight sits inside the circle at 34% / 26%.</li>
+<li><strong>Two shapes to learn.</strong> The rule makes them mean something, so this is information, not noise. The Help page needs one line on it.</li>
+<li><strong>Dense desktop grids</strong> (12 columns) read more as "dots". Some painters may find that busier than tiles.</li>
+<li><strong>Nothing moves</strong> (§3.4): each swatch keeps its square box, so the tap area, the grid, the marquee, the tooltips and the virtual layout do not change.</li>
+<li><strong>Forced colours</strong>: no change (swatches already keep their colours). <strong>Old Safari</strong> (iOS 16.3 and older) draws an <code>outline</code> square on a round element. The selection and focus rings on swatches use <code>box-shadow</code>, which follows the circle everywhere.</li>
+</ul>
+<h3>What changes in the code and the rules</h3>
+<ul>
+<li><strong>One commit in release 1:</strong> a <code>pot</code> class on the paint swatches in about 10 places in <code>ui.js</code>, about 25 lines of CSS, and three test strings in <code>test/ui.test.mjs</code> (for example <code>class="sw metal"</code> becomes <code>class="sw pot metal"</code>).</li>
+<li><strong>CLAUDE.md:</strong> §2 (the paint is the hero: the shape rule), §3.5 Swatch ("square" becomes "a pot is a round lid; a target is square"), §3.4 (a <code>--r-pot</code> radius), and the Help page.</li>
+<li><strong>The logo study</strong> can echo the lid. See <code>mockups/logo.html</code>.</li>
+</ul>
+<p class="note"><strong>Recommendation:</strong> yes, with the rule above, and with a 4px Shelf gap. Open question for Ryan: the tone-ladder chips show the pot, not the ideal step colour. Yes or no?</p>
 </section>
 
 <!-- ======================================================================================= AUDIT -->
@@ -778,10 +826,10 @@ function livePalette(dir, ph) {
 function potLabel(title, k) { return '<div class="potlbl"><h3>' + title + '</h3><span class="sp"></span>' + (k ? '<span class="k">' + k + '</span>' : '') + '</div>'; }
 function roleRow(r, dir, big) {
   var m = r.match, lad = r.ladder.map(function (s) {
-    return '<div class="st">' + sw(s.match.hex, 26, dir === 'pot' ? 'lid' : '') + '<div><small>' + (s.key === 'wash' ? 'Wash' : s.key === 'base' ? 'Base coat' : 'Highlight') + '</small><span class="n">' + esc(s.match.name) + '</span></div></div>';
+    return '<div class="st">' + sw(s.match.hex, 26, 'pot' + (dir === 'pot' ? ' lid' : '')) + '<div><small>' + (s.key === 'wash' ? 'Wash' : s.key === 'base' ? 'Base coat' : 'Highlight') + '</small><span class="n">' + esc(s.match.name) + '</span></div></div>';
   }).join('');
   var inner = '<div class="rh"><h4>' + r.role + '</h4><span class="w">' + ROLE_W[r.role] + '</span><span class="sp"></span><button class="txt mute">' + ic('swap') + 'Other brands</button></div>' +
-    '<div class="pair">' + sw(r.ideal, big ? 56 : 40) + '<span class="arr">→</span>' + sw(m.hex, big ? 56 : 40, (m.type === 'metal' ? 'metal ' : '') + (dir === 'pot' ? 'lid' : '')) + '</div>' +
+    '<div class="pair">' + sw(r.ideal, big ? 56 : 40) + '<span class="arr">→</span>' + sw(m.hex, big ? 56 : 40, 'pot ' + (m.type === 'metal' ? 'metal ' : '') + (dir === 'pot' ? 'lid' : '')) + '</div>' +
     '<div class="info"><div class="pnm">' + esc(m.name) + '</div><div style="color:var(--text-muted);font-size:12.5px">' + esc(m.brand) + ' · ' + esc(m.line) + '</div>' +
     '<div class="line2">' + qTag(m.q) + '<span class="de">ΔE ' + m.dE.toFixed(1) + '</span>' + (m.type === 'metal' ? '<span class="tag mute">metallic</span>' : '') + '<button class="txt hit">' + ic('cart') + 'Add</button></div></div>' +
     '<div class="ladder">' + lad + '</div>';
@@ -802,7 +850,7 @@ function seedbar(ph) {
 }
 function hero(dir) {
   var s = D.seed;
-  return '<div class="hero">' + sw(s.hex, 30, dir === 'pot' ? 'lid' : '') + '<span class="nm">' + esc(s.name) + '</span><span class="tag mute">main</span><span class="sp"></span><button class="txt" style="min-height:var(--tap)">' + ic('cart') + 'Add</button></div>' +
+  return '<div class="hero">' + sw(s.hex, 30, 'pot' + (dir === 'pot' ? ' lid' : '')) + '<span class="nm">' + esc(s.name) + '</span><span class="tag mute">main</span><span class="sp"></span><button class="txt" style="min-height:var(--tap)">' + ic('cart') + 'Add</button></div>' +
     '<div class="hero meta">' + esc(s.brand) + ' · ' + esc(s.line) + ' · <span class="de">' + s.hex + '</span> · approx</div>';
 }
 
@@ -827,7 +875,7 @@ var MARK = {}; [1, 4, 6, 9, 13, 18, 22, 27, 31, 40, 44, 52, 57, 63].forEach(func
 function shelfCells(dir, n, names) {
   return D.shelf.slice(0, n).map(function (p, i) {
     var st = MARK[i] ? '<span class="st ' + MARK[i] + '">' + ic(MARK[i] === 'own' ? 'check' : 'cart', MARK[i] === 'own' ? 'Owned' : 'To buy') + '</span>' : '';
-    var cell = '<div class="cell' + (p.type === 'metal' ? ' sw metal' : '') + (dir === 'pot' ? ' sw lid' : '') + (i === 7 ? ' picked' : '') + '" style="background-color:' + p.hex + '" title="' + esc(p.name) + '">' + st + '</div>';
+    var cell = '<div class="cell pot' + (p.type === 'metal' ? ' sw metal' : '') + (dir === 'pot' ? ' sw lid' : '') + (i === 7 ? ' picked' : '') + '" style="background-color:' + p.hex + '" title="' + esc(p.name) + '">' + st + '</div>';
     return dir === 'pot' && names ? '<div class="potcell">' + cell + '<span class="pl">' + esc(p.name) + '</span></div>' : cell;
   }).join('');
 }
@@ -855,7 +903,7 @@ function firstRun(dir, theme) {
   var body = '<div class="first">' + (dir === 'pot' ? potLabel('Start a scheme', '') : '<h2>Start a scheme</h2>') +
     '<p>Pick one paint you want on the model. The app builds a scheme around it and finds the pots to buy.</p>' +
     seedbar(true) +
-    '<div class="chips">' + picks.map(function (p) { return '<button class="pchip">' + sw(p[1], 28, (dir === 'pot' ? 'lid' : '') + (p[0] === 'Retributor Armour' ? ' metal' : '')) + p[0] + '</button>'; }).join('') + '</div>' +
+    '<div class="chips">' + picks.map(function (p) { return '<button class="pchip">' + sw(p[1], 28, 'pot ' + (dir === 'pot' ? 'lid' : '') + (p[0] === 'Retributor Armour' ? ' metal' : '')) + p[0] + '</button>'; }).join('') + '</div>' +
     '<ol class="steps"><li>Pick a paint (above), or drag the wheel later.</li><li>Pick a harmony, or roll one.</li><li>Add the pots you do not have to your shopping list.</li></ol>' +
     '<button class="txt mute">I own paints — mark my shelf first</button></div>';
   return '<div class="fr ph" data-dir="' + dir + '" data-theme="' + theme + '" role="img" aria-label="' + NAME[dir] + ', first run, phone, ' + theme + '">' + head(dir, 'studio', true) + body + '</div>';
@@ -896,7 +944,7 @@ function kit(dir) {
       '<div class="krow"><span class="klbl">Tags (not pills)</span><span class="tag ok">Excellent</span><span class="tag warn">Fair</span><span class="tag bad">Poor</span><span class="tag own">' + ic('check') + 'Owned</span><span class="tag buy">' + ic('cart') + 'To buy</span><span class="tag mute">metallic</span><span class="de">ΔE 1.6</span></div>' +
       '<div class="krow"><span class="klbl">Field (edge ≥3:1)</span><label class="field" style="max-width:260px">' + ic('search') + '<span class="ph">Paint name or #hex</span></label><span class="sel">Sort: hue' + ic('chev') + '</span></div>' +
       '<div class="krow"><span class="klbl">Overlay shadow</span><div class="ovl">The one overlay shadow.</div><span class="toast">Link copied <button class="txt">Undo</button></span></div>' +
-      '<div class="krow"><span class="klbl">Swatches</span>' + R.map(function (r) { return sw(r.match.hex, 40, (dir === 'pot' ? 'lid ' : '') + (r.match.type === 'metal' ? 'metal' : '')); }).join('') + '</div>' +
+      '<div class="krow"><span class="klbl">Swatches</span>' + R.map(function (r) { return sw(r.match.hex, 40, 'pot ' + (dir === 'pot' ? 'lid ' : '') + (r.match.type === 'metal' ? 'metal' : '')); }).join('') + '</div>' +
       '<div class="krow"><span class="klbl">Logo</span>' + logo(dir) + '</div>' +
       '</div></div>';
   };
@@ -921,7 +969,7 @@ $$('.fr button, .fr .txt').forEach(function (b) { if (!b.closest('.krow') || !/T
 $('#fullLen').addEventListener('change', function (e) { document.body.classList.toggle('fulllen', e.target.checked); });
 /* ---------- Present ---------- */
 (function () {
-  var P = { dir: 'wb', scr: 'studio', dev: 'ph', thm: 'both' };
+  var P = { dir: 'wb', scr: 'studio', dev: 'ph', thm: 'both', sw: 'lids' };
   try { var saved = JSON.parse(localStorage.getItem('vi-present') || 'null'); if (saved) for (var k in P) if (saved[k]) P[k] = saved[k]; } catch (e) { /* storage blocked: defaults */ }
   var INFO = {
     wb: ['Workbench', 'Small radii, thin rules in place of cards, condensed headings. Judges: 58 of 80 (recommended).'],
@@ -949,7 +997,7 @@ $('#fullLen').addEventListener('change', function (e) { document.body.classList.
     var themes = P.thm === 'both' ? ['light', 'dark'] : [P.thm];
     $('#pInfo').innerHTML = P.dir === 'all' ? '<strong>All three directions</strong><span>Left to right: Workbench (58), Paint pot (49), Chamfer (39).</span>'
       : '<strong>' + INFO[P.dir][0] + '</strong><span>' + INFO[P.dir][1] + '</span>';
-    stage.innerHTML = '';
+    stage.innerHTML = ''; stage.classList.toggle('lids', P.sw === 'lids');
     var cells = [];
     dirs.forEach(function (d) { themes.forEach(function (t) {
       var f = build(d, t); f.classList.remove('scroll'); f.removeAttribute('role');
