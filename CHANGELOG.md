@@ -258,6 +258,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **New type: Barlow Condensed for headings and IBM Plex Sans for the rest.** They replace Space Grotesk and
+  Inter, which the visual-identity audit counted among the "made by AI" signs. Both are under the SIL Open Font
+  License 1.1, are served from this site (no outside request), and their licence files are in `src/assets/fonts/`.
+  About & data credits them. The five files are about 116 KB, as before. Barlow Condensed is narrow, so the
+  heading sizes go up one step (32 / 26 / 20 px). The service-worker cache is `ps-v63`.
 - **A new light theme, "Workbench"** (Ryan chose the Workbench+ direction in `mockups/visual-identity.html`).
   - The light greys are warm and almost without colour, so they do not lean towards the accent and paint
     reads true. The old greys were tinted lavender.

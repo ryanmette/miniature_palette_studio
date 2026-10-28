@@ -7,7 +7,7 @@ body {
   font-family: var(--font); font-size: var(--fs-body); line-height: 1.5;
   -webkit-font-smoothing: antialiased; transition: background .2s, color .2s;
 }
-h1, h2, h3 { margin: 0; font-weight: 600; font-family: var(--display); letter-spacing: -.01em; }
+h1, h2, h3 { margin: 0; font-weight: 600; font-family: var(--display); letter-spacing: .005em; line-height: 1.15; }
 button { font-family: var(--font); cursor: pointer; }
 /* Baseline focus for anything without a rule of its own (the tab panels, links on the info pages). The
    browser's default ring is dark, so it disappears on the dark theme. Component rules below replace it. */
@@ -33,7 +33,7 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 .logo .mark { width: 26px; height: 26px; border-radius: 8px; background: var(--accent-fill); border: 1px solid var(--accent-edge);
   box-shadow: var(--accent-bevel); display: grid; place-items: center;
   color: var(--on-accent); font-family: var(--display); font-weight: 700; font-size: 15px; }
-.logo .t { font-family: var(--display); font-weight: 600; font-size: 17px; }
+.logo .t { font-family: var(--display); font-weight: 700; font-size: 21px; letter-spacing: .01em; }
 .logo .t small { color: var(--text-faint); font-weight: 500; font-size: 12px; margin-left: 5px; font-family: var(--font); }
 .spacer { flex: 1; }
 .seg { display: inline-flex; background: var(--surface-2); border-radius: var(--r-ctrl); padding: 3px; gap: 2px; flex-wrap: wrap; }
@@ -270,7 +270,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
    control, so no ring (the browser's own outline boxed the line); forced colours still draw it. */
 .hero:focus { outline: 2px solid transparent; }
 .hero .herochip { width: 28px; height: 28px; border-radius: 8px; flex: none; }
-.heroname { font-size: 16px; }
+.heroname { font-family: var(--display); font-size: 21px; font-weight: 600; line-height: 1.15; }
 .herometa { color: var(--text-muted); font-size: 12.5px; min-width: 0; }
 .herometa .approx { color: var(--warning-text); }
 .herobuy { margin-left: auto; }
@@ -338,7 +338,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 14px; }
 .slot { border: 1px solid var(--border); border-radius: var(--r-card); padding: 14px; background: var(--surface); }
 .slot .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.slot .role { font-family: var(--display); font-weight: 600; font-size: 14px; }
+.slot .role { font-family: var(--display); font-weight: 600; font-size: 18px; }
 .slot .wt { font-size: 11px; color: var(--text-faint); }
 .ivsa { display: flex; align-items: center; gap: 10px; }
 .ivsa .ideal, .ivsa .act { width: 44px; height: 44px; flex: none; }
@@ -560,7 +560,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .ctr { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; }
 .ctrbox { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 12px; }
 .ctrbox .pair { display: flex; gap: 7px; margin: 8px 0; }
-.ratio { font-size: 20px; font-weight: 600; font-family: var(--display); }
+.ratio { font-size: 24px; font-weight: 600; font-family: var(--display); }
 .collide { margin-top: 16px; font-size: 12.5px; background: var(--warning-weak); color: var(--warning-text); border-radius: var(--r-ctrl); padding: 10px 12px; }
 .collide.ok { background: var(--success-weak); color: var(--success-text); }
 
@@ -845,7 +845,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .about[open] { display: flex; flex-direction: column; }
 .aboutbody { flex: 1 1 auto; min-height: 0; padding: 16px 16px 24px; overflow: auto; }
 .aboutbody > :last-child { margin-bottom: 0; }   /* the 24px padding is the whole gap under the last line */
-.aboutbody h3 { font-family: var(--display); font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
+.aboutbody h3 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 16px 0 8px; }
 .aboutbody p { margin: 0 0 8px; font-size: 13px; line-height: 1.6; color: var(--text); }
 .aboutbody a { color: var(--accent); font-weight: 500; }
 .aboutbody .aboutfine { margin-top: 16px; font-size: 11.5px; color: var(--text-muted); }   /* --text-faint is 2.39:1, under AA */

@@ -3,8 +3,10 @@
 :root {
   /* shared, theme-independent */
   --r-card: 14px; --r-ctrl: 10px; --r-pill: 999px;
-  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Barlow Condensed is narrow, so headings run a step larger than a wide face would (the type scale below);
+     the fallback "Arial Narrow" keeps the narrow width if the webfont fails to load. */
+  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
   --tap: 38px;                      /* control height; 44px on a touch screen or ≤520px (app.css) */
   /* Focus ring: a 2px --surface gap, then a 2px --accent ring. The ring is 6.91:1 (light) and 6.20:1
@@ -16,7 +18,7 @@
      palette's buttons), crowd a neighbour's outline (the seed dock) or be covered (the tucked Shelf handle). */
   --focus-inset: inset 0 0 0 2px var(--accent);
   /* type scale */
-  --fs-display: 28px; --fs-h1: 22px; --fs-h2: 16px; --fs-body: 14px; --fs-small: 12.5px; --fs-micro: 11.5px;
+  --fs-display: 32px; --fs-h1: 26px; --fs-h2: 20px; --fs-body: 14px; --fs-small: 12.5px; --fs-micro: 11.5px;
 }
 /* The scrim: the dimmed page behind a modal (a dialog's ::backdrop, the phone Filters sheet). Same in both
    themes. It is also declared on ::backdrop because before Chrome 122 and Safari 17.4 a ::backdrop did

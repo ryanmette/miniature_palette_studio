@@ -13,4 +13,4 @@ npx capacitor-assets generate --assetPath native/assets --ios
 ```
 
 Regenerate the PNGs only if the brand mark changes (they are rendered from the app's
-`--accent-fill` brass treatment + Space Grotesk 700 "P", matching `src/icon.svg` and the header plaque).
+`--accent-fill` brass treatment + the old Space Grotesk 700 "P"; they are redrawn from the new mark, see `mockups/logo.html`).

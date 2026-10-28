@@ -117,7 +117,7 @@ export function setupWheel(app) {
         if (dd > lim) { bxr = cx + vx / dd * lim; byr = cy + vy / dd * lim; }
         ctx.beginPath(); ctx.arc(bxr, byr, r, 0, 7); ctx.fillStyle = accent; ctx.fill();
         ctx.lineWidth = 2; ctx.strokeStyle = surf; ctx.stroke();
-        ctx.fillStyle = onAcc; ctx.font = '700 ' + (COARSE ? 12 : 10) + 'px Inter, system-ui, sans-serif';
+        ctx.fillStyle = onAcc; ctx.font = '600 ' + (COARSE ? 12 : 10) + 'px "IBM Plex Sans", system-ui, sans-serif';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(g, bxr, byr);
         ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';   // reset so later canvas text is unaffected
       }

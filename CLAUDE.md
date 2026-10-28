@@ -146,11 +146,11 @@ outside these blocks. A swatch's own colour is paint *data*, never a token.
 | > 10  | Poor | `--danger` |
 
 ### 3.3 Typography (shared by both themes)
-- **Display / headings / wordmark:** `"Space Grotesk", "Inter", system-ui, sans-serif` (500–700). Geometric, lightly edged — modern in light, tactical in dark.
-- **Body / UI / labels:** `"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif` (400/500). Best for dense data and small sizes.
+- **Display / headings / wordmark:** `"Barlow Condensed", "Arial Narrow", system-ui, sans-serif` (600/700). Condensed and tool-like — a label on a rack, not a SaaS headline (the audit counted Inter + Space Grotesk among the "made by AI" signs).
+- **Body / UI / labels:** `"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif` (400/500/600). Engineered, clear at small sizes and in dense data.
 - **Hex & ΔE:** `ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace`.
-- Both webfonts are **self-hosted** (`src/styles/fonts.css` + `src/assets/fonts/*.woff2`, latin subset, `font-display: swap`) — no external requests. System fallbacks remain; the tool must look correct if a webfont fails to load.
-- Scale: display 28/600 · h1 22/600 · h2 16/600 · body 14/400 · small 12.5/400 · micro 11.5/500-caps-labels (`--text-muted`; `--text-faint` is 2.39:1 on the light surface, under AA, so it is not for text you must read).
+- Both webfonts are **self-hosted** (`src/styles/fonts.css` + `src/assets/fonts/*.woff2`, latin subset, `font-display: swap`) — no external requests — and both are under the **SIL Open Font License 1.1**, with each licence text beside the files (`src/assets/fonts/OFL-*.txt`) and a credit in About & data. About 116 KB for the five files. System fallbacks remain; the tool must look correct if a webfont fails to load.
+- Scale: display 32/600 · h1 26/600 · h2 20/600 (Barlow Condensed is narrow, so its sizes run a step above a wide face's) · body 14/400 · small 12.5/400 · micro 11.5/500-caps-labels (`--text-muted`; `--text-faint` is 2.39:1 on the light surface, under AA, so it is not for text you must read).
 - Line-height 1.5 body. Sentence case everywhere. No ALL CAPS except the 11.5px micro-label style (letter-spacing .05em).
 
 ### 3.4 Space, radius, elevation, motion
@@ -272,7 +272,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── styles/fonts.css       ← @font-face for the self-hosted webfonts (§3.3/§6)
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)
-    ├── assets/fonts/          ← self-hosted Inter + Space Grotesk woff2 (latin) — no external font requests
+    ├── assets/fonts/          ← self-hosted Barlow Condensed + IBM Plex Sans woff2 (latin) + their OFL-*.txt licences — no external font requests
     ├── assets/icons/ · assets/art/  ← designer asset library (SVG source; READMEs) — swappable without touching logic; icons/ holds the proposed 20px stroke set (not referenced yet, mockups/visual-identity.html §2d)
     ├── js/color.js            ← pure color math (see §7). No DOM. (M2)
     ├── js/data.js             ← load + index dataset, nearest-paint search (M2); the ONE paint-search matcher (seed field + Shelf), the closest-paints list and the browse grid's sort orders
@@ -360,7 +360,7 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 ## 6. Coding standards
 
 - ES2020+, modules, `const`/`let`, no transpilation assumed.
-- **Dependencies: none at runtime, and zero third-party runtime requests.** The webfonts (Inter, Space Grotesk) are **self-hosted** (§3.3), so the app makes no external calls at all. Tests use Node's **built-in** runner (`node --test` / `node:assert`) — no install, no devDependency. Anything else needs a line here.
+- **Dependencies: none at runtime, and zero third-party runtime requests.** The webfonts (Barlow Condensed, IBM Plex Sans) are **self-hosted** (§3.3), so the app makes no external calls at all. Tests use Node's **built-in** runner (`node --test` / `node:assert`) — no install, no devDependency. Anything else needs a line here.
   (One standing exception, dormant until Stage-1 kickoff: the native track's **dev-only** Capacitor
   packages, allowlisted in [`CLAUDE_NATIVE.md`](CLAUDE_NATIVE.md) §4 — they never enter the web runtime.) We hand-roll colour math (it's small and well-specified) rather than pull a library.
 - Pure functions for math; side effects only in `ui.js`/`app.js` and the app-injected DOM modules (`wheel.js`, `markmenu.js`, `picker.js`), which get state and actions from `app.js` and hold no scheme state of their own.
