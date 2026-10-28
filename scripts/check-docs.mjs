@@ -27,12 +27,13 @@ export function appVersionProblem(pkgVersion, versionSrc) {
 }
 
 // Imported by the tests for appVersionProblem only: the checks below run when this is the script.
-// Node gives the module its real path (symlinks resolved) but argv[1] as typed, so compare real paths:
-// under a symlinked folder (macOS /tmp is /private/tmp) a plain compare skipped every check and exited 0.
+// argv[1] is the path as typed, and the module's URL is its real path, unless Node keeps the symlinked
+// main path (--preserve-symlinks-main). So compare the real paths of both: under a symlinked folder
+// (macOS /tmp is /private/tmp) a plain compare skipped every check and exited 0.
 if (isMain()) main();
 function isMain() {
   if (!process.argv[1]) return false;
-  try { return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url); } catch { return false; }
+  try { return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url)); } catch { return false; }
 }
 
 function main() {
