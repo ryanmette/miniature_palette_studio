@@ -488,6 +488,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   The §4 tree's `test/` index also gains `seed` and `share`, the two test files v1.9.0 added (a prose
   list, so `check-docs` could not catch it).
 ### Fixed
+- **The tone ladder shows its pots.** Each wash, base and highlight step drew an inline swatch with no size, so
+  the ladder showed only words. Each step now shows the pot named under it, in the pot's own colour and with its
+  finish overlay (a wash or a metallic shows as one). With no pot close enough, it shows the target colour.
 - **Undo and redo changed added colours a little.** Each undo step kept the hue of an added colour to 0.1° and
   its saturation to 0.001. After an undo or a redo, a channel could be 1 sRGB unit off: the second **+** on
   `#9A1115` gave `#630B0D`, and an undo gave `#630B0E`. A check of 200,000 random colours found this in 6.6% of

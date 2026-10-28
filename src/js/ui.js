@@ -333,7 +333,9 @@ export function roleSlots(scheme, markOf) {
   // tap via sticky hover) and in the step's aria-label, so nothing is lost — just not always-on.
   const step = s => {
     const p = s.match && s.match.paint;
-    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}"` : ''}>${swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
+    // The chip shows the POT, the paint named under it, with its finish overlay (§2): a painter reads the
+    // ladder as "these three pots". With no pot (none close enough), it shows the target colour.
+    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
       + `<div class="pn">${p ? esc(p.name) : '—'}</div>`
       + (p ? `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>` : '')
       // wash-step honesty: a real wash/shade/ink shows its finish pill; no close medium → "watered down"

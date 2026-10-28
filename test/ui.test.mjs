@@ -128,6 +128,26 @@ test('ladder steps: short visible name; full identity in the tip + aria-label', 
   assert.ok(html.includes('tabindex="0"'), 'steps are keyboard-reachable');
 });
 
+test('ladder steps show the pot: the matched paint\'s colour and finish, not the target', async () => {
+  const { indexDataset } = await import('../src/js/data.js');
+  const { buildScheme } = await import('../src/js/scheme.js');
+  const { roleSlots } = await import('../src/js/ui.js');
+  const idx = indexDataset({ version: 't', paints: [
+    { id: 'c-layer-a', brand: 'Citadel', line: 'Layer', name: 'Pot A', hex: '#72766F', type: 'layer' },
+    { id: 'c-shade-b', brand: 'Citadel', line: 'Shade', name: 'Wash B', hex: '#3A3C38', type: 'shade' },
+  ] });
+  const scheme = buildScheme(idx, '#70746D', 'shades', { ladder: 'wash' });
+  const html = roleSlots(scheme, () => 'none');
+  const steps = scheme.roles[0].ladders[0].steps.filter(s => s.match && s.match.paint);
+  assert.ok(steps.length, 'the ladder has pots');
+  for (const s of steps) {
+    const p = s.match.paint;
+    if (p.hex.toUpperCase() !== s.idealHex.toUpperCase())
+      assert.ok(html.includes(`background-color:${p.hex}`), `the ${s.key} chip draws the pot ${p.hex}`);
+  }
+  assert.match(html, /class="sw fx-wash" style="background-color:#3A3C38/, 'a wash pot keeps its finish overlay');
+});
+
 test('seed docks: chip on the seeded role, switch dock on the other, reserved row everywhere', () => {
   const dockVm = [
     { id: 'p0', kind: 'base', deg: 0, hex: '#87146E', match: null, dock: { type: 'chip', name: 'Faerzress Purple', hex: '#87146E' } },
