@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { encodeState, decodeState, decodeNodes, decodeOffsets } from '../src/js/share.js';
+import { labChroma } from '../src/js/color.js';
+import { startsNeutral } from '../src/js/harmony.js';
 
 const V = { validHarmony: h => ['complementary', 'triadic', 'shades', 'neutral-pop'].includes(h),
             hasPaint: id => ['citadel-red', 'vallejo-blue'].includes(id),
@@ -52,6 +54,21 @@ test('an added swatch without its own lightness falls back to the wheel slider o
   const p = encodeState({ pickHex: '#000000', extraNodes: [{ h: 90, s: 0.4 }], wheelL: 0.33 });
   assert.equal(p.get('x'), '90.40.33');
   assert.deepEqual(decodeNodes('90.40.33'), [{ h: 90, s: 0.4, l: 0.33 }]);
+});
+
+test('a neutral-only harmony on a seed in the 10–14 band survives the link', () => {
+  // The PR #39 regression test: ?c=F5DCD6 opens neutral (C* 9.76). Two lightness steps down give #F3D5CE
+  // (C* 11.8), which stays neutral (hysteresis). The link has no mode in it, so the reload gets it from h.
+  const VN = { ...V, validHarmony: h => ['complementary', 'neutral-pop', 'duotone', 'warm-cool'].includes(h) };
+  for (const h of ['neutral-pop', 'duotone', 'warm-cool']) {
+    const back = decodeState(`c=F3D5CE&h=${h}`, VN);
+    assert.equal(back.harmony, h);
+    assert.equal(startsNeutral(labChroma(back.customHex), back.harmony), true, h);
+    assert.equal(encodeState({ customHex: back.customHex, pickHex: back.customHex, harmony: back.harmony }).get('h'), h);
+  }
+  // the same seed with a hue harmony stays a hue seed
+  const hue = decodeState('c=F3D5CE&h=complementary', VN);
+  assert.equal(startsNeutral(labChroma(hue.customHex), hue.harmony), false);
 });
 
 test('a link naming a harmony, paint or tab this build lacks still opens', () => {

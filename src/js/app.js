@@ -2,7 +2,7 @@
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
 import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
-  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony } from './harmony.js';
+  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony, startsNeutral } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
 import { encodeState, decodeState, shareUrl } from './share.js';   // the share-link contract (state ⇄ URL)
@@ -2163,6 +2163,9 @@ async function init() {
   }));
   if (!state.customHex && !state.baseId) state.baseId = state.idx.paints[0].id;   // no usable seed in the link
 
+  // Nothing holds a mode yet, and the link has no mode in it. In the 10–14 band, the link's harmony
+  // tells the mode (harmony.js startsNeutral). Live changes keep the hysteresis rule.
+  neutralMode = startsNeutral(labChroma(schemeBase()), state.harmony);
   ensureHarmonyMode();   // seed is now known: sync the strip (incl. neutral mode) + banner + pops
   for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   syncNodeBtns();
