@@ -6,6 +6,23 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Design exploration: a visual identity that does not look "made by AI"** (`mockups/visual-identity.html`, not
+  shipped). Ryan said that parts of the design look "AI", for example the radius and the padding of the buttons.
+  - The audit took 288 screenshots of PR #39 (24 surfaces, 6 sizes, light and dark) and measured the computed
+    styles. It found all twelve known causes. Examples: 8 different soft radii, one button size for main and minor
+    actions, the Tailwind violet-600 accent, 14 micro-caps labels, 20 pill badges, cards in cards, and Unicode
+    icons from different fonts.
+  - It also found two problems that are not style. In dark, the brass accent is ΔE 2.7 from `--warning`, so the
+    two look the same. The edges of the text fields are 1.22:1 (light) and 1.37:1 (dark), under WCAG 1.4.11.
+  - The page shows three directions on real Studio and Shelf frames, phone and desktop, light and dark:
+    "Workbench" (small radii and hairline rules), "Chamfer" (cut corners) and "Paint pot" (round swatches,
+    square controls). Each has a real-paint light accent and an open-licence font pair.
+  - The page also has a UX pass (first run, the length of the Studio on a phone, one main action per stage, empty
+    and error states, one name for one thing, PLAN follow-ups 12 and 13, motion), four judges' scores and a
+    recommendation. Nothing in the app changes until Ryan picks a direction.
+  - New files: a proposed icon set in `src/assets/icons/` (20px, one stroke, original work; the app does not use
+    it yet), candidate fonts in `mockups/fonts/` (SIL OFL 1.1, with each licence), and the audit screenshots and
+    the capture script in `mockups/visual-identity/`. (CLAUDE.md §4 is updated.)
 - **Design exploration: pin a paint to a role** (`mockups/pin-a-paint.html`, not shipped). Ryan asked: “I use Death
   Guard Green and want Balthasar Gold — what else is recommended?” Today the app cannot do this: for that green the Metal
   rule gives gunmetal, and no control pins a paint to a role. The page shows four directions with real engine numbers

@@ -243,6 +243,9 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── lightness-slider.html  ← 4-way exploration: labelling the wheel's lightness slider — judged; built: the colour-ramp track + a label (visible on a phone; the Random button: random-die.html)
 │   ├── random-die.html        ← the wheel's Random control: today's ↻, a die-glyph study (the d6 chosen; a d20 maybe later) and 3 directions, judged; chosen (Ryan, 2026-10-28): keep ↻ + a “Roll a scheme” d6 (built)
 │   ├── pin-a-paint.html       ← UC-3 “complete a scheme I started” (Death Guard Green + Balthasar Gold): 4 directions to pin a paint to a role, judged; recommended: A, a 📌 pin on the Plan role card (not built)
+│   ├── visual-identity.html   ← "does not look made by AI": the audit, 3 directions (Workbench · Chamfer · Paint pot) on real Studio/Shelf frames, the UX pass, 4 judges + verdict (waiting for Ryan)
+│   ├── visual-identity/       ← its evidence: audit/*.jpg (36 screenshots of PR #39) · capture.cjs (dev-only Playwright capture of 24 surfaces × 6 sizes × 2 themes)
+│   ├── fonts/                 ← candidate OFL webfonts for the mockups only (Barlow Condensed, Chakra Petch, Fraunces, IBM Plex Sans, Atkinson Hyperlegible, Public Sans) + each *.OFL.txt
 │   ├── studio-layouts.html    ← 5-way Studio layout exploration (scroll-reduction) + judge ranking
 │   ├── layouts/               ← the 5 standalone layout mocks embedded by studio-layouts.html
 │   │   ├── split-sticky-studio.html · cockpit-3col.html · instrument-band.html
@@ -269,7 +272,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)
     ├── styles/app.css         ← (M3)
     ├── assets/fonts/          ← self-hosted Inter + Space Grotesk woff2 (latin) — no external font requests
-    ├── assets/icons/ · assets/art/  ← designer asset library (SVG source; READMEs) — swappable without touching logic
+    ├── assets/icons/ · assets/art/  ← designer asset library (SVG source; READMEs) — swappable without touching logic; icons/ holds the proposed 20px stroke set (not referenced yet, mockups/visual-identity.html §2d)
     ├── js/color.js            ← pure color math (see §7). No DOM. (M2)
     ├── js/data.js             ← load + index dataset, nearest-paint search (M2); the ONE paint-search matcher (seed field + Shelf), the closest-paints list and the browse grid's sort orders
     ├── js/harmony.js          ← harmony generation (see §7) (M2)
