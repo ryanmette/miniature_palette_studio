@@ -154,14 +154,14 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-tem
 .finish { display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; padding: 1px 6px;
   border-radius: var(--r-pill); background: var(--surface-2); color: var(--text-muted); white-space: nowrap; vertical-align: 1px; }
 .finish svg { width: 10px; height: 10px; }
-.finish-metal { background: var(--warning-weak); color: var(--warning); }
+.finish-metal { background: var(--warning-weak); color: var(--warning-text); }
 .finish-contrast { background: var(--accent-weak); color: var(--accent); }
 /* shared-paint note — when a limited collection reuses one paint across roles (scheme.js distinct assignment) */
 .slot.is-shared { border-color: var(--warning); }
 .sharednote { margin-top: 10px; font-size: 11.5px; color: var(--text-muted); background: var(--warning-weak);
   border-radius: var(--r-ctrl); padding: 7px 10px; line-height: 1.45; }
 .warnpill { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
-  color: var(--warning); background: var(--surface); border: 1px solid var(--warning); border-radius: var(--r-pill); padding: 0 7px; margin-right: 5px; }
+  color: var(--warning-text); background: var(--surface); border: 1px solid var(--warning); border-radius: var(--r-pill); padding: 0 7px; margin-right: 5px; }
 .sharednote .br { color: var(--text-faint); }
 
 input[type="search"], select { height: var(--tap); border: 1px solid var(--border); border-radius: var(--r-ctrl);
@@ -280,7 +280,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .hero .herochip { width: 28px; height: 28px; border-radius: 8px; flex: none; }
 .heroname { font-size: 16px; }
 .herometa { color: var(--text-muted); font-size: 12.5px; min-width: 0; }
-.herometa .approx { color: var(--warning); }
+.herometa .approx { color: var(--warning-text); }
 .herobuy { margin-left: auto; }
 /* Seed-role pill (state, §3.5): the picked paint's Main/Accent role, inline in the hero line. */
 .seedbadge { font-size: 10.5px; font-weight: 600; letter-spacing: .03em;
@@ -364,7 +364,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .ladder .step .cap { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 .ladder .step .pn { font-size: 10.5px; font-weight: 500; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .steptag { font-size: 9.5px; line-height: 1.3; }
-.steptag.dilute { color: var(--warning); font-weight: 600; }
+.steptag.dilute { color: var(--warning-text); font-weight: 600; }
 .nmmcap { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 12px; }
 .ladcap { font-size: 10px; font-weight: 600; letter-spacing: .03em; color: var(--text-faint); margin-top: 12px; text-transform: capitalize; }
 
@@ -377,9 +377,9 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 
 /* owned / adjust / buy affordances on match chips (#5/#6) */
 .ownline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; }
-.owntag { font-size: 11px; font-weight: 600; color: var(--success); }
+.owntag { font-size: 11px; font-weight: 600; color: var(--success-text); }
 .adjust { font-size: 11px; color: var(--text-muted); font-style: italic; }
-.ownmini { font-size: 10px; font-weight: 600; color: var(--success); }
+.ownmini { font-size: 10px; font-weight: 600; color: var(--success-text); }
 .buybtn { margin-top: 6px; height: 26px; padding: 0 11px; border-radius: var(--r-pill); border: 1px solid var(--border-strong);
   background: var(--surface); color: var(--buy); font-weight: 600; font-size: 11.5px; cursor: pointer; }
 .buybtn:hover { background: var(--buy-weak); border-color: var(--buy); }
@@ -569,8 +569,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .ctrbox { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 12px; }
 .ctrbox .pair { display: flex; gap: 7px; margin: 8px 0; }
 .ratio { font-size: 20px; font-weight: 600; font-family: var(--display); }
-.collide { margin-top: 16px; font-size: 12.5px; background: var(--warning-weak); color: var(--warning); border-radius: var(--r-ctrl); padding: 10px 12px; }
-.collide.ok { background: var(--success-weak); color: var(--success); }
+.collide { margin-top: 16px; font-size: 12.5px; background: var(--warning-weak); color: var(--warning-text); border-radius: var(--r-ctrl); padding: 10px 12px; }
+.collide.ok { background: var(--success-weak); color: var(--success-text); }
 
 /* compare + toast (M8) */
 .compare { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 10px 12px; margin: 4px 0 10px; background: var(--surface-2); }
@@ -591,7 +591,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelftools { display: flex; gap: 8px; }
 .shelfhead h2 { font-size: var(--fs-h1); }
 .shelfstats { color: var(--text-muted); }
-.shelfstats .s-owned { color: var(--success); }
+.shelfstats .s-owned { color: var(--success-text); }
 .shelfstats .s-want { color: var(--buy); }
 .shelfhint { margin: 0; font-size: 12.5px; color: var(--text-faint); }
 /* Shelf filter bar: search + status + brand + type + sort on one wrapping row (search grows, controls

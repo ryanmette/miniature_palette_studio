@@ -2214,7 +2214,7 @@ document.addEventListener('touchstart', () => {}, { passive: true });
 init().catch(err => {
   // err.message is not under the app's control (fetch/parse errors can echo response bodies) — the
   // ONE innerHTML sink that must escape (every other render path goes through ui.js esc()).
-  $('main').innerHTML = `<p style="padding:24px;color:var(--danger);max-width:60ch">Couldn't load the paint data: ${ui.esc(err.message)}.
+  $('main').innerHTML = `<p style="padding:24px;color:var(--danger-text);max-width:60ch">Couldn't load the paint data: ${ui.esc(err.message)}.
     Serve the app from a local web server (e.g. <code class="mono">python3 -m http.server</code> in <code class="mono">src/</code>)
     so the browser can fetch <code class="mono">data/paints.json</code>.</p>`;
 });

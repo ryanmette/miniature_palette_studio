@@ -434,6 +434,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     hidden: at 1280px width, 149px of "Split-complementary" was outside the strip.
   - Swatch-name tooltips now sit 7px from the swatch (was 5px), so they do not touch the ring.
   - (CLAUDE.md §3.1 and §3.5 change too. The service worker is `ps-v57`.)
+- **Accessibility: small text meets 4.5:1 (WCAG 1.4.3).**
+  - New tokens `--success-text`, `--warning-text` and `--danger-text` give a darker shade of each state
+    colour for text. The base colours stay for fills, dots and glyphs, which need 3:1. In the light
+    theme, "✓ owned" goes from 2.96:1 to 4.82:1, "approx" from 3.62:1 to 5.69:1, and the metallic pill
+    from 3.09:1 to 4.86:1. The ΔE labels and the Accessibility tab's verdicts use the new tokens too.
+  - In the dark theme, the "Poor" label and "Fails AA" used `--danger` as text at 3.99:1 to 4.32:1.
+    There, `--danger-text` is `#D86C58` (4.81:1 or more).
+  - The light `--text-muted` is now `#626583` (was `#6E7293`). On `--surface-2`, the ΔE badges and the
+    Equivalents chips go from 4.20:1 to 5.09:1. The dark `--text-muted` does not change.
 - **Fixes from the final review of this release's work** (one browser test agent and five code reviewers;
   each finding was checked again by a second agent that tried to refute it):
   - **The seed field's "Closest paints" for a hex left out closer paints.** The list took only the 64 paints

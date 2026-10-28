@@ -241,7 +241,9 @@ export const popChips = (pops, active) =>
     + ` data-pop="${esc(p.hex)}" aria-pressed="${p.hex.toUpperCase() === (active || '').toUpperCase()}"`
     + ` title="Use ${esc(p.name)} as the pop accent">${swatch(p.hex)}${esc(p.name)}</button>`).join('');
 
+// A quality tier's colour: the base token for the dot (a graphic, 3:1), the *-text token for its label (4.5:1).
 const tier = t => `var(--${t})`;
+const tierText = t => `var(--${t}-text)`;
 
 /** A per-paint "to-buy" toggle (#5). Hidden for paints already owned. `mark` ∈ 'owned'|'want'|'none'. */
 const buyBtn = (id, mark) => mark === 'owned' ? '' :
@@ -263,7 +265,7 @@ export function matchChip(m, markOf) {
     + `<div class="nm">${esc(p.name)}</div>`
     + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
-    + `<span style="color:${tier(q.tier)}">${esc(q.label)}</span>`
+    + `<span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
     + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
     + ownTag + buyBtn(p.id, mark) + `</div>`;
 }
@@ -395,7 +397,7 @@ export function equivalentsPanel(name, equivs, markOf) {
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
         + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
-        + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tier(q.tier)}">${esc(q.label)}</span>`
+        + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
         + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
     }).join('')}</div>`;
@@ -441,7 +443,7 @@ export function livePalette(vm, fill, roleByHex = {}) {
     const foot = m
       ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ' <span class="ownmini">✓ owned</span>' : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
-        + `<span style="color:${tier(m.quality.tier)}">${esc(m.quality.label)}</span>`
+        + `<span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span>`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
     const fi = isFree ? +c.id.slice(1) : -1;                                     // index among the added swatches
@@ -485,7 +487,7 @@ export function livePalette(vm, fill, roleByHex = {}) {
 export function a11yPanel(model) {
   const strip = cols => `<div class="cstrip">${cols.map(c => `<span class="sw" style="flex:1;height:30px;background:${safeColor(c)}"></span>`).join('')}</div>`;
   const simRows = model.sims.map(s => `<div class="crow"><span class="clab">${esc(s.label)}</span>${strip(s.colors)}</div>`).join('');
-  const verdict = c => c.passAAText ? ['Passes AA text', 'var(--success)'] : c.passAALarge ? ['Large/UI only', 'var(--warning)'] : ['Fails AA', 'var(--danger)'];
+  const verdict = c => c.passAAText ? ['Passes AA text', 'var(--success-text)'] : c.passAALarge ? ['Large/UI only', 'var(--warning-text)'] : ['Fails AA', 'var(--danger-text)'];
   const ctr = model.contrasts.map(c => {
     const [v, col] = verdict(c);
     return `<div class="ctrbox"><div class="ttl">${esc(c.labelA)} ↔ ${esc(c.labelB)}</div>`
