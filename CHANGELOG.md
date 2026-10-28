@@ -427,6 +427,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   different hex. After the fix, every step showed the same hexes. This was the case before this release too.
 - Tests for the undo snapshot (exact colours, the same text after a round trip, no step for a tab or the theme,
   greys and colours with no lightness): 254 tests. (CLAUDE.md §4 is updated; service worker `ps-v61`.)
+- **Undo and redo changed a colour from an old link a little.** An added colour from an old link's `h.s` token
+  has no lightness of its own. It shows the hue and saturation at the slider's lightness. The undo step did not
+  keep the slider's value. Undo took the lightness from the seed's hex, and that is a little off the slider.
+  For example, `?c=9A1115&x=90.40` with the slider one step up (35%) shows `#597D36`, and an undo gave
+  `#5A7D36`. Now the undo step keeps the slider's value. Undo, redo and Esc in the seed field put it back.
+  "Delete my shelf and settings…" and a shelf Restore do not change the palette, so they do not move the
+  slider. A new seed still moves the slider to its own lightness. A browser check moved the slider 20 times,
+  then did undo and redo. Before the fix, the link above showed a different hex. After the fix, every step on 2
+  links showed the same hexes, and a tab, the theme or Delete added no undo step. Tests: 256. (Service worker
+  `ps-v62`.)
 - **A reload or a share link changed the harmony of a seed that is almost neutral.** Neutral mode starts under
   Lab C\* 10 and stops at 14 or more (CLAUDE.md §7). Between the two, a live change keeps the mode that the seed
   has. The link does not carry the mode, so a load always started such a seed in hue mode. For example,
