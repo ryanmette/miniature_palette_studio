@@ -358,6 +358,34 @@ checks need a real device or a real screen reader. The build used Playwright (Ch
 23. **The first letter after Browse** costs about 55ms at a 4× slower CPU: removing the 3,225 tiles of the
     grid is about 17ms of it. Fix direction: empty the grid in the next frame.
 
+### Raised by Ryan on 2026-10-28 (not yet built)
+
+24. **“Roll a scheme” d6 — chosen, next to build.** Keep ↻. Add a d6 button that rolls a random harmony for the
+    current colour (`mockups/random-die.html`, direction B). The roll keeps the picked paint as the seed, never picks
+    Custom or the current harmony, and is one ↶ step. Placement: the start of the harmony strip (the harmonies it picks
+    from), because the new seed toolbar has no room on a phone. Fix in the same build: ↻ does nothing on a black or white
+    seed.
+25. **Move ↻ away from the lightness slider.** Next to the slider, ↻ reads as “random lightness”, but it keeps the
+    lightness and changes the hue and strength. Options: beside the hero colour, on the wheel, a word (“New colour”), or
+    a small random group with the Roll chip.
+26. **Pin a paint to a role (UC-3 “Complete a scheme I started”).** A Death Guard player uses Death Guard Green and
+    wants Balthasar Gold as the metal. Today `metalIdeal()` gives gunmetal for that green (its hue is 74°, outside the
+    warm range under 70°), so Balthasar Gold never shows, and no control pins a paint to a role. Mockup in progress:
+    `mockups/pin-a-paint.html` (four directions: pin on the role card, a “Paints I'm using” strip, a Metal choice, pins
+    on the wheel).
+27. **Telling paints apart on the Shelf.** Without logos or names, the grid is a wall of colour; a phone shows no names
+    at all. Ideas: section headers by brand and line (sticky) with a jump index; a peek bar on a phone that names the
+    last paint touched; a density setting (colours · with names · list); text brand monograms; generic pot or dropper
+    shapes; names when a filter leaves few paints; a “New” badge. Mockup when Ryan asks.
+28. **Citadel / Warhammer Colour data refresh — soon.** Dataset 1.6.0 has 259 Citadel paints (35 Contrast, 16 Shade).
+    It does not have the seven newer Shades (Mortarion Grime, Berserker Bloodshade, Kroak Green, Poxwalker, Soulblight
+    Grey, Targor Rageshade, Tyran Blue) or most of the Contrast expansion. It still lists the gloss Shades that left the
+    range as current. Add Games Workshop's 2026 paints (Ryan to share the release), mark the retired ones as
+    discontinued, add “Warhammer Colour” (the new range name) as a search word, record every source in `SOURCES.md`
+    (§5), and bump the dataset minor version.
+29. **The seed search matches inside words.** “vallejo red” also finds Hammered Copper (“hammeRED”), in the last
+    group. Fix direction: a query word of 3 letters or less matches only at the start of a word.
+
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:

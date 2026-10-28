@@ -6,6 +6,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Design exploration: the Random control** (`mockups/random-die.html`, not shipped). Ryan asked for a mockup of
+  the d20 and to keep ↻. The page shows today's ↻ beside ↶ and ↷, a study of five die glyphs at 16–28px, and three
+  directions you can try: A, ↻ with a die that rolls on a tap; B, ↻ plus a new “Roll a scheme” die; C, the die replaces
+  ↻. Three judges (the painter, the constitution and accessibility, the build) scored them. C scored highest (46 of 60),
+  and the d6 with pips was the best glyph (51 of 60, first for every judge). **Decisions (Ryan, 2026-10-28):** the die is
+  a d6 (a d20 may be an option later); keep ↻ and add the “Roll a scheme” d6 (B). The recommendation is that the roll
+  changes only the harmony, so the picked paint stays the seed.
 - **One mark menu, and Use as seed on the Shelf** (the Paints picker build;
   `mockups/paints-picker.html` "Recommended"; Ryan, 2026-10-28). The new `markmenu.js` holds the menu's
   gestures, its place on the screen and its keys. The Shelf uses it now. The seed field's list uses the
