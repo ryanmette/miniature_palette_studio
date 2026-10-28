@@ -144,6 +144,7 @@ const LOCALES = {
     useSeedNoneSaid: 'Use as seed needs one paint. No paint is selected.',
     nSelected: '{n} paints selected',
     newSeed: 'New seed: {name}',
+    seedSame: 'Seed: {name}',
     menuNoPaint: 'No paint is selected. Use the arrow keys to go to a paint.',
     shelfGridName: 'Paints — select swatches, then press P for owned, U for to buy, X to clear, or Shift+F10 for the menu',
 

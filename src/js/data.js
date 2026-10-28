@@ -219,12 +219,14 @@ export function equivalents(indexed, paint, { n = 6 } = {}) {
  *  a paint of another finish class (a wash, a contrast, an effect, a metallic) ranks FINISH_PENALTY ΔE
  *  further, so it shows only when it is clearly closer. Each match reports its TRUE ΔE (§2, §7). The seed
  *  field lists these under "Seed: #…"; the Equivalents tab uses them for a role colour or a custom hex. */
-export function closestPaints(indexed, hex, n = 6) {
+export function closestPaints(indexed, hex, n = 6, { quick = false } = {}) {
   // Every paint is a candidate (keep). The cheap Euclidean prefilter ranks by Lab distance alone, but the
   // finish penalty moves washes and metallics down, so a flat paint ranked 79th by Lab distance (Raf Azure
   // Blue for #8899F4, ΔE 6.4) was cut before the ranking and two Poor matches took its place. A full pool
-  // costs about 2 ms, once per keystroke or tab render.
-  return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, keep: indexed.paints.length });
+  // costs about 2 ms (about 12 ms on a slow phone): right for a keystroke or a tab render, too much for
+  // every frame of a drag. `quick` takes the old pool of 192 for a drag frame; the caller then shows the
+  // exact list once the drag stops.
+  return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, keep: quick ? 192 : indexed.paints.length });
 }
 
 /* ---- the paint search: ONE matcher for the seed field and the Shelf search ---- */
