@@ -258,6 +258,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   use). Both pages reuse the app's header, tokens and theme; a small `js/infopage.js` gives them an
   in-page Back link, because the iOS app and the installed PWA have no browser back button.
 ### Changed
+- **A new light theme, "Workbench"** (Ryan chose the Workbench+ direction in `mockups/visual-identity.html`).
+  - The light greys are warm and almost without colour, so they do not lean towards the accent and paint
+    reads true. The old greys were tinted lavender.
+  - The light accent is a real paint, Citadel Sotek Green (`#0B6371`), in place of the violet `#7C3AED`. It is
+    6.91:1 on the surface, and white text on it is 6.91:1. It is ΔE 23.9 or more from every state colour.
+  - Small state text has its own darker colours so that it is 4.5:1 or more on every light ground:
+    `--success-text` (now `#0F7334`) and a new `--buy-text` (`#1D4ED8`) for the "+ buy" buttons and the Shelf
+    count.
+  - The dark theme keeps its brass, but flat: the gradient and the bevel are gone.
 - **The edge of every text field and select is now easy to see.** The seed field, the Shelf search and the
   selects used `--border`, which is 1.22:1 (light) and 1.37:1 (dark) against the page. WCAG 2.1 asks 3:1 for
   the edge that shows where to type. A new `--edge` token is 3.67:1 (light) and 3.62:1 (dark) on the surface.

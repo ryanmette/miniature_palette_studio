@@ -90,7 +90,7 @@ export function setupWheel(app) {
     if (hueH) for (const o of offs) if (!state.dropOffsets.includes(o)) spokeTo(h + o, s);   // hue partners (skip detached)
     for (const o of state.extraNodes) spokeTo(o.h, o.s);   // free/added
     if (hueH) for (const o of offs) { if (state.dropOffsets.includes(o)) continue; const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
-    const accent = cs.getPropertyValue('--accent').trim() || '#7C3AED';
+    const accent = cs.getPropertyValue('--accent').trim() || '#0B6371';
     if (popNodeOn()) {   // neutral mode: the pop node is the wheel's draggable accent (the seed sits at the hueless centre)
       const pop = activePop(), [ph, psat] = rgbToHsl(hexToRgb(pop)), [px, py] = pos(ph, psat);
       spokeTo(ph, psat);

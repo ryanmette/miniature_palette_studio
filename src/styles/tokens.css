@@ -7,7 +7,7 @@
   --display: "Space Grotesk", "Inter", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
   --tap: 38px;                      /* control height; 44px on a touch screen or ≤520px (app.css) */
-  /* Focus ring: a 2px --surface gap, then a 2px --accent ring. The ring is 5.70:1 (light) and 6.20:1
+  /* Focus ring: a 2px --surface gap, then a 2px --accent ring. The ring is 6.91:1 (light) and 6.20:1
      (dark) against the surface. The old 3px --accent-weak ring was about 1.1:1, under WCAG 1.4.11's 3:1.
      Forced colours remove box-shadows, so each rule that draws this ring also sets a transparent
      outline, which the browser then paints in a system colour. */
@@ -23,28 +23,31 @@
    not inherit custom properties from the page, so var(--scrim) there was empty. */
 :root, ::backdrop { --scrim: rgba(0,0,0,.45); }
 
-/* LIGHT — "Playful Bright" (default) */
+/* LIGHT — "Workbench" (default). Warm, low-chroma paper greys (no hue bias toward the accent, so paint reads
+   true, §2) and a real paint as the accent: Citadel Sotek Green #0B6371. The accent is ΔE 23.9 from --buy,
+   37.6 from --success, 45.3 from --warning and 58.7 from --danger, so it never means a state (§3.5). */
 :root, [data-theme="light"] {
-  --bg: #FBFBFE; --surface: #FFFFFF; --surface-2: #F1F2FF;
-  --border: #E6E7F8; --border-strong: #D3D5F0;
-  --text: #20223A; --text-muted: #626583; --text-faint: #A2A6C4;   /* muted: 4.8:1+ on every light surface and weak tint */
-  /* The visible edge of a text field or a select: 3.67:1 on --surface, 3.55:1 on --bg (WCAG 1.4.11 asks 3:1
-     for the edge that shows where to type). --border is 1.22:1, so it stays for rules and button edges only. */
+  --bg: #F6F5F2; --surface: #FFFFFF; --surface-2: #EDEBE6;
+  --border: #DCD8D0; --border-strong: #C9C4BA;
+  --text: #1D1C19; --text-muted: #5E5A52; --text-faint: #9C978D;   /* muted: 5.76:1+ on every light ground; faint is decoration only (2.4:1) */
+  /* The visible edge of a text field or a select: 3.67:1 on --surface, 3.37:1 on --bg (WCAG 1.4.11 asks 3:1
+     for the edge that shows where to type). --border is 1.42:1, so it stays for rules and button edges only. */
   --edge: #8A857B;
-  --accent: #7C3AED; --accent-weak: #F0EAFE; --on-accent: #FFFFFF;
-  /* Accent-fill = the painted surface of solid accent elements (buttons, logo plaque, role badges).
-     Light keeps the flat accent (purple reads fine flat); only dark gets metallic dimension. The
-     bevel is a no-op shadow here so accent box-shadow lists stay valid. */
+  --accent: #0B6371; --accent-weak: #E1EEEF; --on-accent: #FFFFFF;   /* accent 6.91:1 on --surface, 5.80:1 on --surface-2; white on it 6.91:1 */
+  /* Accent-fill = the painted surface of solid accent elements (the main button, role badges). Flat in
+     both themes (Workbench: a tool, not jewellery). The bevel is a no-op shadow so accent box-shadow lists
+     stay valid. */
   --accent-fill: var(--accent); --accent-edge: var(--accent); --accent-bevel: 0 0 0 rgba(0,0,0,0);
   --buy: #2563EB; --buy-weak: #DBEAFE; --on-buy: #FFFFFF;   /* "to-buy" — single-meaning, app-wide; never the selection colour */
   --success: #16A34A; --success-weak: #DCFCE7; --on-success: #FFFFFF;
   --warning: #C2740B; --warning-weak: #FBEBD3;
   --danger: #DC2647;  --danger-weak: #FCE4EA;
   /* *-text = the same state colour, darker, for small TEXT (4.5:1, WCAG 1.4.3) on --surface, --surface-2,
-     --bg and its own weak tint. The base colour stays for fills, dots and glyphs (graphics need 3:1). */
-  --success-text: #117B38; --warning-text: #945908; --danger-text: #C4203D;
-  --shadow: 0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
-  --shadow-pop: 0 10px 40px rgba(60,50,120,.18);   /* floating overlays (the seed field's list, loupe, the mark menu, sheets incl. the open phone Shelf panel, the ⋯ settings, the About and photo dialogs, the confirms) — the ONLY other elevation tier (§3.4) */
+     --bg, --accent-weak and every weak tint (the lowest: success 4.89, warning 4.77, danger 4.81, buy 5.49).
+     The base colour stays for fills, dots and glyphs (graphics need 3:1). */
+  --success-text: #0F7334; --warning-text: #945908; --danger-text: #C4203D; --buy-text: #1D4ED8;
+  --shadow: 0 1px 2px rgba(29,28,25,.06), 0 6px 18px rgba(29,28,25,.05);
+  --shadow-pop: 0 10px 40px rgba(29,28,25,.18);   /* floating overlays (the seed field's list, loupe, the mark menu, sheets incl. the open phone Shelf panel, the ⋯ settings, the About and photo dialogs, the confirms) — the ONLY other elevation tier (§3.4) */
 }
 
 /* DARK — "Grimdark Tabletop" */
@@ -54,14 +57,8 @@
   --text: #ECE3D8; --text-muted: #A8998A; --text-faint: #7C6F62;
   --edge: #7C6F62;   /* field edge: 3.62:1 on --surface, 3.85:1 on --bg (--border is 1.37:1) */
   --accent: #C2912F; --accent-weak: #2C2113; --on-accent: #15100A;
-  /* Polished brass: a vertical light→dark gradient (struck metal) + a diagonal specular sheen, a 1px
-     darker cast edge, and an inset bevel (bright top lip, shadowed bottom). Adds dimension without
-     changing the brass hue — the cure for the flat "black + orange" slab. */
-  --accent-fill:
-    linear-gradient(118deg, rgba(255,255,255,0) 30%, rgba(255,250,235,.28) 47%, rgba(255,255,255,0) 60%),
-    linear-gradient(180deg, #D6A646, #A8781D);
-  --accent-edge: #8C6516;
-  --accent-bevel: inset 0 1px 0 rgba(255,245,220,.4), inset 0 -1px 1px rgba(0,0,0,.3);
+  /* Brass, flat (Workbench: one fill, no gradient or bevel); --on-accent on it is 6.65:1. */
+  --accent-fill: var(--accent); --accent-edge: var(--accent); --accent-bevel: 0 0 0 rgba(0,0,0,0);
   --buy: #5E93C9; --buy-weak: #16242F; --on-buy: #0E1620;   /* cold steel-blue cart, distinct from the brass accent */
   --success: #86A559; --success-weak: #232A16; --on-success: #14190A;   /* white fails 3:1 on the moss green — glyphs go dark */
   /* --warning was #C9923A, ΔE 2.7 from the brass accent: a Fair tag looked like a selected control (§3.5
@@ -69,7 +66,7 @@
   --warning: #E0803A; --warning-weak: #2E1D12;
   --danger: #D2563F;  --danger-weak: #2E1A14;
   /* success + warning already clear 4.5:1 as text here; danger is lifted (it read 4.0:1 on --surface-2) */
-  --success-text: var(--success); --warning-text: var(--warning); --danger-text: #D86C58;
+  --success-text: var(--success); --warning-text: var(--warning); --danger-text: #D86C58; --buy-text: var(--buy);
   --shadow: 0 1px 2px rgba(0,0,0,.45);
   --shadow-pop: 0 18px 50px rgba(0,0,0,.5);
 }

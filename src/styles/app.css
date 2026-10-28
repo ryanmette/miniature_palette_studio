@@ -14,7 +14,7 @@ button { font-family: var(--font); cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .mono { font-family: var(--mono); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.micro { font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); }   /* --text-faint was 2.39:1 on the surface, under AA; --text-muted is 4.68:1 (4.53:1 on --bg) */
+.micro { font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); }   /* --text-faint was 2.39:1 on the surface, under AA; --text-muted is 6.86:1 (6.29:1 on --bg) */
 
 /* buttons (one style, both themes) */
 .btn { height: var(--tap); padding: 0 14px; border-radius: var(--r-ctrl); border: 1px solid var(--border);
@@ -37,10 +37,10 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 .logo .t small { color: var(--text-faint); font-weight: 500; font-size: 12px; margin-left: 5px; font-family: var(--font); }
 .spacer { flex: 1; }
 .seg { display: inline-flex; background: var(--surface-2); border-radius: var(--r-ctrl); padding: 3px; gap: 2px; flex-wrap: wrap; }
-/* Segmented control (§3.5). Every label is --text: 13.98:1 (light) and 12.83:1 (dark) on the track.
+/* Segmented control (§3.5). Every label is --text: 14.30:1 (light) and 12.83:1 (dark) on the track.
    --text-muted was 4.20:1 in light, under WCAG 1.4.3's 4.5:1. The selected segment is a --surface pill
    with an --accent bar inside it, as the selected output tab has an accent underline. The pill alone is
-   1.11:1 (light) and 1.08:1 (dark) against the track, so you could not see it. The bar is 5.70:1 (light)
+   1.20:1 (light) and 1.08:1 (dark) against the track, so you could not see it. The bar is 6.91:1 (light)
    and 6.20:1 (dark) against the pill. It is an ::after, so a change of selection moves nothing (§3.4). No
    weight change for the same reason: a bolder label is wider and pushes the next segments along. */
 .seg button { position: relative; border: none; background: transparent; color: var(--text); height: 30px; padding: 0 12px;
@@ -181,7 +181,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .seedfield input[type="search"] { flex: 1 1 auto; min-width: 0; width: 0; height: calc(100% + 2px); margin: -1px 0; border: 0;
   border-radius: var(--r-ctrl) 0 0 var(--r-ctrl); background: none; padding: 0 0 0 10px; font-size: 13.5px; }
 .seedfield input[type="search"]:focus { outline: none; box-shadow: none; }   /* the ring is on the wrapper */
-.seedfield input::placeholder { color: var(--text-muted); }   /* 4.68:1 on the surface; --text-faint was 2.39:1 */
+.seedfield input::placeholder { color: var(--text-muted); }   /* 6.86:1 on the surface; --text-faint is decoration only */
 /* Chrome keeps room for its clear button and clips the placeholder; Browse sits at that edge, and Esc clears */
 .seedfield input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
 .seedbrowse { flex: none; height: calc(100% + 2px); margin: -1px -1px -1px 0; display: inline-flex; align-items: center; justify-content: center;
@@ -373,7 +373,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .adjust { font-size: 11px; color: var(--text-muted); font-style: italic; }
 .ownmini { font-size: 10px; font-weight: 600; color: var(--success-text); }
 .buybtn { margin-top: 6px; height: 26px; padding: 0 11px; border-radius: var(--r-pill); border: 1px solid var(--border-strong);
-  background: var(--surface); color: var(--buy); font-weight: 600; font-size: 11.5px; cursor: pointer; }
+  background: var(--surface); color: var(--buy-text); font-weight: 600; font-size: 11.5px; cursor: pointer; }
 .buybtn:hover { background: var(--buy-weak); border-color: var(--buy); }
 .buybtn.on { background: var(--buy); border-color: var(--buy); color: var(--on-buy); }
 .buybtn:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
@@ -445,7 +445,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .wl-range:focus { outline: none; box-shadow: none; }
 .wl-range:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 /* The track: 12px, pill-shaped, the pick's own ramp (paint data) with a 1px var(--text-muted) edge, so
-   the ends show on any colour in both themes (4.68:1 light, 6.37:1 dark). Before the first paint, a
+   the ends show on any colour in both themes (6.86:1 light, 6.37:1 dark). Before the first paint, a
    border-coloured stand-in. */
 .wl-range::-webkit-slider-runnable-track { box-sizing: border-box; block-size: 12px; border-radius: var(--r-pill);
   box-shadow: inset 0 0 0 1px var(--text-muted); background: linear-gradient(to top, var(--wl-stops, var(--border), var(--border))); }
@@ -497,7 +497,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .lctop { flex: 1; min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; padding: 8px 9px; border: none; width: 100%; cursor: default; text-align: left; font: inherit; }
 .lctop[role="button"] { cursor: pointer; }   /* only the Equivalents tab makes the swatch a drill-down button */
 /* On a paint colour the ring is the swatch's ink (currentColor): textOn picks it for contrast with the paint,
-   so it shows on any paint, where the accent can match a purple or brass one. -6px keeps it inside the
+   so it shows on any paint, where the accent can match a teal or brass one. -6px keeps it inside the
    column's 3px Equivalents selection ring (.lcol.eqsel), which covered it at -3px. */
 .lctop:focus-visible { outline: 2px solid currentColor; outline-offset: -6px; }
 /* Copy button beside the hex: currentColor icon (inherits the swatch's legible ink) on a faint tinted chip. */
@@ -584,7 +584,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfhead h2 { font-size: var(--fs-h1); }
 .shelfstats { color: var(--text-muted); }
 .shelfstats .s-owned { color: var(--success-text); }
-.shelfstats .s-want { color: var(--buy); }
+.shelfstats .s-want { color: var(--buy-text); }
 .shelfhint { margin: 0; font-size: 12.5px; color: var(--text-faint); }
 /* Shelf filter bar: search + status + brand + type + sort on one wrapping row (search grows, controls
    size to content). Brand is a select (a dropdown) — the old wrapped chip rows cost three rows on a phone
