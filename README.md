@@ -3,7 +3,7 @@
 A static, client-side web tool for miniature painters. Pick or explore a colour — a paint you
 own, a hex, a photo pick, or a drag of the interactive wheel — and get color-theory harmonies
 where every *ideal* color is paired with the *nearest real paint you can actually buy* (matched
-by ΔE 2000), plus cross-brand equivalents, saved **Schemes**, a paint **Shelf** for your collection (with a list to take to the store), and
+by ΔE 2000), plus cross-brand equivalents, saved **Schemes**, a paint **Shelf** for your collection (with a list to take to the store: a link or QR code sends it to your phone, and a "bought" link brings it back), and
 color-blindness / contrast accessibility checks.
 
 **Live at [palette.ryanmette.com](https://palette.ryanmette.com).** No backend, no build step,

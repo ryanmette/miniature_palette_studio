@@ -654,6 +654,8 @@ export function schemeRow(r, tr) {
     : (r.saved
       ? `<button type="button" class="textact" data-screname="${esc(r.id)}" aria-label="${esc(tr('renameNamed', { name }))}">${esc(tr('rename'))}</button>`
       : `<button type="button" class="textact" data-scsave="${esc(r.id)}" aria-label="${esc(tr('saveNamed', { name }))}">${esc(tr('saveScheme'))}</button>`)
+      // Take to the store (item 37): only for a scheme with paints to buy; it opens the panel on this project
+      + (r.toBuy ? `<button type="button" class="textact" data-scstore="${esc(r.id)}" aria-haspopup="dialog" aria-label="${esc(tr('storeNamed', { name }))}">${esc(tr('takeToStoreShort'))}</button>` : '')
       + `<button type="button" class="textact" data-scshare="${esc(r.id)}" aria-label="${esc(tr('shareNamed', { name }))}">${esc(tr('shareLinkShort'))}</button>`
       + `<button type="button" class="textact" data-scdelete="${esc(r.id)}" aria-label="${esc(tr('deleteNamed', { name }))}">${esc(tr('deleteDots'))}</button>`;
   return `<li class="scrow" data-scrow="${esc(r.id)}">${schemeStrip(r.pots)}<div class="scmain">${head}<div class="scacts">${acts}</div></div></li>`;

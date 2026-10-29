@@ -112,3 +112,22 @@ test('v2: a count on an owned row, or one that is not a whole number, is ignored
   const { marks } = csvToMarks(idx, 'brand,name,status,qty\nCitadel,Mephiston Red,owned,4\nVallejo,Bloody Red,wishlist,2.5\nArmy Painter,Hydra Turquoise,wishlist,lots\n');
   assert.deepEqual(marks.map(m => m.qty), [undefined, undefined, undefined]);
 });
+
+test('listToText: rack order (brand · line, then name), boxes, counts, finish words, "for", no hex', async () => {
+  const { listToText } = await import('../src/js/collection-io.js');
+  const paints = [
+    { id: 'v1', brand: 'Vallejo', line: 'Model Color', name: 'Ivory', type: 'base', hex: '#EEE' },
+    { id: 'c2', brand: 'Citadel', line: 'Layer', name: 'Dawnstone', dname: 'Dawnstone (Layer)', type: 'layer', hex: '#777' },
+    { id: 'c1', brand: 'Citadel', line: 'Base', name: 'Mephiston Red', type: 'base', hex: '#960C09' },
+    { id: 'c3', brand: 'Citadel', line: 'Base', name: 'Leadbelcher', type: 'metal', hex: '#888' },
+  ];
+  const txt = listToText(paints, { title: 'Shopping list', date: '29 October 2026', qtyOf: id => (id === 'c1' ? 2 : 1),
+    forName: id => (id === 'c1' ? 'Blue knight' : '') });
+  assert.equal(txt, [
+    'Shopping list — 29 October 2026', '4 paints', '',
+    'Citadel · Base (2)', '[ ] Leadbelcher · metallic', '[ ] Mephiston Red ×2 — for Blue knight', '',
+    'Citadel · Layer (1)', '[ ] Dawnstone (Layer)', '',
+    'Vallejo · Model Color (1)', '[ ] Ivory', ''].join('\n'));
+  assert.doesNotMatch(txt, /#/);
+  assert.equal(listToText([], { title: 'Blue knight' }), 'Blue knight\n0 paints\n');
+});

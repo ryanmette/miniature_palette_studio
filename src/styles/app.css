@@ -1287,6 +1287,37 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
 .cdlg.nobackup .cdlgbody { margin-bottom: 12px; }
 @media (forced-colors: active) { .scstrip { forced-color-adjust: none; } .tag { forced-color-adjust: auto; } }
 
+/* A plain confirm (the store links' asks, item 37): it only adds marks, so no ⚠ and a primary button. */
+.cdlg.plain .dangerglyph { display: none; }
+
+/* Take to the store (PLAN §5 item 37; mockups/shopping-list.html §6) -------------------------------------- */
+.storedlg { width: min(640px, calc(100vw - 32px)); }
+.storesub { font-size: var(--fs-body); font-weight: 600; margin: 0 0 4px; }
+.storefields { display: grid; gap: 12px; margin: 16px 0 8px; }
+.storewhich { width: 100%; max-width: 360px; margin: 4px 0 16px; }
+.storeout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: start; }
+.qrbox { max-width: 320px; }
+/* The code's own colours (tokens, both themes) and a light quiet zone round it, inside a field's edge. Its
+   size (--qr-px, set in app.js) follows the module count: about 4px a module. */
+.qr { display: block; width: var(--qr-px, 184px); height: var(--qr-px, 184px); background: var(--qr-paper); fill: var(--qr-ink);
+  border: 1px solid var(--border-strong); border-radius: var(--r-ctrl); }
+.qrlong { margin: 0; max-width: 184px; padding: 12px; border: 1px solid var(--border-strong); border-radius: var(--r-ctrl); }
+.storeacts { display: grid; gap: 12px; min-width: 0; }
+.storeacts .sethint { margin: 0; }
+/* The link itself, so the painter can see what goes: three lines at most, then an ellipsis */
+.storeurl { margin: 0; font-size: 12px; color: var(--text-muted); overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.storeacts .setbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 520px) {
+  .storeout { grid-template-columns: minmax(0, 1fr); }
+  .qrbox { width: 100%; max-width: none; }
+  .qr { width: min(var(--qr-px, 184px), 100%); height: auto; aspect-ratio: 1; margin: 0 auto; }
+  .storewhich { max-width: none; }
+}
+/* Send "bought": its place is kept while nothing is bought, so it never moves the tools row (§3.4) */
+.rksend { visibility: hidden; }
+.rksend.on { visibility: visible; }
+
 /* The Shelf's list: the rack walk (PLAN §5 item 36; mockups/shopping-list.html, direction A) ------------- */
 .shelftools .seg { flex: none; }
 .shelftools { flex-wrap: wrap; align-items: center; }   /* Grid | List joined the tools: on a phone they wrap, never push off screen */
@@ -1344,6 +1375,10 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
   .rksw { width: 24px; height: 24px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .rkname { font-size: 13pt; }
   .rkline { color: #333; }
+  /* Print in the store panel: its own list, whatever the page shows */
+  body.printstore main { display: none !important; }
+  body.printstore .storeprint { display: block !important; }
+  .storeprinthead { font-size: 16pt; margin: 0 0 8px; }
 }
 
 /* Forced colours (Windows High Contrast) paint every background in the system Canvas colour, so every
@@ -1355,6 +1390,7 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
    - a ring drawn on the paint gets a Canvas band under it, so Highlight never meets the paint. */
 @media (forced-colors: active) {
   .sw, .cell, .lctop, .scsw, .cmppal span { forced-color-adjust: none; }
+  .qr { forced-color-adjust: none; }   /* the store QR code: a forced dark Canvas under black modules would not scan */
   .celltip, .cbadge, .lccopy { forced-color-adjust: auto; }
   .cell[aria-selected="true"], .cell.cursor, .cell:focus-visible, .pkt.cur .sw, .pko.cur .sw { outline-color: Highlight; }
   .lcol.linkhi, .lcol.eqsel { outline-color: Highlight; }

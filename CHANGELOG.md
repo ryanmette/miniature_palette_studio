@@ -6,6 +6,25 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Take the list to the store** (PLAN §5 item 37; `mockups/shopping-list.html` §6, `mockups/project-naming.html` B).
+  There is no server, so the list goes from one device to the other in a link.
+  - **Take to the store…** opens a panel: in ⋯, in the Shelf's list (beside Print), and on a Schemes row that has
+    paints to buy. **Which paints?** gives all the paints to buy, or one project.
+  - The panel shows the link as a **QR code**, and gives **Copy link** (**Share link…** on touch), **Print** and
+    **Save as text**. Scan the code with the phone's camera, and the list opens on the phone, ready to tick.
+  - The QR code is made on the device by a new module, `qr.js` (ISO/IEC 18004). It has no dependency. Tests
+    compare it module for module with an independent encoder.
+  - **The first time a project with no name leaves the app,** the panel asks for its name, once. The field holds
+    the automatic name, selected. **Skip** keeps the automatic names, and the app does not ask again.
+  - **On the other device,** the link asks first: "Add 5 paints to the shopping list here?". It only adds paints.
+    A paint you own there stays owned. Each project comes with its name.
+  - **Send “bought”…** shows in the list after you tick a paint from the shopping list. It makes a link back.
+    Open that link on the first device, and it asks "Mark 2 paints owned?". Open it twice, and nothing more
+    changes.
+  - **The text file** has only the list: the paints in rack order, a `[ ]` box for each, the count, the finish
+    word ("metallic"), the project and the date. It has no hex values.
+  - **Share link** of a saved scheme carries its name (`n`). Open the link on another device, and Save offers that
+    name.
 - **A list to take to the store** (PLAN §5 item 36; `mockups/shopping-list.html` A + D). The Shelf has a
   **Grid | List** switch. The list shows the paints the filters pick, grouped the way a store racks them
   (brand, then range), or **By project** (one group per saved scheme, then Other paints). Each row has the
@@ -63,6 +82,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **The shopping-list turn in the plan** (`docs/PLAN.md` §5, items 34–38): the decisions from the three studies and
   one build order — the data model, Save and the Schemes mode, the rack walk, Take to the store, Not on the rack.
 ### Changed
+- **⋯ → Save the shopping list is now Save the recipe** (item 37: one job for each file). It saves the scheme on
+  screen only: each role's pot, with its hex and ΔE. The shopping list has its own file now: **Save as text** in
+  Take to the store….
 - **The live palette shows the target and the pot together.** Each column's colour block is the target
   colour. A band along its foot shows the nearest pot, with the pot's hex and finish. The **Target / Pot**
   toggle is gone: with a close match it changed nothing you could see, so it looked broken. An old link
