@@ -471,6 +471,11 @@ The build order. Each item needs the one before it:
     scheme. This is backlog item 8 (the substitute finder), met in the store. Built with it: the Studio's Add
     labels paints with their project (the study's "label now", never wired before), and Save names an
     existing project. **The Molten Harmonics loader** (§3.4) shipped on the same branch.
+39. **Help and About** — studied (`mockups/help-about.html`, 2026-10-29), waiting for Ryan's answers. Help is a page and
+    About a dialog: the split is required in part (the App Store needs a public Support URL and privacy policy,
+    guidelines 1.5 and 5.1.1(i)), but the two overlap and Help has drifted (it still names a language setting, and
+    Delete's answer misses saved schemes). Recommended: B, Help in a sheet built from `support.html` itself (one
+    source, no second copy), Help grouped by task, About as a short identity page.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 

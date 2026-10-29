@@ -6,6 +6,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **A study of Help and About** (`mockups/help-about.html`; PLAN §5 item 39). What each holds now, where they overlap,
+  two facts on the Help page that are out of date, Apple's rules that keep Help and Privacy as public pages, and
+  three directions. Recommended: Help opens over the app like About, built from `support.html` itself, so the
+  public page and the app never differ. Not built yet.
 - **Not on the rack: swaps in the store** (PLAN §5 item 38; `mockups/shopping-list.html` direction B).
   - In the Shelf's list, each paint to buy has **Not on the rack?**. It shows the three closest pots, from the
     brands the store carries, each with its true ΔE and label. **A swap keeps the finish:** a wash only gets
