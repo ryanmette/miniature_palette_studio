@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopping list study</title>
+<!-- the app's self-hosted webfonts (no external requests), so text widths in the frames match the app -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  /* ---------- tokens: the same blocks as src/styles/tokens.css (CLAUDE.md §3.1, Workbench+) ----------
+     The page follows the device theme until you pick one with "Page theme". Only colour changes. */
+  :root {
+    --r-card:6px; --r-ctrl:4px; --r-sw:3px; --r-tag:2px; --r-pill:999px; --tap:44px;
+    --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --fs-h1:26px; --fs-h2:20px; --fs-body:14px; --fs-small:12.5px; --fs-micro:11.5px;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  :root, [data-theme="light"] {
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6;
+    --border:#DCD8D0; --border-strong:#C9C4BA; --edge:#8A857B;
+    --text:#1D1C19; --text-muted:#5E5A52; --text-faint:#9C978D;
+    --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+    --buy:#2563EB; --buy-weak:#DBEAFE; --on-buy:#FFFFFF;
+    --success:#16A34A; --success-weak:#DCFCE7; --on-success:#FFFFFF;
+    --warning:#C2740B; --warning-weak:#FBEBD3;
+    --danger:#DC2647; --danger-weak:#FCE4EA;
+    --success-text:#0F7334; --warning-text:#945908; --danger-text:#C4203D; --buy-text:#1D4ED8;
+    --shadow:0 1px 2px rgba(29,28,25,.25);
+    --shadow-pop:0 0 0 1px rgba(29,28,25,.05), 0 12px 24px -10px rgba(29,28,25,.38);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  [data-theme="dark"] {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+    --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+    --warning:#E0803A; --warning-weak:#2E1D12;
+    --danger:#D2563F; --danger-weak:#2E1A14;
+    --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+      --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+      --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+      --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+      --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+      --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+      --warning:#E0803A; --warning-weak:#2E1D12;
+      --danger:#D2563F; --danger-weak:#2E1A14;
+      --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+      --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+      --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+    }
+  }
+
+  /* ---------- the page: regions with rules, no cards (§3.5) ---------- */
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:var(--fs-body); line-height:1.5; padding:24px 16px 48px; }
+  .page { max-width:1140px; margin:0 auto; }
+  h1 { font-family:var(--display); font-size:32px; font-weight:600; line-height:1.15; margin:0 0 8px; }
+  h2 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 4px; }
+  h2 .k { color:var(--accent); margin-right:6px; }
+  h3.lab, .micro { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  h3.lab { margin:24px 0 8px; }
+  a { color:var(--accent); }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); border-radius:var(--r-ctrl); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { border-top:1px solid var(--border); padding:24px 0; }
+  .sub, .why { color:var(--text-muted); font-size:var(--fs-small); max-width:80ch; margin:0 0 12px; }
+  .sub b, .why b, .notes b, td b { color:var(--text); }
+  ul.notes, ol.notes { margin:0; padding-left:20px; font-size:var(--fs-small); color:var(--text-muted); max-width:82ch; }
+  .notes li + li { margin-top:4px; }
+  .sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .pros { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:0 24px; }
+  .pros h3.lab { margin-top:16px; }
+  .trow { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; margin-top:12px; }
+  .trow > .txt { flex:1 1 300px; min-width:0; }
+  figure { margin:0; min-width:0; max-width:100%; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+  figcaption b { color:var(--text); }
+  pre.file { font-family:var(--mono); font-size:12px; line-height:1.45; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card);
+    padding:12px; margin:0; overflow-x:auto; max-width:100%; color:var(--text); }
+  pre.file .dim { color:var(--text-muted); }
+
+  /* the page-theme control */
+  .pc { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; margin:16px 0 0; }
+  .seg { display:inline-flex; }
+  .seg button { position:relative; height:30px; padding:0 12px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text);
+    font:inherit; font-size:12.5px; font-weight:500; cursor:pointer; margin-left:-1px; }
+  .seg button:first-child { border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); margin-left:0; }
+  .seg button:last-child { border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .seg button:hover { background:var(--surface-2); }
+  .seg button[aria-pressed="true"] { background:var(--accent-weak); }
+  .seg button[aria-pressed="true"]::after { content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--accent); }
+  .seg button:focus-visible { z-index:1; }
+  @media (pointer: coarse) { .seg button { height:var(--tap); } }
+
+  /* the study table */
+  .tablewrap { overflow-x:auto; max-width:100%; }
+  table.study { border-collapse:collapse; font-size:var(--fs-small); min-width:760px; width:100%; }
+  table.study th, table.study td { text-align:left; vertical-align:top; padding:8px 12px 8px 0; border-bottom:1px solid var(--border); }
+  table.study th { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.study td { color:var(--text-muted); }
+  table.study td:first-child { color:var(--text); font-weight:600; white-space:nowrap; }
+
+  /* the jobs strip */
+  .jobs { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:0 16px; counter-reset:job; margin:12px 0 0; padding:0; list-style:none; }
+  .jobs li { border-top:1px solid var(--border-strong); padding:8px 0 12px; font-size:var(--fs-small); color:var(--text-muted); }
+  .jobs li b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .jobs li::before { counter-increment:job; content:counter(job); font-family:var(--display); font-weight:700; font-size:20px; color:var(--accent); display:block; line-height:1; margin-bottom:4px; }
+
+  /* ---------- the app's components, as in src/styles/app.css ---------- */
+  .btn { position:relative; min-height:var(--tap); padding:0 14px; border-radius:var(--r-ctrl); border:1px solid var(--border);
+    background:var(--surface); color:var(--text); font:inherit; font-weight:500; font-size:13.5px; line-height:1.2;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .btn:hover { background:var(--surface-2); border-color:var(--border-strong); }
+  .btn:active { transform:scale(.96); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-size:14.5px; font-weight:600; padding:0 18px; min-height:calc(var(--tap) + 6px); }
+  .btn.primary:hover { background:var(--accent); filter:brightness(1.06); }
+  .btn.sm { min-height:32px; padding:0 10px; font-size:12.5px; }
+  @media (pointer: coarse) { .btn.sm { min-height:var(--tap); } }
+  .btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+  .textact { background:none; border:0; color:var(--accent); font:inherit; font-weight:500; min-height:var(--tap); min-width:var(--tap); padding:0 4px; cursor:pointer; }
+  .tag { display:inline-block; font-size:11px; font-weight:500; line-height:1; padding:3px 5px; border:1px solid var(--border-strong); border-radius:var(--r-tag); color:var(--text-muted); white-space:nowrap; }
+  .tag.success { border-color:var(--success); color:var(--success-text); }
+  .tag.warning { border-color:var(--warning); color:var(--warning-text); }
+  .tag.danger  { border-color:var(--danger);  color:var(--danger-text); }
+  .tag.buy     { border-color:var(--buy);     color:var(--buy-text); }
+  .de { font-family:var(--mono); font-size:11.5px; color:var(--text-muted); }
+  .sw { width:40px; height:40px; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; position:relative; overflow:hidden; }
+  .sw.sm { width:24px; height:24px; }
+  .sw.lg { width:48px; height:48px; }
+  /* finish overlay for metallics (§2): a sheen that never changes the colour */
+  .sw.metal::after { content:""; position:absolute; inset:0; background:linear-gradient(125deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.45) 50%, rgba(255,255,255,0) 68%); }
+
+  /* ---------- frames: the app at phone width ---------- */
+  .ph { width:360px; max-width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border-strong); border-radius:20px;
+    overflow:hidden; display:flex; flex-direction:column; font-size:var(--fs-body); }
+  .ph .bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); background:var(--bg); min-height:56px; }
+  .ph .bar .ttl { font-family:var(--display); font-size:20px; font-weight:600; flex:1; min-width:0; }
+  .ph .bar .ttl small { font-family:var(--font); font-size:var(--fs-small); font-weight:400; color:var(--text-muted); margin-left:6px; }
+  .ph .body { padding:0 12px 12px; flex:1; }
+  .ph .foot { position:sticky; bottom:0; padding:12px; border-top:1px solid var(--border); background:var(--bg); display:flex; flex-direction:column; gap:8px; }
+  .ph .foot .btn { width:100%; }
+  .grp { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted);
+    display:flex; justify-content:space-between; padding:16px 0 4px; border-bottom:1px solid var(--border); }
+  .prog { height:4px; background:var(--surface-2); border-radius:var(--r-pill); overflow:hidden; margin:12px 0 0; }
+  .prog i { display:block; height:100%; width:0; background:var(--success); transition:width .2s var(--ease); }
+  .progtxt { font-size:var(--fs-small); color:var(--text-muted); margin-top:4px; }
+
+  /* A — a checklist row */
+  .item { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); min-height:60px; }
+  .item .grow { flex:1; min-width:0; }
+  .item .nm { font-size:16px; font-weight:600; line-height:1.25; }
+  .item .ln { font-size:var(--fs-small); color:var(--text-muted); }
+  .item[data-in="true"] .nm { text-decoration:line-through; text-decoration-thickness:1.5px; color:var(--text-muted); }
+  .tick { width:var(--tap); height:var(--tap); flex:none; border:2px solid var(--edge); border-radius:var(--r-ctrl); background:var(--surface);
+    color:var(--on-success); display:grid; place-items:center; cursor:pointer; padding:0; -webkit-tap-highlight-color:transparent; }
+  .tick svg { width:22px; height:22px; visibility:hidden; }
+  .tick[aria-pressed="true"] { background:var(--success); border-color:var(--success); }
+  .tick[aria-pressed="true"] svg { visibility:visible; }
+
+  /* B — the store's brands + a swap under a row */
+  .stock { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 0; }
+  .chip { min-height:32px; padding:0 10px; border:1px solid var(--border-strong); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text);
+    font:inherit; font-size:12.5px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .chip[aria-pressed="true"] { background:var(--accent-weak); border-color:var(--accent); box-shadow:inset 0 -3px 0 var(--accent); }
+  .chip[aria-pressed="false"] { color:var(--text-muted); text-decoration:line-through; }
+  @media (pointer: coarse) { .chip { min-height:var(--tap); } }
+  .itemB { border-bottom:1px solid var(--border); padding:8px 0; }
+  .itemB .item { border-bottom:0; padding:0; }
+  .swaps { margin:8px 0 0 52px; display:grid; gap:4px; }
+  .swap { display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); }
+  .swap .grow { flex:1; min-width:0; font-size:13px; line-height:1.3; }
+  .swap .grow > span { display:block; color:var(--text-muted); font-size:12px; }
+  .nostock { font-size:12px; color:var(--warning-text); margin:4px 0 0 52px; }
+  .instead { font-size:12px; color:var(--text-muted); }
+
+  /* C — projects */
+  details.proj { border-bottom:1px solid var(--border); }
+  details.proj > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; min-height:var(--tap); padding:8px 0; }
+  details.proj > summary::-webkit-details-marker { display:none; }
+  details.proj > summary .pn { font-family:var(--display); font-size:18px; font-weight:600; flex:1; }
+  details.proj > summary .chev { width:8px; height:8px; border-right:2px solid var(--text-muted); border-bottom:2px solid var(--text-muted); transform:rotate(-45deg); transition:transform .18s var(--ease); margin-right:6px; }
+  details.proj[open] > summary .chev { transform:rotate(45deg); }
+  .mini { display:flex; gap:2px; }
+  .mini i { width:14px; height:14px; border-radius:2px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  .also { font-size:12px; color:var(--buy-text); }
+
+  /* D — the receipt */
+  .receipt { width:300px; max-width:100%; background:var(--surface); border:1px solid var(--border-strong); padding:16px 16px 24px; font-family:var(--mono); font-size:12.5px; line-height:1.5;
+    -webkit-mask:linear-gradient(#000,#000) top/100% calc(100% - 8px) no-repeat, radial-gradient(circle at 6px 0, transparent 5px, #000 5.5px) bottom/12px 8px repeat-x;
+            mask:linear-gradient(#000,#000) top/100% calc(100% - 8px) no-repeat, radial-gradient(circle at 6px 0, transparent 5px, #000 5.5px) bottom/12px 8px repeat-x; }
+  .receipt h4 { font-family:var(--display); font-size:20px; margin:0; text-align:center; letter-spacing:.02em; }
+  .receipt .c { text-align:center; color:var(--text-muted); }
+  .receipt hr { border:0; border-top:1px dashed var(--border-strong); margin:8px 0; }
+  .receipt .rl { display:grid; grid-template-columns:16px 18px 1fr; gap:8px; align-items:start; padding:4px 0; }
+  .receipt .box { width:14px; height:14px; border:1.5px solid var(--text); margin-top:3px; }
+  .receipt .chip2 { width:18px; height:18px; border-radius:2px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.15); margin-top:1px; }
+  .receipt .b { font-weight:600; font-family:var(--font); font-size:14px; }
+  .receipt .s { color:var(--text-muted); font-size:11.5px; }
+  .receipt .bh { font-family:var(--font); font-weight:600; font-size:var(--fs-micro); letter-spacing:.05em; text-transform:uppercase; margin-top:8px; }
+
+  /* E — the rack map */
+  .rack { background:var(--surface-2); border:1px solid var(--border-strong); border-radius:var(--r-ctrl); padding:8px; display:grid; grid-template-columns:repeat(10, 1fr); gap:6px 4px; }
+  .pot { aspect-ratio:1 / 1.25; border-radius:3px 3px 2px 2px; position:relative; box-shadow:inset 0 0 0 1px rgba(0,0,0,.15); opacity:.28; }
+  .pot::before { content:""; position:absolute; left:0; right:0; top:0; height:30%; border-radius:3px 3px 0 0; background:rgba(255,255,255,.5); }
+  .pot.on { opacity:1; outline:2px solid var(--text); outline-offset:2px; }
+  .pot.on b { position:absolute; left:50%; bottom:-2px; transform:translate(-50%, 50%); background:var(--text); color:var(--bg); font-size:10px; line-height:1; padding:2px 4px; border-radius:var(--r-tag); }
+  .shelfrule { grid-column:1 / -1; height:3px; background:var(--border-strong); border-radius:2px; margin:2px 0 6px; }
+  .legendE { margin:12px 0 0; padding:0; list-style:none; font-size:13px; display:grid; gap:4px; }
+  .legendE li { display:flex; align-items:center; gap:8px; }
+  .legendE b.n { background:var(--text); color:var(--bg); font-size:10px; padding:2px 5px; border-radius:var(--r-tag); }
+
+  /* the hand-off panel (desktop) */
+  .desk { width:560px; max-width:100%; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:16px; }
+  .desk .head { display:flex; align-items:center; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:12px; }
+  .desk .head h4 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0; flex:1; }
+  .desk .inner { display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:start; }
+  @media (max-width: 560px) { .desk .inner { grid-template-columns:1fr; } }
+  .qr { width:148px; height:148px; background:#FFFFFF; padding:8px; border:1px solid var(--border-strong); border-radius:var(--r-ctrl); }
+  .qr svg { width:100%; height:100%; display:block; }
+  .url { font-family:var(--mono); font-size:11.5px; background:var(--surface-2); border-radius:var(--r-ctrl); padding:8px; overflow-wrap:anywhere; color:var(--text); margin:4px 0 12px; }
+  .desk .acts { display:flex; flex-wrap:wrap; gap:8px; }
+
+  /* the two notebooks */
+  .sync { display:grid; grid-template-columns:1fr minmax(120px, 200px) 1fr; gap:8px; align-items:center; max-width:760px; margin-top:12px; }
+  .nb { border:1px solid var(--border-strong); border-radius:var(--r-card); background:var(--surface); padding:12px; font-size:var(--fs-small); color:var(--text-muted); }
+  .nb b { display:block; color:var(--text); font-family:var(--display); font-size:18px; font-weight:600; }
+  .arrows { display:grid; gap:12px; font-size:12px; text-align:center; color:var(--text-muted); }
+  .arrows div { border-bottom:2px solid var(--accent); position:relative; padding-bottom:2px; }
+  .arrows div::after { content:""; position:absolute; right:-1px; bottom:-6px; border:5px solid transparent; border-left:8px solid var(--accent); border-right:0; }
+  .arrows div.back { border-bottom:2px dashed var(--danger); }
+  .arrows div.back::after { left:-1px; right:auto; border-left:0; border-right:8px solid var(--danger); }
+  @media (max-width: 600px) { .sync { grid-template-columns:1fr; } .arrows { padding:8px 24px; } }
+
+  /* the swap flag on a Recipe role card, and the count stepper */
+  .rcard { width:340px; max-width:100%; border-top:1px solid var(--border); padding:12px 0; }
+  .rcard .rr { display:flex; align-items:center; gap:12px; }
+  .rcard .role { font-family:var(--display); font-size:18px; font-weight:600; margin-bottom:8px; }
+  .was { font-size:12px; color:var(--text-muted); margin-top:2px; }
+  .was .sw { display:inline-block; vertical-align:-3px; margin-right:4px; }
+  .step { display:inline-flex; align-items:center; border:1px solid var(--border-strong); border-radius:var(--r-ctrl); }
+  .step button { width:32px; height:32px; border:0; background:var(--surface); color:var(--text); font:inherit; font-size:16px; cursor:pointer; }
+  .step button:first-child { border-right:1px solid var(--border-strong); border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); }
+  .step button:last-child { border-left:1px solid var(--border-strong); border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .step output { min-width:56px; text-align:center; font-size:13px; }
+  @media (pointer: coarse) { .step button { width:var(--tap); height:var(--tap); } }
+
+  /* the verdict + questions */
+  .verdict { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0 24px; margin-top:12px; }
+  .verdict > div { border-top:1px solid var(--border-strong); padding:8px 0; font-size:var(--fs-small); color:var(--text-muted); }
+  .verdict > div b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .score { font-family:var(--mono); font-size:12px; color:var(--text); }
+  ol.q { margin:12px 0 0; padding-left:24px; max-width:82ch; }
+  ol.q li { margin-bottom:12px; }
+  ol.q li b { display:block; }
+  ol.q li span { color:var(--text-muted); font-size:var(--fs-small); }
+  .reco { border-left:3px solid var(--accent); padding:8px 0 8px 16px; max-width:82ch; margin-top:12px; }
+  .reco b { color:var(--text); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition:none !important; animation:none !important; }
+    .btn:active { transform:none; }
+  }
+  @media (forced-colors: active) {
+    .sw, .mini i, .chip2, .pot { forced-color-adjust:none; }
+    .tick[aria-pressed="true"] { forced-color-adjust:none; background:Highlight; border-color:Highlight; color:HighlightText; }
+    .seg button[aria-pressed="true"]::after { background:Highlight; }
+    .chip[aria-pressed="true"] { outline:2px solid Highlight; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <p class="micro">Design study · not shipped · 2026-10-29 · updated with Ryan’s answers (two rounds)</p>
+  <h1>The shopping list — five ways to take it to the store</h1>
+  <p class="sub">Today the shopping list is a <b>filter of the Shelf</b>: the same colour grid, with only the paints marked “to buy”.
+    That view is good for <b>planning</b> at a desk. This study asks what the list must be when you <b>stand in front of a paint rack</b>
+    with a phone in one hand. It looks at how other apps do it, gives five very different directions, and ends with questions for Ryan.</p>
+  <p class="sub">All the paints, hex values and ΔE numbers on this page come from the app’s own dataset and engine
+    (<code>src/data/paints.json</code>, <code>data.js equivalents</code>). The frames work: tap them.</p>
+  <div class="pc">
+    <span class="micro" id="pthLab">Page theme</span>
+    <div class="seg" role="group" aria-labelledby="pthLab" id="pth">
+      <button type="button" data-v="device" aria-pressed="true">Device</button>
+      <button type="button" data-v="light" aria-pressed="false">Light</button>
+      <button type="button" data-v="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-now">
+  <h2 id="h-now"><span class="k">0</span>What we have now</h2>
+  <p class="why">Two parts, and they do not talk to each other:</p>
+  <ul class="notes">
+    <li><b>Shelf → status filter → “Shopping list”.</b> The Shelf’s colour grid, with only the to-buy paints shown. It is in hue order, and the names show only in a tooltip.</li>
+    <li><b>⋯ → Save the shopping list.</b> It saves <code>palette-shopping-list.txt</code> (<code>app.js doExport</code>). The file has two parts: the recipe for the scheme on screen <i>now</i>, then every to-buy paint, in the order they were marked.</li>
+  </ul>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Today’s file</b> · the format <code>doExport</code> writes, with this page’s paints</figcaption>
+      <pre class="file" id="todayFile"></pre>
+    </figure>
+    <div class="txt">
+      <h3 class="lab">Why it is weak in a store</h3>
+      <ul class="notes">
+        <li><b>Two lists in one file.</b> The recipe is for the bench. In the store you need only the second part.</li>
+        <li><b>The order is the order you marked them,</b> not the order of the racks. You walk back and forth.</li>
+        <li><b>A hex is not a colour you can see.</b> <code>#960C09</code> tells you nothing at a rack.</li>
+        <li><b>You cannot tick it.</b> On an iPhone the file goes to the Files app, and it opens read-only.</li>
+        <li><b>It is a copy.</b> When you buy a paint, the shelf does not know.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-study">
+  <h2 id="h-study"><span class="k">1</span>How others do it</h2>
+  <p class="why">Three groups: miniature-paint apps (the same problem), grocery apps (the best in-store patterns), and BrickLink
+    (parts in exact colours from many sellers — the closest match outside paint). Where a source is a review and not the maker, the table says so.</p>
+  <div class="tablewrap" tabindex="0" role="region" aria-label="The study table (scrolls sideways)">
+  <table class="study">
+    <thead><tr><th scope="col">Product</th><th scope="col">Where the list lives</th><th scope="col">Help in the store</th><th scope="col">Out of the app</th><th scope="col">The lesson for us</th></tr></thead>
+    <tbody>
+      <tr><td>Citadel Colour</td><td>“Inventory &amp; Wishlist”. A wishlist icon sits on each recipe step, so you add a paint while you read the recipe.</td><td>A barcode scanner for GW pots.</td><td><b>PDF, or print</b> to a wireless printer.</td><td>Add from the recipe (we have this: “+ Add N to the shopping list”). Paper is a real answer. <i>Source: a fan review.</i></td></tr>
+      <tr><td>paintRack</td><td>A wish list beside the owned collection; 27,000+ paints.</td><td>Barcode scan.</td><td>—</td><td>Wish list and owned are two states of one collection — the same model as our <code>store.js</code>.</td></tr>
+      <tr><td>Mini Forge: Paint Rack</td><td>“Build your wishlist”, by brand and colour.</td><td>—</td><td>—</td><td>The pitch is “never forget a colour”: the list is a memory aid.</td></tr>
+      <tr><td>Paint Finder</td><td>A wishlist, plus inventory.</td><td>Barcode scan “to avoid buying duplicates”.</td><td>—</td><td>In the store, <b>“do I own this already?”</b> is as common a question as “what do I need?”.</td></tr>
+      <tr><td>AnyList</td><td>Items sort into categories; you <b>put the categories in your store’s aisle order</b> (per store in the paid tier).</td><td>Tap to cross off, tap again to bring back; clear all crossed-off items in one step.</td><td>Shared lists (sync).</td><td>Order by <b>where it is in the shop</b>, not by what it is. Crossed-off stays visible until you clear it.</td></tr>
+      <tr><td>Apple Reminders · Groceries</td><td>Sections are made automatically as you type (Produce, Dairy…).</td><td>Tick; drag an item to another section and it remembers.</td><td>iCloud sharing.</td><td>The app does the grouping, and learns from one correction.</td></tr>
+      <tr><td>BrickLink</td><td>A <b>Wanted List</b> of parts in exact colours, uploaded as XML.</td><td>The Buy page finds the stores that can fill the list.</td><td>XML in and out.</td><td>Users say it does not show <b>what is still missing</b> after one store’s order. A list must show what is left.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="why" style="margin-top:12px">Sources:
+    <a href="https://ageofminiatures.com/citadel-colour-app-review">Age of Miniatures — Citadel Colour review</a> ·
+    <a href="https://mwm.ai/apps/paintrack/1490523130">paintRack listing</a> ·
+    <a href="https://apps.apple.com/de/app/mini-forge-paint-rack/id6448406354">Mini Forge (App Store)</a> ·
+    <a href="https://apps.apple.com/app/id6744063170">Paint Finder (App Store)</a> ·
+    <a href="https://help.anylist.com/articles/weekly-shopping/">AnyList help</a> ·
+    <a href="https://www.macworld.com/article/227699/anylist-review-grocery-app-crosses-off-nearly-everything-on-our-shopping-list.html">Macworld — AnyList review</a> ·
+    <a href="https://support.apple.com/HT213830">Apple — Groceries list in Reminders</a> ·
+    <a href="https://www.bricklink.com/help.asp?helpID=1">BrickLink — Wanted List help</a> ·
+    <a href="https://www.brickpicker.com/topic/16918-buying-from-bricklink">BrickPicker forum</a>.
+    The Apple pages were blocked from the session that wrote this, so those rows come from search summaries — check them before you use them.</p>
+
+  <h3 class="lab">The pattern: planning and shopping are two different views of one list</h3>
+  <ol class="jobs">
+    <li><b>Find it</b>Which rack, which shelf? Group by brand → line, the way the store does.</li>
+    <li><b>Read it</b>The name, big. The brand and range under it. The colour as a swatch, not a hex.</li>
+    <li><b>Tick it</b>One tap, a 44px target, one hand. Ticked stays in place (no jump).</li>
+    <li><b>Swap it</b>Sold out, or the store does not carry the brand: what is closest here?</li>
+    <li><b>Own it</b>At the till or at home: the ticked paints become “owned” on the shelf.</li>
+  </ol>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-a">
+  <h2 id="h-a"><span class="k">A</span>The rack walk — a checklist in store order</h2>
+  <p class="why">A list, not a grid. It is grouped <b>brand → line</b>, because that is how the racks stand in a store. Each row: a swatch,
+    the <b>name in large type</b>, the line under it, and a tick box. <b>A tick makes the paint owned at once</b> (Ryan’s answer 4); a
+    second tap undoes it. The row stays in place while the list is open (§3.4) and leaves the list the next time you open it.
+    A paint wanted in more than one pot shows a <b>“2 pots”</b> tag (answer 5). This is AnyList’s aisle pattern, with paint racks as the aisles.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone</b> · tap the boxes</figcaption>
+      <div class="ph" id="frameA"></div>
+    </figure>
+    <div class="txt">
+      <div class="pros" style="grid-template-columns:1fr">
+        <div><h3 class="lab">For</h3><ul class="notes">
+          <li>The safest choice: every shopper knows a checklist.</li>
+          <li>No new engine work. The grouping is a sort on <code>brand</code>, <code>line</code>, <code>name</code>.</li>
+          <li>A tick is <b>one</b> write through <code>store.setMark(id, 'owned')</code> and <code>render('marks')</code> — the path the Shelf uses already. No new state to keep.</li>
+          <li>The undo is the same box: a tick by mistake costs one more tap.</li>
+        </ul></div>
+        <div><h3 class="lab">Against</h3><ul class="notes">
+          <li>The tick is the success green with an “Owned” tag, because it <i>is</i> owned now — no new state colour (§3.5).</li>
+          <li><b>Quantity is new data.</b> Today a mark is <code>owned</code> or <code>want</code>. A count needs a field per want mark in <code>store.js</code> (a data-version bump, and a column in the CSV). One pot stays the default, and the tag shows only from 2.</li>
+          <li>With 2 pots, does one tick mean both? This study says yes (you rarely buy half of a line).</li>
+          <li>Does not help when the pot is not on the rack.</li>
+        </ul></div>
+      </div>
+      <h3 class="lab">The count: set after the fact (Ryan, 2026-10-29)</h3>
+      <p class="why">Every paint goes on the list as one pot. You change the count <b>later, on the list</b>, only when you want more — nothing asks
+        for a number on Add. The row has an <b>“Add a count”</b> text action; it turns into a stepper in the same reserved slot (§3.4). At 1 the stepper
+        goes back to the text action, and the “pots” tag goes away.</p>
+      <div class="item" style="max-width:360px"><span class="sw" style="background:#6D774D" aria-hidden="true"></span>
+        <div class="grow"><div class="nm">Death Guard Green</div><div class="ln">Citadel Base</div></div>
+        <div class="step" role="group" aria-label="Pots of Death Guard Green" id="stepDemo"><button type="button" aria-label="One fewer pot">−</button><output aria-live="polite">2 pots</output><button type="button" aria-label="One more pot">+</button></div></div>
+      <h3 class="lab">Open question</h3>
+      <ul class="notes"><li>Where does this view live: a third Shelf view, a mode of the Shelf’s “Shopping list” filter, or a page a link opens (§6)?</li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-b">
+  <h2 id="h-b"><span class="k">B</span>Not on the rack — the swap in the store</h2>
+  <p class="why">The list knows the store may not have the pot. You say which brands <b>this store carries</b>; a paint from a brand it does not carry
+    shows its closest pot from a brand it does, with the true ΔE and its label (§2). Any row also has <b>“Not on the rack?”</b> for a sold-out pot.
+    No other app in the study does this, and the engine for it exists already (the Equivalents tab). It is direction C of
+    <code>mockups/buying-assistant.html</code>, moved into the store.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone</b> · switch Citadel off, or open “Not on the rack?”</figcaption>
+      <div class="ph" id="frameB"></div>
+    </figure>
+    <div class="txt">
+      <div class="pros" style="grid-template-columns:1fr">
+        <div><h3 class="lab">For</h3><ul class="notes">
+          <li>The one thing a paint tool can do that a notes app cannot. It is the app’s main idea (“ideal vs actual”) at the moment of buying.</li>
+          <li>Honest: <b>Kantor Blue</b> has no good swap in Vallejo (ΔE 10.2, Poor). The list says so, and does not hide it.</li>
+          <li><b>Brand-agnostic</b> (answer 2): the chips are the brands that are on <i>your</i> list, never a fixed set, and the swaps search all ten brands in the dataset. One view works in a one-brand game store and in a shop with every brand.</li>
+          <li>“This store carries” is a choice per trip; saving it per store is a later option.</li>
+        </ul></div>
+        <div><h3 class="lab">Against</h3><ul class="notes">
+          <li>More on each row. It must stay folded until asked.</li>
+          <li><b>Finishes:</b> a swap for a wash must be a wash (§7 finish ranking). The dataset’s hex for a wash is the colour on white, so a flat paint can look “Good” for Agrax Earthshade when it is not a swap at all. For a wash, contrast or metallic, the swap list must keep to the same finish class — or say there is none.</li>
+          <li>A swap changes the scheme (see the next figure).</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Recipe, after the trip</b> · the swap goes back to the scheme, with the original flagged</figcaption>
+      <div class="rcard">
+        <div class="role">Accent</div>
+        <div class="rr"><span class="sw lg" style="background:#97211F" aria-hidden="true"></span>
+          <div style="flex:1;min-width:0"><div style="font-weight:600">Carmine Red</div>
+            <div style="font-size:var(--fs-small);color:var(--text-muted)">Vallejo Model Color · <span class="de">ΔE 4.2</span> <span class="tag warning">Fair</span> <span class="tag success">Owned</span></div>
+            <div class="was"><span class="sw sm" style="background:#960C09;width:14px;height:14px" aria-hidden="true"></span>Swapped in the store for Mephiston Red · <button class="textact" type="button" tabindex="-1" style="min-height:0;min-width:0;padding:0;font-size:12px">Use the original</button></div>
+          </div></div>
+      </div>
+    </figure>
+    <div class="txt">
+      <h3 class="lab">Swaps go back to the scheme, flagged (Ryan, 2026-10-29)</h3>
+      <ul class="notes">
+        <li><b>The swap becomes the role’s pot</b> in the Recipe, so next time you paint from what you bought.</li>
+        <li><b>The original stays on record</b> in one muted line: “Swapped in the store for Mephiston Red”, with <b>Use the original</b> to go back.
+          In the app, the ΔE shown is the swap’s true ΔE to the <i>role’s target</i>, not to the original pot (§2); this picture uses the pot-to-pot value.</li>
+        <li>A swap is <b>state</b> (what the pot is), so it is a line of text, not a ring or a colour (§3.5).</li>
+        <li><b>Data:</b> a swap is a pot held on a role — the same idea as <code>mockups/pin-a-paint.html</code>, now built as <b>role holds</b> (v1.12.0, in the scheme’s link as <code>hd</code>). A store swap is a pot hold plus one new field: the paint it replaced.</li>
+        <li>The scheme lives in the URL, so a share link carries the pinned pot too, and the flag with it.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-c">
+  <h2 id="h-c"><span class="k">C</span>One list, a “for” label per paint</h2>
+  <p class="why">Ryan’s answer 3: <b>one list</b>, with a way to limit an export by project. So this is not a list per project. Each to-buy paint
+    keeps a small <b>“for”</b> label: the scheme you added it from (the Recipe’s “+ Add N to the shopping list” knows it). The list stays one
+    list in store order (A), and the hand-off panel (§6) gets a <b>“Which paints?”</b> choice: all, or one project. Below: the same list seen by
+    its labels. Many lists is a request on a mini-painting app’s request board (<a href="https://minipainters.featurebase.app">featurebase</a>); a label gets most of that for little cost.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone</b> · open and close the projects</figcaption>
+      <div class="ph" id="frameC"></div>
+    </figure>
+    <div class="txt">
+      <div class="pros" style="grid-template-columns:1fr">
+        <div><h3 class="lab">For</h3><ul class="notes">
+          <li>Answers “why did I put this on the list?” — a real question three weeks later.</li>
+          <li>You can buy for one project this trip, and leave the rest.</li>
+          <li>Much smaller than projects: no saved schemes, no list management. A label is the scheme’s name and its share link, kept with the mark.</li>
+        </ul></div>
+        <div><h3 class="lab">Against</h3><ul class="notes">
+          <li>A scheme has <b>no name</b> today (it lives in the URL). Ryan’s answer: the name is <b>asked on export or save</b>, not on Add. When and how to ask is a UX flow of its own and <b>needs its own study</b> (see “Next”).</li>
+          <li>A paint added by hand on the Shelf has no label. It goes under “No project”.</li>
+          <li>Same data change as the quantity: a field per want mark in <code>store.js</code>.</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-d">
+  <h2 id="h-d"><span class="k">D</span>The receipt — a list to print or screenshot</h2>
+  <p class="why">A narrow strip like a till receipt. Each paint: a swatch, the name, the brand and line, and a box for a pen.
+    It has no state and needs no app: print it, or take a screenshot — the screenshot <b>is</b> the file, with the colours in it.
+    Citadel Colour exports a PDF for the same reason.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Print view</b> · the same groups as A</figcaption>
+      <div class="receipt" id="receipt"></div>
+    </figure>
+    <div class="txt">
+      <div class="pros" style="grid-template-columns:1fr">
+        <div><h3 class="lab">For</h3><ul class="notes">
+          <li>Lasts for years and works anywhere — the §2 “portable and durable” principle.</li>
+          <li>Cheap: a print style sheet on view A, so it is not a second view to keep up.</li>
+          <li>Works for someone who shops for you.</li>
+        </ul></div>
+        <div><h3 class="lab">Against</h3><ul class="notes">
+          <li>No ticks go back to the shelf. You mark them owned by hand at home.</li>
+          <li>A printer may not print the swatch colours true (the names carry the meaning).</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-e">
+  <h2 id="h-e"><span class="k">E</span>The rack map — the wild one</h2>
+  <p class="why">A picture of the rack, with your paints lit up in place. Here: the Citadel Base range (57 pots in the dataset), drawn
+    in <b>hue order</b>. The real order of a store rack is not published, and it changes from store to store — so this picture is a guess.</p>
+  <div class="trow">
+    <figure style="width:360px; max-width:100%">
+      <figcaption><b>Citadel Base rack</b> · <span id="eCount"></span></figcaption>
+      <div class="rack" id="rack" role="img" aria-label="A rack of Citadel Base pots in hue order. Four pots are lit: the ones on the list."></div>
+      <ul class="legendE" id="legendE"></ul>
+    </figure>
+    <div class="txt">
+      <div class="pros" style="grid-template-columns:1fr">
+        <div><h3 class="lab">For</h3><ul class="notes">
+          <li>Very fast to read: find the lit pot. It looks like nothing else.</li>
+          <li>A good picture for the first-run guide or the App Store page, even if it never ships as a tool.</li>
+        </ul></div>
+        <div><h3 class="lab">Against</h3><ul class="notes">
+          <li>It works for one brand with one known rack. No source gives the rack order, so it would be invented data — against §2 (“honest about approximation”) and §5 (provenance).</li>
+          <li>Ten brands, ten racks. It does not scale.</li>
+          <li><b>Probably a trap.</b> Shown so the idea is judged, not to be built.</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-hand">
+  <h2 id="h-hand"><span class="k">6</span>From the desk to the store</h2>
+  <p class="why">Ryan’s case: plan at a desktop, then shop with a phone. The list must go from one device to the other. There is no server (§1),
+    so it must go <b>in</b> something: a file, a link, or paper.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Desktop</b> · one panel, four ways out (the QR code is a picture, not a working code)</figcaption>
+      <div class="desk" role="group" aria-label="Take the list to the store">
+        <div class="head"><h4>Take this list to the store</h4><button class="textact" type="button" tabindex="-1" aria-hidden="true">Done</button></div>
+        <div class="inner">
+          <div class="qr" aria-hidden="true"><svg id="qr" viewBox="0 0 29 29" shape-rendering="crispEdges"></svg></div>
+          <div>
+            <div class="micro" id="whichLab">Which paints?</div>
+            <div class="seg" role="group" aria-labelledby="whichLab" style="margin:4px 0 12px">
+              <button type="button" tabindex="-1" aria-pressed="true">All · 6</button><button type="button" tabindex="-1" aria-pressed="false">Plague Marine · 3</button><button type="button" tabindex="-1" aria-pressed="false">Blue knight · 4</button>
+            </div>
+            <div class="micro">Scan with your phone, or send the link</div>
+            <div class="url" id="url"></div>
+            <div class="acts">
+              <button class="btn primary" type="button" tabindex="-1">Copy link</button>
+              <button class="btn" type="button" tabindex="-1">Print</button>
+              <button class="btn" type="button" tabindex="-1">Save as text</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </figure>
+    <div class="txt">
+      <h3 class="lab">The four ways, compared</h3>
+      <div class="tablewrap">
+      <table class="study" style="min-width:0">
+        <thead><tr><th scope="col">Way</th><th scope="col">Tick in store</th><th scope="col">Colour</th><th scope="col">Note</th></tr></thead>
+        <tbody>
+          <tr><td>Link / QR</td><td>Yes</td><td>Yes</td><td>Opens view A on the phone. The best fit. Six paints ≈ 200 characters of URL.</td></tr>
+          <tr><td>Print / PDF</td><td>Pen</td><td>Yes</td><td>View D. What Citadel does.</td></tr>
+          <tr><td>Text file</td><td>No</td><td>No</td><td>Durable fallback. Fix its contents (below).</td></tr>
+          <tr><td>Share sheet → Notes</td><td>By hand</td><td>No</td><td>The same text, sent to an app. Touch only (<code>CAN_SHARE</code>).</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="trow">
+    <figure>
+      <figcaption><b>A better text file</b> · only the paints to buy, in rack order, with boxes</figcaption>
+      <pre class="file" id="betterFile"></pre>
+    </figure>
+    <div class="txt">
+      <h3 class="lab">What changes in the file</h3>
+      <ul class="notes">
+        <li><b>One job per file.</b> The scheme recipe becomes its own file (“Save the recipe”).</li>
+        <li><b>Grouped brand → line,</b> as on the racks, with the paint count.</li>
+        <li><b><code>[ ]</code> boxes</b> — a text box that a pen, a notes app or a Markdown app can tick. (In Markdown, <code>- [ ]</code> is a real checkbox.)</li>
+        <li><b>No hex.</b> A hex does not help at a rack. Finish words stay (“metallic”), because they tell you which pot.</li>
+        <li><b>A date,</b> so an old copy is easy to spot.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="lab">The hard part: two devices, two shelves</h3>
+  <p class="why">With no server, the desktop and the phone each keep <b>their own</b> shelf — two notebooks that are not connected. The list
+    can go out in a link. But when you tick “bought” on the phone, only the phone’s shelf learns it.</p>
+  <div class="sync" role="img" aria-label="Diagram: the desktop shelf sends the list to the phone with a link. Nothing sends the bought paints back.">
+    <div class="nb"><b>Desktop shelf</b>Where you plan. Owned + shopping list.</div>
+    <div class="arrows"><div>the list, in a link →</div><div class="back">← “bought” — how?</div></div>
+    <div class="nb"><b>Phone shelf</b>Where you shop. Its own copy, on its own device.</div>
+  </div>
+  <p class="why" style="margin-top:12px">Ryan’s answer 1 is <b>both</b>, so this is a real problem, not an edge case. Option 2 is the fit:
+    the list goes out in a link, and what you bought comes back in a link. Both are the same contract as the share link (<code>share.js</code>), so
+    nothing leaves the two devices but a URL you send yourself.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone</b> · after the trip, at the end of the list</figcaption>
+      <div class="ph" style="width:320px"><div class="body" style="padding-top:12px">
+        <div class="grp" style="padding-top:0"><span>Send it back</span><span></span></div>
+        <p class="sub" style="margin:8px 0">You bought 3 paints on this phone. Your other device does not know yet.</p>
+        <div style="display:grid;gap:8px"><button class="btn primary" type="button" tabindex="-1">Send “bought” to my other device…</button>
+        <span class="progtxt" style="margin:0">Opens the share sheet with a link. Open the link on the desktop, and it marks the 3 paints owned there.</span></div>
+      </div></div>
+    </figure>
+    <div class="txt">
+      <h3 class="lab">Rules the link back must keep</h3>
+      <ul class="notes">
+        <li><b>It only adds “owned”.</b> It never removes a mark and never replaces the shelf (unlike Restore…).</li>
+        <li><b>It asks first</b> on the desktop: “Mark 3 paints owned? Mephiston Red, Kantor Blue, Ivory” — a link from someone else must not change your shelf without a yes.</li>
+        <li><b>Opening it twice does nothing new</b> (a paint already owned stays owned).</li>
+      </ul>
+    </div>
+  </div>
+  <ul class="notes" style="margin-top:12px">
+    <li><b>Option 1 — the phone is the shelf.</b> Mark owned on the phone and accept that the desktop is out of date. Simple; fine if you plan on the phone too.</li>
+    <li><b>Option 2 — a link back (chosen).</b> The phone makes a “bought” link (the same idea, the other way). Open it on the desktop to mark those paints owned. One extra step.</li>
+    <li><b>Option 3 — the backup file.</b> ⋯ → Back up everything on the phone, Restore… on the desktop. It works today, but it replaces the whole shelf, so it is a poor fit for a few paints.</li>
+    <li><b>Not an option in v1:</b> sync. It needs a server and accounts (§1 out of scope).</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-v">
+  <h2 id="h-v"><span class="k">7</span>Verdict and questions</h2>
+  <div class="verdict">
+    <div><b>A · Rack walk</b><span class="score">Build</span> — the base. Every other direction sits on it.</div>
+    <div><b>B · Not on the rack</b><span class="score">Build, with A</span> — the reason to use this app and not a notes app.</div>
+    <div><b>C · “For” label</b><span class="score">Build, small</span> — one list; the label filters the export (answer 3).</div>
+    <div><b>D · Receipt</b><span class="score">Cheap add-on</span> — a print style sheet on A.</div>
+    <div><b>E · Rack map</b><span class="score">Do not build</span> — invented data; one brand only.</div>
+  </div>
+  <div class="reco"><b>Recommendation (after Ryan’s answers):</b> A + B together, ticked <b>in the app</b>, opened on the phone <b>from a link or a QR code</b>,
+    with a <b>“bought” link back</b> to the other device. Add a quantity (set after the fact) and a “for” label to each to-buy mark (one <code>store.js</code> change for both). A swap goes back to the scheme as a pinned pot, with the original flagged.
+    D is the print view of A, and the fixed text file is the durable fallback.</div>
+
+  <h3 class="lab">Ryan’s answers (2026-10-29)</h3>
+  <table class="study" style="min-width:0;max-width:82ch">
+    <tbody>
+      <tr><td>1 · Where the shelf lives</td><td><b>Both.</b> → the “bought” link back (§6, option 2).</td></tr>
+      <tr><td>2 · Stores</td><td><b>Hobby stores with some brands, but agnostic.</b> → B’s chips come from the list; swaps search every brand.</td></tr>
+      <tr><td>3 · One list or many</td><td><b>One list,</b> maybe an export limited by project. → C becomes a “for” label + “Which paints?”.</td></tr>
+      <tr><td>4 · Tick → owned</td><td><b>At once.</b> → A has no Done step; a second tap undoes.</td></tr>
+      <tr><td>5 · Quantity</td><td><b>Nice to have.</b> One pot is the default; the tag shows from 2.</td></tr>
+      <tr><td>6 · Paper or app</td><td><b>In the app.</b> → A is the main view; D is a print style only.</td></tr>
+      <tr><td>7 · Swap → scheme</td><td><b>Yes, but flag the original.</b> → the swap is the role’s pot; one muted line names the original, with “Use the original” (B).</td></tr>
+      <tr><td>8 · Where the count is set</td><td><b>After the fact,</b> when the painter says how many. → One pot on Add; “Add a count” on the list row (A).</td></tr>
+      <tr><td>9 · A project’s name</td><td><b>Asked on export or save.</b> A UX flow that needs its own study.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="lab">Next</h3>
+  <ol class="q">
+    <li><b>A study: naming a project on export or save</b> — started: <a href="project-naming.html">project-naming.html</a>.<span>When the name is asked (each export, or once per scheme), what it suggests (the paint and harmony, the last name used), what happens to paints with no name, and how a name is changed later.</span></li>
+    <li><b>One model for holds and swaps.</b><span>A store swap is a role hold (v1.12.0, built since this study): a pot fixed to a role. Only “swapped from” is new.</span></li>
+  </ol>
+  <details style="margin-top:12px"><summary class="micro" style="cursor:pointer;min-height:var(--tap);display:flex;align-items:center">The first questions (answered above)</summary>
+  <ol class="q">
+    <li><b>Where does your shelf really live — phone, desktop, or both?</b><span>This picks option 1, 2 or 3 above, and so how “bought” gets back.</span></li>
+    <li><b>Which stores do you buy in?</b><span>A game store that carries one or two brands makes B very valuable. A big hobby shop with every brand makes A’s rack order the main thing.</span></li>
+    <li><b>One list, or a list per project?</b><span>Have you stood in a store and asked “what was this one for?”. If yes, C moves up.</span></li>
+    <li><b>A tick: owned at once, or only after “Done”?</b><span>This study chose “after Done”, so a tick by mistake does no harm.</span></li>
+    <li><b>Do you need a count (two pots of one base) or a price?</b><span>Today a paint is on the list or not. A count changes the data model.</span></li>
+    <li><b>Is paper or a screenshot good enough for you?</b><span>If yes, D alone may be the first step, and A can wait.</span></li>
+  </ol>
+  </details>
+</section>
+
+</div>
+
+<script>
+(() => {
+  /* ---- data: real rows from src/data/paints.json; swaps from data.js equivalents() (true ΔE 2000, §2) ---- */
+  const LIST = [
+    { id:'mr', name:'Mephiston Red', brand:'Citadel', line:'Base', hex:'#960C09', proj:'Blue knight',
+      subs:[{ brand:'Army Painter', line:"Nolzur's", name:'Cambion Crimson', hex:'#9C1A1D', dE:4.0 },
+            { brand:'Vallejo', line:'Model Color', name:'Carmine Red', hex:'#97211F', dE:4.2 }] },
+    { id:'dg', name:'Death Guard Green', brand:'Citadel', line:'Base', hex:'#6D774D', proj:'Plague Marine', qty:2,
+      subs:[{ brand:'Vallejo', line:'Mecha Color', name:'Olive Green', hex:'#5F6E45', dE:4.2 },
+            { brand:'Army Painter', line:'Warpaints Fanatic', name:'Camouflage Green', hex:'#6E8358', dE:5.1 }] },
+    { id:'kb', name:'Kantor Blue', brand:'Citadel', line:'Base', hex:'#02134E', proj:'Blue knight',
+      subs:[{ brand:'Army Painter', line:'Warpaints Fanatic', name:'Triumphant Navy', hex:'#1A2C53', dE:8.5 },
+            { brand:'Vallejo', line:'Model Color', name:'Dark Blue', hex:'#273461', dE:10.2 }] },
+    { id:'bg', name:'Balthasar Gold', brand:'Citadel', line:'Base', hex:'#A77353', metal:true, proj:'Plague Marine', also:'Blue knight',
+      subs:[{ brand:'Army Painter', line:'Metallics', name:'Evil Chrome', hex:'#A46049', dE:7.8, metal:true },
+            { brand:'Vallejo', line:'Mecha Color', name:'Copper', hex:'#9A5B3A', dE:8.5, metal:true }] },
+    { id:'iv', name:'Ivory', brand:'Vallejo', line:'Model Color', hex:'#EBE2D1', proj:'Blue knight',
+      subs:[{ brand:'Army Painter', line:'Warpaints Fanatic', name:'Pale Sand', hex:'#EFEAD3', dE:3.7 },
+            { brand:'Citadel', line:'Dry', name:'Longbeard Grey', hex:'#DBDCC6', dE:5.9 }] },
+    { id:'sb', name:'Skeleton Bone', brand:'Army Painter', line:'Warpaints', hex:'#C2AE9D', proj:'Plague Marine',
+      subs:[{ brand:'Vallejo', line:'Model Color', name:'Deck Tan', hex:'#ABA390', dE:7.4 }] },
+  ];
+  // CLAUDE.md §3.2 — the fixed ΔE → label mapping (data.js matchQuality)
+  const quality = dE => dE <= 1 ? ['Indistinguishable','success'] : dE <= 2 ? ['Excellent','success'] : dE <= 3.5 ? ['Good','success']
+    : dE <= 5 ? ['Fair','warning'] : dE <= 10 ? ['Loose','warning'] : ['Poor','danger'];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const sw = (p, cls = '') => `<span class="sw ${cls}${p.metal ? ' metal' : ''}" style="background:${p.hex}" aria-hidden="true"></span>`;
+  const fin = p => p.metal ? ' <span class="tag">metallic</span>' : '';
+  const qtyTag = p => (p.qty || 1) > 1 ? ` <span class="tag buy">${p.qty} pots</span>` : '';
+  const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  // rack order: brand, then line, then name — the way a store stands its racks
+  const byRack = arr => [...arr].sort((a, b) => a.brand.localeCompare(b.brand) || a.line.localeCompare(b.line) || a.name.localeCompare(b.name));
+  const groups = arr => { const m = new Map(); for (const p of byRack(arr)) { const k = `${p.brand} · ${p.line}`; (m.get(k) || m.set(k, []).get(k)).push(p); } return m; };
+
+  /* ---- page theme ---- */
+  const pth = document.getElementById('pth');
+  pth.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    for (const x of pth.querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b));
+    if (b.dataset.v === 'device') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = b.dataset.v;
+  });
+
+  /* ---- 0: today's file, in doExport's format ---- */
+  const lineOf = p => `${p.name} (${p.brand} ${p.line})`;
+  let today = 'Palette Studio for Miniatures — shopping list\nBase #6D774D · triadic scheme · wash-base-highlight ladder\n\n';
+  const recipe = [['Primary', LIST[1], 0.0], ['Secondary', LIST[5], 4.1], ['Accent', LIST[0], 6.3], ['Metal', LIST[3], 2.4]];
+  for (const [role, p, dE] of recipe) today += `${role.padEnd(20)} ${lineOf(p)} ${p.hex}  ΔE ${dE}\n`;
+  today += `\nYour shopping list (${LIST.length}):\n`;
+  for (const p of LIST) today += `  ${lineOf(p)} ${p.hex}\n`;
+  today += '\nHex values are approximate; ΔE = perceptual distance to the target colour.\n';
+  document.getElementById('todayFile').textContent = today;
+
+  /* ---- 6: the better file ---- */
+  let better = `Shopping list (${LIST.length}) — 29 Oct 2026\n`;
+  for (const [k, ps] of groups(LIST)) {
+    better += `\n${k.toUpperCase()}\n`;
+    for (const p of ps) better += `[ ] ${p.name}${(p.qty || 1) > 1 ? ` ×${p.qty}` : ''}${p.metal ? '   (metallic)' : ''}\n`;
+  }
+  better += '\nColours are approximate. Made with palette.ryanmette.com\n';
+  document.getElementById('betterFile').textContent = better;
+
+  /* ---- A: the rack walk — a tick makes the paint owned at once (Ryan, 2026-10-29); a second tap undoes it ---- */
+  const fA = document.getElementById('frameA');
+  const ownedA = new Set();
+  function drawA() {
+    const n = ownedA.size, pots = LIST.reduce((t, p) => t + (p.qty || 1), 0);
+    let h = `<div class="bar"><span class="ttl">Shopping list<small>${LIST.length} paints · ${pots} pots</small></span></div><div class="body">
+      <div class="prog" aria-hidden="true"><i style="width:${(n / LIST.length) * 100}%"></i></div>
+      <div class="progtxt" id="aSay" aria-live="polite">${n ? `${n} bought and marked owned · ${LIST.length - n} to go` : 'Tick a paint when it is in your basket. It is then owned on your shelf.'}</div>`;
+    for (const [k, ps] of groups(LIST)) {
+      h += `<div class="grp"><span>${esc(k)}</span><span>${ps.length}</span></div>`;
+      for (const p of ps) {
+        const on = ownedA.has(p.id);
+        h += `<div class="item" data-in="${on}">${sw(p)}<div class="grow"><div class="nm">${esc(p.name)}</div><div class="ln">${esc(p.brand)} ${esc(p.line)}${fin(p)}${qtyTag(p)}${on ? ' <span class="tag success">Owned</span>' : ''}</div></div>
+          <button class="tick" type="button" data-id="${p.id}" aria-pressed="${on}" aria-label="Bought: ${esc(p.name)}${(p.qty || 1) > 1 ? `, ${p.qty} pots` : ''}">${CHECK}</button></div>`;
+      }
+    }
+    h += `</div><div class="foot"><span class="progtxt" style="text-align:center;margin:0">${n ? 'Tap a ticked paint again to put it back on the list.' : 'Ticked paints leave the list the next time you open it.'}</span></div>`;
+    fA.innerHTML = h;
+  }
+  fA.addEventListener('click', e => {
+    const t = e.target.closest('.tick'); if (!t) return;
+    const id = t.dataset.id; ownedA.has(id) ? ownedA.delete(id) : ownedA.add(id);
+    drawA(); fA.querySelector(`.tick[data-id="${id}"]`)?.focus();
+  });
+  drawA();
+
+  /* ---- B: the swap ---- */
+  const fB = document.getElementById('frameB');
+  // the chips are the brands ON THE LIST, never a fixed set: the same view works in any store (Ryan, 2026-10-29)
+  const BRANDS = [...new Set(byRack(LIST).map(p => p.brand))];
+  const stocked = new Set(BRANDS);
+  const openB = new Set();
+  const swapped = new Map();   // id → the sub chosen in its place
+  function subRow(p, s) {
+    const [lab, tier] = quality(s.dE);
+    return `<div class="swap">${sw(s, 'sm')}<div class="grow">${esc(s.name)}<span>${esc(s.brand)} ${esc(s.line)} · <span class="de">ΔE ${s.dE.toFixed(1)}</span> <span class="tag ${tier}">${lab}</span></span></div>
+      <button class="btn sm" type="button" data-use="${p.id}|${esc(s.name)}">Use</button></div>`;
+  }
+  function drawB() {
+    let h = `<div class="bar"><span class="ttl">Shopping list<small>${LIST.length} paints</small></span></div><div class="body">
+      <div class="micro" style="margin-top:12px" id="stLab">This store carries</div>
+      <div class="stock" role="group" aria-labelledby="stLab">${BRANDS.map(b => `<button class="chip" type="button" data-brand="${b}" aria-pressed="${stocked.has(b)}">${b}</button>`).join('')}</div>`;
+    for (const [k, ps] of groups(LIST)) {
+      h += `<div class="grp"><span>${esc(k)}</span><span>${ps.length}</span></div>`;
+      for (const p0 of ps) {
+        const sub = swapped.get(p0.id);
+        const p = sub ? { ...sub, id:p0.id } : p0;
+        const here = stocked.has(p.brand);
+        const subs = p0.subs.filter(s => stocked.has(s.brand) && s.name !== p.name);
+        const open = !here || openB.has(p0.id);
+        h += `<div class="itemB"><div class="item">${sw(p)}<div class="grow"><div class="nm">${esc(p.name)}</div><div class="ln">${esc(p.brand)} ${esc(p.line)}${fin(p)}${qtyTag(p0)}</div>
+          ${sub ? `<div class="instead">in place of ${esc(p0.name)} · <button class="textact" style="min-height:0;min-width:0;padding:0;font-size:12px" type="button" data-undo="${p0.id}">Undo</button></div>` : ''}</div>
+          ${here ? `<button class="btn sm" type="button" data-open="${p0.id}" aria-expanded="${open}">Not on the rack?</button>` : ''}</div>`;
+        if (!here) h += `<div class="nostock">This store does not carry ${esc(p.brand)}. The closest here:</div>`;
+        if (open) h += `<div class="swaps">${subs.length ? subs.map(s => subRow(p0, s)).join('') : `<div class="instead">No pot from these brands is close. Keep it on the list for another store.</div>`}</div>`;
+        h += `</div>`;
+      }
+    }
+    fB.innerHTML = h + `</div>`;
+  }
+  fB.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    let refocus = null;
+    if (b.dataset.brand) { const x = b.dataset.brand; stocked.has(x) ? stocked.delete(x) : stocked.add(x); refocus = `[data-brand="${x}"]`; }
+    else if (b.dataset.open) { const x = b.dataset.open; openB.has(x) ? openB.delete(x) : openB.add(x); refocus = `[data-open="${x}"]`; }
+    else if (b.dataset.use) { const [id, nm] = b.dataset.use.split('|'); const p = LIST.find(q => q.id === id); swapped.set(id, p.subs.find(s => esc(s.name) === nm)); openB.delete(id); refocus = `[data-undo="${id}"]`; }
+    else if (b.dataset.undo) { swapped.delete(b.dataset.undo); refocus = `[data-open="${b.dataset.undo}"]`; }
+    drawB(); if (refocus) fB.querySelector(refocus)?.focus();
+  });
+  drawB();
+
+  /* ---- C: projects ---- */
+  const fC = document.getElementById('frameC');
+  const PROJ = ['Plague Marine', 'Blue knight'];
+  let hc = `<div class="bar"><span class="ttl">Shopping list<small>2 projects</small></span></div><div class="body">`;
+  PROJ.forEach((pr, i) => {
+    const ps = LIST.filter(p => p.proj === pr || p.also === pr);
+    hc += `<details class="proj"${i === 0 ? ' open' : ''}><summary><span class="chev" aria-hidden="true"></span><span class="pn">${pr}</span>
+      <span class="mini" aria-hidden="true">${ps.map(p => `<i style="background:${p.hex}"></i>`).join('')}</span><span class="tag buy">${ps.length} to buy</span></summary>`;
+    for (const p of ps) {
+      const other = p.proj === pr ? p.also : p.proj;
+      hc += `<div class="item">${sw(p)}<div class="grow"><div class="nm">${esc(p.name)}</div><div class="ln">${esc(p.brand)} ${esc(p.line)}${fin(p)}${qtyTag(p)}</div>
+        ${other ? `<div class="also">Also for ${esc(other)}</div>` : ''}</div></div>`;
+    }
+    hc += `<div style="padding:8px 0 12px"><button class="btn sm" type="button">Shop for ${pr} only</button></div></details>`;
+  });
+  fC.innerHTML = hc + `</div><div class="foot"><button class="btn primary" type="button">Shop for all · ${LIST.length} paints</button></div>`;
+
+  /* ---- D: receipt ---- */
+  let hr = `<h4>SHOPPING LIST</h4><div class="c">${LIST.length} paints · 29 Oct 2026</div><hr>`;
+  for (const [k, ps] of groups(LIST)) {
+    hr += `<div class="bh">${esc(k)}</div>`;
+    for (const p of ps) hr += `<div class="rl"><span class="box" aria-hidden="true"></span><span class="chip2" style="background:${p.hex}" aria-hidden="true"></span><span><span class="b">${esc(p.name)}${(p.qty || 1) > 1 ? ` ×${p.qty}` : ''}</span>${p.metal ? '<br><span class="s">metallic</span>' : ''}</span></div>`;
+  }
+  hr += `<hr><div class="c">Colours are approximate.<br>palette.ryanmette.com</div>`;
+  document.getElementById('receipt').innerHTML = hr;
+
+  /* ---- E: the rack map (Citadel Base in the dataset, sorted by HSL hue; greys and metals at the end) ---- */
+  const BASE = [["Abaddon Black","#000000",0],["Averland Sunset","#FBB81C",0],["Balthasar Gold","#A77353",1],["Barak-Nar Burgundy","#451636",0],["Bugman Glow","#804C43",0],["Caledor Sky","#366699",0],["Caliban Green","#003D15",0],["Castellan Green","#264715",0],["Catachan Fleshtone","#442B25",0],["Celestra Grey","#8BA3A3",0],["Corax White","#FFFFFF",0],["Corvus Black","#171314",0],["Daemonette Hide","#655F81",0],["Death Guard Green","#6D774D",0],["Death Korps Drab","#3D4539",0],["Deathworld Forest","#556229",0],["Dryad Bark","#2B2A24",0],["Gal Vorbak Red","#4B213C",0],["Grey Knights Steel","#B0BDC6",1],["Grey Seer","#A2A5A7",0],["Hobgrot Hide","#9C823B",0],["Incubi Darkness","#082E32",0],["Ionrach Skin","#97A384",0],["Iron Hands Steel","#B2A79F",1],["Iron Warriors","#706E6B",1],["Jokaero Orange","#ED3814",0],["Kantor Blue","#02134E",0],["Khorne Red","#650001",0],["Leadbelcher","#969696",1],["Lupercal Green","#002C2B",0],["Macragge Blue","#0F3D7C",0],["Mechanicus Standard Grey","#39484A",0],["Mephiston Red","#960C09",0],["Morghast Bone","#C0A973",0],["Mournfang Brown","#490F06",0],["Naggaroth Night","#3B2B50",0],["Night Lords Blue","#002B5C",0],["Nocturne Green","#162A29",0],["Orruk Flesh","#97C17E",0],["Phoenician Purple","#440052",0],["Rakarth Flesh","#9C998D",0],["Ratskin Flesh","#A86648",0],["Retributor Armour","#EDC169",1],["Rhinox Hide","#462F30",0],["Runelord Brass","#8D806F",1],["Screamer Pink","#7A0E44",0],["Screaming Bell","#D18A5E",1],["Steel Legion Drab","#584E2D",0],["Stegadon Scale Green","#06455D",0],["The Fang","#405B71",0],["Thondia Brown","#4F322C",0],["Thousand Sons Blue","#00506F",0],["Waaagh! Flesh","#0B3B36",0],["Warplock Bronze","#B36E4F",1],["Wraithbone","#DBD1B2",0],["XV-88","#6C4811",0],["Zandri Dust","#988E56",0]];
+  const hsl = hex => { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, l = (mx + mn) / 2, s = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
+    const h = !d ? 0 : mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [h * 60, s, l]; };
+  const key = ([, hex, metal]) => { const [h, s, l] = hsl(hex); return metal ? 2000 + l : s < .12 ? 1000 + (1 - l) : h; };
+  const sorted = [...BASE].sort((a, b) => key(a) - key(b));
+  const want = LIST.filter(p => p.brand === 'Citadel' && p.line === 'Base');
+  let hrk = '';
+  sorted.forEach(([nm, hex, metal], i) => {
+    const k = want.findIndex(p => p.name === nm);
+    hrk += `<span class="pot${k >= 0 ? ' on' : ''}" style="background:${hex}" title="${esc(nm)}">${k >= 0 ? `<b>${k + 1}</b>` : ''}</span>`;
+    if ((i + 1) % 10 === 0) hrk += '<span class="shelfrule"></span>';
+  });
+  document.getElementById('rack').innerHTML = hrk + '<span class="shelfrule"></span>';
+  document.getElementById('legendE').innerHTML = want.map((p, i) => `<li><b class="n">${i + 1}</b>${sw(p, 'sm')}${esc(p.name)}${fin(p)}</li>`).join('');
+  document.getElementById('eCount').textContent = `${want.length} of the list’s ${LIST.length} paints are on this rack`;
+
+  /* ---- A: the count stepper (a picture that works; in the app, 1 would go back to “Add a count”) ---- */
+  const st = document.getElementById('stepDemo'); let q = 2;
+  st.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+    q = Math.max(1, q + (b === st.lastElementChild ? 1 : -1)); st.querySelector('output').textContent = q === 1 ? '1 pot' : `${q} pots`; });
+
+  /* ---- 6: the link + a QR-like picture (NOT a real code: the finder squares + a seeded pattern) ---- */
+  const ids = ['citadel-base-mephiston-red','citadel-base-death-guard-green','citadel-base-kantor-blue','citadel-base-balthasar-gold','vallejo-model-color-ivory','army-painter-warpaints-skeleton-bone'];
+  document.getElementById('url').textContent = `palette.ryanmette.com/?list=${ids.join(',')}`;
+  let seed = 7, cells = '';
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const finder = (x, y) => `<rect x="${x}" y="${y}" width="7" height="7" fill="#15150F"/><rect x="${x + 1}" y="${y + 1}" width="5" height="5" fill="#FFF"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3" fill="#15150F"/>`;
+  const inFinder = (x, y) => (x < 8 && y < 8) || (x > 20 && y < 8) || (x < 8 && y > 20);
+  for (let y = 0; y < 29; y++) for (let x = 0; x < 29; x++) if (!inFinder(x, y) && rnd() < .48) cells += `<rect x="${x}" y="${y}" width="1" height="1" fill="#15150F"/>`;
+  document.getElementById('qr').innerHTML = cells + finder(0, 0) + finder(22, 0) + finder(0, 22);
+})();
+</script>
+</body>
+</html>

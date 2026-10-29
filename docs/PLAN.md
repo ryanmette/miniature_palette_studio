@@ -103,20 +103,18 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.8.0** — the neutral + polish release: neutral-seed scheme engine (pop harmonies, hysteresis, wheel-overlay explainer), studio redesign (Paints drawer, condensed hero, role badges, seed **docks** replacing the Main|Accent toggle), temperature/NMM/wash-media ladders, pick fidelity + `dname` disambiguation, accent-seed pinning, Equivalents drill-down, dark-theme brass + animated theme switch, doc-freshness CI gate, a 38-finding adversarial-review hardening pass, mobile no-overspill pass, and Stage-1 native groundwork (safe areas, Preferences persistence, icon/splash set).
 
 - **v1.9.0** — the correctness + structure release: Equivalents source chips (pick which scheme colour's cross-brand matches you see), metal-first equivalents + dataset 1.5.0 single-finish groups, the Shelf's brand dropdown, and a full-codebase review closing **all 15 findings** — the output tabs no longer sit on a stale colour through a wheel drag, and the wheel draws the scheme it is building (it disagreed with the palette by 180° in accent-seed mode). Structurally: one `render(reason)` chokepoint, `seed.js` (the tested pick ↔ scheme-base frame), `share.js` (the tested share-link contract), `wheel.js` extracted from `app.js` (1,729 → 1,510 lines), the CSV/search/SW/equivalents performance batch, and a dataset validator whose SOFT warnings are actionable again (640 lines of noise → 0 new).
-### Current status (2026-08-11)
-**v1.9.0 released** — the web app is feature-complete and hardened. A second full-codebase review
-found 15 findings and all 15 are fixed, along with the structural debt behind them: render order and
-the pick ↔ scheme-base frame each caused a cluster of findings and are now single, documented
-mechanisms rather than conventions. `app.js` is down to 1,510 lines with `seed.js`, `share.js` and
-`wheel.js` split out; unit tests are at 135. **Monetization direction chosen: A (affiliate links) +
-B (audience funnel)** — see [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files
-retailer applications (§9). **Next planned work: the native app, Stage 1 (v2.0)** — the kickoff
-checklist is `IOS_APP_PLAN.md` §4b; the repo-side groundwork shipped in v1.8, and the native-track
-constitution is drafted (`CLAUDE_NATIVE.md`, dormant until kickoff). The two decisions that had been
-queued in §5's follow-ups (accent-seed across the neutral boundary; the per-module comment pass) both
-shipped in PR #32 and sit in `[Unreleased]`; §5's live backlog is now the buying-assistant plan (items 7–11).
-Still outside this repo: the Mac/Xcode build, a designer for the asset library, and the optional
-palette-from-photo enhancement.
+- **v1.10.0** — the Workbench+ release (visual identity, release 1; `mockups/visual-identity.html`): the Workbench light theme with a Sotek Green accent and flat dark brass, Barlow Condensed + IBM Plex Sans, a small radius set and square tags, regions under hairline rules in place of cards, one SVG icon set, the dropper-and-lid mark, and the 3:1 field edge. Also since v1.9.0: the paint field (it replaced the Paints drawer), one mark menu, Roll a scheme, the full ⋯ menu with Back up / Restore / Delete, the matching note, and dataset 1.6.0 (AK Interactive and AMMO by Mig; 3,225 paints, 10 brands).
+- **v1.11.0** — the UX pass (visual identity, release 2): one name for one thing (Recipe, Target / Pot, Other brands, "your paint", the shopping list), the first-run guide, empty and error states, 44px targets for the small controls (follow-up 12), the neutral note kept on the wheel (follow-up 13), a shorter phone Studio with sticky tabs, ladder steps that show their pots, readable hints (`--text-muted`), the ⋯ groups named by what they act on, the language from the device, Copy link with a mouse, and the Open Graph preview card.
+- **v1.12.0** — keep this, change the rest (`mockups/hold-flow.html` A): role holds (Lock colour · 📌 Choose pot… on the Recipe, the hold note, `hd` in the share link) — a lock now reaches the Recipe and the shopping list; "Starting paint" in place of "your paint"; share a scheme as an image (`shareimage.js`, `mockups/share-image.html`) and a link card that is not cut on a Mac; the dropdown chevron, the harmony strip's scrollbar room and the Recipe's ring room.
+### Current status (2026-10-29)
+**v1.12.0 released** — role holds (UC-3) and share as an image. The visual identity is done: v1.10.0 is the look (Workbench+) and v1.11.0 the
+UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funnel)** — see
+[`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
+**Next planned work: the native app, Stage 1 (v2.0)** — the kickoff checklist is
+`IOS_APP_PLAN.md` §4b, and the native-track constitution is drafted (`CLAUDE_NATIVE.md`, dormant until
+kickoff). §5's live backlog is the buying-assistant plan (items 7–11) and the shopping-list turn (items 34–38, 34–37 built;
+studied and answered 2026-10-29); the pin-a-paint direction shipped as role holds in v1.12.0. Still outside this repo: the Mac/Xcode build, a designer for the asset
+library, and the optional palette-from-photo enhancement.
 
 ### Native Stage-1 kickoff — greenlit (2026-07-09)
 Ryan has **authorised Stage-1 (v2.0) kickoff**: enrolled in the Apple Developer Program (paid), a
@@ -262,11 +260,16 @@ computes every answer P3 needs (ΔE matching, cross-brand equivalents, interchan
 to-buy marks) but files them *inside* the scheme output. Four routing directions explored in
 [`mockups/buying-assistant.html`](../mockups/buying-assistant.html); none needs new engine work.
 
-7. **Paint detail sheet — direction B** (recommended first). One component: tap any paint anywhere
-   (Shelf cell, drawer chip, live-palette column, ladder rung, equivalents row) → a sheet with identity,
+7. **Paint detail sheet — direction B** (recommended first). One component: open it from any paint
+   anywhere → a sheet with identity,
    finish, owned/to-buy toggle, its interchangeable group, closest in other brands, and *closest on your
    shelf* with an adjust direction. Reuses `equivalents()`, `nearestPaints()`, `groupMembers()` and the
    store marks — all shipped. Reversible, and it is the leaf node every other direction below needs.
+   The doorways: a **Details** item in the mark menu (`markmenu.js`), on the Shelf and in the seed field's
+   list, where a tap already marks or picks; a tap on the other paints (live-palette column, ladder rung,
+   equivalents row).
+   On a phone it is a good first user of the **resizable sheet** (a part-height card that grows to full
+   height when you scroll or drag it) recorded for the full app release in `IOS_APP_PLAN.md` §1.
 8. **Substitute finder — direction C.** “I need X, what can I use?” as a mode *on* that sheet rather than
    a new surface: constrain by *only what I own* / *only these brands* (the in-store constraint) and rank
    the alternatives. The literal buying assistant; still no engine work.
@@ -277,9 +280,195 @@ to-buy marks) but files them *inside* the scheme output. Four routing directions
     person's usage over a few weeks is a signal, not a mandate. Revisit after 7/8 have been lived with.
 11. **In-store pot identification (v2, native).** Barcode was already parked in `IOS_APP_PLAN.md` §5 with
     the right blocker — no EAN/UPC column exists and no open dataset supplies one. The way around it is
-    **label OCR**: read the printed name on the pot, fuzzy-match against the 2,508 names we already hold.
-    No new data, no backend, and it degrades to “put the text in the search field”. Barcode stays the
-    nicer UX *if* a mapping ever exists — a data-sourcing project, not a UI one.
+    **label OCR**: read the printed name on the pot, fuzzy-match against the names of the 3,225 paints we already hold.
+    No new data, no backend, and it degrades to “put the text in the Shelf search” (the question in a shop
+    is “do I own it?”, and the Shelf is where a tap marks it; the Studio's seed field takes the same words).
+    Barcode stays the nicer UX *if* a mapping ever exists — a data-sourcing project, not a UI one.
+
+### Follow-ups from the lightness-slider build (noted 2026-10-28, not yet scheduled)
+
+Found by the review of the "B, fixed" slider build. Not changed in that build: each is older than it.
+
+12. **Touch targets: the fixed-size controls are still smaller than 44px.** `--tap` is now 44px on every
+    touch screen (CLAUDE.md §3.6), so the controls that use it grew. Controls with a fixed size did not.
+    **Partly done (2026-10-28, the ⋯ menu foundations):** every segmented control (the Studio / Shelf
+    switch, the harmony chips, the tone ladder, Ideal / Real, language, the Shelf status filter) and every
+    `.btn.sm` is now `--tap` tall on touch and on a phone (44px; was 30–34px and 32px), and the theme
+    switch has a 44px hit area. **Still open,** measured with a 390px phone and a 768px touch tablet: the
+    live palette's ↶ ↷ + − (30px) and its copy and column buttons (20–21px), the output tabs (40px), the
+    seed docks and buy buttons (26px), the Plan cards' "equivalents" jump (20px), the hero's copy-hex
+    button (19px), the Equivalents source chips (30px) and the footer's "About & data" link (20px). WCAG
+    2.1 AA does not require 44px (2.5.5 is AAA), so this is §3.6's own rule, not an AA failure.
+    **Done (2026-10-28, release 2 of the visual identity):** on touch and ≤520px, ↶ ↷ + −, the output tabs
+    and the source chips are `--tap`; the column buttons are 32px, 44px apart; the docks, buy buttons,
+    "equivalents" jump, hex-copy, column copy and footer link get a 44px hit area (an invisible `::after`)
+    with no change to how they look. Checked with `elementFromPoint` at 390, 768 and 1025px: every edge of
+    every 44px area lands on its own control. One planned exception: where the column copy button's area
+    meets the seed dock under it, the visible dock wins (the copy keeps 44 × 38px).
+13. **Neutral mode and the slider at widths over 1024px.** When a slider move enters neutral mode
+    (§7, by design), two older behaviours get in the way. (a) The neutral explainer overlay covers the
+    top 37px of the slider at 1180px (56px at 1025px with a mouse), with "Lighter" and the thumb at 94%, until it
+    collapses to its pill after about 7 s. A tap there lands on the overlay. (b) The hero line wraps when
+    its "neutral seed" pill shows in the 398px studio column, so the wheel row moves down about 29px
+    during the drag (§3.4). Fix direction: keep the overlay inside the wheel's box, not the gutter, and
+    keep the hero on one line (an ellipsis on the name, or a reserved slot for the pill). Ryan decides
+    neutral-mode behaviour, so this waits for him.
+    **Done (2026-10-28, release 2 of the visual identity; Ryan approved the UX pass):** (a) the overlay is
+    inside a box that is exactly the wheel (`.wbox`), so it ends 12px before the gutter at every width.
+    (b) No longer happens: the pill is in the overlay, not the hero, and the hero is one line (28px) for a
+    red, a grey and a near-black seed at 1025px (mouse and touch) and 1180px, so the wheel does not move.
+
+### Follow-ups from the ⋯ menu build (noted 2026-10-28, not yet scheduled)
+
+The ⋯ Settings build (`mockups/collection-setting.html`, direction A, the full menu and its design
+critique) is in `[Unreleased]`. The critique marked these "Not now". They are recorded here so that they
+are not lost.
+
+14. **Undo after Restore** (critique usability-1). Restore cannot be undone. The confirm shows both
+    counts, the paints that would lose their mark, and offers "Save a backup of this shelf" first, so the
+    risk is visible. An Undo toast that puts the old state back is the next step.
+15. **"Settings" names a panel that is mostly actions** (usability-5). The title stays, because §3.6 uses
+    it and a screen reader reads each row when the panel opens.
+16. **On a phone, a change to Use my paints has no visible effect while the sheet is open**
+    (usability-10). The sheet covers the live palette. The hint says what changes, a screen reader hears
+    it, and the matching note shows the setting when the sheet closes.
+17. **Two rows that wait for a reason:** an "Install the app" row (the install prompt event exists only
+    in Chromium browsers; an iPhone can only show instructions) and "Brands I use" (backlog 8 puts a
+    brand limit on the substitute finder as a choice you make at that time; a hidden app-wide filter is
+    the problem the matching note fixes).
+18. **`--text-faint` is still used for text you must read** (WCAG 1.4.3). It is 2.39:1 on the light
+    surface (AA needs 4.5:1). The ⋯ menu review found three faults; this build fixed them: the `.micro`
+    labels (the Plan's "Tone ladder", the Shelf counts) are `--text-muted` now (4.68:1 on the surface,
+    4.53:1 on `--bg`); the right-click menu shows the `--focus` ring (it showed a `--surface-2` fill,
+    about 1.1:1, with `outline: none`); in forced colours only the selected output tab has a line.
+    **Still open:** about 13 other rules use `--text-faint` as a text colour, for example the footer note,
+    the logo's "for miniatures", `.hint`, `.ttl`, `.ladcap`, `.cmphead`, `.shelfhint` and "no close
+    paint — consider mixing". (The Paints picker build removed two: the hex field's "#" and `.count`.) Fix direction: `--text-muted` for each, or a
+    darker `--text-faint` value in §3.1 (a token change, so Ryan decides).
+
+### Follow-ups from the Paints picker build (noted 2026-10-28, not yet scheduled)
+
+The seed field and its list (`mockups/paints-picker.html` "Recommended") are in `[Unreleased]`. These
+checks need a real device or a real screen reader. The build used Playwright (Chromium) only.
+
+19. **The list's height on a real iPhone.** The open list takes its height from `visualViewport`, because
+    iOS does not make the layout viewport smaller for the keyboard. Test it with the keyboard up, in
+    Safari and in the iOS app (WKWebView), on a small phone (375×667) and turned sideways. Also check that
+    a tap on Browse does not raise the keyboard, and that the page does not zoom when the field takes focus.
+20. **A screen-reader pass of the field and its list** (VoiceOver on iOS and macOS, TalkBack, NVDA): the
+    combobox, the browse grid (rows, two-way arrows), the search listbox and its groups, the live hex
+    messages, the mark menu after a double-tap-and-hold, and where focus lands after a pick and a mark.
+21. **Forced colours** (Windows High Contrast): the cursor ring on a tile and a row, the pick ring, and
+    the open Browse button.
+22. **A tile shows the full name only on three lines.** About 67 names (for example "Barbarian Flesh
+    (Warpaints Fanatic)") and about 400 brand names are still cut in a 390px grid. The mark menu's title
+    and a search row show them whole. Fix direction: a readout of the name of the cursor tile.
+23. **The first letter after Browse** costs about 55ms at a 4× slower CPU: removing the 3,225 tiles of the
+    grid is about 17ms of it. Fix direction: empty the grid in the next frame.
+
+### Raised by Ryan on 2026-10-28 (24 is built; the others are not yet built)
+
+24. **“Roll a scheme” d6 — built** (`[Unreleased]`). ↻ stays. A d6 button rolls a random harmony for the
+    current colour (`mockups/random-die.html`, direction B). The roll keeps the picked paint as the seed, never picks
+    Custom or the current harmony, and is one ↶ step. Placement: the start of the harmony strip (the harmonies it picks
+    from), outside the strip's group of options, because the new seed toolbar has no room on a phone. Visible words:
+    “Roll a scheme” where the row is 460px or wider, else “Roll” (a phone, and the studio column from 1025px to about
+    1160px). Fixed in the same build: ↻ did nothing on a black or white seed; now it moves the lightness the smallest
+    step that lets the colour show, and says so. Follow-ups: 30–33.
+25. **Move ↻ away from the lightness slider.** Next to the slider, ↻ reads as “random lightness”, but it keeps the
+    lightness and changes the hue and strength. Options: beside the hero colour, on the wheel, a word (“New colour”), or
+    a small random group with the Roll chip.
+26. **Pin a paint to a role (UC-3 “Complete a scheme I started”).** A Death Guard player uses Death Guard Green and
+    wants Balthasar Gold as the metal. Today `metalIdeal()` gives gunmetal for that green (its hue is 74°, outside the
+    warm range under 70°), so Balthasar Gold never shows, and no control pins a paint to a role. Mockup done
+    (`mockups/pin-a-paint.html`, 2026-10-28): judges chose **A, a 📌 pin on the Plan role card** (49/60), with C's metal
+    families and B's “harmony's own pick” line. A pin is a paint, never ΔE 0: the card shows its distance from the
+    harmony's pick. Waits for Ryan's answers (all roles or Metal first; the word and icon; bronze in Auto; a pin on the
+    seed's role).
+27. **Telling paints apart on the Shelf.** Without logos or names, the grid is a wall of colour; a phone shows no names
+    at all. Ideas: section headers by brand and line (sticky) with a jump index; a peek bar on a phone that names the
+    last paint touched; a density setting (colours · with names · list); text brand monograms; generic pot or dropper
+    shapes; names when a filter leaves few paints; a “New” badge. Mockup when Ryan asks.
+28. **Citadel / Warhammer Colour data refresh — soon.** Dataset 1.6.0 has 259 Citadel paints (35 Contrast, 16 Shade).
+    It does not have the seven newer Shades (Mortarion Grime, Berserker Bloodshade, Kroak Green, Poxwalker, Soulblight
+    Grey, Targor Rageshade, Tyran Blue) or most of the Contrast expansion. It still lists the gloss Shades that left the
+    range as current. Add Games Workshop's 2026 paints (Ryan to share the release), mark the retired ones as
+    discontinued, add “Warhammer Colour” (the new range name) as a search word, record every source in `SOURCES.md`
+    (§5), and bump the dataset minor version.
+29. **The seed search matches inside words.** “vallejo red” also finds Hammered Copper (“hammeRED”), in the last
+    group. Fix direction: a query word of 3 letters or less matches only at the start of a word.
+
+### Follow-ups from the Roll a scheme build (noted 2026-10-28, not yet scheduled)
+
+Roll a scheme and the ↻ fix (item 24) are in `[Unreleased]`. The build used Playwright (Chromium) only, so these
+checks need a real device, another browser or a real screen reader.
+
+30. **A screen-reader pass of Roll and ↻** (VoiceOver on iOS and macOS, TalkBack, NVDA): the name “Roll a scheme”
+    where the button shows “Roll”, the “Rolled: Compound.” lead (the summary then leaves out the harmony), and ↻'s
+    “Lightness moved to 8% so the colour can show”, alone and with a roll pressed before it is said.
+31. **Safari, Firefox and the iOS app (WKWebView):** the container query that picks “Roll a scheme” or “Roll” (a
+    browser without it shows “Roll”), the die's turn (`element.animate()` on an inline SVG), the page scroll that
+    keeps a pressed chip or Roll in place over 1024px, and the service worker update to `ps-v53`.
+32. **Forced colours** (Windows High Contrast): the Roll button's border and focus ring, and the d6 in
+    `currentColor`.
+33. **The hero line can lose a line when the “neutral” pill goes** (§3.4). At 414–430px (a large phone), a custom
+    colour's hero fits on one line without the pill and needs two with it, so ↻ on black moves the wheel, ↻ and the
+    strip up about 29px, and the next tap at the same place can miss ↻. The 1–3px change at other widths is fixed.
+    Older than this build (↻ on a grey seed did the same), and the same cause as item 13 (b). Fix direction: as
+    13 (b), keep the hero on a fixed number of lines (an ellipsis on the name, or a reserved slot for the pill).
+
+### Backlog — the shopping-list turn (raised 2026-10-29 by Ryan; studied, not yet built)
+
+**The signal.** Ryan plans at a desktop and buys in hobby stores that carry only some brands. Today the shopping
+list is a filter of the Shelf, and its file mixes the scheme's recipe with the paints to buy. Three studies, each
+answered by Ryan: [`mockups/shopping-list.html`](../mockups/shopping-list.html) (the list in the store),
+[`mockups/project-naming.html`](../mockups/project-naming.html) (when to ask for a name) and
+[`mockups/scheme-library.html`](../mockups/scheme-library.html) (keeping saved schemes). The decisions:
+
+- **One list,** in rack order (brand → line). **A tick marks the paint owned at once**; a second tap undoes it.
+- **A count is set after the fact,** on the list. One pot is the default.
+- **Brand-agnostic:** the "this store carries" choice comes from the brands on the list.
+- **A swap goes back to the scheme,** with the original paint flagged.
+- **A project is one scheme.** Its name is asked **once, at the first export**, with a Skip. **A name saves the
+  scheme for good**, and it goes in the share link.
+- **Saved schemes get a third mode, Schemes** (Studio · Schemes · Shelf), with an **explicit Save** (Changed ·
+  Save · Save as new), no folders, and a colour strip of the four roles.
+- **Both devices:** the list goes to the phone in a link or a QR code, and a "bought" link comes back.
+
+The build order. Each item needs the one before it:
+
+34. **The data model** (`store.js` v2) — **done, ryanmette/miniature_palette_studio#54.** One `schemes` map with a key
+    that never changes (a short random id; not a hash of the link, which changes when a saved scheme
+    changes): `{ name, link, saved, created, changed }`. No `pins` field: role holds (v1.12.0) already live in
+    the scheme's link (`hd`). A to-buy paint's count and project are a second map, `wantInfo: { id: { qty,
+    for } }`, **beside** `want`, which stays a list of ids — so an older build still reads the whole list. The
+    backup file carries both maps; the CSV gets `qty` and `project` columns; old data loads as one pot each,
+    with no project. Unit tests, no UI.
+35. **Save and the Schemes mode** — **built (`feat/schemes-mode`).** The Save line above the hero (Not saved
+    + Save · the name + Saved · the name + Changed + Save + Save as new), one `--tap` row in every state; the
+    Save dialog (the name pre-filled with "Death Guard Green · triadic" and selected; a taken name becomes
+    "(2)", and the hint says so); the Schemes mode (Studio · Schemes · Shelf) with open, rename, share and
+    delete (a confirm; the paints stay on the list), the projects that were never saved, and the empty state.
+    The address bar keeps the saved scheme's id (`s`, never in a shared link). CLAUDE.md §3.6 changed in the
+    same commit. **Take to the store** is not in the Schemes actions yet: it comes with item 37.
+36. **The rack walk** (shopping-list direction A) — **built (`feat/rack-walk`).** Ryan chose where it lives
+    and how it groups (2026-10-29): a **Grid | List** switch on the Shelf (the list shows the paints the
+    filters pick), and **Rack order | By project** (brand · line, or one group per scheme + "Other paints").
+    A tick marks a paint owned at once; a second tap puts back its mark, count and project; a ticked row stays
+    in place while the list is open. "Add a count" turns into a − n pots + stepper. **Print** gives the list
+    on paper (direction D). The address bar keeps `sv=list` and `sg=project` (never in a shared link). A tick
+    redraws one row (a full rebuild of 3,225 rows took 660ms; one row takes about 11ms).
+37. **Take to the store** — **built (`feat/take-to-store`).** The hand-off panel (link · QR code · Print · Save as
+    text); "Which paints?" by project; the naming step at the first export (once per project: `store.js`
+    `asked`); the name in the share link (`n=`); the "bought" link back, which only adds owned marks and asks
+    first. The text file becomes the list only, in rack order, with boxes; the recipe gets its own file (⋯ →
+    Save the recipe). The QR code is hand-rolled (`qr.js`, no dependency) and checked against an independent
+    encoder. The list link carries each project's scheme link and name, so the phone gets the same projects.
+    Not built from the study: rename in place on the list's group header (Schemes → Rename does it).
+38. **Not on the rack** (shopping-list direction B). Swaps from the brands the store carries, kept to the same
+    finish class (a wash's swap is a wash, or none); a swap becomes a pot hold on its role (role holds,
+    v1.12.0) with the original flagged — the one new field, kept on the scheme. This is backlog item 8 (the
+    substitute finder), met in the store.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
@@ -297,8 +486,9 @@ Ordered, with the reasoning rather than just the list:
 
 **Explicitly NOT tomorrow:** direction D (held, above) · the scanner (needs the Stage-1 native shell to
 exist first) · TD5 dataset provenance (a data-sourcing job needing manufacturer values, not a code task) ·
-splitting the Shelf/drawer out of `app.js` (internal quality, no user-visible value — it can wait behind
-work that changes what the tool does).
+splitting the Shelf out of `app.js` (internal quality, no user-visible value — it can wait behind work
+that changes what the tool does). The Paints drawer is gone: its successor, the seed field and its list,
+lives in `picker.js`.
 
 ---
 

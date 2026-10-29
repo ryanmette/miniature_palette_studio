@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lightness slider — four directions</title>
+<!-- the app's self-hosted webfonts, so the text widths in the real-size frames match the app -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  :root {
+    --bg:#FBFBFE; --surface:#FFFFFF; --surface-2:#F1F2FF;
+    --border:#E6E7F8; --border-strong:#D3D5F0;
+    --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
+    --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+    --success:#16A34A; --warning:#C2740B; --danger:#DC2647;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px; --tap:44px;
+    --font:"Inter",system-ui,sans-serif; --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+    --shadow-pop:0 10px 40px rgba(60,50,120,.18);
+    --ring:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  .dark { --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62; --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 18px 50px rgba(0,0,0,.5); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:24px 16px; }
+  h1 { font-family:var(--display); font-size:21px; margin:0 0 4px; }
+  .sub { color:var(--text-muted); max-width:80ch; margin:0 0 16px; font-size:13.5px; }
+  .sub b, .why b, .notes b { color:var(--text); }
+  a { color:var(--accent); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow);
+    padding:16px; margin-bottom:24px; max-width:1100px; }
+  section.recd { border-color:var(--accent); }
+  h2 { font-family:var(--display); font-size:15.5px; margin:0 0 4px; }
+  h3.lab { font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:24px 0 8px; }
+  .why { color:var(--text-muted); font-size:12.5px; margin:0 0 16px; max-width:78ch; }
+  .verdict { font-size:12.5px; margin:16px 0 0; color:var(--text-muted); border-top:1px dashed var(--border); padding-top:8px; max-width:78ch; }
+  .verdict b { color:var(--text); }
+  .rec { display:inline-block; font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase;
+    background:var(--accent-weak); color:var(--accent); border-radius:var(--r-pill); padding:0 8px; margin-left:8px; vertical-align:2px; }
+  ul.notes, ol.notes { margin:0; padding-left:18px; font-size:12.5px; color:var(--text-muted); max-width:82ch; }
+  ul.notes li + li, ol.notes li + li { margin-top:4px; }
+  .pair { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+  figure { margin:0; min-width:0; max-width:100%; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; max-width:340px; }
+  figcaption b { color:var(--text); }
+  .ann { font-size:11.5px; color:var(--text-muted); margin:8px 0 0; max-width:340px; }
+  .ann b { color:var(--text); }
+
+  /* ---------- frames: a crop of the studio card ---------- */
+  .ph { width:320px; border:1px solid var(--border-strong); border-radius:20px; background:var(--bg); color:var(--text); padding:12px; font-size:12px; }
+  .dk { width:520px; max-width:100%; border:1px solid var(--border-strong); border-radius:12px; background:var(--bg); color:var(--text); padding:12px; font-size:12px; }
+  .scard { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); padding:12px; }
+  .hero { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .hero .sw { width:26px; height:26px; border-radius:8px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; }
+  .hero b { font-family:var(--display); font-size:13.5px; }
+  .hero .hx { font-family:var(--mono); font-size:11px; color:var(--text-muted); }
+  .wrow { display:flex; align-items:center; justify-content:center; gap:16px; }
+  .ph .wrow { flex-direction:column; gap:8px; }
+  canvas.wh { width:200px; height:200px; border-radius:50%; display:block; }
+  .dk canvas.wh { width:240px; height:240px; }
+  .gut { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .ctlrow { display:flex; align-items:center; gap:8px; width:100%; }
+  .legend { display:flex; justify-content:center; gap:12px; font-size:10.5px; color:var(--text-muted); margin-top:8px; }
+  .legend i { display:inline-grid; place-items:center; width:16px; height:16px; border-radius:50%; background:var(--accent); color:var(--on-accent);
+    font-style:normal; font-size:9px; font-weight:700; margin-right:4px; vertical-align:-3px; }
+  .rnd { flex:none; min-width:var(--tap); height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text);
+    font:inherit; font-size:12px; padding:0 10px; display:inline-flex; align-items:center; justify-content:center; gap:4px; cursor:pointer; }
+  .rnd:focus-visible, input[type=range]:not(.wlr):focus-visible, .tone:focus-visible { outline:none; box-shadow:var(--ring); }
+  .isnew { outline:1.5px dashed var(--accent); outline-offset:4px; border-radius:8px; }
+  .dk .isnew { outline-offset:6px; }
+  .num { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+
+  /* today: the native range with accent-color (as in app.css) */
+  input.native { accent-color:var(--accent); }
+  .ph input.native { flex:1; }
+  .dk input.native { writing-mode:vertical-lr; direction:rtl; width:26px; height:200px; }
+
+  /* A · label + value */
+  .alab { display:flex; justify-content:space-between; align-items:baseline; font-size:11px; color:var(--text-muted); width:100%; }
+  .alab b { font-weight:500; color:var(--text); }
+  .dk .alab { flex-direction:column; align-items:center; gap:0; width:auto; text-align:center; }
+
+  /* B and C · a styled native range whose track shows your colour from dark to light.
+     --trk is set on the input itself (never on :root, CLAUDE.md §3.6 lesson). */
+  input.grad { -webkit-appearance:none; appearance:none; background:none; cursor:pointer; margin:0; }
+  input.grad::-webkit-slider-runnable-track { height:12px; border-radius:var(--r-pill); background:var(--trk); box-shadow:inset 0 0 0 1px rgba(0,0,0,.15); }
+  input.grad::-moz-range-track { height:12px; border-radius:var(--r-pill); background:var(--trk); box-shadow:inset 0 0 0 1px rgba(0,0,0,.15); }
+  input.grad::-webkit-slider-thumb { -webkit-appearance:none; width:26px; height:26px; margin-top:-7px; border-radius:50%; background:var(--thumb);
+    border:3px solid #FFFFFF; box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.3); }
+  input.grad::-moz-range-thumb { width:20px; height:20px; border-radius:50%; background:var(--thumb); border:3px solid #FFFFFF;
+    box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.3); }
+  .ph input.grad { flex:1; height:var(--tap); }
+  .dk input.grad { writing-mode:vertical-lr; direction:rtl; width:var(--tap); height:200px; }
+  .dk input.grad::-webkit-slider-runnable-track { width:12px; height:auto; }
+  .dk input.grad::-webkit-slider-thumb { margin-top:0; margin-left:-7px; }
+  .endc { flex:none; width:14px; height:14px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,0,0,.25); }
+  .bwrap { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+  .dk .bwrap { flex-direction:column-reverse; width:auto; }
+  .bcap { font-size:11px; color:var(--text-muted); text-align:center; }
+  .bcap b { color:var(--text); font-weight:500; }
+
+  /* C · a 44px "big track" with the label inside (Control Center style) */
+  .cwrap { position:relative; flex:1; height:var(--tap); }
+  .cwrap input.grad { position:absolute; inset:0; width:100%; height:100%; }
+  .cwrap input.grad::-webkit-slider-runnable-track { height:var(--tap); border-radius:var(--r-ctrl); }
+  .cwrap input.grad::-moz-range-track { height:var(--tap); border-radius:var(--r-ctrl); }
+  .cwrap input.grad::-webkit-slider-thumb { width:8px; height:36px; margin-top:4px; border-radius:4px; border:2px solid #FFFFFF; }
+  .cwrap input.grad::-moz-range-thumb { width:6px; height:34px; border-radius:4px; border:2px solid #FFFFFF; }
+  .clab { position:absolute; left:6px; top:50%; transform:translateY(-50%); pointer-events:none; background:var(--surface); color:var(--text);
+    border-radius:var(--r-pill); padding:2px 8px; font-size:11px; box-shadow:0 1px 2px rgba(0,0,0,.2); }
+  .dk .cwrap { flex:none; width:var(--tap); height:220px; }
+  .dk .cwrap input.grad { writing-mode:vertical-lr; direction:rtl; }
+  .dk .cwrap input.grad::-webkit-slider-runnable-track { width:var(--tap); height:auto; }
+  .dk .cwrap input.grad::-webkit-slider-thumb { width:36px; height:8px; margin-top:0; margin-left:4px; }
+  .dk .clab { left:50%; top:6px; transform:translateX(-50%); writing-mode:horizontal-tb; }
+
+  /* D · tone steps: a radio group of 7 swatches of your colour */
+  .tones { display:flex; gap:4px; flex:1; min-width:0; }
+  .dk .tones { flex-direction:column-reverse; width:auto; }
+  .tone { flex:1; min-width:0; height:var(--tap); border:0; border-radius:8px; cursor:pointer; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); padding:0; }
+  .dk .tone { width:var(--tap); height:28px; flex:none; }
+  .tone[aria-checked="true"] { box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+  .dcap { font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; width:100%; }
+  .dk .dcap { flex-direction:column; align-items:center; width:auto; }
+
+  /* the ↻ options */
+  .rbar { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+  .rbar figure { text-align:center; }
+  .d20 { width:20px; height:20px; flex:none; }
+
+  /* ============ RECOMMENDED · B, fixed ============
+     Real sizes. Phone = the app's ≤520px layout (a 320px row at a 390px screen; fluid, as min(82vw, 340px)).
+     Desktop = the app's wheel column at 1025px: 398px wide, a 340px wheel, a 12px gap, a 38px gutter.
+     In the app, .rdk maps to the default rules and .rph to @media (max-width:520px). */
+  .rph { width:372px; max-width:100%; border:1px solid var(--border-strong); border-radius:20px; background:var(--bg); color:var(--text); padding:12px; font-size:12px; }
+  .rdk { --tap:38px; width:max-content; border:1px solid var(--border-strong); border-radius:12px; background:var(--bg); color:var(--text); padding:12px; font-size:12px; }
+  .rph canvas.wh2 { display:block; width:100%; max-width:320px; height:auto; aspect-ratio:1; border-radius:50%; margin:0 auto; }
+  .rdk canvas.wh2 { display:block; width:340px; height:340px; border-radius:50%; flex:none; }
+  .colbox { width:398px; outline:1px dashed var(--border-strong); }   /* the real wheel column at 1025px */
+  .rdk .wrow2 { display:flex; align-items:center; justify-content:center; gap:12px; }   /* 12px: on the spacing scale (the app has 14px) */
+  .wlc { display:flex; position:relative; }   /* relative: the hidden label stays inside the frame's scroll box */
+  .rph .wlc { flex-direction:column; align-items:stretch; gap:4px; width:100%; max-width:320px; margin:8px auto 0; }
+  .rph .wl-row { display:flex; align-items:center; gap:8px; }
+  .rdk .wlc { flex-direction:column; align-items:center; gap:4px; width:var(--tap); }
+  .wl-lab { font-size:12.5px; color:var(--text-muted); cursor:pointer; }
+  .wl-end { font-size:11.5px; font-weight:500; line-height:16px; color:var(--text-muted); white-space:nowrap; }
+  .sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .rph .legend { margin-top:12px; }   /* 12px keeps the label row apart from the P/A/2 legend */
+
+  /* The slider: one native range. The input box is the hit area: var(--tap) thick (44px on a phone or touch, 38px with a mouse).
+     JS writes only paint data on the input (never on :root): --wl-stops (the pick's own dark→light ramp),
+     --wl-thumb (the colour now) and --wl-ring (textOn: #15150F or #FFFFFF, the §7 rule the wheel's base node uses).
+     The gradient DIRECTION lives here in CSS, so a phone that rotates across 520px stays correct.
+     Logical sizes (block-size / inline-size / margin-block-start) let one rule set serve both orientations. */
+  .wlr { -webkit-appearance:none; appearance:none; background:none; margin:0; padding:0; cursor:pointer; block-size:var(--tap); border-radius:var(--r-pill); }
+  .rph .wlr { flex:1; min-width:0; inline-size:auto; }
+  .rdk .wlr { writing-mode:vertical-lr; direction:rtl; inline-size:220px; }   /* rtl: Up = lighter, dark at the bottom */
+  .wlr::-webkit-slider-runnable-track { block-size:12px; border-radius:var(--r-pill); box-shadow:inset 0 0 0 1px var(--text-muted);
+    background:linear-gradient(to right, var(--wl-stops)); }
+  .wlr::-moz-range-track { block-size:12px; border-radius:var(--r-pill); box-shadow:inset 0 0 0 1px var(--text-muted);
+    background:linear-gradient(to right, var(--wl-stops)); }
+  .rdk .wlr::-webkit-slider-runnable-track { background:linear-gradient(to top, var(--wl-stops)); }
+  .rdk .wlr::-moz-range-track { background:linear-gradient(to top, var(--wl-stops)); }
+  .wlr::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; box-sizing:border-box; inline-size:28px; block-size:28px;
+    margin-block-start:-8px; border-radius:50%; background:var(--wl-thumb); border:3px solid var(--wl-ring); }
+  .wlr::-moz-range-thumb { box-sizing:border-box; inline-size:28px; block-size:28px; border-radius:50%; background:var(--wl-thumb); border:3px solid var(--wl-ring); }
+  .wlr:focus { outline:none; }
+  .wlr:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }   /* not var(--focus): that ring is 1.17:1 / 1.12:1 */
+  /* Forced colours (Windows High Contrast) drop the custom track and thumb colours: give the system slider back. */
+  @media (forced-colors: active) {
+    .wlr { -webkit-appearance:auto; appearance:auto; }
+    .wlr::-webkit-slider-thumb { -webkit-appearance:auto; appearance:auto; }
+  }
+
+  /* Random: one secondary button. d20 + word on the phone, d20 alone in the desktop gutter. */
+  .rnd2 { flex:none; height:var(--tap); min-width:var(--tap); padding:0 12px; display:inline-flex; align-items:center; justify-content:center; gap:4px;
+    border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text);
+    font:inherit; font-size:14px; font-weight:500; cursor:pointer; }
+  .rnd2:hover { border-color:var(--border-strong); background:var(--surface-2); }
+  .rnd2:active { transform:scale(.96); }
+  .rnd2:focus { outline:none; }
+  .rnd2:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .rdk .rnd2 { width:var(--tap); padding:0; margin-top:8px; }
+  @media (prefers-reduced-motion: reduce) { .rnd2:active { transform:none; } }
+
+  .scrollx { max-width:100%; overflow-x:auto; }
+  .scrollx:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  table.sc { border-collapse:collapse; font-size:12.5px; margin:0 0 8px; }
+  table.sc th, table.sc td { text-align:left; vertical-align:top; padding:4px 12px 4px 0; border-bottom:1px solid var(--border); }
+  table.sc th { font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.sc td.n { font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right; padding-right:16px; }
+  table.sc tr.win td { background:var(--accent-weak); font-weight:500; }
+  table.dis { min-width:760px; }
+  table.dis td { color:var(--text-muted); }
+  table.dis td:first-child, table.dis td:last-child { color:var(--text); }
+</style>
+</head>
+<body>
+
+<h1>Lightness slider — four directions</h1>
+<p class="sub">
+  <b>The problem (Ryan, 2026-10-27):</b> the slider under the wheel has no label, so “it’s not intuitive what it does”.
+  <br><br>
+  <b>Result:</b> three judges chose B. <a href="#verdict-slot">See the recommendation</a>, the <a href="#scores">scores</a>,
+  the <a href="#bugs">bugs found on the way</a> and the <a href="#docs">docs to change</a>.
+  <br><br>
+  <b>What it does</b> (<code>wheel.js:230</code>): it sets the <b>lightness</b> of the scheme’s base colour, from 6% to 94%
+  (HSL L). The wheel redraws at that lightness. The harmony colours share the base lightness, so they change with it.
+  Added colours, detached colours and the neutral pop keep their own lightness, so they do not change. The <b>↻</b> button next
+  to the slider picks a random hue and strength. It keeps the lightness.
+  <br><br>
+  <b>What Apple says</b> (<a href="https://developer.apple.com/design/human-interface-guidelines/sliders">HIG · Sliders</a>):
+  “Consider using a label to introduce a slider.” “A slider can optionally display left and right icons that illustrate the
+  meaning of the minimum and maximum values.” And customise the track, the thumb and the icons “to blend with your app’s design
+  and communicate intent”.
+  <br><br>
+  <b>Every slider on this page works.</b> Drag it, or use the arrow keys, and the wheel and your colour change, as in the app.
+  The hero starts on Alga Green (<code>#555E1B</code>, as in <code>paints.json</code>). When you move a slider, the hero shows
+  “Custom” and the new hex, as in the app. It does not change back to the paint.
+  <br><br>
+  <b>Scale:</b> the desktop frames in Today and A–D are <b>not to scale</b>. They show a 240px wheel in a 520px frame, so the
+  gutter looks roomy. In the app at 1025px, the wheel is 340px and the wheel row has only 6px free. The recommended desktop
+  frame uses the real sizes.
+</p>
+
+<!-- ============================================================ TODAY -->
+<section>
+  <h2>Today</h2>
+  <p class="why">A native range with the accent colour. Nothing says what it changes. On a phone the control is 16px tall
+  (measured at 390px in Chromium), well under the 44px touch rule (§3.6). On iOS the native thumb (about 28px) is the real
+  target. The ↻ icon can read as “reload”, or as “redo” next to the live palette’s ↶ and ↷.</p>
+  <div class="pair">
+    <figure><figcaption><b>Phone</b> (dark, like your screenshot)</figcaption><div class="ph dark" data-dir="today" data-mode="ph"></div></figure>
+    <figure><figcaption><b>Desktop</b> (vertical, in the wheel gutter; not to scale)</figcaption><div class="dk" data-dir="today" data-mode="dk"></div></figure>
+  </div>
+</section>
+
+<!-- ============================================================ A -->
+<section>
+  <h2>A · Label it</h2>
+  <p class="why">A small “Lightness” label and the value as a percentage, above the slider on a phone and over it on desktop.
+  The slider itself does not change.</p>
+  <div class="pair">
+    <figure><figcaption><b>Phone</b></figcaption><div class="ph" data-dir="A" data-mode="ph"></div></figure>
+    <figure><figcaption><b>Desktop</b> (not to scale)</figcaption><div class="dk" data-dir="A" data-mode="dk"></div></figure>
+  </div>
+  <p class="verdict"><b>Pro:</b> the smallest change, and the word is explicit. <b>Con:</b> “Lightness 24%” still does not
+  say <i>of what</i>. It adds a row on a phone (about 16px). The slider stays 16px tall on a phone.</p>
+  <h3 class="lab">Review notes</h3>
+  <ul class="notes">
+    <li>The d20 button is a separate change from the slider. Judge the slider alone. See “And the ↻ button”.</li>
+    <li>“24%” is HSL lightness. A painter cannot act on a bare percentage (§2, principle 4).</li>
+    <li>In the app at 1025px, the 53px “Lightness” header does not fit the 38px gutter.</li>
+    <li>On the phone, the value sits above the Random button, not above the slider, so it reads as part of the button.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ B -->
+<section id="B">
+  <h2>B · Show it</h2>
+  <p class="why">The track paints <b>your colour</b> from dark to light, and the thumb is filled with your colour now. A dark
+  dot and a light dot mark the two ends (Apple’s “left and right icons”). One short caption names it. You can see what the slider
+  does before you touch it. It is still a native range, so the keyboard and screen readers work as today. (Two limits: forced
+  colours remove the custom track and the dots, and this frame has no Firefox rule for the vertical track. The recommendation
+  fixes both.)</p>
+  <div class="pair">
+    <figure><figcaption><b>Phone</b></figcaption><div class="ph" data-dir="B" data-mode="ph"></div></figure>
+    <figure><figcaption><b>Phone, dark</b></figcaption><div class="ph dark" data-dir="B" data-mode="ph"></div></figure>
+    <figure><figcaption><b>Desktop</b> (not to scale)</figcaption><div class="dk" data-dir="B" data-mode="dk"></div></figure>
+  </div>
+  <p class="verdict"><b>Pro:</b> it explains itself without reading, and it shows where the colour will go. The touch area
+  grows to 44px. <b>Con:</b> it needs custom CSS for the track and the thumb in WebKit and Firefox. The end dots and the thumb
+  ring fail contrast (see the notes). The track redraws with each colour change (a CSS gradient, so it is cheap).</p>
+  <h3 class="lab">Review notes</h3>
+  <ul class="notes">
+    <li>The d20 button is a separate change from the slider. Judge the slider alone. See “And the ↻ button”.</li>
+    <li><b>The end dots fail contrast.</b> The light dot on the light card is 1.08:1. The dark dot on the dark card is
+      1.02:1. So each dot disappears in one theme. The recommendation removes the dots.</li>
+    <li><b>The thumb fails WCAG 1.4.11 at the light end.</b> In the light theme, a 3px white border and a 35%-black hairline
+      give about 2.4:1 against a near-white track. The recommendation uses the wheel’s black-or-white ring (4.28:1 or more).</li>
+    <li>The dots and the word “Random” shorten the phone track to 129px in this frame (about 173px on a real 390px phone,
+      against 262px today).</li>
+    <li>The caption is centred under the whole row, not under the track. It also sits on the P/A/2 legend, so it reads as part
+      of the legend.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ C -->
+<section>
+  <h2>C · Big track, label inside</h2>
+  <p class="why">A 44px-tall track, like the iOS Control Center brightness slider, with the label inside it. You can grab it
+  anywhere. The track shows your colour from dark to light, and a thin bar marks the value.</p>
+  <div class="pair">
+    <figure><figcaption><b>Phone</b></figcaption><div class="ph" data-dir="C" data-mode="ph"></div></figure>
+    <figure><figcaption><b>Phone, dark</b></figcaption><div class="ph dark" data-dir="C" data-mode="ph"></div></figure>
+    <figure><figcaption><b>Desktop</b> (not to scale)</figcaption><div class="dk" data-dir="C" data-mode="dk"></div></figure>
+  </div>
+  <p class="verdict"><b>Pro:</b> the biggest touch target and the clearest label. <b>Con:</b> the heaviest look under the wheel.
+  The label sits on top of the colour, so it needs its own small chip to stay readable, and the chip then hides the value. On
+  desktop, a 44px-wide vertical bar takes more of the gutter.</p>
+  <h3 class="lab">Review notes</h3>
+  <ul class="notes">
+    <li>The d20 button is a separate change from the slider. Judge the slider alone. See “And the ↻ button”.</li>
+    <li><b>The label chip hides the thumb for L from about 7% to 56%.</b> Most paints are in that range, so you cannot see
+      the value. At the 24% start, the chip is on the thumb now.</li>
+    <li>On iOS a range moves only from its thumb. This thumb is 8px wide, so “grab it anywhere” is not true on an iPhone.</li>
+    <li>The chip has its own shadow. It is not one of the two shadow tokens (§3.4).</li>
+    <li>The model is the Control Center brightness slider. A painter can think that the slider dims the screen.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ D -->
+<section>
+  <h2>D · Tone steps</h2>
+  <p class="why">Seven swatches of your colour, from dark to light. Tap one to use it. Painters already think in tones, and each
+  step shows its result. This is a radio group, so the arrow keys move between the steps.</p>
+  <div class="pair">
+    <figure><figcaption><b>Phone</b></figcaption><div class="ph" data-dir="D" data-mode="ph"></div></figure>
+    <figure><figcaption><b>Phone, dark</b></figcaption><div class="ph dark" data-dir="D" data-mode="ph"></div></figure>
+    <figure><figcaption><b>Desktop</b> (not to scale)</figcaption><div class="dk" data-dir="D" data-mode="dk"></div></figure>
+  </div>
+  <p class="verdict"><b>Pro:</b> no words needed, and it reads like a paint ladder. <b>Con:</b> only 7 values instead of 89
+  steps, so fine control is lost. It also looks like the live palette and the Plan’s tone ladders, so it can be confused with
+  them.</p>
+  <h3 class="lab">Review notes</h3>
+  <ul class="notes">
+    <li>The d20 button is a separate change from the slider. Judge the slider alone. See “And the ↻ button”.</li>
+    <li><b>The phone tones are 20–21px wide.</b> §3.6 needs 44px.</li>
+    <li><b>Selection is not reliable.</b> A tone is selected when the lightness is within 0.061 of it, and the steps are 0.12
+      apart. At a midpoint (for example 30%), two tones are selected. Most paints are between steps, so no tone is selected.
+      You cannot go back to the paint’s own lightness.</li>
+    <li>The selected ring is the same as the focus ring. A keyboard user cannot tell selection from focus (§3.5).</li>
+    <li>The steps cover 12–84%. The slider covers 6–94%.</li>
+    <li>The arrow keys do not wrap at the ends (the APG radio group pattern wraps). Desktop tones are 44×28px. The lightest and
+      darkest step edges are 1.22:1 and 1.27:1 against the card.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ ↻ -->
+<section>
+  <h2>And the ↻ button</h2>
+  <p class="why">↻ can read as “reload”. In the app it is also near the live palette’s ↶ undo and ↷ redo buttons. ↻ and ↷
+  look almost the same, so ↻ can read as “redo”. Its name is “Generate a random base colour”, but only screen readers and a
+  hover tooltip say so. Three options, all 44px:</p>
+  <div class="rbar">
+    <figure><button class="rnd" type="button" aria-label="Generate a random base colour">↻</button><figcaption style="margin-top:4px">Today</figcaption></figure>
+    <figure><button class="rnd" type="button"><span aria-hidden="true">↻</span> Random</button><figcaption style="margin-top:4px">1 · Add the word</figcaption></figure>
+    <figure><button class="rnd" type="button" aria-label="Random colour">
+      <svg class="d20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 21 7.5v9L12 21.5 3 16.5v-9z"/><path d="M12 2.5 7.5 15h9z"/><path d="M3 7.5 7.5 15 3 16.5M21 7.5 16.5 15 21 16.5M7.5 15 12 21.5 16.5 15"/></svg></button>
+      <figcaption style="margin-top:4px">2 · A d20 (on-brand)</figcaption></figure>
+    <figure><button class="rnd" type="button"><svg class="d20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 21 7.5v9L12 21.5 3 16.5v-9z"/><path d="M12 2.5 7.5 15h9z"/><path d="M3 7.5 7.5 15 3 16.5M21 7.5 16.5 15 21 16.5M7.5 15 12 21.5 16.5 15"/></svg>Random</button>
+      <figcaption style="margin-top:4px">3 · Both</figcaption></figure>
+  </div>
+  <p class="verdict">On a phone there is room for the word next to the slider. On desktop the gutter is narrow, so the icon stays
+  alone there, with its tooltip and accessible name. <b>All three judges chose option 3 on a phone and option 2 on
+  desktop.</b> Two judges note that a 20px d20 can look like a hexagon or a gem. Test it with painters, and test a d6 with
+  pips against it.</p>
+</section>
+
+<!-- ============================================================ RECOMMENDATION -->
+<section class="recd" id="verdict-slot">
+  <h2>Recommendation · B, fixed <span class="rec">Chosen by 3 of 3</span></h2>
+  <p class="why">All three judges chose B. These frames show B with the fixes that the judges agree on. The track shows your
+  colour from dark to light. A visible word names the slider. The end dots are removed. A black or white ring keeps the thumb
+  visible at every lightness. Drag a slider, or use the arrow keys. The screen-reader text under each frame changes with it.</p>
+  <div class="pair">
+    <figure><figcaption><b>Phone</b> (the app’s 320px row at a 390px screen)</figcaption><div class="rph" data-rec="ph"></div></figure>
+    <figure><figcaption><b>Phone, dark</b></figcaption><div class="rph dark" data-rec="ph"></div></figure>
+  </div>
+  <div class="pair" style="margin-top:24px">
+    <figure><figcaption><b>Desktop at 1025px</b> (real sizes; the dashed box is the 398px wheel column). On a narrow screen, scroll the frame sideways.</figcaption>
+      <div class="scrollx" tabindex="0" role="region" aria-label="Desktop frame, light, at real size"><div class="rdk" data-rec="dk"></div></div></figure>
+    <figure><figcaption><b>Desktop at 1025px, dark</b></figcaption>
+      <div class="scrollx" tabindex="0" role="region" aria-label="Desktop frame, dark, at real size"><div class="rdk dark" data-rec="dk"></div></div></figure>
+  </div>
+  <p class="ann" id="fit" style="max-width:78ch"><b>How it fits at 1025px.</b> At 1025px the studio column gives the wheel row
+  398px. The row is a 340px wheel + a 12px gap + a 38px gutter = 390px, so 8px stays free. (Today the gap is 14px, which is
+  off the spacing scale, and 6px stays free.) The 38px gutter is the input box, at the desktop <code>--tap</code>. The 12px
+  track and the 28px thumb sit inside it. “Lighter” and “Darker” are centred on the gutter, so they do not make it wider.
+  The word “Lightness” (53px) does not fit, so on desktop it stays the accessible name and the tooltip. At 1180px the column
+  is 468px, so there is more room.</p>
+
+  <h3 class="lab">What to build</h3>
+  <ul class="notes">
+    <li><b>Control:</b> one native <code>&lt;input type="range" min="6" max="94" step="1"&gt;</code>. The arrow keys, Page Up,
+      Page Down, Home and End work as today.</li>
+    <li><b>Name:</b> a visible <code>&lt;label for&gt;</code> “Lightness” above the track, at the left (phone). The label is the
+      accessible name. Remove the <code>aria-label</code>, so there is no second name. On desktop the label is visually hidden,
+      and the gutter shows “Lighter” above the track and “Darker” below it.</li>
+    <li><b>Track:</b> 12px thick, pill radius. It shows the pick’s own hue and strength from L 6% to 94% (five stops). JS
+      writes only colours on the input (never on <code>:root</code>): <code>--wl-stops</code>, <code>--wl-thumb</code> and
+      <code>--wl-ring</code>. Write them in the wheel’s shared <code>draw()</code> path, not in the slider’s input handler, so
+      they also update after a pick, a typed hex, undo, Random and a share link. Cache the stops by an h:s key (about 0.014ms per
+      write). CSS sets the direction:
+      to the right on a phone, to the top in the gutter. A 1px <code>var(--text-muted)</code> edge shows where the track ends
+      (4.68:1 light, 6.37:1 dark).</li>
+    <li><b>Thumb:</b> 28px, filled with the colour now. Its 3px ring uses the wheel’s <code>textOn</code> rule
+      (<code>#15150F</code> or <code>#FFFFFF</code>). Worst case against the fill and the track under it: 4.28:1. Worst case
+      against the card: 4.28:1 light, 4.12:1 dark. The token ring (2px surface + 1px text-muted) falls to 2.16:1 on some mid
+      colours, so we do not use it.</li>
+    <li><b>Hit area:</b> the input box is <code>var(--tap)</code> thick: 44px on a phone or a touch screen, 38px with a mouse.</li>
+    <li><b>Track length:</b> at 390px the phone track is about 207px (262px today). At 360px it is about 182px, which is under
+      the painter judge’s 200px. The word “Random” costs about 60px. Test the drag on a 360px phone.</li>
+    <li><b>Value:</b> <code>aria-valuetext</code> gives a number and a word, for example “24%, dark”. Bands: very dark (up to
+      15), dark (up to 35), mid (up to 65), light (up to 85), very light. There is no number on screen. The hero hex shows the
+      exact result.</li>
+    <li><b>Focus:</b> <code>outline: 2px solid var(--accent)</code>, offset 3px (5.70:1 light, 6.20:1 dark).</li>
+    <li><b>Forced colours:</b> <code>appearance: auto</code> in <code>@media (forced-colors: active)</code> gives the system
+      slider back.</li>
+    <li><b>Motion and layout:</b> nothing animates. The gradient and the ring change by paint only. Nothing reflows.</li>
+    <li><b>Random:</b> d20 + “Random” on a phone, d20 alone on desktop. <code>aria-label</code> “Random colour”.
+      <code>title</code> “Random colour (keeps the lightness)”. The glyph is <code>aria-hidden</code>. Secondary button style,
+      <code>var(--tap)</code> high.</li>
+    <li><b>Source colour:</b> paint the track and the thumb from the pick (the hero colour). It shares L with the scheme base,
+      so the thumb matches the hero in accent-seed mode too.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ SCORES -->
+<section id="scores">
+  <h2>Scores</h2>
+  <p class="why">Three judges scored each direction for clarity, speed, fit and cost, from 1 to 5 each (maximum 20 for each
+  judge). The painter judge looks at how painters use it. The constitution judge checks CLAUDE.md and WCAG. The build judge
+  checks the cost and the risk in the code.</p>
+  <div class="scrollx" tabindex="0" role="region" aria-label="Scores table">
+  <table class="sc">
+    <thead><tr><th scope="col">Direction</th><th scope="col">Painter</th><th scope="col">Constitution</th><th scope="col">Build</th><th scope="col">Total (of 60)</th></tr></thead>
+    <tbody>
+      <tr><td>A · Label it</td><td class="n">12</td><td class="n">13</td><td class="n">15</td><td class="n">40</td></tr>
+      <tr class="win"><td>B · Show it</td><td class="n">15</td><td class="n">16</td><td class="n">16</td><td class="n">47</td></tr>
+      <tr><td>C · Big track, label inside</td><td class="n">10</td><td class="n">11</td><td class="n">10</td><td class="n">31</td></tr>
+      <tr><td>D · Tone steps</td><td class="n">10</td><td class="n">8</td><td class="n">10</td><td class="n">28</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 class="lab">Why B</h3>
+  <ul class="notes">
+    <li><b>You see what it does before you touch it.</b> The track is your own colour from dark to light. All three judges
+      gave this as the main reason.</li>
+    <li><b>It stays a native range.</b> The keys, screen readers, undo and share links work as today.</li>
+    <li><b>The hit area is 44px on a phone.</b> Today the control is 16px tall in Chromium.</li>
+    <li><b>It is cheap at run time.</b> One custom-property write costs about 0.014 ms (measured by the build judge).</li>
+    <li><b>Its problems are all fixable</b> without a change to the idea: the end dots, the thumb ring and the off-token
+      chrome.</li>
+  </ul>
+
+  <h3 class="lab">Where the judges disagreed</h3>
+  <div class="scrollx" tabindex="0" role="region" aria-label="Disagreements table">
+  <table class="sc dis">
+    <thead><tr><th scope="col">Point</th><th scope="col">Painter</th><th scope="col">Constitution</th><th scope="col">Build</th><th scope="col">We pick</th></tr></thead>
+    <tbody>
+      <tr><td>Words</td><td>“Darker · Lightness · Lighter” under the track</td><td>A visible “Lightness” label</td><td>A visible “Lightness” label</td>
+        <td>Phone: the visible label “Lightness” (also the accessible name). Desktop: “Lighter” and “Darker” at the ends, because “Lightness” does not fit.</td></tr>
+      <tr><td>Number</td><td>A value bubble while you drag</td><td>No number on screen</td><td>Label + <code>aria-valuetext</code> “24%”</td>
+        <td>No number on screen: the hero hex shows the result. <code>aria-valuetext</code> adds a word: “24%, dark”.</td></tr>
+      <tr><td>Thumb ring</td><td>Black or white (<code>textOn</code>)</td><td>Black or white (<code>textOn</code>)</td><td>2px surface + 1px text-muted</td>
+        <td><code>textOn</code>: 4.28:1 or more. The token ring falls to 2.16:1.</td></tr>
+      <tr><td>Thumb size</td><td>30px touch, 22px mouse</td><td>26px</td><td>28px</td><td>28px</td></tr>
+      <tr><td>Gutter width</td><td>38px</td><td>44px, with a smaller wheel</td><td>38px</td><td>38px with a mouse, 44px on touch (bug d)</td></tr>
+      <tr><td>End dots</td><td>Remove</td><td>Keep, with a ring</td><td>Remove</td><td>Remove</td></tr>
+      <tr><td>Track colour</td><td>The scheme base</td><td>The pick</td><td>The pick</td><td>The pick (the hero colour)</td></tr>
+      <tr><td>Tick at the paint’s lightness</td><td>Optional</td><td>—</td><td>—</td><td>Not now: the hero name and hex show that you left the paint</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============================================================ BUGS -->
+<section id="bugs">
+  <h2>Bugs found on the way</h2>
+  <p class="why">These bugs are in the app today, not in this mockup. Fix them in the same build.</p>
+  <ol class="notes" type="a">
+    <li><b>The round trip drifts.</b> Move the slider to 6% and back, and the colour changes. Measured in the app, in one
+      jump: <code>#555E1B</code> → 6% → 24% = <code>#535F1C</code>, and <code>#6B5B4B</code> → 6% → 36% = <code>#6B594D</code>.
+      Step by step (arrow keys, as a drag does): <code>#555E1B</code> comes back as <code>#575E1C</code>, and
+      <code>#6B5B4B</code> as <code>#6C4B4B</code> (the hue moves from 30° to 0°, brown to red). Cause: <code>wheel.js:230</code> reads the hue and the saturation again from the 8-bit hex on each
+      input event. Fix: hold h and s while the slider moves. Add a <code>node --test</code> for the round trip. The sliders on
+      this page hold h and s, so they do not drift.</li>
+    <li><b>A lightness drag can start neutral mode.</b> At the ends of the slider, the seed’s chroma falls below C* 10, so the
+      studio goes into neutral mode. This is by design (§7). Alga Green has C* 9.4 at 6% and C* 8.7 at 94%. Three test colours
+      all showed the neutral overlay at 6%. This is a design question: should a lightness drag change the mode?</li>
+    <li><b>The slider’s focus ring is almost invisible.</b> It uses the app-wide <code>var(--focus)</code> ring
+      (<code>--accent-weak</code>): 1.17:1 in the light theme and 1.12:1 in the dark theme. Fix: <code>outline: 2px solid
+      var(--accent)</code>, offset 3px, as on the wheel canvas.</li>
+    <li><b>Touch screens wider than 520px get small targets.</b> <code>--tap</code> is 44px only at 520px or less. So a touch
+      tablet gets a 26px-wide slider and a 38px ↻. Fix: set <code>--tap</code> to 44px for <code>(pointer: coarse)</code>
+      too, and make the slider box <code>var(--tap)</code> wide. At 1025px the row is then 340 + 12 + 44 = 396px of 398px.</li>
+  </ol>
+</section>
+
+<!-- ============================================================ DOCS -->
+<section id="docs">
+  <h2>Constitution and docs (same commit as the build)</h2>
+  <ul class="notes">
+    <li><b>CLAUDE.md §3.6, “Wheel module”:</b> rewrite the lightness sentence. It must say: a native range with a visible
+      “Lightness” label on a phone, and “Lighter” and “Darker” at the ends of the gutter; a track that shows the pick’s own
+      dark-to-light ramp (stops on the input, never on <code>:root</code>; direction in CSS); a 28px thumb filled with the
+      colour, with a <code>textOn</code> ring; and a d20 “Random” button in place of “↻ Generate”. Change “this reclaims the
+      old control row”: on a phone the label adds one short row.</li>
+    <li><b>CLAUDE.md §3.5:</b> add a “Slider” line. It is the only custom-styled range. The track is paint data with a 1px
+      <code>var(--text-muted)</code> edge. The thumb ring follows the §7 text-on-swatch rule. Focus is a 2px
+      <code>var(--accent)</code> outline. Forced colours get <code>appearance: auto</code>.</li>
+    <li><b><code>src/styles/app.css</code>:</b> rewrite the comment above <code>.wheelrow</code>. It says “↻ Generate” and
+      “a11y unchanged”. Put the gaps on the spacing scale: <code>.wheelrow</code> 14px → 12px, phone <code>.wlcol</code>
+      10px → 8px.</li>
+    <li><b><code>src/js/i18n.js</code>:</b> add keys for “Lightness”, “Lighter”, “Darker”, “Random”, “Random colour”, “Random
+      colour (keeps the lightness)”, and the value text with its five bands (very dark, dark, mid, light, very light). en-US:
+      “Random color” and “Random color (keeps the lightness)”.</li>
+    <li><b><code>CHANGELOG.md</code>:</b> add an <code>[Unreleased]</code> entry for the build: the slider, the d20 and the four
+      bug fixes.</li>
+    <li><b><code>src/sw.js</code>:</b> bump <code>CACHE</code> (§8, service-worker discipline).</li>
+    <li><b><code>src/assets/icons/</code>:</b> add the d20 SVG (<code>currentColor</code>; <code>aria-hidden</code> where it is
+      used) and its README entry.</li>
+    <li><b>Test plan:</b> widths 360, 390, 1025 and 1180px; the light and dark themes; Chromium; iOS Safari and WebKit
+      (vertical <code>writing-mode</code>, the <code>::-webkit-slider-*</code> pseudo-elements, a drag from the thumb); Firefox
+      (<code>::-moz-range-*</code>, also vertical); forced colours; reduced motion; the keys (arrows, Page Up, Page Down, Home,
+      End); VoiceOver and TalkBack read “Lightness, 24%, dark”; <code>node --test</code> for the round trip and the bands.</li>
+  </ul>
+</section>
+
+<script>
+/* ---- small colour helpers, matching the app's color.js (hslToRgb / rgbToHsl / textOn) ---- */
+const hsl2rgb = (h, s, l) => {
+  const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return [f(0), f(8), f(4)].map(x => Math.round(x * 255));
+};
+const hsl2hex = (h, s, l) => '#' + hsl2rgb(h, s, l).map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+const hex2rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+function rgb2hsl([r, g, b]) {
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, l = (mx + mn) / 2;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  let h = 0;
+  if (d !== 0) { h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+  return [h, s, l];
+}
+const lum = hex => { const c = hex2rgb(hex).map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+// §7 text-on-swatch: near-black or white, whichever has the higher WCAG contrast (the wheel's base-node ring)
+const textOn = hex => contrast(hex, '#15150F') >= contrast(hex, '#FFFFFF') ? '#15150F' : '#FFFFFF';
+const band = v => v <= 15 ? 'very dark' : v <= 35 ? 'dark' : v <= 65 ? 'mid' : v <= 85 ? 'light' : 'very light';
+
+// Start EXACTLY on Alga Green (paints.json #555E1B): h, s and the start L come from the hex, not from rounded HSL.
+// h and s are held while a slider moves (the fix for bug a), so the round trip does not drift.
+const [H0, S0, L0] = rgb2hsl(hex2rgb('#555E1B'));
+const BASE = { h: H0, s: S0, paint: true };   // paint: false after Random (the app then shows a custom colour)
+const TONES = [0.12, 0.24, 0.36, 0.48, 0.6, 0.72, 0.84];
+
+/** Draw the hue × strength disc at one lightness, hue 0 at the top, clockwise (as wheel.js),
+    and the base node as the app draws it: filled with the colour, with a 3px textOn ring. */
+function drawWheel(cv, L, h, s, nodeR = 9) {
+  const css = cv.getBoundingClientRect().width || 200, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const N = Math.round(css * dpr), ctx = cv.getContext('2d');
+  if (cv.width !== N) cv.width = cv.height = N;
+  const img = ctx.createImageData(N, N), R = N / 2;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const dx = x - R + .5, dy = y - R + .5, r = Math.hypot(dx, dy) / R, i = (y * N + x) * 4;
+    if (r > 1) { img.data[i + 3] = 0; continue; }
+    const c = hsl2rgb((Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, r, L);
+    img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  const a = (h - 90) * Math.PI / 180, px = R + Math.cos(a) * s * R, py = R + Math.sin(a) * s * R, hex = hsl2hex(h, s, L);
+  ctx.fillStyle = hex; ctx.beginPath(); ctx.arc(px, py, nodeR * dpr, 0, 7); ctx.fill();
+  ctx.lineWidth = 3 * dpr; ctx.strokeStyle = textOn(hex); ctx.stroke();
+}
+const heroName = moved => (BASE.paint && !moved) ? 'Alga Green' : 'Custom';
+const refreshAll = () => document.querySelectorAll('[data-dir], [data-rec]').forEach(f => f.__update && f.__update());
+function randomBase() { BASE.h = Math.random() * 360; BASE.s = 0.5 + Math.random() * 0.45; BASE.paint = false; refreshAll(); }
+
+const D20 = '<svg class="d20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 21 7.5v9L12 21.5 3 16.5v-9z"/><path d="M12 2.5 7.5 15h9z"/><path d="M3 7.5 7.5 15 3 16.5M21 7.5 16.5 15 21 16.5M7.5 15 12 21.5 16.5 15"/></svg>';
+let uid = 0;
+
+/* ---------- Today and directions A–D (as the judges saw them, with an honest hero) ---------- */
+function mount(el) {
+  const dir = el.dataset.dir, desk = el.dataset.mode === 'dk', id = 'l' + (++uid);
+  let L = L0, moved = false;
+  const gradTrack = () => `linear-gradient(${desk ? 'to top' : 'to right'}, ${[0.06, 0.25, 0.5, 0.75, 0.94].map(l => hsl2hex(BASE.h, BASE.s, l)).join(', ')})`;
+  const rndBtn = (dir === 'today' || desk) ? `<button class="rnd${dir === 'today' ? '' : ' isnew'}" type="button" title="Generate a random base colour" aria-label="Generate a random base colour">${dir === 'today' ? '↻' : D20}</button>`
+    : `<button class="rnd isnew" type="button" aria-label="Random colour">${D20}Random</button>`;
+  let ctl = '';
+  if (dir === 'today') ctl = `<input class="native" id="${id}" type="range" min="6" max="94" step="1" aria-label="Lightness">`;
+  if (dir === 'A') ctl = `<div class="alab isnew" aria-hidden="true"><span>Lightness</span><b class="num" data-val></b></div>
+      <input class="native" id="${id}" type="range" min="6" max="94" step="1" aria-label="Lightness">`;
+  if (dir === 'B') ctl = `<div class="bwrap isnew"><span class="endc" data-end="lo" title="Darker"></span>
+      <input class="grad" id="${id}" type="range" min="6" max="94" step="1" aria-label="Lightness"><span class="endc" data-end="hi" title="Lighter"></span></div>`;
+  if (dir === 'C') ctl = `<div class="cwrap isnew"><input class="grad" id="${id}" type="range" min="6" max="94" step="1" aria-label="Lightness">
+      <span class="clab" aria-hidden="true">Lightness <span class="num" data-val></span></span></div>`;
+  if (dir === 'D') ctl = `<div class="tones isnew" role="radiogroup" aria-label="Lightness">${TONES.map((t, i) =>
+      `<button class="tone" type="button" role="radio" aria-checked="false" data-l="${t}" aria-label="${Math.round(t * 100)}%" tabindex="-1"></button>`).join('')}</div>`;
+  // vertical on desktop: light is at the top, so the caption is the name alone (the end dots show the direction)
+  const caption = dir === 'B' ? `<div class="bcap" aria-hidden="true"><b>Lightness</b>${desk ? '' : ' · darker ↔ lighter'}</div>`
+    : dir === 'D' ? (desk ? `<div class="bcap" aria-hidden="true"><b>Lightness</b></div>`
+      : `<div class="dcap" aria-hidden="true"><span>Darker</span><b style="color:var(--text);font-weight:500">Lightness</b><span>Lighter</span></div>`) : '';
+  el.innerHTML = `<div class="scard">
+      <div class="hero"><span class="sw"></span><span><b></b> <span class="hx"></span></span></div>
+      <div class="wrow"><canvas class="wh" aria-hidden="true"></canvas>
+        <div class="${desk ? 'gut' : 'ctlrow'}" style="${desk ? '' : 'flex-wrap:wrap'}">
+          ${desk ? caption + ctl + rndBtn : ctl + rndBtn + (caption ? `<div style="flex-basis:100%">${caption}</div>` : '')}
+        </div></div>
+      <div class="legend"><span><i>P</i>Primary</span><span><i>A</i>Accent</span><span><i>2</i>Secondary</span></div></div>`;
+  if (!desk && dir === 'A') { const row = el.querySelector('.ctlrow'), lab = row.querySelector('.alab'); lab.style.flexBasis = '100%'; row.prepend(lab); }
+  const cv = el.querySelector('canvas'), input = el.querySelector('input[type=range]');
+  function update() {
+    const hex = hsl2hex(BASE.h, BASE.s, L);
+    el.querySelector('.hero .sw').style.background = hex; el.querySelector('.hx').textContent = hex;
+    // as in the app: a slider move turns a paint pick into a custom colour, and it does not turn back
+    el.querySelector('.hero b').textContent = heroName(moved);
+    drawWheel(cv, L, BASE.h, BASE.s);
+    el.querySelectorAll('[data-val]').forEach(v => { v.textContent = Math.round(L * 100) + '%'; });
+    if (input) { input.value = Math.round(L * 100); input.setAttribute('aria-valuetext', `${Math.round(L * 100)}%`);
+      if (input.classList.contains('grad')) { input.style.setProperty('--trk', gradTrack()); input.style.setProperty('--thumb', hex); } }
+    el.querySelectorAll('[data-end]').forEach(d => { d.style.background = hsl2hex(BASE.h, BASE.s, d.dataset.end === 'lo' ? 0.06 : 0.94); });
+    el.querySelectorAll('.tone').forEach(t => { t.style.background = hsl2hex(BASE.h, BASE.s, +t.dataset.l);
+      const on = Math.abs(+t.dataset.l - L) < 0.061; t.setAttribute('aria-checked', String(on)); t.tabIndex = on ? 0 : -1; });
+    if (dir === 'D' && !el.querySelector('.tone[aria-checked="true"]')) el.querySelector('.tone').tabIndex = 0;
+  }
+  if (input) input.addEventListener('input', () => { L = +input.value / 100; moved = true; update(); });
+  el.querySelectorAll('.tone').forEach((t, i, all) => {
+    t.addEventListener('click', () => { L = +t.dataset.l; moved = true; update(); t.focus(); });
+    t.addEventListener('keydown', e => { const k = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key]; if (!k) return; e.preventDefault();
+      const j = Math.max(0, Math.min(all.length - 1, i + k)); L = +all[j].dataset.l; moved = true; update(); all[j].focus(); });
+  });
+  el.querySelectorAll('.rnd').forEach(b => b.addEventListener('click', randomBase));
+  el.__update = update;
+  update();
+}
+document.querySelectorAll('[data-dir]').forEach(mount);
+
+/* ---------- The recommendation: B, fixed ---------- */
+function mountRec(el) {
+  const desk = el.dataset.rec === 'dk', id = 'rec' + (++uid);
+  let L = L0, moved = false, stopKey = '';
+  const wl = desk
+    ? `<div class="wlc" title="Lightness">
+         <label class="wl-lab sr" for="${id}">Lightness</label>
+         <span class="wl-end" aria-hidden="true">Lighter</span>
+         <input class="wlr" id="${id}" type="range" min="6" max="94" step="1">
+         <span class="wl-end" aria-hidden="true">Darker</span>
+         <button class="rnd2" type="button" aria-label="Random colour" title="Random colour (keeps the lightness)">${D20}</button>
+       </div>`
+    : `<div class="wlc">
+         <label class="wl-lab" for="${id}">Lightness</label>
+         <div class="wl-row">
+           <input class="wlr" id="${id}" type="range" min="6" max="94" step="1">
+           <button class="rnd2" type="button" aria-label="Random colour" title="Random colour (keeps the lightness)">${D20}<span>Random</span></button>
+         </div>
+       </div>`;
+  const legend = `<div class="legend" aria-hidden="true"><span><i>P</i>Primary</span><span><i>A</i>Accent</span><span><i>2</i>Secondary</span></div>`;
+  el.innerHTML = `<div class="scard">
+      <div class="hero"><span class="sw"></span><span><b></b> <span class="hx"></span></span></div>
+      ${desk ? `<div class="colbox"><div class="wrow2"><canvas class="wh2" aria-hidden="true"></canvas>${wl}</div></div>`
+             : `<canvas class="wh2" aria-hidden="true"></canvas>${wl}`}
+      ${legend}</div>
+    <p class="ann" data-sr></p><p class="ann" data-len></p>`;
+  const cv = el.querySelector('canvas'), input = el.querySelector('.wlr'), sr = el.querySelector('[data-sr]');
+  function update() {
+    const hex = hsl2hex(BASE.h, BASE.s, L), v = Math.round(L * 100), vt = `${v}%, ${band(v)}`;
+    el.querySelector('.hero .sw').style.background = hex; el.querySelector('.hx').textContent = hex;
+    el.querySelector('.hero b').textContent = heroName(moved);
+    drawWheel(cv, L, BASE.h, BASE.s, desk ? 11 : 15);   // the app's node sizes: 11px with a mouse, 15px on touch
+    input.value = v; input.setAttribute('aria-valuetext', vt);
+    // paint data on the input only (never :root); the stops change only when h or s changes
+    const key = BASE.h + ':' + BASE.s;
+    if (key !== stopKey) { stopKey = key; input.style.setProperty('--wl-stops', [0.06, 0.25, 0.5, 0.75, 0.94].map(l => hsl2hex(BASE.h, BASE.s, l)).join(', ')); }
+    input.style.setProperty('--wl-thumb', hex);
+    input.style.setProperty('--wl-ring', textOn(hex));
+    sr.innerHTML = `Screen reader: <b>“Lightness, ${vt}, slider”</b>`;
+  }
+  input.addEventListener('input', () => { L = +input.value / 100; moved = true; update(); });
+  el.querySelector('.rnd2').addEventListener('click', randomBase);
+  el.__update = update;
+  update();
+}
+document.querySelectorAll('[data-rec]').forEach(mountRec);
+
+/* Live measurements, so the numbers on the page are the numbers in the frames (after the webfonts load). */
+function measure() {
+  document.querySelectorAll('[data-rec]').forEach(el => {
+    const out = el.querySelector('[data-len]'), w = s => el.querySelector(s).getBoundingClientRect().width;
+    if (el.dataset.rec === 'ph') {
+      const btn = w('.rnd2'), track = w('.wlr'), at = row => Math.round(row - 8 - btn);
+      out.innerHTML = `Track here: <b>${Math.round(track)}px</b>. In the app: about <b>${at(320)}px</b> at 390px and <b>${at(295)}px</b>
+        at 360px (today 262px and 237px, with no word on the button).`;
+    } else {
+      const ends = [...el.querySelectorAll('.wl-end')].map(e => e.getBoundingClientRect().width.toFixed(1));
+      out.innerHTML = `Measured here: wheel row <b>${Math.round(w('.wrow2 canvas') + 12 + w('.wlc'))}px</b> of 398px; gutter
+        <b>${Math.round(w('.wlc'))}px</b>; “Lighter” <b>${ends[0]}px</b>, “Darker” <b>${ends[1]}px</b>.`;
+    }
+  });
+}
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(measure);
+let mt = 0; window.addEventListener('resize', () => { clearTimeout(mt); mt = setTimeout(measure, 150); });
+</script>
+</body>
+</html>

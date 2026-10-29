@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual identity and UX pass</title>
+<!-- A plain file: no server, no ES-module imports, no fetch. Every font is self-hosted (mockups/fonts,
+     SIL Open Font License 1.1, licence text beside each file). The frames are built by the classic
+     script at the end from inline data (real engine output for Citadel Mephiston Red, complementary). -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+/* ---------- the candidate fonts (OFL 1.1, latin subset, woff2 from the @fontsource packages) ---------- */
+@font-face { font-family:"Barlow Condensed"; font-weight:500; font-display:swap; src:url("fonts/barlow-condensed-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family:"Barlow Condensed"; font-weight:600; font-display:swap; src:url("fonts/barlow-condensed-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family:"Barlow Condensed"; font-weight:700; font-display:swap; src:url("fonts/barlow-condensed-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family:"Chakra Petch"; font-weight:500; font-display:swap; src:url("fonts/chakra-petch-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family:"Chakra Petch"; font-weight:600; font-display:swap; src:url("fonts/chakra-petch-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family:"Chakra Petch"; font-weight:700; font-display:swap; src:url("fonts/chakra-petch-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family:"Fraunces"; font-weight:600; font-display:swap; src:url("fonts/fraunces-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family:"Fraunces"; font-weight:700; font-display:swap; src:url("fonts/fraunces-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family:"IBM Plex Sans"; font-weight:400; font-display:swap; src:url("fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family:"IBM Plex Sans"; font-weight:500; font-display:swap; src:url("fonts/ibm-plex-sans-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family:"IBM Plex Sans"; font-weight:600; font-display:swap; src:url("fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family:"Atkinson Hyperlegible"; font-weight:400; font-display:swap; src:url("fonts/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family:"Atkinson Hyperlegible"; font-weight:700; font-display:swap; src:url("fonts/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family:"Public Sans"; font-weight:400; font-display:swap; src:url("fonts/public-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family:"Public Sans"; font-weight:500; font-display:swap; src:url("fonts/public-sans-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family:"Public Sans"; font-weight:600; font-display:swap; src:url("fonts/public-sans-latin-600-normal.woff2") format("woff2"); }
+
+/* ---------- the page itself (neutral, so it does not favour a direction) ---------- */
+:root { --pg-bg:#FFFFFF; --pg-fg:#1A1A1A; --pg-mute:#555555; --pg-line:#D6D6D6; --pg-soft:#F4F4F4; --pg-link:#0B57D0; --pg-mark:#FFF4C2; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --pg-bg:#121212; --pg-fg:#EDEDED; --pg-mute:#B0B0B0; --pg-line:#3A3A3A; --pg-soft:#1D1D1D; --pg-link:#8AB4F8; --pg-mark:#3A3214; } }
+:root[data-theme="dark"] { --pg-bg:#121212; --pg-fg:#EDEDED; --pg-mute:#B0B0B0; --pg-line:#3A3A3A; --pg-soft:#1D1D1D; --pg-link:#8AB4F8; --pg-mark:#3A3214; }
+* { box-sizing:border-box; }
+html { -webkit-text-size-adjust:100%; }
+body { margin:0; background:var(--pg-bg); color:var(--pg-fg); font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+a { color:var(--pg-link); }
+.pg { max-width:1400px; margin:0 auto; padding:24px 16px 80px; }
+.pg > header h1 { font-size:28px; margin:0 0 6px; }
+.pg h2 { font-size:24px; margin:56px 0 8px; padding-top:16px; border-top:2px solid var(--pg-fg); }
+.pg h3 { font-size:18px; margin:32px 0 8px; }
+.pg h4 { font-size:15px; margin:20px 0 6px; }
+.pg p, .pg li { max-width:80ch; }
+.lead { color:var(--pg-mute); }
+nav.toc { position:sticky; top:0; z-index:50; background:var(--pg-bg); border-bottom:1px solid var(--pg-line); display:flex; gap:4px 16px; flex-wrap:wrap; padding:8px 16px; font-size:14px; }
+nav.toc a { text-decoration:none; padding:6px 0; }
+.status { border:2px solid var(--pg-fg); padding:12px 16px; margin:16px 0; max-width:80ch; }
+table.t { border-collapse:collapse; width:100%; font-size:13.5px; margin:8px 0 16px; }
+table.t th, table.t td { border:1px solid var(--pg-line); padding:6px 8px; text-align:left; vertical-align:top; }
+table.t th { background:var(--pg-soft); }
+table.t td.n { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.tw { overflow-x:auto; }
+code { font:12.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace; background:var(--pg-soft); padding:1px 4px; }
+.thumbs { display:flex; gap:8px; flex-wrap:wrap; }
+.thumbs a { display:block; }
+.thumbs img { display:block; height:150px; width:auto; border:1px solid var(--pg-line); }
+.pass { color:#0A7D2C; font-weight:600; } .fail { color:#C0122C; font-weight:600; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pass { color:#6FD38E; } :root:not([data-theme="light"]) .fail { color:#FF8A8A; } }
+.row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; max-width:100%; overflow-x:auto; }
+.figure { min-width:0; max-width:100%; }
+#iconSheet { overflow-x:auto; }
+.cap { font-size:13px; color:var(--pg-mute); margin:6px 0 0; }
+.figure { margin:0 0 24px; }
+.ph-toggle { margin:8px 0; }
+.note { background:var(--pg-mark); padding:8px 12px; max-width:80ch; }
+.scorebar { display:inline-block; height:10px; background:var(--pg-fg); vertical-align:middle; margin-right:6px; }
+.dirhead { display:flex; gap:16px; align-items:baseline; flex-wrap:wrap; }
+
+/* =====================================================================================================
+   THE FRAMES. One component system for all three directions. A direction changes only the shape,
+   type and the light colour set; both themes of a direction share its shape (CLAUDE.md §3 unify rule).
+   ===================================================================================================== */
+.fr { --tap:38px; position:relative; background:var(--bg); color:var(--text); font-family:var(--bd); font-size:14px; line-height:1.45;
+  border:1px solid var(--pg-line); overflow:hidden; text-align:left; }
+.fr.ph { --tap:44px; width:390px; }
+.fr.ph.scroll { height:844px; overflow-y:auto; }
+body.fulllen .fr.ph.scroll { height:auto; overflow:visible; }
+.fr.dt { width:1280px; }
+.zoomwrap { zoom:.5; }
+@supports not (zoom:1) { .zoomwrap { transform:scale(.5); transform-origin:0 0; } }
+.fr *, .fr *::before, .fr *::after { box-sizing:border-box; }
+.fr button, .fr input, .fr select { font:inherit; color:inherit; }
+.pg .fr h1, .pg .fr h2, .pg .fr h3, .pg .fr h4 { margin:0; padding:0; border:0; font-family:var(--hd); font-weight:var(--hd-w); letter-spacing:var(--hd-track); line-height:1.15; }
+
+/* ---------- colour sets ----------
+   Light: each direction has its own neutral family and a real-paint accent (see each section).
+   Dark: the Grimdark set is kept for all three. Change: --warning moves from #C9923A to #E0803A,
+   because #C9923A sat ΔE 2.7 from the brass accent (the accent and the warning read as one colour). */
+.fr[data-theme="dark"] {
+  --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --line:#3A302A; --ctrl-line:#4D4138; --edge:#7C6F62;
+  --text:#ECE3D8; --text-muted:#A8998A;
+  --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+  --buy:#5E93C9; --buy-weak:#16242F; --success:#86A559; --success-weak:#232A16; --warning:#E0803A; --warning-weak:#2E1D12; --danger:#D2563F; --danger-weak:#2E1A14;
+  --success-text:#86A559; --warning-text:#E0803A; --danger-text:#DE6A52; --buy-text:#5E93C9;   /* #D2563F was 4.32:1 on --surface */
+  --pop:0 1px 0 rgba(0,0,0,.6), 0 14px 28px -10px rgba(0,0,0,.75);
+  --accent-fill:var(--accent); --accent-bevel:none; --accent-edge:var(--accent);
+}
+.fr[data-dir="wb"][data-theme="light"] {
+  --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6; --line:#DCD8D0; --ctrl-line:#C9C4BA; --edge:#8A857B;
+  --text:#1D1C19; --text-muted:#5E5A52;
+  --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+  --buy:#2563EB; --buy-weak:#DBEAFE; --success:#16A34A; --success-weak:#DCFCE7; --warning:#C2740B; --warning-weak:#FBEBD3; --danger:#DC2647; --danger-weak:#FCE4EA;
+  --success-text:#166534; --warning-text:#9A5A0A; --danger-text:#B4232F; --buy-text:#1D4ED8;   /* small tag text: 4.5:1 on every light ground (judge 2) */
+  --pop:0 0 0 1px var(--edge), 0 10px 20px -8px rgba(29,28,25,.35);
+  --accent-fill:var(--accent); --accent-bevel:none; --accent-edge:var(--accent);
+}
+.fr[data-dir="ch"][data-theme="light"] {
+  --bg:#F1F2EF; --surface:#FBFBF9; --surface-2:#E6E8E3; --line:#D3D7CF; --ctrl-line:#B9BFB6; --edge:#7E857C;
+  --text:#1A1E1B; --text-muted:#535A54;
+  --accent:#584E2D; --accent-weak:#ECE8DA; --on-accent:#FFFFFF;
+  --buy:#2563EB; --buy-weak:#DBEAFE; --success:#16A34A; --success-weak:#DCFCE7; --warning:#C2740B; --warning-weak:#FBEBD3; --danger:#DC2647; --danger-weak:#FCE4EA;
+  --success-text:#166534; --warning-text:#9A5A0A; --danger-text:#B4232F; --buy-text:#1D4ED8;   /* small tag text: 4.5:1 on every light ground (judge 2) */
+  --pop:4px 4px 0 rgba(26,30,27,.28);
+  --accent-fill:var(--accent); --accent-bevel:none; --accent-edge:#3F381F;
+}
+.fr[data-dir="pot"][data-theme="light"] {
+  --bg:#FAF8F5; --surface:#FFFFFF; --surface-2:#F1EDE7; --line:#E3DDD3; --ctrl-line:#CFC6B8; --edge:#8F877B;
+  --text:#221F1C; --text-muted:#625A51;
+  --accent:#7A0E44; --accent-weak:#F6E6EE; --on-accent:#FFFFFF;
+  --buy:#2563EB; --buy-weak:#DBEAFE; --success:#16A34A; --success-weak:#DCFCE7; --warning:#C2740B; --warning-weak:#FBEBD3; --danger:#DC2647; --danger-weak:#FCE4EA;
+  --success-text:#166534; --warning-text:#9A5A0A; --danger-text:#B4232F; --buy-text:#1D4ED8;   /* small tag text: 4.5:1 on every light ground (judge 2) */
+  --pop:0 2px 0 var(--ctrl-line), 0 12px 24px -12px rgba(34,31,28,.45);
+  --accent-fill:var(--accent); --accent-bevel:none; --accent-edge:var(--accent);
+}
+/* Chamfer and Paint pot keep the polished brass in dark (it suits a cut plate and a pot lid). Workbench
+   makes it flat: a tool, not jewellery. Only the fill changes, never the brass hue. */
+.fr[data-dir="ch"][data-theme="dark"], .fr[data-dir="pot"][data-theme="dark"] {
+  --accent-fill:linear-gradient(118deg,rgba(255,255,255,0) 30%,rgba(255,250,235,.28) 47%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#D6A646,#A8781D);
+  --accent-edge:#8C6516; --accent-bevel:inset 0 1px 0 rgba(255,245,220,.4), inset 0 -1px 1px rgba(0,0,0,.3);
+}
+.fr { --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* ---------- shape + type per direction (shared by both themes) ---------- */
+.fr[data-dir="wb"]  { --r-ctrl:4px; --r-panel:6px; --r-sw:3px; --r-tag:2px; --hd:"Barlow Condensed","Arial Narrow",sans-serif; --hd-w:600; --hd-track:.005em; --bd:"IBM Plex Sans",system-ui,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,monospace; --cut:0px; }
+.fr[data-dir="ch"]  { --r-ctrl:0px; --r-panel:0px; --r-sw:2px; --r-tag:0px; --hd:"Chakra Petch",system-ui,sans-serif; --hd-w:600; --hd-track:0; --bd:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,monospace; --cut:6px; --cut-p:14px; }
+.fr[data-dir="pot"] { --r-ctrl:2px; --r-panel:2px; --r-sw:50%; --r-tag:2px; --hd:"Fraunces",Georgia,serif; --hd-w:600; --hd-track:-.01em; --bd:"Public Sans",system-ui,sans-serif; --mono:ui-monospace,"SF Mono",Menlo,monospace; --cut:0px; }
+
+/* ---------- icons: one set, 20px grid, 1.5 stroke, currentColor. Only the stroke ends change per direction ---------- */
+.ic { width:20px; height:20px; flex:none; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+.fr[data-dir="wb"] .ic { stroke-linecap:square; stroke-linejoin:miter; }
+.fr[data-dir="ch"] .ic { stroke-linecap:butt; stroke-linejoin:miter; }
+
+/* ---------- controls ---------- */
+.b { position:relative; display:inline-flex; align-items:center; justify-content:center; gap:6px; height:var(--tap); padding:0 14px;
+  border:1px solid var(--ctrl-line); background:var(--surface); color:var(--text); border-radius:var(--r-ctrl);
+  font-size:13.5px; font-weight:500; cursor:pointer; white-space:nowrap; }
+.b.icl { padding:0 14px 0 10px; }            /* asymmetric: the icon carries its own side bearing */
+.b.ico { width:var(--tap); padding:0; }
+.b.main { height:calc(var(--tap) + 8px); padding:0 20px; font-size:15px; font-weight:600; background:var(--accent-fill); border-color:var(--accent-edge); color:var(--on-accent); box-shadow:var(--accent-bevel); }
+.b.main.icl { padding:0 20px 0 14px; }
+.b:focus-visible, .b.is-focus { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); z-index:2; }
+.b.main:focus-visible, .b.main.is-focus { box-shadow:var(--focus), var(--accent-bevel); }
+.txt { display:inline-flex; align-items:center; gap:6px; min-height:var(--tap); padding:0 4px; border:0; background:none; color:var(--accent);
+  font-size:13.5px; font-weight:600; cursor:pointer; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px; }
+.txt.mute { color:var(--text-muted); font-weight:500; }
+/* a small inline text action keeps its line height and gets a 44px hit area from ::before (UX 8) */
+.txt.hit { min-height:0; position:relative; } .fr.ph .txt.hit::before { content:""; position:absolute; left:-4px; right:-4px; top:50%; height:44px; margin-top:-22px; }
+.txt:focus-visible, .txt.is-focus { outline:2px solid var(--accent); outline-offset:2px; border-radius:var(--r-tag); }
+/* the joined toolbar: shared borders, radius only on the outer corners */
+.tb { display:inline-flex; align-items:stretch; }
+.tb > * { border-radius:0; margin-left:-1px; }
+.tb > *:first-child { margin-left:0; border-top-left-radius:var(--r-ctrl); border-bottom-left-radius:var(--r-ctrl); }
+.tb > *:last-child { border-top-right-radius:var(--r-ctrl); border-bottom-right-radius:var(--r-ctrl); }
+.tb .b[aria-pressed="true"] { background:var(--accent-weak); color:var(--text); box-shadow:inset 0 -3px 0 var(--accent); }
+.tb .b[aria-pressed="true"]:focus-visible, .tb .b[aria-pressed="true"].is-focus { box-shadow:inset 0 -3px 0 var(--accent), var(--focus); }
+.field { display:flex; align-items:center; gap:8px; height:calc(var(--tap) + 8px); padding:0 12px 0 10px; border:1px solid var(--edge);
+  background:var(--surface); border-radius:var(--r-ctrl); color:var(--text-muted); min-width:0; flex:1; font-size:16px; }
+.field .ph { color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fr.dt .field { font-size:15px; }
+.sel { display:inline-flex; align-items:center; justify-content:space-between; gap:8px; height:var(--tap); padding:0 10px 0 12px; border:1px solid var(--edge);
+  border-radius:var(--r-ctrl); background:var(--surface); font-size:13.5px; min-width:120px; }
+
+/* ---------- tags (square, not pills). State = a tag; interaction = a ring (§3.5) ---------- */
+.tag { display:inline-flex; align-items:center; gap:4px; height:20px; padding:0 6px; border-radius:var(--r-tag); font-size:11.5px; font-weight:600;
+  border:1px solid currentColor; background:transparent; white-space:nowrap; line-height:1; }
+.tag .ic { width:13px; height:13px; stroke-width:2; }
+.tag.ok { color:var(--success-text); } .tag.warn { color:var(--warning-text); } .tag.bad { color:var(--danger-text); } .tag.buy { color:var(--buy-text); }
+.tag.own { color:var(--success-text); }
+.tag.mute { color:var(--text-muted); border-color:var(--line); }
+.de { font-family:var(--mono); font-size:11.5px; color:var(--text-muted); white-space:nowrap; }
+
+/* ---------- swatches: paint data, never tinted; only their shape follows the direction ---------- */
+.sw { border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; }
+.sw.metal { background-image:linear-gradient(158deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,0) 40%,rgba(0,0,0,.26) 100%); }
+
+
+/* ---------- the header ---------- */
+.f-head { display:flex; align-items:center; gap:12px; padding:10px 16px; border-bottom:1px solid var(--line); background:var(--bg); }
+.fr.dt .f-head { padding:12px 24px; }
+.logo { display:flex; align-items:center; gap:8px; color:var(--text); }
+.logo svg { width:28px; height:28px; flex:none; }
+.logo .wm { font-family:var(--hd); font-weight:700; font-size:19px; letter-spacing:var(--hd-track); white-space:nowrap; }
+.fr[data-dir="wb"] .logo .wm { font-size:21px; letter-spacing:.01em; }
+.logo .wm small { font-family:var(--bd); font-weight:500; font-size:12px; color:var(--text-muted); margin-left:6px; letter-spacing:0; }
+.f-head .sp { flex:1; }
+.f-head .b.ico { flex:none; }
+.fr.ph .logo .wm { font-size:17px; }
+.modes .b { min-width:76px; }
+.fr.ph .modes .b { min-width:0; padding:0 14px; }
+
+/* ---------- panels: the direction decides how a region is separated ---------- */
+/* Workbench: no cards. A hairline rule and space separate the regions. */
+.fr[data-dir="wb"] .pnl { border-top:1px solid var(--line); padding:16px 0 0; }
+.fr[data-dir="wb"] .pnl.first { border-top:0; padding-top:0; }
+/* Paint pot: no cards. A region starts with a label band, like the paper label on a pot. */
+.fr[data-dir="pot"] .pnl { padding:0; }
+/* Chamfer: one plate per region, with a cut corner (top-left and bottom-right). Plates are not
+   focusable, so the clip cannot hide a focus ring. The edge is the plate itself; the face is an inner
+   layer 1px in, with the same cut. */
+.fr[data-dir="ch"] .pnl { position:relative; isolation:isolate; padding:16px; background:var(--line);
+  clip-path:polygon(var(--cut-p) 0,100% 0,100% calc(100% - var(--cut-p)),calc(100% - var(--cut-p)) 100%,0 100%,0 var(--cut-p)); }
+.fr[data-dir="ch"] .pnl::before { content:""; position:absolute; inset:1px; z-index:-1; background:var(--surface);
+  clip-path:polygon(calc(var(--cut-p) - .4px) 0,100% 0,100% calc(100% - var(--cut-p) + .4px),calc(100% - var(--cut-p) + .4px) 100%,0 100%,0 calc(var(--cut-p) - .4px)); }
+@media (forced-colors: active) { .fr[data-dir="ch"] .pnl { clip-path:none; border:1px solid CanvasText; } .fr[data-dir="ch"] .pnl::before { display:none; } }
+
+/* ---------- the Chamfer control: cut corners WITHOUT clipping the focus ring ----------
+   The problem: clip-path clips everything the element paints, so a box-shadow ring, an outline and a
+   drop shadow all vanish at the cut. The fix: the control itself is never clipped. Two pseudo-elements
+   carry the cut shape: ::before is the edge and ::after is the face, 1px in. On focus, ::before grows
+   5px OUTSIDE the box with a matching cut and turns --accent (the ring), and ::after grows 2px with an
+   inset --surface band (the gap). So the ring is the same two-ring as --focus (gap, then accent), it
+   follows the cut, and nothing clips it. Forced colours: the layers go and a system outline takes over. */
+.fr[data-dir="ch"] .b, .fr[data-dir="ch"] .field, .fr[data-dir="ch"] .sel { --c:var(--cut); border-color:transparent; background:none; isolation:isolate; position:relative; box-shadow:none; }
+.fr[data-dir="ch"] .b::before, .fr[data-dir="ch"] .b::after,
+.fr[data-dir="ch"] .field::before, .fr[data-dir="ch"] .field::after,
+.fr[data-dir="ch"] .sel::before, .fr[data-dir="ch"] .sel::after {
+  content:""; position:absolute; z-index:-1; pointer-events:none;
+  clip-path:polygon(var(--c) 0,100% 0,100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,0 100%,0 var(--c)); }
+.fr[data-dir="ch"] .b::before, .fr[data-dir="ch"] .field::before, .fr[data-dir="ch"] .sel::before { inset:-1px; background:var(--ctrl-line); }
+.fr[data-dir="ch"] .field::before, .fr[data-dir="ch"] .sel::before { background:var(--edge); }
+.fr[data-dir="ch"] .b::after, .fr[data-dir="ch"] .field::after, .fr[data-dir="ch"] .sel::after { inset:0; background:var(--surface); }
+.fr[data-dir="ch"] .b.main::before { background:var(--accent-edge); }
+.fr[data-dir="ch"] .b.main::after { background:var(--accent-fill); box-shadow:var(--accent-bevel); }
+.fr[data-dir="ch"] .tb .b[aria-pressed="true"]::after { background:linear-gradient(0deg,var(--accent) 3px,var(--accent-weak) 3px); }
+.fr[data-dir="ch"] .b:focus-visible, .fr[data-dir="ch"] .b.is-focus { box-shadow:none; outline:2px solid transparent; }
+.fr[data-dir="ch"] .b:focus-visible::before, .fr[data-dir="ch"] .b.is-focus::before { inset:-5px; --c:calc(var(--cut) + 2px); background:var(--accent); }
+.fr[data-dir="ch"] .b:focus-visible::after, .fr[data-dir="ch"] .b.is-focus::after { inset:-2px; --c:calc(var(--cut) + 1px); box-shadow:inset 0 0 0 2px var(--surface); }
+/* joined Chamfer toolbars: only the outer corners are cut, as with radii */
+.fr[data-dir="ch"] .tb > .b:not(:first-child):not(:last-child) { --c:0px; }
+.fr[data-dir="ch"] .tb > .b:first-child:not(:last-child)::before, .fr[data-dir="ch"] .tb > .b:first-child:not(:last-child)::after { clip-path:polygon(var(--c) 0,100% 0,100% 100%,0 100%,0 var(--c)); }
+.fr[data-dir="ch"] .tb > .b:last-child:not(:first-child)::before, .fr[data-dir="ch"] .tb > .b:last-child:not(:first-child)::after { clip-path:polygon(0 0,100% 0,100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,0 100%); }
+@media (forced-colors: active) {
+  .fr[data-dir="ch"] .b, .fr[data-dir="ch"] .field, .fr[data-dir="ch"] .sel { border:1px solid ButtonBorder; }
+  .fr[data-dir="ch"] .b::before, .fr[data-dir="ch"] .b::after,
+  .fr[data-dir="ch"] .field::before, .fr[data-dir="ch"] .field::after, .fr[data-dir="ch"] .sel::before, .fr[data-dir="ch"] .sel::after { display:none; }
+  .fr[data-dir="ch"] .b:focus-visible, .fr[data-dir="ch"] .b.is-focus { outline:2px solid Highlight; outline-offset:2px; }
+}
+/* Chamfer tags: a notch on one corner, the stencil-plate idea at 20px */
+.fr[data-dir="ch"] .tag { clip-path:polygon(4px 0,100% 0,100% 100%,0 100%,0 4px); }
+/* Chamfer overlays: a clipped plate cannot carry box-shadow, so the overlay wrapper casts a drop-shadow
+   filter, which follows the clipped shape. */
+.fr[data-dir="ch"] .ovl { filter:drop-shadow(4px 4px 0 rgba(0,0,0,.28)); box-shadow:none !important; }
+
+/* ---------- Studio ---------- */
+.f-main { padding:16px; display:grid; grid-template-columns:minmax(0,1fr); gap:16px; }
+.f-main > *, .pnl, .studiocol > *, .dtsplit > * { min-width:0; }
+.fr.dt .f-main { padding:20px 24px; }
+.seedbar { display:flex; align-items:center; gap:8px; }
+.seedbar .tb { flex:1; min-width:0; }
+.seedbar .tb .field { border-top-right-radius:0; border-bottom-right-radius:0; }
+.seedbar .tb .b { height:calc(var(--tap) + 8px); }
+.hero { display:flex; align-items:center; gap:10px; min-width:0; }
+.hero .nm { font-family:var(--hd); font-weight:var(--hd-w); font-size:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.fr[data-dir="wb"] .hero .nm { font-size:22px; }
+.hero .meta { font-size:12.5px; color:var(--text-muted); }
+.hero .sp { flex:1; }
+.wheelrow { display:flex; gap:12px; align-items:stretch; justify-content:center; }
+.wheel { position:relative; border-radius:50%; flex:none;
+  background:radial-gradient(circle,rgba(128,128,128,.0) 0,rgba(128,128,128,.0) 30%,transparent 31%),conic-gradient(from 90deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.15); }
+.wheel::after { content:""; position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.0) 0%, rgba(40,40,40,.0) 0%), radial-gradient(circle, rgba(60,60,60,.55) 0%, rgba(60,60,60,0) 70%); }
+.node { position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.5); z-index:1; }
+.node b { position:absolute; right:-12px; top:-12px; min-width:18px; height:18px; display:grid; place-items:center; padding:0 3px; font:700 10.5px/1 var(--bd);
+  background:var(--accent-fill); color:var(--on-accent); border-radius:var(--r-tag); box-shadow:0 0 0 1.5px var(--surface); }
+.vslider { display:flex; flex-direction:column; align-items:center; gap:6px; width:44px; font-size:11.5px; color:var(--text-muted); }
+.vslider .trk { flex:1; width:10px; border-radius:var(--r-tag); box-shadow:inset 0 0 0 1px rgba(0,0,0,.2); position:relative; min-height:120px; }
+.vslider .thumb { position:absolute; left:50%; width:26px; height:26px; margin:-13px 0 0 -13px; border-radius:50%; border:3px solid var(--surface); box-shadow:0 0 0 1px var(--edge); }
+.fr[data-dir="ch"] .vslider .thumb { border-radius:0; transform:rotate(45deg); }
+.fr[data-dir="wb"] .vslider .thumb { border-radius:var(--r-tag); height:16px; margin-top:-8px; }
+.harm { display:flex; gap:8px; align-items:center; min-width:0; }
+.harm .strip { display:flex; gap:0; overflow:hidden; min-width:0; flex:1; -webkit-mask-image:linear-gradient(90deg,#000 85%,transparent); mask-image:linear-gradient(90deg,#000 85%,transparent); }
+.harm .strip .b { flex:none; }
+.lbl { font-size:13px; font-weight:600; color:var(--text); }
+.lbl.caps { font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+.palhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.palhead .sp { flex:1; }
+/* live palette: one row of columns; the column's weight follows the role (60-30-10), not an even grid */
+.lp { display:grid; grid-template-columns:6fr 3fr 2fr 1.6fr; gap:6px; }
+.fr.ph .lp { grid-template-columns:4fr 3fr 2.2fr 2fr; }
+.fr.ph .lp .blk { height:72px; }
+.fr.ph .lp .pn { font-size:11.5px; }
+.fr.ph .dock { font-size:11px; padding:0 4px; text-align:center; line-height:1.2; }
+.lp { grid-template-rows:auto auto auto; row-gap:6px; }
+.lp .col { display:grid; grid-row:span 3; grid-template-rows:subgrid; gap:6px; min-width:0; }   /* one row height per band across the columns (§3.6 subgrid) */
+.lp .blk { height:84px; border-radius:var(--r-sw); position:relative; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+.fr[data-dir="pot"] .lp .blk { border-radius:var(--r-panel); }
+.fr[data-dir="wb"] .lp .blk .role { text-transform:uppercase; letter-spacing:.06em; font-size:11.5px; }
+.lp .blk .role { position:absolute; left:8px; top:6px; font-size:11.5px; font-weight:700; }
+.lp .pn { font-size:12.5px; line-height:1.3; min-width:0; }
+.lp .pn b { display:block; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dock { display:flex; align-items:center; justify-content:center; gap:4px; min-height:30px; font-size:12px; border:1px dashed var(--edge); border-radius:var(--r-ctrl); color:var(--text-muted); background:none; padding:0 6px; }
+.dock.on { border:1px solid var(--accent); color:var(--text); background:var(--accent-weak); font-weight:600; }
+.fr.ph .dock { min-height:44px; }
+.dock .ic { width:14px; height:14px; }
+.mnote { font-size:12.5px; color:var(--text-muted); display:flex; gap:6px; align-items:flex-start; }
+.mnote .ic { width:16px; height:16px; margin-top:1px; }
+/* tabs: an underline on the selected one, words from the hobby */
+.tabs { display:flex; gap:20px; border-bottom:1px solid var(--line); }
+.tabs .tab { height:var(--tap); display:inline-flex; align-items:center; gap:6px; border:0; background:none; padding:0; font-size:14px; font-weight:600; color:var(--text-muted); box-shadow:inset 0 -3px 0 transparent; }
+.tabs .tab[aria-selected="true"] { color:var(--text); box-shadow:inset 0 -3px 0 var(--accent); }
+.fr.ph .tabs { position:sticky; top:0; background:var(--bg); z-index:3; gap:16px; }
+/* Plan: role rows (not cards). Primary carries more weight than the others. */
+.roles { display:grid; gap:0; }
+.fr.dt .roles { grid-template-columns:1fr 1fr; column-gap:28px; }
+.rrow { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; padding:14px 0; border-top:1px solid var(--line); }
+.fr.dt .rrow.big { grid-column:1 / -1; }
+.rrow .rh { grid-column:1 / -1; display:flex; align-items:baseline; gap:8px; }
+.rrow .rh h4 { font-size:17px; }
+.fr[data-dir="wb"] .rrow .rh h4 { font-size:19px; }
+.rrow .rh .w { font-size:12px; color:var(--text-muted); }
+.rrow .rh .sp { flex:1; }
+.rrow .pair { display:flex; align-items:center; gap:6px; }
+.rrow .pair .arr { color:var(--text-muted); }
+.rrow .info { min-width:0; font-size:13px; }
+.rrow .info .pnm { font-weight:600; font-size:14px; }
+.rrow .info .line2 { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:4px; }
+.ladder { grid-column:1 / -1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:6px; font-size:12px; }
+.ladder .st { display:flex; gap:6px; align-items:center; min-width:0; }
+.ladder .st div { min-width:0; }
+.ladder .st small { display:block; color:var(--text-muted); font-size:11.5px; }
+.ladder .st span.n { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fr[data-dir="ch"] .rrow { border-top:0; padding:12px 0; }
+.fr[data-dir="ch"] .roles { gap:10px; }
+.fr[data-dir="ch"] .roles .pnl { padding:12px 14px; }
+.planbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+/* Paint pot: the region label is a band, like the paper label on a pot */
+.potlbl { display:flex; align-items:baseline; gap:10px; padding:6px 10px; background:var(--surface-2); border-top:2px solid var(--text); border-bottom:1px solid var(--line); }
+.potlbl h3 { font-size:18px; white-space:nowrap; }
+.potlbl .k { text-align:right; }
+.potlbl .k { font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); }
+.potlbl .sp { flex:1; }
+.fr[data-dir="pot"] .rrow { border-top:1px dashed var(--line); }
+
+/* desktop Studio: the sticky studio column + the output column, separated by a rule, not two cards */
+.dtsplit { display:grid; grid-template-columns:minmax(0,500px) minmax(0,1fr); gap:28px; align-items:start; }
+.fr[data-dir="wb"] .dtsplit, .fr[data-dir="pot"] .dtsplit { gap:0; }
+.fr[data-dir="wb"] .dtsplit > :first-child, .fr[data-dir="pot"] .dtsplit > :first-child { padding-right:28px; border-right:1px solid var(--line); }
+.fr[data-dir="wb"] .dtsplit > :last-child, .fr[data-dir="pot"] .dtsplit > :last-child { padding-left:28px; }
+.studiocol { display:grid; gap:14px; }
+
+/* ---------- Shelf ---------- */
+.shelfhead { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+.shelfhead h2 { font-size:24px; }
+.fr[data-dir="wb"] .shelfhead h2 { font-size:28px; }
+.shelfhead .cnt { font-size:13px; color:var(--text-muted); }
+.shelfhead .sp { flex:1; }
+.sdock { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:10px 0; border-bottom:1px solid var(--line); background:var(--bg); }
+.fr.ph .sdock .field { flex-basis:100%; }
+.grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+.fr.dt .grid { grid-template-columns:repeat(12,minmax(0,1fr)); gap:10px; }
+.cell { position:relative; width:100%; aspect-ratio:1; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+.cell .st { position:absolute; right:-3px; bottom:-3px; width:20px; height:20px; display:grid; place-items:center; border-radius:var(--r-tag); box-shadow:0 0 0 2px var(--bg); }
+.cell .st .ic { width:14px; height:14px; stroke-width:2.2; }
+.cell .st.own { background:var(--success); color:#fff; }
+.fr[data-theme="dark"] .cell .st.own { color:#14190A; }
+.cell .st.want { background:var(--buy); color:#fff; }
+.fr[data-theme="dark"] .cell .st.want { color:#0E1620; }
+.fr[data-dir="pot"] .cell .st { border-radius:50%; right:0; bottom:0; }
+.cell.picked { outline:3px solid var(--text); outline-offset:2px; }
+.potcell { min-width:0; display:grid; gap:4px; text-align:center; font-size:11px; line-height:1.2; }
+.potcell .pl { color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hint { font-size:12.5px; color:var(--text-muted); display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+kbd { display:inline-grid; place-items:center; min-width:20px; height:20px; padding:0 4px; font:600 11px/1 var(--mono); border:1px solid var(--edge); border-bottom-width:2px; border-radius:var(--r-tag); color:var(--text); background:var(--surface); }
+.empty { padding:24px 16px; display:grid; gap:10px; justify-items:start; }
+.empty h3 { font-size:18px; }
+.empty p { margin:0; color:var(--text-muted); max-width:46ch; font-size:13.5px; }
+
+/* ---------- kit (the parts sheet) ---------- */
+.kit { display:grid; gap:14px; padding:16px; }
+.kit .krow { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.kit .klbl { width:120px; flex:none; font-size:12px; color:var(--text-muted); }
+.ovl { background:var(--surface); border:1px solid var(--ctrl-line); border-radius:var(--r-panel); box-shadow:var(--pop); padding:10px 12px; font-size:13px; }
+.fr[data-dir="ch"] .ovl.plate { border:0; background:none; padding:0; }
+.spec h1 { font-size:30px; } .spec h2 { font-size:22px; } .spec p { margin:4px 0 0; font-size:14px; }
+.toast { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; background:var(--text); color:var(--bg); border-radius:var(--r-ctrl); font-size:13px; font-weight:500; box-shadow:var(--pop); }
+.toast .txt { color:var(--bg); min-height:0; }
+
+/* ---------- the first-run frame ---------- */
+.first { display:grid; gap:12px; padding:20px 16px; }
+.first h2 { font-size:24px; }
+.fr[data-dir="wb"] .first h2 { font-size:28px; }
+.first p { margin:0; color:var(--text-muted); font-size:14px; }
+.steps { list-style:none; margin:0; padding:0; display:grid; gap:0; counter-reset:s; }
+.steps li { counter-increment:s; display:grid; grid-template-columns:28px 1fr; gap:10px; padding:10px 0; border-top:1px solid var(--line); font-size:13.5px; }
+.steps li::before { content:counter(s); width:24px; height:24px; display:grid; place-items:center; font:700 12px/1 var(--hd); border:1.5px solid var(--text); border-radius:var(--r-tag); }
+.fr[data-dir="pot"] .steps li::before { border-radius:50%; }
+.chips { display:flex; gap:8px; flex-wrap:wrap; }
+.pchip { display:inline-flex; align-items:center; gap:8px; height:var(--tap); padding:0 12px 0 6px; border:1px solid var(--ctrl-line); border-radius:var(--r-ctrl); background:var(--surface); font-size:13px; }
+.pchip .sw { width:28px; height:28px; }
+
+
+/* ---------- Present: one frame set at a time, scaled to fit, never clipped ---------- */
+#present { margin-top:24px; }
+.pbar { position:sticky; top:41px; z-index:40; background:var(--pg-bg); border-bottom:1px solid var(--pg-line); padding:8px 0; display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; }
+.pgrp { display:flex; flex-wrap:wrap; gap:0; align-items:center; }
+.pgrp > span { font-size:12px; color:var(--pg-mute); margin-right:8px; }
+.pgrp button { font:inherit; font-size:14px; min-height:40px; padding:0 12px; border:1px solid var(--pg-line); background:var(--pg-bg); color:var(--pg-fg); margin-left:-1px; cursor:pointer; }
+.pgrp button:first-of-type { margin-left:0; }
+.pgrp button[aria-pressed="true"] { background:var(--pg-fg); color:var(--pg-bg); border-color:var(--pg-fg); }
+.pgrp button:disabled { opacity:.4; cursor:not-allowed; }
+.pgrp button:focus-visible { outline:2px solid var(--pg-link); outline-offset:2px; position:relative; z-index:1; }
+.pinfo { display:flex; flex-wrap:wrap; gap:4px 16px; align-items:baseline; margin:12px 0 8px; }
+.pinfo strong { font-size:18px; }
+.pinfo span { color:var(--pg-mute); font-size:14px; }
+.pstage { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; justify-content:center; padding:8px 0 24px; }
+.pcell { display:grid; gap:6px; justify-items:center; min-width:0; }
+.pcell .cap { margin:0; }
+.pscale { overflow:hidden; }
+.pscale > .fr { transform-origin:0 0; }
+.pscale > .fr.ph.scroll { height:auto; overflow:visible; }
+/* Pot-lid swatches (the Present switch): a REAL PAINT is a round lid; a target colour (ideal, scheme block,
+   simulated colour) stays square. The box keeps its size, so the tap area and the grid do not change. */
+.lids .fr .pot { border-radius:50%; }
+.lids .fr .cell.pot .st { right:2%; bottom:2%; border-radius:50%; }
+.lids .fr .cell.pot.picked { outline:0; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 2px var(--bg), 0 0 0 5px var(--text); }
+@media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+/* Forced colours: paint is data, so swatches keep their colour; pressed and selected states get a system
+   outline (box-shadow and background are removed in this mode). */
+@media (forced-colors: active) {
+  .sw, .cell, .lp .blk, .wheel, .node, .vslider .trk, .vslider .thumb { forced-color-adjust:none; }
+  .tb .b[aria-pressed="true"], .tabs .tab[aria-selected="true"] { outline:2px solid Highlight; outline-offset:-3px; }
+}
+</style>
+</head>
+<body>
+<!-- the icon set: 20px grid, stroke 1.5, currentColor; no fill and no linecap on the paths, so each
+     direction can set the stroke ends in CSS. The same paths are in src/assets/icons/*.svg. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-menu" viewBox="0 0 20 20"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13"/></symbol>
+  <symbol id="i-more" viewBox="0 0 20 20"><path d="M4.5 10h.01M10 10h.01M15.5 10h.01" stroke-width="2.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-reroll" viewBox="0 0 20 20"><path d="M16 10a6 6 0 1 1-1.76-4.24"/><path d="M14.5 2.75v3.5H11"/></symbol>
+  <symbol id="i-check" viewBox="0 0 20 20"><path d="M4 10.5l3.75 3.75L16 6"/></symbol>
+  <symbol id="i-anchor" viewBox="0 0 20 20"><circle cx="10" cy="4.5" r="1.75"/><path d="M10 6.25V17M6.5 9h7M3.75 11.5a6.25 6.25 0 0 0 12.5 0"/></symbol>
+  <symbol id="i-warning" viewBox="0 0 20 20"><path d="M10 3.25l7.25 13H2.75z"/><path d="M10 8.25v3.5M10 14h.01"/></symbol>
+  <symbol id="i-search" viewBox="0 0 20 20"><circle cx="8.75" cy="8.75" r="5.25"/><path d="M12.6 12.6l4.4 4.4"/></symbol>
+  <symbol id="i-empty" viewBox="0 0 20 20"><circle cx="10" cy="10" r="5.5"/></symbol>
+  <symbol id="i-close" viewBox="0 0 20 20"><path d="M5 5l10 10M15 5L5 15"/></symbol>
+  <symbol id="i-brush" viewBox="0 0 20 20"><path d="M17 3l-6.5 6.5M9 8.5l2.5 2.5"/><path d="M8.25 10.25c-2 0-3.25 1.4-3.25 3.1 0 1.2-.75 2-1.75 2.4 3.6.7 7.25-.6 7.25-3.6z"/></symbol>
+  <symbol id="i-pot" viewBox="0 0 20 20"><path d="M4.75 4h10.5v3H4.75zM5.5 7h9v9a1.5 1.5 0 0 1-1.5 1.5H7A1.5 1.5 0 0 1 5.5 16zM5.5 11h9"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 20 20"><path d="M10 2.75c-3 3.9-5 6.6-5 9.25a5 5 0 0 0 10 0c0-2.65-2-5.35-5-9.25z"/></symbol>
+  <symbol id="i-d20" viewBox="0 0 20 20"><path d="M10 2l7 4v8l-7 4-7-4V6z"/><path d="M10 6.5l3.5 6h-7zM10 2v4.5M17 6l-3.5 6.5M3 6l3.5 6.5M13.5 12.5L10 18M6.5 12.5L10 18M17 14l-3.5-1.5M3 14l3.5-1.5"/></symbol>
+  <symbol id="i-d6" viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13" rx="2.5" transform="rotate(-10 10 10)"/><path d="M7.4 7.2h.01M12.6 7.2h.01M10 10h.01M7.4 12.8h.01M12.6 12.8h.01" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 20 20"><path d="M3 7h3l1.75-2.5h4.5L14 7h3v9H3z"/><circle cx="10" cy="11.25" r="2.75"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 20 20"><path d="M3.5 3.5h5v5h-5zM11.5 3.5h5v5h-5zM3.5 11.5h5v5h-5zM11.5 11.5h5v5h-5z"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 20 20"><path d="M2.5 3.5h2.25l2 9.5h8.5l1.5-6.5H5.6"/><path d="M8 16.5h.01M14 16.5h.01" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 20 20"><path d="M7 4.5L3.5 8 7 11.5"/><path d="M3.5 8h8.25a4.75 4.75 0 0 1 0 9.5H8"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 20 20"><path d="M13 4.5L16.5 8 13 11.5"/><path d="M16.5 8H8.25a4.75 4.75 0 0 0 0 9.5H12"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 20 20"><path d="M4 10h12"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 20 20"><path d="M3.5 7h12l-3-3M16.5 13h-12l3 3"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 20 20"><path d="M1.75 10S4.75 4.5 10 4.5 18.25 10 18.25 10 15.25 15.5 10 15.5 1.75 10 1.75 10z"/><circle cx="10" cy="10" r="2.5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4"/></symbol>
+  <symbol id="i-info" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.25"/><path d="M10 9v5M10 6.25h.01"/></symbol>
+  <!-- the three logo marks -->
+  <symbol id="logo-wb" viewBox="0 0 32 32"><path d="M16 2.5c-5.2 6.7-8.75 11.4-8.75 16a8.75 8.75 0 0 0 17.5 0c0-4.6-3.55-9.3-8.75-16z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="miter"/><circle cx="16" cy="19" r="4.6" fill="none" stroke="var(--accent)" stroke-width="2.2"/><path d="M16 14.4V19l4 2.3M16 19l-4 2.3" fill="none" stroke="var(--accent)" stroke-width="2.2"/></symbol>
+  <symbol id="logo-ch" viewBox="0 0 32 32"><path d="M8 2h22v22l-6 6H2V8z" fill="var(--accent)"/><path d="M16 8.5c-3.6 4.6-6 7.8-6 10.9a6 6 0 0 0 12 0c0-3.1-2.4-6.3-6-10.9z" fill="var(--on-accent)"/></symbol>
+  <symbol id="logo-pot" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="var(--accent)"/><circle cx="16" cy="16" r="10.5" fill="none" stroke="var(--on-accent)" stroke-width="1.6" opacity=".55"/><path d="M16 16V5.5A10.5 10.5 0 0 1 25.1 21.25z" fill="var(--on-accent)"/><path d="M16 16l-9.1 5.25" stroke="var(--on-accent)" stroke-width="1.6"/></symbol>
+</svg>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#present">Present</a><a href="#lids">Pot lids</a><a href="#audit">1 Audit</a><a href="#workbench">2a Workbench</a><a href="#chamfer">2b Chamfer</a><a href="#pot">2c Paint pot</a>
+  <a href="#shared">2d Shared parts</a><a href="#ux">3 UX pass</a><a href="#scores">4 Scores</a><a href="#verdict">Verdict</a>
+</nav>
+
+<div class="pg">
+<header>
+  <h1>Palette Studio — visual identity and UX pass</h1>
+  <p class="lead">This page is a design document. The app does not load it. It holds the audit, three design directions, the UX pass, the judges' scores and a recommendation.</p>
+  <div class="status"><strong>Status: decided and built (release 1).</strong> Ryan chose <strong>Workbench+</strong> with the Sotek Green light accent, <strong>square swatches</strong> (no pot lids), and logo <strong>4a</strong> from <code>mockups/logo.html</code> (2026-10-28). Release 1 (the look) is on branch <code>claude/magical-meitner-wbdr2k</code>. Release 2 is the UX pass in this page's Part 3; it includes the tone-ladder chips that show the pot. The pot-lid section below stays as a record of the choice.</div>
+  <p class="ph-toggle"><label><input type="checkbox" id="fullLen"> Show the phone frames at full length (they scroll inside an 844px screen by default)</label></p>
+</header>
+
+<section id="present" aria-labelledby="presentTitle">
+<h2 id="presentTitle" style="margin-top:24px">Present the directions</h2>
+<p class="lead">Pick a direction, a screen, a device and a theme. The frames show at full length and scale to fit your window, so nothing is cut off. Use "All three" to compare the directions side by side.</p>
+<div class="pbar" role="group" aria-label="What to show">
+  <div class="pgrp" role="group" aria-label="Direction"><span aria-hidden="true">Direction</span>
+    <button type="button" data-p="dir" data-v="wb" aria-pressed="true">Workbench</button><button type="button" data-p="dir" data-v="pot" aria-pressed="false">Paint pot</button><button type="button" data-p="dir" data-v="ch" aria-pressed="false">Chamfer</button><button type="button" data-p="dir" data-v="all" aria-pressed="false">All three</button></div>
+  <div class="pgrp" role="group" aria-label="Screen"><span aria-hidden="true">Screen</span>
+    <button type="button" data-p="scr" data-v="studio" aria-pressed="true">Studio</button><button type="button" data-p="scr" data-v="shelf" aria-pressed="false">Shelf</button><button type="button" data-p="scr" data-v="first" aria-pressed="false">First run</button><button type="button" data-p="scr" data-v="states" aria-pressed="false">Empty states</button><button type="button" data-p="scr" data-v="parts" aria-pressed="false">Parts</button></div>
+  <div class="pgrp" role="group" aria-label="Device"><span aria-hidden="true">Device</span>
+    <button type="button" data-p="dev" data-v="ph" aria-pressed="true">Phone</button><button type="button" data-p="dev" data-v="dt" aria-pressed="false">Desktop</button></div>
+  <div class="pgrp" role="group" aria-label="Theme"><span aria-hidden="true">Theme</span>
+    <button type="button" data-p="thm" data-v="both" aria-pressed="true">Both</button><button type="button" data-p="thm" data-v="light" aria-pressed="false">Light</button><button type="button" data-p="thm" data-v="dark" aria-pressed="false">Dark</button></div>
+  <div class="pgrp" role="group" aria-label="Swatches"><span aria-hidden="true">Swatches</span>
+    <button type="button" data-p="sw" data-v="lids" aria-pressed="true">Pot lids</button><button type="button" data-p="sw" data-v="square" aria-pressed="false">Squares</button></div>
+</div>
+<div class="pinfo" id="pInfo" aria-live="polite"></div>
+<div class="pstage" id="pStage"></div>
+</section>
+
+<section id="lids" aria-labelledby="lidsTitle">
+<h2 id="lidsTitle">Pot-lid swatches — what the change touches</h2>
+<p class="lead">Ryan likes the round pot lids and asked how far the change reaches. Use <strong>Swatches: Pot lids · Squares</strong> in the Present view above to flip every screen. This section lists every place in the real app that draws a swatch (from <code>src/js/ui.js</code>), and what would change.</p>
+<h3>The rule that makes the shape mean something</h3>
+<p><strong>A real paint — a pot you can buy or own — is a round lid. A target colour stays square</strong>: the ideal colour, the scheme's blocks, a custom hex, a colour from a photo, a colour-blind simulation. Then the Plan's "ideal → pot" reads as "square → circle", and a painter can tell "a colour" from "a paint" before reading a word. The hero follows the same rule: a picked paint shows a lid, a typed hex shows a square.</p>
+<div class="tw"><table class="t">
+<thead><tr><th>Surface</th><th>Code</th><th>What the swatch is</th><th>With the rule</th><th>How many</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Shelf grid</td><td><code>ui.js:122</code> <code>.cell</code></td><td>a pot</td><td><strong>round</strong></td><td class="n">3,225</td><td>The owned / to-buy badge moves onto the lid's edge. The selection ring becomes a round ring (a box-shadow, so it follows the circle in every Safari). The tap area, the marquee and the tooltips use the same square box, so nothing moves (§3.4).</td></tr>
+<tr><td>Seed list, Browse grid</td><td><code>ui.js:76</code> <code>.pkt .sw</code></td><td>a pot</td><td><strong>round</strong></td><td class="n">3,225 + Recent</td><td>The same as the Shelf.</td></tr>
+<tr><td>Seed list, search rows</td><td><code>ui.js:92</code></td><td>a pot</td><td><strong>round</strong></td><td class="n">≤ ~50</td><td>—</td></tr>
+<tr><td>Seed list, "Seed: #…" row</td><td><code>ui.js:103</code></td><td>a typed hex</td><td>square</td><td class="n">1</td><td>The square tells you it is not a paint.</td></tr>
+<tr><td>Hero chip</td><td><code>ui.js:198</code> <code>.herochip</code></td><td>your pick</td><td><strong>round</strong> for a paint; square for a hex or a photo colour</td><td class="n">1</td><td>The shape says which kind of seed you have.</td></tr>
+<tr><td>Live palette blocks</td><td><code>ui.js:473</code> <code>.lctop</code></td><td>the scheme's colours</td><td>square (no change)</td><td class="n">3–7</td><td>They are the scheme, not pots. The paint name under each block stays words.</td></tr>
+<tr><td>Wheel nodes</td><td><code>wheel.js</code></td><td>handles</td><td>no change (already round)</td><td class="n">3–7</td><td>—</td></tr>
+<tr><td>Plan: ideal → match</td><td><code>ui.js:351</code> <code>.ivsa</code></td><td>ideal, then the pot</td><td>square → <strong>round</strong></td><td class="n">4</td><td>The clearest gain: the gap between the target and the pot you buy is now also a change of shape.</td></tr>
+<tr><td>Plan: tone ladders</td><td><code>ui.js:331</code> <code>.step</code></td><td><em>today the ideal step colour</em>, labelled with the pot's name</td><td><strong>round, showing the pot</strong> (needs your yes)</td><td class="n">12–24</td><td>Today the chip is the ideal colour but the words name a pot. With lids, the chip should be the pot you buy, so chip and name agree. This changes what the colour shows, so it is your decision.</td></tr>
+<tr><td>Equivalents rows</td><td><code>ui.js:383, 396</code> <code>.eqc</code></td><td>pots</td><td><strong>round</strong></td><td class="n">6–8</td><td>—</td></tr>
+<tr><td>Equivalents source chips</td><td><code>ui.js:371</code></td><td>the role colours</td><td>square</td><td class="n">4–6</td><td>—</td></tr>
+<tr><td>Neutral "pop" chips</td><td><code>ui.js:242</code></td><td>pots</td><td><strong>round</strong></td><td class="n">≤ 6</td><td>—</td></tr>
+<tr><td>Accessibility strips and pairs</td><td><code>ui.js:486–500</code></td><td>simulated colours</td><td>square</td><td class="n">—</td><td>A colour-blind simulation is not a paint.</td></tr>
+<tr><td>Photo dialog sample</td><td><code>#edChip</code></td><td>a sampled colour</td><td>square</td><td class="n">1</td><td>—</td></tr>
+</tbody></table></div>
+<h3>What it costs</h3>
+<ul>
+<li><strong>Less paint on screen.</strong> A circle shows 78.5% of the colour of the square it sits in: 21.5% less per swatch. On a 390px phone Shelf (5 columns), a 62px lid shows 3,019 px² of paint against 3,844 px² today. Taking the Shelf gap from 8px to 4px makes each lid 65px across and brings it back to 88% of today's square.</li>
+<li><strong>The finish overlays</strong> (metallic sheen, wash and contrast satin, gloss, slime, texture) are drawn in the box and clipped by the circle. They still read (see the metallic lids in the frames). The gloss highlight sits inside the circle at 34% / 26%.</li>
+<li><strong>Two shapes to learn.</strong> The rule makes them mean something, so this is information, not noise. The Help page needs one line on it.</li>
+<li><strong>Dense desktop grids</strong> (12 columns) read more as "dots". Some painters may find that busier than tiles.</li>
+<li><strong>Nothing moves</strong> (§3.4): each swatch keeps its square box, so the tap area, the grid, the marquee, the tooltips and the virtual layout do not change.</li>
+<li><strong>Forced colours</strong>: no change (swatches already keep their colours). <strong>Old Safari</strong> (iOS 16.3 and older) draws an <code>outline</code> square on a round element. The selection and focus rings on swatches use <code>box-shadow</code>, which follows the circle everywhere.</li>
+</ul>
+<h3>What changes in the code and the rules</h3>
+<ul>
+<li><strong>One commit in release 1:</strong> a <code>pot</code> class on the paint swatches in about 10 places in <code>ui.js</code>, about 25 lines of CSS, and three test strings in <code>test/ui.test.mjs</code> (for example <code>class="sw metal"</code> becomes <code>class="sw pot metal"</code>).</li>
+<li><strong>CLAUDE.md:</strong> §2 (the paint is the hero: the shape rule), §3.5 Swatch ("square" becomes "a pot is a round lid; a target is square"), §3.4 (a <code>--r-pot</code> radius), and the Help page.</li>
+<li><strong>The logo study</strong> can echo the lid. See <code>mockups/logo.html</code>.</li>
+</ul>
+<p class="note"><strong>Recommendation:</strong> yes, with the rule above, and with a 4px Shelf gap. Open question for Ryan: the tone-ladder chips show the pot, not the ideal step colour. Yes or no?</p>
+</section>
+
+<!-- ======================================================================================= AUDIT -->
+<section id="audit">
+<h2>1. Audit — what makes the app look "made by AI"</h2>
+<p>Method: a Playwright script (<code>mockups/visual-identity/capture.cjs</code>) opened the app on PR #39's head with one fixed seed (<code>?p=citadel-base-mephiston-red</code>). It took 24 surfaces at 360×640, 390×844, 768×1024 (touch), 1025×800 (touch), 1180×820 and 1280×800, in light and dark: 288 screenshots. The same script measured the computed styles of every visible control. The page shows two screenshots per surface (390 light and 1280 dark). The script makes the full set again in about ten minutes.</p>
+<p>Ryan's own two causes are real and measurable: one soft radius, and one button size. They are only the start. The bigger tell is that <em>every</em> default of a 2024 component kit is still in place at the same time: violet accent, Inter and Space Grotesk, a card for every region, soft two-layer shadows, pill badges, micro-caps labels and Unicode icons. Any one of them is fine. All of them together is the "AI" look.</p>
+
+<h3 id="audit-causes">1.1 The known causes, measured</h3>
+<div class="tw"><table class="t">
+<thead><tr><th>#</th><th>Cause</th><th>Measured (Studio at 1280×800 unless named)</th><th>Evidence</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr><td>a</td><td>One soft radius on every control</td><td>8 different radii, all soft: 10px ×28 elements, 999px ×21, 8px ×20, 6px ×10, 5px ×7, 50% ×8, 14px ×7, 4px ×1. On the Shelf, 3,234 elements are 10px.</td><td><code>--r-ctrl:10px</code>, <code>--r-card:14px</code>, <code>--r-pill:999px</code> (tokens.css). <code>.seg button{border-radius:8px}</code> is off-token.</td><td class="fail">AI default</td></tr>
+<tr><td>b</td><td>One button size, one padding</td><td>The main action "+ Add 15 to buy" is 38px tall, 13.5px, padding 0 14px. "Compare", "From photo" and "Include Contrast" are the same. On touch every control is 44px. Only two button font sizes exist (12.5 and 13.5px). The icon buttons pad the same as text buttons.</td><td><code>.btn{height:var(--tap);padding:0 14px}</code>, <code>.btn.primary</code> changes only the colour.</td><td class="fail">AI default</td></tr>
+<tr><td>c</td><td>The accent #7C3AED</td><td>Exactly Tailwind violet-600. It colours the logo, the focus ring, every selected bar, the primary button, the P/A/2 badges, the "main" pill and links. The light neutrals are tinted towards it: <code>--surface-2:#F1F2FF</code>, <code>--border:#E6E7F8</code>, <code>--text-muted:#6E7293</code> are lavender greys (hue 232–240°). It is ΔE 15.1 from <code>--buy</code> blue.</td><td><code>--accent</code>, <code>--accent-weak:#F0EAFE</code> (tokens.css light block)</td><td class="fail">AI default</td></tr>
+<tr><td>d</td><td>Inter + Space Grotesk</td><td>Text nodes: Inter 500 ×82, Inter 400 ×39, Inter 600 ×17, Space Grotesk 600 ×6, 700 ×1. The most common SaaS pair of 2023–25.</td><td><code>--font</code>, <code>--display</code>; fonts.css</td><td class="fail">AI default</td></tr>
+<tr><td>e</td><td>A card for every region, cards in cards</td><td>The seed toolbar, the studio and the output are each a <code>.card</code> (surface, 1px border, 14px radius, two-layer shadow). Inside them: the Plan role cards (<code>.slot</code>, 14px radius, border), each Equivalents row, the live palette columns (<code>.lcol</code>), the settings groups. The whole Shelf is one card. Depth is two everywhere.</td><td><code>.card</code> app.css:127, <code>.slot</code> app.css:334</td><td class="fail">AI default</td></tr>
+<tr><td>f</td><td>Micro-caps labels</td><td>14 places: "Live palette → nearest paint", "Tone ladder", a 13-word caps sentence "Each role: ideal colour → …", 6 settings group labels, "Recent", "All paints", the Shelf stats "0 owned · 0 to buy · 3225 total", the Filters sheet labels.</td><td><code>.micro</code>, <code>.pkhead</code>, <code>.setlbl</code></td><td class="fail">AI default</td></tr>
+<tr><td>g</td><td>Pill badges with a weak fill</td><td>20 pills with text in the Studio: "+ buy" ×5, "⇄ equivalents" ×4, "main", P/A/2 ×3, "metallic", "wash" ×4, the seed chip. The toast is a pill.</td><td><code>.buybtn</code>, <code>.eqjump</code>, <code>.wk-badge</code>, <code>.finish</code>, <code>.toast</code> — all <code>--r-pill</code></td><td class="fail">AI default</td></tr>
+<tr><td>h</td><td>Unicode symbols as icons</td><td>In the Studio: ⋯ ▾ ↻ ↶ ↷ ⚓ ⇄ ✎ ◎ and the emoji 🔓. Elsewhere: ⚠ ✕ ⌕ ◐ ⇧ ⌘. Each comes from a different system font, so stroke weight and size do not match (↶ is thin, ⚓ is heavy, 🔓 is a colour emoji).</td><td><code>#settingsBtn</code>, <code>#wrand</code>, <code>#undo</code>, <code>.dockbtn</code>, <code>.eqjump</code>, <code>.lcbtn</code>, <code>.hchip</code></td><td class="fail">AI default</td></tr>
+<tr><td>i</td><td>The soft two-layer shadow</td><td>13 elements carry <code>0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05)</code> — a violet-tinted shadow — including the selected segment of every segmented control.</td><td><code>--shadow</code></td><td class="fail">AI default</td></tr>
+<tr><td>j</td><td>The "P" plaque</td><td>A 26px letter P in an 8px-radius square, in the accent. The "initial in a squircle" mark.</td><td><code>.logo .mark</code></td><td class="fail">AI default</td></tr>
+<tr><td>k</td><td>Even, symmetric grids</td><td>Settings: four rows of two equal buttons. Plan: four identical role cards in a 2-up grid, so Accent (10%) looks as important as Primary (60%). Phone: Studio and Shelf are a 50/50 track, Ideal and Real a 50/50 track. The tone ladder is three equal cells.</td><td><code>.setbtns</code>, <code>.slots{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}</code></td><td class="fail">AI default</td></tr>
+<tr><td>l</td><td>Generic words</td><td>"Live palette → nearest paint", "Nearest real paint", "Ideal / Real", "⚓ seed here", "Plan · roles", "Equivalents", "Generate a random base colour", "Use as base colour", "Export CSV", "Default order", "Show 3,225 paints". The hobby's words appear only in the ladders (wash, base, highlight).</td><td>index.html, ui.js, i18n.js</td><td class="fail">AI default</td></tr>
+</tbody></table></div>
+
+<h3>1.2 Two problems the audit found that are not style</h3>
+<ul>
+  <li><strong>Dark accent = dark warning.</strong> The brass <code>--accent:#C2912F</code> is ΔE 2.7 from <code>--warning:#C9923A</code>. They are the same colour to the eye, so a "Fair" or "Loose" match tag looks like a selected control. This breaks §3.5 ("single-meaning"). All three directions fix it the same way: <code>--warning</code> becomes <code>#E0803A</code> (ΔE 14.8 from the brass, 16.4 from <code>--danger</code>, 6.15:1 on <code>--surface</code>).</li>
+  <li><strong>Field edges are 1.4:1.</strong> The seed field and the Shelf search are drawn only by <code>--border</code>, 1.22:1 (light) and 1.37:1 (dark) on the surface. WCAG 2.1 1.4.11 asks 3:1 for the visual edge that identifies a field. All three directions add an <code>--edge</code> token (3.4–3.7:1) for fields and selects only.</li>
+</ul>
+
+<h3 id="audit-surfaces">1.3 Surface by surface</h3>
+<div class="tw"><table class="t" id="surfTable">
+<thead><tr><th>Surface</th><th>"AI defaults" found</th><th>Evidence (selector · token)</th><th>Screens (390 light · 1280 dark)</th></tr></thead>
+<tbody></tbody></table></div>
+</section>
+
+<!-- ======================================================================================= DIRECTIONS -->
+<section id="workbench">
+<h2>2a. Direction 1 — "Workbench"</h2>
+<p class="lead">A painting desk, not a dashboard. Small radii, hairline rules and space in place of cards, condensed headings, dense controls that sit together like tools in a rack.</p>
+<div data-kit="wb"></div>
+<h3>Studio — phone</h3><div class="row" data-frames="wb studio ph"></div>
+<h3>Studio — desktop (shown at 50%)</h3><div class="row" data-frames="wb studio dt"></div>
+<h3>Shelf — phone and desktop</h3><div class="row" data-frames="wb shelf ph"></div><div class="row" data-frames="wb shelf dt"></div>
+</section>
+
+<section id="chamfer">
+<h2>2b. Direction 2 — "Chamfer"</h2>
+<p class="lead">Cut corners on controls and region plates, like a stencil plate or a tank hatch. It suits the wargame side of the hobby. The section below proves that focus stays visible on a cut control.</p>
+<div data-kit="ch"></div>
+<h3>Studio — phone</h3><div class="row" data-frames="ch studio ph"></div>
+<h3>Studio — desktop (shown at 50%)</h3><div class="row" data-frames="ch studio dt"></div>
+<h3>Shelf — phone and desktop</h3><div class="row" data-frames="ch shelf ph"></div><div class="row" data-frames="ch shelf dt"></div>
+</section>
+
+<section id="pot">
+<h2>2c. Direction 3 — "Paint pot"</h2>
+<p class="lead">The paint is the round, soft thing — a pot lid seen from above. Every control is square. Region labels look like the paper label on a pot.</p>
+<div data-kit="pot"></div>
+<h3>Studio — phone</h3><div class="row" data-frames="pot studio ph"></div>
+<h3>Studio — desktop (shown at 50%)</h3><div class="row" data-frames="pot studio dt"></div>
+<h3>Shelf — phone and desktop</h3><div class="row" data-frames="pot shelf ph"></div><div class="row" data-frames="pot shelf dt"></div>
+</section>
+
+<section id="shared">
+<h2>2d. Parts that every direction shares</h2>
+<h3>Icons</h3>
+<p>One set on a 20px grid, one stroke width (1.5px), <code>currentColor</code>, no fill. Only the stroke ends change per direction: square (Workbench), cut (Chamfer), round (Paint pot). They replace ☰ ⋯ ↻ ✓ ⚓ ⚠ ○ ⌕ ✕ ↶ ↷ ⇄ and add hobby icons: brush, pot, drop, d6, d20. The sources are in <code>src/assets/icons/</code>. Licence: original work for this project, under the repository's licence (no third-party icon set is used).</p>
+<div id="iconSheet"></div>
+<h3>Fonts and licences</h3>
+<div class="tw"><table class="t">
+<thead><tr><th>Direction</th><th>Headings</th><th>Body (option to Inter)</th><th>Licence</th><th>Files (latin, woff2)</th></tr></thead>
+<tbody>
+<tr><td>Workbench</td><td>Barlow Condensed 500/600/700 — Jeremy Tribby</td><td>IBM Plex Sans 400/500/600 — IBM</td><td>SIL OFL 1.1 (both)</td><td>~23 KB per Barlow weight, ~27 KB per Plex weight</td></tr>
+<tr><td>Chamfer</td><td>Chakra Petch 500/600/700 — Cadson Demak</td><td>Atkinson Hyperlegible 400/700 — Braille Institute</td><td>SIL OFL 1.1 (both)</td><td>~16 KB per Chakra weight, ~19 KB per Atkinson weight</td></tr>
+<tr><td>Paint pot</td><td>Fraunces 600/700 — Undercase Type</td><td>Public Sans 400/500/600 — USWDS</td><td>SIL OFL 1.1 (both)</td><td>~33 KB per Fraunces weight, ~21 KB per Public Sans weight</td></tr>
+</tbody></table></div>
+<p>Each licence text is in <code>mockups/fonts/*.OFL.txt</code>. The build would copy the chosen pair into <code>src/assets/fonts/</code> with its licence and add <code>@font-face</code> rules to <code>src/styles/fonts.css</code>, as for Inter now. No font is loaded from a server.</p>
+</section>
+
+<!-- ======================================================================================= UX -->
+<section id="ux">
+<h2>3. UX pass</h2>
+<p>Each item gives the problem, the measurement where there is one, and the fix. The fixes are shown in the frames above (each direction draws them in its own shape) and in the extra frames here.</p>
+<div id="uxBody"></div>
+</section>
+
+<!-- ======================================================================================= JUDGES -->
+<section id="scores">
+<h2>4. Judges and scores</h2>
+<div id="scoreBody">
+<p>Four judges scored each direction from 0 to 20. Each judge worked alone, from this page, the rendered frames and the code. No judge saw another judge's scores.</p>
+<div class="tw"><table class="t">
+<thead><tr><th>Judge</th><th>Workbench</th><th>Chamfer</th><th>Paint pot</th><th>Main reason</th></tr></thead>
+<tbody>
+<tr><td>1. A painter on a phone at the bench (Priya, Sam)</td><td class="n">15</td><td class="n">10</td><td class="n">14</td><td>Workbench has the largest headings, a one-row Shelf dock and the least chrome before the Recipe. Paint pot's lids with names look most like a rack of pots. Chamfer's plates make the text smaller and push the Shelf grid about 100px down.</td></tr>
+<tr><td>2. The constitution and accessibility</td><td class="n">15</td><td class="n">13</td><td class="n">10</td><td>Workbench breaks the fewest rules: square swatches, a small radius set, the same shape in both themes. Chamfer has the best forced-colours work, but its clipped plates cut tooltips and popovers. Paint pot breaks §3.5 (square swatches), and its lid ring tinted the paint (§2).</td></tr>
+<tr><td>3. An "AI look" critic</td><td class="n">12</td><td class="n">9</td><td class="n">13</td><td>Paint pot has the clearest idea from the hobby (round paint, square chrome). Workbench is disciplined, but Barlow + Plex is a common "dev tool" pair. Chamfer reads as a "40k UI kit": Chakra Petch, and the cut on every element.</td></tr>
+<tr><td>4. The build: cost and risk</td><td class="n">16</td><td class="n">7</td><td class="n">12</td><td>Workbench is mostly token values and deletions (4 commits, about 150–220 CSS lines). Chamfer needs both pseudo-elements on every control. That collides with the existing ones (the segment bar, the tab focus ring, the 44px hit areas), inputs cannot have them, and 25 clipping containers cut its ring. Paint pot changes one token for the swatch shape, but it reverses §3.5.</td></tr>
+<tr><th>Total (of 80)</th><th class="n">58</th><th class="n">39</th><th class="n">49</th><td></td></tr>
+</tbody></table></div>
+
+<h3>Where the judges disagree</h3>
+<ul>
+<li><strong>Round swatches.</strong> The painter and the critic like the pot lids: they are the most "hobby" idea on the page. The constitution judge counts them as a break of §3.5, and a disc shows about 21% less paint (π/4) on a dense grid. The build judge says the change is one token, but the decision is a product decision.</li>
+<li><strong>The accent.</strong> The painter says the teal accent (Sotek Green) can read as a paint when a scheme has a teal role: the "Add 9 pots" button sits near Hydra Turquoise. The constitution judge says the wine accent (Screamer Pink) is a saturated red in a tool whose sample scheme is red, and it is the closest to <code>--danger</code> (ΔE 23.8). Every colour from a real paint can meet a scheme that uses it. The rule that limits the risk: the accent appears only on chrome (the main button, the selected bar, the focus ring, text actions), never on or beside a swatch.</li>
+<li><strong>How "AI" Workbench still looks.</strong> The build and constitution judges rank it first. The critic ranks it second: "change the colour token and it becomes any SaaS settings page". The critic's fixes for it are in the verdict.</li>
+</ul>
+
+<h3>Findings that apply to every direction (the judges found them; this page now fixes the ones it can)</h3>
+<ol>
+<li><strong>Tags failed 4.5:1.</strong> Tag text is 11.5px, so it is small text and needs 4.5:1. This page had tested it at 3:1. Light <code>--success</code> and <code>--warning</code> failed on every ground, as do today's tags (3.00:1 and 3.09:1 on their weak fills). <em>Fixed here:</em> new text tokens for tags — light <code>--success-text:#166534</code>, <code>--warning-text:#9A5A0A</code>, <code>--danger-text:#B4232F</code>, <code>--buy-text:#1D4ED8</code>, dark <code>--danger-text:#DE6A52</code>. The table below now tests them at 4.5:1. One fail is left: Chamfer's warning text on its <code>--surface-2</code>.</li>
+<li><strong>Forced colours lost the pressed state and the swatches.</strong> <em>Fixed here:</em> swatches, the wheel and the slider track get <code>forced-color-adjust:none</code> (paint is data). Pressed and selected controls get a <code>Highlight</code> outline. Today's app also loses its swatches in forced colours. The build fixes that too.</li>
+<li><strong>Small targets in the phone frames.</strong> "Change" was 18px and the role "Add" was 28px tall. The wordmark squeezed ⋯ to 22–43px wide. <em>Fixed here:</em> a 44px <code>::before</code> hit area (UX 8), and ⋯ no longer shrinks.</li>
+<li><strong>The live-palette rows did not line up</strong> (about 15px). <em>Fixed here:</em> the columns share rows through a subgrid, as in the app (§3.6).</li>
+<li><strong>The pot-lid ring tinted the paint.</strong> <em>Fixed here:</em> the ring is gone. A lid is now only a round swatch.</li>
+<li><strong>Dark warning and colour blindness.</strong> The new <code>--warning:#E0803A</code> is ΔE 14.8 from the brass for typical vision, but only ΔE 1.0 under deuteranopia. The tags carry words, so WCAG 1.4.1 passes. The build should also put the warning icon on Fair and Loose tags, so that the state never rests on colour alone.</li>
+<li><strong>Off-scale values in the mockup</strong> (font sizes 13, 13.5, 15, 17, 19, 21; spacing 6, 10, 14, 20, 28). The build either uses the §3.3/§3.4 scales or changes them in CLAUDE.md in the same commit.</li>
+</ol>
+</div>
+<h3>Contrast, computed (WCAG 2.1 relative luminance)</h3>
+<p>The script below computes every ratio from the token values on this page, so the table cannot drift from the frames.</p>
+<div class="tw" id="contrastTable"></div>
+</section>
+
+<section id="verdict">
+<h2>Verdict</h2>
+<div id="verdictBody">
+<p><strong>Recommendation: Workbench, with five changes from the judges ("Workbench+").</strong> It has the highest total (58 of 80) and is first for three of the four judges. It is the cheapest and safest build. It also keeps the constitution's square swatches, and it gives the painter the most paint and the least chrome on a phone.</p>
+<ol>
+<li><strong>A real size scale for buttons</strong> (the critic, and Ryan's own complaint). Main action: 46px, 15px semibold, one per stage. Standard: <code>--tap</code> (38px with a mouse, 44px on touch). Compact: 30px, with a mouse only, for joined toolbars (↶ ↷ + −). Minor actions are text actions. Today every control has one size.</li>
+<li><strong>An icon house style.</strong> Use a 1.75px stroke with square caps and mitred joins, not the 1.5px round "Lucide" look. The d6, d20, pot and brush stay.</li>
+<li><strong>The accent.</strong> It is Ryan's choice (see the questions). The rule for any choice: the accent appears only on chrome, never on or beside a swatch.</li>
+<li><strong>Fonts.</strong> Use only Barlow Condensed 600/700 and IBM Plex Sans 400/500/600. That is about 116 KB, against 112 KB now.</li>
+<li><strong>Fixes for every direction.</strong> Add the tag text tokens, the <code>--edge</code> token for fields, dark <code>--warning:#E0803A</code>, the forced-colours fixes and the UX pass.</li>
+</ol>
+<p>Two ideas from the other directions can be added later: Paint pot's round lids for the small ladder chips only (not the Shelf grid), and Chamfer's cut for the logo plate only. Neither is in the recommendation.</p>
+<p><strong>Not in this pass:</strong> the critic calls the full-saturation rainbow wheel the most generic part of the screen. The wheel is the true hue circle that the harmonies turn on, so a change to it is a product decision of its own. This page does not propose one.</p>
+<h3>Build order (from the build judge)</h3>
+<p>Commits 1, 3, 4 and 7–12 are the same for every direction. Only 2, 5 and 6 are Workbench work.</p>
+<ol>
+<li>tokens: <code>--edge</code> on fields and selects, dark <code>--warning</code>, the tag text tokens (CLAUDE.md §3.1)</li>
+<li>tokens: the Workbench light set and the accent; flat dark brass (§3, §3.1)</li>
+<li>fonts: self-host the new pair, remove Inter and Space Grotesk, the canvas font in <code>wheel.js</code>, the <code>sw.js</code> font list and <code>CACHE</code>, OFL credits (§3.3, §4, §6)</li>
+<li>icons: an SVG sprite in place of the Unicode glyphs, with the glyphs taken out of the i18n strings (§3.5)</li>
+<li>shape: radii 4/6/3/2, square tags, joined toolbars, the button size scale (§3.4, §3.5)</li>
+<li>layout: hairline regions in place of the 4 cards; the rise only on a new scheme (UX 9); check the sticky studio and the Shelf dock (§3.4, §3.5)</li>
+<li>touch targets and the neutral overlay (PLAN follow-ups 12 and 13)</li>
+<li>the phone Studio order (UX 2, §3.6)</li>
+<li>one name for one thing (i18n, plus the English that is still hard-coded in <code>ui.js</code>; update <code>test/ui.test.mjs</code> in the same commit)</li>
+<li>"Make this your paint" docks and the "Other brands for [▾]" select (UX 7)</li>
+<li>empty and error states (UX 4)</li>
+<li>the first-run block (UX 1)</li>
+<li>docs and the release: README, USE_CASES, PLAN, CHANGELOG, a 1.x minor version</li>
+</ol>
+<h3>Questions for Ryan</h3>
+<ol>
+<li><strong>Direction:</strong> Workbench+ (recommended), Paint pot, Chamfer, or a mix?</li>
+<li><strong>Light accent:</strong> Sotek Green teal <code>#0B6371</code> (the Workbench frames), Screamer Pink wine <code>#7A0E44</code>, or another paint you like?</li>
+<li><strong>Round pot-lid swatches:</strong> no (recommended), only on the small ladder chips, or everywhere? Round swatches change CLAUDE.md §3.5.</li>
+<li><strong>Scope:</strong> one release, or two (the look first, then the UX pass)?</li>
+</ol>
+</div>
+</section>
+</div>
+
+<script>
+/* ---------- data: real engine output (data.js/scheme.js on paints.json), Citadel Mephiston Red, complementary ---------- */
+var DATA = {"seed":{"name":"Mephiston Red","brand":"Citadel","line":"Base","hex":"#960C09"},"partners":[{"hex":"#099396","deg":180}],"roles":[{"role":"Primary","ideal":"#960C09","match":{"name":"Mephiston Red","brand":"Citadel","line":"Base","type":"base","hex":"#960C09","dE":0,"q":"Indistinguishable"},"ladder":[{"key":"wash","ideal":"#4B0402","match":{"name":"Flesh Wash","brand":"Army Painter","line":"Nolzur's","type":"wash","hex":"#4B1B0E","dE":5.9,"q":"Loose"},"dilute":false},{"key":"base","ideal":"#960C09","match":{"name":"Mephiston Red","brand":"Citadel","line":"Base","type":"base","hex":"#960C09","dE":0,"q":"Indistinguishable"},"dilute":false},{"key":"highlight","ideal":"#E43935","match":{"name":"Centurion Red","brand":"Two Thin Coats","line":"Wave 3","type":"layer","hex":"#E63132","dE":0.9,"q":"Indistinguishable"},"dilute":false}]},{"role":"Secondary","ideal":"#965209","match":{"name":"Skrag Brown","brand":"Citadel","line":"Layer","type":"layer","hex":"#8B4806","dE":3.8,"q":"Fair"},"ladder":[{"key":"wash","ideal":"#4B2802","match":{"name":"Light Rust Wash","brand":"AMMO by Mig","line":"Wash","type":"wash","hex":"#552E11","dE":3.4,"q":"Good"},"dilute":false},{"key":"base","ideal":"#965209","match":{"name":"Skrag Brown","brand":"Citadel","line":"Layer","type":"layer","hex":"#8B4806","dE":3.8,"q":"Fair"},"dilute":false},{"key":"highlight","ideal":"#E49035","match":{"name":"Marigold Yellow","brand":"Reaper","line":"Master Series","type":"layer","hex":"#EE922B","dE":2.1,"q":"Good"},"dilute":false}]},{"role":"Accent","ideal":"#099396","match":{"name":"Hydra Turquoise","brand":"Army Painter","line":"Warpaints Fanatic","type":"layer","hex":"#149398","dE":0.9,"q":"Indistinguishable"},"ladder":[{"key":"wash","ideal":"#024A4B","match":{"name":"Turquoise Ink","brand":"Scale75","line":"Artist","type":"ink","hex":"#204C50","dE":4.1,"q":"Fair"},"dilute":false},{"key":"base","ideal":"#099396","match":{"name":"Hydra Turquoise","brand":"Army Painter","line":"Warpaints Fanatic","type":"layer","hex":"#149398","dE":0.9,"q":"Indistinguishable"},"dilute":false},{"key":"highlight","ideal":"#35E1E4","match":{"name":"Turquoise","brand":"Pro Acryl","line":"Pro Acryl","type":"layer","hex":"#75F1F1","dE":4.9,"q":"Fair"},"dilute":false}]},{"role":"Metal","ideal":"#C8A13A","match":{"name":"Keleshite Gold","brand":"Reaper","line":"Pathfinder","type":"metal","hex":"#BD9E44","dE":2.9,"q":"Good"},"ladder":[{"key":"wash","ideal":"#8F7121","match":{"name":"Oozing Vomit","brand":"Army Painter","line":"Wash","type":"wash","hex":"#7B5C1D","dE":8.3,"q":"Loose"},"dilute":false},{"key":"base","ideal":"#C8A13A","match":{"name":"Keleshite Gold","brand":"Reaper","line":"Pathfinder","type":"metal","hex":"#BD9E44","dE":2.9,"q":"Good"},"dilute":false},{"key":"highlight","ideal":"#DBCBA1","match":{"name":"Platinum Crown","brand":"Two Thin Coats","line":"Wave 2","type":"metal","hex":"#CEC2A4","dE":4.1,"q":"Fair"},"dilute":false}]}],"eq":[{"name":"Sanguine Scarlet","brand":"Two Thin Coats","hex":"#961714","type":"layer","dE":1.9,"q":"Excellent"},{"name":"Clotted Red","brand":"Reaper","hex":"#890101","type":"layer","dE":2.8,"q":"Good"},{"name":"Heraldic Red","brand":"Reaper","hex":"#97161A","type":"layer","dE":3.5,"q":"Fair"},{"name":"Bold Pyrrole Red","brand":"Pro Acryl","hex":"#A90F0F","type":"layer","dE":3.8,"q":"Fair"},{"name":"Cambion Crimson","brand":"Army Painter","hex":"#9C1A1D","type":"layer","dE":4,"q":"Fair"},{"name":"Carmine Red","brand":"Vallejo","hex":"#97211F","type":"layer","dE":4.2,"q":"Fair"}],"shelf":[{"name":"Evil Sunz Scarlet","hex":"#C01411","type":"layer","line":"Layer"},{"name":"Flesh Tearers Red","hex":"#4B0402","type":"contrast","line":"Contrast"},{"name":"Wazdakka Red","hex":"#880804","type":"layer","line":"Layer"},{"name":"Knight-Questor Flesh","hex":"#996563","type":"layer","line":"Layer"},{"name":"Cygor Brown","hex":"#3E1A17","type":"contrast","line":"Contrast"},{"name":"Canoptek Alloy","hex":"#C3B2AC","type":"metal","line":"Layer"},{"name":"Troll Slayer Orange","hex":"#F16C23","type":"layer","line":"Layer"},{"name":"Brass Scorpion","hex":"#A65D2C","type":"metal","line":"Layer"},{"name":"Reikland Fleshshade Gloss","hex":"#C2A896","type":"shade","line":"Shade"},{"name":"Bestigor Flesh","hex":"#D08951","type":"layer","line":"Layer"},{"name":"Fulgurite Copper","hex":"#CE8D51","type":"metal","line":"Layer"},{"name":"Sycorax Bronze","hex":"#BB9F84","type":"metal","line":"Layer"},{"name":"Snakebite Leather","hex":"#694C29","type":"contrast","line":"Contrast"},{"name":"Iyanden Yellow","hex":"#DB7F0C","type":"contrast","line":"Contrast"},{"name":"Cassandora Yellow","hex":"#F5CC92","type":"shade","line":"Shade"},{"name":"Ungor Flesh","hex":"#D1A560","type":"layer","line":"Layer"},{"name":"Skullcrusher Brass","hex":"#F4CB7A","type":"metal","line":"Layer"},{"name":"Retributor Armour","hex":"#EDC169","type":"metal","line":"Base"},{"name":"Sigmarite","hex":"#D6AC57","type":"metal","line":"Dry"},{"name":"Zamesi Desert","hex":"#D89D1B","type":"layer","line":"Layer"},{"name":"Morghast Bone","hex":"#C0A973","type":"base","line":"Base"},{"name":"Wraithbone","hex":"#DBD1B2","type":"base","line":"Base"},{"name":"Flash Gitz Yellow","hex":"#FFF300","type":"layer","line":"Layer"},{"name":"Athonian Camoshade","hex":"#B6B788","type":"shade","line":"Shade"},{"name":"Militarum Green","hex":"#6B7711","type":"contrast","line":"Contrast"},{"name":"Plaguebearer Flesh","hex":"#718025","type":"contrast","line":"Contrast"},{"name":"Deathworld Forest","hex":"#556229","type":"base","line":"Base"},{"name":"Elysian Green","hex":"#6B8C37","type":"layer","line":"Layer"},{"name":"Loren Forest","hex":"#486C25","type":"layer","line":"Layer"},{"name":"Deepkin Flesh","hex":"#A9B79F","type":"layer","line":"Layer"},{"name":"Moot Green","hex":"#3DAF44","type":"layer","line":"Layer"},{"name":"Caliban Green","hex":"#003D15","type":"base","line":"Base"},{"name":"Skarsnik Green","hex":"#588F6B","type":"layer","line":"Layer"},{"name":"Warp Lightning","hex":"#005E26","type":"contrast","line":"Contrast"},{"name":"Warboss Green","hex":"#317E57","type":"layer","line":"Layer"},{"name":"Celestra Grey","hex":"#8BA3A3","type":"base","line":"Base"},{"name":"Incubi Darkness","hex":"#082E32","type":"base","line":"Base"},{"name":"Terradon Turquoise","hex":"#005862","type":"contrast","line":"Contrast"},{"name":"Baharroth Blue","hex":"#54BDCA","type":"layer","line":"Layer"},{"name":"Sotek Green","hex":"#0B6371","type":"layer","line":"Layer"},{"name":"Aethermatic Blue","hex":"#1C7E92","type":"contrast","line":"Contrast"},{"name":"Stegadon Scale Green","hex":"#06455D","type":"base","line":"Base"},{"name":"Thousand Sons Blue","hex":"#00506F","type":"base","line":"Base"},{"name":"Gryph-Charger Grey","hex":"#25698A","type":"contrast","line":"Contrast"},{"name":"Grey Knights Steel","hex":"#B0BDC6","type":"metal","line":"Base"},{"name":"Apothecary White","hex":"#A5BED4","type":"contrast","line":"Contrast"},{"name":"Night Lords Blue","hex":"#002B5C","type":"base","line":"Base"},{"name":"Teclis Blue","hex":"#3877BF","type":"layer","line":"Layer"},{"name":"Hoeth Blue","hex":"#4C78AF","type":"layer","line":"Layer"},{"name":"Macragge Blue","hex":"#0F3D7C","type":"base","line":"Base"},{"name":"Alaitoc Blue","hex":"#2F4F85","type":"layer","line":"Layer"},{"name":"Daemonette Hide","hex":"#655F81","type":"base","line":"Base"},{"name":"Genestealer Purple","hex":"#7658A5","type":"layer","line":"Layer"},{"name":"Kakophoni Purple","hex":"#8869AE","type":"layer","line":"Layer"},{"name":"Phoenician Purple","hex":"#440052","type":"base","line":"Base"},{"name":"Barak-Nar Burgundy","hex":"#451636","type":"base","line":"Base"},{"name":"Screamer Pink","hex":"#7A0E44","type":"base","line":"Base"},{"name":"Word Bearers Red","hex":"#620104","type":"layer","line":"Layer"},{"name":"Khorne Red","hex":"#650001","type":"base","line":"Base"},{"name":"Abaddon Black","hex":"#000000","type":"base","line":"Base"},{"name":"Black Templar","hex":"#171717","type":"contrast","line":"Contrast"},{"name":"Stormvermin Fur","hex":"#6D655F","type":"layer","line":"Layer"},{"name":"Dawnstone","hex":"#697068","type":"layer","line":"Layer"},{"name":"Iron Warriors","hex":"#706E6B","type":"metal","line":"Base"},{"name":"Nuln Oil","hex":"#9E9A98","type":"shade","line":"Shade"},{"name":"Drakenhof Nightshade","hex":"#A1A5AF","type":"shade","line":"Shade"},{"name":"Pallid Wych Flesh","hex":"#CACCBB","type":"layer","line":"Layer"},{"name":"Runefang Steel","hex":"#C2C8CC","type":"metal","line":"Layer"}]};
+</script>
+<script>
+(function () {
+'use strict';
+var D = DATA;
+var $ = function (s, r) { return (r || document).querySelector(s); };
+var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+var ic = function (id, label) { return '<svg class="ic" ' + (label ? 'role="img" aria-label="' + esc(label) + '"' : 'aria-hidden="true"') + '><use href="#i-' + id + '"/></svg>'; };
+var NAME = { wb: 'Workbench', ch: 'Chamfer', pot: 'Paint pot' };
+
+/* ---------- colour maths (WCAG luminance, CIEDE2000), for the contrast table ---------- */
+function hexRgb(h) { h = h.replace('#', ''); return [0, 2, 4].map(function (i) { return parseInt(h.substr(i, 2), 16); }); }
+function lin(c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+function lum(h) { var r = hexRgb(h).map(lin); return 0.2126 * r[0] + 0.7152 * r[1] + 0.0722 * r[2]; }
+function cr(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+function lab(h) {
+  var r = hexRgb(h).map(lin);
+  var X = (r[0] * 0.4124 + r[1] * 0.3576 + r[2] * 0.1805) / 0.95047, Y = r[0] * 0.2126 + r[1] * 0.7152 + r[2] * 0.0722, Z = (r[0] * 0.0193 + r[1] * 0.1192 + r[2] * 0.9505) / 1.08883;
+  var f = function (t) { return t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116; };
+  return [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))];
+}
+function de2000(h1, h2) {
+  var a = lab(h1), b = lab(h2), L1 = a[0], a1 = a[1], b1 = a[2], L2 = b[0], a2 = b[1], b2 = b[2];
+  var rad = Math.PI / 180, C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2), Cb = (C1 + C2) / 2;
+  var G = 0.5 * (1 - Math.sqrt(Math.pow(Cb, 7) / (Math.pow(Cb, 7) + Math.pow(25, 7))));
+  var a1p = a1 * (1 + G), a2p = a2 * (1 + G), C1p = Math.hypot(a1p, b1), C2p = Math.hypot(a2p, b2);
+  var h1p = (Math.atan2(b1, a1p) / rad + 360) % 360, h2p = (Math.atan2(b2, a2p) / rad + 360) % 360;
+  var dL = L2 - L1, dC = C2p - C1p, dh = 0;
+  if (C1p * C2p) { dh = h2p - h1p; if (dh > 180) dh -= 360; else if (dh < -180) dh += 360; }
+  var dH = 2 * Math.sqrt(C1p * C2p) * Math.sin(dh * rad / 2), Lb = (L1 + L2) / 2, Cbp = (C1p + C2p) / 2, hb = h1p + h2p;
+  if (C1p * C2p) { if (Math.abs(h1p - h2p) > 180) hb += (hb < 360 ? 360 : -360); hb /= 2; }
+  var T = 1 - 0.17 * Math.cos((hb - 30) * rad) + 0.24 * Math.cos(2 * hb * rad) + 0.32 * Math.cos((3 * hb + 6) * rad) - 0.2 * Math.cos((4 * hb - 63) * rad);
+  var SL = 1 + 0.015 * Math.pow(Lb - 50, 2) / Math.sqrt(20 + Math.pow(Lb - 50, 2)), SC = 1 + 0.045 * Cbp, SH = 1 + 0.015 * Cbp * T;
+  var RT = -2 * Math.sqrt(Math.pow(Cbp, 7) / (Math.pow(Cbp, 7) + Math.pow(25, 7))) * Math.sin(60 * Math.exp(-Math.pow((hb - 275) / 25, 2)) * rad);
+  return Math.sqrt(Math.pow(dL / SL, 2) + Math.pow(dC / SC, 2) + Math.pow(dH / SH, 2) + RT * (dC / SC) * (dH / SH));
+}
+
+/* ---------- the surface table (audit 1.3) ---------- */
+var SURF = [
+  ['Header', '00-loading', 'The "P" plaque (j). Studio / Shelf is a pill-in-a-track segmented control with a soft shadow under the selected half (i). ⋯ is a Unicode glyph in a 38px, 10px-radius square (h). The tagline "for miniatures" is faint and adds nothing. On a phone the switch becomes a 50/50 track (k).', '<code>.logo .mark</code> · <code>.seg button[aria-pressed=true]{box-shadow:var(--shadow)}</code> · <code>#settingsBtn</code>', '01-studio'],
+  ['Seed field and its list', '03-seedlist-browse', 'A whole card (surface, border, shadow) exists only to hold one toolbar (e). The field, the camera and "Compare" are the same height and weight, so the field does not read as the main action (b). The field edge is 1.22:1. The list: 10px tiles with centred captions, micro-caps "Recent" and "All paints" (f).', '<code>.card.seedtoolbar</code> · <code>#seedQ</code> · <code>.pkhead</code> · <code>--border</code>', '04-seedlist-search'],
+  ['Hero line', '01-studio', 'A violet weak-fill pill "main" and an outlined pill "+ buy" (g). The meta line says "Citadel · Base · base" (the line and the type repeat).', '<code>.seedbadge</code> · <code>.buybtn</code> · <code>--accent-weak</code>', '01-studio'],
+  ['Wheel and lightness slider', '01-studio', 'The ↻ glyph in a rounded square (h). The P / A / 2 legend is three round accent badges plus a separate legend row (g) — the legend costs a row on a phone.', '<code>#wrand</code> · <code>.wk-badge</code> · <code>.wkey</code>', '16-neutral'],
+  ['Harmony strip', '01-studio', 'Ten chips in a tinted track, the selected one a white pill with a soft shadow and a violet bar (a, i). "Roll" has the same height and weight as a chip.', '<code>#seg.harmscroll</code> · <code>.rollbtn</code>', '01-studio'],
+  ['Live palette', '02-studio-full', 'Micro-caps title with an arrow, "Live palette → nearest paint" (f, l). ↶ ↷ + − are Unicode in 30px buttons, under 44px on touch (h). ✎ ◎ 🔓 on the columns (one is a colour emoji). Each column is a rounded box in the studio card (e). The columns are equal width, whatever the role weight (k).', '<code>.palhead .micro</code> · <code>#undo</code> · <code>.lcbtn</code> · <code>.lcol</code>', '01-studio'],
+  ['Seed docks', '02-studio-full', '"⚓ seed here": an anchor glyph and the word "seed", which a painter does not use (h, l). A dashed pill.', '<code>.dockbtn</code>', '01-studio'],
+  ['Matching note', '10-matchnote', 'A muted line with no icon. Clear words, but it looks like a caption, so it is easy to miss.', '<code>#matchnote</code>', '10-matchnote'],
+  ['Plan role cards and ladders', '08-plan', 'Cards in a card (e). Four equal cards, so Accent looks as big as Primary (k). In each card: "⇄ equivalents" pill, "~60%", "Nearest real paint", a mono ΔE pill, "+ buy" pill (g). A 13-word micro-caps sentence over the cards (f). "+ Add 15 to buy" is the main action of the stage but is the same size as "Include Contrast" (b).', '<code>.slot</code> · <code>.eqjump</code> · <code>.buybtn</code> · <code>.micro</code>', '08-plan'],
+  ['Equivalents tab', '06-equivalents', 'Each match is a bordered rounded card in the output card, with its own "+ buy" pill (e, g). Eight cards of the same shape (k).', '<code>.eqrow</code> · <code>.buybtn</code>', '06-equivalents'],
+  ['Accessibility tab', '07-accessibility', 'Rounded cards again; colour-blind rows as boxed strips; contrast results as pills.', '<code>.card</code> descendants in <code>#panel-a11y</code>', '07-accessibility'],
+  ['Shelf grid', '17-shelf', 'The whole Shelf is one card (e). Title in Space Grotesk, stats in micro-caps (d, f). "Import" and "Export" have the same weight as "Select" (b). 3,234 swatches with a 10px radius (a). The hint is a dense line of symbols (see UX 5).', '<code>section.card.shelf</code> · <code>.shelfstats.micro</code> · <code>#shelfHint</code>', '18-shelf-scrolled'],
+  ['Shelf dock', '18-shelf-scrolled', 'The search edge is 1.22:1. The status filter is another pill-in-track segmented control.', '<code>#shelfQ</code> · <code>#shelfMarkSeg</code>', '17-shelf'],
+  ['Filters sheet', '19-filters', 'A rounded sheet with micro-caps labels BRAND, TYPE, SORT (f) and a full-width violet "Show 3,225 paints" (c). The sheet is fine; the look is the kit default.', '<code>.shelfmore</code> · <code>#shelfDone</code>', '19-filters', '390x844-dark-19-filters'],
+  ['Mark menu', '20-markmenu', 'A 10px-radius popover with the soft pop shadow. Good content; generic shape.', '<code>#markMenu.menu</code> · <code>--shadow-pop</code>', '20-markmenu'],
+  ['⋯ settings', '09-settings', 'Six micro-caps group labels (f). Four rows of two equal buttons (k). Every action has the same weight: "Share link" looks the same as "Restore…".', '<code>.setlbl</code> · <code>.setbtns</code>', '09-settings'],
+  ['About & data', '12-about', '✕ glyph in the close button, ⚠ glyph in "Delete" (h). Long, dense text in one column with no hierarchy beyond Space Grotesk headings.', '<code>#aboutClose</code> · <code>.dangerglyph</code>', '12-about'],
+  ['Restore and Delete confirms', '13-delete-confirm', 'Two equal-width buttons (k). The ⚠ glyph (h). Clear words.', '<code>.cdlgacts</code> · <code>.dangerglyph</code>', '14-restore-confirm'],
+  ['Toasts', '11-toast', 'A dark pill centred at the bottom (g): the default toast. An unreadable backup file is reported only by a toast that goes after a few seconds (see UX 4).', '<code>.toast{border-radius:var(--r-pill)}</code>', '15-unreadable'],
+  ['Loader', '00-loading', 'Not built. §3.4 names the Molten Harmonics loader, but it lives only in <code>mockups/loaders/</code>. While the dataset loads, the page shows the empty cards and an empty wheel area for about 1.5 s on a slow link.', '— (no element)', '00-loading'],
+  ['Empty states', '21-shelf-empty-owned', '"No paints match this filter." is squeezed into one grid cell, with no action. The empty seed search is good ("No paint matches …. Try a brand or a colour word").', '<code>#shelfGrid .empty</code> · <code>#pkEmpty</code>', '05-seedlist-empty'],
+  ['support.html and privacy.html', '22-support', 'Space Grotesk headings, violet links, "← Back to the app" in a rounded pill-like button. A default doc page.', '<code>infopage.js</code> · inline styles', '23-privacy']
+];
+var tb = $('#surfTable tbody');
+SURF.forEach(function (s) {
+  var a = 'visual-identity/audit/390x844-light-' + s[1] + '.jpg', b = 'visual-identity/audit/' + (s[5] || '1280x800-dark-' + s[4]) + '.jpg';
+  tb.insertAdjacentHTML('beforeend', '<tr><td><strong>' + s[0] + '</strong></td><td>' + s[2] + '</td><td>' + s[3] + '</td><td><div class="thumbs"><a href="' + a + '"><img loading="lazy" src="' + a + '" alt="' + esc(s[0]) + ', 390 px, light"></a><a href="' + b + '"><img loading="lazy" src="' + b + '" alt="' + esc(s[0]) + (s[5] ? ', 390 px, dark' : ', 1280 px, dark') + '"></a></div></td></tr>');
+});
+
+/* ---------- shared bits ---------- */
+var R = D.roles;
+var ROLE_W = { Primary: '~60%', Secondary: '~30%', Accent: '~10%', Metal: 'spot' };
+function qTag(q) { var c = q === 'Poor' ? 'bad' : (q === 'Fair' || q === 'Loose') ? 'warn' : 'ok'; return '<span class="tag ' + c + '">' + q + '</span>'; }
+function sw(hex, size, extra) { return '<span class="sw ' + (extra || '') + '" style="background-color:' + hex + ';width:' + size + 'px;height:' + size + 'px"></span>'; }
+function txtOn(hex) { return cr(hex, '#15150F') >= cr(hex, '#FFFFFF') ? '#15150F' : '#FFFFFF'; }
+function logo(dir) { return '<span class="logo"><svg aria-hidden="true"><use href="#logo-' + dir + '"/></svg><span class="wm">Palette Studio</span></span>'; }
+function head(dir, mode, ph) {
+  return '<div class="f-head">' + logo(dir) + '<span class="sp"></span>' +
+    '<div class="tb modes" role="group" aria-label="View"><button class="b" aria-pressed="' + (mode === 'studio') + '">Studio</button><button class="b" aria-pressed="' + (mode === 'shelf') + '">Shelf</button></div>' +
+    '<button class="b ico" aria-label="Settings">' + ic('more') + '</button></div>';
+}
+function wheel(size) {
+  // node positions: hue angle on the conic wheel (from 90deg = red at the right, clockwise in CSS)
+  var nodes = [{ h: 2, r: .62, b: 'P' }, { h: 182, r: .62, b: 'A' }, { h: 32, r: .62, b: '2' }];
+  var hs = nodes.map(function (n) {
+    var a = (90 + n.h - 90) * Math.PI / 180; // conic starts at 90deg (right) = red; CSS angles run clockwise
+    var x = 50 + Math.sin((90 + n.h) * Math.PI / 180) * n.r * 50, y = 50 - Math.cos((90 + n.h) * Math.PI / 180) * n.r * 50;
+    return '<span class="node" style="left:' + x + '%;top:' + y + '%;background:' + (n.b === 'P' ? R[0].ideal : n.b === 'A' ? R[2].ideal : R[1].ideal) + '"><b>' + n.b + '</b></span>';
+  }).join('');
+  return '<div class="wheel" style="width:' + size + 'px;height:' + size + 'px" role="img" aria-label="Colour wheel">' + hs + '</div>';
+}
+function vslider() {
+  return '<div class="vslider"><span>Lighter</span><div class="trk" style="background:linear-gradient(#fbe9e8,' + R[0].ideal + ' 62%,#1a0202)"><span class="thumb" style="top:62%;background:' + R[0].ideal + '"></span></div><span>Darker</span>' +
+    '<button class="b ico" aria-label="Pick a colour for me">' + ic('reroll') + '</button></div>';
+}
+function harm(ph) {
+  var hs = ['Complementary', 'Analogous', 'Triadic', 'Split-comp.', 'Tetradic', 'Square'];
+  return '<div class="harm"><button class="b icl" title="Roll a scheme">' + ic('d6') + (ph ? 'Roll' : 'Roll a scheme') + '</button>' +
+    '<div class="strip"><div class="tb" role="group" aria-label="Harmony">' + hs.map(function (h, i) { return '<button class="b" aria-pressed="' + (i === 0) + '">' + h + '</button>'; }).join('') + '</div></div></div>';
+}
+function livePalette(dir, ph) {
+  var cols = R.map(function (r, i) {
+    var dock = i === 0 ? '<span class="dock on">' + ic('check') + 'Your paint</span>' : i === 2 ? '<button class="dock">Make this your paint</button>' : '<span></span>';
+    var lbl = dir === 'wb' ? 'lbl caps' : 'lbl';
+    return '<div class="col"><div class="blk' + (r.role === 'Metal' ? ' sw metal' : '') + '" style="background-color:' + r.ideal + '"><span class="role" style="color:' + txtOn(r.ideal) + '">' + r.role + '</span></div>' +
+      dock + '<div class="pn"><b>' + esc(r.match.name) + '</b><span class="de">ΔE ' + r.match.dE.toFixed(1) + '</span></div></div>';
+  }).join('');
+  var tools = '<div class="tb" role="group" aria-label="Edit the scheme"><button class="b ico" aria-label="Undo">' + ic('undo') + '</button><button class="b ico" aria-label="Redo" disabled style="color:var(--text-muted)">' + ic('redo') + '</button><button class="b ico" aria-label="Add a colour">' + ic('plus') + '</button><button class="b ico" aria-label="Remove the last colour">' + ic('minus') + '</button></div>';
+  var fill = '<div class="tb" role="group" aria-label="Show"><button class="b" aria-pressed="true">Target</button><button class="b" aria-pressed="false">Pots</button></div>';
+  var title = dir === 'pot' ? '' : '<h3 style="font-size:' + (dir === 'wb' ? '19' : '16') + 'px">Your scheme</h3>';
+  return (dir === 'pot' ? potLabel('Your scheme', 'Complementary') : '') + '<div class="palhead">' + title + '<span class="sp"></span>' + tools + fill + '</div>' +
+    '<div class="lp">' + cols + '</div>' +
+    '<p class="mnote">' + ic('info') + '<span>Matches: every paint, finishes left out. <button class="txt hit">Change</button></span></p>';
+}
+function potLabel(title, k) { return '<div class="potlbl"><h3>' + title + '</h3><span class="sp"></span>' + (k ? '<span class="k">' + k + '</span>' : '') + '</div>'; }
+function roleRow(r, dir, big) {
+  var m = r.match, lad = r.ladder.map(function (s) {
+    return '<div class="st">' + sw(s.match.hex, 26, 'pot' + (dir === 'pot' ? ' lid' : '')) + '<div><small>' + (s.key === 'wash' ? 'Wash' : s.key === 'base' ? 'Base coat' : 'Highlight') + '</small><span class="n">' + esc(s.match.name) + '</span></div></div>';
+  }).join('');
+  var inner = '<div class="rh"><h4>' + r.role + '</h4><span class="w">' + ROLE_W[r.role] + '</span><span class="sp"></span><button class="txt mute">' + ic('swap') + 'Other brands</button></div>' +
+    '<div class="pair">' + sw(r.ideal, big ? 56 : 40) + '<span class="arr">→</span>' + sw(m.hex, big ? 56 : 40, 'pot ' + (m.type === 'metal' ? 'metal ' : '') + (dir === 'pot' ? 'lid' : '')) + '</div>' +
+    '<div class="info"><div class="pnm">' + esc(m.name) + '</div><div style="color:var(--text-muted);font-size:12.5px">' + esc(m.brand) + ' · ' + esc(m.line) + '</div>' +
+    '<div class="line2">' + qTag(m.q) + '<span class="de">ΔE ' + m.dE.toFixed(1) + '</span>' + (m.type === 'metal' ? '<span class="tag mute">metallic</span>' : '') + '<button class="txt hit">' + ic('cart') + 'Add</button></div></div>' +
+    '<div class="ladder">' + lad + '</div>';
+  var row = '<div class="rrow' + (big ? ' big' : '') + '">' + inner + '</div>';
+  return dir === 'ch' ? '<div class="pnl">' + row + '</div>' : row;
+}
+function tabs() {
+  return '<div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="true">' + ic('brush') + 'Recipe</button><button class="tab" role="tab" aria-selected="false">' + ic('swap') + 'Other brands</button><button class="tab" role="tab" aria-selected="false">' + ic('eye') + 'Colour check</button></div>';
+}
+function plan(dir, dt) {
+  var bar = '<div class="planbar"><button class="b main icl">' + ic('cart') + 'Add 9 pots to the shopping list</button><span style="font-size:12.5px;color:var(--text-muted)">2 already on your shelf</span></div>' +
+    '<div class="planbar" style="font-size:13px"><span style="color:var(--text-muted)">Ladder</span><div class="tb" role="group" aria-label="Ladder"><button class="b" aria-pressed="true">Wash · base · highlight</button><button class="b" aria-pressed="false">Shadow · mid · highlight</button></div></div>';
+  return tabs() + bar + '<div class="roles">' + R.map(function (r, i) { return roleRow(r, dir, i === 0); }).join('') + '</div>';
+}
+function seedbar(ph) {
+  return '<div class="seedbar"><div class="tb"><label class="field">' + ic('search') + '<span class="ph">Paint name or #hex</span></label><button class="b ico" aria-label="Browse paints">' + ic('grid') + '</button><button class="b ico" aria-label="Pick from a photo">' + ic('camera') + '</button></div>' +
+    (ph ? '' : '<button class="txt mute">Compare…</button>') + '</div>';
+}
+function hero(dir) {
+  var s = D.seed;
+  return '<div class="hero">' + sw(s.hex, 30, 'pot' + (dir === 'pot' ? ' lid' : '')) + '<span class="nm">' + esc(s.name) + '</span><span class="tag mute">main</span><span class="sp"></span><button class="txt" style="min-height:var(--tap)">' + ic('cart') + 'Add</button></div>' +
+    '<div class="hero meta">' + esc(s.brand) + ' · ' + esc(s.line) + ' · <span class="de">' + s.hex + '</span> · approx</div>';
+}
+
+/* ---------- the frames ---------- */
+function studioPhone(dir, theme) {
+  var sec = function (inner, first) { return dir === 'ch' ? '<div class="pnl">' + inner + '</div>' : '<div class="pnl' + (first ? ' first' : '') + '">' + inner + '</div>'; };
+  var body =
+    sec(seedbar(true) + '<div style="height:12px"></div>' + hero(dir), true) +
+    sec('<div class="wheelrow">' + wheel(236) + vslider() + '</div><div style="height:12px"></div>' + harm(true)) +
+    sec(livePalette(dir, true)) +
+    (dir === 'pot' ? potLabel('Recipe', 'Four roles') : '') + '<div>' + plan(dir, false) + '</div>';
+  return '<div class="fr ph scroll" data-dir="' + dir + '" data-theme="' + theme + '" role="img" aria-label="' + NAME[dir] + ', Studio, phone, ' + theme + '">' + head(dir, 'studio', true) + '<div class="f-main">' + body + '</div></div>';
+}
+function studioDesk(dir, theme) {
+  var sec = function (inner, first) { return dir === 'ch' ? '<div class="pnl">' + inner + '</div>' : '<div class="pnl' + (first ? ' first' : '') + '">' + inner + '</div>'; };
+  var left = '<div class="studiocol">' + sec(hero(dir), true) + sec('<div class="wheelrow">' + wheel(300) + vslider() + '</div><div style="height:12px"></div>' + harm(false)) + sec(livePalette(dir, false)) + '</div>';
+  var right = '<div>' + (dir === 'ch' ? '<div class="pnl">' + plan(dir, true) + '</div>' : (dir === 'pot' ? potLabel('Recipe', 'Four roles') : '') + plan(dir, true)) + '</div>';
+  return '<div class="zoomwrap"><div class="fr dt" data-dir="' + dir + '" data-theme="' + theme + '" role="img" aria-label="' + NAME[dir] + ', Studio, desktop, ' + theme + '">' + head(dir, 'studio', false) +
+    '<div class="f-main">' + seedbar(false) + '<div class="dtsplit">' + left + right + '</div></div></div></div>';
+}
+var MARK = {}; [1, 4, 6, 9, 13, 18, 22, 27, 31, 40, 44, 52, 57, 63].forEach(function (i) { MARK[i] = 'own'; }); [2, 15, 33, 48].forEach(function (i) { MARK[i] = 'want'; });
+function shelfCells(dir, n, names) {
+  return D.shelf.slice(0, n).map(function (p, i) {
+    var st = MARK[i] ? '<span class="st ' + MARK[i] + '">' + ic(MARK[i] === 'own' ? 'check' : 'cart', MARK[i] === 'own' ? 'Owned' : 'To buy') + '</span>' : '';
+    var cell = '<div class="cell pot' + (p.type === 'metal' ? ' sw metal' : '') + (dir === 'pot' ? ' sw lid' : '') + (i === 7 ? ' picked' : '') + '" style="background-color:' + p.hex + '" title="' + esc(p.name) + '">' + st + '</div>';
+    return dir === 'pot' && names ? '<div class="potcell">' + cell + '<span class="pl">' + esc(p.name) + '</span></div>' : cell;
+  }).join('');
+}
+function shelfBody(dir, ph) {
+  var acts = '<button class="txt mute">Import…</button><button class="txt mute">Export CSV</button>';
+  var headH = dir === 'pot' ? potLabel('My paint shelf', '14 owned · 4 to buy · 3,225 paints') : '<div class="shelfhead"><h2>My paint shelf</h2><span class="cnt">14 owned · 4 to buy · 3,225 paints</span><span class="sp"></span>' + acts + '</div>';
+  var dock = '<div class="sdock"><label class="field">' + ic('search') + '<span class="ph">Search your shelf</span></label>' +
+    '<div class="tb" role="group" aria-label="Show"><button class="b" aria-pressed="true">All</button><button class="b" aria-pressed="false">' + ic('check') + 'Owned</button><button class="b" aria-pressed="false">' + ic('cart') + 'To buy</button></div>' +
+    (ph ? '<button class="b icl">' + ic('menu') + 'Filters</button>' : '<span class="sel">All brands' + ic('chev') + '</span><span class="sel">All types' + ic('chev') + '</span><span class="sel">Sort: hue' + ic('chev') + '</span>') + '</div>';
+  var hint = '<p class="hint">' + (ph ? 'Tap a paint to mark it. Hold for more.' : 'Click a paint, then <kbd>P</kbd> owned · <kbd>U</kbd> to buy · <kbd>X</kbd> clear. <button class="txt mute" style="min-height:0">More shortcuts</button>') + '</p>';
+  var potActs = dir === 'pot' ? '<div style="display:flex;gap:8px">' + acts + '</div>' : '';
+  var grid = '<div class="grid">' + shelfCells(dir, ph ? 35 : 60, dir === 'pot') + '</div>';
+  return headH + potActs + dock + hint + grid;
+}
+function shelfPhone(dir, theme) {
+  var b = shelfBody(dir, true);
+  return '<div class="fr ph scroll" data-dir="' + dir + '" data-theme="' + theme + '" role="img" aria-label="' + NAME[dir] + ', Shelf, phone, ' + theme + '">' + head(dir, 'shelf', true) + '<div class="f-main">' + (dir === 'ch' ? '<div class="pnl" style="display:grid;gap:12px">' + b + '</div>' : b) + '</div></div>';
+}
+function shelfDesk(dir, theme) {
+  var b = shelfBody(dir, false);
+  return '<div class="zoomwrap"><div class="fr dt" data-dir="' + dir + '" data-theme="' + theme + '" role="img" aria-label="' + NAME[dir] + ', Shelf, desktop, ' + theme + '">' + head(dir, 'shelf', false) + '<div class="f-main">' + (dir === 'ch' ? '<div class="pnl" style="display:grid;gap:12px">' + b + '</div>' : b) + '</div></div></div>';
+}
+function firstRun(dir, theme) {
+  var picks = [['Mephiston Red', '#960C09'], ['Macragge Blue', '#0D407F'], ['Caliban Green', '#003D15'], ['Retributor Armour', '#C39E5A']];
+  var body = '<div class="first">' + (dir === 'pot' ? potLabel('Start a scheme', '') : '<h2>Start a scheme</h2>') +
+    '<p>Pick one paint you want on the model. The app builds a scheme around it and finds the pots to buy.</p>' +
+    seedbar(true) +
+    '<div class="chips">' + picks.map(function (p) { return '<button class="pchip">' + sw(p[1], 28, 'pot ' + (dir === 'pot' ? 'lid' : '') + (p[0] === 'Retributor Armour' ? ' metal' : '')) + p[0] + '</button>'; }).join('') + '</div>' +
+    '<ol class="steps"><li>Pick a paint (above), or drag the wheel later.</li><li>Pick a harmony, or roll one.</li><li>Add the pots you do not have to your shopping list.</li></ol>' +
+    '<button class="txt mute">I own paints — mark my shelf first</button></div>';
+  return '<div class="fr ph" data-dir="' + dir + '" data-theme="' + theme + '" role="img" aria-label="' + NAME[dir] + ', first run, phone, ' + theme + '">' + head(dir, 'studio', true) + body + '</div>';
+}
+function states(dir, theme) {
+  var e = function (icon, h, p, act) { return '<div class="empty' + (dir === 'ch' ? ' pnl' : '') + '" style="' + (dir === 'ch' ? '' : 'border-top:1px solid var(--line)') + '">' + '<span style="color:var(--text-muted)">' + ic(icon) + '</span><h3>' + h + '</h3><p>' + p + '</p>' + act + '</div>'; };
+  return '<div class="fr ph" data-dir="' + dir + '" data-theme="' + theme + '" style="display:grid;gap:0" role="img" aria-label="' + NAME[dir] + ', empty and error states, ' + theme + '">' +
+    e('pot', 'Your shelf is empty', 'Mark the paints you own, and the Studio can use them first.', '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b main icl">' + ic('check') + 'Mark my paints</button><button class="txt mute">Import a paintRack list…</button></div>') +
+    e('warning', 'No pot within ΔE 10', 'The closest is <strong>Ruby Red</strong> (Pro Acryl), ΔE 13.2 — a Poor match. A mix or a glaze gets closer.', '<button class="txt">See the 6 closest</button>') +
+    e('warning', 'This file is not a backup', '<code>shelf.csv</code> is not a Palette Studio backup. Nothing changed. To bring in a paint list, use Import on the Shelf.', '<div style="display:flex;gap:8px"><button class="b">Pick another file</button><button class="txt mute">Open the Shelf</button></div>') +
+    e('check', 'No owned paints yet', '"Only my paints" is on, but nothing on your shelf is marked as owned, so every paint can match.', '<button class="b icl">' + ic('check') + 'Mark my paints</button>') + '</div>';
+}
+
+/* ---------- the parts sheet per direction ---------- */
+var SPEC = {
+  wb: { radii: [['--r-ctrl', '4px', 'buttons, fields, selects, toolbars (outer corners only), the dock, menus'], ['--r-panel', '6px', 'overlays only: the seed list, the ⋯ sheet, dialogs, the mark menu, toasts'], ['--r-sw', '3px', 'swatches and live-palette blocks'], ['--r-tag', '2px', 'tags, keycaps, wheel badges'], ['(none)', '—', 'regions: no card. A 1px --line rule and 16px of space separate them.']],
+    accent: ['Sotek Green', 'Citadel Layer', '#0B6371'], fonts: ['Barlow Condensed', 'IBM Plex Sans'], caps: 'the role names on the live-palette blocks',
+    shadow: 'No shadow in the page flow. Overlays: a 1px --edge ring plus one tight drop (0 10px 20px −8px).', dark: 'Brass kept, but flat (no gradient, no bevel).' },
+  ch: { radii: [['--cut', '6px', 'controls: two cut corners (top-left, bottom-right)'], ['--cut-p', '14px', 'region plates and overlays'], ['--r-sw', '2px', 'swatches'], ['--r-tag', '0 + a 4px notch', 'tags'], ['(radius)', '0px', 'everything else is square']],
+    accent: ['Steel Legion Drab', 'Citadel Base', '#584E2D'], fonts: ['Chakra Petch', 'Atkinson Hyperlegible'], caps: 'none (Chakra Petch headings carry the tone)',
+    shadow: 'No shadow in the page flow. Overlays: a hard 4px offset (drop-shadow filter, so it follows the cut).', dark: 'Polished brass kept as now.' },
+  pot: { radii: [['--r-sw', '50%', 'every swatch is a pot lid: live palette chips, ladders, the Shelf grid, the hero'], ['--r-ctrl', '2px', 'buttons, fields, selects, toolbars'], ['--r-panel', '2px', 'overlays'], ['--r-tag', '2px', 'tags'], ['(label)', '—', 'regions start with a label band: 2px --text rule, --surface-2 band']],
+    accent: ['Screamer Pink', 'Citadel Base', '#7A0E44'], fonts: ['Fraunces', 'Public Sans'], caps: 'the right-hand word on each label band ("Complementary", "Four roles")',
+    shadow: 'No shadow in the page flow. Overlays: a 2px solid lip plus one soft drop.', dark: 'Polished brass kept as now.' }
+};
+function kit(dir) {
+  var s = SPEC[dir];
+  var dEs = [['--buy', '#2563EB'], ['--success', '#16A34A'], ['--warning', '#C2740B'], ['--danger', '#DC2647']].map(function (x) { return x[0] + ' ΔE ' + de2000(s.accent[2], x[1]).toFixed(1); }).join(' · ');
+  var radii = '<table class="t"><thead><tr><th>Token</th><th>Value</th><th>Where it applies</th></tr></thead><tbody>' + s.radii.map(function (r) { return '<tr><td><code>' + r[0] + '</code></td><td>' + r[1] + '</td><td>' + r[2] + '</td></tr>'; }).join('') + '</tbody></table>';
+  var sheet = function (theme) {
+    return '<div class="fr" data-dir="' + dir + '" data-theme="' + theme + '" style="width:620px;max-width:100%"><div class="kit">' +
+      '<div class="spec"><h1>Mephiston Red</h1><h2>Recipe · four roles</h2><p>Body text: 14px. Base coat, then a wash, then the highlight. ΔE <span class="de">2.9</span></p></div>' +
+      '<div class="krow"><span class="klbl">Main action</span><button class="b main icl">' + ic('cart') + 'Add 9 pots</button></div>' +
+      '<div class="krow"><span class="klbl">Minor actions</span><button class="b icl">' + ic('camera') + 'From photo</button><button class="b ico" aria-label="Settings">' + ic('more') + '</button><button class="txt">Compare…</button><button class="txt mute">Export CSV</button></div>' +
+      '<div class="krow"><span class="klbl">Joined toolbar</span><div class="tb"><button class="b ico" aria-label="Undo">' + ic('undo') + '</button><button class="b ico" aria-label="Redo">' + ic('redo') + '</button><button class="b ico" aria-label="Add">' + ic('plus') + '</button><button class="b ico" aria-label="Remove">' + ic('minus') + '</button></div><div class="tb"><button class="b" aria-pressed="true">Target</button><button class="b" aria-pressed="false">Pots</button></div></div>' +
+      '<div class="krow"><span class="klbl">Focus (forced on)</span><button class="b is-focus">Secondary</button><button class="b main is-focus">Main</button><div class="tb"><button class="b" aria-pressed="true">On</button><button class="b is-focus" aria-pressed="false">Off</button></div><button class="txt is-focus">Text</button></div>' +
+      '<div class="krow"><span class="klbl">Focus (Tab to me)</span><button class="b">Tab here</button><button class="b main">Then here</button><button class="txt">And here</button></div>' +
+      '<div class="krow"><span class="klbl">Tags (not pills)</span><span class="tag ok">Excellent</span><span class="tag warn">Fair</span><span class="tag bad">Poor</span><span class="tag own">' + ic('check') + 'Owned</span><span class="tag buy">' + ic('cart') + 'To buy</span><span class="tag mute">metallic</span><span class="de">ΔE 1.6</span></div>' +
+      '<div class="krow"><span class="klbl">Field (edge ≥3:1)</span><label class="field" style="max-width:260px">' + ic('search') + '<span class="ph">Paint name or #hex</span></label><span class="sel">Sort: hue' + ic('chev') + '</span></div>' +
+      '<div class="krow"><span class="klbl">Overlay shadow</span><div class="ovl">The one overlay shadow.</div><span class="toast">Link copied <button class="txt">Undo</button></span></div>' +
+      '<div class="krow"><span class="klbl">Swatches</span>' + R.map(function (r) { return sw(r.match.hex, 40, 'pot ' + (dir === 'pot' ? 'lid ' : '') + (r.match.type === 'metal' ? 'metal' : '')); }).join('') + '</div>' +
+      '<div class="krow"><span class="klbl">Logo</span>' + logo(dir) + '</div>' +
+      '</div></div>';
+  };
+  return '<div class="dirhead"><h3>Tokens and parts</h3></div>' +
+    '<div class="row"><div style="flex:1 1 420px;min-width:0">' + radii +
+    '<p><strong>Light accent:</strong> <span style="display:inline-block;width:14px;height:14px;vertical-align:-2px;background:' + s.accent[2] + '"></span> ' + s.accent[0] + ' (' + s.accent[1] + ') <code>' + s.accent[2] + '</code> — a real pot. White on it is ' + cr('#FFFFFF', s.accent[2]).toFixed(2) + ':1. Distance from the state colours: ' + dEs + '. The old violet was ΔE 15.1 from --buy.</p>' +
+    '<p><strong>Dark:</strong> ' + s.dark + ' --warning moves to #E0803A (see 1.2).</p>' +
+    '<p><strong>Type:</strong> headings ' + s.fonts[0] + ', body ' + s.fonts[1] + ' (SIL OFL 1.1, self-hosted). <strong>Micro-caps:</strong> one place only — ' + s.caps + '.</p>' +
+    '<p><strong>Shadows:</strong> ' + s.shadow + '</p></div></div>' +
+    '<div class="row">' + sheet('light') + sheet('dark') + '</div>';
+}
+
+/* ---------- mount ---------- */
+$$('[data-kit]').forEach(function (el) { el.innerHTML = kit(el.dataset.kit); });
+$$('[data-frames]').forEach(function (el) {
+  var a = el.dataset.frames.split(' '), dir = a[0], what = a[1], size = a[2];
+  var f = what === 'studio' ? (size === 'ph' ? studioPhone : studioDesk) : (size === 'ph' ? shelfPhone : shelfDesk);
+  el.innerHTML = ['light', 'dark'].map(function (t) { return '<figure class="figure">' + f(dir, t) + '<figcaption class="cap">' + NAME[dir] + ' · ' + what + ' · ' + (size === 'ph' ? '390 px phone' : '1280 px desktop') + ' · ' + t + '</figcaption></figure>'; }).join('');
+});
+// the frames are pictures of an app; their controls must not be in the page's tab order (except the kit's "Tab to me" row)
+$$('.fr button, .fr .txt').forEach(function (b) { if (!b.closest('.krow') || !/Tab|Then|And here/.test(b.textContent)) b.setAttribute('tabindex', '-1'); });
+$('#fullLen').addEventListener('change', function (e) { document.body.classList.toggle('fulllen', e.target.checked); });
+/* ---------- Present ---------- */
+(function () {
+  var P = { dir: 'wb', scr: 'studio', dev: 'ph', thm: 'both', sw: 'lids' };
+  try { var saved = JSON.parse(localStorage.getItem('vi-present') || 'null'); if (saved) for (var k in P) if (saved[k]) P[k] = saved[k]; } catch (e) { /* storage blocked: defaults */ }
+  var INFO = {
+    wb: ['Workbench', 'Small radii, thin rules in place of cards, condensed headings. Judges: 58 of 80 (recommended).'],
+    pot: ['Paint pot', 'Round pot-lid swatches, square controls, label bands. Judges: 49 of 80.'],
+    ch: ['Chamfer', 'Cut corners on controls and plates. Judges: 39 of 80.']
+  };
+  var one = function (html) { var t = document.createElement('div'); t.innerHTML = html; return t.querySelector('.fr'); };
+  function build(dir, theme) {
+    var ph = P.dev === 'ph';
+    if (P.scr === 'studio') return one(ph ? studioPhone(dir, theme) : studioDesk(dir, theme));
+    if (P.scr === 'shelf') return one(ph ? shelfPhone(dir, theme) : shelfDesk(dir, theme));
+    if (P.scr === 'first') return one(firstRun(dir, theme));
+    if (P.scr === 'states') return one(states(dir, theme));
+    var t = document.createElement('div'); t.innerHTML = kit(dir);
+    return t.querySelectorAll('.fr')[theme === 'dark' ? 1 : 0];
+  }
+  var stage = $('#pStage');
+  function render() {
+    var phoneOnly = P.scr === 'first' || P.scr === 'states' || P.scr === 'parts';
+    $$('.pbar button').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(P[b.dataset.p] === b.dataset.v));
+      if (b.dataset.p === 'dev') b.disabled = phoneOnly && b.dataset.v === 'dt';
+    });
+    var dirs = P.dir === 'all' ? ['wb', 'pot', 'ch'] : [P.dir];
+    var themes = P.thm === 'both' ? ['light', 'dark'] : [P.thm];
+    $('#pInfo').innerHTML = P.dir === 'all' ? '<strong>All three directions</strong><span>Left to right: Workbench (58), Paint pot (49), Chamfer (39).</span>'
+      : '<strong>' + INFO[P.dir][0] + '</strong><span>' + INFO[P.dir][1] + '</span>';
+    stage.innerHTML = ''; stage.classList.toggle('lids', P.sw === 'lids');
+    var cells = [];
+    dirs.forEach(function (d) { themes.forEach(function (t) {
+      var f = build(d, t); f.classList.remove('scroll'); f.removeAttribute('role');
+      f.querySelectorAll('button, .txt').forEach(function (b) { b.setAttribute('tabindex', '-1'); });
+      var cell = document.createElement('figure'); cell.className = 'pcell figure';
+      var box = document.createElement('div'); box.className = 'pscale'; box.appendChild(f);
+      var cap = document.createElement('figcaption'); cap.className = 'cap'; cap.textContent = NAME[d] + ' · ' + t;
+      cell.appendChild(box); cell.appendChild(cap); stage.appendChild(cell); cells.push(box);
+    }); });
+    fit();
+    try { localStorage.setItem('vi-present', JSON.stringify(P)); } catch (e) { /* storage blocked */ }
+  }
+  // Scale every frame by one factor so the row fits the stage; a phone frame never grows past 100%.
+  function fit() {
+    var boxes = $$('.pscale', stage); if (!boxes.length) return;
+    var W = stage.clientWidth, gap = 16, n = boxes.length;
+    var nat = boxes.map(function (b) { var f = b.firstChild; f.style.transform = ''; return { w: f.offsetWidth, h: f.offsetHeight }; });
+    var per = Math.min(n, Math.max(1, Math.floor((W + gap) / (Math.min.apply(null, nat.map(function (x) { return x.w; })) * .55 + gap))));
+    var avail = (W - gap * (per - 1)) / per;
+    boxes.forEach(function (b, i) {
+      var k = Math.min(1, avail / nat[i].w);
+      b.firstChild.style.transform = k < 1 ? 'scale(' + k + ')' : '';
+      b.style.width = Math.floor(nat[i].w * k) + 'px'; b.style.height = Math.ceil(nat[i].h * k) + 'px';
+    });
+  }
+  $$('.pbar button').forEach(function (b) { b.addEventListener('click', function () { P[b.dataset.p] = b.dataset.v; if ((P.scr === 'first' || P.scr === 'states' || P.scr === 'parts') && P.dev === 'dt') P.dev = 'ph'; render(); }); });
+  if ('ResizeObserver' in window) new ResizeObserver(function () { fit(); }).observe(stage); else addEventListener('resize', fit);
+  render();
+})();
+
+
+/* ---------- the icon sheet ---------- */
+var ICONS = [['menu', '☰', 'Filters / list'], ['more', '⋯', 'Settings'], ['reroll', '↻', 'Pick a colour for me'], ['check', '✓', 'Owned'], ['anchor', '⚓', 'Your paint (seed dock)'], ['warning', '⚠', 'Warning'], ['empty', '○', 'Not marked'], ['search', '⌕', 'Search'], ['close', '✕', 'Close'], ['undo', '↶', 'Undo'], ['redo', '↷', 'Redo'], ['swap', '⇄', 'Other brands'], ['cart', '+ buy', 'To buy'], ['camera', '—', 'From photo'], ['grid', '—', 'Browse'], ['eye', '—', 'Colour check'], ['info', '—', 'Matching note'], ['brush', 'new', 'Recipe'], ['pot', 'new', 'Shelf / pot'], ['drop', 'new', 'Wash / ink'], ['d6', '(svg)', 'Roll a scheme'], ['d20', 'new', 'Roll (later)']];
+$('#iconSheet').innerHTML = ['wb', 'ch', 'pot'].map(function (dir) {
+  return '<div class="fr" data-dir="' + dir + '" data-theme="light" style="padding:12px 16px;margin:0 0 8px"><strong style="font-family:var(--hd);font-size:16px">' + NAME[dir] + '</strong><div style="display:flex;flex-wrap:wrap;gap:14px 18px;margin-top:8px">' +
+    ICONS.map(function (x) { return '<div style="display:grid;justify-items:center;gap:2px;width:72px;font-size:11px;text-align:center"><span style="display:flex;gap:6px;align-items:center">' + ic(x[0]) + '<svg class="ic" style="width:40px;height:40px" aria-hidden="true"><use href="#i-' + x[0] + '"/></svg></span><code style="background:none">' + x[0] + '</code><span style="color:var(--text-muted)">was ' + esc(x[1]) + '</span></div>'; }).join('') + '</div></div>';
+}).join('');
+
+/* ---------- the contrast table ---------- */
+var SETS = {
+  'Now · light': { bg: '#FBFBFE', surface: '#FFFFFF', s2: '#F1F2FF', line: '#E6E7F8', edge: '#D3D5F0', text: '#20223A', muted: '#6E7293', accent: '#7C3AED', weak: '#F0EAFE', on: '#FFFFFF', warning: '#C2740B', success: '#16A34A', buy: '#2563EB', danger: '#DC2647', tsuccess: '#16A34A', twarning: '#C2740B', tdanger: '#DC2647', tbuy: '#2563EB' },
+  'Workbench · light': { bg: '#F6F5F2', surface: '#FFFFFF', s2: '#EDEBE6', line: '#DCD8D0', edge: '#8A857B', text: '#1D1C19', muted: '#5E5A52', accent: '#0B6371', weak: '#E1EEEF', on: '#FFFFFF', warning: '#C2740B', success: '#16A34A', buy: '#2563EB', danger: '#DC2647', tsuccess: '#166534', twarning: '#9A5A0A', tdanger: '#B4232F', tbuy: '#1D4ED8' },
+  'Chamfer · light': { bg: '#F1F2EF', surface: '#FBFBF9', s2: '#E6E8E3', line: '#D3D7CF', edge: '#7E857C', text: '#1A1E1B', muted: '#535A54', accent: '#584E2D', weak: '#ECE8DA', on: '#FFFFFF', warning: '#C2740B', success: '#16A34A', buy: '#2563EB', danger: '#DC2647', tsuccess: '#166534', twarning: '#9A5A0A', tdanger: '#B4232F', tbuy: '#1D4ED8' },
+  'Paint pot · light': { bg: '#FAF8F5', surface: '#FFFFFF', s2: '#F1EDE7', line: '#E3DDD3', edge: '#8F877B', text: '#221F1C', muted: '#625A51', accent: '#7A0E44', weak: '#F6E6EE', on: '#FFFFFF', warning: '#C2740B', success: '#16A34A', buy: '#2563EB', danger: '#DC2647', tsuccess: '#166534', twarning: '#9A5A0A', tdanger: '#B4232F', tbuy: '#1D4ED8' },
+  'Now · dark': { bg: '#141110', surface: '#1C1815', s2: '#251F1A', line: '#3A302A', edge: '#4D4138', text: '#ECE3D8', muted: '#A8998A', accent: '#C2912F', weak: '#2C2113', on: '#15100A', warning: '#C9923A', success: '#86A559', buy: '#5E93C9', danger: '#D2563F', tsuccess: '#86A559', twarning: '#C9923A', tdanger: '#D2563F', tbuy: '#5E93C9' },
+  'All three · dark': { bg: '#141110', surface: '#1C1815', s2: '#251F1A', line: '#3A302A', edge: '#7C6F62', text: '#ECE3D8', muted: '#A8998A', accent: '#C2912F', weak: '#2C2113', on: '#15100A', warning: '#E0803A', success: '#86A559', buy: '#5E93C9', danger: '#D2563F', tsuccess: '#86A559', twarning: '#E0803A', tdanger: '#DE6A52', tbuy: '#5E93C9' }
+};
+var PAIRS = [['text', 'bg', 4.5, 'Text on the page'], ['text', 'surface', 4.5, 'Text on a surface'], ['text', 's2', 4.5, 'Text on --surface-2'], ['muted', 'bg', 4.5, 'Muted text on the page'], ['muted', 'surface', 4.5, 'Muted text on a surface'], ['muted', 's2', 4.5, 'Muted text on --surface-2'],
+  ['accent', 'surface', 4.5, 'Accent text / text action'], ['accent', 'bg', 3, 'Accent bar, focus ring on the page'], ['on', 'accent', 4.5, 'Label on the main button'], ['accent', 'weak', 3, 'Selected bar on its tint'], ['text', 'weak', 4.5, 'Text on the selected tint'],
+  ['edge', 'surface', 3, 'Field edge (1.4.11)'], ['edge', 'bg', 3, 'Field edge on the page'], ['line', 'surface', 0, 'Hairline rule (decorative, no minimum)'],
+  ['tsuccess', 'bg', 4.5, 'Owned / Excellent tag text (11.5px: small text)'], ['tsuccess', 's2', 4.5, '… on --surface-2'], ['twarning', 'bg', 4.5, 'Fair / Loose tag text'], ['twarning', 's2', 4.5, '… on --surface-2'],
+  ['tdanger', 'bg', 4.5, 'Poor tag text'], ['tdanger', 'surface', 4.5, '… on --surface'], ['tdanger', 's2', 4.5, '… on --surface-2'], ['tbuy', 'bg', 4.5, 'To-buy tag text'], ['tbuy', 's2', 4.5, '… on --surface-2'],
+  ['success', 'surface', 3, 'Owned badge fill (graphic, 3:1)'], ['buy', 'surface', 3, 'To-buy badge fill (graphic, 3:1)']];
+var html = '<table class="t"><thead><tr><th>Pair</th><th>Needs</th>' + Object.keys(SETS).map(function (k) { return '<th>' + k + '</th>'; }).join('') + '</tr></thead><tbody>';
+PAIRS.forEach(function (p) {
+  html += '<tr><td>' + p[3] + ' <code>' + p[0] + '/' + p[1] + '</code></td><td class="n">' + (p[2] ? p[2] + ':1' : '—') + '</td>' + Object.keys(SETS).map(function (k) {
+    var s = SETS[k], v = cr(s[p[0]], s[p[1]]), ok = !p[2] || v >= p[2];
+    return '<td class="n ' + (ok ? 'pass' : 'fail') + '">' + v.toFixed(2) + '</td>';
+  }).join('') + '</tr>';
+});
+html += '<tr><td>Accent vs --warning (ΔE 2000; must look different)</td><td class="n">&gt; 10</td>' + Object.keys(SETS).map(function (k) { var v = de2000(SETS[k].accent, SETS[k].warning); return '<td class="n ' + (v > 10 ? 'pass' : 'fail') + '">' + v.toFixed(1) + '</td>'; }).join('') + '</tr>';
+html += '<tr><td>Accent vs --buy (ΔE 2000)</td><td class="n">&gt; 10</td>' + Object.keys(SETS).map(function (k) { var v = de2000(SETS[k].accent, SETS[k].buy); return '<td class="n ' + (v > 10 ? 'pass' : 'fail') + '">' + v.toFixed(1) + '</td>'; }).join('') + '</tr>';
+html += '<tr><td>Accent vs --danger (ΔE 2000)</td><td class="n">&gt; 10</td>' + Object.keys(SETS).map(function (k) { var v = de2000(SETS[k].accent, SETS[k].danger); return '<td class="n ' + (v > 10 ? 'pass' : 'fail') + '">' + v.toFixed(1) + '</td>'; }).join('') + '</tr>';
+html += '<tr><td>Accent vs --success (ΔE 2000)</td><td class="n">&gt; 10</td>' + Object.keys(SETS).map(function (k) { var v = de2000(SETS[k].accent, SETS[k].success); return '<td class="n ' + (v > 10 ? 'pass' : 'fail') + '">' + v.toFixed(1) + '</td>'; }).join('') + '</tr>';
+$('#contrastTable').innerHTML = html + '</tbody></table>';
+window.__VI = { cr: cr, de2000: de2000, SETS: SETS, PAIRS: PAIRS };
+
+/* ---------- the UX pass ---------- */
+var UX = [
+  { id: 'ux-1', h: '1. First run', prob: 'A first visit opens on a random paint (for example Alga Green) with a full scheme for it. Nothing says what to do first. The only hint is the placeholder "Paint or #hex". A new painter sees a scheme for a paint they did not choose.',
+    fix: 'On a first visit (no saved settings, no link), the hero becomes "Start a scheme": one sentence, the seed field as the main control, four starter pots, three numbered steps and a text action to the Shelf. The wheel and the Plan stay below, so nothing moves when the painter picks. After the first pick the block does not come back.', frames: 'first' },
+  { id: 'ux-2', h: '2. The length of the Studio on a phone', prob: 'Measured on PR #39 at 390×844: the seed field is at y = 152 and the first Plan card at y = 1,371, so a painter scrolls 1,219 px (1.4 screens) from the seed to the Plan. At 360×640 it is 1,247 px (about 2 screens). The page is 2,754 px. The costs: the slider sits under the wheel (about 70 px), the P/A/2 legend is its own row (30 px), Ideal / Real is its own row (50 px), and the live palette stacks its four columns as four rows (about 330 px).',
+    fix: 'Put the slider beside the wheel on a phone as well (a 236 px wheel and a 44 px gutter fit in 358 px). Remove the legend row: the live-palette blocks carry the role names, and the wheel badges match them. Join Undo / Redo / + / − and Target / Pots into the palette title row. Show the live palette as one row of four columns, sized 60-30-10. Make the tabs sticky once you reach them. Result in the phone frames: <strong id="uxLen">…</strong>.' },
+  { id: 'ux-3', h: '3. One main action per stage', prob: 'Every button is 38 px (44 px on touch) at 13.5 px. On the Plan, "+ Add 15 to buy" has the same size as "Include Contrast". In the seed toolbar, the field has the same height as "Compare". On the Shelf, "Import" and "Export" weigh the same as "Select".',
+    fix: 'One main action per stage, 8 px taller, 15 px semibold, accent fill: the seed field (Studio), "Add 9 pots to the shopping list" (Plan), the search (Shelf), "Mark my paints" (empty Shelf). Minor actions become text actions: Compare…, Import…, Export CSV, Other brands, Change. Icon buttons with words get asymmetric padding (10 px on the icon side, 14 px on the text side).' },
+  { id: 'ux-4', h: '4. Empty states and error states', prob: 'The empty Shelf filter shows "No paints match this filter." in one grid cell, with no action. An unreadable backup gives a toast that goes after a few seconds. A role with no pot within ΔE 10 shows only a "Poor" tag. With "Only my paints" on and nothing marked as owned, the app quietly matches every paint (app.js <code>matchOpts</code>), and nothing on the Plan says why.',
+    fix: 'Each state gets a heading, one sentence and one next action. The error for a bad file stays on screen until the painter acts. The frames below show all four in each direction.', frames: 'states' },
+  { id: 'ux-5', h: '5. Dense help text', prob: 'The Shelf hint with a mouse: "Click to select · ⇧ or ⌘ for many · drag a box · then P (owned) · U (to buy) · X (clear). Right-click for options." (19 words, 4 symbols, 6 separators). On touch: "Tap a swatch to cycle owned → to buy → clear · “Select” for multi · long-press for the menu."',
+    fix: 'Mouse: "Click a paint, then <kbd>P</kbd> owned · <kbd>U</kbd> to buy · <kbd>X</kbd> clear." and a "More shortcuts" text action that opens support.html#shortcuts. Touch: "Tap a paint to mark it. Hold for more." The multi-select keys stay in the Help page and in the grid\'s accessible name. See the Shelf frames.' },
+  { id: 'ux-6', h: '6. Duplicate controls and one thing with many names', prob: '', table: [
+      ['The paint you start from', 'seed, base colour, main, your pick, "Use as base colour", "Generate a random base colour", "⚓ seed here"', '"your paint" (and "Pick a colour for me" for ↻)'],
+      ['The list of paints to buy', 'to buy, buy list, shopping list, "+ buy", "Add 15 to buy"', '"shopping list"; the action is "Add"'],
+      ['The theoretical colour and the pot', 'Ideal / Real, ideal vs actual, "Nearest real paint"', '"Target" and "Pot"'],
+      ['Cross-brand matches', 'Equivalents (tab), "⇄ equivalents" (Plan), "interchangeable"', '"Other brands"'],
+      ['Read a backup file', 'Shelf "Import…" (CSV or JSON) and ⋯ "Restore…" (JSON): two names, two places for one file type', 'Shelf "Import…" takes CSV; a JSON file there opens the same Restore confirm, named "Restore a backup"'],
+      ['Write a file', 'Shelf "Export CSV", ⋯ "Save shopping list", ⋯ "Back up"', 'keep three (they are different files), name them by what they hold: "Save my shelf (CSV)", "Save the shopping list", "Back up everything"'],
+      ['About & data', 'the footer link and the ⋯ row', 'keep both: the footer is 2,700 px down on a phone'],
+      ['Two random buttons', '↻ (a random colour) and Roll (a random harmony)', 'keep both (Ryan\'s decision), one icon set: reroll and d6'],
+      ['The plan tab', '"Plan · roles"', '"Recipe" (a painter\'s word for the steps and the pots)']
+    ], fix: 'Use one name for one thing everywhere: the chrome strings in i18n.js, the Help page and the screen-reader names. Paint names do not change (they are data).' },
+  { id: 'ux-7', h: '7. Seed docks, the Equivalents source picker and the matching note', prob: 'Seed docks: "⚓ seed here" needs two ideas the painter does not have (a seed, and that a dock moves it). The Equivalents source: a click on a live-palette column changes the list on that tab only, and the only sign is a ring on the column. The matching note is clear but looks like a caption.',
+    fix: 'Docks: the current column shows a tag "✓ Your paint"; the other column that can take it shows a button "Make this your paint" (44 px on touch). Equivalents: the tab starts with "Other brands for: [Mephiston Red ▾]", a select with the picked paint and the four role colours; the column ring stays as the second way. Matching note: an info icon and a "Change" text action that opens ⋯ at "Use my paints".' },
+  { id: 'ux-8', h: '8. PLAN §5 follow-ups 12 and 13', prob: '12 — still under 44 px on touch (measured at 390 px): ↶ ↷ + − 30 px; the column copy and lock buttons 20–21 px; the output tabs 40 px; the seed docks and "+ buy" 26 px; "⇄ equivalents" 20 px; the hero copy-hex 19 px; the footer link 20 px. 13 — the neutral overlay covers the top 37 px of the slider at 1180 px (56 px at 1025 px), and the hero wraps when the "neutral seed" pill shows, so the wheel moves down about 29 px.',
+    fix: '12: the new toolbar puts ↶ ↷ + − in one joined group at <code>--tap</code> (44 px on touch). The copy and lock buttons move into the column\'s mark menu (long-press or right-click), so the 20 px targets go. Tabs use <code>--tap</code>. Docks and text actions get a 44 px <code>min-height</code> on touch. One rule covers what is left: under <code>(pointer: coarse)</code> a <code>::before</code> hit area grows a small control to 44 px, as the theme switch does now. 13: the overlay becomes a child of the wheel box (absolute, <code>max-width</code> = the wheel), so it never reaches the slider gutter. The hero keeps one line: the name gets an ellipsis and the pill gets a reserved slot.' },
+  { id: 'ux-9', h: '9. Motion', prob: 'Most motion confirms an action (the die turns once, a marked cell pops, the hero chip pops on a new paint, panels cross-fade). Two do not. <code>.card{animation:mh-rise .32s}</code> (app.css:1042) makes every card fade and rise on every render, also after a mark or a setting change, when nothing new appeared. <code>.npill</code> bounces (0.42 s overshoot) when the neutral note collapses — the painter did nothing.',
+    fix: 'Rise only on the render that shows a new scheme (a class set by that render), never on a re-render. The neutral pill fades in 180 ms with no bounce. Everything else stays. Reduced motion stays as now (no transforms, no animation).' }
+];
+var ux = '';
+UX.forEach(function (u) {
+  ux += '<h3 id="' + u.id + '">' + u.h + '</h3>';
+  if (u.prob) ux += '<p><strong>Now:</strong> ' + u.prob + '</p>';
+  if (u.table) ux += '<div class="tw"><table class="t"><thead><tr><th>One thing</th><th>Names now</th><th>Proposed name</th></tr></thead><tbody>' + u.table.map(function (r) { return '<tr><td>' + r[0] + '</td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+  ux += '<p><strong>Fix:</strong> ' + u.fix + '</p>';
+  if (u.frames === 'first') ux += ['wb', 'ch', 'pot'].map(function (d) { return '<div class="row">' + ['light', 'dark'].map(function (t) { return '<figure class="figure">' + firstRun(d, t) + '<figcaption class="cap">' + NAME[d] + ' · first run · ' + t + '</figcaption></figure>'; }).join('') + '</div>'; }).join('');
+  if (u.frames === 'states') ux += ['wb', 'ch', 'pot'].map(function (d) { return '<div class="row">' + ['light', 'dark'].map(function (t) { return '<figure class="figure">' + states(d, t) + '<figcaption class="cap">' + NAME[d] + ' · empty and error states · ' + t + '</figcaption></figure>'; }).join('') + '</div>'; }).join('');
+});
+$('#uxBody').innerHTML = ux;
+$$('#uxBody .fr button, #uxBody .fr .txt').forEach(function (b) { b.setAttribute('tabindex', '-1'); });
+/* measure the proposal in its own phone frames: seed field to the first Plan row */
+(function () {
+  var out = [];
+  $$('[data-frames$="studio ph"] .fr').forEach(function (f) {
+    var full = f.classList.contains('scroll'); f.style.height = 'auto'; f.style.overflow = 'visible';
+    var top = f.getBoundingClientRect().top, a = $('.seedbar', f).getBoundingClientRect().top - top, b = $('.rrow', f).getBoundingClientRect().top - top;
+    out.push(Math.round(b - a)); f.style.height = ''; f.style.overflow = '';
+  });
+  var mn = Math.min.apply(null, out), mx = Math.max.apply(null, out);
+  var el = document.getElementById('uxLen'); if (el) el.textContent = 'seed field to the first Plan row = ' + mn + '–' + mx + ' px (was 1,219 px), about ' + (mx / 844).toFixed(1) + ' of a 390×844 screen';
+})();
+
+})();
+</script>
+</body>
+</html>

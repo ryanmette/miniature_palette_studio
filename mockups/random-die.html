@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Random button — the d6 and ↻</title>
+<!-- the app's self-hosted webfonts (no external requests), so text widths in the frames match the app -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  /* ---------- tokens: the same blocks as src/styles/tokens.css (CLAUDE.md §3.1) ----------
+     The page follows the device theme. Each frame sets data-theme, so a light and a dark frame
+     sit side by side. Only the colour set changes between the themes. */
+  :root {
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px; --tap:44px;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --fs-h2:16px; --fs-body:14px; --fs-small:12.5px; --fs-micro:11.5px;
+    --ease:cubic-bezier(.2,.7,.2,1); --bounce:cubic-bezier(.34,1.56,.64,1);
+  }
+  :root, [data-theme="light"] {
+    --bg:#FBFBFE; --surface:#FFFFFF; --surface-2:#F1F2FF;
+    --border:#E6E7F8; --border-strong:#D3D5F0;
+    --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
+    --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+    --success:#16A34A; --success-weak:#DCFCE7;
+    --warning:#C2740B; --warning-weak:#FBEBD3;
+    --danger:#DC2647; --danger-weak:#FCE4EA;
+    --shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+    --shadow-pop:0 10px 40px rgba(60,50,120,.18);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);   /* per theme block: a var() in a custom property resolves where it is declared */
+  }
+  [data-theme="dark"] {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --success:#86A559; --success-weak:#232A16;
+    --warning:#C9923A; --warning-weak:#2E2412;
+    --danger:#D2563F; --danger-weak:#2E1A14;
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 18px 50px rgba(0,0,0,.5);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+      --border:#3A302A; --border-strong:#4D4138;
+      --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+      --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+      --success:#86A559; --success-weak:#232A16;
+      --warning:#C9923A; --warning-weak:#2E2412;
+      --danger:#D2563F; --danger-weak:#2E1A14;
+      --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 18px 50px rgba(0,0,0,.5);
+      --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+    }
+  }
+
+  /* ---------- the page ---------- */
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:24px 16px; }
+  h1 { font-family:var(--display); font-size:22px; font-weight:600; margin:0 0 8px; }
+  h2 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 4px; }
+  h3.lab { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:24px 0 8px; }
+  a { color:var(--accent); }
+  a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:2px; }
+  code { font-family:var(--mono); font-size:12px; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow);
+    padding:16px; margin:0 auto 24px; max-width:1140px; }
+  .page { max-width:1140px; margin:0 auto; }
+  .sub, .why { color:var(--text-muted); font-size:var(--fs-small); max-width:80ch; margin:0 0 12px; }
+  .sub b, .why b, .notes b { color:var(--text); }
+  ul.notes { margin:0; padding-left:18px; font-size:var(--fs-small); color:var(--text-muted); max-width:82ch; }
+  ul.notes li + li { margin-top:4px; }
+  .sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .pc { display:flex; flex-wrap:wrap; gap:8px 24px; align-items:center; margin:12px 0 0; }
+  .pc .pcl { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin-right:8px; }
+  .pros { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:8px 24px; }
+  .pros h3.lab { margin-top:16px; }
+  dl.spec { display:grid; grid-template-columns:max-content minmax(0, 1fr); gap:4px 12px; font-size:var(--fs-small); margin:0; max-width:82ch; }
+  dl.spec dt { color:var(--text-muted); }
+  dl.spec dd { margin:0; min-width:0; overflow-wrap:anywhere; }
+
+  /* ---------- the app's components, as in src/styles/app.css ---------- */
+  .btn { position:relative; height:var(--tap); padding:0 14px; border-radius:var(--r-ctrl); border:1px solid var(--border);
+    background:var(--surface); color:var(--text); font:inherit; font-weight:500; font-size:13.5px; line-height:1;
+    display:inline-flex; align-items:center; justify-content:center; gap:7px; cursor:pointer;
+    transition:background .12s, border-color .12s; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+  .btn:hover { border-color:var(--border-strong); background:var(--surface-2); }
+  .btn:focus { outline:none; }
+  .btn:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); }
+  .btn:active { transform:scale(.96); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .btn.icon { padding:0; width:var(--tap); font-size:15px; }
+  .btn.hist { width:30px; height:30px; padding:0; font-size:15px; }
+  .seg { display:inline-flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; gap:2px; flex-wrap:wrap; }
+  .seg button, .seg .chip { position:relative; border:none; background:transparent; color:var(--text); height:30px; padding:0 12px;
+    border-radius:8px; font:inherit; font-weight:500; font-size:12.5px; line-height:1; display:inline-flex; align-items:center; gap:6px;
+    cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+  .seg [aria-pressed="true"], .seg .chip.on { background:var(--surface); box-shadow:var(--shadow); }
+  .seg [aria-pressed="true"]::after, .seg .chip.on::after { content:""; position:absolute; left:8px; right:8px; bottom:3px; height:2px;
+    border-radius:var(--r-pill); background:var(--accent); pointer-events:none; }
+  .seg button:focus { outline:none; }
+  .seg button:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); z-index:1; }
+  .seg button:active { transform:scale(.96); }
+  @media (pointer: coarse) { .seg button { min-height:var(--tap); } }
+  @media (forced-colors: active) {
+    .seg button { outline:1px solid ButtonBorder; outline-offset:-1px; }
+    .seg button[aria-pressed="true"] { outline:2px solid Highlight; outline-offset:-2px; }
+    .seg button[aria-pressed="true"]::after { forced-color-adjust:none; background:Highlight; }
+    .seg button:focus-visible { outline:2px solid CanvasText; outline-offset:2px; }
+  }
+  .micro { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  /* a non-working picture of a control: same look, not focusable, hidden from screen readers */
+  .fake { pointer-events:none; }
+
+  /* ---------- frames: a crop of the studio card ----------
+     Phone = the app at 390px (≤520px rules). Desktop = the app's studio column (mouse: --tap 38px;
+     a touch screen: 44px, as in the app). The wheel is drawn smaller than in the app; the buttons,
+     the gutter and the slider are real size. */
+  .trow { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; margin-top:8px; }
+  figure { margin:0; min-width:0; max-width:100%; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+  figcaption b { color:var(--text); }
+  .scrollx { max-width:100%; overflow-x:auto; border-radius:12px; }
+  .scrollx:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .fr { background:var(--bg); color:var(--text); border:1px solid var(--border-strong); padding:12px; font-size:12px; }
+  .fr.ph { --tap:44px; width:340px; max-width:100%; border-radius:20px; }
+  .fr.dk { --tap:38px; width:540px; border-radius:12px; }
+  @media (pointer: coarse) { .fr.dk { --tap:44px; } }
+  /* On a narrow screen the desktop frame scales to fit (it stays one picture). 620px: below it the 540px frame
+     does not fit the section (the viewport less 66px of padding and border). */
+  .fitnote { display:none; }
+  @media (max-width: 620px) { .fr.dk { zoom:.6; } .fitnote { display:inline; } }
+  .scard { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); padding:12px; box-shadow:var(--shadow); }
+  .fr .scard + .scard { margin-top:12px; }
+  .hero { display:flex; align-items:center; gap:8px; margin-bottom:12px; min-width:0; }
+  .herochip { width:26px; height:26px; border-radius:8px; flex:none; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  .hero b { font-family:var(--display); font-size:14px; font-weight:600; white-space:nowrap; }
+  .hero .hx { font-family:var(--mono); font-size:11.5px; color:var(--text-muted); }
+  .wrow { display:flex; align-items:center; justify-content:center; gap:12px; }
+  .ph .wrow { flex-direction:column; gap:12px; }
+  .wheel { position:relative; flex:none; border-radius:50%; aspect-ratio:1; }
+  .ph .wheel { width:min(100%, 220px); }
+  .dk .wheel { width:260px; }
+  .wheel svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+  .wlc { position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; width:var(--tap); }
+  .ph .wlc { display:grid; grid-template-columns:minmax(0, 1fr) auto; align-items:center; gap:4px 8px; width:100%; }
+  .ph .wlc.three { grid-template-columns:minmax(0, 1fr) auto auto; }
+  .wl-lab { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+    font-size:var(--fs-small); color:var(--text-muted); cursor:pointer; }
+  .ph .wl-lab { grid-column:1 / -1; position:static; width:auto; height:auto; margin:0; overflow:visible; clip:auto; white-space:normal; }
+  .wl-end { font-size:var(--fs-micro); font-weight:500; line-height:16px; color:var(--text-muted); white-space:nowrap; }
+  .ph .wl-end { display:none; }
+  .dk .gbtn { margin-top:8px; }
+  .dk .gbtn + .gbtn { margin-top:4px; }
+  /* the slider: the app's .wl-range, vertical in the desktop gutter, horizontal on a phone */
+  .wl-range { -webkit-appearance:none; appearance:none; background:none; margin:0; padding:0; border:0; cursor:pointer; border-radius:var(--r-pill);
+    writing-mode:vertical-lr; direction:rtl; inline-size:180px; block-size:var(--tap); }
+  .ph .wl-range { writing-mode:horizontal-tb; direction:ltr; inline-size:auto; min-width:0; }
+  .wl-range:focus { outline:none; }
+  .wl-range:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .wl-range::-webkit-slider-runnable-track { box-sizing:border-box; block-size:12px; border-radius:var(--r-pill);
+    box-shadow:inset 0 0 0 1px var(--text-muted); background:linear-gradient(to top, var(--wl-stops, var(--border), var(--border))); }
+  .ph .wl-range::-webkit-slider-runnable-track { background:linear-gradient(to right, var(--wl-stops, var(--border), var(--border))); }
+  .wl-range::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; box-sizing:border-box; inline-size:28px; block-size:28px;
+    margin-block-start:-8px; border-radius:50%; background:var(--wl-thumb, var(--surface)); border:3px solid var(--wl-ring, var(--text-muted)); }
+  @media (forced-colors: none) {
+    .wl-range::-moz-range-track { box-sizing:border-box; block-size:12px; border-radius:var(--r-pill);
+      box-shadow:inset 0 0 0 1px var(--text-muted); background:linear-gradient(to top, var(--wl-stops, var(--border), var(--border))); }
+    .ph .wl-range::-moz-range-track { background:linear-gradient(to right, var(--wl-stops, var(--border), var(--border))); }
+    .wl-range::-moz-range-progress { background:transparent; }
+    .wl-range::-moz-range-thumb { box-sizing:border-box; inline-size:28px; block-size:28px; border-radius:50%;
+      background:var(--wl-thumb, var(--surface)); border:3px solid var(--wl-ring, var(--text-muted)); }
+  }
+  @media (forced-colors: active) {
+    .wl-range, .wl-range::-webkit-slider-thumb { -webkit-appearance:auto; appearance:auto; }
+    .wl-range::-webkit-slider-thumb { margin:0; }
+  }
+  .wkey { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:12px; font-weight:500; font-size:11.5px; line-height:1;
+    color:var(--text-muted); letter-spacing:.04em; }
+  .wkey span { display:inline-flex; align-items:center; gap:6px; }
+  .wkey i { display:inline-grid; place-items:center; width:16px; height:16px; border-radius:var(--r-pill); background:var(--accent); color:var(--on-accent);
+    font-weight:700; font-size:10px; font-style:normal; }
+  /* the harmony strip (a picture: it scrolls to the chosen harmony) */
+  .hsrow { display:flex; align-items:center; gap:8px; margin-top:12px; min-width:0; }
+  .hs { position:relative; flex:1; min-width:0; display:flex; flex-wrap:nowrap; overflow:hidden; padding:4px;
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+    mask-image:linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent); }
+  .hs .chip { flex:0 0 auto; }
+  .ph .hs .chip { height:var(--tap); font-size:12.5px; padding:0 12px; }
+  .hg { width:15px; height:15px; flex:none; opacity:.85; }
+  .ph .hg { display:none; }
+  .palhead { display:flex; justify-content:space-between; align-items:center; gap:8px 12px; flex-wrap:wrap; margin:12px 0 8px; }
+  .palctl { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .ph .palhead { flex-direction:column; align-items:flex-start; }
+  .ph .palctl .seg { flex-basis:100%; }
+  .ph .palctl .seg .chip { flex:1; justify-content:center; height:var(--tap); }
+  .lp { display:flex; gap:4px; }
+  .lp span { flex:1; height:28px; border-radius:var(--r-ctrl); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  /* new in this direction: a dashed accent outline, as in the other mock-ups */
+  .isnew { outline:1.5px dashed var(--accent); outline-offset:3px; }
+  .isnew:focus-visible { outline:2px solid transparent; }
+  /* the seed toolbar (a picture, except the new button) */
+  .seedbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .seedbar .hexin { display:flex; align-items:center; gap:6px; height:var(--tap); padding:0 10px; border:1px solid var(--border); border-radius:var(--r-ctrl);
+    background:var(--surface); color:var(--text); font-family:var(--mono); font-size:12.5px; min-width:0; }
+  .seedbar .hexin span { color:var(--text-muted); }
+  .ph .seedbar .hexin { flex:1 1 100%; }
+  .dk .seedbar .hexin { flex:0 1 110px; }
+  .dk .seedbar .push { margin-left:auto; }
+  .seedbar .b-roll { padding:0 12px 0 10px; }
+  .seedbar .push { margin-left:auto; }
+  .seedbar .cut { font-size:11px; color:var(--text-muted); }
+  .wheel .ln line { stroke:rgba(255,255,255,.75); stroke-width:.7; }
+  .wheel .nd { fill:none; stroke:#FFFFFF; stroke-width:1.5; filter:drop-shadow(0 0 .6px rgba(0,0,0,.8)); }
+  .wheel .nd.base { stroke-width:1.9; }
+  .wheel .bdg circle { fill:var(--accent); stroke:var(--surface); stroke-width:.8; }
+  .wheel .bdg text { fill:var(--on-accent); font:700 5.2px var(--font); }
+  .glyph { display:inline-block; line-height:1; }
+  .dieg { display:inline-flex; }
+  /* the glyph study */
+  .gfr { --tap:44px; border-radius:12px; width:max-content; padding:8px; }
+  table.gt { border-collapse:collapse; font-size:12px; }
+  table.gt th, table.gt td { padding:4px 8px 4px 0; text-align:left; vertical-align:middle; }
+  table.gt thead th { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.gt tbody th { font-weight:400; color:var(--text-muted); width:96px; max-width:96px; line-height:1.3; }
+  table.gt td:last-child { padding-right:0; }
+  /* the die takes the button's own --text colour (currentColor): one button style during the roll too (§3.5) */
+  .dieover { position:absolute; inset:0; display:grid; place-items:center; opacity:0; pointer-events:none; }
+  table.gt tbody th b { color:var(--text); font-weight:600; }
+  .d20 { display:block; flex:none; }
+  /* the scores and the verdict */
+  table.st { border-collapse:collapse; font-size:var(--fs-small); width:100%; }
+  table.st th, table.st td { padding:8px; text-align:left; vertical-align:top; border-bottom:1px solid var(--border); }
+  table.st thead th { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted);
+    border-bottom-color:var(--border-strong); }
+  table.st tbody th { font-weight:400; }
+  table.st .n { text-align:right; font-family:var(--mono); white-space:nowrap; }
+  table.st tr.top th, table.st tr.top td { font-weight:600; }
+  table.st.wide { min-width:600px; }
+  table.st tbody th { overflow-wrap:anywhere; }
+  @media (max-width: 520px) { table.st:not(.wide) th, table.st:not(.wide) td { padding:8px 4px; } }
+  ol.notes { margin:0; padding-left:20px; font-size:var(--fs-small); color:var(--text-muted); max-width:82ch; }
+  ol.notes li + li { margin-top:8px; }
+  /* Reduced motion, as app.css: no transforms, no transitions. .rm on <html> is the page's motion setting
+     (Device follows prefers-reduced-motion; Full and Reduced override it for the preview). */
+  .rm .btn:active, .rm .seg button:active { transform:none; }
+  .rm * { transition:none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<section id="intro">
+  <h1>Random button — the d6 and ↻</h1>
+  <p class="sub"><b>The request (Ryan, 2026-10-28):</b> “Let’s do a mockup of the D20, keep ↻”. The app keeps ↻ as it is.
+  This page is a design study only. Nothing in <code>src/</code> changes.</p>
+  <p class="sub"><b>Decision (Ryan, 2026-10-28):</b> “Instead of a D20 let’s see it as a D6. Maybe the D20 is an option
+  for later.” So every demo on this page now shows the <b>d6</b> (glyph d). The d20 drawings stay in the glyph study, for a
+  possible later option.</p>
+  <p class="sub"><b>Decision 2 (Ryan, 2026-10-28):</b> “Keep ↻, add the Roll a scheme d6” — direction B. The recommendation
+  is that the roll changes only the harmony, so your picked paint stays the seed. Because the new seed toolbar has no room
+  on a phone, the build puts the d6 at the start of the harmony strip, next to the harmonies it picks from.</p>
+  <p class="sub"><b>What ↻ does today</b> (<code>wheel.js</code>, <code>#wrand</code>): it picks a random hue and a random
+  strength (saturation 50% to 95%) for the scheme’s base colour. It keeps the lightness, the harmony and the seed role
+  (Main or Accent). Added colours turn with the base. Locked colours stay. ↶ undoes it. The hero then shows “Custom” and the
+  new hex. Its accessible name and its tooltip are “Generate a random base colour”. On desktop it sits in the wheel’s gutter,
+  under the lightness slider (38px with a mouse, 44px on touch). On a phone it sits at the right of the horizontal slider
+  (44px).</p>
+  <p class="sub"><b>What “keep ↻” can mean.</b> This page draws three readings:</p>
+  <ul class="notes">
+    <li><a href="#dirA"><b>A · ↻ stays; the d20 rolls when you tap it.</b></a> The button and its job do not change. The d20 is
+      only the motion that confirms the tap.</li>
+    <li><a href="#dirB"><b>B · ↻ stays for the colour; a new d20 rolls a whole scheme.</b></a> A second button picks a random
+      harmony and a random colour.</li>
+    <li><a href="#dirC"><b>C · The d20 replaces ↻.</b></a> The earlier recommendation, for comparison.</li>
+  </ul>
+  <p class="sub" style="margin-top:12px">The judges’ <a href="#scores">scores</a> and the <a href="#verdict">verdict</a> are at
+  the end.</p>
+  <p class="sub" style="margin-top:12px"><b>Earlier judges</b> (<a href="lightness-slider.html">lightness-slider.html</a>,
+  “And the ↻ button”): ↻ can read as “reload”. Next to the live palette’s ↶ undo and ↷ redo, it can read as “redo”. All three
+  judges chose “d20 + Random” on a phone and “d20 alone” on desktop. Two judges said that a 20px d20 can look like a hexagon
+  or a gem: “test it with painters, and test a d6 with pips against it”. The <a href="#glyphs">glyph study</a> does that test.
+  Ryan now asks to keep ↻.</p>
+  <p class="sub"><b>Every demo works.</b> Tap ↻, the d20 or a Roll button, and the frames of that section change, as in the
+  app. ↶ and ↷ undo and redo. The slider sets the lightness. The other controls in the frames are pictures. Each section’s
+  light and dark frames share one colour. They start on Alga Green (<code>#555E1B</code>, from <code>paints.json</code>).</p>
+  <div class="pc" role="group" aria-label="Preview settings">
+    <div><span class="pcl" id="pthLab">Page theme</span>
+      <div class="seg" role="group" aria-labelledby="pthLab" id="pageTheme">
+        <button type="button" data-v="device" aria-pressed="true">Device</button>
+        <button type="button" data-v="light" aria-pressed="false">Light</button>
+        <button type="button" data-v="dark" aria-pressed="false">Dark</button>
+      </div></div>
+    <div><span class="pcl" id="motLab0">Motion</span>
+      <div class="seg motionseg" role="group" aria-labelledby="motLab0">
+        <button type="button" data-v="device" aria-pressed="true">Device</button>
+        <button type="button" data-v="full" aria-pressed="false">Full</button>
+        <button type="button" data-v="reduced" aria-pressed="false">Reduced</button>
+      </div></div>
+  </div>
+  <p class="why" style="margin:8px 0 0">“Reduced” previews <code>prefers-reduced-motion: reduce</code>. Each direction has the
+  same control next to its demo.</p>
+</section>
+
+<script>
+/* ===== Shared helpers for every demo on this page (colour maths, the frame drawing, the motion setting). =====
+   The colours in the frames are paint data (inline styles), never tokens. Chrome uses tokens only. */
+const K = (() => {
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const hsl2hex = (h, s, l) => {
+    h = ((h % 360) + 360) % 360;
+    const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2;
+    const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+    return '#' + [r, g, b].map(v => Math.round((v + m) * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+  };
+  const hex2rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  const hex2hsl = hex => {
+    const [r, g, b] = hex2rgb(hex).map(v => v / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+    if (!d) return [0, 0, l];
+    const s = d / (1 - Math.abs(2 * l - 1));
+    const h = mx === r ? 60 * (((g - b) / d) % 6) : mx === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4);
+    return [(h + 360) % 360, s, l];
+  };
+  const lum = hex => { const [r, g, b] = hex2rgb(hex).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  // §7 text-on-swatch: near-black or white, whichever has the higher contrast
+  const textOn = hex => ratio(hex, '#15150F') >= ratio(hex, '#FFFFFF') ? '#15150F' : '#FFFFFF';
+
+  // harmony.js HARMONY_STEPS (hue steps; the two value harmonies as their own steps)
+  const STEPS = {
+    complementary: [{ dh: 180 }], analogous: [{ dh: -30 }, { dh: 30 }], triadic: [{ dh: 120 }, { dh: 240 }],
+    'split-complementary': [{ dh: 150 }, { dh: 210 }], tetradic: [{ dh: 60 }, { dh: 180 }, { dh: 240 }],
+    square: [{ dh: 90 }, { dh: 180 }, { dh: 270 }], compound: [{ dh: 30 }, { dh: 180 }, { dh: 210 }],
+    shades: [{ dl: -0.24 }, { dl: -0.12 }, { dl: 0.12 }, { dl: 0.24 }],
+    monochromatic: [{ ds: -0.34, dl: -0.06 }, { ds: -0.17 }, { ds: 0.10, dl: 0.12 }], custom: [],
+  };
+  const NAMES = { complementary: 'Complementary', analogous: 'Analogous', triadic: 'Triadic', 'split-complementary': 'Split-complementary',
+    tetradic: 'Tetradic', square: 'Square', compound: 'Compound', shades: 'Shades', monochromatic: 'Monochromatic', custom: 'Custom' };
+  const ORDER = Object.keys(NAMES);
+  const partners = st => STEPS[st.harm].map(p => ({ h: st.h + (p.dh || 0), s: clamp(st.s + (p.ds || 0), 0, 1), l: clamp(st.l + (p.dl || 0), 0.04, 0.96), hue: !p.ds && !p.dl }));
+  // which partner wears which badge: the one nearest 180° is A, the next one is 2 (as the role plan reads)
+  const badges = st => {
+    const ps = STEPS[st.harm].map((p, i) => ({ i, d: p.ds || p.dl ? 999 : Math.abs(180 - (((p.dh || 0) % 360) + 360) % 360) }));
+    const hueOnes = ps.filter(p => p.d < 999).sort((a, b) => a.d - b.d);
+    const out = {}; if (hueOnes[0]) out[hueOnes[0].i] = 'A'; if (hueOnes[1]) out[hueOnes[1].i] = '2'; return out;
+  };
+  // the harmony strip's little glyph (ui.js draws the same idea: spokes to each hue partner)
+  const hglyph = harm => {
+    const pts = [0, ...STEPS[harm].filter(p => !p.ds && !p.dl).map(p => p.dh || 0)];
+    const xy = d => [11 + 7 * Math.sin(d * Math.PI / 180), 11 - 7 * Math.cos(d * Math.PI / 180)];
+    return '<svg class="hg" viewBox="0 0 22 22" aria-hidden="true">' + pts.map((d, i) => {
+      const [x, y] = xy(d); return `<line x1="11" y1="11" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="currentColor" stroke-width="1.3"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${i ? 1.7 : 2.4}" fill="currentColor"/>`;
+    }).join('') + '</svg>';
+  };
+
+  /* ---- motion: Device / Full / Reduced (every .motionseg on the page shares one setting) ---- */
+  let motion = 'device';
+  const mq = matchMedia('(prefers-reduced-motion: reduce)');
+  const reduced = () => motion === 'reduced' || (motion === 'device' && mq.matches);
+  const syncMotion = () => {
+    document.documentElement.classList.toggle('rm', reduced());
+    document.querySelectorAll('.motionseg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === motion)));
+  };
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.motionseg button'); if (!b) return;
+    motion = b.dataset.v; syncMotion();
+  });
+  mq.addEventListener('change', syncMotion);
+  const motionSeg = id => `<div class="pc"><span class="pcl" id="${id}">Motion</span><div class="seg motionseg" role="group" aria-labelledby="${id}">` +
+    ['device', 'full', 'reduced'].map(v => `<button type="button" data-v="${v}" aria-pressed="${v === motion}">${v[0].toUpperCase() + v.slice(1)}</button>`).join('') + '</div></div>';
+
+  /* ---- page theme: Device / Light / Dark ---- */
+  document.getElementById('pageTheme').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const v = b.dataset.v;
+    if (v === 'device') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = v;
+    b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  });
+
+  /* ---- one shared state per section: the colour, the harmony, the history (↶ ↷) ---- */
+  const START = { h: 68.06, s: 0.554, l: 0.237, harm: 'complementary', name: 'Alga Green' };
+  function store(onChange) {
+    const st = { ...START, past: [], future: [] };
+    const snap = () => ({ h: st.h, s: st.s, l: st.l, harm: st.harm, name: st.name });
+    let coAt = -Infinity;   // the time of the last coalescing change (opts.coalesce)
+    st.set = (patch, opts = {}) => {
+      // As the app: ↻ renders as 'drag', so its history write waits 250ms. Taps less than 250ms apart make one ↶ step.
+      const now = performance.now(), join = opts.coalesce && now - coAt < 250;
+      coAt = opts.coalesce ? now : -Infinity;
+      if (!opts.noHistory && !join) { st.past.push(snap()); st.future = []; }
+      Object.assign(st, patch); onChange(opts);
+    };
+    st.undo = () => { if (!st.past.length) return; coAt = -Infinity; st.future.push(snap()); Object.assign(st, st.past.pop()); onChange({ pop: true, said: 'Undone.' }); };
+    st.redo = () => { if (!st.future.length) return; coAt = -Infinity; st.past.push(snap()); Object.assign(st, st.future.pop()); onChange({ pop: true, said: 'Redone.' }); };
+    st.hex = () => hsl2hex(st.h, st.s, st.l);
+    return st;
+  }
+  const rnd = () => ({ h: Math.random() * 360, s: 0.5 + Math.random() * 0.45 });
+  return { clamp, hsl2hex, hex2hsl, textOn, STEPS, NAMES, ORDER, partners, badges, hglyph, reduced, syncMotion, motionSeg, store, rnd };
+})();
+K.syncMotion();
+
+/* ===== The frame: a crop of the studio card (hero, wheel + lightness, legend, harmony strip, live palette head).
+   K.mount(host, cfg) draws four frames (phone and desktop, light and dark) that share one state.
+   cfg.slots(mode) gives each section's own parts: the gutter buttons, the start of the harmony strip,
+   a seed toolbar. Section scripts then wire their own buttons. ===== */
+(() => {
+  let uidN = 0;
+  const WORD = l => l < 20 ? 'very dark' : l < 40 ? 'dark' : l < 60 ? 'mid' : l < 80 ? 'light' : 'very light';
+  const STOPS = [0.06, 0.28, 0.50, 0.72, 0.94];
+  const wheelBg = l => {
+    const L = (l * 100).toFixed(1) + '%';
+    const hues = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360].map(h => `hsl(${h} 100% ${L})`).join(', ');
+    return `radial-gradient(closest-side, hsl(0 0% ${L}), hsl(0 0% ${L} / 0)), conic-gradient(${hues})`;
+  };
+  const pos = (h, s) => [50 + Math.sin(h * Math.PI / 180) * s * 47, 50 - Math.cos(h * Math.PI / 180) * s * 47];
+  const badge = (x, y, t) => `<g class="bdg"><circle cx="${(x + 5.2).toFixed(1)}" cy="${(y - 5.2).toFixed(1)}" r="4.3"/><text x="${(x + 5.2).toFixed(1)}" y="${(y - 3.4).toFixed(1)}" text-anchor="middle">${t}</text></g>`;
+  const nodes = st => {
+    const [bx, by] = pos(st.h, st.s), ps = K.partners(st), bd = K.badges(st);
+    let lines = '', rings = '', marks = '';
+    ps.forEach((p, i) => {
+      if (!p.hue) return;
+      const [x, y] = pos(p.h, p.s);
+      lines += `<line x1="${bx.toFixed(1)}" y1="${by.toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`;
+      rings += `<circle class="nd" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2"/>`;
+      if (bd[i]) marks += badge(x, y, bd[i]);
+    });
+    rings += `<circle class="nd base" cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="6"/>`;
+    marks += badge(bx, by, 'P');
+    return `<g class="ln">${lines}</g>${rings}${marks}`;
+  };
+  const lpCols = st => [st.hex(), ...K.partners(st).map(p => K.hsl2hex(p.h, p.s, p.l))];
+
+  function frameHTML(mode, theme, uid, sl) {
+    const wl = 'wl-' + uid, dk = mode === 'dk';
+    const chips = K.ORDER.map(k => `<span class="chip" data-h="${k}">${K.hglyph(k)}<span>${K.NAMES[k]}</span></span>`).join('');
+    const fr = `<div class="fr ${mode}" data-theme="${theme}">
+      ${sl.seed ? `<div class="scard">${sl.seed}</div>` : ''}
+      <div class="scard">
+        <div class="hero"><span class="herochip"></span><b class="nm"></b><span class="hx"></span></div>
+        <div class="wrow">
+          <div class="wheel" aria-hidden="true"><svg viewBox="0 0 100 100"></svg></div>
+          <div class="wlc${sl.three ? ' three' : ''}">
+            <label class="wl-lab" for="${wl}">Lightness</label>
+            ${dk ? '<span class="wl-end" aria-hidden="true">Lighter</span>' : ''}
+            <input id="${wl}" class="wl-range" type="range" min="6" max="94" step="1">
+            ${dk ? '<span class="wl-end" aria-hidden="true">Darker</span>' : ''}
+            ${sl.gutter || ''}
+          </div>
+        </div>
+        <div class="wkey" aria-hidden="true"><span><i>P</i>Primary</span><span><i>A</i>Accent</span><span><i>2</i>Secondary</span></div>
+        <div class="hsrow">${sl.strip || ''}<div class="hs seg" aria-hidden="true">${chips}</div></div>
+        <div class="palhead"><span class="micro">Live palette → nearest paint</span>
+          <div class="palctl">
+            <button type="button" class="btn hist" data-act="undo" aria-label="Undo" title="Undo (Ctrl/⌘+Z)">↶</button>
+            <button type="button" class="btn hist" data-act="redo" aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)">↷</button>
+            <span class="btn hist fake" aria-hidden="true">+</span><span class="btn hist fake" aria-hidden="true">−</span>
+            <span class="seg fake" aria-hidden="true"><span class="chip on">Ideal</span><span class="chip">Real</span></span>
+          </div></div>
+        <div class="lp" aria-hidden="true"></div>
+      </div>
+    </div>`;
+    const cap = `<figcaption><b>${dk ? 'Desktop' : 'Phone'}</b> · ${theme}${sl.cap ? ' · ' + sl.cap : ''}${dk ? '<span class="fitnote"> · shown at 60% to fit. Its controls are too small to tap here: test touch in the phone frame.</span>' : ''}</figcaption>`;
+    return `<figure class="f-${mode}">${cap}${dk ? `<div class="scrollx" data-label="Desktop frame, ${theme}">${fr}</div>` : fr}</figure>`;
+  }
+
+  function paint(f, st, opts) {
+    const hex = st.hex(), q = s => f.querySelector(s);
+    const chip = q('.herochip');
+    chip.style.background = hex; q('.nm').textContent = st.name; q('.hx').textContent = hex;
+    q('.wheel').style.background = wheelBg(st.l);
+    q('.wheel svg').innerHTML = nodes(st);
+    const r = q('.wl-range'), lv = Math.round(st.l * 100);
+    if (+r.value !== lv) r.value = lv;
+    r.setAttribute('aria-valuetext', lv + '%, ' + WORD(lv));
+    r.style.setProperty('--wl-stops', STOPS.map(l => K.hsl2hex(st.h, st.s, l)).join(', '));
+    r.style.setProperty('--wl-thumb', hex);
+    r.style.setProperty('--wl-ring', K.textOn(hex));
+    const hs = q('.hs');
+    hs.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.h === st.harm));
+    // The active chip centres, as in the app. Layout offsets (.hs is position:relative), not client rects:
+    // a zoomed desktop frame gives zoomed rects but unzoomed scrollLeft and clientWidth.
+    const on = hs.querySelector('.chip.on');
+    const left = on.offsetLeft - (hs.clientWidth - on.offsetWidth) / 2;
+    hs.scrollTo({ left, behavior: opts.smooth && !K.reduced() ? 'smooth' : 'auto' });
+    q('.lp').innerHTML = lpCols(st).map(c => `<span style="background:${c}"></span>`).join('');
+    const hv = q('.hexv'); if (hv) hv.textContent = hex.slice(1);
+    q('[data-act="undo"]').disabled = !st.past.length;
+    q('[data-act="redo"]').disabled = !st.future.length;
+    if (opts.pop && !K.reduced()) chip.animate([{ transform: 'scale(.82)' }, { transform: 'scale(1.05)', offset: .6 }, { transform: 'scale(1)' }],
+      { duration: 320, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+  }
+
+  K.mount = (host, cfg) => {
+    const frames = [];
+    const live = document.createElement('p');
+    live.className = 'sr'; live.setAttribute('role', 'status');
+    let lastSaid = '';
+    const say = t => { if (t && t !== lastSaid) { live.textContent = t; lastSaid = t; } };
+    const st = K.store(opts => { frames.forEach(f => paint(f, st, opts)); if (opts.said) say(opts.said); });
+    if (cfg.from) ['h', 's', 'l', 'harm', 'name', 'past', 'future'].forEach(k => { st[k] = cfg.from[k]; });   // a re-drawn demo keeps its colour and history
+    for (const theme of ['light', 'dark']) {
+      const row = document.createElement('div'); row.className = 'trow';
+      row.innerHTML = ['ph', 'dk'].map(mode => frameHTML(mode, theme, ++uidN, cfg.slots(mode, theme))).join('');
+      host.appendChild(row);
+      row.querySelectorAll('.fr').forEach(f => frames.push(f));
+    }
+    host.appendChild(live);
+    frames.forEach(f => {
+      f.querySelector('[data-act="undo"]').addEventListener('click', st.undo);
+      f.querySelector('[data-act="redo"]').addEventListener('click', st.redo);
+      const r = f.querySelector('.wl-range');
+      let run = false;   // one slider run = one undo step, as in the app
+      r.addEventListener('input', () => { st.set({ l: r.value / 100, name: 'Custom' }, { noHistory: run }); run = true; });
+      r.addEventListener('change', () => { run = false; });
+    });
+    frames.forEach(f => paint(f, st, {}));
+    return { st, frames, say };
+  };
+
+  /* A die that rolls in place (B and C): a hop and one turn, landing with an overshoot. Transform only.
+     Returns the animation, or null under reduced motion. */
+  K.spin = el => {
+    el.getAnimations().forEach(a => a.cancel());   // a fast second press starts the turn again; nothing queues
+    return K.reduced() ? null : el.animate(
+      [{ transform: 'none' }, { transform: 'translateY(-5px) rotate(200deg) scale(.9)', offset: .45 }, { transform: 'rotate(360deg)' }],
+      { duration: 320, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+  };
+
+  /* A frame wrapper is a scroll region (a Tab stop with a name) only while it really scrolls sideways.
+     Checked again on resize and after a demo re-draws. */
+  K.fitScroll = () => document.querySelectorAll('.scrollx').forEach(x => {
+    if (x.scrollWidth > x.clientWidth + 1) { x.tabIndex = 0; x.setAttribute('role', 'region'); x.setAttribute('aria-label', x.dataset.label); }
+    else { x.removeAttribute('tabindex'); x.removeAttribute('role'); x.removeAttribute('aria-label'); }
+  });
+  let fitT = 0;
+  addEventListener('resize', () => { clearTimeout(fitT); fitT = setTimeout(K.fitScroll, 100); });
+  addEventListener('load', K.fitScroll);
+  if (document.fonts) document.fonts.ready.then(K.fitScroll);
+})();
+</script>
+
+<section id="today">
+  <h2>Today</h2>
+  <p class="why">As the app is now (commit <code>8ff5a59</code>). <b>Desktop:</b> ↻ is in the gutter under the vertical slider
+  and its “Darker” label. <b>Phone:</b> ↻ is at the right of the horizontal slider, under the visible “Lightness” label. In both,
+  the live palette’s ↶ undo and ↷ redo are a short distance below: 116px below ↻ on desktop (1280×800, mouse) and 141px below
+  it on a phone (390×844, touch). These are the vertical gaps between the buttons’ edges, measured in the app. ↻ and ↷ are
+  both clockwise arrows (U+21BB and U+21B7), so ↻ can read as “redo” or “reload”. Its name is in the tooltip and the
+  accessible name only. iOS never shows a tooltip, so on an iPhone ↻ has no visible name.</p>
+  <div id="todayFrames"></div>
+  <h3 class="lab">The look-alikes, at real size</h3>
+  <div class="trow" style="align-items:center">
+    <figure><figcaption>↻ in the gutter</figcaption><span class="btn icon fake" style="--tap:38px" aria-hidden="true">↻</span></figure>
+    <figure><figcaption>↷ redo</figcaption><span class="btn hist fake" aria-hidden="true">↷</span></figure>
+    <figure><figcaption>↶ undo</figcaption><span class="btn hist fake" aria-hidden="true">↶</span></figure>
+    <figure><figcaption>A browser’s reload</figcaption><span class="btn icon fake" style="--tap:38px" aria-hidden="true">⟳</span></figure>
+  </div>
+  <p class="why" style="margin:8px 0 0"><b>Font note:</b> ↻, ↶, ↷ and ⟳ are text characters. The app’s self-hosted fonts
+  (Inter, latin subset) do not hold them, so each device draws them with a system font. Their shapes, weights and baselines
+  change from device to device, and so does how much ↻ looks like ↷. An SVG die draws the same everywhere.</p>
+  <ul class="notes" style="margin-top:12px">
+    <li><b>Name:</b> <code>aria-label</code> and <code>title</code> “Generate a random base colour”. No visible word.</li>
+    <li><b>Size:</b> <code>--tap</code>: 38px with a mouse, 44px on touch and on a phone. ↶ and ↷ are 30px (not yet 44px on
+      touch, PLAN §5 follow-up 12).</li>
+    <li><b>Motion:</b> the press scale (.96) only. The hero chip does <b>not</b> pop: ↻ renders as a wheel drag
+      (<code>setBase</code> → <code>render('drag')</code> → <code>renderHero(false)</code>).</li>
+    <li><b>Undo:</b> the history write waits 250ms (as for a drag). Taps less than 250ms apart make one ↶ step.</li>
+    <li><b>Black, white and the slider’s ends:</b> ↻ keeps the lightness, so on a black or white seed (lightness 0% or
+      100%) it changes nothing (<code>#FFFFFF</code> stays <code>#FFFFFF</code>). Near the ends most rolls stay neutral
+      (Lab C* 14 or less, so neutral mode stays on): 79% of rolls at 6% and 88% at 94%; none from 20% to 80% (measured with
+      <code>color.js</code>). A, B and C keep this, unless the build changes it.</li>
+  </ul>
+</section>
+<script>
+(() => {
+  const host = document.getElementById('todayFrames');
+  const m = K.mount(host, {
+    slots: mode => ({ gutter: `<button type="button" class="btn icon gbtn t-rnd" title="Generate a random base colour" aria-label="Generate a random base colour">↻</button>` }),
+  });
+  host.querySelectorAll('.t-rnd').forEach(b => b.addEventListener('click', () => {
+    const r = K.rnd();
+    m.st.set({ ...r, name: 'Custom' }, { coalesce: true, said: 'New base colour: Custom ' + K.hsl2hex(r.h, r.s, m.st.l) + '.' });
+  }));
+})();
+</script>
+
+<section id="glyphs">
+  <h2>Glyph study</h2>
+  <p class="why">Five glyphs on the app’s secondary button (44px), at 16, 20, 24 and 28px. Each is inline SVG in
+  <code>currentColor</code> (so it takes <code>--text</code> in both themes) and <code>aria-hidden</code>: the button’s
+  name does the talking. The app’s ↻ is 15px today. Checked in Chromium at 1× (a desktop monitor) and 3× (a phone).</p>
+  <div class="trow" id="glyphGrid"></div>
+  <h3 class="lab">Which still reads as a die at 20px</h3>
+  <ul class="notes">
+    <li><b>(d) the d6 with five pips reads as a die at every size, on a 1× and a 3× screen.</b> Nothing else has a rounded
+      square with pips. The small tilt makes it a thrown die, not a keypad or a grid icon. It is also the most on-brand die
+      for this audience: Warhammer and most wargames roll buckets of d6. The d20 is the role-playing die.</li>
+    <li><b>(c) is the d20 that still reads at 20px.</b> The strokes are thicker (2.2 to 2.4 units) and there are only five
+      facet lines, so they do not merge. The shaded front face gives it volume: it reads as a solid object, not as a flat
+      hexagon. At 16px it is a hexagon with a triangle in it, and to a wargamer it can look like a hex nut or a warning
+      sign. The face is now at <code>fill-opacity</code> .5 (it was .35, under 3:1).</li>
+    <li><b>(a), the earlier d20, works at 24px and up.</b> At 16px on a 1× screen its nine thin facet lines merge into a grey
+      knot. At 20px it is busy: two judges saw a knot, one saw a faceted hexagon that still reads. This is the “hexagon or
+      gem” risk the judges named.</li>
+    <li><b>(b) the “20” needs 24px and a 2× or 3× screen.</b> At 20px the number is about 4px tall and turns to a smudge. When
+      you can read it, it is the strongest d20 cue, because a “natural 20” is what painters and gamers know.</li>
+    <li><b>(e) ↻ reads as an arrow at every size.</b> That is the problem: it says “reload” or “redo”, not “random”. It is
+      also a text character, not an SVG: the self-hosted Inter does not hold it, so each device draws it with its own system
+      font (see the font note in Today).</li>
+  </ul>
+  <h3 class="lab">Contrast of each glyph (WCAG 1.4.11, 3:1 for a graphic)</h3>
+  <p class="why">Each glyph is in <code>currentColor</code>, which is <code>--text</code> on the secondary button. The
+  strokes and pips are <b>15.54:1</b> on the light surface (13.98:1 on the hover fill) and <b>13.89:1</b> on the dark
+  surface (12.83:1 on hover), for (a), (b), (d) and (e). The only part with less contrast is the shaded face of (c):
+  <b>3.12:1</b> light (3.05:1 on hover) and <b>4.39:1</b> dark (4.25:1 on hover) at <code>fill-opacity</code> .5, and 4.98:1
+  light / 3.16:1 dark against its own stroke. At .35 it was 2.11:1 light and 2.80:1 dark, which failed. So all five pass,
+  and the choice between them is about shape, not contrast.</p>
+  <div class="pc" role="group" aria-labelledby="dieLab">
+    <span class="pcl" id="dieLab">Die in the demos below</span>
+    <div class="seg" id="dieSeg">
+      <button type="button" data-v="a" aria-pressed="false">(a) d20</button>
+      <button type="button" data-v="b" aria-pressed="false">(b) d20 “20”</button>
+      <button type="button" data-v="c" aria-pressed="false">(c) bold d20</button>
+      <button type="button" data-v="d" aria-pressed="true">(d) d6 · chosen</button>
+    </div>
+  </div>
+  <p class="why" style="margin:8px 0 0">The demos start with the d6 (d), Ryan’s choice. Pick a d20 to compare it, in every
+  direction at once.</p>
+</section>
+<script>
+(() => {
+  // The candidate dice, in a 24-unit box. The <svg> wrapper sets fill="none" stroke="currentColor".
+  const HEX = 'M12 2 20.7 7v10L12 22 3.3 17V7z';
+  K.G = {
+    a: { name: 'd20, as in lightness-slider.html', body: '<g stroke-width="1.6"><path d="M12 2.5 21 7.5v9L12 21.5 3 16.5v-9z"/><path d="M12 2.5 7.5 15h9z"/><path d="M3 7.5 7.5 15 3 16.5M21 7.5 16.5 15 21 16.5M7.5 15 12 21.5 16.5 15"/></g>' },
+    b: { name: 'd20 with a “20” on its top face', body: `<g stroke-width="1.5"><path d="${HEX}"/><path d="M12 5.4 5.4 16.4h13.2z"/><path d="M12 2v3.4M3.3 7 12 5.4 20.7 7M3.3 7 5.4 16.4 3.3 17M20.7 7 18.6 16.4 20.7 17M5.4 16.4 12 22 18.6 16.4"/></g><text x="12" y="14.6" text-anchor="middle" font-family="Space Grotesk, Inter, sans-serif" font-weight="700" font-size="6.6" fill="currentColor" stroke="none">20</text>` },
+    c: { name: 'bold d20, one shaded face', body: `<path d="${HEX}" stroke-width="2.4"/><path d="M12 5.8 6 16.2h12z" fill="currentColor" fill-opacity=".5" stroke-width="2.2"/><path d="M12 2v3.8M6 16.2 12 22 18 16.2" stroke-width="2"/>` },
+    d: { name: 'd6 with five pips', body: '<g transform="rotate(-12 12 12)"><rect x="4" y="4" width="16" height="16" rx="3.6" stroke-width="1.8"/><g fill="currentColor" stroke="none"><circle cx="8.4" cy="8.4" r="1.65"/><circle cx="15.6" cy="8.4" r="1.65"/><circle cx="12" cy="12" r="1.65"/><circle cx="8.4" cy="15.6" r="1.65"/><circle cx="15.6" cy="15.6" r="1.65"/></g></g>' },
+  };
+  K.svg = (k, px, cls = 'd20') => `<svg class="${cls}" width="${px}" height="${px}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true" focusable="false">${K.G[k].body}</svg>`;
+  // the die every demo uses; .dieg elements re-draw when it changes
+  let cur = 'd';
+  K.die = (px = 20, cls = 'd20') => `<span class="dieg" data-px="${px}" data-cls="${cls}">${K.svg(cur, px, cls)}</span>`;
+  K.dieName = () => cur === 'd' ? 'd6' : 'd20';
+  document.getElementById('dieSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    cur = b.dataset.v;
+    b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    document.querySelectorAll('.dieg').forEach(s => { s.innerHTML = K.svg(cur, +s.dataset.px, s.dataset.cls); });
+  });
+
+  // the study grid: one table per theme
+  const rows = ['a', 'b', 'c', 'd', 'e'];
+  const cell = (k, px) => k === 'e' ? `<span class="btn icon fake" aria-hidden="true"><span class="glyph" style="font-size:${px}px">↻</span></span>`
+    : `<span class="btn icon fake" aria-hidden="true">${K.svg(k, px)}</span>`;
+  document.getElementById('glyphGrid').innerHTML = ['light', 'dark'].map(theme => `<figure><figcaption><b>${theme === 'light' ? 'Light' : 'Dark'}</b></figcaption>
+    <div class="scrollx" data-label="Glyph study, ${theme}"><div class="fr gfr" data-theme="${theme}"><table class="gt">
+    <thead><tr><th scope="col">Glyph</th>${[16, 20, 24, 28].map(px => `<th scope="col">${px}px</th>`).join('')}</tr></thead><tbody>
+    ${rows.map(k => `<tr><th scope="row"><b>(${k})</b> ${k === 'e' ? '↻, today' : K.G[k].name}</th>${[16, 20, 24, 28].map(px => `<td>${cell(k, px)}</td>`).join('')}</tr>`).join('')}
+    </tbody></table></div></div></figure>`).join('');
+})();
+</script>
+
+<section id="dirA">
+  <h2>A · ↻ stays; the d6 rolls when you tap it</h2>
+  <p class="why">The button, its job, its name and its place do not change. At rest the icon is ↻. When you tap it, the
+  colour changes at once, as today. At the same time a die drops onto the button, turns and lands with a small bounce. Then
+  the die fades and ↻ comes back. The die is only decoration: an overlay inside the button, so nothing around it moves.
+  <b>Tap ↻ in any frame.</b></p>
+  <p class="why"><b>Changed after judging:</b> the judges scored a version where the colour changed when the die landed
+  (380ms after the tap). That made each new colour late, and it raced with ↶: an undo during the roll was overwritten when
+  the die landed. Now the colour changes on the tap and the die waits for nothing.</p>
+  <div id="aMotion"></div>
+  <div id="aFrames"></div>
+  <h3 class="lab">Specification</h3>
+  <dl class="spec">
+    <dt>Name</dt><dd><code>aria-label</code> and <code>title</code> “Generate a random base colour”, as today. The die is
+      <code>aria-hidden</code>. The live region speaks the new colour, as today.</dd>
+    <dt>Size</dt><dd>As today: <code>--tap</code>, 38px with a mouse, 44px on touch and on a phone. The die is 24px, inside
+      the button, in the button’s own <code>--text</code> colour (<code>currentColor</code>).</dd>
+    <dt>State</dt><dd>As today: the colour changes on the tap (<code>setBase</code> → <code>render('drag')</code>). The hero
+      chip does not pop. Taps less than 250ms apart make one ↶ step. Nothing waits for the animation, so ↶, the hex field, a
+      wheel drag or a background tab cannot race with it.</dd>
+    <dt>Motion</dt><dd>↻ fades out (120ms) as the die drops 14px, turns 300° and lands with an overshoot (320ms, the card-reveal
+      tier, <code>cubic-bezier(.34,1.56,.64,1)</code>). Then the die fades out and ↻ fades in (200ms). 520ms in all.
+      Transform and opacity only, with the Web Animations API, so <code>wheel.js</code> must check
+      <code>prefers-reduced-motion</code> itself (the CSS rule does not stop <code>element.animate()</code>).</dd>
+    <dt>Reduced motion</dt><dd>No die. The colour changes at once, as today.</dd>
+    <dt>Keyboard</dt><dd>Enter or Space, as today. A second press during a roll starts the die again. The colour changed on
+      each press, so nothing queues.</dd>
+    <dt>Neutral seed</dt><dd>As today: nothing changes on a black or white seed, and most rolls stay neutral near the slider’s
+      ends. The die still tumbles, so a roll that changes nothing looks worse than today.</dd>
+  </dl>
+  <div class="pros">
+    <div><h3 class="lab">For</h3><ul class="notes">
+      <li>It keeps ↻ exactly, as Ryan asked. No new control, no new name, nothing to learn again.</li>
+      <li>The on-brand moment comes at the right time: the tap. After one tap the painter knows that ↻ means “roll”, not
+        “reload” or “redo”.</li>
+      <li>No layout change and no reflow. The smallest build: one SVG and one animation in <code>wheel.js</code>. The state
+        path does not change.</li>
+    </ul></div>
+    <div><h3 class="lab">Against</h3><ul class="notes">
+      <li>At rest nothing changes. Before the first tap, ↻ still reads as “reload” or “redo”. The judges’ problem stays.</li>
+      <li>A painter who taps ↻ ten times to shop for a colour sees ten tumbles. The flat 2D spin of a hexagon can read as a
+        turning hex nut more than a thrown die.</li>
+      <li>With reduced motion the die never shows, so those painters get no cue at all.</li>
+      <li>A moving shape next to the wheel pulls the eye to the button for a moment, away from the colour that changed.</li>
+    </ul></div>
+  </div>
+</section>
+<script>
+(() => {
+  document.getElementById('aMotion').innerHTML = K.motionSeg('motLabA');
+  const host = document.getElementById('aFrames');
+  const m = K.mount(host, {
+    slots: () => ({ gutter: `<button type="button" class="btn icon gbtn a-rnd" title="Generate a random base colour" aria-label="Generate a random base colour"><span class="glyph">↻</span><span class="dieover" aria-hidden="true">${K.die(24)}</span></button>` }),
+  });
+  // The colour changes on the tap, as today. The die is decoration: no state waits for it.
+  function roll(btn) {
+    const r = K.rnd();
+    m.st.set({ ...r, name: 'Custom' }, { coalesce: true, said: 'New base colour: Custom ' + K.hsl2hex(r.h, r.s, m.st.l) + '.' });
+    const die = btn.querySelector('.dieover'), g = btn.querySelector('.glyph');
+    [die, g].forEach(el => el.getAnimations().forEach(a => a.cancel()));   // a fast second press starts the die again
+    if (K.reduced()) return;
+    // one timeline: ↻ out 0–120ms, die in 0–120ms, tumble 0–320ms, then die out and ↻ in 320–520ms
+    const o = { duration: 520 };
+    g.animate([{ opacity: 1 }, { opacity: 0, offset: 120 / 520 }, { opacity: 0, offset: 320 / 520 }, { opacity: 1 }], o);
+    die.animate([{ opacity: 0 }, { opacity: 1, offset: 120 / 520 }, { opacity: 1, offset: 320 / 520 }, { opacity: 0 }], o);
+    die.animate([{ transform: 'translate(-3px, -14px) rotate(-300deg) scale(.55)', easing: 'cubic-bezier(.34,1.56,.64,1)' },
+      { transform: 'none', offset: 320 / 520 }, { transform: 'none' }], o);
+  }
+  host.querySelectorAll('.a-rnd').forEach(b => b.addEventListener('click', () => roll(b)));
+})();
+</script>
+
+<section id="dirB">
+  <h2>B · ↻ stays for the colour; a new d6 rolls a whole scheme</h2>
+  <p class="why">↻ keeps its job: a random base colour. A new <b>Roll a scheme</b> button with a d6 picks a random harmony
+  <b>and</b> a random hue and strength, in one step. The scheme changes on the tap, while the die turns in place.
+  <b>Try both buttons in any frame</b>, and move the d6 to each place with the control below. (The judges scored a version
+  where the scheme changed when the die landed, 380ms later.)</p>
+  <dl class="spec" style="margin-bottom:12px">
+    <dt>It changes</dt><dd>The harmony: one of the nine that have a rule, never Custom and never the one you have. The base
+      hue and strength: as ↻ (hue 0–360°, strength 50–95%). So the hero turns “Custom”: the paint you picked goes.</dd>
+    <dt>It keeps</dt><dd><b>The lightness</b> (your value choice, as ↻ keeps it). <b>The seed role</b> (Main or Accent). Use my
+      paints and the tone ladder. Locked colours stay. Added colours turn with the base, as with ↻.</dd>
+    <dt>Undo</dt><dd>One ↶ step undoes the harmony and the colour together. Each roll is its own step (quick ↻ taps merge;
+      rolls do not).</dd>
+    <dt>Neutral seed</dt><dd><b>Not designed yet.</b> On a black or white seed the roll cannot give a hue (as ↻). Near the
+      slider’s ends most rolls stay neutral: 79% at 6%, 88% at 94%. Then the app’s <code>ensureHarmonyMode</code> puts
+      Neutral + pop back and parks the rolled harmony, so “Rolled: Triadic” would be false, and the parked harmony comes back
+      later, unasked, when the seed leaves neutral mode.</dd>
+    <dt>Option: harmony only</dt><dd>The painter judge’s fix (not scored): the roll keeps your paint and changes only the
+      harmony. It is the same path as a tap on a harmony chip (<code>render('scheme')</code>: one ↶ step, the strip and the
+      hero stay in step). A neutral seed rolls only from the harmonies it can use (Neutral + pop, Duotone, Warm–cool,
+      Shades), so the announcement is always true. Try it with the control below.</dd>
+  </dl>
+  <div class="pc" role="group" aria-labelledby="bPlaceLab">
+    <span class="pcl" id="bPlaceLab">Where the d6 sits</span>
+    <div class="seg" id="bPlace">
+      <button type="button" data-v="seed" aria-pressed="true">Seed toolbar</button>
+      <button type="button" data-v="strip" aria-pressed="false">Harmony strip</button>
+      <button type="button" data-v="gutter" aria-pressed="false">Gutter</button>
+    </div>
+  </div>
+  <div class="pc" role="group" aria-labelledby="bScopeLab">
+    <span class="pcl" id="bScopeLab">What the roll changes</span>
+    <div class="seg" id="bScope">
+      <button type="button" data-v="both" aria-pressed="true">Harmony and colour (as judged)</button>
+      <button type="button" data-v="harm" aria-pressed="false">Harmony only (keeps your paint)</button>
+    </div>
+  </div>
+  <p class="why" id="bPlaceNote" style="margin:8px 0 0"></p>
+  <div id="bMotion"></div>
+  <div id="bFrames"></div>
+  <h3 class="lab">Specification</h3>
+  <dl class="spec">
+    <dt>Name</dt><dd>Seed toolbar: the visible words “Roll a scheme” are the name. Harmony strip and gutter (icon only):
+      <code>aria-label</code> “Roll a scheme”. <code>title</code> everywhere: “Roll a scheme: a random harmony and colour
+      (keeps the lightness)”, or “Roll a scheme: a random harmony for this colour” for harmony only. A title does not show
+      on touch or for the keyboard, so the Help page must say what the roll keeps. The die is <code>aria-hidden</code>. The
+      live region says “Rolled: Triadic, Custom #…” (or the paint’s name for harmony only). ↻ keeps “Generate a random base
+      colour”.</dd>
+    <dt>Size</dt><dd><code>--tap</code>: 38px with a mouse, 44px on touch and on a phone. The die is 20px.</dd>
+    <dt>Motion</dt><dd>The die hops 5px and turns once (320ms, <code>cubic-bezier(.34,1.56,.64,1)</code>, transform only). The
+      scheme changes on the tap. The harmony strip glides to the new chip and the hero chip pops (a discrete change, as a
+      harmony chip). ↻ does not animate.</dd>
+    <dt>Reduced motion</dt><dd>No turn and no glide. The scheme changes at once and the strip jumps to the new chip.</dd>
+  </dl>
+  <div class="pros">
+    <div><h3 class="lab">For</h3><ul class="notes">
+      <li>↻ stays exactly as it is. The d6 adds a bigger roll: a whole new scheme in one tap.</li>
+      <li>The die means “roll the dice” in the full sense. A random harmony is a bigger, more fun roll than a random hue.</li>
+      <li><b>Seed toolbar</b> (the designer’s choice of the three): it sits with the other ways to start a scheme (a paint, a
+        hex, a photo). It is far from ↻, so the two do not mix. It has room for its words on a phone: row 1 has only Paints
+        today.</li>
+      <li><b>Harmony only:</b> each button gets its own job. ↻ gives a new colour; the die gives a new scheme for your
+        colour. The paint you picked stays.</li>
+    </ul></div>
+    <div><h3 class="lab">Against — the risk of two random buttons</h3><ul class="notes">
+      <li>Two buttons now both mean “random”. The painter must learn which changes what. Only the names say it.</li>
+      <li>↻ keeps its look, so it still reads as “reload” or “redo”. B does not fix that problem; it adds a feature.</li>
+      <li><b>Gutter:</b> two random icons, one on top of the other, in a 38px column. The column grows past the 340px wheel
+        (by 16px with a mouse, 28px on touch), and on a phone the slider loses 52px more. The worst place.</li>
+      <li><b>Harmony strip:</b> the die looks like the first harmony chip, but it is a button and not a choice. It takes 52px
+        from the strip on a phone.</li>
+      <li>A new control is more to build, test, translate (en-US: “color”) and explain in Help.</li>
+    </ul></div>
+  </div>
+</section>
+<script>
+(() => {
+  document.getElementById('bMotion').innerHTML = K.motionSeg('motLabB');
+  const host = document.getElementById('bFrames');
+  const TITLES = { both: 'Roll a scheme: a random harmony and colour (keeps the lightness)', harm: 'Roll a scheme: a random harmony for this colour' };
+  let scope = 'both';
+  const NOTES = {
+    seed: 'Seed toolbar. Phone: on row 1 beside Paints, where there is free space today. Desktop: after Paints, before the hex field.',
+    strip: 'Harmony strip. An icon button at the start of the strip, outside its track. The strip scrolls on as before.',
+    gutter: 'Gutter. Under ↻ on desktop; to the right of ↻ on a phone. Shown to judge the risk; not proposed.',
+  };
+  const ROT = `<button type="button" class="btn icon gbtn b-rnd" title="Generate a random base colour" aria-label="Generate a random base colour">↻</button>`;
+  const iconRoll = () => `<button type="button" class="btn icon gbtn b-roll isnew" title="${TITLES[scope]}" aria-label="Roll a scheme">${K.die(20)}</button>`;
+  let place = 'seed', m = null;
+  const slots = mode => {
+    const sl = { gutter: ROT };
+    if (place === 'seed') {
+      sl.seed = `<div class="seedbar">
+        <span class="btn fake" aria-hidden="true">☰&nbsp;Paints ▾</span>
+        <button type="button" class="btn b-roll isnew" title="${TITLES[scope]}">${K.die(20)}<span>Roll a scheme</span></button>
+        <span class="hexin fake" aria-hidden="true"><span>#</span><b class="hexv" style="font-weight:400"></b></span>
+        <span class="btn fake push" aria-hidden="true">From photo</span>
+        ${mode === 'ph' ? '<span class="btn fake" aria-hidden="true">Compare</span>' : ''}
+      </div>`;
+      sl.cap = mode === 'ph' ? 'the seed toolbar on top' : 'the seed toolbar on top (Compare is cut off)';
+    }
+    if (place === 'strip') sl.strip = iconRoll();
+    if (place === 'gutter') { sl.gutter = ROT + iconRoll(); sl.three = true; }
+    return sl;
+  };
+  function draw() {
+    const from = m && m.st;
+    host.innerHTML = '';
+    m = K.mount(host, { slots, from });
+    host.querySelectorAll('.b-rnd').forEach(b => b.addEventListener('click', () => {
+      const r = K.rnd();
+      m.st.set({ ...r, name: 'Custom' }, { coalesce: true, said: 'New base colour: Custom ' + K.hsl2hex(r.h, r.s, m.st.l) + '.' });
+    }));
+    host.querySelectorAll('.b-roll').forEach(b => b.addEventListener('click', () => roll(b)));
+    document.getElementById('bPlaceNote').textContent = NOTES[place];
+    K.fitScroll();
+  }
+  // The scheme changes on the tap; the die turn is decoration, so no state waits for it.
+  function roll(btn) {
+    const pool = K.ORDER.filter(k => k !== 'custom' && k !== m.st.harm);
+    const harm = pool[Math.floor(Math.random() * pool.length)];
+    if (scope === 'harm') {
+      m.st.set({ harm }, { pop: true, smooth: true, said: 'Rolled: ' + K.NAMES[harm] + ', ' + m.st.name + ' ' + m.st.hex() + '.' });
+    } else {
+      const r = K.rnd();
+      m.st.set({ ...r, harm, name: 'Custom' }, { pop: true, smooth: true,
+        said: 'Rolled: ' + K.NAMES[harm] + ', Custom ' + K.hsl2hex(r.h, r.s, m.st.l) + '.' });
+    }
+    K.spin(btn.querySelector('.dieg'));
+  }
+  const pick = (id, fn) => document.getElementById(id).addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    fn(b.dataset.v); draw();
+  });
+  pick('bPlace', v => { place = v; });
+  pick('bScope', v => { scope = v; });
+  draw();
+})();
+</script>
+
+<section id="dirC">
+  <h2>C · The d6 replaces ↻ (the earlier recommendation, with the d6)</h2>
+  <p class="why">For comparison. This is what the three judges chose in <a href="lightness-slider.html">lightness-slider.html</a>:
+  <b>d6 + “Random”</b> on a phone, where there is room for the word, and <b>the d6 alone</b> in the narrow desktop gutter. The job
+  does not change: a random hue and strength, the lightness kept. The colour changes on the tap, as today, while the die
+  turns once in place. <b>Tap it in any frame.</b></p>
+  <div id="cMotion"></div>
+  <div id="cFrames"></div>
+  <h3 class="lab">Specification</h3>
+  <dl class="spec">
+    <dt>Name</dt><dd><code>aria-label</code> “Random colour”. <code>title</code> “Random colour (keeps the lightness)”. On a
+      phone the visible word “Random” is part of the name (WCAG 2.5.3). The die is <code>aria-hidden</code>. en-US: “Random
+      color”.</dd>
+    <dt>Size</dt><dd><code>--tap</code>: 38px with a mouse, 44px on touch and on a phone. Phone button: about 110px wide, so
+      the slider goes from 268px to about 202px at 390px (66px shorter). Measured by putting the button (die + “Random”,
+      padding 0 12px 0 10px) into the committed app at 390×844. In this page’s frame the button is 104px.</dd>
+    <dt>State</dt><dd>As today: the colour changes on the tap (<code>setBase</code> → <code>render('drag')</code>), no hero
+      pop, and taps less than 250ms apart make one ↶ step.</dd>
+    <dt>Motion</dt><dd>The die hops 5px and turns once (320ms, transform only). Nothing waits for it.</dd>
+    <dt>Reduced motion</dt><dd>No turn. The colour changes at once, as today.</dd>
+    <dt>Neutral seed</dt><dd>As today: nothing changes on a black or white seed, and most rolls stay neutral near the slider’s
+      ends.</dd>
+  </dl>
+  <div class="pros">
+    <div><h3 class="lab">For</h3><ul class="notes">
+      <li>It removes the problem at rest. A die does not read as “reload” or “redo”, and the word “Random” on a phone says it
+        outright.</li>
+      <li>One random button, one meaning. Nothing new to learn or to explain.</li>
+      <li>On-brand for wargamers, in both themes.</li>
+    </ul></div>
+    <div><h3 class="lab">Against</h3><ul class="notes">
+      <li>Ryan asked to keep ↻. Painters who use the app today know ↻.</li>
+      <li>On desktop the die has no word, so it carries the whole meaning at 20px. See the glyph study: (a) fails there;
+        (c) or (d) is needed.</li>
+      <li>The word costs about 66px of slider on a phone.</li>
+    </ul></div>
+  </div>
+</section>
+<script>
+(() => {
+  document.getElementById('cMotion').innerHTML = K.motionSeg('motLabC');
+  const host = document.getElementById('cFrames');
+  const T = 'Random colour (keeps the lightness)';
+  const m = K.mount(host, {
+    slots: mode => ({ gutter: mode === 'ph'
+      ? `<button type="button" class="btn gbtn c-rnd isnew" style="padding:0 12px 0 10px" title="${T}" aria-label="Random colour">${K.die(20)}<span>Random</span></button>`
+      : `<button type="button" class="btn icon gbtn c-rnd isnew" title="${T}" aria-label="Random colour">${K.die(20)}</button>` }),
+  });
+  // The colour changes on the tap, as today; the die turn is decoration.
+  function roll(btn) {
+    const r = K.rnd();
+    m.st.set({ ...r, name: 'Custom' }, { coalesce: true, said: 'New base colour: Custom ' + K.hsl2hex(r.h, r.s, m.st.l) + '.' });
+    K.spin(btn.querySelector('.dieg'));
+  }
+  host.querySelectorAll('.c-rnd').forEach(b => b.addEventListener('click', () => roll(b)));
+})();
+</script>
+
+<section id="scores">
+  <h2>Scores</h2>
+  <p class="why">Three judges scored each option out of 20: <b>the painter</b> (a miniature painter and wargamer, on a phone
+  and a laptop), <b>accessibility</b> (WCAG 2.1 AA and CLAUDE.md) and <b>the build</b> (cost and risk in the real code). The
+  total is out of 60. They scored the page before the fixes on it now. In that version the colour changed when the die
+  landed, 380ms after the tap.</p>
+  <h3 class="lab" id="scDirLab">Directions</h3>
+  <table class="st" aria-labelledby="scDirLab">
+    <thead><tr><th scope="col">Option</th><th scope="col" class="n">Painter</th><th scope="col" class="n">Access.</th><th scope="col" class="n">Build</th><th scope="col" class="n">Total</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Today · ↻ as it is</th><td class="n">9</td><td class="n">12</td><td class="n">14</td><td class="n">35</td></tr>
+      <tr><th scope="row">A · ↻ stays; a die tumbles on the tap</th><td class="n">10</td><td class="n">10</td><td class="n">12</td><td class="n">32</td></tr>
+      <tr><th scope="row">B · ↻ stays; plus “Roll a scheme”</th><td class="n">14</td><td class="n">11</td><td class="n">8</td><td class="n">33</td></tr>
+      <tr class="top"><th scope="row">C · the die replaces ↻ (top)</th><td class="n">16</td><td class="n">15</td><td class="n">15</td><td class="n">46</td></tr>
+    </tbody>
+  </table>
+  <h3 class="lab" id="scGlLab">Glyphs</h3>
+  <table class="st" aria-labelledby="scGlLab">
+    <thead><tr><th scope="col">Glyph</th><th scope="col" class="n">Painter</th><th scope="col" class="n">Access.</th><th scope="col" class="n">Build</th><th scope="col" class="n">Total</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">(a) d20, as in lightness-slider.html</th><td class="n">6</td><td class="n">10</td><td class="n">8</td><td class="n">24</td></tr>
+      <tr><th scope="row">(b) d20 with a “20”</th><td class="n">9</td><td class="n">7</td><td class="n">7</td><td class="n">23</td></tr>
+      <tr><th scope="row">(c) bold d20, one shaded face</th><td class="n">13</td><td class="n">13</td><td class="n">14</td><td class="n">40</td></tr>
+      <tr class="top"><th scope="row">(d) d6 with five pips (top)</th><td class="n">17</td><td class="n">17</td><td class="n">17</td><td class="n">51</td></tr>
+      <tr><th scope="row">(e) ↻, today</th><td class="n">5</td><td class="n">6</td><td class="n">11</td><td class="n">22</td></tr>
+    </tbody>
+  </table>
+  <h3 class="lab">Where the judges agreed</h3>
+  <ul class="notes">
+    <li><b>C is the clearest direction</b> (15 or 16 from each judge). It is the only one that removes the “reload” and “redo”
+      reading before the first tap, for every painter.</li>
+    <li><b>The d6 (d) is the best glyph</b> (17 from each judge, and each named it best). The “20” of (b) is a smudge at
+      20px.</li>
+    <li><b>A’s late colour was a defect</b>: 380ms on every colour, and a race with ↶. Fixed on this page: the colour now
+      changes on the tap in A, B and C.</li>
+  </ul>
+  <h3 class="lab" id="scDisLab">Where the judges disagreed</h3>
+  <div class="scrollx" data-label="Where the judges disagreed">
+  <table class="st wide" aria-labelledby="scDisLab">
+    <thead><tr><th scope="col">Point</th><th scope="col">Painter</th><th scope="col">Accessibility</th><th scope="col">Build</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Today</th><td>9: a puzzle; a phone has no tooltip</td><td>12: it conforms; the meaning is the problem</td><td>14: no cost; but black and white seeds, no i18n</td></tr>
+      <tr><th scope="row">A or B</th><td>B 14, A 10: the labelled roll is the clearest new control</td><td>B 11, A 10: about the same</td><td>A 12, B 8: B costs the most, and CI cannot test its path</td></tr>
+      <tr><th scope="row">If ↻ must stay</th><td>B in the seed toolbar, with words, the d6, harmony only. Not A.</td><td>B in the seed toolbar. Not A. Also try “↻ + Random”.</td><td>A, with the colour on the tap. Not B now.</td></tr>
+      <tr><th scope="row">(a) at 20px, 1×</th><td>6: a knot</td><td>10: busy, but it reads</td><td>8: a knot</td></tr>
+      <tr><th scope="row">(e) ↻</th><td>5: an arrow, not chance</td><td>6: the wrong meaning; the font varies</td><td>11: free, but it reads as reload</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="verdict">
+  <h2>Verdict</h2>
+  <p class="sub"><b>Decision (Ryan, 2026-10-28): the die is a d6.</b> The d20 may come back later as an option, for example a
+  choice for role-playing gamers. Ryan then chose B: keep ↻ and add the “Roll a scheme” d6.</p>
+  <p class="sub"><b>The scores support C with the d6 (d).</b> C has 46 of 60; the next direction, Today, has 35. The d6 has
+  51 of 60; the next glyph, (c), has 40. Neither result is close: every judge put C first and the d6 first.</p>
+  <p class="sub"><b>C goes against Ryan’s request.</b> C replaces ↻, and Ryan asked to keep ↻. So this page does not
+  recommend C, unless Ryan changes the request (open question 1).</p>
+
+  <h3 class="lab">The recommendation that keeps ↻</h3>
+  <p class="why">The options that keep ↻ are close, and none of them beats today: Today 35, B 33, A 32. Two judges (the
+  painter and accessibility) named B in the seed toolbar as the best way to keep ↻. The build judge’s main objections to B
+  come from the roll that also changes the colour. So:</p>
+  <ol class="notes">
+    <li><b>Keep ↻ as it is.</b> Its job, place, size and name do not change. Do not build A’s tumble: two judges said no,
+      and it does not fix the meaning at rest.</li>
+    <li><b>Add B in the seed toolbar only, with the words “Roll a scheme” and the d6.</b> Never as an icon alone, and not in
+      the gutter or the harmony strip.</li>
+    <li><b>Make it roll the harmony only.</b> It keeps the painter’s paint. Then each button has its own job: ↻ gives a new
+      colour, and the die gives a new scheme for your colour. Try it in B with “Harmony only”.</li>
+  </ol>
+  <p class="why" style="margin-top:8px"><b>This is close, and the last step is not scored.</b> It reads the judges’ written
+  advice. On the scores alone, no change (Today, 35) is a little ahead of B (33) and A (32). And ↻ still reads as “reload”
+  at rest, because only C fixes that.</p>
+
+  <h3 class="lab">What to build if Ryan agrees</h3>
+  <dl class="spec">
+    <dt>Place</dt><dd>The seed toolbar. Phone (≤520px): row 1, after ☰ Paints (row 1 holds only Paints today; the hex field
+      fills row 2). Desktop: after Paints, before the hex field.</dd>
+    <dt>Name</dt><dd>The visible words “Roll a scheme” are the accessible name: no <code>aria-label</code> (WCAG 2.5.3).
+      <code>title</code> “Roll a scheme: a random harmony for this colour”. Both through <code>data-i18n</code> (en-US:
+      “color”). The words never name the die, so a d6 or d20 change needs no new strings. The Help page
+      (<code>support.html</code>) says what the roll changes and keeps, because a title does not show on touch.</dd>
+    <dt>Glyph</dt><dd>The d6 (d): inline SVG, 20px, <code>currentColor</code>, <code>aria-hidden="true"</code>,
+      <code>focusable="false"</code>.</dd>
+    <dt>Size</dt><dd>The secondary <code>.btn</code>, <code>--tap</code> high: 38px with a mouse, 44px on touch and at
+      ≤520px. Padding 0 12px 0 10px. No new button style.</dd>
+    <dt>What it does</dt><dd>It picks a harmony at random from the ones the seed can use, never Custom and never the current
+      one. A seed with a hue: the nine with a rule. A neutral seed: Neutral + pop, Duotone, Warm–cool and Shades. It then runs
+      the harmony chip’s own path: <code>state.harmony</code>, <code>state.dropOffsets = []</code>, the strip’s
+      <code>aria-pressed</code>, <code>scrollHarmonyActive()</code>, <code>render('scheme')</code>. So each roll is one ↶
+      step, the hero chip pops and the live region speaks the new scheme. It keeps the pick, the seed role, the lightness,
+      the pop, the locked and added colours, and Use my paints.</dd>
+    <dt>Code</dt><dd>A pure <code>rollHarmony(rng, current, neutral)</code> in <code>harmony.js</code>, with unit tests
+      (<code>node --test</code>). The click handler in <code>app.js</code>. No new file.</dd>
+    <dt>Motion</dt><dd>The die hops 5px and turns once: 320ms (the §3.4 card-reveal tier),
+      <code>cubic-bezier(.34,1.56,.64,1)</code>, transform only, with <code>element.animate()</code>. The scheme changes on
+      the tap. Nothing waits for the animation.</dd>
+    <dt>Reduced motion</dt><dd>The script checks <code>matchMedia('(prefers-reduced-motion: reduce)')</code> itself (the CSS
+      rule does not stop <code>element.animate()</code>). No turn; the scheme changes at once.</dd>
+    <dt>↻</dt><dd>No change to its look or its job. Two small fixes the judges found: give it <code>data-i18n-aria</code> and
+      a <code>title</code> key (en-US users get “colour” today), and decide what it does on a black or white seed (open
+      question 4).</dd>
+    <dt>CLAUDE.md</dt><dd>§3.6 header bullet (“the Paints drawer trigger + seed hex + From photo + Compare sit atop the
+      Studio”) and §3.6 Layout (“a full-width seed toolbar (Paints · hex · From photo · Compare)”): add Roll a scheme. §7: one
+      locked line for the roll’s pool (a hue seed, a neutral seed). §3.4 Patterns: one line for the die turn (320ms). Also
+      USE_CASES UC-11 (Randomise / shuffle), <code>support.html</code>, the i18n table and CHANGELOG. The §4 tree does not
+      change.</dd>
+  </dl>
+
+  <h3 class="lab">If Ryan accepts replacing ↻ (C)</h3>
+  <p class="why"><code>#wrand</code> gets the d6 SVG (20px) and the word “Random”, shown at ≤520px only.
+  <code>aria-label</code> “Random colour” (<code>data-i18n-aria</code>; en-US “Random color”), <code>title</code> “Random
+  colour (keeps the lightness)”. Desktop: icon only, <code>--tap</code> square. Phone: about 110px wide, so the slider goes
+  from 268px to about 202px. The same 320ms turn, the same reduced-motion check, and the same state path as today. CLAUDE.md
+  §3.6: the wheel module (“The compact ↻ Generate icon sits under it…”), the lightness-run list (“undo/redo, ↻, wheel
+  drag”) and the touch-target list (“selects, ↻, the lightness slider”).</p>
+
+  <h3 class="lab">Open questions for Ryan</h3>
+  <ol class="notes">
+    <li><b>What does “keep ↻” keep: the glyph or the job?</b> C keeps the job (a random colour, the lightness kept) and
+      changes only the icon. It is the clear winner on the scores. If you mean the glyph, the recommendation above
+      stands.</li>
+    <li><b>Should “Roll a scheme” keep your paint?</b> Harmony only (recommended), or harmony and colour (as judged, which
+      turns the hero to “Custom”)?</li>
+    <li><b>A d6 or a d20? Answered: the d6</b> (Ryan, 2026-10-28; a d20 may be a later option). The scores pick the d6 (51 to 40). To a wargamer the bold d20 (c) can look like a hex nut at
+      20px. The earlier judges asked to test both with painters.</li>
+    <li><b>Black and white seeds.</b> Today ↻ does nothing on a black or white seed, and near the slider’s ends most rolls
+      stay neutral (79% at 6%, 88% at 94%). Should a roll there move the lightness into the 20–80% band and say so, or keep
+      the lightness and accept a neutral result?</li>
+    <li><b>A word beside ↻ on a phone?</b> The accessibility judge’s cheapest fix: keep the ↻ glyph, show the word “Random”
+      beside it on a phone, and rename it “Random colour”. It is not drawn or scored here. Does that still count as keeping
+      ↻?</li>
+  </ol>
+</section>
+
+</div>
+</body>
+</html>

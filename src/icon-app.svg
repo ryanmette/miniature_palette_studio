@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Palette Studio">
+  <!-- The installed-app icon: the mark in white on Sotek Green, full bleed. The mark is scaled to .62 so it
+       stays inside the maskable safe zone (a circle of 40% radius), so a round or squircle crop never cuts it. -->
+  <rect width="32" height="32" fill="#0B6371"/>
+  <g transform="translate(16 16) scale(.62) translate(-16 -16)"><g transform="translate(20.27 10.91) rotate(-140) scale(0.7)"><rect x="-1.25" y="-15" width="2.5" height="2.4" fill="#FFFFFF"/><path d="M-1.6 -12.8h3.2L4.2 -4.6h-8.4z" fill="#FFFFFF"/><rect x="-6.5" y="-5" width="13" height="17" rx="3" fill="#FFFFFF"/><circle cx="0" cy="-23.6" r="6" fill="#FFFFFF"/></g></g>
+</svg>

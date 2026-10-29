@@ -1,7 +1,7 @@
 // data.js — load + index the paint dataset and search it by perceptual distance.
 // Pure search functions (testable); only loadDataset() touches the network.
 
-import { hexToLab, deltaE2000, adjustDirection } from './color.js';
+import { hexToLab, hexToRgb, rgbToHsl, deltaE2000, adjustDirection } from './color.js';
 
 /** Fixed ΔE2000 → quality mapping (CLAUDE.md §3.2). */
 export function matchQuality(dE) {
@@ -56,6 +56,16 @@ export function groupOf(indexed, paint) {
  * the Shelf, and cross-brand Equivalents. `metal` is deliberately NOT here (the Metal role wants it).
  */
 export const FINISH_TYPES = ['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect', 'technical'];
+
+/** Finish class, the same four the equivalence groups use (§5.2): a wash is never an equivalent of a flat
+ *  that shares its hex, and a texture paint is not an equivalent of either. */
+export const finishClass = t => t === 'metal' ? 'metal' : t === 'effect' || t === 'technical' ? 'effect'
+  : FINISH_TYPES.includes(t) ? 'translucent' : 'flat';
+/** Equivalents rank a paint of a DIFFERENT finish class as if it were this much ΔE further (ranking only;
+ *  the reported ΔE stays true, §2/§7). The same size as the metal demotion for colour roles. Measured over
+ *  the whole dataset: flat sources go from 78% to 99% same-finish matches for +0.27 mean ΔE. A strict
+ *  same-finish-first tier (as metals use) was rejected: for washes it pulled in 293 matches over ΔE 10. */
+export const FINISH_PENALTY = 4;
 
 function passesFilter(p, { excludeId, excludeIds, brands, excludeBrands, ownedIds, types, excludeTypes } = {}) {
   if (excludeId && p.id === excludeId) return false;
@@ -183,25 +193,164 @@ export function nearestPaints(indexed, hex, n = 5, opts = {}) {
 
 /** Cross-brand equivalents for a paint: nearest paints in OTHER brands. A metallic paint's true
  *  equivalents are other METALLICS — hex proximity says nothing about how a flat reads next to a
- *  metal on the model — so for a metal source, metals rank strictly first (reported ΔE stays true, §2). */
+ *  metal on the model — so for a metal source, metals rank strictly first. Any other paint of a different
+ *  finish class (a wash, a contrast or a texture paint for a flat source) ranks FINISH_PENALTY further.
+ *  Reported ΔE stays true either way (§2). */
 export function equivalents(indexed, paint, { n = 6 } = {}) {
   const lab = paint.lab || hexToLab(paint.hex);
   const isMetal = paint.type === 'metal';
-  // Through the same cheap prefilter every other search uses (§6): this scanned + sorted the WHOLE
-  // dataset — ~2,200 ΔE2000 calls and a 2,200-element sort — to return 6-8 rows, and the Equivalents
-  // tab re-runs it on every source-chip click. candidatePool already understands excludeBrands, and
-  // floatTypes keeps the metal tier below from being pruned out of existence.
-  // keep=192, not the default 64: this returns a LIST, and a short pool let a marginally worse paint
-  // take a tail slot. Measured over all 2,508 paints against a full-dataset reference — rank 1 is
-  // identical either way; 192 cuts the differing tail rows from 94 to 10 (of ~20,000) and is still
-  // ~5.5× faster than the full scan it replaces.
-  const opts = { excludeBrands: new Set([paint.brand]), keep: 192, ...(isMetal ? { floatTypes: new Set(['metal']) } : {}) };
+  // Rank every paint of another brand, with no prefilter (candidatePool). The prefilter keeps the paints
+  // nearest by plain Lab distance, and FINISH_PENALTY changes the order after that cut. So a paint after the
+  // cut can belong in the list: for a wash, a wash that is further away than many flats. Measured on dataset
+  // 1.6.0 (3,225 paints) against a full scan, a pool of 192 gave 13 paints a worse paint in their top 8, by
+  // up to 1.34 ΔE of ranking score. It also put two paints with the same score in another order for 228
+  // more (a full scan keeps dataset order). A call takes about 3 ms, and the Equivalents tab makes one
+  // call per source-chip click (budget 16 ms, §6).
   const tier = isMetal ? (p => p.type === 'metal' ? 0 : 1) : () => 0;
-  return candidatePool(indexed, lab, opts)
-    .map(p => ({ paint: p, deltaE: deltaE2000(lab, p.lab) }))
-    .sort((a, b) => tier(a.paint) - tier(b.paint) || a.deltaE - b.deltaE)
+  const cls = finishClass(paint.type);
+  return indexed.paints.filter(p => p.brand !== paint.brand)
+    .map(p => { const deltaE = deltaE2000(lab, p.lab); return { paint: p, deltaE, score: deltaE + (finishClass(p.type) === cls ? 0 : FINISH_PENALTY) }; })
+    .sort((a, b) => tier(a.paint) - tier(b.paint) || a.score - b.score)
     .slice(0, n)
-    .map(m => ({ ...m, quality: matchQuality(m.deltaE) }));
+    .map(({ paint, deltaE }) => ({ paint, deltaE, quality: matchQuality(deltaE) }));
+}
+
+/** The paints closest to a typed colour, best first. They rank as the Equivalents tab ranks a flat colour:
+ *  a paint of another finish class (a wash, a contrast, an effect, a metallic) ranks FINISH_PENALTY ΔE
+ *  further, so it shows only when it is clearly closer. Each match reports its TRUE ΔE (§2, §7). The seed
+ *  field lists these under "Seed: #…"; the Equivalents tab uses them for a role colour or a custom hex. */
+export function closestPaints(indexed, hex, n = 6, { quick = false } = {}) {
+  // Every paint is a candidate (keep). The cheap Euclidean prefilter ranks by Lab distance alone, but the
+  // finish penalty moves washes and metallics down, so a flat paint ranked 79th by Lab distance (Raf Azure
+  // Blue for #8899F4, ΔE 6.4) was cut before the ranking and two Poor matches took its place. A full pool
+  // costs about 2 ms (about 12 ms on a slow phone): right for a keystroke or a tab render, too much for
+  // every frame of a drag. `quick` takes the old pool of 192 for a drag frame; the caller then shows the
+  // exact list once the drag stops.
+  return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, keep: quick ? 192 : indexed.paints.length });
+}
+
+/* ---- the paint search: ONE matcher for the seed field and the Shelf search ---- */
+
+/** The finish word each type shows on a swatch's finish tag (ui.js finishTag reads these). A search for
+ *  a finish word finds the paints that show it: "metallic" finds the metal type. */
+export const FINISH_WORDS = { metal: 'metallic', contrast: 'contrast', wash: 'wash', shade: 'shade', ink: 'ink', glaze: 'glaze', effect: 'effect' };
+
+/** Text for matching: no accents, lower case, no apostrophes, any other punctuation as a space.
+ *  "Dawnstone (Layer)" → "dawnstone layer" · "Resedagrün" → "resedagrun" · "Tiger’s Eye" → "tigers eye". */
+export const foldText = s => String(s ?? '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .replace(/['’‘`]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+
+// The folded words of each paint, worked out once per paint object (a search runs on every keystroke).
+// A WeakMap, so the paint objects keep their shape and nothing is stored with the data.
+const folded = new WeakMap();
+function foldOf(p) {
+  let f = folded.get(p);
+  if (!f) {
+    const line = p.line && p.line !== '—' ? p.line : '';
+    // Every word a swatch or a row shows: name, display name ("Dawnstone (Layer)"), brand, line, type and
+    // the finish word. Spaces at both ends, so a word can be matched at the start of the text too.
+    const name = foldText(p.name);
+    // words: the name with a space before each word, so " w" finds a word that starts with w (no split per search)
+    f = { hay: ` ${foldText(`${p.name} ${p.dname || ''} ${p.brand} ${line} ${p.type || ''} ${FINISH_WORDS[p.type] || ''}`)} `,
+      name, dname: foldText(p.dname || p.name), words: ` ${name}` };
+    folded.set(p, f);
+  }
+  return f;
+}
+const queryWords = q => foldText(q).split(' ').filter(Boolean);
+/** Fold every paint now, so the first keystroke after the page loads does not pay for 3,225 folds. The app
+ *  calls it when the browser is idle. */
+export function warmPaintSearch(indexed) { for (const p of indexed.paints) foldOf(p); }
+
+/** Does a paint match a search? Every word of the query must be in the paint's words (part of a word is
+ *  enough: "stone" finds Dawnstone). "vallejo red", "citadel metallic" and "dawnstone (layer)" all narrow
+ *  the list. In a query of two or more words, a one-letter word is not "part of any word": "D&D" folds to
+ *  "d d", and two d's anywhere matched 1,885 paints. Returns a test for one paint, or null when the query has
+ *  no words (no filter). */
+export function paintMatcher(query) {
+  const words = queryWords(query);
+  if (!words.length) return null;
+  // The hay has a space at each end, so " d " finds the whole word d and " b" a word that starts with b. A
+  // one-letter word before the last is a whole word ("d&d"); the last one is the word being typed, so it
+  // starts a word ("abaddon b" on the way to "abaddon black"); one letter alone matches inside words.
+  const last = words.length - 1;
+  const pats = words.map((w, i) => (w.length > 1 || !last ? w : i < last ? ` ${w} ` : ` ${w}`));
+  return p => { const h = foldOf(p).hay; return pats.every(w => h.includes(w)); };
+}
+
+/** The seed field's search: the paints that match, best first. Four groups, in this order: the name or the
+ *  display name is the query ("dawnstone (layer)"); the name starts with it; a word of the name starts with
+ *  a word of the query; the rest. In each group, the paints in `ownedIds` come first, then A to Z by display
+ *  name. [] for an empty query. */
+export function searchPaints(indexed, query, { ownedIds } = {}) {
+  const match = paintMatcher(query);
+  if (!match) return [];
+  const n = queryWords(query).join(' '), starts = n.split(' ').map(w => ' ' + w);
+  const group = p => {
+    const f = foldOf(p);
+    if (f.name === n || f.dname === n) return 0;
+    if (f.name.startsWith(n) || f.dname.startsWith(n)) return 1;
+    return starts.some(w => f.words.includes(w)) ? 2 : 3;
+  };
+  const own = p => (ownedIds && ownedIds.has(p.id) ? 0 : 1);
+  return indexed.paints.filter(match)
+    .map(p => ({ p, g: group(p), o: own(p), name: p.dname || p.name }))
+    .sort((a, b) => a.g - b.g || a.o - b.o || a.name.localeCompare(b.name))
+    .map(x => x.p);
+}
+
+/* ---- the seed field's browse grid: the orders of its Sort control ---- */
+
+/** The browse grid's orders, in the Sort control's order: colour wheel · closest to your pick · owned
+ *  first · name. */
+export const BROWSE_SORTS = ['hue', 'closest', 'owned', 'name'];
+/** Below this Lab chroma a paint reads as grey, so the colour-wheel order puts it after the colours. Lower
+ *  than the neutral-seed threshold (NEUTRAL_CHROMA, 10): the paints between 6 and 10 are blue-greys and
+ *  olive drabs, and they read as tinted in a grid. */
+export const GREY_CHROMA = 6;
+/** The width of one hue band in the colour-wheel order (degrees). */
+const HUE_BAND = 15;
+
+// The colour-wheel order depends on the dataset only, so it is worked out once per dataset.
+const wheelOrders = new WeakMap();
+function wheelOrder(paints) {
+  let order = wheelOrders.get(paints);
+  if (!order) {
+    // A plain hue sort put a dark red next to a pale pink next to a dark red: noise in a grid. So the
+    // wheel is cut into 15° bands, and in each band the paints go from light to dark. HSL hue, as on the
+    // wheel; Lab lightness and chroma, as the matching uses. Greys have no hue to sort by: they come
+    // last, from light to dark.
+    const keyed = paints.map(p => {
+      const grey = Math.hypot(p.lab[1], p.lab[2]) < GREY_CHROMA;
+      return { p, grey, band: grey ? 0 : Math.floor(rgbToHsl(hexToRgb(p.hex))[0] / HUE_BAND), light: p.lab[0] };
+    });
+    keyed.sort((a, b) => a.grey - b.grey || a.band - b.band || b.light - a.light);
+    order = keyed.map(x => x.p);
+    wheelOrders.set(paints, order);
+  }
+  return order;
+}
+
+/**
+ * Every paint in a Sort order of the seed field's browse grid. A new array; the dataset is not changed.
+ *   'hue'      the colour wheel: 15° hue bands from red, light to dark in each band, then the greys
+ *   'closest'  by ΔE 2000 to `pickHex` (the colour wheel order when there is no pick)
+ *   'owned'    the paints in `ownedIds` first, then A to Z by display name
+ *   'name'     A to Z by display name ("Dawnstone (Dry)" before "Dawnstone (Layer)")
+ */
+export function browseOrder(indexed, key = 'hue', { pickHex = null, ownedIds = null } = {}) {
+  const ps = indexed.paints, name = p => p.dname || p.name;
+  if (key === 'closest' && pickHex) {
+    const t = hexToLab(pickHex);
+    // decorate–sort–undecorate: one ΔE 2000 per paint, not one per comparison
+    return ps.map(p => [deltaE2000(t, p.lab), p]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  }
+  if (key === 'owned') {
+    const own = p => (ownedIds && ownedIds.has(p.id) ? 0 : 1);
+    return ps.slice().sort((a, b) => own(a) - own(b) || name(a).localeCompare(name(b)));
+  }
+  if (key === 'name') return ps.slice().sort((a, b) => name(a).localeCompare(name(b)));
+  return wheelOrder(ps).slice();
 }
 
 /** Fetch + index the dataset (browser). Tests use indexDataset() with a fixture instead. */

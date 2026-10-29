@@ -3,26 +3,27 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Support · Palette Studio for Miniatures</title>
-<meta name="description" content="Get help with Palette Studio for Miniatures: contact, common questions, and moving your collection between devices." />
+<title>Help and support · Palette Studio for Miniatures</title>
+<meta name="description" content="Get help with Palette Studio for Miniatures: how the matching works, keyboard shortcuts, common questions, and how to back up your shelf or move it to another device." />
 <link rel="stylesheet" href="styles/fonts.css" />
 <link rel="stylesheet" href="styles/tokens.css" />
 <link rel="stylesheet" href="styles/app.css" />
 <link rel="icon" href="icon.svg" type="image/svg+xml" />
-<meta name="theme-color" content="#141110" />
+<meta name="theme-color" content="#F6F5F2" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#141110" media="(prefers-color-scheme: dark)" />
 <script type="module" src="js/infopage.js"></script>
 </head>
 <body>
 <header>
   <div class="bar">
-    <div class="logo"><span class="mark">P</span><span class="t">Palette Studio<small>for miniatures</small></span></div>
+    <div class="logo"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><g transform="translate(20.27 10.91) rotate(-140) scale(0.7)"><rect x="-1.25" y="-15" width="2.5" height="2.4" fill="currentColor"/><path d="M-1.6 -12.8h3.2L4.2 -4.6h-8.4z" fill="currentColor"/><rect x="-6.5" y="-5" width="13" height="17" rx="3" fill="currentColor"/><circle cx="0" cy="-23.6" r="6" class="lid"/></g></svg><span class="t">Palette Studio<small>for miniatures</small></span></div>
     <div class="spacer"></div>
     <a class="btn sm" id="backToApp" href="./">← Back to the app</a>
   </div>
 </header>
 
 <main class="doc">
-  <h1>Support</h1>
+  <h1>Help and support</h1>
   <p class="docdate">Palette Studio for Miniatures</p>
 
   <p>Palette Studio is a free tool for miniature painters. Pick a paint or a colour, and it builds a
@@ -37,24 +38,157 @@
     <li>if the problem is with a scheme, a link to it (<strong>⋯ → Share link</strong>).</li>
   </ul>
 
+  <h2 id="matching">How the matching works</h2>
+  <p>For each colour in your scheme, Palette Studio finds the nearest real paint. It measures how
+    different two colours look with <strong>ΔE 2000</strong> (say “delta E”), a standard measure of colour
+    difference. A lower number is a closer match.</p>
+  <p>Every match shows its ΔE and a label:</p>
+  <ul>
+    <li><strong>Indistinguishable</strong>: ΔE 1 or less. You cannot see a difference.</li>
+    <li><strong>Excellent</strong>: ΔE 2 or less.</li>
+    <li><strong>Good</strong>: ΔE 3.5 or less.</li>
+    <li><strong>Fair</strong>: ΔE 5 or less. You can see the difference side by side.</li>
+    <li><strong>Loose</strong>: ΔE 10 or less.</li>
+    <li><strong>Poor</strong>: more than ΔE 10. It is a different colour.</li>
+  </ul>
+  <p>The colour values for real paints are approximate. So a match is never exact, and the ΔE tells you
+    how close it is.</p>
+  <h3>Use my paints</h3>
+  <p>Set it in <strong>⋯ → Use my paints</strong>. It changes the matches in the live palette, the Recipe,
+    the shopping list and the Accessibility tab. The Other brands tab always lists every paint.</p>
+  <ul>
+    <li><strong>Off</strong>: every paint can match.</li>
+    <li><strong>Prefer</strong>: a paint you own counts as about ΔE 6 closer than it is. So it wins a
+      close call, but not a clear one. The ΔE you see is the true value.</li>
+    <li><strong>Only</strong>: only paints you own can match, even when the match is poor.</li>
+  </ul>
+  <p>While Prefer or Only is on, a note under the live palette says so. To use this setting, first mark
+    the paints you own on the <strong>Shelf</strong>.</p>
+
+  <h2 id="shortcuts">Keyboard shortcuts</h2>
+  <dl class="keys">
+    <dt><kbd>Ctrl</kbd>/<kbd>⌘</kbd> <kbd>Z</kbd></dt>
+    <dd>Studio: undo a palette change. <kbd>Ctrl</kbd>/<kbd>⌘</kbd> <kbd>Shift</kbd> <kbd>Z</kbd> or
+      <kbd>Ctrl</kbd>/<kbd>⌘</kbd> <kbd>Y</kbd> redoes it.</dd>
+    <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt>
+    <dd>Wheel: hue <span class="nw">(<kbd>←</kbd> <kbd>→</kbd>)</span> and saturation, how vivid <span class="nw">(<kbd>↑</kbd> <kbd>↓</kbd>)</span>.
+      Hold <kbd>Shift</kbd> for bigger steps. Lightness slider: the arrow keys.</dd>
+    <dt><kbd>[</kbd> <kbd>]</kbd></dt>
+    <dd>Wheel: go to the previous or next colour.</dd>
+    <dt><kbd>+</kbd> <kbd>−</kbd></dt>
+    <dd>Wheel: add a colour, or remove the last colour you added.</dd>
+    <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt>
+    <dd>Shelf: move between paints. Hold <kbd>Shift</kbd> to select more.</dd>
+    <dt><kbd>↓</kbd></dt>
+    <dd>Paint field (“Paint or #hex”): open the list. In the colour grid, the arrow keys move in all four
+      directions. <kbd>Home</kbd> and <kbd>End</kbd> go to the start and the end of a row; with
+      <kbd>Ctrl</kbd>, to the first and the last paint. <kbd>Tab</kbd> goes to Sort. In a list of names,
+      <kbd>↑</kbd> and <kbd>↓</kbd> move.</dd>
+    <dt><kbd>Enter</kbd></dt>
+    <dd>Paint field: start the scheme from the paint or the colour that the list shows as active. A hex such
+      as <code>#9A1115</code> changes the starting colour as you type; <code>9A1115</code> or <code>#9A1</code> needs
+      <kbd>Enter</kbd>. Other brands tab: show the matches for the palette colour that has focus.</dd>
+    <dt><kbd>Shift</kbd> <kbd>F10</kbd></dt>
+    <dd>Open the mark menu: on the Shelf for the selection (Start a scheme from this, Mark owned, Add to shopping
+      list and Clear mark), and in the paint field's list for the active paint (Mark owned, Add to shopping list
+      and Clear mark). The
+      Menu key on a Windows keyboard does the same. On a touch screen, press and hold a paint; with a mouse,
+      right-click it.</dd>
+    <dt><kbd>P</kbd> <kbd>U</kbd> <kbd>X</kbd></dt>
+    <dd>Shelf: mark the selection as owned, add it to the shopping list, or clear its marks.</dd>
+    <dt><kbd>Esc</kbd></dt>
+    <dd>Close a list, menu, sheet or dialog. In the paint field, after a hex that changed the starting colour as you
+      typed, Esc also puts back the starting paint from before. On the Shelf, clear the selection.</dd>
+  </dl>
+
   <h2>Common questions</h2>
+
+  <h3 id="random">What do Roll a scheme and ↻ (Pick a colour for me) do?</h3>
+  <p>Both give you a random idea. You can undo each one with <strong>↶ Undo</strong> (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>
+    <kbd>Z</kbd>).</p>
+  <ul>
+    <li><strong>Roll a scheme</strong> (the die at the start of the row of harmonies; where that row is narrow, for
+      example on a phone, the button shows only “Roll”) picks a new harmony at random for the starting colour. The starting paint
+      stays the same, in the same role (Main or Accent). The lightness, the colours you locked or added, and the pop
+      accent do not change. It never picks Custom or the harmony you have now. For a neutral colour (a black, white
+      or grey), it picks only from the schemes for neutrals: Neutral + pop, Duotone, Warm / cool and Shades.</li>
+    <li><strong>↻ Pick a colour for me</strong> (under the lightness slider; beside it on a phone) gives
+      the scheme a new random colour: a random hue and strength. For most colours, it keeps the lightness and the
+      harmony. On black, on white, and on colours near them, every hue looks grey. So there, ↻ moves the lightness
+      by the smallest step that lets the new colour show, and a message tells you the new lightness. On a black,
+      white or grey colour, the scheme is one for neutrals. The new colour has a hue, so the scheme changes back to
+      a harmony with a hue: the one you had before, or Complementary.</li>
+  </ul>
+
+  <h3 id="holds">How do I keep a colour or a paint I already chose?</h3>
+  <p>On the <strong>Recipe</strong> tab, the Secondary, Accent and Metal cards each have two controls:</p>
+  <ul>
+    <li><strong>Lock colour</strong> keeps the role's target colour. When you change the harmony, roll a scheme or
+      press ↻, the other roles change and this one stays.</li>
+    <li><strong>📌 Choose pot…</strong> lets you pick the paint for the role, for example a gold you already used
+      on the model. The tone ladder then starts from that pot. The card still shows how far the pot is from the
+      target colour (ΔE), so you can see if it fits the scheme.</li>
+  </ul>
+  <p>On the live palette, the pencil on a column opens the same list of paints. Its last row lets you set a
+    custom colour. On the wheel, drag a role's node to lock that role at a new colour.</p>
+  <p>A line under the live palette lists what you hold. Select <strong>Release</strong> to let a role change
+    again. Holds stay when you pick a new starting paint, and a shared link keeps them. The Primary role always
+    comes from the starting paint, so you cannot hold it.</p>
 
   <h3>Why doesn't a match look exactly like my paint?</h3>
   <p>The colour values for real paints are approximate. Every match shows its ΔE score and a
-    plain-language label, so you can see how close it is. The paint data comes from the community
-    dataset <a href="https://github.com/Arcturus5404/miniature-paints" target="_blank" rel="noopener">Arcturus5404/miniature-paints</a>.</p>
+    plain-language label, so you can see how close it is (see <a href="#matching">How the matching
+    works</a>). The paint data comes from the community dataset
+    <a href="https://github.com/Arcturus5404/miniature-paints" target="_blank" rel="noopener">Arcturus5404/miniature-paints</a>.</p>
 
   <h3>A paint is missing, or its colour is wrong</h3>
   <p>Tell me through the contact page. Include the brand, the paint name, and what looks wrong.</p>
 
-  <h3>Where is my collection saved?</h3>
-  <p>On your device only. In a browser, your collection belongs to that browser, so clearing the site's
-    data or using a private window removes it.</p>
+  <h3>Where is my shelf saved?</h3>
+  <p>Only in this browser, on this device. Palette Studio has no accounts and no server, so there is no
+    other copy. Clearing the site's data or using a private window removes it. Safari can also clear it
+    when you do not open the site for some time. To keep your shelf safe, add the app to your Home Screen,
+    or back it up now and then (<strong>⋯ → Back up everything</strong>).</p>
 
-  <h3>How do I move my collection to another device?</h3>
-  <p>Open the <strong>Shelf</strong> and choose <strong>Export CSV</strong>. On the other device, open
-    the Shelf, choose <strong>Import…</strong>, and select that file. Your owned and to-buy marks come
-    across. Your settings, such as theme, do not.</p>
+  <h3>How do I use my shopping list in a store?</h3>
+  <p>Open the <strong>Shelf</strong>, press <strong>List</strong>, then <strong>Shopping list</strong>. The paints
+    show in the order a store racks them: brand, then range. <strong>By project</strong> groups them by the
+    scheme they are for. Tick a paint when it is in your basket: it is then owned. Tap it again to undo.
+    <strong>Add a count</strong> sets how many pots you want. <strong>Print</strong> puts the list on paper.</p>
+
+  <h3>How do I get my list from my computer to my phone?</h3>
+  <p>On the computer, open <strong>⋯ → Take to the store…</strong> (or <strong>Take to the store…</strong> in the
+    Shelf's list). Choose all your paints or one project. Scan the QR code with your phone's camera, or send the
+    link to your phone. On the phone, the app asks before it adds the paints to the shopping list there. Paints
+    you own on the phone stay owned. Nothing goes to a server: the list is in the link.</p>
+  <p>In the store, tick each paint as you buy it. Then press <strong>Send “bought”…</strong> above the list, and
+    open that link on the computer. The app asks, then marks those paints owned there too. It only adds owned
+    marks, and opening the link again changes nothing.</p>
+  <p>The first time a project without a name leaves the app, it asks for a name once. <strong>Skip</strong> keeps
+    the automatic name (for example “Death Guard Green · triadic”). The name is part of the link you send.</p>
+  <p><strong>Save as text</strong> in the same panel gives a plain file of the list: each paint with a
+    <code>[ ]</code> box, in rack order, with no colour codes. <strong>⋯ → Save the recipe</strong> saves the
+    scheme on screen.</p>
+
+  <h3>How do I keep a scheme?</h3>
+  <p>Press <strong>Save</strong> on the line above the starting paint, give the scheme a name, and press
+    <strong>Save</strong> again. It goes to <strong>Schemes</strong>, next to Studio and Shelf at the top. When
+    you change a saved scheme, the line says <strong>Changed</strong>: <strong>Save</strong> keeps the change
+    in it, and <strong>Save as new</strong> keeps both. Nothing is saved until you press Save. In Schemes you
+    can open, rename, share or delete a scheme. Deleting a scheme keeps its paints on your shopping list.</p>
+
+  <h3>How do I move my shelf to another device?</h3>
+  <p><strong>⋯ → Back up everything</strong> here, then <strong>⋯ → Restore…</strong> on the other device. It
+    replaces the shelf there. To add paints from a paintRack list without replacing anything, use
+    <strong>Import…</strong> on the Shelf.</p>
+  <p>A backup holds your owned marks, your shopping list, your saved schemes and your settings: theme, language, Use my paints, the
+    tone ladder and Include Contrast. Before Restore… replaces anything, it shows what is on this device
+    and what is in the backup, and it lets you save a backup of this shelf first.</p>
+
+  <h3>How do I delete my shelf?</h3>
+  <p>Open <strong>⋯ → About &amp; data</strong> and choose <strong>Delete my shelf and settings…</strong>.
+    It asks first, and it lets you save a backup. Then it removes your owned marks, your shopping list and your
+    settings from this device. You cannot undo this.</p>
 
   <h3>Does it work offline?</h3>
   <p>Yes. After your first visit, the website works without a connection, and you can add it to your

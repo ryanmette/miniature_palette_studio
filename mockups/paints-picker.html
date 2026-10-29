@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paints picker — four directions</title>
+<style>
+  :root {
+    --bg:#FBFBFE; --surface:#FFFFFF; --surface-2:#F1F2FF;
+    --border:#E6E7F8; --border-strong:#D3D5F0;
+    --text:#20223A; --text-muted:#6E7293; --text-faint:#A2A6C4;
+    --accent:#7C3AED; --accent-weak:#F0EAFE; --on-accent:#FFFFFF;
+    --buy:#2563EB; --on-buy:#FFFFFF; --success:#16A34A; --on-success:#FFFFFF; --warning:#C2740B; --danger:#DC2647;
+    --r-card:14px; --r-ctrl:10px; --r-pill:999px; --tap:44px;
+    --font:"Inter",system-ui,sans-serif; --display:"Space Grotesk","Inter",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --shadow:0 1px 2px rgba(60,50,120,.06), 0 6px 18px rgba(60,50,120,.05);
+    --shadow-pop:0 10px 40px rgba(60,50,120,.18);
+    /* the visible two-ring focus (the app's --focus is ~1.1:1; see the contrast task) */
+    --ring:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  .dark { --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62; --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --on-buy:#0E1620; --success:#86A559; --on-success:#14190A; --warning:#C9923A; --danger:#D2563F;
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 18px 50px rgba(0,0,0,.5);
+    /* restated here: a var() inside a custom property resolves where it is defined, so the :root ring stays violet */
+    --ring:0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:24px 16px; }
+  h1 { font-family:var(--display); font-size:21px; margin:0 0 4px; }
+  .sub { color:var(--text-muted); max-width:80ch; margin:0 0 16px; font-size:13.5px; }
+  .sub b, .why b, .notes b { color:var(--text); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); box-shadow:var(--shadow);
+    padding:16px; margin-bottom:24px; max-width:1100px; }
+  section.recd { border-color:var(--accent); }
+  h2 { font-family:var(--display); font-size:15.5px; margin:0 0 4px; }
+  h3.lab { font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:24px 0 8px; }
+  .why { color:var(--text-muted); font-size:12.5px; margin:0 0 16px; max-width:78ch; }
+  .rec { display:inline-block; font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase;
+    background:var(--accent-weak); color:var(--accent); border-radius:var(--r-pill); padding:0 8px; margin-left:8px; vertical-align:2px; }
+  ul.notes { margin:0; padding-left:18px; font-size:12.5px; color:var(--text-muted); max-width:82ch; }
+  ul.notes li + li { margin-top:4px; }
+  table.t { border-collapse:collapse; font-size:12.5px; width:100%; max-width:920px; }
+  table.t th, table.t td { text-align:left; padding:6px 12px 6px 0; border-bottom:1px solid var(--border); vertical-align:top; }
+  table.t th { font-weight:500; color:var(--text-muted); }
+  table.t td.n { font-family:var(--mono); white-space:nowrap; }
+  table.t tr.win td { font-weight:600; }
+  .pair { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+  figure { margin:0; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; max-width:320px; }
+  figcaption b { color:var(--text); }
+  .ann { font-size:11.5px; color:var(--text-muted); margin:8px 0 0; max-width:320px; }
+  .ann b { color:var(--text); }
+  .scroll-x { overflow-x:auto; }
+
+  /* ---------- phone frame (320 wide, true 44px targets, type one step smaller) ---------- */
+  .phone { position:relative; width:320px; height:640px; border:1px solid var(--border-strong); border-radius:24px; overflow:hidden;
+    background:var(--bg); color:var(--text); font-size:12px; }
+  .phone.short { height:520px; }
+  .apph { background:var(--bg); padding:8px 12px; border-bottom:1px solid var(--border); }
+  .apph .r1 { display:flex; align-items:center; gap:8px; font-family:var(--display); font-weight:600; font-size:14px; }
+  .logo { width:24px; height:24px; border-radius:7px; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; font-size:12px; }
+  .dots { margin-left:auto; width:var(--tap); height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); display:grid; place-items:center;
+    color:var(--text-muted); background:var(--surface); }
+  .mseg { display:flex; background:var(--surface-2); border-radius:var(--r-ctrl); padding:3px; margin-top:8px; }
+  .mseg span { flex:1; text-align:center; padding:8px; border-radius:8px; color:var(--text-muted); }
+  .mseg span.on { background:var(--surface); color:var(--text); box-shadow:var(--shadow); font-weight:500; }
+  .card { margin:12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-card); padding:12px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:4px; min-height:var(--tap); padding:0 12px; border:1px solid var(--border);
+    border-radius:var(--r-ctrl); background:var(--surface); color:var(--text); font:inherit; font-size:12px; white-space:nowrap; cursor:pointer; }
+  .btn.sm { min-height:32px; font-size:11.5px; }
+  .btn.ic { width:var(--tap); padding:0; }
+  .btn:focus-visible, .seedfield:focus-within, .opt.act, .chip.act, .menu button:focus-visible { outline:none; box-shadow:var(--ring); }
+  .sel { min-height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); display:flex; align-items:center;
+    justify-content:space-between; padding:0 10px; gap:4px; color:var(--text); }
+  .sel::after { content:"▾"; color:var(--text-faint); font-size:10px; }
+  .field { min-height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); display:flex; align-items:center;
+    padding:0 10px; color:var(--text-faint); }
+  .row { display:flex; gap:8px; align-items:center; }
+  .wrap { flex-wrap:wrap; }
+  .micro { font-size:10.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  .hero { display:flex; align-items:center; gap:8px; }
+  .hero:focus { outline:none; }
+  .hero .sw { width:28px; height:28px; border-radius:var(--r-ctrl); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; }
+  .hero b { font-family:var(--display); font-size:13.5px; }
+  .hero .hx { font-family:var(--mono); font-size:11px; color:var(--text-muted); }
+  .hero .meta { font-size:10.5px; color:var(--text-muted); }
+  .wheel { width:220px; height:220px; border-radius:50%; margin:12px auto 0;
+    background:radial-gradient(circle, #8a8a8a 0 4%, transparent 70%), conic-gradient(from 90deg, #e53935, #fdd835, #43a047, #00acc1, #3949ab, #8e24aa, #e53935); }
+  .fold { position:absolute; left:0; right:0; border-top:1.5px dashed var(--danger); z-index:7; pointer-events:none; }
+  .fold span { position:absolute; right:8px; top:-18px; font-size:10px; color:var(--danger); background:var(--bg); padding:0 4px; }
+  .tag { display:inline-block; font-size:10px; color:var(--accent); background:var(--accent-weak); border-radius:var(--r-pill); padding:0 8px; }
+  .meas { position:absolute; right:4px; z-index:6; font-size:10px; color:var(--accent); background:var(--accent-weak); border-radius:var(--r-pill); padding:0 6px; }
+
+  /* today's drawer */
+  .strip { display:flex; gap:10px; overflow:hidden; mask-image:linear-gradient(90deg,#000 85%,transparent); }
+  .strip .c { flex:none; width:64px; text-align:center; font-size:10.5px; color:var(--text-muted); }
+  .strip .c i { display:block; width:64px; height:64px; border-radius:var(--r-ctrl); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); margin-bottom:2px; }
+  .strip .c.on i { box-shadow:0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+  /* ---------- the recommended picker (one component, mounted several times) ---------- */
+  .seedbar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .seedbar > .btn:not(.ic) { padding:0 10px; }
+  .seedbar > .cmp { margin-left:auto; }
+  .btn svg { flex:none; }
+  /* The input keeps room for its placeholder (7em is about “Paint or #hex”). Where it cannot, Compare wraps to a
+     second row. On a touch screen the field text is 16px, because iOS zooms the page into a smaller field (§3.6). */
+  .seedfield { flex:1 1 0; min-width:calc(7em + var(--tap) + 10px); display:flex; align-items:center; min-height:var(--tap);
+    border:1px solid var(--border-strong); border-radius:var(--r-ctrl); background:var(--surface); font-size:12px; }
+  @media (pointer: coarse) { .seedfield { font-size:16px; } }
+  .seedfield input { flex:1; min-width:0; height:calc(var(--tap) - 2px); border:0; background:none; color:var(--text); font:inherit;
+    padding:0 0 0 8px; outline:none; }
+  .seedfield input::placeholder { color:var(--text-muted); }
+  /* Chrome keeps room for its clear button and clips the placeholder; Browse sits at that edge, and Esc still clears */
+  .seedfield input::-webkit-search-cancel-button { -webkit-appearance:none; display:none; }
+  .seedfield .browse { flex:none; width:var(--tap); height:calc(var(--tap) - 2px); display:grid; place-items:center; border:0;
+    border-left:1px solid var(--border); background:none; color:var(--text-muted); border-radius:0 var(--r-ctrl) var(--r-ctrl) 0;
+    cursor:pointer; font-family:inherit; font-size:12px; }
+  .seedfield .browse[aria-expanded="true"] { color:var(--accent); }
+  .pick-drawer { position:absolute; left:12px; right:12px; z-index:5; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card);
+    box-shadow:var(--shadow-pop); display:flex; flex-direction:column; overflow:hidden; animation:pk-in .2s cubic-bezier(.2,.7,.2,1); }
+  @keyframes pk-in { from { opacity:0; transform:translateY(-4px); } }
+  @media (prefers-reduced-motion: reduce) { .pick-drawer { animation:none; } }
+  .pick-drawer[hidden] { display:none; }
+  .pd-body { overflow-y:auto; overscroll-behavior:contain; padding:8px; flex:1; min-height:0; outline:none; }
+  .pd-foot { flex:none; border-top:1px solid var(--border); padding:6px 8px; display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px;
+    font-size:11px; color:var(--text-muted); }
+  .pd-foot[hidden] { display:none; }
+  .pd-foot .sortctl { margin-left:auto; display:flex; align-items:center; gap:8px; }
+  .pd-foot label { color:var(--text); font-weight:500; }
+  .pd-foot select { min-height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text); font:inherit;
+    font-size:12px; padding:0 8px; }
+  @media (pointer: coarse) { .pd-foot select { font-size:16px; } }
+  .ghead { font-size:10.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:4px 4px 4px; }
+  .recent { display:flex; gap:6px; overflow-x:auto; padding:4px 4px 8px; }
+  .grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; }
+  .grow { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; }
+  .grow + .grow { margin-top:6px; }
+  /* long-press marks, so a press must not start a text selection or the iOS callout (the Shelf's guards) */
+  .chip { border:0; background:none; padding:2px; border-radius:var(--r-ctrl); text-align:center; color:var(--text); font:inherit; cursor:pointer; position:relative; min-width:0;
+    user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+  .chip .sw { display:block; aspect-ratio:1; border-radius:var(--r-ctrl); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); position:relative; }
+  .chip .nm { display:block; font-size:10px; line-height:1.25; margin-top:2px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .chip .br { display:block; font-size:9px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .recent .chip { flex:none; width:52px; }
+  /* Two looks, two meanings (§3.5): the current pick (state) is an INSET ring on its swatch; the keyboard cursor
+     (interaction) is the OUTER ring on the whole option (.act, above). */
+  .chip.cur .sw, .opt.cur .sw { outline:2px solid var(--accent); outline-offset:2px; }   /* the app's pick recipe (app.css .pchip); the cursor is the outer ring on the whole option */
+  .chip.shelfsel .sw { outline:2px solid var(--accent); outline-offset:2px; }
+  /* the app's owned / to-buy corner badge (app.css .cbadge, ui.js markBadge): ✓ and a cart, on-colour tokens */
+  .cbadge { position:absolute; top:3px; right:3px; width:17px; height:17px; border-radius:50%; display:grid; place-items:center;
+    font-size:11px; font-weight:700; line-height:1; box-shadow:var(--shadow); }
+  .cbadge.owned { background:var(--success); color:var(--on-success); }
+  .cbadge.want { background:var(--buy); color:var(--on-buy); }
+  /* finish overlays, copied from app.css (§2): they show the finish and never change the colour */
+  .sw.metal { background-image:linear-gradient(158deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.26) 100%); }
+  .sw.fx-wash { background-image:linear-gradient(155deg, rgba(255,255,255,.40), rgba(255,255,255,0) 48%, rgba(0,0,0,.16)); }
+  .sw.fx-contrast { background-image:linear-gradient(150deg, rgba(255,255,255,.30), rgba(255,255,255,0) 42%, rgba(0,0,0,.20) 96%); }
+  .opt { display:flex; align-items:center; gap:8px; width:100%; min-height:var(--tap); padding:4px 6px; border:0; background:none; border-radius:var(--r-ctrl);
+    color:var(--text); font:inherit; font-size:12px; text-align:left; cursor:pointer; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+  .opt .sw { flex:none; width:30px; height:30px; border-radius:var(--r-ctrl); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); position:relative; }
+  .opt .sw .cbadge { top:-4px; right:-6px; }
+  .opt .tx { flex:1; min-width:0; }
+  .opt .tx b { display:block; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .opt .tx > span { display:block; font-size:10.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .opt .curw { color:var(--accent); font-weight:600; }
+  .opt .de { flex:none; font-size:10.5px; color:var(--text); white-space:nowrap; text-align:right; }
+  .opt .de i { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:4px; }
+  .opt .de small { display:block; font-family:var(--mono); font-size:9.5px; color:var(--text-muted); }
+  .opt.use .sw { display:grid; place-items:center; }
+  /* hover is an interaction, so it is a thin ring, not a fill (§3.5); the grey second line keeps its contrast */
+  .opt:hover:not(.act), .chip:hover:not(.act) { box-shadow:inset 0 0 0 1px var(--border-strong); }
+  .empty { margin:0; padding:12px; color:var(--text-muted); font-size:12px; }
+  .empty[hidden], .hint[hidden] { display:none; }
+  .hint { margin:0; font-size:10.5px; color:var(--text-muted); padding:2px 4px 6px; }
+  .menu { position:absolute; z-index:9; min-width:180px; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-ctrl);
+    box-shadow:var(--shadow-pop); padding:4px; }
+  .menu[hidden] { display:none; }
+  .menu .mh { font-size:10.5px; color:var(--text-muted); padding:4px 8px 6px; border-bottom:1px solid var(--border); margin-bottom:4px; }
+  .menu button { display:flex; width:100%; align-items:center; gap:8px; min-height:var(--tap); padding:0 8px; border:0; background:none; border-radius:8px;
+    color:var(--text); font:inherit; font-size:12px; text-align:left; cursor:pointer; }
+  .menu button:hover { background:var(--surface-2); }
+  .menu button[aria-disabled="true"] { color:var(--text-muted); cursor:not-allowed; }
+  .menu .ck { flex:none; width:12px; color:var(--accent); font-weight:700; visibility:hidden; }
+  .menu [aria-checked="true"] .ck { visibility:visible; }
+  .menu .msep { height:1px; background:var(--border); margin:4px 0; }
+  /* no tap flash on touch; press feedback comes from the rings (app.css, §3.6) */
+  @media (pointer: coarse) { .chip, .opt, .browse, .menu button { -webkit-tap-highlight-color:transparent; } }
+  .kbd-sim { position:absolute; left:0; right:0; bottom:0; height:220px; z-index:8; background:#D1D4DB; display:grid; grid-template-rows:repeat(4,1fr); gap:6px; padding:8px 4px; }
+  .dark .kbd-sim { background:#2B2B2E; }
+  .kbd-sim div { display:flex; gap:4px; justify-content:center; }
+  .kbd-sim i { flex:1; max-width:26px; border-radius:5px; background:#FFFFFF; box-shadow:0 1px 0 rgba(0,0,0,.3); }
+  .dark .kbd-sim i { background:#6B6B6F; }
+  /* The toast is always in the page, so a screen reader hears it. While idle it is hidden only visually. */
+  .ptoast { position:absolute; left:50%; bottom:12px; transform:translateX(-50%); z-index:10; width:max-content; max-width:calc(100% - 24px);
+    background:var(--text); color:var(--bg); border-radius:var(--r-ctrl); padding:8px 12px; font-size:11.5px; box-shadow:var(--shadow-pop); }
+  .ptoast.idle { width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; box-shadow:none; }
+  .isnew { outline:1.5px dashed var(--accent); outline-offset:3px; border-radius:6px; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+  /* desktop variant: the same component, the field at a fixed width, the results anchored under it */
+  .desk { position:relative; width:100%; max-width:980px; height:560px; border:1px solid var(--border-strong); border-radius:12px; overflow:hidden;
+    background:var(--bg); font-size:12px; --tap:38px; }
+  .desk .apph { display:flex; align-items:center; gap:12px; padding:8px 16px; }
+  .desk .apph .mseg { margin:0; width:160px; }
+  .desk .apph .mseg span { padding:4px; }
+  .desk .card { margin:12px 16px; }
+  .desk .seedfield { flex:0 1 440px; }
+  .desk .seedfield .browse { width:auto; padding:0 12px; white-space:nowrap; }
+  .desk .seedbar > .cmp { margin-left:0; }
+  .desk .pick-drawer { right:auto; width:440px; }
+  .desk .grow { grid-template-columns:repeat(8, minmax(0,1fr)); }
+  .desk .dcols { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 16px; }
+  .desk .dcols .card { margin:0; height:360px; }
+
+  /* direction wireframes */
+  .dirs { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:16px; }
+  .dir { border:1px solid var(--border); border-radius:var(--r-card); padding:12px; background:var(--bg); }
+  .dir.win { border-color:var(--accent); }
+  .dir h4 { font-family:var(--display); font-size:13.5px; margin:0 0 4px; }
+  .dir p { font-size:11.5px; color:var(--text-muted); margin:8px 0 0; }
+  .wf { position:relative; height:330px; border:1px solid var(--border-strong); border-radius:18px; background:var(--surface); overflow:hidden; font-size:10px; }
+  .wf .b { position:absolute; left:8px; right:8px; border:1px solid var(--border-strong); border-radius:6px; background:var(--surface-2); display:flex; align-items:center;
+    justify-content:center; color:var(--text-muted); text-align:center; padding:2px 4px; }
+  .wf .b.hot { border-color:var(--accent); color:var(--text); background:var(--accent-weak); }
+  .wf .b.pop { box-shadow:var(--shadow-pop); background:var(--surface); }
+  .wf .tiles { position:absolute; left:8px; right:8px; display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
+  .wf .tiles i { aspect-ratio:1; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<h1>Paints picker — four directions and a recommendation</h1>
+<p class="sub">
+  <b>The problem (Ryan, 2026-10-27):</b> the Studio’s <b>☰ Paints</b> drawer is “redundant and confusing for users”. On a
+  390px phone, the seed toolbar is 3 rows (178px). The open drawer adds 4 rows of controls (194px) and shows only about
+  <b>3½ paints</b>. Most of its controls exist somewhere else too.
+  <br><br>
+  An audit read the code and the docs. Four agents each designed one direction, and three judges scored them: the painter,
+  the constitution and accessibility, and the build. All three judges chose the same base. The <b>recommended mix</b> is at
+  the end, and you can try it: it runs on 134 real paints from all ten brands, with the app’s own ΔE 2000 code.
+  <br><br>
+  <a href="#recommended"><b>Go to the recommended picker and try it →</b></a>
+</p>
+
+<!-- ============================================================ TODAY -->
+<section>
+  <h2>Today</h2>
+  <p class="why">One job (choose the colour that starts the scheme) has two text inputs. One drawer copies the Shelf’s filters and
+  its import and export. The first phone screen is all controls.</p>
+  <div class="pair">
+    <figure>
+      <figcaption><b>Phone, drawer open</b> (measured at 390px; every phone frame here is drawn at 320, with true 44px targets).</figcaption>
+      <div class="phone">
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span class="on">Studio</span><span>Shelf</span></div></div>
+        <div class="card" style="margin-bottom:6px">
+          <div class="row"><span class="btn" style="background:var(--surface-2)">☰ Paints ▴</span></div>
+          <div class="field" style="margin-top:8px;color:var(--text);font-family:var(--mono)"># 555E1B</div>
+          <div class="row" style="justify-content:flex-end;margin-top:8px"><span class="btn">From photo</span><span class="btn">Compare</span></div>
+        </div>
+        <div class="card" style="margin-top:0;box-shadow:var(--shadow-pop)">
+          <div class="field">Search paints…</div>
+          <div class="row" style="margin-top:6px"><span class="sel" style="flex:1">All brands</span><span class="sel" style="flex:1">All types</span></div>
+          <div class="row" style="margin-top:6px"><span class="sel" style="flex:1">Default order</span><span class="btn sm">Import…</span></div>
+          <div class="row" style="margin-top:6px"><span class="btn sm">Export CSV</span></div>
+          <div class="strip" style="margin-top:10px">
+            <span class="c on"><i style="background:#555E1B"></i>Alga Green</span><span class="c"><i style="background:#CF4E27"></i>Amaranth Red</span>
+            <span class="c"><i style="background:#332A47"></i>Amethyst Blue</span><span class="c"><i style="background:#1C2A2B"></i>Anthracite Grey</span>
+          </div>
+          <div style="font-size:10.5px;color:var(--text-muted);margin-top:6px">3225 of 3225 paints · 1 owned</div>
+        </div>
+        <span class="meas" style="top:120px">toolbar 178px</span>
+        <span class="meas" style="top:330px">4 rows of controls</span>
+      </div>
+    </figure>
+    <div style="flex:1;min-width:280px">
+      <h3 class="lab" style="margin-top:0">What is duplicated</h3>
+      <table class="t">
+        <tr><th>In the drawer</th><th>Also</th></tr>
+        <tr><td>Search · brand · type · sort</td><td>The Shelf dock and its Filters sheet (separate state; the same brand and type lists, a longer sort list: 7 options against 5)</td></tr>
+        <tr><td>Import… · Export CSV</td><td>The Shelf title row (the same code). The ⋯ menu proposal adds Back up / Restore: a third place.</td></tr>
+        <tr><td>Search paints</td><td>The <code>#</code> hex box beside it: two text inputs that both choose the seed</td></tr>
+        <tr><td>Mark owned / to buy</td><td>The Shelf. In the drawer it needs a right-click or P/U/X, so an iPhone cannot do it.</td></tr>
+      </table>
+      <h3 class="lab">Bugs found on the way (reproduced)</h3>
+      <ul class="notes">
+        <li><b>Small phones open scrolled down.</b> At 360px and 375px wide, the page loads part of the way down. The offset depends
+          on the viewport height, for example 401px at 360×640, 384px at 375×667 and 239px at 375×812. The cause is <code>syncTabs()</code> in
+          <code>app.js</code>: its <code>scrollIntoView</code> on the active tab also scrolls the page. At 390px wide the tabs fit, so
+          the page does not move. <b>Fixed on 2026-10-28</b>, as a separate change: the app now scrolls only the tab strip.</li>
+        <li><b>A tap on ☰ Paints raises the keyboard.</b> It always focuses the search, so the keyboard covers the paints.</li>
+        <li><b>A pasted <code>#9A1115</code> does nothing.</b> The hex box keeps 6 characters, so it holds <code>9A111</code>.</li>
+        <li><b>A paint name in the hex box makes a colour.</b> “Abaddon Black” seeds <code>#ABADDB</code>.</li>
+        <li><b>Marks do not always refresh.</b> After a mark, the hero, the drawer or the Studio can show the old state, until the
+          next full render. With Use my collection on, even the matches can be stale.</li>
+        <li><b>The drawer is heavy.</b> It holds 3,225 buttons (3,232 tab stops). It rebuilds all of them on every seed change (paint,
+          hex, photo, undo), also while it is closed. A wheel drag does not rebuild it.</li>
+        <li><b>After a wheel drag, the drawer is out of date.</b> It still rings the old paint and marks it <code>aria-selected</code>.
+          “Closest to base” keeps the old order.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ THE FOUR DIRECTIONS -->
+<section>
+  <h2>The four directions</h2>
+  <p class="why">Each agent made the strongest honest case for one direction. The phone sketches show the first screen with the
+  picker open. Each judge gave 1–5 for clarity, speed, fit and cost (60 is the maximum). The cards list the scores in the
+  table’s order: painter · constitution · build.</p>
+  <div class="dirs">
+    <div class="dir win">
+      <h4>A · Slim the drawer <span class="rec">Base of the winner</span></h4>
+      <div class="wf">
+        <div class="b" style="top:8px;height:30px">header · Studio | Shelf</div>
+        <div class="b hot" style="top:46px;height:30px">⌕ Paint name or #hex &nbsp;▾</div>
+        <div class="b" style="top:80px;height:24px">From photo · Compare (row 2)</div>
+        <div class="b pop" style="top:110px;height:212px;align-items:flex-start;padding-top:8px">picker only: a 4-column grid of paints</div>
+        <div class="tiles" style="top:136px;left:16px;right:16px"><i style="background:#555E1B"></i><i style="background:#960C09"></i><i style="background:#0F3D7C"></i><i style="background:#BD9E44"></i><i style="background:#2A1C51"></i><i style="background:#556229"></i><i style="background:#697068"></i><i style="background:#D6AC57"></i><i style="background:#0F702A"></i><i style="background:#47125A"></i><i style="background:#C01411"></i><i style="background:#1C2A2B"></i></div>
+        <div class="b" style="top:292px;height:24px;left:16px;right:16px">count · Filters</div>
+      </div>
+      <p>One seed field replaces ☰ Paints and the hex box. The drawer only picks: no import, export or marking. It keeps the
+        Studio’s job in the Studio. As designed, its toolbar has 2 rows (126px). The one-row toolbar came from B and C.
+        <b>Scores: painter 16 · constitution 16 · build 15 = 47</b></p>
+    </div>
+    <div class="dir">
+      <h4>C · One search field</h4>
+      <div class="wf">
+        <div class="b hot" style="top:8px;height:30px">⌕ Paint or #hex &nbsp;· Cancel</div>
+        <div class="b" style="top:46px;height:26px;justify-content:flex-start">Recent</div>
+        <div class="b" style="top:76px;height:26px;justify-content:flex-start">▪ Mephiston Red · Citadel Base</div>
+        <div class="b" style="top:106px;height:26px;justify-content:flex-start">▪ #9A1115 · your colour</div>
+        <div class="b" style="top:136px;height:26px;justify-content:flex-start">Browse all 3,225 by colour →</div>
+        <div class="b" style="top:166px;height:156px;background:#D1D4DB">keyboard</div>
+      </div>
+      <p>A full-screen search layer with typeahead rows. Browsing by colour goes to a Shelf “pick mode”. It has the best typed
+        search. But it adds a full-screen layer and a fourth Shelf behaviour.
+        <b>Scores: painter 14 · constitution 14 · build 13 = 41</b></p>
+    </div>
+    <div class="dir">
+      <h4>D · A “Choose a colour” sheet</h4>
+      <div class="wf">
+        <div class="b" style="top:8px;height:40px">[■ Alga Green ▾] seed button</div>
+        <div class="b pop" style="top:70px;bottom:0;align-items:flex-start;padding-top:8px;border-radius:12px 12px 0 0">Choose a colour</div>
+        <div class="b" style="top:100px;height:26px;left:16px;right:16px">⌕ Paint or #hex · 📷</div>
+        <div class="b" style="top:134px;height:40px;left:16px;right:16px">Recent ▪▪▪▪▪</div>
+        <div class="b" style="top:180px;height:40px;left:16px;right:16px">Your paints ▪▪▪▪▪</div>
+        <div class="b" style="top:226px;height:80px;left:16px;right:16px">Browse by brand ›</div>
+      </div>
+      <p>One button opens one sheet with everything. The sheet content is good. But search needs one more tap, and so do the most
+        common jobs. In 1.x it is a single-height sheet that covers the scheme. The resizable sheet that would fix that is not
+        planned until v2.0. <b>Scores: painter 11 · constitution 10 · build 7 = 28</b></p>
+    </div>
+    <div class="dir">
+      <h4>B · The Shelf picks</h4>
+      <div class="wf">
+        <div class="b hot" style="top:8px;height:30px">Cancel · Pick a paint</div>
+        <div class="b" style="top:46px;height:30px">⌕ Search · Filters</div>
+        <div class="tiles" style="top:86px"><i style="background:#555E1B"></i><i style="background:#960C09"></i><i style="background:#0F3D7C"></i><i style="background:#BD9E44"></i><i style="background:#2A1C51"></i><i style="background:#556229"></i><i style="background:#697068"></i><i style="background:#D6AC57"></i><i style="background:#0F702A"></i><i style="background:#47125A"></i><i style="background:#C01411"></i><i style="background:#1C2A2B"></i><i style="background:#960C09"></i><i style="background:#555E1B"></i><i style="background:#2A1C51"></i><i style="background:#0F3D7C"></i></div>
+      </div>
+      <p>Delete the drawer; ☰ Paints opens the Shelf in a pick mode. It keeps one paint browser. But on the same grid, a tap marks a
+        paint in one mode and replaces your scheme in the other. That breaks the locked tap-to-mark rule (USE_CASES §10.2).
+        <b>Scores: painter 9 · constitution 9 · build 10 = 28</b></p>
+    </div>
+  </div>
+  <h3 class="lab">Scores by judge (clarity + speed + fit + cost, each 1–5)</h3>
+  <div class="scroll-x"><table class="t">
+    <tr><th>Direction</th><th>Painter</th><th>Constitution &amp; a11y</th><th>Build &amp; risk</th><th>Total</th></tr>
+    <tr class="win"><td>A · Slim the drawer</td><td class="n">16</td><td class="n">16</td><td class="n">15</td><td class="n">47</td></tr>
+    <tr><td>C · One search field</td><td class="n">14</td><td class="n">14</td><td class="n">13</td><td class="n">41</td></tr>
+    <tr><td>D · Choose-a-colour sheet</td><td class="n">11</td><td class="n">10</td><td class="n">7</td><td class="n">28</td></tr>
+    <tr><td>B · The Shelf picks</td><td class="n">9</td><td class="n">9</td><td class="n">10</td><td class="n">28</td></tr>
+  </table></div>
+</section>
+
+<!-- ============================================================ RECOMMENDED -->
+<section class="recd" id="recommended">
+  <h2>Recommended: one seed field, and a list that only picks <span class="rec">Recommended</span></h2>
+  <p class="why">It uses the structure of A and adds the best parts of C and D. <b>One field</b> takes a paint name, a brand
+  word or a hex. <b>Browse</b> (▾ on desktop, a grid button on a phone) opens a colour grid without the keyboard. A tap only
+  <b>picks</b> a paint. Marking moves to a long-press menu. Import and export leave the Studio. The brand and type filters stay
+  on the Shelf.</p>
+
+  <div class="pair">
+    <figure>
+      <figcaption><b>Try it.</b> Tap the grid button to browse. The keyboard stays down. Or type <code>red</code>,
+        <code>vallejo red</code>, <code>citadel metallic</code>, <code>dawnstone (layer)</code>, <code>#9A1115</code>,
+        <code>9a1115</code> or <code>decade</code>. Tap a paint to pick it. To mark a paint, press and hold it, or right-click it.</figcaption>
+      <div class="phone" data-picker='{"interactive":true}'></div>
+      <p class="ann">The toolbar is <b>one row</b> (74px at 390, measured in the B and C prototypes; today 178px). Then the hero
+        and the whole wheel fit on the first screen. Today the screen edge cuts the wheel. <b>Caveat:</b> with the 44px Browse
+        button in the field, the input is about 129px wide at 390, 114px at 375 and 99px at 360 (computed from the app’s toolbar
+        at 16px). The placeholder needs 100px. So at 360px and less, Compare wraps to a second row. This 320px frame shows that
+        row on a touch screen, where the field text is 16px.</p>
+    </figure>
+    <figure>
+      <figcaption><b>Browse, no keyboard.</b> Recent picks come first. Then every paint shows in a colour grid. Your pick has a
+        ring inside its swatch. The keyboard cursor has the outer ring. A line at the top tells you how to mark.</figcaption>
+      <div class="phone" data-picker='{"open":"browse","active":1}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>Typing “red”, keyboard up.</b> Each row shows the brand and the line. Exact and starts-with name matches
+        come first. In each group, paints you own come first.</figcaption>
+      <div class="phone" data-picker='{"query":"red","keyboard":true}'></div>
+      <p class="ann"><b>Build note:</b> iOS Safari does not make the layout viewport smaller for the keyboard. So the build sets
+        the height of the open list from <code>visualViewport.height</code>. Test it on a real iPhone, in Safari and in the app
+        (WKWebView).</p>
+    </figure>
+    <figure>
+      <figcaption><b>A hex, typed or pasted.</b> When you type the 6th digit after <code>#</code>, the seed changes. The row says
+        “Seed: #9A1115”, and the hero says “Custom #9A1115”, as the app does. The closest paints follow, with ΔE and its label.
+        They use the Equivalents ranking for a flat colour: a paint with another finish ranks as if its ΔE were 4 more. Each row
+        shows the true ΔE. Esc closes the list and puts back the seed from before you typed.</figcaption>
+      <div class="phone" data-picker='{"query":"#9A1115"}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>“decade” is a word, not a colour.</b> A hex word with letters only searches names first. “Use #DECADE as
+        seed” is the last option, so nothing changes by accident.</figcaption>
+      <div class="phone short" data-picker='{"query":"decade"}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>Twins stay apart.</b> Citadel makes a Dawnstone in two lines. Each row shows the line. In the grid, the
+        name carries the line: “Dawnstone (Layer)” and “Dawnstone (Dry)”. You can also type <code>dawnstone (layer)</code>.</figcaption>
+      <div class="phone short" data-picker='{"query":"dawnstone"}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>Press and hold to mark.</b> A tap only picks. Hold (500ms), right-click or Shift+F10 opens one shared menu.
+        This also makes marking work in the Studio picker on iPhone. Today the drawer needs a right-click or P/U/X to mark. The
+        build reuses the Shelf’s long-press guards.</figcaption>
+      <div class="phone short" data-picker='{"query":"macragge","menu":0}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>Dark theme, browse.</b></figcaption>
+      <div class="phone short dark" data-picker='{"open":"browse","active":1}'></div>
+    </figure>
+    <figure>
+      <figcaption><b>The Shelf gets “Use as seed”.</b> Select one paint. Open its menu. Tap “Use as seed”. The Studio starts
+        from that paint. There is no pick mode. A tap on the Shelf still marks. On a keyboard, Shift+F10 opens this menu (new).</figcaption>
+      <div class="phone short" inert>
+        <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio<span class="dots">⋯</span></div>
+          <div class="mseg"><span>Studio</span><span class="on">Shelf</span></div></div>
+        <div style="padding:12px"><div class="field">⌕ Search your shelf…</div></div>
+        <div class="grid" style="padding:0 12px">
+          <span class="chip shelfsel"><span class="sw" style="background-color:#960C09"><span class="cbadge owned">✓</span></span><span class="nm">Mephiston Red</span></span>
+          <span class="chip"><span class="sw" style="background-color:#0F3D7C"><span class="cbadge owned">✓</span></span><span class="nm">Macragge Blue</span></span>
+          <span class="chip"><span class="sw" style="background-color:#556229"><span class="cbadge owned">✓</span></span><span class="nm">Deathworld Forest</span></span>
+          <span class="chip"><span class="sw" style="background-color:#02134E"><span class="cbadge want"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path fill="currentColor" d="M1 1h2l.6 2H15l-1.7 6.2a1.4 1.4 0 0 1-1.35 1H5.4a1.4 1.4 0 0 1-1.36-1L2.2 2.4 1.9 1.3 1 1zm4.7 12.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm6 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg></span></span><span class="nm">Kantor Blue</span></span>
+        </div>
+        <div class="menu" role="menu" aria-label="Mark selection" style="left:24px;top:250px">
+          <div class="mh">Mephiston Red · Citadel Base</div>
+          <button type="button" role="menuitem" class="isnew">Use as seed</button>
+          <div class="msep" role="separator"></div>
+          <button type="button" role="menuitem">Mark owned</button>
+          <button type="button" role="menuitem">Mark to buy</button>
+          <button type="button" role="menuitem">Clear mark</button>
+        </div>
+      </div>
+      <p class="ann">“Use as seed” is on for exactly one selected paint. With 0 or 2+ selected, it stays visible and says why it is
+        off. The Shelf’s items stay actions (<code>menuitem</code>), because they can mark many paints at once.</p>
+    </figure>
+  </div>
+
+  <h3 class="lab">Desktop (1180px) — the same field and list, anchored under the field</h3>
+  <div class="desk" data-picker='{"desk":true,"open":"browse"}'></div>
+
+  <h3 class="lab">Where everything goes</h3>
+  <div class="scroll-x"><table class="t">
+    <tr><th>Today</th><th>After</th></tr>
+    <tr><td>☰ Paints button + <code>#</code> hex box</td><td>One seed field: <b>Paint or #hex</b>, with <b>Browse</b> inside it</td></tr>
+    <tr><td>Drawer search</td><td>The seed field. Several words narrow it: “vallejo red”, “citadel shade”. The Shelf search gets the
+      same matcher. It also searches the display name, so “dawnstone (layer)” still works there.</td></tr>
+    <tr><td>Drawer brand · type selects</td><td>Gone from the Studio. Brand, type and finish words work in the field (“citadel
+      metallic”). Faceted filters stay on the Shelf.</td></tr>
+    <tr><td>Drawer sort (7 options)</td><td>One <b>Sort</b> control in the browse view: Hue · Closest to your pick · Owned first ·
+      Name. It comes right after the field in the tab order.</td></tr>
+    <tr><td>Drawer Import… · Export CSV</td><td>CSV import and export stay on the Shelf. Its Import… still accepts a
+      <code>.json</code> backup, through the Restore confirm. Back up and Restore go in ⋯ (the menu proposal).</td></tr>
+    <tr><td>Drawer marking (right-click, P/U/X)</td><td>One shared mark menu: long-press, right-click or Shift+F10. Its items use the
+      app’s words: Mark owned · Mark to buy · Clear mark. P/U/X stay on the Shelf, and the Shelf gets Shift+F10 too.</td></tr>
+    <tr><td>Hex box as a readout of the colour</td><td>The hero line is the one readout (it already shows the hex).</td></tr>
+    <tr><td>From photo (text button)</td><td>A 44px camera button on a phone (named “From photo”); the text label stays on desktop.</td></tr>
+    <tr><td>No way to seed from the Shelf</td><td>“Use as seed” in the Shelf’s menu</td></tr>
+  </table></div>
+
+  <h3 class="lab">Choices for you (the judges disagreed)</h3>
+  <ul class="notes">
+    <li><b>Live hex.</b> Today a hex seeds as you type. The proposal keeps that for <code>#</code> + 6 digits. It asks for Enter
+      for anything else (a bare <code>9A1115</code>, or <code>#9A1</code>). The accessibility judge wanted Enter for everything:
+      “nothing seeds while typing” was that judge’s must-have. On a phone, the open list and the keyboard cover the scheme, so you
+      do not see the live change until the list closes. Each live edit also adds one undo step. If live hex stays, the polite
+      live region says the new seed, and Esc puts back the seed from before you typed. This page does both.</li>
+    <li><b><code>#RGB</code> live.</b> Two judges (the painter and the build) wanted <code>#RGB</code> to seed live too. The
+      proposal says no. When you type <code>#9A1115</code>, the first 3 digits would seed <code>#99AA11</code> for a moment.</li>
+    <li><b>Marking in the Studio.</b> The proposal uses a long-press menu (no new buttons). Two judges preferred a small
+      “✓ own · + buy” pair on each Plan row. That pair is easier to find, but it adds more small buttons, and today’s buy buttons are
+      already under 44px.</li>
+    <li><b>Recent picks.</b> The proposal keeps them for this visit only, so they are not new saved data and need no backup or
+      delete. One judge wanted them saved. The build judge wanted to leave Recent out of this change.</li>
+    <li><b>Filters in the picker.</b> The painter wanted a Filters sheet in the picker, with a new title. The proposal uses brand
+      and type words in the field instead.</li>
+    <li><b>Browse grid or rows.</b> The proposal uses a grid to browse (you look by colour) and rows to search (you read names).
+      The grid uses the APG grid pattern: rows and cells, so a screen reader says the row and the column, and the arrow keys
+      move in two directions. The other option is rows everywhere. The accessibility judge specified rows.</li>
+  </ul>
+
+  <h3 class="lab">Fixed by this change</h3>
+  <ul class="notes">
+    <li>The keyboard rises only when you tap the field, never on Browse.</li>
+    <li>A pasted <code>#9A1115</code> works, and “Abaddon Black” can never become <code>#ABADDB</code>.</li>
+    <li>The list exists only while it is open: one tab stop instead of 3,232. It is built when it opens, from the current pick,
+      so a wheel drag cannot leave it out of date. There is no rebuild of 3,225 buttons on each seed change.</li>
+    <li>One <code>render('marks')</code> path: a mark anywhere updates the hero, the palette, the open list and the Shelf.</li>
+  </ul>
+
+  <h3 class="lab">Constitution and docs (same commit as the build)</h3>
+  <ul class="notes">
+    <li><b>CLAUDE.md §3.6.</b> Rewrite the picker bullet as “seed field + a list that only picks”. Give it a motion clause: the
+      list fades in (180–220ms), and under <code>prefers-reduced-motion</code> it appears with no motion. Edit Top-level modes
+      and Layout. Change the ≤520px rule to “the seed toolbar is one row where the input keeps ≥100px; otherwise Compare
+      wraps”. Add that the open list takes its height from <code>visualViewport</code>.</li>
+    <li><b>§3.6 header bullet.</b> Write one wording, shared with the ⋯ menu proposal
+      (<code>mockups/collection-setting.html</code> #fullmenu). The proposal that lands first writes it. The second one edits
+      it. Say that the Shelf’s Import… keeps <code>.json</code>, through the Restore confirm.</li>
+    <li><b>§3.5.</b> Add: “In the seed field’s list, a tap or Enter only picks. Marking there is the shared mark menu
+      (long-press, right-click, Shift+F10). The Plan’s buy toggles, the Equivalents drill-down and the Shelf’s tap-to-cycle do not
+      change.” The other doorways in PLAN backlog 7 keep “tap”. Add the mark menu’s keyboard path (Shift+F10 or the ContextMenu
+      key) to the keyboard rule.</li>
+    <li><b>§3.1 (do this first).</b> The list cursor needs a visible ring, and today’s <code>--focus</code> is about 1.1:1.
+      Change <code>--focus</code> in both themes, app-wide, in the same commit. Or do the contrast task before this build. This
+      page uses a two-ring stand-in (<code>--ring</code>). Also remove the “drawer” words from the §3.1 and §3.4 comments. The
+      light ✓ badge pair (<code>--on-success</code> on <code>--success</code>) is 3.3:1. That is enough for a graphic, not for
+      text.</li>
+    <li><b>§4 tree.</b> <code>seed.js</code> gets the query parser. The shared matcher goes in <code>data.js</code>, beside
+      <code>nearestPaints</code>. Update both tree lines.</li>
+    <li><b>USE_CASES.</b> UC-21 and Priya’s step 2. §10.1: the seed list is one more surface that shows marks. §10.2: Shift+F10
+      (or the ContextMenu key) opens the Shelf menu at the cursor cell. UC-23: “Use as seed” in the Shelf menu.</li>
+    <li><b>PLAN.</b> Backlog 7: its doorway becomes the mark menu’s “Details”. Backlog 11 and <b>IOS_APP_PLAN §5</b>: say which
+      field gets the OCR text (the Shelf search). Line 302 says “splitting the Shelf/drawer out of <code>app.js</code>”. The
+      drawer is gone, so change that line.</li>
+    <li><b>mockups/collection-setting.html</b> lines 712 and 762 say that Import… and CSV are also in the Paints drawer. After
+      the build, CSV is on the Shelf only.</li>
+    <li><b>Code.</b> Add Shift+F10 and ContextMenu to <code>shelfKeydown</code>. Take the Shelf’s long-press code into one helper,
+      and use it on both surfaces. Group the grid’s <code>role=row</code> elements by the rendered column count (the Shelf’s
+      <code>gridCols()</code>), and group them again on resize. Build the tiles and rows from the ui.js parts: <code>.sw</code> + <code>fxCls</code>,
+      <code>finishTag</code>, <code>markBadge</code> and <code>pname</code>. Add i18n keys for the new strings: the placeholder,
+      Browse, Sort and its options, the menu items, the hints, and the empty and partial-hex messages.</li>
+    <li><b>Tests.</b> Replace the <code>paintStrip</code> test in <code>test/ui.test.mjs</code>. Add unit tests for the parser and
+      the matcher, with the cases “metallic”, “citadel metallic” and “dawnstone (layer)”.</li>
+    <li>CHANGELOG, and a <code>CACHE</code> bump in <code>sw.js</code>.</li>
+  </ul>
+</section>
+
+<script>
+/* ---- the app's colour maths (src/js/color.js, copied so this page works on its own) ---- */
+const Color = (() => {
+  // color.js — pure colour math for Palette Studio. No DOM, no globals, no deps.
+  // Conventions locked in CLAUDE.md §7: sRGB ↔ linear ↔ XYZ ↔ CIELAB (D65),
+  // matching via CIEDE2000 (kL=kC=kH=1). Verified against Sharma et al. reference pairs.
+  //
+  // The pipeline, and why it has so many steps: a hex is a display encoding, not a measurement of
+  // light, and the numeric distance between two hexes has almost nothing to do with how different
+  // they LOOK. So every match in the app walks the same road —
+  //
+  //   #RRGGBB → sRGB 0-255 → linear light → CIE XYZ → CIELAB → ΔE 2000
+  //
+  //   • linear light  undoes the display's gamma curve, so the numbers are proportional to photons
+  //   • XYZ           a device-independent way to say "this colour", tied to a reference white (D65)
+  //   • CIELAB        re-spaces XYZ so equal numeric steps look like equal perceptual steps
+  //   • ΔE 2000       patches the places CIELAB still gets wrong (blues, near-neutrals, saturation)
+  //
+  // HSL also appears here, but only for the harmony geometry (rotate the hue, keep S/L) — it is a
+  // convenient dial, not a perceptual space, and nothing is ever MATCHED in it.
+
+  const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
+  const clamp255 = x => (x < 0 ? 0 : x > 255 ? 255 : x);
+
+  /** Normalise a user/URL-supplied colour string to '#RRGGBB' (uppercase), or null if it isn't a
+   *  6-digit hex (with or without the leading '#'). The ONE validation guard for colour input —
+   *  seven hand-rolled copies of this regex had already drifted into with-# and without-# variants. */
+  const normHex = s => {
+    const m = /^#?([0-9a-fA-F]{6})$/.exec(String(s ?? '').trim());
+    if (!m) return null;
+    // Rebuild via an integer round-trip rather than echoing the capture group: numerically identical,
+    // but the output provably contains only hex digits even to a static analyser (taint ends at the
+    // parseInt) — normHex/safeColor products are interpolated into HTML all over the app.
+    return '#' + parseInt(m[1], 16).toString(16).padStart(6, '0').toUpperCase();
+  };
+
+  /** "#RGB" or "#RRGGBB" → [r,g,b] in 0–255. */
+  function hexToRgb(hex) {
+    let h = String(hex).trim().replace(/^#/, '');
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    if (!/^[0-9a-fA-F]{6}$/.test(h)) throw new Error(`invalid hex: ${hex}`);
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  }
+
+  /** [r,g,b] 0–255 → "#RRGGBB" (uppercase). */
+  function rgbToHex([r, g, b]) {
+    return '#' + [r, g, b].map(v => Math.round(clamp255(v)).toString(16).padStart(2, '0')).join('').toUpperCase();
+  }
+
+  /**
+   * sRGB channel 0–255 → linear-light 0–1.
+   * Displays don't emit light in proportion to the stored value — sRGB bakes in a gamma curve so the
+   * limited bits land where the eye is most sensitive. Undo it before doing any maths that assumes
+   * light adds up (mixing, XYZ, the colour-blindness matrices). The two-part curve (a short linear
+   * toe below 0.04045, a power curve above) is the sRGB spec's, not an approximation of it.
+   */
+  const srgbToLinear = c => {
+    c /= 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  /** linear-light 0–1 → sRGB channel 0–255. */
+  const linearToSrgb = c => 255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+
+  const rgbToLinear = ([r, g, b]) => [srgbToLinear(r), srgbToLinear(g), srgbToLinear(b)];
+  const linearToRgb = ([r, g, b]) => [linearToSrgb(r), linearToSrgb(g), linearToSrgb(b)];
+
+  const D65 = [0.95047, 1.0, 1.08883];
+
+  /**
+   * [r,g,b] 0–255 → CIE XYZ (D65, Y in 0–1).
+   * The matrix is the sRGB→XYZ primaries under D65 (daylight white). Y is luminance, which is why the
+   * green row (0.7152) dominates: the eye takes most of its brightness signal from green.
+   */
+  function rgbToXyz([r, g, b]) {
+    const [R, G, B] = rgbToLinear([r, g, b]);
+    return [
+      R * 0.4124 + G * 0.3576 + B * 0.1805,
+      R * 0.2126 + G * 0.7152 + B * 0.0722,
+      R * 0.0193 + G * 0.1192 + B * 0.9505,
+    ];
+  }
+
+  /**
+   * CIE XYZ (D65) → CIELAB [L,a,b]: L* = lightness 0–100, a* = green→red, b* = blue→yellow.
+   * Each channel is divided by the reference white first, so Lab describes a colour RELATIVE to what
+   * counts as white. `f` is a cube root — the eye's response to intensity is roughly a power law —
+   * swapped for a straight line below a small threshold, where the cube root's slope runs away toward
+   * infinity and would amplify noise in the near-blacks.
+   */
+  function xyzToLab([x, y, z]) {
+    const f = t => (t > 0.008856451679035631 ? Math.cbrt(t) : t / 0.12841854934601665 + 4 / 29);
+    const fx = f(x / D65[0]), fy = f(y / D65[1]), fz = f(z / D65[2]);
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  }
+
+  const rgbToLab = rgb => xyzToLab(rgbToXyz(rgb));
+  const hexToLab = hex => rgbToLab(hexToRgb(hex));
+
+  /** Lab chroma C* = √(a*² + b*²) — perceptual colourfulness (0 = a pure neutral). */
+  const labChroma = hex => { const [, a, b] = hexToLab(hex); return Math.hypot(a, b); };
+  /** Neutral-seed detection threshold (locked, CLAUDE.md §7). Lab chroma is used rather than HSL
+   *  saturation because visually-black "saturated" hexes (e.g. #100000, HSL S=1) must classify as
+   *  neutral. Seeds in the borderline band just above the threshold stay in normal hue mode. */
+  const NEUTRAL_CHROMA = 10;
+  /** Hysteresis exit threshold (locked, §7): the studio ENTERS neutral mode below NEUTRAL_CHROMA but
+   *  only EXITS above NEUTRAL_EXIT, so a drag hovering on the boundary can't flip the mode per frame
+   *  (banner/strip thrash). Seeds in the 10–14 deadband keep whichever mode they arrived in. */
+  const NEUTRAL_EXIT = 14;
+  const isNeutral = hex => labChroma(hex) < NEUTRAL_CHROMA;
+
+  /**
+   * CIEDE2000 colour difference between two CIELAB values (kL=kC=kH=1) — the single matching metric
+   * for the whole app (§7). Roughly: ΔE 1 is the smallest difference a person can notice side by side,
+   * ΔE 2–3 is a good paint match, ΔE 10+ is plainly a different colour (the §3.2 scale).
+   *
+   * It is long because it is CIELAB plus four corrections, each fixing a place where plain Lab
+   * distance disagrees with people:
+   *   G       inflates a* for near-neutral colours, where Lab overstates how different faint tints look
+   *   Sl/Sc/Sh weight lightness/chroma/hue differences by WHERE in the space you are — a chroma step
+   *            matters less among already-vivid colours than among muted ones
+   *   T        varies the hue weighting around the hue circle (blues and reds are not equally touchy)
+   *   Rt       the rotation term: a specific correction for the blue region near 275°, where hue and
+   *            chroma errors interact
+   * Everything is on the CIE's published formula; the variable names follow Sharma et al. so the code
+   * can be read against the paper. Do not "simplify" it — §7 locks the metric so results never drift.
+   */
+  function deltaE2000(lab1, lab2) {
+    const [L1, a1, b1] = lab1, [L2, a2, b2] = lab2;
+    const rad = Math.PI / 180, deg = 180 / Math.PI;
+    // Step 1 — chroma (distance from the neutral axis) of each colour, and the a* inflation G that
+    // stretches near-neutrals apart so two barely-tinted greys don't read as identical.
+    const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2);
+    const Cbar = (C1 + C2) / 2, Cbar7 = Math.pow(Cbar, 7);
+    const G = 0.5 * (1 - Math.sqrt(Cbar7 / (Cbar7 + 6103515625))); // 25^7
+    // Step 2 — re-derive chroma and hue in that adjusted space (the primed values).
+    const a1p = (1 + G) * a1, a2p = (1 + G) * a2;
+    const C1p = Math.hypot(a1p, b1), C2p = Math.hypot(a2p, b2);
+    let h1p = Math.atan2(b1, a1p); if (h1p < 0) h1p += 2 * Math.PI;
+    let h2p = Math.atan2(b2, a2p); if (h2p < 0) h2p += 2 * Math.PI;
+    // Step 3 — the three differences. Hue is an ANGLE, so its difference has to take the short way
+    // round the circle (±180°), and is undefined when either colour is neutral (no hue to compare).
+    const dLp = L2 - L1, dCp = C2p - C1p;
+    let dhp = 0;
+    if (C1p * C2p !== 0) {
+      dhp = h2p - h1p;
+      if (dhp > Math.PI) dhp -= 2 * Math.PI; else if (dhp < -Math.PI) dhp += 2 * Math.PI;
+    }
+    // ΔH' converts that hue ANGLE into a distance: the same angular gap means a bigger visual
+    // difference the more saturated the two colours are, hence the √(C1'·C2') factor.
+    const dHp = 2 * Math.sqrt(C1p * C2p) * Math.sin(dhp / 2);
+    // Step 4 — the midpoints the weighting functions are evaluated at.
+    const Lbp = (L1 + L2) / 2, Cbp = (C1p + C2p) / 2;
+    let hbp;
+    if (C1p * C2p === 0) hbp = h1p + h2p;
+    else if (Math.abs(h1p - h2p) <= Math.PI) hbp = (h1p + h2p) / 2;
+    // Sharma eq. 14: wide hue gaps wrap toward 0° — ADD 2π when the sum is small, SUBTRACT when large.
+    // (The old always-add branch put h̄' a full turn high for sum ≥ 2π; T's cosines are 2π-periodic so
+    // the numeric effect was < 2e-4 ΔE, but the published formula is the locked convention, §7.)
+    else hbp = h1p + h2p < 2 * Math.PI ? (h1p + h2p + 2 * Math.PI) / 2 : (h1p + h2p - 2 * Math.PI) / 2;
+    // Step 5 — the weighting terms. T tunes hue sensitivity around the circle; Rt (via dTheta and Rc)
+    // is the blue-region rotation; Sl/Sc/Sh scale each difference by where in the space it happens.
+    const T = 1 - 0.17 * Math.cos(hbp - 30 * rad) + 0.24 * Math.cos(2 * hbp)
+      + 0.32 * Math.cos(3 * hbp + 6 * rad) - 0.20 * Math.cos(4 * hbp - 63 * rad);
+    const dTheta = 30 * rad * Math.exp(-Math.pow((hbp * deg - 275) / 25, 2));
+    const Cbp7 = Math.pow(Cbp, 7);
+    const Rc = 2 * Math.sqrt(Cbp7 / (Cbp7 + 6103515625));
+    const Sl = 1 + (0.015 * Math.pow(Lbp - 50, 2)) / Math.sqrt(20 + Math.pow(Lbp - 50, 2));
+    const Sc = 1 + 0.045 * Cbp;
+    const Sh = 1 + 0.015 * Cbp * T;
+    const Rt = -Math.sin(2 * dTheta) * Rc;
+    // Step 6 — weighted root-sum-square of the three differences, plus the chroma/hue interaction.
+    return Math.sqrt(
+      (dLp / Sl) ** 2 + (dCp / Sc) ** 2 + (dHp / Sh) ** 2 + Rt * (dCp / Sc) * (dHp / Sh)
+    );
+  }
+
+  const deltaE2000Hex = (h1, h2) => deltaE2000(hexToLab(h1), hexToLab(h2));
+
+  /**
+   * [r,g,b] 0–255 → HSL [h 0–360, s 0–1, l 0–1].
+   * Used for the harmony GEOMETRY only (rotate the hue, keep saturation and lightness) — never for
+   * matching, which is always Lab/ΔE. HSL is a reshuffle of RGB, so equal steps in it are not equal
+   * perceptual steps: this is exactly why a "saturated" near-black like #100000 reads as vivid here
+   * but correctly classifies as neutral by Lab chroma (see isNeutral).
+   */
+  function rgbToHsl([r, g, b]) {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    let h = 0;
+    const l = (mx + mn) / 2;
+    const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+    if (d !== 0) {
+      if (mx === r) h = ((g - b) / d) % 6;
+      else if (mx === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60; if (h < 0) h += 360;
+    }
+    return [h, s, l];
+  }
+
+  /** HSL [h,s,l] → [r,g,b] 0–255. */
+  function hslToRgb([h, s, l]) {
+    h = ((h % 360) + 360) % 360;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    let rgb;
+    if (h < 60) rgb = [c, x, 0]; else if (h < 120) rgb = [x, c, 0];
+    else if (h < 180) rgb = [0, c, x]; else if (h < 240) rgb = [0, x, c];
+    else if (h < 300) rgb = [x, 0, c]; else rgb = [c, 0, x];
+    return rgb.map(v => (v + m) * 255);
+  }
+
+  /** Rotate a colour's hue by `deg`, preserving S and L. Returns a hex. */
+  function rotateHue(hex, deg) {
+    const [h, s, l] = rgbToHsl(hexToRgb(hex));
+    return rgbToHex(hslToRgb([h + deg, s, l]));
+  }
+
+  /** Adjust lightness/saturation (deltas in 0–1), preserving hue. Returns a hex. */
+  function adjustHsl(hex, { dl = 0, ds = 0 } = {}) {
+    const [h, s, l] = rgbToHsl(hexToRgb(hex));
+    return rgbToHex(hslToRgb([h, clamp01(s + ds), clamp01(l + dl)]));
+  }
+
+  /**
+   * Plain-language direction to nudge an owned `paintHex` toward the `idealHex` (use-what-you-own, #6).
+   * Picks the single most-impactful axis (lightness > saturation > hue) so the hint stays actionable.
+   * @returns {string|null} e.g. "lighten slightly", "darken", "mute", "saturate", "shift hue" — or null if already close.
+   */
+  function adjustDirection(idealHex, paintHex) {
+    const [ih, is, il] = rgbToHsl(hexToRgb(idealHex));
+    const [ph, ps, pl] = rgbToHsl(hexToRgb(paintHex));
+    const dl = il - pl, ds = is - ps;
+    let dh = ih - ph; if (dh > 180) dh -= 360; if (dh < -180) dh += 360;
+    // Compare on a common ~0–1 scale; lightness/saturation read more strongly to a painter than hue.
+    const cands = [
+      { m: Math.abs(dl), word: dl > 0 ? 'lighten' : 'darken' },
+      { m: Math.abs(ds) * 0.8, word: ds > 0 ? 'saturate' : 'mute' },
+      { m: (Math.abs(dh) / 180) * 0.6, word: 'shift hue' },
+    ];
+    cands.sort((a, b) => b.m - a.m);
+    const top = cands[0];
+    if (top.m < 0.03) return null;                 // effectively the same colour — no adjustment worth naming
+    return top.word + (top.m < 0.12 ? ' slightly' : '');
+  }
+
+  /** WCAG 2.1 relative luminance of a colour (hex or [r,g,b]), 0–1. */
+  function relativeLuminance(color) {
+    const [r, g, b] = (typeof color === 'string' ? hexToRgb(color) : color).map(srgbToLinear);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  /** WCAG 2.1 contrast ratio between two colours, 1–21. */
+  function contrastRatio(a, b) {
+    const L1 = relativeLuminance(a), L2 = relativeLuminance(b);
+    return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+  }
+
+  const NEAR_BLACK = '#15150F', NEAR_WHITE = '#FFFFFF';
+  /** Pick legible text colour for a swatch: whichever of black/white has higher contrast (§3.5/§7). */
+  function textOn(hex) {
+    return contrastRatio(hex, NEAR_BLACK) >= contrastRatio(hex, NEAR_WHITE) ? NEAR_BLACK : NEAR_WHITE;
+  }
+  return { hexToLab, deltaE2000, textOn, hexToRgb, rgbToHsl };
+})();
+
+/* ---- 134 real paints from src/data/paints.json: [id, brand, line, name, hex, type] ---- */
+const PAINTS = [["ak-interactive-3rd-gen-alga-green","AK Interactive","3rd Gen","Alga Green","#555E1B","layer"],["citadel-base-deathworld-forest","Citadel","Base","Deathworld Forest","#556229","base"],["scale75-artist-violet","Scale75","Artist","Violet","#2A1C51","layer"],["reaper-pathfinder-keleshite-gold","Reaper","Pathfinder","Keleshite Gold","#BD9E44","metal"],["citadel-dry-sigmarite","Citadel","Dry","Sigmarite","#D6AC57","metal"],["citadel-base-macragge-blue","Citadel","Base","Macragge Blue","#0F3D7C","base"],["citadel-base-mephiston-red","Citadel","Base","Mephiston Red","#960C09","base"],["citadel-base-kantor-blue","Citadel","Base","Kantor Blue","#02134E","base"],["citadel-dry-dawnstone","Citadel","Dry","Dawnstone","#697068","dry"],["citadel-layer-dawnstone","Citadel","Layer","Dawnstone","#697068","layer"],["citadel-base-abaddon-black","Citadel","Base","Abaddon Black","#000000","base"],["citadel-layer-warpstone-glow","Citadel","Layer","Warpstone Glow","#0F702A","layer"],["citadel-layer-xereus-purple","Citadel","Layer","Xereus Purple","#47125A","layer"],["citadel-base-naggaroth-night","Citadel","Base","Naggaroth Night","#3B2B50","base"],["citadel-base-retributor-armour","Citadel","Base","Retributor Armour","#EDC169","metal"],["citadel-base-leadbelcher","Citadel","Base","Leadbelcher","#969696","metal"],["citadel-base-corax-white","Citadel","Base","Corax White","#FFFFFF","base"],["citadel-layer-evil-sunz-scarlet","Citadel","Layer","Evil Sunz Scarlet","#C01411","layer"],["citadel-base-caliban-green","Citadel","Base","Caliban Green","#003D15","base"],["citadel-shade-agrax-earthshade","Citadel","Shade","Agrax Earthshade","#A99D8D","shade"],["citadel-shade-nuln-oil","Citadel","Shade","Nuln Oil","#9E9A98","shade"],["citadel-base-balthasar-gold","Citadel","Base","Balthasar Gold","#A77353","metal"],["citadel-base-rhinox-hide","Citadel","Base","Rhinox Hide","#462F30","base"],["citadel-base-mournfang-brown","Citadel","Base","Mournfang Brown","#490F06","base"],["citadel-base-zandri-dust","Citadel","Base","Zandri Dust","#988E56","base"],["citadel-layer-ushabti-bone","Citadel","Layer","Ushabti Bone","#ABA173","layer"],["citadel-base-averland-sunset","Citadel","Base","Averland Sunset","#FBB81C","base"],["citadel-layer-yriel-yellow","Citadel","Layer","Yriel Yellow","#FFD900","layer"],["citadel-layer-moot-green","Citadel","Layer","Moot Green","#3DAF44","layer"],["citadel-layer-calgar-blue","Citadel","Layer","Calgar Blue","#2A497F","layer"],["citadel-layer-cadian-fleshtone","Citadel","Layer","Cadian Fleshtone","#C47652","layer"],["citadel-base-mechanicus-standard-grey","Citadel","Base","Mechanicus Standard Grey","#39484A","base"],["citadel-base-death-guard-green","Citadel","Base","Death Guard Green","#6D774D","base"],["two-thin-coats-wave-3-decadent-purple","Two Thin Coats","Wave 3","Decadent Purple","#C1BED3","layer"],["ak-interactive-3rd-gen-amaranth-red","AK Interactive","3rd Gen","Amaranth Red","#CF4E27","layer"],["ak-interactive-3rd-gen-dead-red","AK Interactive","3rd Gen","Dead Red","#F54949","layer"],["ak-interactive-3rd-gen-scarlet-red","AK Interactive","3rd Gen","Scarlet Red","#D03B27","layer"],["ammo-by-mig-acrylic-blood-red","AMMO by Mig","Acrylic","Blood Red","#AC2B25","layer"],["ammo-by-mig-acrylic-red","AMMO by Mig","Acrylic","Red","#BD2615","layer"],["army-painter-d-d-succubus-red","Army Painter","D&D","Succubus Red","#AA262F","layer"],["army-painter-warpaints-pure-red","Army Painter","Warpaints","Pure Red","#CA1913","layer"],["army-painter-warpaints-fanatic-pure-red","Army Painter","Warpaints Fanatic","Pure Red","#CD151C","layer"],["citadel-base-gal-vorbak-red","Citadel","Base","Gal Vorbak Red","#4B213C","base"],["p3-p3-hoksune-red","P3","P3","Hoksune Red","#4B2015","layer"],["pro-acryl-pro-acryl-bold-pyrrole-red","Pro Acryl","Pro Acryl","Bold Pyrrole Red","#A90F0F","layer"],["reaper-bones-brilliant-red","Reaper","Bones","Brilliant Red","#EC202B","layer"],["scale75-artist-burgundy-wine-red","Scale75","Artist","Burgundy Wine Red","#5A2212","layer"],["two-thin-coats-wave-1-berserker-red","Two Thin Coats","Wave 1","Berserker Red","#4D1A15","layer"],["ak-interactive-3rd-gen-afv-n-8-earth-red-fs30117","AK Interactive","3rd Gen AFV","Nº8 Earth Red (fs30117)","#6D3D26","layer"],["ak-interactive-3rd-gen-air-rlm-79-1941","AK Interactive","3rd Gen Air","Rlm 79 (1941)","#E6A058","layer"],["ak-interactive-3rd-gen-figures-british-uniform-lights","AK Interactive","3rd Gen Figures","British Uniform Lights","#8C682A","layer"],["ak-interactive-3rd-gen-rubber-black","AK Interactive","3rd Gen","Rubber Black","#29251A","layer"],["ak-interactive-3rd-gen-lemon-yellow","AK Interactive","3rd Gen","Lemon Yellow","#FFE121","layer"],["ak-interactive-3rd-gen-green-grey","AK Interactive","3rd Gen","Green-grey","#DFE4BC","layer"],["ak-interactive-3rd-gen-figures-splittermuster-green-spots","AK Interactive","3rd Gen Figures","Splittermuster Green Spots","#303E27","layer"],["ak-interactive-3rd-gen-air-ijn-q1-anti-glare-blue-black","AK Interactive","3rd Gen Air","Ijn Q1 Anti-glare Blue-black","#1B2325","layer"],["ammo-by-mig-acrylic-chipping","AMMO by Mig","Acrylic","Chipping","#260E0E","layer"],["ammo-by-mig-acrylic-brown-soil","AMMO by Mig","Acrylic","Brown Soil","#6E4939","layer"],["ammo-by-mig-acrylic-fs-30219-tan","AMMO by Mig","Acrylic","Fs 30219 Tan","#81603D","layer"],["ammo-by-mig-acrylic-scc-2-british-1941-44-service-drab","AMMO by Mig","Acrylic","Scc 2 (british 1941-44 Service Drab)","#544933","layer"],["ammo-by-mig-acrylic-khaki-green-n-3-british-1939-42","AMMO by Mig","Acrylic","Khaki Green Nº3 (british 1939-42)","#685F38","layer"],["ammo-by-mig-acrylic-sky-type-s-bs-210","AMMO by Mig","Acrylic","Sky Type S (bs 210)","#B4B299","layer"],["ammo-by-mig-acrylic-ral-6014-gelboliv","AMMO by Mig","Acrylic","RAL 6014 Gelboliv","#454732","layer"],["ammo-by-mig-acrylic-ral-6011-resedagr-n","AMMO by Mig","Acrylic","RAL 6011 Resedagrün","#677D4C","layer"],["ammo-by-mig-acrylic-rlm-76-pale-grey","AMMO by Mig","Acrylic","RLM 76 Pale Grey","#9AC4B6","layer"],["army-painter-skin-tones-mocca-skin","Army Painter","Skin Tones","Mocca Skin","#402828","layer"],["army-painter-warpaints-monster-brown","Army Painter","Warpaints","Monster Brown","#9D6A5F","layer"],["army-painter-warpaints-elven-flesh","Army Painter","Warpaints","Elven Flesh","#F9BE94","layer"],["army-painter-warpaints-sulfide-ochre","Army Painter","Warpaints","Sulfide Ochre","#C78600","layer"],["army-painter-warpaints-combat-fatigues","Army Painter","Warpaints","Combat Fatigues","#868E59","layer"],["army-painter-warpaints-fanatic-autumn-sage","Army Painter","Warpaints Fanatic","Autumn Sage","#75AD98","layer"],["army-painter-warpaints-fanatic-bright-sapphire","Army Painter","Warpaints Fanatic","Bright Sapphire","#84CEF0","layer"],["army-painter-warpaints-fanatic-triumphant-navy","Army Painter","Warpaints Fanatic","Triumphant Navy","#1A2C53","layer"],["army-painter-warpaints-fanatic-pink-potion","Army Painter","Warpaints Fanatic","Pink Potion","#F4B9D4","layer"],["citadel-layer-bloodreaver-flesh","Citadel","Layer","Bloodreaver Flesh","#6A4848","layer"],["citadel-base-catachan-fleshtone","Citadel","Base","Catachan Fleshtone","#442B25","base"],["citadel-layer-kislev-flesh","Citadel","Layer","Kislev Flesh","#D1A570","layer"],["citadel-base-steel-legion-drab","Citadel","Base","Steel Legion Drab","#584E2D","base"],["citadel-layer-warboss-green","Citadel","Layer","Warboss Green","#317E57","layer"],["citadel-dry-skink-blue","Citadel","Dry","Skink Blue","#54BDCA","dry"],["citadel-dry-etherium-blue","Citadel","Dry","Etherium Blue","#9EB5CE","dry"],["citadel-dry-lucius-lilac","Citadel","Dry","Lucius Lilac","#B598C9","dry"],["p3-p3-ruddy-blush","P3","P3","Ruddy Blush","#AB3737","layer"],["p3-p3-kapitan-red","P3","P3","Kapitan Red","#D07B3A","layer"],["p3-p3-mud-rut","P3","P3","Mud Rut","#674D2D","layer"],["p3-p3-icy-yellow","P3","P3","Icy Yellow","#C7B378","layer"],["p3-p3-cygnus-yellow","P3","P3","Cygnus Yellow","#F7E52D","layer"],["p3-p3-cryx-bane-base","P3","P3","Cryx Bane Base","#313A25","layer"],["p3-p3-arcane-blue","P3","P3","Arcane Blue","#7ACFD9","layer"],["p3-p3-exile-blue","P3","P3","Exile Blue","#203467","layer"],["pro-acryl-pro-acryl-mahogany","Pro Acryl","Pro Acryl","Mahogany","#261410","layer"],["pro-acryl-pro-acryl-light-umber","Pro Acryl","Pro Acryl","Light Umber","#5E4433","layer"],["pro-acryl-pro-acryl-warm-flesh","Pro Acryl","Pro Acryl","Warm Flesh","#F6C67C","layer"],["pro-acryl-pro-acryl-ivory","Pro Acryl","Pro Acryl","Ivory","#D5D0B3","layer"],["pro-acryl-pro-acryl-dark-camo-green","Pro Acryl","Pro Acryl","Dark Camo Green","#313C2C","layer"],["pro-acryl-signature-matt-cexwish-dark-emerald","Pro Acryl","Signature","Matt Cexwish Dark Emerald","#194245","layer"],["pro-acryl-pro-acryl-blue","Pro Acryl","Pro Acryl","Blue","#0855A3","layer"],["pro-acryl-pro-acryl-purple","Pro Acryl","Pro Acryl","Purple","#63306B","layer"],["reaper-bones-crimson-red","Reaper","Bones","Crimson Red","#711313","layer"],["reaper-master-series-bronzed-skin-shadow","Reaper","Master Series","Bronzed Skin Shadow","#A63201","layer"],["reaper-master-series-highlight-orange","Reaper","Master Series","Highlight Orange","#E27812","layer"],["reaper-bones-bleached-linen","Reaper","Bones","Bleached Linen","#F1E8D9","layer"],["reaper-master-series-bright-skin-highlight","Reaper","Master Series","Bright Skin Highlight","#F1D45F","layer"],["reaper-bones-wilderness-green","Reaper","Bones","Wilderness Green","#173708","layer"],["reaper-master-series-light-blue","Reaper","Master Series","Light Blue","#72DAE5","layer"],["reaper-master-series-midnight-blue","Reaper","Master Series","Midnight Blue","#0B141D","layer"],["reaper-master-series-violet-red","Reaper","Master Series","Violet Red","#611E47","layer"],["scale75-scalecolor-black-leather","Scale75","Scalecolor","Black Leather","#422A2A","layer"],["scale75-fantasy-games-sharpnel-red","Scale75","Fantasy & Games","Sharpnel Red","#6E290A","layer"],["scale75-scalecolor-walnut","Scale75","Scalecolor","Walnut","#7D6450","layer"],["scale75-artist-yellow-ocre","Scale75","Artist","Yellow Ocre","#A0702E","layer"],["scale75-artist-naples-yellow","Scale75","Artist","Naples Yellow","#DAAC22","layer"],["scale75-warfront-ss-camo-medium-green","Scale75","Warfront","Ss Camo Medium Green","#4D5025","layer"],["scale75-artist-alizarin-green","Scale75","Artist","Alizarin Green","#26944B","layer"],["scale75-scalecolor-sky-blue","Scale75","Scalecolor","Sky Blue","#2496C8","layer"],["scale75-artist-dark-ultramarine","Scale75","Artist","Dark Ultramarine","#32297A","layer"],["two-thin-coats-wave-2-dread-red","Two Thin Coats","Wave 2","Dread Red","#6E3E3E","layer"],["two-thin-coats-wave-1-boar-hide","Two Thin Coats","Wave 1","Boar Hide","#724438","layer"],["two-thin-coats-wave-2-noble-steed-brown","Two Thin Coats","Wave 2","Noble Steed Brown","#755339","layer"],["two-thin-coats-wave-2-argonaut-skin","Two Thin Coats","Wave 2","Argonaut Skin","#A78E6C","layer"],["two-thin-coats-wave-3-sun-bleach-yellow","Two Thin Coats","Wave 3","Sun Bleach Yellow","#F5E350","layer"],["two-thin-coats-wave-2-talisman-green","Two Thin Coats","Wave 2","Talisman Green","#79C042","layer"],["two-thin-coats-wave-2-hydra-green","Two Thin Coats","Wave 2","Hydra Green","#344B4D","layer"],["two-thin-coats-wave-1-celestial-blue","Two Thin Coats","Wave 1","Celestial Blue","#6991C0","layer"],["two-thin-coats-wave-3-enchantress-purple","Two Thin Coats","Wave 3","Enchantress Purple","#593662","layer"],["vallejo-game-color-bloody-red","Vallejo","Game Color","Bloody Red","#D41C1C","layer"],["vallejo-game-color-dried-blood","Vallejo","Game Color","Dried Blood","#622A1D","layer"],["vallejo-game-color-skin-tone","Vallejo","Game Color","Skin Tone","#E5AB85","layer"],["vallejo-game-color-earth","Vallejo","Game Color","Earth","#775730","layer"],["vallejo-model-color-canvas","Vallejo","Model Color","Canvas","#4D3E1F","layer"],["vallejo-game-color-fluorescent-yellow","Vallejo","Game Color","Fluorescent Yellow","#F0E639","layer"],["vallejo-game-color-ghost-green","Vallejo","Game Color","Ghost Green","#83C192","layer"],["vallejo-game-color-magic-blue","Vallejo","Game Color","Magic Blue","#0069AA","layer"],["vallejo-model-color-light-violet","Vallejo","Model Color","Light Violet","#A893BC","layer"]].map(([id, brand, line, name, hex, type]) => ({ id, brand, line, name, hex, type }));
+PAINTS.forEach(p => { p.lab = Color.hexToLab(p.hex); p.hue = Color.rgbToHsl(Color.hexToRgb(p.hex))[0]; });
+const BYID = new Map(PAINTS.map(p => [p.id, p]));
+// dname, derived the way data.js indexDataset() does: where a brand reuses a name, the name carries the line.
+{
+  const n = new Map(), key = p => p.brand + '\u0000' + p.name.toLowerCase();
+  for (const p of PAINTS) n.set(key(p), (n.get(key(p)) || 0) + 1);
+  for (const p of PAINTS) p.dname = n.get(key(p)) > 1 && p.line && p.line !== '—' ? `${p.name} (${p.line})` : p.name;
+}
+const pname = p => p.dname || p.name;
+const lineOf = p => (p.line && p.line !== p.brand && p.line !== '—' ? p.line : '');
+const OWNED_NAMES = ['Deathworld Forest','Sigmarite','Macragge Blue','Mephiston Red','Abaddon Black','Warpstone Glow','Retributor Armour','Leadbelcher',
+  'Corax White','Evil Sunz Scarlet','Caliban Green','Balthasar Gold','Rhinox Hide','Mournfang Brown','Zandri Dust','Ushabti Bone','Averland Sunset',
+  'Yriel Yellow','Moot Green','Calgar Blue','Cadian Fleshtone','Mechanicus Standard Grey'];
+/* The finish words the rows show (ui.js FINISHES), and the swatch overlay class for each type (ui.js fxCls). */
+const FINISH = { wash:'wash', shade:'shade', ink:'ink', contrast:'contrast', glaze:'glaze', effect:'effect', metal:'metallic' };
+const FX = { metal:'metal', wash:'fx-wash', ink:'fx-wash', shade:'fx-wash', glaze:'fx-wash', contrast:'fx-contrast' };
+const fx = p => (FX[p.type] ? ' ' + FX[p.type] : '');
+/* data.js finishClass + FINISH_PENALTY: the Equivalents ranking. */
+const FINISH_TYPES = ['wash', 'shade', 'ink', 'contrast', 'glaze', 'effect', 'technical'];
+const finishClass = t => t === 'metal' ? 'metal' : t === 'effect' || t === 'technical' ? 'effect' : FINISH_TYPES.includes(t) ? 'translucent' : 'flat';
+const FINISH_PENALTY = 4;
+const MARK_LABEL = { owned: 'owned', want: 'to buy', none: 'not owned' };   // ui.js markLabel
+const LABEL = d => d <= 1 ? ['Indistinguishable','success'] : d <= 2 ? ['Excellent','success'] : d <= 3.5 ? ['Good','success']
+  : d <= 5 ? ['Fair','warning'] : d <= 10 ? ['Loose','warning'] : ['Poor','danger'];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+/* Icons: inline SVG in currentColor, so they follow the theme. The cart is ui.js cartGlyph, verbatim. */
+const CART = `<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">`
+  + `<path fill="currentColor" d="M1 1h2l.6 2H15l-1.7 6.2a1.4 1.4 0 0 1-1.35 1H5.4a1.4 1.4 0 0 1-1.36-1L2.2 2.4 1.9 1.3 1 1zm4.7 12.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm6 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>`;
+const GRID_ICON = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 0h5v5H9z"/></svg>';
+const CAMERA = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+  + '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+const COARSE = matchMedia('(pointer: coarse)').matches;
+const SORTS = [['hue', 'Hue'], ['closest', 'Closest to your pick'], ['owned', 'Owned first'], ['name', 'Name']];
+const MARKS = [['owned', 'Mark owned'], ['want', 'Mark to buy'], ['none', 'Clear mark']];
+
+/** The query parser the build would put in seed.js (pure, unit-tested there). */
+function parseQuery(raw) {
+  const q = raw.trim();
+  // Each hex is rebuilt from a number, so no typed text can reach the page as HTML.
+  const asHex = s => '#' + parseInt(s, 16).toString(16).toUpperCase().padStart(6, '0');
+  let m = q.match(/^#\s*([0-9a-f]{6})$/i);
+  if (m) return { kind: 'hex', hex: asHex(m[1]), live: true };
+  m = q.match(/^#\s*([0-9a-f]{3})$/i);
+  if (m) return { kind: 'hex', hex: asHex(m[1].split('').map(c => c + c).join('')), live: false };
+  if (/^#\s*[0-9a-f]{0,5}$/i.test(q)) return { kind: 'partial' };   // '#', '#9A', '#9A11' …: not a hex yet
+  m = q.match(/^([0-9a-f]{6})$/i);
+  if (m) return /\d/.test(m[1]) ? { kind: 'hex', hex: asHex(m[1]), live: false } : { kind: 'name', hexWord: asHex(m[1]) };
+  return { kind: 'name' };
+}
+/* Fold for matching: no accents, lower case, punctuation as spaces ("Dawnstone (Layer)" → "dawnstone layer"). */
+const fold = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+PAINTS.forEach(p => {
+  // the haystack holds every word a row shows: name, display name, brand, line, type and the finish word ("metallic")
+  p.hay = ' ' + fold(`${p.name} ${p.dname} ${p.brand} ${p.line} ${p.type} ${FINISH[p.type] || ''}`) + ' ';
+  p.nf = fold(p.name); p.df = fold(p.dname);
+});
+/** The shared matcher (data.js; the Shelf would use it too): every word must match. Exact and starts-with
+ *  name matches come first; inside each group, paints you own come first. */
+function search(q, owned) {
+  const n = fold(q), words = n.split(' ').filter(Boolean);
+  if (!words.length) return [];
+  return PAINTS.filter(p => words.every(w => p.hay.includes(w)))
+    .map(p => ({ p, own: owned.has(p.id) ? 0 : 1,
+      tier: p.nf === n || p.df === n ? 0 : p.nf.startsWith(n) ? 1 : p.nf.split(' ').some(w => w.startsWith(words[0])) ? 2 : 3 }))
+    .sort((a, b) => a.tier - b.tier || a.own - b.own || pname(a.p).localeCompare(pname(b.p))).map(x => x.p);
+}
+/** The hex list ranks like the Equivalents tab does for a flat target: a paint of another finish class ranks as if
+ *  its ΔE were FINISH_PENALTY more. The row shows the TRUE ΔE (§2, §7). */
+function closest(hex, n) {
+  const lab = Color.hexToLab(hex);
+  return PAINTS.map(p => { const d = Color.deltaE2000(lab, p.lab); return { p, d, score: d + (finishClass(p.type) === 'flat' ? 0 : FINISH_PENALTY) }; })
+    .sort((a, b) => a.score - b.score).slice(0, n);
+}
+
+/* ---- one picker component, mounted into every [data-picker] frame ---- */
+let uid = 0;
+function mountPicker(root, opts) {
+  const id = 'pk' + (++uid), desk = !!opts.desk, live = !!opts.interactive;
+  // Only the "Try it" frame is live. The others are pictures: inert, so they add no tab stops and a click cannot change them.
+  if (!live) root.inert = true;
+  const owned = new Set(PAINTS.filter(p => OWNED_NAMES.includes(p.name) && p.brand === 'Citadel' && p.id !== 'citadel-dry-dawnstone').map(p => p.id));
+  owned.add('citadel-layer-dawnstone');
+  const want = new Set(['citadel-base-kantor-blue', 'citadel-layer-xereus-purple']);
+  const markOf = pid => owned.has(pid) ? 'owned' : want.has(pid) ? 'want' : 'none';
+  const st = { pick: { id: 'ak-interactive-3rd-gen-alga-green', hex: '#555E1B' }, recent: ['ak-interactive-3rd-gen-alga-green', 'citadel-base-mephiston-red'],
+    sort: 'hue', view: null, opts: [], rows: [], active: -1, before: null, liveHex: false, de: null, menu: null };
+  root.innerHTML = `
+    <div class="apph"><div class="r1"><span class="logo">P</span>Palette Studio${desk ? '' : '<span class="dots" aria-hidden="true">⋯</span>'}</div>
+      ${desk ? '<div class="mseg"><span class="on">Studio</span><span>Shelf</span></div><span class="dots" aria-hidden="true">⋯</span>' : '<div class="mseg"><span class="on">Studio</span><span>Shelf</span></div>'}</div>
+    <div class="card tb">
+      <div class="seedbar">
+        <div class="seedfield isnew">
+          <label class="sr-only" for="${id}q">Paint name, brand or hex colour</label>
+          <input id="${id}q" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="grid" aria-controls="${id}grid"
+            aria-describedby="${id}kh" placeholder="${desk ? 'Paint, brand or #hex' : 'Paint or #hex'}" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+          <button class="browse" type="button" tabindex="-1" aria-label="Browse paints" title="Browse paints" aria-expanded="false" aria-controls="${id}grid">${desk ? 'Browse ▾' : GRID_ICON}</button>
+        </div>
+        <div class="pick-drawer" id="${id}drawer" hidden>
+          <div class="pd-body" tabindex="-1">
+            <p class="hint" hidden>${desk ? 'Right-click a paint to mark it.' : 'Hold a paint to mark it.'}</p>
+            <div role="grid" id="${id}grid" aria-label="Paints" hidden></div>
+            <div role="listbox" id="${id}list" aria-label="Matching paints" hidden></div>
+            <p class="empty" hidden></p>
+          </div>
+          <div class="pd-foot" hidden><span>${PAINTS.length} paints here · 3,225 in the app</span>
+            <span class="sortctl"><label for="${id}sort">Sort</label><select id="${id}sort">${SORTS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></span></div>
+        </div>
+        <button class="btn${desk ? '' : ' ic'}" type="button"${desk ? '' : ' aria-label="From photo"'} title="From photo">${CAMERA}${desk ? 'From photo' : ''}</button>
+        <button class="btn cmp" type="button">Compare</button>
+      </div>
+    </div>
+    ${desk ? '<div class="dcols"><div class="card"><div class="hero" tabindex="-1"></div><div class="wheel"></div></div><div class="card"><div class="micro">Plan · roles</div></div></div>'
+      : '<div class="card st"><div class="hero" tabindex="-1"></div><div class="wheel"></div></div>'}
+    <div class="menu" role="menu" aria-labelledby="${id}mh" hidden></div>
+    <div class="ptoast idle" role="status"></div>
+    <div class="sr-only" aria-live="polite"></div>
+    <p class="sr-only" id="${id}kh">The down arrow opens the list. The arrow keys move through it. Enter picks a paint.
+      Shift+F10 opens the mark menu. Escape closes the list. While you browse, Tab goes to Sort.</p>`;
+  const $ = s => root.querySelector(s);
+  const input = $('input'), browse = $('.browse'), field = $('.seedfield'), drawer = $('.pick-drawer'), body = $('.pd-body'),
+    gridEl = $('[role=grid]'), listEl = $('[role=listbox]'), hintEl = $('.hint'), emptyEl = $('.empty'), foot = $('.pd-foot'),
+    sortEl = foot.querySelector('select'), menu = $('.menu'), toastEl = $('.ptoast'), liveEl = $('[aria-live]'), heroEl = $('.hero');
+
+  const isCur = p => p.id === st.pick.id && p.hex === st.pick.hex;
+  const seedName = () => { const p = BYID.get(st.pick.id); return p && p.hex === st.pick.hex ? pname(p) : 'Custom ' + st.pick.hex; };
+  function renderHero() {
+    const p = BYID.get(st.pick.id), isPaint = p && p.hex === st.pick.hex;
+    const meta = isPaint ? p.brand + (lineOf(p) ? ' · ' + lineOf(p) : '') + (FINISH[p.type] ? ' · ' + FINISH[p.type] : '') : 'typed hex';
+    heroEl.innerHTML = `<span class="sw${isPaint ? fx(p) : ''}" style="background-color:${st.pick.hex}"></span><span><b>${esc(seedName())}</b> `
+      + `<span class="hx">${st.pick.hex}</span><br><span class="meta">${esc(meta)}</span></span>`;
+  }
+  let toastT = 0, liveT = 0;
+  const toast = m => { toastEl.textContent = m; toastEl.classList.remove('idle'); clearTimeout(toastT);
+    toastT = setTimeout(() => { toastEl.classList.add('idle'); toastEl.textContent = ''; }, 2400); };
+  // the result count, spoken once the typing pauses (500ms), so a screen reader is not flooded
+  const say = m => { if (!live) return; clearTimeout(liveT); liveT = setTimeout(() => { liveEl.textContent = m; }, 500); };
+
+  const badge = p => ({ owned: '<span class="cbadge owned" aria-hidden="true">✓</span>', want: `<span class="cbadge want" aria-hidden="true">${CART}</span>`, none: '' })[markOf(p.id)];
+  const nameLabel = p => `${pname(p)}, ${p.brand}${pname(p) === p.name && lineOf(p) ? ' ' + lineOf(p) : ''}`;
+  const optLabel = (p, d) => [nameLabel(p), FINISH[p.type], MARK_LABEL[markOf(p.id)], isCur(p) ? 'your current pick' : '',
+    d != null ? `${LABEL(d)[0]} match, ΔE ${d.toFixed(1)}` : ''].filter(Boolean).join(', ');
+  // Options are not focusable: focus stays in the field, and aria-activedescendant moves (one tab stop).
+  const chip = k => { const p = st.opts[k].p;
+    return `<div class="chip${isCur(p) ? ' cur' : ''}" role="gridcell" id="${id}o${k}" data-k="${k}" aria-selected="false" aria-label="${esc(optLabel(p))}">`
+      + `<span class="sw${fx(p)}" style="background-color:${p.hex}">${badge(p)}</span><span class="nm">${esc(pname(p))}</span><span class="br">${esc(p.brand)}</span></div>`; };
+  const row = (k, d) => { const p = st.opts[k].p, L = d != null ? LABEL(d) : null;
+    const sub = [isCur(p) ? '<span class="curw">current</span>' : '', esc(p.brand), esc(lineOf(p)), FINISH[p.type] || '',
+      markOf(p.id) === 'none' ? '' : MARK_LABEL[markOf(p.id)]].filter(Boolean).join(' · ');
+    return `<div class="opt${isCur(p) ? ' cur' : ''}" role="option" id="${id}o${k}" data-k="${k}" aria-selected="false" aria-label="${esc(optLabel(p, d))}">`
+      + `<span class="sw${fx(p)}" style="background-color:${p.hex}">${badge(p)}</span><span class="tx"><b>${esc(p.name)}</b><span>${sub}</span></span>`
+      + (L ? `<span class="de" aria-hidden="true"><i style="background:var(--${L[1]})"></i>${L[0]}<small>ΔE ${d.toFixed(1)}</small></span>` : '') + '</div>'; };
+  const useRow = (k, isLive) => { const hex = st.opts[k].hex;
+    const t = isLive ? `Seed: ${hex}` : `Use ${hex} as seed`;
+    const sub = isLive ? 'The scheme uses this colour now.' : `${desk ? 'Click' : 'Tap'} or press Enter to start from it.`;
+    return `<div class="opt use" role="option" id="${id}o${k}" data-k="${k}" aria-selected="false" aria-label="${t}. ${sub}">`
+      + `<span class="sw" style="background-color:${hex}"></span><span class="tx"><b>${t}</b><span>${sub}</span></span></div>`; };
+  const group = (key, title, inner) => `<div role="group" aria-labelledby="${id}${key}"><div class="ghead" role="presentation" id="${id}${key}">${esc(title)}</div>${inner}</div>`;
+
+  function sortPaints() {
+    const a = PAINTS.slice();
+    if (st.sort === 'closest') {
+      // ΔE to the pick is worked out once per open (cached by the pick's hex), not on every compare
+      if (!st.de || st.de.hex !== st.pick.hex) { const L = Color.hexToLab(st.pick.hex); st.de = { hex: st.pick.hex, m: new Map(PAINTS.map(p => [p.id, Color.deltaE2000(L, p.lab)])) }; }
+      a.sort((x, y) => st.de.m.get(x.id) - st.de.m.get(y.id));
+    } else if (st.sort === 'owned') a.sort((x, y) => (owned.has(y.id) - owned.has(x.id)) || pname(x).localeCompare(pname(y)));
+    else if (st.sort === 'name') a.sort((x, y) => pname(x).localeCompare(pname(y)));
+    else a.sort((x, y) => x.hue - y.hue);
+    return a;
+  }
+
+  function render() {
+    const q = input.value.trim(), parsed = parseQuery(q), browsing = st.view === 'browse' && !q;
+    const keep = st.active >= 0 ? st.opts[st.active] : null;   // keep the cursor on the same paint (a mark or a sort can move it)
+    st.opts = []; st.rows = [];
+    const add = o => st.opts.push(o) - 1;
+    const popup = browsing ? gridEl : listEl;
+    input.setAttribute('aria-haspopup', browsing ? 'grid' : 'listbox');
+    input.setAttribute('aria-controls', popup.id); browse.setAttribute('aria-controls', popup.id);
+    gridEl.hidden = !browsing; listEl.hidden = true; hintEl.hidden = !browsing; foot.hidden = !browsing; emptyEl.hidden = true;
+    gridEl.innerHTML = ''; listEl.innerHTML = '';
+    let html = '', empty = '', msg = '';
+    if (browsing) {
+      // APG combobox with a grid popup: rows of cells, in two labelled row groups
+      const recent = st.recent.map(r => BYID.get(r)).filter(Boolean).map(p => add({ p }));
+      const all = sortPaints().map(p => add({ p })), cols = desk ? 8 : 4;
+      if (recent.length) st.rows.push(recent);
+      for (let i = 0; i < all.length; i += cols) st.rows.push(all.slice(i, i + cols));
+      gridEl.innerHTML = (recent.length ? `<div class="ghead" id="${id}hr" aria-hidden="true">Recent</div>`
+          + `<div role="rowgroup" aria-labelledby="${id}hr"><div role="row" class="recent">${recent.map(chip).join('')}</div></div>` : '')
+        + `<div class="ghead" id="${id}ha" aria-hidden="true">All paints</div>`
+        + `<div role="rowgroup" aria-labelledby="${id}ha">${st.rows.slice(recent.length ? 1 : 0).map(r => `<div role="row" class="grow">${r.map(chip).join('')}</div>`).join('')}</div>`;
+      msg = `${plural(PAINTS.length, 'paint')}. Recent picks come first.`;
+    } else if (q) {
+      if (parsed.kind === 'hex') {
+        const k0 = add({ hex: parsed.hex });
+        const near = closest(parsed.hex, 6).map(({ p, d }) => ({ k: add({ p }), d }));
+        const isLive = st.liveHex && st.pick.hex === parsed.hex;   // after Esc puts the seed back, the hex is no longer applied
+        html = useRow(k0, isLive) + group('hc', 'Closest paints', near.map(({ k, d }) => row(k, d)).join(''));
+        msg = (isLive ? `Seed: ${parsed.hex}.` : `${parsed.hex}. Press Enter to use it as seed.`) + ` ${plural(near.length, 'closest paint')}.`;
+      } else if (parsed.kind === 'partial') {
+        empty = msg = 'A hex has 6 digits.';
+      } else {
+        const res = search(q, owned), shown = res.slice(0, 40), ks = shown.map(p => add({ p }));
+        if (ks.length) html = group('hp', res.length > ks.length ? `${ks.length} of ${res.length} paints` : plural(res.length, 'paint'), ks.map(k => row(k)).join(''));
+        else empty = `No paint matches “${q}”. Try a brand or a colour word. Or ${desk ? 'click Browse' : 'tap the grid button'} to see all paints.`;
+        if (parsed.hexWord) { const k = add({ hex: parsed.hexWord }); html += group('ho', 'Or a colour', useRow(k, false)); }
+        msg = ks.length ? plural(res.length, 'paint') + '.' : empty;
+      }
+      listEl.innerHTML = html; listEl.hidden = !html;
+      // the no-match text sits outside the listbox, and the typed text goes in as text, never as HTML
+      if (empty) { emptyEl.textContent = empty; emptyEl.hidden = false; }
+    }
+    let a = keep ? st.opts.findIndex(o => (keep.p && o.p && o.p.id === keep.p.id) || (keep.hex && o.hex === keep.hex)) : -1;
+    if (a < 0 && !browsing && st.opts.length) a = 0;   // while searching, Enter takes the first row
+    st.active = a;
+    syncActive(false);
+    say(msg);
+  }
+  // aria-selected only on the active option; the pick is shown by its inset ring and "current", not by aria-selected
+  function syncActive(scroll) {
+    for (const e of body.querySelectorAll('.act')) { e.classList.remove('act'); e.setAttribute('aria-selected', 'false'); }
+    const el = !drawer.hidden && st.active >= 0 ? root.querySelector(`#${id}o${st.active}`) : null;
+    if (el) {
+      el.classList.add('act'); el.setAttribute('aria-selected', 'true'); input.setAttribute('aria-activedescendant', el.id);
+      if (scroll) el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else input.removeAttribute('aria-activedescendant');
+  }
+  function place() {
+    const fieldBox = field.getBoundingClientRect(), rb = root.getBoundingClientRect();
+    drawer.style.top = (fieldBox.bottom - rb.top + 6) + 'px';
+    if (desk) drawer.style.left = (fieldBox.left - rb.left) + 'px';
+    const kb = root.querySelector('.kbd-sim');
+    const bottom = kb ? kb.offsetTop - 6 : root.clientHeight - 12;
+    drawer.style.maxHeight = (bottom - parseFloat(drawer.style.top)) + 'px';
+    drawer.style.height = st.view === 'browse' && !input.value.trim() ? drawer.style.maxHeight : '';
+  }
+  // remember the seed when a session in the field starts, so Esc can put it back after a live hex
+  const begin = () => { if (!st.before) { st.before = { ...st.pick }; st.liveHex = false; } };
+  function open(view) {
+    if (drawer.hidden) begin();
+    st.view = view; drawer.hidden = false;
+    input.setAttribute('aria-expanded', 'true'); browse.setAttribute('aria-expanded', 'true');
+    render(); place();
+  }
+  const openFromKeys = () => open(input.value.trim() ? 'search' : 'browse');
+  // close() resets everything: the list exists only while it is open
+  function close() {
+    hideMenu(false);
+    drawer.hidden = true; st.view = null; st.opts = []; st.rows = []; st.active = -1; st.before = null; st.liveHex = false;
+    gridEl.innerHTML = ''; listEl.innerHTML = '';
+    input.setAttribute('aria-expanded', 'false'); browse.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant');
+  }
+  function restoreLive() {
+    if (!st.liveHex || !st.before) return;
+    st.pick = st.before; renderHero(); toast(`Seed put back: ${seedName()}`);
+  }
+  function commit(o) {
+    if (!o) return;
+    if (o.p) { st.pick = { id: o.p.id, hex: o.p.hex }; st.recent = [o.p.id, ...st.recent.filter(r => r !== o.p.id)].slice(0, 5); }
+    else st.pick = { id: null, hex: o.hex };
+    input.value = ''; renderHero(); close();
+    toast(`New seed: ${seedName()}`);
+    // on a touch screen, drop the keyboard so the new scheme shows; elsewhere, stay in the field
+    if (COARSE) { input.blur(); heroEl.focus({ preventScroll: true }); } else if (live) input.focus();
+  }
+
+  /* ---- 2-D keys for the grid (APG grid), 1-D keys for the rows ---- */
+  function pos(k) { for (let r = 0; r < st.rows.length; r++) { const c = st.rows[r].indexOf(k); if (c >= 0) return [r, c]; } return [-1, -1]; }
+  function moveGrid(key, ctrl) {
+    const R = st.rows; if (!R.length) return;
+    let [r, c] = pos(st.active);
+    if (r < 0) { if (key !== 'ArrowDown' && key !== 'PageDown') return; r = 0; c = 0; }
+    else if (key === 'ArrowDown') r = Math.min(R.length - 1, r + 1);
+    else if (key === 'ArrowUp') { if (r === 0) { st.active = -1; syncActive(false); return; } r--; }   // up from the top row: back to the field
+    else if (key === 'ArrowRight') { if (c < R[r].length - 1) c++; else if (r < R.length - 1) { r++; c = 0; } }
+    else if (key === 'ArrowLeft') { if (c > 0) c--; else if (r > 0) { r--; c = R[r].length - 1; } }
+    else if (key === 'Home') { if (ctrl) r = 0; c = 0; }
+    else if (key === 'End') { if (ctrl) r = R.length - 1; c = R[r].length - 1; }
+    else if (key === 'PageDown') r = Math.min(R.length - 1, r + 5);
+    else if (key === 'PageUp') r = Math.max(0, r - 5);
+    st.active = R[r][Math.min(c, R[r].length - 1)]; syncActive(true);
+  }
+  function moveList(key) {
+    const n = st.opts.length, a = st.active; if (!n) return;
+    st.active = key === 'ArrowDown' ? Math.min(n - 1, a + 1) : key === 'ArrowUp' ? Math.max(0, a - 1)
+      : key === 'PageDown' ? Math.min(n - 1, Math.max(a, 0) + 5) : Math.max(0, a - 5);
+    syncActive(true);
+  }
+  let escClear = false;
+  input.addEventListener('keydown', e => {
+    const k = e.key, isOpen = !drawer.hidden, inGrid = isOpen && st.view === 'browse' && !input.value.trim();
+    if ((k === 'ArrowDown' || k === 'ArrowUp') && e.altKey) {
+      e.preventDefault();
+      if (k === 'ArrowDown' && !isOpen) openFromKeys(); else if (k === 'ArrowUp' && isOpen) { restoreLive(); close(); }
+    } else if (k === 'ArrowDown' || k === 'ArrowUp') {
+      e.preventDefault();
+      // a closed field: open, then put the cursor on the first option (Up: the last) — n is read after open()
+      if (!isOpen) { openFromKeys(); const n = st.opts.length; st.active = n ? (k === 'ArrowDown' ? 0 : n - 1) : -1; syncActive(true); }
+      else inGrid ? moveGrid(k) : moveList(k);
+    } else if (isOpen && (k === 'PageDown' || k === 'PageUp')) { e.preventDefault(); inGrid ? moveGrid(k) : moveList(k); }
+    else if (inGrid && st.active >= 0 && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(k)) { e.preventDefault(); moveGrid(k, e.ctrlKey || e.metaKey); }
+    else if (k === 'Enter') { if (isOpen && st.active >= 0) { e.preventDefault(); commit(st.opts[st.active]); } }   // closed: Enter does nothing
+    else if ((k === 'F10' && e.shiftKey) || k === 'ContextMenu') {
+      if (isOpen && st.active >= 0 && st.opts[st.active].p) { e.preventDefault(); openMenu(root.querySelector(`#${id}o${st.active}`), 'key'); }
+    } else if (k === 'Escape') {
+      if (!menu.hidden) { e.preventDefault(); hideMenu(true); }
+      else if (isOpen) { e.preventDefault(); restoreLive(); close(); }   // first Esc: close the list only (and undo a live hex)
+      else escClear = !!input.value;                                      // list closed: type=search clears the field itself
+    }
+  });
+  input.addEventListener('input', () => {
+    const v = input.value.trim();
+    if (!v) { const fromEsc = escClear; escClear = false; if (!fromEsc && !drawer.hidden) { st.active = -1; open('browse'); } return; }
+    escClear = false;
+    begin();
+    const parsed = parseQuery(v);
+    if (parsed.kind === 'hex' && parsed.live) { st.pick = { id: null, hex: parsed.hex }; st.liveHex = true; renderHero(); }
+    st.active = -1; open('search');
+  });
+  // a tap or click on the empty field opens the browse view (Recent first)
+  input.addEventListener('click', () => { if (drawer.hidden && !input.value.trim()) open('browse'); });
+  // Browse never takes focus, so a phone keyboard does not rise; on a fine pointer the field takes focus for the arrow keys
+  for (const ev of ['pointerdown', 'mousedown']) browse.addEventListener(ev, e => e.preventDefault());
+  browse.addEventListener('click', () => {
+    if (!drawer.hidden && st.view === 'browse' && !input.value.trim()) { close(); return; }
+    input.value = ''; open('browse');
+    if (!COARSE) input.focus();
+  });
+  sortEl.addEventListener('change', () => { st.sort = sortEl.value; render(); });
+  sortEl.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); close(); input.focus(); } });
+  // a press in the list never moves focus out of the field
+  body.addEventListener('mousedown', e => e.preventDefault());
+
+  /* ---- a tap only picks; marking is a second gesture (the Shelf's long-press guards) ---- */
+  let lpT = 0, lpX = 0, lpY = 0, suppressTap = false, dismissTap = false;
+  const cancelLP = () => { clearTimeout(lpT); lpT = 0; };
+  body.addEventListener('pointerdown', e => {
+    suppressTap = false;   // reset on every press, so one long-press never eats the next tap
+    const b = e.target.closest('[data-k]');
+    if (!b || e.pointerType === 'mouse' || !st.opts[+b.dataset.k]?.p) return;
+    lpX = e.clientX; lpY = e.clientY; cancelLP();
+    lpT = setTimeout(() => { lpT = 0; suppressTap = true; openMenu(b, 'touch'); }, 500);
+  });
+  body.addEventListener('pointermove', e => { if (lpT && Math.hypot(e.clientX - lpX, e.clientY - lpY) > 10) cancelLP(); });
+  body.addEventListener('pointerup', cancelLP);
+  body.addEventListener('pointercancel', cancelLP);
+  body.addEventListener('click', e => {
+    if (suppressTap) { suppressTap = false; return; }   // the long-press already used this tap
+    if (dismissTap) { dismissTap = false; return; }     // this press only closed the mark menu
+    const b = e.target.closest('[data-k]'); if (b) commit(st.opts[+b.dataset.k]);
+  });
+  body.addEventListener('contextmenu', e => {
+    const b = e.target.closest('[data-k]'); if (!b || !st.opts[+b.dataset.k]?.p) return;
+    e.preventDefault(); cancelLP();
+    if (!menu.hidden && st.menu && st.menu.k === +b.dataset.k) return;   // a touch long-press opened it already
+    suppressTap = true; openMenu(b, 'mouse');
+  });
+
+  /* ---- the shared mark menu ---- */
+  function openMenu(el, how) {
+    const k = +el.dataset.k, o = st.opts[k]; if (!o || !o.p) return;
+    const p = o.p, m = markOf(p.id);
+    st.menu = { k, p, at: performance.now(), wasActive: st.active === k, back: document.activeElement };
+    menu.innerHTML = `<div class="mh" id="${id}mh">${esc(pname(p))} · ${esc(p.brand)}${pname(p) === p.name && lineOf(p) ? ' ' + esc(lineOf(p)) : ''}</div>`
+      + MARKS.map(([v, l]) => `<button type="button" role="menuitemradio" tabindex="-1" aria-checked="${m === v}" data-v="${v}"><span class="ck" aria-hidden="true">✓</span>${l}</button>`).join('')
+      + `<div class="msep" role="separator"></div><button type="button" role="menuitem" tabindex="-1" aria-disabled="true" title="Later: the paint detail sheet (PLAN backlog 7)">`
+      + `<span class="ck" aria-hidden="true"></span>Details… (later)</button>`;
+    menu.hidden = false;
+    // below the paint, away from the finger; above it when there is no room below
+    const r = el.getBoundingClientRect(), rb = root.getBoundingClientRect(), h = menu.offsetHeight, w = menu.offsetWidth;
+    let top = r.bottom - rb.top + 4; if (top + h > root.clientHeight - 8) top = r.top - rb.top - h - 4;
+    menu.style.top = Math.max(8, top) + 'px';
+    menu.style.left = Math.min(Math.max(8, r.left - rb.left), root.clientWidth - w - 8) + 'px';
+    if (live && how !== 'static') menu.querySelector('[role^="menuitem"]').focus();
+  }
+  function hideMenu(restoreFocus) {
+    if (menu.hidden) return;
+    const back = st.menu && st.menu.back;
+    menu.hidden = true; st.menu = null;
+    if (!restoreFocus || !live) return;
+    // focus goes back where it was (the field, after Shift+F10); after a touch long-press it stays down, so no keyboard rises
+    if (back && back !== document.body && root.contains(back) && !menu.contains(back)) back.focus();
+    else if (!COARSE) input.focus();
+  }
+  menu.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-v]'); if (!b || !st.menu) return;
+    // the Shelf's guard: a finger lift right after a long-press is not a choice (a key press has detail 0)
+    if (ev.detail && performance.now() - st.menu.at < 350) return;
+    const { p, wasActive } = st.menu, v = b.dataset.v;
+    owned.delete(p.id); want.delete(p.id);
+    if (v === 'owned') owned.add(p.id); else if (v === 'want') want.add(p.id);
+    if (!wasActive) st.active = -1;
+    hideMenu(true);
+    render();
+    toast(`${pname(p)}: ${v === 'owned' ? 'marked owned' : v === 'want' ? 'marked to buy' : 'mark cleared'}`);
+  });
+  menu.addEventListener('keydown', ev => {
+    const items = [...menu.querySelectorAll('[role^="menuitem"]')], i = items.indexOf(document.activeElement);
+    const go = j => items[(j + items.length) % items.length].focus();
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); go(i + 1); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); go(i - 1); }
+    else if (ev.key === 'Home') { ev.preventDefault(); go(0); }
+    else if (ev.key === 'End') { ev.preventDefault(); go(items.length - 1); }
+    else if (ev.key === 'Escape' || ev.key === 'Tab') { ev.preventDefault(); hideMenu(true); }
+  });
+
+  // Close on a press outside, or when focus leaves the field, the list and the menu. Only the live frame listens,
+  // so a click on the page never changes the picture frames.
+  if (live) {
+    document.addEventListener('pointerdown', e => {
+      const t = e.target, inMenu = menu.contains(t);
+      dismissTap = false;
+      if (!menu.hidden && !inMenu) { hideMenu(false); if (body.contains(t)) dismissTap = true; }
+      if (!drawer.hidden && !inMenu && !field.contains(t) && !drawer.contains(t)) close();
+    }, true);
+    root.addEventListener('focusout', e => {
+      if (drawer.hidden || menu.contains(e.target)) return;   // the menu closing hands focus back on its own
+      const to = e.relatedTarget;
+      if (to && (field.contains(to) || drawer.contains(to) || menu.contains(to))) return;
+      close();
+    });
+  }
+
+  renderHero();
+  if (opts.keyboard) { const kb = document.createElement('div'); kb.className = 'kbd-sim'; kb.setAttribute('aria-hidden', 'true');
+    kb.innerHTML = [10, 9, 7, 5].map(n => `<div>${'<i></i>'.repeat(n)}</div>`).join(''); root.append(kb); }
+  if (opts.query) {
+    input.value = opts.query; begin();
+    const parsed = parseQuery(opts.query);
+    if (parsed.kind === 'hex' && parsed.live) { st.pick = { id: null, hex: parsed.hex }; st.liveHex = true; renderHero(); }
+    open('search');
+  }
+  if (opts.open === 'browse') open('browse');
+  if (typeof opts.active === 'number') { st.active = opts.active; syncActive(false); }
+  if (typeof opts.menu === 'number') { const el = root.querySelector(`#${id}o${opts.menu}`); if (el) openMenu(el, 'static'); }
+}
+document.querySelectorAll('[data-picker]').forEach(el => mountPicker(el, JSON.parse(el.dataset.picker)));
+</script>
+</body>
+</html>

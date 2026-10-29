@@ -34,8 +34,9 @@ export function parseCsvRows(text) {
   return rows;
 }
 
-/** Parse paintRack-style CSV into {brand, name, status} rows. Tolerant of column order; falls back to
- *  positional brand,name when there's no recognisable header. */
+/** Parse paintRack-style CSV into {brand, name, status, qty} rows. Tolerant of column order; falls back to
+ *  positional brand,name when there's no recognisable header. `qty` is the text of a column headed exactly
+ *  qty / quantity / count (our own export writes one), or '' when there is none. */
 export function parsePaintRackCsv(text) {
   const rows = parseCsvRows(text);
   if (!rows.length) return [];
@@ -46,12 +47,17 @@ export function parsePaintRackCsv(text) {
   let bi = find('brand', 'manufacturer'), ni = find('name', 'paint');
   const si = find('wish', 'want', 'buy', 'status', 'own', 'have', 'qty', 'quantity');
   if (bi < 0 && ni < 0) {   // no header → assume positional: brand, name, [status]
-    return rows.map(r => ({ brand: (r[0] || '').trim(), name: (r[1] || '').trim(), status: (r[2] || '').trim() }));
+    return rows.map(r => ({ brand: (r[0] || '').trim(), name: (r[1] || '').trim(), status: (r[2] || '').trim(), qty: '' }));
   }
   if (bi < 0) bi = 0;
   if (ni < 0) ni = bi === 0 ? 1 : 0;
+  // Only an exact count header, and never the column already read as the status: a file whose only
+  // marker column is "qty" keeps reading it as the status, as before.
+  let qi = header.findIndex(h => /^(qty|quantity|count)$/.test(h));
+  if (qi === si) qi = -1;
   return rows.slice(1).map(r => ({
     brand: (r[bi] || '').trim(), name: (r[ni] || '').trim(), status: si >= 0 ? (r[si] || '').trim() : '',
+    qty: qi >= 0 ? (r[qi] || '').trim() : '',
   }));
 }
 
@@ -72,8 +78,9 @@ function nameIndex(idx) {
 /**
  * Map paintRack-style CSV text to collection marks against a dataset index.
  * A row is 'want' if its status mentions wish/want/buy, else 'owned' (an inventory export = paints owned).
+ * A 'want' row with a count of 2 or more carries `qty` (the shopping list's pots; an owned paint has none).
  * Matches on brand+name, then falls back to name-only. Unmatched rows are reported, not dropped silently.
- * @returns {{marks: Array<{id,mark}>, matched:number, unmatched: Array<{brand,name}>}}
+ * @returns {{marks: Array<{id,mark,qty?}>, matched:number, unmatched: Array<{brand,name}>}}
  */
 export function csvToMarks(idx, text) {
   const rows = parsePaintRackCsv(text);
@@ -84,19 +91,60 @@ export function csvToMarks(idx, text) {
     const id = byBrandName.get(canonBrand(r.brand) + '|' + norm(r.name)) || (byName.get(norm(r.name)) || [])[0];
     if (!id) { unmatched.push({ brand: r.brand, name: r.name }); continue; }
     if (seen.has(id)) continue; seen.add(id);
-    marks.push({ id, mark: /wish|want|buy/.test(r.status.toLowerCase()) ? 'want' : 'owned' });
+    const mark = /wish|want|buy/.test(r.status.toLowerCase()) ? 'want' : 'owned';
+    const qty = Number(r.qty);
+    marks.push(mark === 'want' && Number.isInteger(qty) && qty >= 2 ? { id, mark, qty } : { id, mark });
   }
   return { marks, matched: marks.length, unmatched };
 }
 
-/** Serialise the collection to paintRack-compatible CSV (brand,name,status). Round-trips with csvToMarks.
- *  Writes the disambiguated dname where one exists — twins like Dawnstone (Layer)/(Dry) would otherwise
- *  serialise to identical rows and re-import as one paint (the other's mark silently lost). */
-export function marksToCsv(idx, ownedIds, wantIds) {
+/** Serialise the collection to paintRack-compatible CSV (brand,name,status,qty,project). Round-trips with
+ *  csvToMarks (the count; a project needs its scheme's link, which a CSV cannot hold, so the project
+ *  column is for people and is not read back). The two extra columns sit after paintRack's three, so a
+ *  reader that knows only those still reads the file. Writes the disambiguated dname where one exists —
+ *  twins like Dawnstone (Layer)/(Dry) would otherwise serialise to identical rows and re-import as one
+ *  paint (the other's mark silently lost). `qtyOf(id)` and `projectName(id)` fill the extra columns for
+ *  a to-buy paint (store.js qtyOf; the scheme's name); without them a to-buy paint is one pot, no project. */
+export function marksToCsv(idx, ownedIds, wantIds, { qtyOf = () => 1, projectName = () => '' } = {}) {
   const esc = v => (/[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
-  let out = 'brand,name,status\n';
-  const add = (id, status) => { const p = idx.byId.get(id); if (p) out += `${esc(p.brand)},${esc(p.dname || p.name)},${status}\n`; };
-  for (const id of ownedIds) add(id, 'owned');
-  for (const id of wantIds) add(id, 'wishlist');
+  let out = 'brand,name,status,qty,project\n';
+  const add = (id, status, qty, project) => {
+    const p = idx.byId.get(id);
+    if (p) out += `${esc(p.brand)},${esc(p.dname || p.name)},${status},${qty},${esc(project)}\n`;
+  };
+  for (const id of ownedIds) add(id, 'owned', '', '');
+  for (const id of wantIds) add(id, 'wishlist', qtyOf(id) || 1, projectName(id) || '');
+  return out;
+}
+
+/* ---- the store list as a text file (PLAN §5 item 37; mockups/shopping-list.html §6, "A better text file") ----
+   One job: the paints to buy, as a store racks them (brand · line, then name), each with a box a pen or a notes
+   app can tick ("[ ]"; in Markdown "- [ ]" is a real checkbox). No hex: a hex does not help at a rack. A finish
+   word stays, because it tells you which pot. The date tells an old copy from a new one. */
+const FINISH_WORD = { metal: 'metallic', wash: 'wash', shade: 'shade', ink: 'ink', contrast: 'contrast', glaze: 'glaze', effect: 'effect' };
+const lineOf = p => (p.line && p.line !== '—' && p.line !== p.brand ? p.line : '');
+
+/**
+ * @param paints  dataset paints (brand, line, name, dname?, type)
+ * @param o.title     the first line ("Shopping list", or the project's name)
+ * @param o.date      the date line, already in words ("29 October 2026")
+ * @param o.qtyOf     id → pots (default 1)
+ * @param o.forName   id → the project's name, or '' (left out when the file is one project)
+ * @returns {string}
+ */
+export function listToText(paints, { title = 'Shopping list', date = '', qtyOf = () => 1, forName = () => '' } = {}) {
+  const rows = [...paints].sort((a, b) => a.brand.localeCompare(b.brand) || lineOf(a).localeCompare(lineOf(b))
+    || (a.dname || a.name).localeCompare(b.dname || b.name));
+  let out = `${title}${date ? ` — ${date}` : ''}\n${rows.length} paint${rows.length === 1 ? '' : 's'}\n`;
+  let key = null;
+  for (const p of rows) {
+    const k = [p.brand, lineOf(p)].filter(Boolean).join(' · ');
+    if (k !== key) {
+      key = k;
+      out += `\n${k} (${rows.filter(q => [q.brand, lineOf(q)].filter(Boolean).join(' · ') === k).length})\n`;
+    }
+    const qty = qtyOf(p.id) || 1, fin = FINISH_WORD[p.type], f = forName(p.id);
+    out += `[ ] ${p.dname || p.name}${qty > 1 ? ` ×${qty}` : ''}${fin ? ` · ${fin}` : ''}${f ? ` — for ${f}` : ''}\n`;
+  }
   return out;
 }

@@ -48,9 +48,9 @@ we need to power shelf-first planning.
 |-------|--------------------|---------|--------|
 | **STOCK** | Bulk-mark paints **owned** / **to-buy** | **Shelf** (Finder grid) | ✅ shipped (collection build) |
 | **PLAN** | Seed + harmony → role-mapped scheme | Studio | ✅ v1 |
-| **RESOLVE** | Ideal → nearest real paint; **prefer owned**, show the ΔE gap + how to adjust | Plan tab / Studio | ✅ shipped v1.1 (owned-boost, #6) |
+| **RESOLVE** | Ideal → nearest real paint; **prefer owned**, show the ΔE gap + how to adjust | Recipe tab / Studio | ✅ shipped v1.1 (owned-boost, #6) |
 | **SHOP** | Collect the scheme's gaps into a **to-buy / shopping list**; export/share | Shelf + Export | ✅ shipped v1.1 (want-list ↔ Export, #5) |
-| **PAINT** | Per role: base · derived wash · highlight (or a value tone ladder) | Plan tab | ✅ shipped v1.1 (base + tone ladders, #7) |
+| **PAINT** | Per role: base · derived wash · highlight (or a value tone ladder) | Recipe tab | ✅ shipped v1.1 (base + tone ladders, #7) |
 
 > **Honesty rule carries through (CLAUDE.md §2).** Owned paints rank **higher but never silently** —
 > we always show the ΔE gap and an adjust direction, e.g. *"your Averland Sunset · ΔE 6 — lighten
@@ -142,9 +142,9 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 ### Planner (P1)
 - **UC-1 — Scheme from a main colour.** *Trigger:* "My armour is Macragge Blue." *Flow:* seed→Primary, pick harmony, see secondary/accent + real paints. *Out:* a buyable scheme. *Feat:* harmonies, ΔE match, roles.
 - **UC-2 — Scheme from an accent.** *Trigger:* "I want gold as the spot colour." *Flow:* seed→Accent, engine solves a complementary Primary. *Out:* scheme. *Feat:* inverse harmony, roles.
-- **UC-3 — Complete a scheme I started.** *Trigger:* "I have a body and an accent — what else?" *Flow:* lock both seeds, generate secondary/metal/wash/highlight. *Out:* full slate. *Feat:* multi-seed, locking, derivation.
+- **UC-3 — Complete a scheme I started.** *Trigger:* "I have a body and an accent — what else?" *Flow:* lock both seeds, generate secondary/metal/wash/highlight. *Out:* full slate. *Feat:* multi-seed, locking, derivation. *Status:* ✅ built (role holds): the starting paint sets Primary; on the Recipe, **Lock colour** keeps a role's target and **📌 Choose pot…** sets the paint for a role (Death Guard Green + Balthasar Gold as the Metal pot). Holds survive a harmony change, Roll, ↻ and a new starting paint; the share link carries them (`hd`).
 - **UC-4 — Stay within paints I own / one brand.** *Trigger:* "Only show me Citadel I have." *Flow:* filter the match pool to owned/brand. *Out:* scheme achievable now. *Feat:* owned-paints filter.
-- **UC-5 — Shopping list / export.** *Trigger:* "What do I buy?" *Flow:* export scheme as a paint list (names, brands, hex, ΔE). *Out:* copyable list. *Feat:* export.
+- **UC-5 — Shopping list / export.** *Trigger:* "What do I buy?" *Flow:* export scheme as a paint list (names, brands, hex, ΔE) — **⋯ → Save the recipe** (was "Save the shopping list", and "Export list" before that; item 37 gave the shopping list its own file, **Save as text** in Take to the store, UC-30). *Out:* a text file. *Feat:* export.
 - **UC-6 — Compare two candidate schemes.** *Trigger:* "Blue-orange vs purple-yellow?" *Flow:* hold A vs B side by side. *Out:* a decision. *Feat:* compare/snapshots.
 - **UC-7 — Recipe ladder for one paint.** *Trigger:* "Give me a shade + 2 highlights for this." *Flow:* value steps from one seed → nearest paints. *Out:* a paint ladder. *Feat:* derivation, ΔE match.
 
@@ -155,9 +155,9 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 - **UC-8 — Free-drag the wheel.** *Trigger:* idle tinkering. *Flow:* drag the base node around the wheel; hue/saturation change; every harmony node + its nearest paint updates **live**. *Out:* serendipity. *Feat:* interactive wheel, real-time recompute.
 - **UC-9 — Flip harmony types live.** *Trigger:* curiosity. *Flow:* toggle complementary↔triadic↔… and watch nodes rearrange. *Feat:* wheel, harmonies.
 - **UC-10 — Lock a paint, spin the rest.** *Trigger:* "Keep this red, surprise me with the rest." *Flow:* pin one node; others move around it. *Feat:* node locking.
-- **UC-11 — Randomise / shuffle.** *Trigger:* "Inspire me." *Flow:* one tap reseeds within constraints. *Feat:* randomiser.
+- **UC-11 — Randomise / shuffle.** *Trigger:* "Inspire me." *Flow:* one tap reseeds within constraints. *Feat:* randomiser. *Status:* ✅ built, two controls. **↻** (under the lightness slider; beside it on a phone) gives a random hue and strength and keeps the lightness; on black or white it moves the lightness the smallest step that lets the colour show, and says so (a neutral seed then gets a hue harmony back). **Roll a scheme** (the d6 at the start of the harmony strip) gives a random harmony for the colour now and keeps the starting paint as the seed (never Custom or the current harmony; a neutral seed rolls only its own schemes). Each is one ↶ step.
 - **UC-12 — Push saturation/lightness.** *Trigger:* "What if it were grimdark / pastel?" *Flow:* S/L sliders shift the whole scheme; matches re-resolve. *Feat:* HSL controls.
-- **UC-13 — Save / share a find.** *Trigger:* "Don't lose this." *Flow:* state→URL; copy/share. *Feat:* URL encoding.
+- **UC-13 — Save / share a find.** *Trigger:* "Don't lose this." *Flow:* state→URL; copy/share. *Feat:* URL encoding. **Share as an image** (✅ built): a link preview cannot show a scheme (the preview bots run no JavaScript, and there is no server), so ⋯ → **Share image…** (touch) or **Copy image** / **Save the image** (mouse) makes a square PNG of the four roles on the device and shares it with the link (`shareimage.js`; `mockups/share-image.html`, direction A).
 
 ### Range Switcher (P3)
 - **UC-14 — Cross-brand equivalents.** *Trigger:* "Vallejo version of Mephiston Red?" *Flow:* show the paint's equivalence group across brands w/ ΔE. *Feat:* equivalents.
@@ -170,14 +170,17 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 - **UC-19 — Suggest a safe swap.** *Trigger:* a flagged collision. *Flow:* propose the nearest paint that restores separation. *Feat:* CVD + ΔE.
 
 ### Collection / Shelf — STOCK + SHOP (the collection build)
-- **UC-23 — Stock my shelf (bulk).** *Trigger:* "Let me tell the tool what I own." *Flow:* open the **Shelf** (full-width Finder grid of all paints) → select swatches (click · ⇧-range · ⌘-toggle · marquee · right-click) → mark **owned / to-buy / clear**; keyboard P/U/X + arrows; touch tap-to-cycle. *Out:* a persistent collection (`store.js`). *Feat:* shelf grid, bulk multi-select, symmetric owned/to-buy badges. **✅ shipped.**
-- **UC-24 — Auto-suggested want-to-buy from scheme gaps.** *Trigger:* "What does this scheme need that I don't own?" *Flow:* a planned scheme's roles whose nearest *owned* paint is poor → suggested **to-buy**; also manual add/remove. *Out:* a want list that feeds **Export** (the shopping list). *Feat:* owned model + scheme gaps + export. **✅ shipped v1.1 (#5).**
-- **UC-25 — Use what I own (owned-boost ranking).** *Trigger:* "I'd rather adjust a paint I have than buy a new one." *Flow:* matching **prefers owned** paints (soft ΔE weight, not a hard filter) and surfaces the gap + an **adjust direction** (lighten / darken / mix). *Out:* a buildable-now scheme + honest deltas. *Feat:* ownership-weighted ΔE, adjust hints. **✅ shipped v1.1 (#6).** Contrast with UC-4 (owned-only *filter*, already shipped).
+- **UC-23 — Stock my shelf (bulk).** *Trigger:* "Let me tell the tool what I own." *Flow:* open the **Shelf** (full-width Finder grid of all paints) → select swatches (click · ⇧-range · ⌘-toggle · marquee · right-click) → mark **owned / add to shopping list / clear**; keyboard P/U/X + arrows, and **Shift+F10** (or the ContextMenu key) for the menu; touch tap-to-cycle, long-press for the menu. The menu also has **Start a scheme from this**: with one paint selected, the Studio starts from it. *Out:* a persistent collection (`store.js`). *Feat:* shelf grid, bulk multi-select, symmetric owned/to-buy badges, the shared mark menu (`markmenu.js`). **✅ shipped.**
+- **UC-24 — Auto-suggested want-to-buy from scheme gaps.** *Trigger:* "What does this scheme need that I don't own?" *Flow:* a planned scheme's roles whose nearest *owned* paint is poor → suggested **to-buy**; also manual add/remove. *Out:* a want list that feeds **Take to the store** (⋯, the Shelf's list; UC-30). *Feat:* owned model + scheme gaps + export. **✅ shipped v1.1 (#5).**
+- **UC-25 — Use what I own (owned-boost ranking).** *Trigger:* "I'd rather adjust a paint I have than buy a new one." *Flow:* matching **prefers owned** paints (soft ΔE weight, not a hard filter) and surfaces the gap + an **adjust direction** (lighten / darken / mix). *Out:* a buildable-now scheme + honest deltas. *Feat:* ownership-weighted ΔE, adjust hints. **✅ shipped v1.1 (#6).** Contrast with UC-4 (owned-only *filter*, already shipped). Both are one setting, **⋯ → Use my paints** (Off · Prefer · Only; it was "Use my collection" in the Plan tab), and the **matching note** under the live palette says when it is on (`mockups/collection-setting.html`, direction A).
 - **UC-26 — Choose a tone ladder.** *Trigger:* "I think in value structure, not wash/base/highlight." *Flow:* pick the ladder style per scheme/role — **Wash·Base·Highlight** / **Shadow·Mid·Highlight** / **Both** (onboarding step and/or in-UI toggle). *Out:* a recipe ladder in the painter's preferred mental model. *Feat:* selectable ladder (`scheme.js`). **✅ shipped v1.1 (#7).**
-- **UC-27 — Import / export my collection.** *Trigger:* "I already track my paints elsewhere." *Flow:* import **paintRack-format CSV** (`brand, name, owned/level`; the community de-facto standard) or the app's JSON; export the same. *Out:* portable collection (survives web→app moves + cache clears). *Feat:* `store.exportJSON`/`importJSON` + paintRack-CSV adapter (`collection-io.js`). **✅ shipped v1.1 (#27).**
+- **UC-29 — Shop at the rack.** *Trigger:* "I'm in the store with my list." *Flow:* Shelf → **List** → **Shopping list**: the paints in the order a store racks them (brand · line), each with its swatch, its name big, and "for Blue knight" when a scheme needs it; or **By project**. Tick a paint when it is in the basket — it is owned at once, and a second tap undoes it. **Add a count** for two pots. **Print** puts the list on paper. *Out:* the shelf up to date as you shop. *Feat:* the Shelf's list (`ui.rackRow`), `store.js` v2 counts and projects. Study: `mockups/shopping-list.html` A + D. **✅ built (PLAN §5 item 36).**
+- **UC-30 — Take my list from the desk to the store, and bring "bought" back.** *Trigger:* "I planned on my computer; I shop with my phone." *Flow:* ⋯ (or the Shelf's list, or a Schemes row) → **Take to the store…** → **Which paints?** (all, or one project) → scan the **QR code** or send the link. The first time, unnamed projects are asked for a name once (Skip keeps the automatic name). On the phone the link asks, then adds the paints to the shopping list there and opens the list (UC-29). After the trip, **Send “bought”…** makes a link back; on the computer it asks, then marks those paints owned. *Out:* both shelves up to date, with no server. *Feat:* `share.js` list and bought links, `qr.js`, `store.js` `asked`, `collection-io.js listToText`. Studies: `mockups/shopping-list.html` §6, `mockups/project-naming.html` B. **✅ built (PLAN §5 item 37).**
+- **UC-28 — Keep my schemes.** *Trigger:* "I want to come back to this scheme." *Flow:* **Save** on the line above the hero, with a name (pre-filled: "Death Guard Green · triadic") → the scheme is in **Schemes** (the third mode); a change shows **Changed** with **Save** and **Save as new** (an explicit Save, so exploring never writes over it); in Schemes: open, rename, share the link, delete (its paints stay on the shopping list). *Out:* a library of named schemes on this device, in the backup. *Feat:* `store.js` v2 `schemes` (a stable id + the scheme's link, `share.js schemeQuery`). Studies: `mockups/shopping-list.html` → `project-naming.html` → `scheme-library.html`. **✅ built (PLAN §5 items 34–35).**
+- **UC-27 — Import / export my collection.** *Trigger:* "I already track my paints elsewhere." *Flow:* import **paintRack-format CSV** (`brand, name, owned/level`; the community de-facto standard) or the app's JSON; export the same. *Out:* portable collection (survives web→app moves + cache clears). *Feat:* `store.exportJSON`/`importJSON` + paintRack-CSV adapter (`collection-io.js`). **✅ shipped v1.1 (#27).** The whole-device copy is **⋯ → Back up everything / Restore…** (a JSON file of the shelf and settings, with its date). Restore — and a JSON file picked through Import… — shows a confirm with both counts first, and offers a backup of this shelf. **About & data → Delete my shelf and settings…** removes every copy on the device.
 
 ### Cross-cutting
-- **UC-20 — Open & tweak a shared palette** (mode F). **UC-21 — Manage "paints I own."** Two surfaces, one `store.js` model: in-context marking in the **Paints drawer** (right-click or **P/U/X** on a focused chip → owned/to-buy badges, while planning) and the full **Shelf** for bulk stocking (UC-23). Persistent collection lives in `store.js` (versioned, portable — `localStorage` today, swappable to IndexedDB / native / sync).
+- **UC-20 — Open & tweak a shared palette** (mode F). **UC-21 — Manage "paints I own."** Two surfaces, one `store.js` model and one **mark menu** (`markmenu.js`: Mark owned · Add to shopping list · Clear mark): in-context marking in the **seed field's list** while planning (press and hold a paint, right-click it, or **Shift+F10** on the active one; a tap there only picks), and the full **Shelf** for bulk stocking (UC-23). A mark shows at once on every surface (`render('marks')`). Persistent collection lives in `store.js` (versioned, portable — `localStorage` today, swappable to IndexedDB / native / sync).
 
 ---
 
@@ -185,7 +188,7 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 
 **Priya — "I have a main colour" (UC-1, mode B)**
 1. Lands on tool → tab "I have a main colour."
-2. Types/searches her body paint (or pastes a hex) → it fills the **Primary** slot.
+2. Types her body paint, or a brand word and a colour ("vallejo red"), in the **seed field** ("Paint or #hex"), or pastes a hex; or taps **Browse** to look by colour (Recent picks first) → a tap fills the **Primary** slot.
 3. Picks a harmony (default: complementary). Engine fills Secondary/Accent + suggests Metal.
 4. Each slot shows ideal swatch → nearest real paint + ΔE badge; a derived wash & highlight appear under Primary.
 5. Toggles "only paints I own" to make it buildable now. Exports the shopping list. Shares the URL.
@@ -259,10 +262,13 @@ Positioning: a **collection-aware scheme planner**, not an inventory app.
 
 1. **State model:** a paint is **not-owned (default) · owned · to-buy**, where owned and to-buy are
    **mutually exclusive** (to-buy implies not-owned). One shared model in `store.js`; markers can live
-   on any paint surface (Shelf, Studio nearest-paint, Resolve, Equivalents), not just the Shelf.
+   on any paint surface (Shelf, the seed field's list, Studio nearest-paint, Resolve, Equivalents), not just the Shelf.
 2. **Shelf interaction (LOCKED):** Finder/file-browser model — click · ⇧-range · ⌘/Ctrl-toggle ·
-   **marquee** · **right-click** menu; keyboard **P** owned / **U** to-buy / **X** clear / **Esc** /
+   **marquee** · **right-click** menu; keyboard **P** owned / **U** shopping list / **X** clear / **Esc** /
    arrows; **touch tap-to-cycle**. No reflow on select/mark (CLAUDE.md §3.4). ✅ shipped.
+   **Shift+F10** (or the **ContextMenu** key) opens the menu at the cursor cell, and a touch long-press
+   opens it under the swatch. It is the app's one mark menu (`markmenu.js`), with **Start a scheme from this** on top
+   (one paint selected: the Studio starts from it). There is no pick mode: a tap on the Shelf still marks.
 3. **State visual language:** owned/to-buy are **symmetric corner badges** (owned ✓ green, to-buy cart
    in the dedicated `--buy` colour); **selection = an outline ring** (a separate visual language, §3.5).
    The to-buy colour is single-meaning, app-wide, and **never** the selection colour.

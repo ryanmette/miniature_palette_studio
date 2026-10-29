@@ -19,24 +19,27 @@ redistribution with attribution — satisfied here, in the in-app "About & data"
 own `attribution` field. **DakkaDakka** is credited for the cross-reference *concept* only; its chart was
 not copied. Paint and brand names are trademarks of their respective owners, used for identification only.
 
-## Coverage — 2508 paints, 8 brands
+## Coverage — 3225 paints, 10 brands
 
 | Brand | Count | Lines included |
 |-------|------:|----------------|
 | Citadel | 259 | Base, Layer, Dry, Shade, Contrast, Technical, Glaze |
-| Vallejo | 540 | Game Color, Model Color, Mecha Color, Xpress, Metal Color, Wash, Special FX |
+| Vallejo | 548 | Game Color, Model Color, Mecha Color, Xpress, Metal Color, Wash, Special FX |
 | Army Painter | 503 | Warpaints, Warpaints Fanatic, Speedpaint, Wash, Metallics, Skin Tones, Nolzur's, D&D |
 | Two Thin Coats | 178 | Wave 1–3 (Duncan Rhodes) |
 | Reaper | 429 | Master Series (Core), Pathfinder, Bones, Wash |
-| Scale75 | 350 | Scalecolor, Fantasy & Games, Artist, Warfront, Instant, Inktensity, Metal n Alchemy, FX, Soil Works |
+| Scale75 | 353 | Scalecolor, Fantasy & Games, Artist, Warfront, Instant, Inktensity, Metal n Alchemy, FX, Soil Works |
 | P3 | 130 | Formula P3, P3 Wash |
 | Pro Acryl | 119 | Pro Acryl, Signature, Wash |
+| AK Interactive | 467 | 3rd Gen: Standard, AFV, Air, Figures, Intense, Pastel, Metallic, Ink |
+| AMMO by Mig | 239 | Acrylics (A.MIG-0xxx), Washes |
 
 **Curated-broad scope (by `scripts/build-dataset.mjs`):** we include the real hobby colour ranges plus
 their washes / contrast / metallics / effects, and **skip**: airbrush ranges (they duplicate the colour
 ranges — Citadel Air, Vallejo Model/Game Air, Army Painter Warpaints Air), primers/sprays, craft &
 weathering lines (Vallejo Arte Deco, Panzer Aces, Weathering FX, Nocturna, Hobby Paint), discontinued
-Citadel Foundation, and non-colour utility products (mediums, varnishes, sealers, thinners — filtered by name).
+Citadel Foundation, the superseded AK 2nd Gen acrylics (AFV, Air, Figures, General, Naval — 3rd Gen
+replaces them), and non-colour utility products (mediums, varnishes, sealers, thinners — filtered by name).
 
 ## Types & finish handling
 
@@ -54,7 +57,7 @@ opt-in via a Plan-tab toggle. `metal` is the Metal role. Citadel's **Technical**
 - **Curated equivalence groups** are auto-seeded at build time: paints within **ΔE 2000 ≤ 1.0** ("indistinguishable")
   **and the same finish class** (metal · translucent media · effect · opaque — a hex match across finish classes is
   not interchangeability on the model) are union-find clustered into `groups[]` (each with a representative `refHex`
-  + a basic-colour `label`), and every member paint carries a `groupId`. v1.5.0: **120 groups, 292 paints**
+  + a basic-colour `label`), and every member paint carries a `groupId`. v1.6.0: **180 groups, 434 paints**
   (max group diameter ΔE 2.16). Surfaced in the
   Equivalents tab; the *closest other-brand* matches are still computed at runtime by ΔE 2000.
 - QA: [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs) — **hard checks PASS** (valid sRGB hex,

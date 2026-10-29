@@ -3,7 +3,7 @@
 // vary saturation/lightness at the base hue. Each partner is a {dh,ds,dl} step from the base — the
 // steps are locked so results never drift.
 
-import { rotateHue, adjustHsl, rgbToHsl, hslToRgb, hexToRgb, rgbToHex, clamp01 } from './color.js';
+import { rotateHue, adjustHsl, rgbToHsl, hslToRgb, hexToRgb, rgbToHex, clamp01, NEUTRAL_CHROMA, NEUTRAL_EXIT } from './color.js';
 
 /** Partner steps per harmony type (deltas from the base): dh = hue°, ds/dl = sat/lightness in 0–1.
  *  The base (a zero step) is implicit. */
@@ -108,6 +108,35 @@ const NEUTRAL_TYPES = Object.freeze(['neutral-pop', 'duotone', 'warm-cool']);
 export const isNeutralHarmony = type => NEUTRAL_TYPES.includes(type);
 /** Every harmony a neutral seed can use: the neutral recipes + the value/rule-less survivors. */
 export const NEUTRAL_HARMONY_TYPES = Object.freeze([...NEUTRAL_TYPES, 'shades', 'custom']);
+/**
+ * The neutral mode that a page load or a share link starts in (CLAUDE.md §7). `chroma` is the scheme
+ * base's Lab C*. Under NEUTRAL_CHROMA the seed is neutral. At NEUTRAL_EXIT or more it is not. Between the
+ * two (the hysteresis band), a live change keeps the mode that the seed had, and the link does not carry
+ * the mode. But a link has a neutral-only harmony only while the mode is neutral, so in the band that
+ * harmony starts neutral mode. Before this, a reload changed `?c=F3D5CE&h=neutral-pop` (C* 11.8) to
+ * complementary. Shades and Custom can be in either mode. They start as a hue seed, with the same colours.
+ */
+export const startsNeutral = (chroma, harmony) =>
+  chroma < NEUTRAL_CHROMA || (chroma < NEUTRAL_EXIT && isNeutralHarmony(harmony));
+
+/* ---- Roll a scheme (the d6 at the start of the harmony strip; CLAUDE.md §7) ----
+   The pools are locked. Custom is never in them: it has no rule, so a roll to it would change nothing. */
+/** A seed with a hue: the 9 rule harmonies (the 7 hue rotations, shades and monochromatic). */
+export const ROLL_TYPES = Object.freeze(HARMONY_TYPES.filter(t => t !== 'custom'));
+/** A neutral seed: the harmonies it can use (neutral-pop, duotone, warm-cool, shades). */
+export const ROLL_NEUTRAL_TYPES = Object.freeze(NEUTRAL_HARMONY_TYPES.filter(t => t !== 'custom'));
+/** The harmonies a roll can give: the seed's pool without the current harmony. */
+export const rollPool = (current, { neutral = false } = {}) =>
+  (neutral ? ROLL_NEUTRAL_TYPES : ROLL_TYPES).filter(t => t !== current);
+/**
+ * A random harmony for Roll a scheme: never Custom, never `current`, and only one the seed can use.
+ * `rand` gives a number in [0, 1), as Math.random does. The caller passes it, so this stays
+ * deterministic and testable.
+ */
+export function rollHarmony(current, { neutral = false } = {}, rand) {
+  const pool = rollPool(current, { neutral });
+  return pool[Math.min(pool.length - 1, Math.floor(rand() * pool.length))];
+}
 
 /**
  * Partners for a neutral seed. Same {hex, deg} shape as harmonyPartners; deg is null — these

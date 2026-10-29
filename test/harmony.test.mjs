@@ -126,3 +126,89 @@ test('clampPop enforces the minimum pop chroma on any entry path', async () => {
   assert.ok(rgbToHsl(hexToRgb(clamped))[1] >= POP_MIN_S - 0.01, 'clamped pop meets POP_MIN_S');
   assert.notEqual(clamped, '#888888');
 });
+
+/* ---- Roll a scheme (CLAUDE.md §7): the pool and the pick ---- */
+test('rollHarmony: a seed with a hue rolls from the 9 rule harmonies, never Custom', async () => {
+  const { ROLL_TYPES, rollPool } = await import('../src/js/harmony.js');
+  assert.deepEqual([...ROLL_TYPES], ['complementary', 'analogous', 'triadic', 'split-complementary', 'tetradic',
+    'square', 'compound', 'shades', 'monochromatic']);
+  assert.ok(!ROLL_TYPES.includes('custom'));
+  for (const t of ROLL_TYPES) assert.ok(isHarmony(t) && !isNeutralHarmony(t), t);
+  assert.equal(rollPool('custom').length, 9);   // from Custom, every rule harmony can come
+});
+
+test('rollHarmony: a neutral seed rolls only from the harmonies it can use', async () => {
+  const { ROLL_NEUTRAL_TYPES, rollPool } = await import('../src/js/harmony.js');
+  assert.deepEqual([...ROLL_NEUTRAL_TYPES], ['neutral-pop', 'duotone', 'warm-cool', 'shades']);
+  for (const t of ROLL_NEUTRAL_TYPES) assert.ok(NEUTRAL_HARMONY_TYPES.includes(t), t);
+  assert.deepEqual(rollPool('neutral-pop', { neutral: true }), ['duotone', 'warm-cool', 'shades']);
+});
+
+test('rollHarmony: never the current harmony, never Custom, from any random number', async () => {
+  const { rollHarmony, ROLL_TYPES, ROLL_NEUTRAL_TYPES } = await import('../src/js/harmony.js');
+  // the edges of [0, 1) and points between them
+  const rs = [0, 1e-9, 0.1, 0.25, 0.5, 0.75, 0.9, 0.999999, 1 - Number.EPSILON];
+  for (const neutral of [false, true]) {
+    const pool = neutral ? ROLL_NEUTRAL_TYPES : ROLL_TYPES;
+    for (const cur of [...pool, 'custom']) for (const r of rs) {
+      const h = rollHarmony(cur, { neutral }, () => r);
+      assert.notEqual(h, cur, `${cur} → ${h}`);
+      assert.notEqual(h, 'custom');
+      assert.ok(pool.includes(h), `${h} is in the ${neutral ? 'neutral' : 'hue'} pool`);
+    }
+  }
+});
+
+test('rollHarmony: every harmony in the pool can come up', async () => {
+  const { rollHarmony, rollPool, ROLL_TYPES, ROLL_NEUTRAL_TYPES } = await import('../src/js/harmony.js');
+  for (const neutral of [false, true]) {
+    for (const cur of neutral ? ROLL_NEUTRAL_TYPES : ROLL_TYPES) {
+      const pool = rollPool(cur, { neutral }), seen = new Set();
+      // one random number in the middle of each pool slot reaches each harmony once
+      pool.forEach((_, i) => seen.add(rollHarmony(cur, { neutral }, () => (i + 0.5) / pool.length)));
+      assert.deepEqual([...seen].sort(), [...pool].sort(), `${cur}${neutral ? ' (neutral)' : ''}`);
+    }
+  }
+});
+
+test('startsNeutral: under 10 a link starts neutral, at 14 or more it does not, whatever its harmony', async () => {
+  const { startsNeutral } = await import('../src/js/harmony.js');
+  const { NEUTRAL_CHROMA, NEUTRAL_EXIT } = await import('../src/js/color.js');
+  for (const h of ['complementary', 'shades', 'custom', 'neutral-pop', 'duotone', 'warm-cool']) {
+    assert.equal(startsNeutral(0, h), true, `C* 0, ${h}`);
+    assert.equal(startsNeutral(NEUTRAL_CHROMA - 0.01, h), true, `C* 9.99, ${h}`);
+    assert.equal(startsNeutral(NEUTRAL_EXIT, h), false, `C* 14, ${h}`);   // as the live rule: neutral holds only while C* < 14
+    assert.equal(startsNeutral(40, h), false, `C* 40, ${h}`);
+  }
+});
+
+test('startsNeutral: in the 10–14 band only a neutral-only harmony starts neutral mode', async () => {
+  const { startsNeutral } = await import('../src/js/harmony.js');
+  const { NEUTRAL_CHROMA, NEUTRAL_EXIT } = await import('../src/js/color.js');
+  for (const C of [NEUTRAL_CHROMA, 11.8, NEUTRAL_EXIT - 0.01]) {
+    for (const h of ['neutral-pop', 'duotone', 'warm-cool']) assert.equal(startsNeutral(C, h), true, `C* ${C}, ${h}`);
+    // Shades and Custom can be in either mode. They start as a hue seed, with the same colours.
+    for (const h of ['complementary', 'triadic', 'monochromatic', 'shades', 'custom']) assert.equal(startsNeutral(C, h), false, `C* ${C}, ${h}`);
+  }
+});
+
+test('startsNeutral: the mode it starts in is one the live hysteresis rule keeps (no flip on load)', async () => {
+  // app.js ensureHarmonyMode: a held neutral mode stays while C* < NEUTRAL_EXIT, a held hue mode while
+  // C* >= NEUTRAL_CHROMA. A start mode outside that would flip on the first render and drop the harmony.
+  const { startsNeutral } = await import('../src/js/harmony.js');
+  const { NEUTRAL_CHROMA, NEUTRAL_EXIT } = await import('../src/js/color.js');
+  for (let C = 0; C <= 20; C += 0.25) for (const h of ['neutral-pop', 'duotone', 'warm-cool', 'shades', 'complementary']) {
+    const n = startsNeutral(C, h);
+    assert.equal(n ? C < NEUTRAL_EXIT : C < NEUTRAL_CHROMA, n, `C* ${C}, ${h}`);
+  }
+});
+
+test('startsNeutral: the regression-test colours (#F5DCD6 under 10, #F3D5CE in the band)', async () => {
+  const { startsNeutral } = await import('../src/js/harmony.js');
+  const { labChroma } = await import('../src/js/color.js');
+  assert.ok(labChroma('#F5DCD6') < 10);
+  const C = labChroma('#F3D5CE');
+  assert.ok(C >= 10 && C < 14, `C* ${C}`);
+  assert.equal(startsNeutral(C, 'neutral-pop'), true);    // the link's neutral-pop survives the reload
+  assert.equal(startsNeutral(C, 'complementary'), false);
+});
