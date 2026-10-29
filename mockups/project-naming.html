@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project naming study</title>
+<!-- the app's self-hosted webfonts (no external requests), so text widths in the frames match the app -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  /* ---------- tokens: the same blocks as src/styles/tokens.css (CLAUDE.md §3.1, Workbench+) ----------
+     The page follows the device theme until you pick one with "Page theme". Only colour changes. */
+  :root {
+    --r-card:6px; --r-ctrl:4px; --r-sw:3px; --r-tag:2px; --r-pill:999px; --tap:44px;
+    --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --fs-h1:26px; --fs-h2:20px; --fs-body:14px; --fs-small:12.5px; --fs-micro:11.5px;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  :root, [data-theme="light"] {
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6;
+    --border:#DCD8D0; --border-strong:#C9C4BA; --edge:#8A857B;
+    --text:#1D1C19; --text-muted:#5E5A52; --text-faint:#9C978D;
+    --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+    --buy:#2563EB; --buy-weak:#DBEAFE; --on-buy:#FFFFFF;
+    --success:#16A34A; --success-weak:#DCFCE7; --on-success:#FFFFFF;
+    --warning:#C2740B; --warning-weak:#FBEBD3;
+    --danger:#DC2647; --danger-weak:#FCE4EA;
+    --success-text:#0F7334; --warning-text:#945908; --danger-text:#C4203D; --buy-text:#1D4ED8;
+    --shadow:0 1px 2px rgba(29,28,25,.25);
+    --shadow-pop:0 0 0 1px rgba(29,28,25,.05), 0 12px 24px -10px rgba(29,28,25,.38);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  [data-theme="dark"] {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+    --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+    --warning:#E0803A; --warning-weak:#2E1D12;
+    --danger:#D2563F; --danger-weak:#2E1A14;
+    --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+      --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+      --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+      --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+      --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+      --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+      --warning:#E0803A; --warning-weak:#2E1D12;
+      --danger:#D2563F; --danger-weak:#2E1A14;
+      --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+      --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+      --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+    }
+  }
+
+  /* ---------- the page: regions with rules, no cards (§3.5) ---------- */
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:var(--fs-body); line-height:1.5; padding:24px 16px 48px; }
+  .page { max-width:1140px; margin:0 auto; }
+  h1 { font-family:var(--display); font-size:32px; font-weight:600; line-height:1.15; margin:0 0 8px; }
+  h2 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 4px; }
+  h2 .k { color:var(--accent); margin-right:6px; }
+  h3.lab, .micro { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  h3.lab { margin:24px 0 8px; }
+  a { color:var(--accent); }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); border-radius:var(--r-ctrl); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { border-top:1px solid var(--border); padding:24px 0; }
+  .sub, .why { color:var(--text-muted); font-size:var(--fs-small); max-width:80ch; margin:0 0 12px; }
+  .sub b, .why b, .notes b, td b { color:var(--text); }
+  ul.notes, ol.notes { margin:0; padding-left:20px; font-size:var(--fs-small); color:var(--text-muted); max-width:82ch; }
+  .notes li + li { margin-top:4px; }
+  .sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .pros { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:0 24px; }
+  .pros h3.lab { margin-top:16px; }
+  .trow { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; margin-top:12px; }
+  .trow > .txt { flex:1 1 300px; min-width:0; }
+  figure { margin:0; min-width:0; max-width:100%; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+  figcaption b { color:var(--text); }
+  pre.file { font-family:var(--mono); font-size:12px; line-height:1.45; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card);
+    padding:12px; margin:0; overflow-x:auto; max-width:100%; color:var(--text); }
+  pre.file .dim { color:var(--text-muted); }
+
+  /* the page-theme control */
+  .pc { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; margin:16px 0 0; }
+  .seg { display:inline-flex; }
+  .seg button { position:relative; height:30px; padding:0 12px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text);
+    font:inherit; font-size:12.5px; font-weight:500; cursor:pointer; margin-left:-1px; }
+  .seg button:first-child { border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); margin-left:0; }
+  .seg button:last-child { border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .seg button:hover { background:var(--surface-2); }
+  .seg button[aria-pressed="true"] { background:var(--accent-weak); }
+  .seg button[aria-pressed="true"]::after { content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--accent); }
+  .seg button:focus-visible { z-index:1; }
+  @media (pointer: coarse) { .seg button { height:var(--tap); } }
+
+  /* the study table */
+  .tablewrap { overflow-x:auto; max-width:100%; }
+  table.study { border-collapse:collapse; font-size:var(--fs-small); min-width:760px; width:100%; }
+  table.study th, table.study td { text-align:left; vertical-align:top; padding:8px 12px 8px 0; border-bottom:1px solid var(--border); }
+  table.study th { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.study td { color:var(--text-muted); }
+  table.study td:first-child { color:var(--text); font-weight:600; white-space:nowrap; }
+
+  /* the jobs strip */
+  .jobs { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:0 16px; counter-reset:job; margin:12px 0 0; padding:0; list-style:none; }
+  .jobs li { border-top:1px solid var(--border-strong); padding:8px 0 12px; font-size:var(--fs-small); color:var(--text-muted); }
+  .jobs li b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .jobs li::before { counter-increment:job; content:counter(job); font-family:var(--display); font-weight:700; font-size:20px; color:var(--accent); display:block; line-height:1; margin-bottom:4px; }
+
+  /* ---------- the app's components, as in src/styles/app.css ---------- */
+  .btn { position:relative; min-height:var(--tap); padding:0 14px; border-radius:var(--r-ctrl); border:1px solid var(--border);
+    background:var(--surface); color:var(--text); font:inherit; font-weight:500; font-size:13.5px; line-height:1.2;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .btn:hover { background:var(--surface-2); border-color:var(--border-strong); }
+  .btn:active { transform:scale(.96); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-size:14.5px; font-weight:600; padding:0 18px; min-height:calc(var(--tap) + 6px); }
+  .btn.primary:hover { background:var(--accent); filter:brightness(1.06); }
+  .btn.sm { min-height:32px; padding:0 10px; font-size:12.5px; }
+  @media (pointer: coarse) { .btn.sm { min-height:var(--tap); } }
+  .btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+  .textact { background:none; border:0; color:var(--accent); font:inherit; font-weight:500; min-height:var(--tap); min-width:var(--tap); padding:0 4px; cursor:pointer; }
+  .tag { display:inline-block; font-size:11px; font-weight:500; line-height:1; padding:3px 5px; border:1px solid var(--border-strong); border-radius:var(--r-tag); color:var(--text-muted); white-space:nowrap; }
+  .tag.success { border-color:var(--success); color:var(--success-text); }
+  .tag.warning { border-color:var(--warning); color:var(--warning-text); }
+  .tag.danger  { border-color:var(--danger);  color:var(--danger-text); }
+  .tag.buy     { border-color:var(--buy);     color:var(--buy-text); }
+  .de { font-family:var(--mono); font-size:11.5px; color:var(--text-muted); }
+  .sw { width:40px; height:40px; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; position:relative; overflow:hidden; }
+  .sw.sm { width:24px; height:24px; }
+  .sw.lg { width:48px; height:48px; }
+  /* finish overlay for metallics (§2): a sheen that never changes the colour */
+  .sw.metal::after { content:""; position:absolute; inset:0; background:linear-gradient(125deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.45) 50%, rgba(255,255,255,0) 68%); }
+
+
+  /* ---------- frames (this study) ---------- */
+  .desk { width:560px; max-width:100%; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:16px; }
+  .desk .head { display:flex; align-items:center; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:12px; }
+  .desk .head h4 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0; flex:1; }
+  .ph { width:360px; max-width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border-strong); border-radius:20px; overflow:hidden; }
+  .ph .bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); min-height:56px; }
+  .ph .bar .ttl { font-family:var(--display); font-size:20px; font-weight:600; flex:1; }
+  .ph .body { padding:0 12px 12px; }
+
+  /* a field, as in app.css: the visible edge is --edge (3:1, WCAG 1.4.11) */
+  .fld { display:grid; gap:4px; margin:0 0 12px; }
+  .fld label { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  .fld input { font:inherit; font-size:15px; min-height:var(--tap); padding:0 10px; border:1px solid var(--edge); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text); width:100%; }
+  .fld input:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); }
+  @media (pointer: coarse) { .fld input { font-size:16px; } }
+  .fld .hint { font-size:12px; color:var(--text-muted); }
+  .namerow { display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; padding:12px 0; border-top:1px solid var(--border); }
+  .namerow .fld { margin:0; }
+  .mini { display:flex; gap:2px; margin-top:24px; }
+  .mini i { width:14px; height:14px; border-radius:2px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  .sugg { display:flex; flex-wrap:wrap; gap:4px 8px; font-size:12px; color:var(--text-muted); align-items:center; }
+  .sugg button { font:inherit; font-size:12px; color:var(--accent); background:none; border:0; padding:0; min-height:24px; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+  @media (pointer: coarse) { .sugg button { min-height:var(--tap); } }
+  .acts { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px; }
+  .fix { display:grid; } .fix > * { grid-area:1 / 1; } .fix > [hidden] { display:block !important; visibility:hidden; }
+  .auto { color:var(--text-muted); font-style:italic; }
+  .say { font-size:var(--fs-small); color:var(--text-muted); min-height:1.5em; }
+
+  /* the which-paints segmented control (§3.5 .seg) */
+  .seg.wide button { height:auto; min-height:32px; padding:4px 10px; text-align:left; }
+  @media (pointer: coarse) { .seg.wide button { min-height:var(--tap); } }
+
+  /* the group header on the phone list, renamed in place */
+  .gh { display:flex; align-items:center; gap:8px; min-height:var(--tap); border-bottom:1px solid var(--border); padding:8px 0; }
+  .gh .pn { font-family:var(--display); font-size:18px; font-weight:600; flex:1; min-width:0; }
+  .gh .pn.auto { font-family:var(--font); font-size:15px; font-weight:500; }
+  .row { display:flex; align-items:center; gap:12px; min-height:52px; border-bottom:1px solid var(--border); font-weight:600; }
+  .row small { display:block; font-weight:400; color:var(--text-muted); font-size:var(--fs-small); }
+
+  /* the timeline of moments */
+  .moments { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0 16px; margin-top:12px; }
+  .moments > div { border-top:1px solid var(--border-strong); padding:8px 0 12px; font-size:var(--fs-small); color:var(--text-muted); }
+  .moments > div b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .moments .t { font-family:var(--display); font-weight:700; font-size:20px; color:var(--accent); display:block; line-height:1; margin-bottom:4px; }
+  .moments .no { color:var(--text-muted); }
+  .moments .no .t { color:var(--text-faint); }
+
+  .verdict { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0 24px; margin-top:12px; }
+  .verdict > div { border-top:1px solid var(--border-strong); padding:8px 0; font-size:var(--fs-small); color:var(--text-muted); }
+  .verdict > div b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .score { font-family:var(--mono); font-size:12px; color:var(--text); }
+  .reco { border-left:3px solid var(--accent); padding:8px 0 8px 16px; max-width:82ch; margin-top:12px; }
+  ol.q { margin:12px 0 0; padding-left:24px; max-width:82ch; }
+  ol.q li { margin-bottom:12px; }
+  ol.q li b { display:block; }
+  ol.q li span { color:var(--text-muted); font-size:var(--fs-small); }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none !important; animation:none !important; } .btn:active { transform:none; } }
+  @media (forced-colors: active) {
+    .sw, .mini i { forced-color-adjust:none; }
+    .seg button[aria-pressed="true"]::after { background:Highlight; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <p class="micro">Design study · not shipped · 2026-10-29 · follows <a href="shopping-list.html">shopping-list.html</a></p>
+  <h1>Naming a project — when and how the app asks</h1>
+  <p class="sub">The shopping-list study gave each to-buy paint a <b>“for” label</b>: the project it is for. Ryan’s answer: the name is
+    <b>asked on export or save</b>, not when a paint is added. This study asks <b>when</b> exactly, <b>what</b> the app suggests,
+    what happens to paints with <b>no</b> project, and how a name is <b>changed later</b>.</p>
+  <div class="pc">
+    <span class="micro" id="pthLab">Page theme</span>
+    <div class="seg" role="group" aria-labelledby="pthLab" id="pth">
+      <button type="button" data-v="device" aria-pressed="true">Device</button>
+      <button type="button" data-v="light" aria-pressed="false">Light</button>
+      <button type="button" data-v="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-idea">
+  <h2 id="h-idea"><span class="k">0</span>The idea that makes it easy: label now, name later</h2>
+  <p class="why">A name is a word for people. The app does not need it to keep the paints apart. When you press
+    <b>“+ Add N to the shopping list”</b> on a Recipe, the app can <b>silently</b> record which scheme the paints came from — the scheme’s
+    share link is already a unique key for it (<code>share.js encodeState</code>). So nothing is lost while a project has no name: it shows an
+    <span class="auto">automatic name</span> until you give it a real one. The question “when do we ask?” then only decides
+    <b>when a person is asked for a word</b>, never when the data is kept.</p>
+  <p class="why">An analogy: a parcel gets a tracking number at the counter (the key). You can write “Mum’s birthday” on it later (the name).
+    The parcel goes to the right place either way.</p>
+  <h3 class="lab">The data, as a sketch (a <code>store.js</code> version bump)</h3>
+<pre class="file"><span class="dim">// today</span>
+{ v: 1, owned: ['…'], want: ['citadel-base-mephiston-red', …], prefs: {…} }
+
+<span class="dim">// with counts, labels and names</span>
+{ v: 2, owned: ['…'],
+  want: [{ id: 'citadel-base-mephiston-red', qty: 1, for: 'k7f3' }, …],
+  projects: { k7f3: { name: 'Blue knight', scheme: '?p=…&amp;h=triadic…' } },   <span class="dim">// no name yet → name: ''</span>
+  prefs: {…} }</pre>
+  <p class="why" style="margin-top:8px">The key (<code>k7f3</code>) is a short hash of the scheme link. A paint added by hand on the Shelf has no <code>for</code>.
+    The Back up file and the CSV carry the new fields; an old backup still restores (no <code>for</code>, a count of 1).</p>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-when">
+  <h2 id="h-when"><span class="k">1</span>The moments that count as “export or save”</h2>
+  <p class="why">The app has no Save button for a scheme: a scheme lives in its link. So “export or save” means the moments when the list <b>leaves the
+    app</b>. Four moments do; two do not.</p>
+  <div class="moments">
+    <div><span class="t">1</span><b>Take to the store</b>The new hand-off panel: the link, the QR code, Print, Save as text. <i>The main moment.</i></div>
+    <div><span class="t">2</span><b>⋯ → Save the shopping list</b>Today’s text file, until the panel replaces it.</div>
+    <div><span class="t">3</span><b>⋯ → Share link</b>A scheme’s link. It can carry the name (see question 3).</div>
+    <div><span class="t">4</span><b>Shelf → Save my shelf (CSV)</b>The “for” column needs a word, or the key is all you see.</div>
+    <div class="no"><span class="t">—</span><b>+ Add to the shopping list</b>Not asked (Ryan). The label is kept silently.</div>
+    <div class="no"><span class="t">—</span><b>Back up everything</b>Not asked: a backup keeps the keys and the names as they are.</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-others">
+  <h2 id="h-others"><span class="k">2</span>How others ask</h2>
+  <div class="tablewrap" tabindex="0" role="region" aria-label="How others ask (scrolls sideways)">
+  <table class="study">
+    <thead><tr><th scope="col">Product</th><th scope="col">When it asks</th><th scope="col">The lesson for us</th></tr></thead>
+    <tbody>
+      <tr><td>Adobe Color</td><td>On Save: choose a library, <b>name the theme</b>, add tags, then Save.</td><td>Asking at save is normal for colour tools. A community expert warns that two themes with the <b>same name overwrite</b> each other — we must never lose paints on a repeated name.</td></tr>
+      <tr><td>Google Docs</td><td><b>Never blocks.</b> A new file is “Untitled document”; you click the title to rename it, at any time.</td><td>A placeholder name plus rename-in-place costs nothing at the moment of work. Guides tell people to name it <b>before they share</b> — the same moment Ryan chose.</td></tr>
+      <tr><td>Coolors (a clone of it)</td><td>On Save, a popup asks for the palette’s name.</td><td>The pattern is common, but this source is a clone on GitHub, not Coolors itself.</td></tr>
+      <tr><td>A system Save dialog</td><td>Every save: the name field comes pre-filled and selected, so typing replaces it and Enter keeps it.</td><td>A good suggestion makes “asking” cost one key press.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="why" style="margin-top:12px">Sources:
+    <a href="https://helpx.adobe.com/creative-cloud/adobe-color.html">Adobe Color FAQ</a> ·
+    <a href="https://community.adobe.com/t5/illustrator-discussions/how-to-access-adobe-color-swatches/td-p/8774741">Adobe community (same-name overwrite)</a> ·
+    <a href="https://alicekeeler.com/2011/09/03/step-one-title-your-google-doc/">Alice Keeler — title your Google Doc</a> ·
+    <a href="https://alicekeeler.com/2016/04/23/google-docs-name-mobile-files/">Alice Keeler — rename on mobile</a> ·
+    <a href="https://github.com/alancphilpott/coolors">a Coolors clone (GitHub)</a>.
+    The last row is the platforms’ own convention, not a cited source.</p>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-dirs">
+  <h2 id="h-dirs"><span class="k">3</span>Four ways to ask</h2>
+  <div class="verdict" style="margin-top:0">
+    <div><b>A · Every export</b>Each time a list leaves the app, every unnamed project gets a field. Always named; asks again and again if you skip.</div>
+    <div><b>B · Once, at the first export</b>The first export with an unnamed project asks once, inside the panel, with a suggestion and <b>Skip</b>. Never again for that project.</div>
+    <div><b>C · Never block</b>Export goes at once with automatic names. The names in the panel are editable in place, like a document title.</div>
+    <div><b>D · When you keep a scheme</b>A new “Save this scheme” in the Studio asks for the name. A saved-scheme library — a bigger feature.</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-b">
+  <h2 id="h-b"><span class="k">B</span>Once, at the first export — the recommended flow</h2>
+  <p class="why">The first time a list with unnamed projects leaves the app, the hand-off panel opens on a short <b>“Name your projects”</b> step.
+    Each field is <b>pre-filled with a suggestion and selected</b>, so typing replaces it and Enter keeps it. <b>Skip</b> uses the automatic names and
+    never asks for those projects again. This frame works: type, pick a suggestion, Skip, or Continue.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Desktop</b> · the hand-off panel, first export</figcaption>
+      <div class="desk" id="flowB"></div>
+    </figure>
+    <div class="txt">
+      <h3 class="lab">The suggestion, in this order</h3>
+      <ol class="notes">
+        <li><b>A name you used before for this scheme</b> (it was renamed, then its paints were bought, then re-added).</li>
+        <li><b>The paint and the harmony:</b> “Death Guard Green · triadic”. Always there, always true — the automatic name.</li>
+        <li><b>Your recent names</b> as one-tap choices under the field (“Plague Marine”). Picking one <b>joins</b> the two schemes into one project (question 1).</li>
+      </ol>
+      <h3 class="lab">Rules</h3>
+      <ul class="notes">
+        <li><b>Skip is one press,</b> and the export still happens. Asking must never block the list from going to the store.</li>
+        <li><b>Asked once per project.</b> A skipped project keeps its automatic name and is not asked again; rename it later (below).</li>
+        <li><b>The step shows only the unnamed ones.</b> A list where every project has a name goes straight to the panel.</li>
+        <li><b>A name already in use</b> is not an overwrite (the Adobe lesson): the app asks “Add these paints to Plague Marine?” — yes joins them, no keeps them apart as “Plague Marine (2)”.</li>
+        <li><b>Accessibility:</b> each field has its own label (“Name for the scheme from Death Guard Green, triadic”); focus starts in the first field; Continue says “2 projects named” in the panel’s live region (§3.5).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-rename">
+  <h2 id="h-rename"><span class="k">4</span>Changing a name later</h2>
+  <p class="why">A name is changed where you see it: the project’s <b>group header</b> on the shopping list. Tap the name, type, Enter (Esc puts it back).
+    The same works for an <span class="auto">automatic name</span>, which is how a skipped project gets a real one. This is Google Docs’ title-in-place.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone</b> · the shopping list grouped by project · tap “Rename”</figcaption>
+      <div class="ph" id="rename"></div>
+    </figure>
+    <div class="txt">
+      <h3 class="lab">What a rename changes</h3>
+      <ul class="notes">
+        <li><b>Every paint with that label,</b> at once — the name lives in one place (<code>projects[key].name</code>), not on each paint.</li>
+        <li><b>A link already sent keeps the old name.</b> A link is a copy; this is the same as today’s share link.</li>
+        <li><b>Clearing the name</b> goes back to the automatic name. The paints stay on the list.</li>
+        <li><b>When every paint of a project is bought,</b> the group leaves the list, but the name stays with the scheme: re-add its paints, and the name comes back (suggestion 1).</li>
+      </ul>
+      <h3 class="lab">Paints with no project</h3>
+      <ul class="notes">
+        <li>A paint marked by hand on the Shelf has no label. It goes in a last group, <b>“Other paints”</b>, which is never asked for a name.</li>
+        <li>A paint two projects need shows in both groups, with “Also for …” (as in the shopping-list study, C). It is still one pot on the list unless you add a count.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-acd">
+  <h2 id="h-acd"><span class="k">5</span>Why not A, C or D</h2>
+  <div class="pros">
+    <div><h3 class="lab">A · Every export</h3><ul class="notes">
+      <li>Asks again after a Skip, so Skip means “not now”, and the step comes back on every trip to the store. That is the pattern that makes people stop exporting.</li>
+      <li>B with no “never again” is A. B keeps A’s good part: the first ask.</li></ul></div>
+    <div><h3 class="lab">C · Never block</h3><ul class="notes">
+      <li>Zero friction, but most lists will carry “Death Guard Green · triadic” for ever: the automatic name is true, but it is not a <i>project</i>.</li>
+      <li>B’s Skip <b>is</b> C, for the painter who wants it. B is C plus one chance.</li></ul></div>
+    <div><h3 class="lab">D · When you keep a scheme</h3><ul class="notes">
+      <li>Needs a saved-scheme library: a new place to list, open, rename and delete schemes. It is local data, so §1 allows it, but it is a feature of its own.</li>
+      <li>If it comes, its Save asks the same question with the same field, and the shopping list reuses that name. Nothing in B blocks it.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-v">
+  <h2 id="h-v"><span class="k">6</span>Verdict and questions</h2>
+  <div class="verdict">
+    <div><b>A · Every export</b><span class="score">No</span> — nags; B keeps its one good ask.</div>
+    <div><b>B · Once, first export</b><span class="score">Build</span> — one ask, a good suggestion, Skip, rename in place.</div>
+    <div><b>C · Never block</b><span class="score">Inside B</span> — it is B’s Skip.</div>
+    <div><b>D · Save a scheme</b><span class="score">Later, if wanted</span> — a library is its own feature.</div>
+  </div>
+  <div class="reco"><b>Recommendation:</b> label silently on Add; ask <b>once</b>, at the first export, in the hand-off panel, with the field pre-filled
+    and selected and a one-press Skip; rename in place on the list’s group header. Same name → ask to join, never overwrite.</div>
+  <h3 class="lab">Questions for Ryan</h3>
+  <ol class="q">
+    <li><b>Is a project one scheme, or can it hold several?</b><span>An army may use two schemes (troops and a character). If one project can hold several, picking a recent name joins them; if not, a project is just a scheme’s name.</span></li>
+    <li><b>Did “save” mean a saved-scheme library (D)?</b><span>If yes, D becomes its own study. If “save” meant the files and links, B covers it.</span></li>
+    <li><b>Should a share link carry the project name?</b><span>It is nice for the person who opens it. But the name you typed then goes into every link you send — a small privacy point.</span></li>
+    <li><b>Is the automatic name right?</b><span>“Death Guard Green · triadic” is always true. Other options: the paint only, or the scheme’s three colours’ names.</span></li>
+  </ol>
+</section>
+
+</div>
+
+<script>
+(() => {
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  /* ---- page theme ---- */
+  const pth = document.getElementById('pth');
+  pth.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    for (const x of pth.querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b));
+    if (b.dataset.v === 'device') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = b.dataset.v;
+  });
+
+  /* ---- data: the two schemes of the shopping-list study (real hex values from the dataset) ---- */
+  const P = [
+    { key:'k2a9', auto:'Death Guard Green · triadic', name:'', hexes:['#6D774D','#A77353','#C2AE9D'], n:3 },
+    { key:'k7f3', auto:'Kantor Blue · split-complementary', name:'', hexes:['#02134E','#960C09','#A77353'], n:3 },
+  ];
+  const RECENT = ['Plague Marine', 'Ultramarine captain'];
+  const mini = p => `<span class="mini" aria-hidden="true">${p.hexes.map(h => `<i style="background:${h}"></i>`).join('')}</span>`;
+  const label = p => p.name || p.auto;
+
+  /* ---- B: the flow ---- */
+  const fB = document.getElementById('flowB');
+  let stage = 'ask';
+  function drawB() {
+    if (stage === 'ask') {
+      let h = `<div class="head"><h4>Take this list to the store</h4></div>
+        <p class="sub" style="margin:0 0 4px"><b>Name your projects</b> — once. The names show on the list and in the files.</p>`;
+      P.forEach((p, i) => {
+        h += `<div class="namerow">${mini(p)}<div class="fld"><label for="nm${i}">Project · ${p.n} paints</label>
+          <input id="nm${i}" value="${esc(p.name || p.auto)}" aria-describedby="hn${i}" autocomplete="off">
+          <div class="sugg" id="hn${i}">From ${esc(p.auto)}. Recent: ${RECENT.map(r => `<button type="button" data-i="${i}" data-r="${esc(r)}">${esc(r)}</button>`).join('')}</div></div></div>`;
+      });
+      h += `<div class="acts"><button class="btn primary" type="button" data-act="go">Continue</button><button class="textact" type="button" data-act="skip">Skip — use these names</button></div>`;
+      fB.innerHTML = h;
+    } else {
+      fB.innerHTML = `<div class="head"><h4>Take this list to the store</h4><button class="textact" type="button" data-act="again">Start again</button></div>
+        <div class="micro" id="whLab">Which paints?</div>
+        <div class="seg wide" role="group" aria-labelledby="whLab" style="margin:4px 0 12px;flex-wrap:wrap">
+          <button type="button" aria-pressed="true">All · 6</button>${P.map(p => `<button type="button" aria-pressed="false">${p.name ? esc(p.name) : `<span class="auto">${esc(p.auto)}</span>`} · ${p.n}</button>`).join('')}</div>
+        <p class="say" role="status">${stage === 'named' ? `${P.filter(p => p.name).length} projects named. You can rename them on the list.` : 'Automatic names kept. Rename them on the list at any time.'}</p>
+        <div class="acts"><button class="btn primary" type="button" tabindex="-1">Copy link</button><button class="btn" type="button" tabindex="-1">Print</button><button class="btn" type="button" tabindex="-1">Save as text</button></div>`;
+    }
+  }
+  fB.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.r) { const inp = document.getElementById('nm' + b.dataset.i); inp.value = b.dataset.r; inp.focus(); inp.select(); return; }
+    const act = b.dataset.act;
+    if (act === 'go') { P.forEach((p, i) => { const v = document.getElementById('nm' + i).value.trim(); p.name = v && v !== p.auto ? v : ''; }); stage = 'named'; drawB(); drawR(); fB.querySelector('.seg button')?.focus(); }
+    if (act === 'skip') { stage = 'skipped'; drawB(); fB.querySelector('.seg button')?.focus(); }
+    if (act === 'again') { P.forEach(p => p.name = ''); stage = 'ask'; drawB(); drawR(); const f = document.getElementById('nm0'); f.focus(); f.select(); }
+  });
+  fB.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input')) { e.preventDefault(); fB.querySelector('[data-act="go"]').click(); } });
+  drawB();
+
+  /* ---- 4: rename in place on the phone list ---- */
+  const fR = document.getElementById('rename');
+  const PAINTS = { k2a9:[['Death Guard Green','Citadel Base','#6D774D'],['Balthasar Gold','Citadel Base','#A77353'],['Skeleton Bone','Army Painter Warpaints','#C2AE9D']],
+    k7f3:[['Kantor Blue','Citadel Base','#02134E'],['Mephiston Red','Citadel Base','#960C09'],['Balthasar Gold','Citadel Base · also for the other project','#A77353']] };
+  let editing = null;
+  function drawR(focusKey) {
+    let h = `<div class="bar"><span class="ttl">Shopping list</span></div><div class="body">`;
+    for (const p of P) {
+      h += editing === p.key
+        ? `<div class="gh"><label class="sr" for="rn-${p.key}">Project name</label><input id="rn-${p.key}" style="flex:1;font:inherit;font-size:16px;min-height:var(--tap);padding:0 8px;border:1px solid var(--edge);border-radius:var(--r-ctrl);background:var(--surface);color:var(--text)" value="${esc(label(p))}" placeholder="${esc(p.auto)}">
+            <button class="textact" type="button" data-save="${p.key}">Done</button></div>`
+        : `<div class="gh"><span class="pn${p.name ? '' : ' auto'}">${esc(label(p))}</span><button class="textact" type="button" data-edit="${p.key}" aria-label="Rename ${esc(label(p))}">Rename</button></div>`;
+      for (const [n, l, hx] of PAINTS[p.key]) h += `<div class="row"><span class="sw" style="background:${hx}" aria-hidden="true"></span><span>${esc(n)}<small>${esc(l)}</small></span></div>`;
+    }
+    h += `<div class="gh"><span class="pn">Other paints</span></div><div class="row"><span class="sw" style="background:#EBE2D1" aria-hidden="true"></span><span>Ivory<small>Vallejo Model Color</small></span></div>`;
+    fR.innerHTML = h + `</div><p class="say" role="status" id="rnSay" style="padding:0 12px 12px">${fR.dataset.say || ''}</p>`;
+    if (focusKey) { const el = fR.querySelector(editing ? `#rn-${focusKey}` : `[data-edit="${focusKey}"]`); el?.focus(); if (editing) el?.select(); }
+  }
+  function save(key, keep) {
+    const p = P.find(x => x.key === key); const inp = document.getElementById('rn-' + key);
+    if (keep) { const v = inp.value.trim(); p.name = v && v !== p.auto ? v : ''; fR.dataset.say = p.name ? `Renamed to ${p.name}.` : `Back to the automatic name.`; }
+    editing = null; drawR(key); drawB();
+  }
+  fR.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.edit) { editing = b.dataset.edit; drawR(editing); }
+    if (b.dataset.save) save(b.dataset.save, true);
+  });
+  fR.addEventListener('keydown', e => {
+    if (!e.target.matches('input')) return;
+    if (e.key === 'Enter') { e.preventDefault(); save(editing, true); }
+    if (e.key === 'Escape') { e.preventDefault(); fR.dataset.say = ''; save(editing, false); }
+  });
+  drawR();
+})();
+</script>
+</body>
+</html>

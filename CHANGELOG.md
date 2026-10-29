@@ -14,6 +14,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   "for" label per paint; D, a receipt to print; E, a rack map (not to build: the rack order is not published).
   It also shows the hand-off from the desktop to the phone (a link or QR code) and a "bought" link back, because
   each device keeps its own shelf. Ryan's answers are on the page. (CLAUDE.md §4 is updated.)
+- **Design exploration: naming a project** (`mockups/project-naming.html`, not shipped). It follows the
+  shopping-list study. Ryan said a project's name is asked on export or save. The page proposes "label now,
+  name later": Add records the scheme silently, and a name is only a word on top. It compares four ways to ask
+  and recommends B: ask once, at the first export, with the field pre-filled and a Skip. A name is changed in
+  place on the list. It has a working flow, a data sketch for `store.js`, and four questions for Ryan.
 
 ### Fixed
 - **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role
