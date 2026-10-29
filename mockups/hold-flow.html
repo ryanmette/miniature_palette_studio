@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Keep and Change Flow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Design study, not shipped (CLAUDE.md §4: mockups/ has no runtime role). Ryan, 2026-10-29: "Let's do a
+     study on how the flow would work. The pinning vs locking and everything else. Maybe look outside for
+     influences." Numbers come from the app's own engine (src/js/scheme.js, data 1.6.0) and from browser runs of
+     the live build; each is marked where it came from. -->
+<style>
+/* Layout: one reading column with wide tables and frames that scroll inside themselves; Workbench+ tokens
+   (CLAUDE.md §3.1), the app's own look, so the frames read as the app. */
+:root {
+  --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6; --border:#DCD8D0; --border-strong:#C9C4BA;
+  --text:#1D1C19; --muted:#5E5A52; --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+  --success:#0F7334; --warning:#945908; --danger:#C4203D; --buy:#1D4ED8;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --border:#3A302A; --border-strong:#4D4138;
+  --text:#ECE3D8; --muted:#A8998A; --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+  --success:#86A559; --warning:#E0803A; --danger:#D86C58; --buy:#5E93C9; color-scheme:dark; } }
+:root[data-theme="dark"] {
+  --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --border:#3A302A; --border-strong:#4D4138;
+  --text:#ECE3D8; --muted:#A8998A; --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+  --success:#86A559; --warning:#E0803A; --danger:#D86C58; --buy:#5E93C9; color-scheme:dark; }
+@font-face { font-family:"Barlow Condensed"; font-weight:600; src:url(../src/assets/fonts/barlow-condensed-600.woff2) format("woff2"); }
+@font-face { font-family:"Barlow Condensed"; font-weight:700; src:url(../src/assets/fonts/barlow-condensed-700.woff2) format("woff2"); }
+@font-face { font-family:"IBM Plex Sans"; font-weight:400; src:url(../src/assets/fonts/ibm-plex-sans-400.woff2) format("woff2"); }
+@font-face { font-family:"IBM Plex Sans"; font-weight:600; src:url(../src/assets/fonts/ibm-plex-sans-600.woff2) format("woff2"); }
+body { background:var(--bg); color:var(--text); font:15px/1.55 var(--font); margin:0; }
+.wrap { max-width:1040px; margin:0 auto; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); padding-block:32px 64px; display:grid; gap:12px; }
+h1 { font:700 40px/1.05 var(--display); margin:0; text-wrap:balance; }
+h2 { font:700 28px/1.1 var(--display); margin:40px 0 4px; padding-top:24px; border-top:1px solid var(--border); text-wrap:balance; }
+h3 { font:600 20px/1.2 var(--display); margin:20px 0 0; }
+p, li { max-width:72ch; } p { margin:0; }
+ul, ol { margin:0; padding-left:22px; display:grid; gap:6px; }
+.lede { font-size:17px; color:var(--muted); }
+.eyebrow { font:500 12px/1 var(--font); letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.ask { border-left:3px solid var(--accent); padding:4px 0 4px 14px; color:var(--muted); font-style:italic; }
+.toc { display:flex; flex-wrap:wrap; gap:4px 16px; font-size:14px; }
+.toc a { color:var(--accent); }
+a { color:var(--accent); }
+code, .mono { font-family:var(--mono); font-size:.9em; }
+.tw { overflow-x:auto; border:1px solid var(--border); border-radius:6px; background:var(--surface); }
+table { border-collapse:collapse; width:100%; font-size:14px; }
+th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--border); }
+th { font-weight:600; background:var(--surface-2); }
+tr:last-child td { border-bottom:0; }
+td.n { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.keep { color:var(--success); font-weight:600; } .chg { color:var(--warning); font-weight:600; } .bad { color:var(--danger); font-weight:600; }
+.tag { display:inline-block; border:1px solid var(--border-strong); border-radius:2px; padding:0 6px; font-size:12px; font-weight:600; color:var(--muted); }
+.tag.rec { border-color:var(--accent); color:var(--accent); }
+.tag.sec { border-color:var(--warning); color:var(--warning); }
+.callout { border:1px solid var(--border-strong); border-radius:6px; padding:12px 14px; background:var(--surface); display:grid; gap:6px; }
+.callout.find { border-color:var(--danger); }
+.callout strong { font-weight:600; }
+.grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; }
+.card { border:1px solid var(--border); border-radius:6px; padding:12px 14px; background:var(--surface); display:grid; gap:6px; align-content:start; }
+.card h3 { margin:0; }
+/* the model diagram */
+.model { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; }
+.model .box { border:1px solid var(--border-strong); border-radius:4px; padding:10px 12px; background:var(--surface); display:grid; gap:4px; }
+.model .box b { font:700 18px/1.1 var(--display); }
+.model .box.you { border-color:var(--accent); background:var(--accent-weak); }
+/* frames: a palette column and a recipe card side by side, drawn in the app's own language */
+.frames { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; }
+.frame { border:1px solid var(--border); border-radius:6px; background:var(--bg); padding:10px; display:grid; gap:8px; }
+.frame .cap { font-size:12.5px; color:var(--muted); }
+.cols { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+.col { border-radius:3px; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(0,0,0,.1); background:var(--surface-2); font-size:11px; display:grid; grid-template-rows:62px auto auto; }
+.col .top { padding:5px 6px; display:flex; flex-direction:column; justify-content:space-between; }
+.col .top .r { font-weight:600; }
+.col .top .h { font-family:var(--mono); font-size:10px; }
+.col .mk { padding:4px 6px 0; min-height:22px; }
+.col .ft { padding:4px 6px 6px; line-height:1.25; }
+.chip { display:inline-flex; gap:3px; align-items:center; border:1px solid var(--accent); border-radius:2px; padding:0 4px; font-size:10.5px; font-weight:600; background:var(--surface); color:var(--text); }
+.chip.pin { background:var(--accent); color:var(--on-accent); }
+.chip.lock { border-color:var(--border-strong); }
+.dock { display:block; text-align:center; border:1.5px dashed var(--border-strong); border-radius:4px; font-size:10.5px; color:var(--muted); padding:1px 2px; }
+.rcard { border-top:1px solid var(--border); padding-top:8px; display:grid; gap:4px; font-size:12.5px; }
+.rcard .rh { display:flex; justify-content:space-between; align-items:center; gap:6px; }
+.rcard .rh b { font:700 16px var(--display); }
+.rcard .row { display:flex; gap:6px; align-items:center; }
+.sw { width:26px; height:26px; border-radius:3px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.15); flex:none; }
+.health { border:1px solid var(--warning); border-radius:4px; padding:6px 8px; font-size:12.5px; background:var(--surface); }
+.health b { color:var(--warning); }
+.btnlike { display:inline-block; border:1px solid var(--border-strong); border-radius:4px; padding:1px 7px; font-size:11.5px; background:var(--surface); }
+.txtact { color:var(--accent); font-weight:600; }
+.dirs { display:grid; gap:12px; }
+.dir { border:1px solid var(--border); border-radius:6px; background:var(--surface); padding:14px; display:grid; gap:8px; }
+.dir.rec { border-color:var(--accent); }
+.dir h3 { margin:0; }
+.pc { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; }
+.pc div { display:grid; gap:4px; }
+.score { font-variant-numeric:tabular-nums; }
+.note { font-size:13px; color:var(--muted); }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+@media (max-width:520px) { h1 { font-size:32px; } h2 { font-size:24px; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+<span class="eyebrow">Design study · not shipped · 2026-10-29</span>
+<h1>Keep this, change the rest: your starting paint, locks and pins</h1>
+<p class="lede">How the Studio should let a painter say what must stay while the app works out the rest. The study measures today's controls, looks at how other tools do it, proposes one model, and walks three painters through it.</p>
+<p class="ask">“Let's do a study on how the flow would work. The pinning vs locking and everything else. Maybe look outside for influences to better achieve this.” — and: “‘Make this your paint’ can feel confusing if it's not a paint you already own.” (Ryan)</p>
+<nav class="toc" aria-label="On this page">
+  <a href="#today">1 Today, measured</a><a href="#outside">2 Outside influences</a><a href="#model">3 One model</a>
+  <a href="#words">4 Words</a><a href="#dirs">5 Three directions</a><a href="#rules">6 The rules</a>
+  <a href="#flows">7 Three painters</a><a href="#conflict">8 When a choice does not fit</a><a href="#verdict">9 Verdict</a><a href="#ask">10 Questions</a>
+</nav>
+
+<!-- ================================================================== 1 -->
+<h2 id="today">1. Today, measured</h2>
+<p>Eleven controls change a scheme today. They sit in four places, and they act on two different things: the <strong>live palette</strong> (colours, as in Adobe Color) and the <strong>Recipe</strong> (roles and the pots to buy).</p>
+<div class="tw"><table>
+<thead><tr><th scope="col">Control</th><th scope="col">Where</th><th scope="col">What it holds or changes</th><th scope="col">Reaches the Recipe?</th></tr></thead>
+<tbody>
+<tr><td>Paint field / Browse / From photo</td><td>Seed toolbar</td><td>Sets the starting paint (or a colour)</td><td class="keep">Yes — every role is built from it</td></tr>
+<tr><td>Dock “Move my paint here”</td><td>Live palette</td><td>Moves the starting paint between Primary and Accent</td><td class="keep">Yes</td></tr>
+<tr><td>Harmony chips · Roll a scheme</td><td>Under the wheel</td><td>Change the rule that makes the other colours</td><td class="keep">Yes</td></tr>
+<tr><td>↻ Pick a colour for me · wheel drag · lightness</td><td>Wheel</td><td>Change the starting colour</td><td class="keep">Yes</td></tr>
+<tr><td>🔒 Lock</td><td>Live palette column</td><td>Keeps a colour when the harmony, Roll or ↻ change</td><td class="bad">No — see the finding below</td></tr>
+<tr><td>✎ Edit · + Add · − Remove · reorder</td><td>Live palette</td><td>Change palette colours by hand</td><td class="bad">No</td></tr>
+<tr><td>◎ Start from this colour</td><td>Live palette column</td><td>Makes a palette colour the starting colour</td><td class="keep">Yes</td></tr>
+<tr><td>Use my paints (Off · Prefer · Only)</td><td>⋯ menu</td><td>Which pots may match</td><td class="keep">Yes (matching only)</td></tr>
+<tr><td>Tone ladder · Include Contrast</td><td>Recipe tab</td><td>Which steps and paint types are offered</td><td class="keep">Yes</td></tr>
+<tr><td>Mark owned / shopping list</td><td>Everywhere</td><td>State of a paint on your shelf</td><td>Decorates matches</td></tr>
+<tr><td><em>(missing)</em> Hold a specific pot on a role</td><td>—</td><td>“Metal must be Balthasar Gold”</td><td>—</td></tr>
+</tbody></table></div>
+
+<div class="callout find">
+  <strong>Finding: a lock never reaches the Recipe.</strong>
+  <p>Measured in the live build (v1.11.0, Chrome, 1280px), starting colour <code>#4A6B2F</code>, Triadic:</p>
+  <ol>
+    <li>Before: live palette and Recipe agree. Secondary is <code>#2F4A6B</code> in both.</li>
+    <li>Lock Secondary: the column jumps after Accent. It is now a “free” colour, cut from the harmony.</li>
+    <li>Change to Complementary: the palette keeps the blue but calls it <strong>“Added”</strong>; the Recipe's Secondary becomes green <code>#2F6B32</code>. The shopping list follows the Recipe, so the lock bought nothing.</li>
+    <li>↻ and Roll behave the same. After a Roll to Shades the palette has <strong>7 columns</strong>; the Recipe still has its 4 roles and no blue.</li>
+  </ol>
+  <p>Why: <code>currentScheme()</code> (app.js) builds the Recipe from the starting colour, the harmony and the settings only. Locks, edits and added colours live in <code>state.extraNodes</code>, which only the live palette reads. So today the app has <strong>two models of one scheme</strong>. A pin added on top would be a third.</p>
+</div>
+
+<div class="callout">
+  <strong>Finding: “your paint” collides with “my paints”.</strong>
+  <p>Since v1.11.0 the pick is “your paint”, and ⋯ has “Use my paints”, which means <em>owned</em>. A painter who picks Mephiston Red to plan a new army does not own it, yet the app calls it “your paint” and the Shelf's menu says “Make this your paint”. Both words claim ownership. (Ryan's note.)</p>
+</div>
+
+<div class="callout">
+  <strong>The case the app cannot do</strong>
+  <p>Ryan's Death Guard example, computed with the app's engine (data 1.6.0): starting from Citadel <strong>Death Guard Green</strong> <code>#6D774D</code>, the Metal role's target is gunmetal <code>#6E7177</code> in Complementary, Triadic and Analogous alike, matched to Vallejo Dark Steel (ΔE 2.5). The painter wants <strong>Balthasar Gold</strong> <code>#A77353</code>: <strong>ΔE 22.9</strong> from that target, a Poor match. Nothing in the app can hold it there.</p>
+</div>
+
+<!-- ================================================================== 2 -->
+<h2 id="outside">2. Outside influences</h2>
+<p>How other tools let you keep one thing and regenerate the rest. Sources are the products' own pages where this session could reach them; several sites (Coolors, Adobe, Huemint, NN/g) were blocked by the session's network, so their lines come from the official text quoted in search results, and third-party sources are marked <span class="tag sec">secondary</span>.</p>
+<div class="tw"><table>
+<thead><tr><th scope="col">Tool</th><th scope="col">What you fix</th><th scope="col">What regenerates</th><th scope="col">Lesson for us</th></tr></thead>
+<tbody>
+<tr><td><a href="https://help.coolors.co/hc/en-us/articles/360010581980">Coolors</a></td><td>A colour, with a padlock on its column</td><td>Every unlocked column, on Space</td><td>The lock lives on the item; one key rerolls the rest.</td></tr>
+<tr><td><a href="https://realtimecolors.com/docs/color-locking">Realtime Colors</a></td><td>Up to 4 colours (padlock)</td><td>The others, “in relation to” the locked ones, on Space or a dice icon</td><td>The free colours fit around the locked ones; they are not random.</td></tr>
+<tr><td><a href="https://huemint.com/about/">Huemint</a></td><td>A swatch (click to lock)</td><td>The rest; each slot has a role (background, foreground, accent)</td><td>Role-aware slots: a fix belongs to a role, not just to a colour.</td></tr>
+<tr><td><a href="https://helpx.adobe.com/creative-cloud/adobe-color.html">Adobe Color</a></td><td>One <em>base</em> colour (a triangle mark)</td><td>All others follow the harmony rule; for free colours, the Custom rule</td><td>One anchor, clearly marked. No lock at all.</td></tr>
+<tr><td><a href="https://m3.material.io/styles/color/advanced/define-new-colors">Material 3</a></td><td>The <em>source</em> colour; plus <em>static</em> (custom) colours</td><td>Dynamic colours follow the source; a static colour can be “harmonized” toward it or kept exact</td><td>Two kinds of fix: the anchor, and literal colours that must not move (brand colours, “real-world signage”). A real pot is that literal kind.</td></tr>
+<tr><td>Colormind <span class="tag sec">secondary</span></td><td>A slot given a value</td><td>Slots given <code>"N"</code></td><td>Fixed and free slots, nothing in between.</td></tr>
+<tr><td><a href="https://support.microsoft.com/en-us/excel/define-and-solve-a-problem-by-using-solver">Excel Solver</a></td><td>Every cell not listed as variable</td><td>The variable cells, under constraints</td><td>When the fixes cannot all hold, the <a href="https://www.solver.com/help/analytic-solver/Solver-could-not-find-a-feasible-solution">Feasibility Report</a> names the constraints that clash.</td></tr>
+<tr><td><a href="https://cad.onshape.com/help/Content/Home/colors.htm">Onshape (CAD)</a></td><td>Constraints on a sketch</td><td>The free geometry</td><td>Health by colour: blue under-defined, black fully defined, red over-defined, with the culprit marked.</td></tr>
+<tr><td>Fontjoy <span class="tag sec">secondary</span></td><td>A font (padlock)</td><td>The unlocked fonts; a slider sets “similar ↔ contrast”</td><td>A dial for how far a reroll may wander.</td></tr>
+<tr><td><a href="https://blog.eatthismuch.com/eat-this-much-tutorial-3-getting-meals-you-like-part-1-how-to-regenerate-meals-favorite-and-block-foods/">Eat This Much</a></td><td>A meal (“I ate this” locks it)</td><td>The day (one button) or one meal (shuffle)</td><td>Reroll at two scopes: everything, or one slot.</td></tr>
+<tr><td><a href="https://developer.spotify.com/documentation/web-api/reference/get-recommendations">Spotify recommendations</a></td><td>Up to 5 seeds</td><td>The list; it reports when filters make the request impossible</td><td>Seeds are inputs; say when the inputs over-constrain the result.</td></tr>
+<tr><td><a href="https://www.warhammer-community.com/en-gb/articles/omFJUf55/citadel-colour-the-only-painting-partner-you-need/">Citadel Colour</a> and other hobby apps</td><td>Nothing: fixed recipes (Paint by Model), converters, inventories</td><td>—</td><td>No hobby tool found lets you hold a real pot on a role and fit the rest. This would be new in the hobby (search coverage only).</td></tr>
+</tbody></table></div>
+
+<h3>What carries over</h3>
+<div class="grid2">
+  <div class="card"><h3>1 · One marked anchor</h3><p>Adobe's base, M3's source, Spotify's seed. Everything follows it. Ours is the starting paint; it needs a clear mark and a name that does not mean “owned”.</p></div>
+  <div class="card"><h3>2 · The fix lives on the item</h3><p>Coolors, Realtime Colors, Fontjoy: the padlock sits on what it keeps, and pressing it again undoes it. No mode, no settings page.</p></div>
+  <div class="card"><h3>3 · Two kinds of fix</h3><p>M3 separates colours that may be nudged to fit from colours that must stay exact. Ours: a <strong>locked colour</strong> is a target (the nearest pot may change); a <strong>pinned pot</strong> is literal (it is the paint on your desk).</p></div>
+  <div class="card"><h3>4 · The fix is per role</h3><p>Huemint knows background, foreground and accent. Our roles (Primary, Secondary, Accent, Metal) are the natural slots for a fix; a free “Added” colour that belongs to no role is what broke today.</p></div>
+  <div class="card"><h3>5 · Free colours fit the fixed ones</h3><p>Realtime Colors regenerates “in relation to” the locks. For us the harmony still comes from the anchor, but the report on fit must account for the fixes.</p></div>
+  <div class="card"><h3>6 · Name the clash</h3><p>Solver's Feasibility Report and Onshape's red constraint: when a fix makes the result poor, say which fix and how far. Never silently degrade.</p></div>
+</div>
+<p class="note">Vocabulary: <strong>lock</strong> (padlock) is the near-universal word for “keep when I reroll”. <strong>Base / source / seed</strong> is the one input everything comes from. <strong>Pin</strong> means “keep at the top” almost everywhere; no tool uses it for rerolls, so if we use it, the UI must teach it by what it holds (a pot).</p>
+
+<!-- ================================================================== 3 -->
+<h2 id="model">3. One model: what you decide, what the app works out</h2>
+<p>Every control sorts into one of four jobs. The model fixes the finding above by making the live palette and the Recipe two views of <strong>one</strong> scheme.</p>
+<div class="model">
+  <div class="box you"><span class="eyebrow">You decide</span><b>Start</b><span>The starting paint (or colour), and the role it plays: Primary or Accent.</span></div>
+  <div class="box you"><span class="eyebrow">You decide</span><b>Hold</b><span>🔒 Lock a role's <em>colour</em> (a target) or 📌 pin a role's <em>pot</em> (a real paint). Held things survive every reroll.</span></div>
+  <div class="box"><span class="eyebrow">You ask</span><b>Explore</b><span>Harmony, Roll, ↻, drag, lightness. Each one recomputes everything you have not held.</span></div>
+  <div class="box"><span class="eyebrow">You limit</span><b>Filter</b><span>Use my paints, Include Contrast, the tone ladder. They limit which pots may match; they never move a colour.</span></div>
+</div>
+<p>Three consequences:</p>
+<ul>
+  <li><strong>A hold belongs to a role.</strong> Locking the Secondary column holds the Secondary target, in the palette <em>and</em> in the Recipe. The shopping list follows.</li>
+  <li><strong>A pin is a lock plus a chosen pot.</strong> Pinning Balthasar Gold to Metal sets the Metal target to its colour and the Metal pot to it. Unpinning gives the generated target back.</li>
+  <li><strong>Extra colours stay extra.</strong> A colour added with + that is not a role (a fifth or sixth column) is a sketch colour: it shows on the palette as <em>Extra</em>, it can be locked, and it is not in the Recipe. The palette says so, so nobody expects to buy it.</li>
+</ul>
+
+<!-- ================================================================== 4 -->
+<h2 id="words">4. Words</h2>
+<p>Ryan's point: a word for the starting paint must not sound like ownership. The candidates, judged against what a painter says at the bench:</p>
+<div class="tw"><table>
+<thead><tr><th scope="col">Name for the anchor</th><th scope="col">Clash with “owned”?</th><th scope="col">Says what it does?</th><th scope="col">On a 110px phone column</th><th scope="col">Verdict</th></tr></thead>
+<tbody>
+<tr><td>your paint <em>(today)</em></td><td class="bad">Yes</td><td>No — “yours” of what?</td><td>Fits</td><td>Replace</td></tr>
+<tr><td><strong>Starting paint</strong></td><td class="keep">No</td><td class="keep">Yes — the scheme starts from it</td><td>“Starting paint” fits on one line at 11.5px</td><td><span class="tag rec">Recommended</span></td></tr>
+<tr><td>Base paint</td><td class="keep">No</td><td class="bad">Clashes with Citadel's “Base” paint line and the base step of the tone ladder</td><td>Fits</td><td>No</td></tr>
+<tr><td>Key paint / key colour</td><td class="keep">No</td><td>Partly; design jargon</td><td>Fits</td><td>Second choice</td></tr>
+<tr><td>Hero paint</td><td class="keep">No</td><td>Partly; and “hero” is already the top line's code name</td><td>Fits</td><td>No</td></tr>
+<tr><td>Seed (the code name)</td><td class="keep">No</td><td>Not to a painter</td><td>Fits</td><td>No</td></tr>
+</tbody></table></div>
+<div class="tw"><table>
+<thead><tr><th scope="col">Place</th><th scope="col">Today (v1.11)</th><th scope="col">Proposed</th></tr></thead>
+<tbody>
+<tr><td>Tag on the anchor's palette column</td><td>✓ Your paint</td><td>★ Starting paint</td></tr>
+<tr><td>Dock on the other column</td><td>⚓ Move my paint here <em>(PR #49)</em></td><td>⚓ Move here <span class="note">(the tag beside it says what moves; the name is “Move the starting paint to Primary”)</span></td></tr>
+<tr><td>Shelf menu</td><td>Make this your paint</td><td>Start a scheme from this</td></tr>
+<tr><td>Toast</td><td>Your paint: Mephiston Red</td><td>Starting paint: Mephiston Red</td></tr>
+<tr><td>A typed hex</td><td>Your colour: #9A1115</td><td>Starting colour: #9A1115</td></tr>
+<tr><td>Lock (palette column and Recipe card)</td><td>🔒 Lock / Unlock (palette only)</td><td>🔒 Lock colour · <em>Colour locked</em></td></tr>
+<tr><td>Pin (Recipe card and palette column)</td><td>—</td><td>📌 Choose pot… · <em>Pot chosen: Balthasar Gold</em></td></tr>
+<tr><td>“Use my paints”</td><td>Use my paints</td><td>Unchanged — it <em>is</em> about owned paints, now the only “my”</td></tr>
+</tbody></table></div>
+<p class="note">Why “Choose pot” and not “Pin”: research found no tool that uses pin for this, and painters say “I'm using Balthasar Gold for the metal”. The 📌 icon can stay as the mark; the words say what it holds. The code can still call it a pin.</p>
+
+<!-- ================================================================== 5 -->
+<h2 id="dirs">5. Three directions for the whole flow</h2>
+<div class="dirs">
+<div class="dir rec">
+  <h3>A · One scheme, two holds <span class="tag rec">Recommended</span></h3>
+  <p>Fix the model first: the live palette and the Recipe show one scheme. Each role can be <strong>locked</strong> (hold its colour) or have a <strong>chosen pot</strong> (hold the paint). Both marks show on the palette column and on the Recipe card. Roll, harmony and ↻ change everything else. A short fit line (section 8) says when a hold does not suit the scheme.</p>
+  <div class="frames">
+    <div class="frame">
+      <div class="cols">
+        <div class="col"><div class="top" style="background:#6D774D;color:#fff"><span class="r">Primary</span><span class="h">#6D774D</span></div><div class="mk"><span class="chip">★ Starting paint</span></div><div class="ft">Death Guard Green</div></div>
+        <div class="col"><div class="top" style="background:#58774D;color:#fff"><span class="r">Secondary</span><span class="h">#58774D</span></div><div class="mk"></div><div class="ft">Army Green</div></div>
+        <div class="col"><div class="top" style="background:#574D77;color:#fff"><span class="r">Accent</span><span class="h">#574D77</span></div><div class="mk"><span class="dock">⚓ Move here</span></div><div class="ft">Titan Blue</div></div>
+        <div class="col"><div class="top" style="background:#A77353;color:#fff"><span class="r">Metal</span><span class="h">#A77353</span></div><div class="mk"><span class="chip pin">📌 Pot chosen</span></div><div class="ft">Balthasar Gold</div></div>
+      </div>
+      <div class="cap">Live palette, Complementary. The Metal column shows the chosen pot, not the generated gunmetal. Engine numbers; the frame is drawn.</div>
+    </div>
+    <div class="frame">
+      <div class="rcard"><div class="rh"><b>Metal</b><span class="chip pin">📌 Pot chosen</span></div>
+        <div class="row"><span class="sw" style="background:#6E7177" title="Generated target #6E7177"></span>→<span class="sw" style="background:#A77353"></span><span><strong>Balthasar Gold</strong> · Citadel<br><span class="bad">Poor</span> <span class="mono">ΔE 22.9</span> from the generated target</span></div>
+        <span class="note">Left swatch: what the scheme would pick. The gap stays visible (§2 honesty). <span class="txtact">Change pot</span> · <span class="txtact">Unpin</span></span>
+      </div>
+      <div class="cap">Recipe card. The tone ladder builds from Balthasar Gold (§7 steps from the pot's hex).</div>
+    </div>
+  </div>
+  <div class="pc"><div><strong>For</strong><ul><li>Fixes today's lock bug and adds the pin in one model.</li><li>Keeps Sam's colour exploration (lock) and Priya's planning (choose pot).</li><li>Each hold sits on the thing it holds, in both views (Coolors, Huemint).</li><li>Small engine change: <code>buildScheme</code> takes per-role holds; the pin study's prototype did it in about 12 ms.</li></ul></div>
+  <div><strong>Against</strong><ul><li>Two marks to learn (lock and pot). Words and the fit line must carry it.</li><li>Locks on today's “Added” columns need a migration: role columns keep their lock; extra columns become Extra.</li></ul></div></div>
+</div>
+
+<div class="dir">
+  <h3>B · Choose pots only</h3>
+  <p>One kind of hold. The palette's lock goes; to keep a role, you choose its pot (the nearest pot is offered first, one tap). A held role is always a real paint.</p>
+  <div class="pc"><div><strong>For</strong><ul><li>One concept, one icon. Nothing to explain.</li><li>Everything held is buyable, so the shopping list is exact.</li></ul></div>
+  <div><strong>Against</strong><ul><li>Sam can no longer keep a colour that no pot matches well (an exact teal for a cloak); he must accept a pot.</li><li>Removes a control people know from Coolors and from today's app.</li><li>Locking a target and letting “Use my paints” pick the owned pot later is lost.</li></ul></div></div>
+</div>
+
+<div class="dir">
+  <h3>C · A paint list first (“Paints I'm using”)</h3>
+  <p>The pin study's direction B, widened: a tray of paints you are using. The first is the starting paint; the app assigns roles to the rest and fills the gaps. Locks stay on the palette for colour play.</p>
+  <div class="pc"><div><strong>For</strong><ul><li>The most hobby-native: it starts from the pots on the desk. No hobby app does this today.</li><li>No need to know roles before choosing paints.</li></ul></div>
+  <div><strong>Against</strong><ul><li>The largest change: a new surface and role assignment rules (a gold is Metal, but a brown could be Secondary or Metal).</li><li>Two places to set the scheme (the tray and the wheel). It scored 35 of 60 in the pin study, against A's 49.</li></ul></div></div>
+</div>
+</div>
+
+<h3>Scores</h3>
+<p>Each direction scored 1–5 on five questions, by the study's author against the evidence above (a self-score, not independent judges).</p>
+<div class="tw"><table>
+<thead><tr><th scope="col">Question</th><th scope="col">A · Two holds</th><th scope="col">B · Pots only</th><th scope="col">C · Paint list</th></tr></thead>
+<tbody>
+<tr><td>Does Ryan's Death Guard case work?</td><td class="n">5</td><td class="n">5</td><td class="n">5</td></tr>
+<tr><td>Does Sam's colour exploration still work?</td><td class="n">5</td><td class="n">2</td><td class="n">4</td></tr>
+<tr><td>Is it one model (palette = Recipe)?</td><td class="n">5</td><td class="n">5</td><td class="n">3</td></tr>
+<tr><td>How much is there to learn?</td><td class="n">3</td><td class="n">5</td><td class="n">3</td></tr>
+<tr><td>Build cost and risk (5 = small)</td><td class="n">4</td><td class="n">4</td><td class="n">2</td></tr>
+<tr><th scope="row">Total of 25</th><th class="n score">22</th><th class="n score">21</th><th class="n score">17</th></tr>
+</tbody></table></div>
+
+<!-- ================================================================== 6 -->
+<h2 id="rules">6. The rules (direction A)</h2>
+<p>What each action does to each kind of decision. <span class="keep">Keeps</span> means untouched; <span class="chg">recomputes</span> means the app works it out again.</p>
+<div class="tw"><table>
+<thead><tr><th scope="col">Action</th><th scope="col">Starting paint</th><th scope="col">🔒 Locked colour</th><th scope="col">📌 Chosen pot</th><th scope="col">Roles you did not hold</th></tr></thead>
+<tbody>
+<tr><td>Pick a new starting paint</td><td class="chg">Replaced</td><td class="keep">Keeps</td><td class="keep">Keeps</td><td class="chg">Recomputes</td></tr>
+<tr><td>⚓ Move here (Primary ⇄ Accent)</td><td>Changes role</td><td class="keep">Keeps</td><td class="keep">Keeps</td><td class="chg">Recomputes</td></tr>
+<tr><td>Harmony chip · Roll a scheme</td><td class="keep">Keeps</td><td class="keep">Keeps</td><td class="keep">Keeps</td><td class="chg">Recomputes</td></tr>
+<tr><td>↻ Pick a colour for me · wheel drag · lightness</td><td class="chg">New colour</td><td class="keep">Keeps</td><td class="keep">Keeps</td><td class="chg">Recomputes</td></tr>
+<tr><td>Use my paints · Include Contrast</td><td class="keep">Keeps</td><td>Keeps the colour; its pot may change</td><td class="keep">Keeps the pot (“not in your paints” under Only)</td><td>Pots may change</td></tr>
+<tr><td>Undo / redo</td><td colspan="4">Each hold, release and change is one step, as today.</td></tr>
+<tr><td>Share link</td><td colspan="4">Holds travel in the link (one parameter per role), so a friend sees the same Recipe.</td></tr>
+</tbody></table></div>
+<ul>
+  <li><strong>The starting paint's role holds nothing else.</strong> It already is the paint you chose (no lock or pot there). To change it, choose a new starting paint.</li>
+  <li><strong>Choosing a pot replaces a lock</strong> on the same role (the pot's colour becomes the target). Releasing the pot gives back the generated colour, not the old lock.</li>
+  <li><strong>⚓ Move here does not show on a held column.</strong> Release it first, so two of your choices never fight over one role (the pin study's rule).</li>
+  <li><strong>No role reuses a held pot.</strong> Held pots are taken first, as the starting paint is today.</li>
+  <li><strong>Release all.</strong> A text action under the palette, “Release 2 holds”, when any hold exists: the one way back to a fully generated scheme.</li>
+</ul>
+
+<!-- ================================================================== 7 -->
+<h2 id="flows">7. Three painters, direction A</h2>
+<h3>Priya plans a new army (the planner)</h3>
+<div class="tw"><table><thead><tr><th scope="col">Step</th><th scope="col">She does</th><th scope="col">The app</th></tr></thead><tbody>
+<tr><td class="n">1</td><td>Types “mephiston” and picks Mephiston Red.</td><td>Starting paint: Mephiston Red (★ on Primary). Recipe for Complementary.</td></tr>
+<tr><td class="n">2</td><td>Tries Triadic and Split, then Rolls twice.</td><td>Every role except Primary recomputes each time. Nothing is held, so nothing surprises her.</td></tr>
+<tr><td class="n">3</td><td>Likes the Secondary brown; taps 🔒 on its card.</td><td>Secondary is locked in the Recipe and on the palette. The next Rolls change only Accent and Metal.</td></tr>
+<tr><td class="n">4</td><td>Adds the gaps to the shopping list.</td><td>The list has the locked Secondary's pot. Today it would not.</td></tr>
+</tbody></table></div>
+
+<h3>Sam explores on the wheel (the explorer)</h3>
+<div class="tw"><table><thead><tr><th scope="col">Step</th><th scope="col">He does</th><th scope="col">The app</th></tr></thead><tbody>
+<tr><td class="n">1</td><td>Presses ↻ until a teal looks right, drags it lighter.</td><td>Starting colour: teal. All roles follow.</td></tr>
+<tr><td class="n">2</td><td>Locks the Accent orange on the palette (🔒 on the column).</td><td>Accent locked: same mark on the Recipe card. The orange is a target; the pot under it is the nearest.</td></tr>
+<tr><td class="n">3</td><td>Adds a sixth colour with + to try a glow.</td><td>The column says <em>Extra</em>: a sketch colour, not in the Recipe. The palette's footnote: “Extra colours are not in the Recipe.”</td></tr>
+<tr><td class="n">4</td><td>Turns on Use my paints: Only.</td><td>The locked orange stays; its pot becomes the nearest one he owns, with its ΔE.</td></tr>
+</tbody></table></div>
+
+<h3>A Death Guard player finishes a started model (Ryan's case)</h3>
+<div class="tw"><table><thead><tr><th scope="col">Step</th><th scope="col">He does</th><th scope="col">The app (engine numbers)</th></tr></thead><tbody>
+<tr><td class="n">1</td><td>Starts from Death Guard Green.</td><td>Primary Death Guard Green; Metal target gunmetal <code>#6E7177</code> → Vallejo Dark Steel, ΔE 2.5.</td></tr>
+<tr><td class="n">2</td><td>On the Metal card, taps 📌 Choose pot…, types “balthasar”, picks Balthasar Gold.</td><td>The search list puts metallics first. Metal now holds Balthasar Gold <code>#A77353</code>; the card shows the generated gunmetal on the left and <span class="bad">Poor · ΔE 22.9</span>.</td></tr>
+<tr><td class="n">3</td><td>Reads the fit line.</td><td>“Balthasar Gold is far from this scheme's metal (ΔE 22.9). The rest of the scheme does not depend on Metal, so nothing else changes.”</td></tr>
+<tr><td class="n">4</td><td>Rolls a few harmonies for the Secondary and Accent.</td><td>Primary and Metal stay; the other two recompute. He adds the gaps to the shopping list.</td></tr>
+</tbody></table></div>
+
+<!-- ================================================================== 8 -->
+<h2 id="conflict">8. When a choice does not fit</h2>
+<p>From Solver and Onshape: say which choice causes the problem, and how much, in plain words. One line under the live palette, in the matching note's place, shown only when a held role is Poor (over ΔE 10 from its generated target):</p>
+<div class="frames">
+  <div class="frame">
+    <div class="health"><b>Metal:</b> Balthasar Gold is ΔE 22.9 from this scheme's metal (Poor). <span class="txtact">Keep it</span> · <span class="txtact">Show closer pots</span></div>
+    <div class="cap">A chosen pot far from the scheme. “Keep it” dismisses the line for this hold; the ΔE stays on the card.</div>
+  </div>
+  <div class="frame">
+    <div class="health"><b>Accent:</b> your locked orange has no pot within ΔE 10 under “Only my paints”. <span class="txtact">Show the closest to buy</span></div>
+    <div class="cap">A locked colour that the filter cannot match. This replaces a silent Poor tag.</div>
+  </div>
+</div>
+<p class="note">Not proposed: moving the harmony to fit a held pot. A held colour does not steer the other roles (Realtime Colors does this; our harmonies come from the starting paint, which is clearer). If Ryan wants “fit the scheme to my pots”, it is a later step: Start from this pot (◎) already exists for one colour.</p>
+
+<!-- ================================================================== 9 -->
+<h2 id="verdict">9. Verdict</h2>
+<div class="callout" style="border-color:var(--accent)">
+  <strong>Build direction A, in three steps.</strong>
+  <ol>
+    <li><strong>One model (a fix).</strong> A lock belongs to a role and reaches the Recipe. Columns that are not roles show as <em>Extra</em>, with a footnote. This fixes today's lock and needs no new control.</li>
+    <li><strong>Words.</strong> “Starting paint” and “Starting colour” replace “your paint” and “your colour”; the dock says “Move here” beside the ★ tag; the Shelf's menu says “Start a scheme from this”.</li>
+    <li><strong>Choose a pot (the pin).</strong> 📌 Choose pot… on each Recipe card (from the pin study, direction A), shown on the palette column too, with the fit line.</li>
+  </ol>
+  <p>Later, if wanted: a per-role reroll (Eat This Much's shuffle) and a “similar ↔ bold” dial for Roll (Fontjoy, Huemint).</p>
+</div>
+
+<!-- ================================================================== 10 -->
+<h2 id="ask">10. Questions for Ryan</h2>
+<ol>
+  <li><strong>Direction:</strong> A (two holds), B (pots only), or C (a paint list)?</li>
+  <li><strong>The anchor's name:</strong> “Starting paint” (recommended), “Key paint”, or another word you use at the bench?</li>
+  <li><strong>The pin's words:</strong> “Choose pot…” with a 📌 mark (recommended), or “Pin”?</li>
+  <li><strong>A new starting paint:</strong> keep the holds (recommended: your Balthasar Gold survives a new green), or clear them?</li>
+  <li><strong>Order:</strong> ship step 1 (the lock fix) first on its own? It fixes a real bug and needs no new design.</li>
+</ol>
+<p class="note">Sources and method: today's behaviour was measured in the live build with Playwright (1280 × 900, Chromium); engine numbers come from <code>src/js/scheme.js</code> with paint data 1.6.0; outside tools are cited inline. The earlier, narrower study is <code>mockups/pin-a-paint.html</code>.</p>
+</main>
+</body>
+</html>

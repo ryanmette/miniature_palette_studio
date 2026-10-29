@@ -5,6 +5,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Design study: keep this, change the rest** (`mockups/hold-flow.html`, not shipped). Ryan asked for a study of
+  the whole flow: the starting paint, locks, pins and the rest. It measures today's controls and finds that a
+  lock never reaches the Recipe: after a harmony change, the palette keeps the locked colour as "Added" and the
+  Recipe's role changes, so the shopping list ignores the lock. It compares other tools (Coolors, Realtime
+  Colors, Huemint, Adobe Color, Material 3, Excel Solver, Onshape, Eat This Much), proposes one model (start,
+  hold, explore, filter), proposes "Starting paint" in place of "your paint" (which read as "owned"), and
+  scores three directions. The recommendation is A: one scheme with two holds, a locked colour and a chosen pot.
 ### Fixed
 - **The dock on the live palette says what it does: "Move my paint here"** (Ryan's report). It said "Make
   this your paint", which read as "make this column's colour my paint". The button moves your paint into
