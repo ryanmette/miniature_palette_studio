@@ -436,10 +436,13 @@ answered by Ryan: [`mockups/shopping-list.html`](../mockups/shopping-list.html) 
 
 The build order. Each item needs the one before it:
 
-34. **The data model** (`store.js` v2). One `schemes` map with a key that never changes (a short random id;
-    not a hash of the link, which changes when a saved scheme changes): `{ name, link, saved, created,
-    changed, pins }`. `want` entries become `{ id, qty, for }`. The backup file carries the map; the CSV gets
-    the count and the project; old data migrates (a count of 1, no project). Unit tests, no UI.
+34. **The data model** (`store.js` v2) — **in ryanmette/miniature_palette_studio#54.** One `schemes` map with a key
+    that never changes (a short random id; not a hash of the link, which changes when a saved scheme
+    changes): `{ name, link, saved, created, changed }`. No `pins` field: role holds (v1.12.0) already live in
+    the scheme's link (`hd`). A to-buy paint's count and project are a second map, `wantInfo: { id: { qty,
+    for } }`, **beside** `want`, which stays a list of ids — so an older build still reads the whole list. The
+    backup file carries both maps; the CSV gets `qty` and `project` columns; old data loads as one pot each,
+    with no project. Unit tests, no UI.
 35. **Save and the Schemes mode.** Save on the hero line (the naming field, pre-filled with the automatic
     name "Death Guard Green · triadic"); Changed · Save · Save as new; the Schemes mode with open, rename,
     take to the store, share and delete (a confirm; the paints stay on the list); the empty state. Change
@@ -451,9 +454,9 @@ The build order. Each item needs the one before it:
     which only adds owned marks and asks first. The text file becomes the list only, in rack order, with
     boxes; the recipe gets its own file.
 38. **Not on the rack** (shopping-list direction B). Swaps from the brands the store carries, kept to the same
-    finish class (a wash's swap is a wash, or none); a swap is pinned to its role with the original flagged.
-    Design the pin once, with `mockups/pin-a-paint.html`. This is backlog item 8 (the substitute finder),
-    met in the store.
+    finish class (a wash's swap is a wash, or none); a swap becomes a pot hold on its role (role holds,
+    v1.12.0) with the original flagged — the one new field, kept on the scheme. This is backlog item 8 (the
+    substitute finder), met in the store.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
