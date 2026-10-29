@@ -5,6 +5,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role
+  card, the ring that links it to the wheel and the live palette sat 1px from the card's edges, with no
+  space on the left or right. The card now has 12px of room on each side (the content does not move), and
+  the ring is drawn inside it, 10px clear of the content.
 
 ## [1.11.0] - 2026-10-28
 ### Added
