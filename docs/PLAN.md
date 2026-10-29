@@ -474,11 +474,59 @@ The build order. Each item needs the one before it:
     existing project. **The Molten Harmonics loader** (§3.4) shipped on the same branch.
 39. **Help and About** — studied (`mockups/help-about.html`, 2026-10-29); **chosen: B** (Ryan, 2026-10-29), with the task
     grouping, the names Help and About, "Copy support details" in Help's Contact (shown, then copied; never sent
-    in the contact link), and What's new in About. **Built** (`help.js`, `#helpDlg`, 2026-10-29). A notification log next to ⋯ is a later study. Help is a page and
+    in the contact link), and What's new in About. **Built** (`help.js`, `#helpDlg`, 2026-10-29). A notification log next to ⋯ is a later study (now item 41). Help is a page and
     About a dialog: the split is required in part (the App Store needs a public Support URL and privacy policy,
     guidelines 1.5 and 5.1.1(i)), but the two overlap and Help has drifted (it still names a language setting, and
     Delete's answer misses saved schemes). B: Help in a sheet built from `support.html` itself (one source, no
     second copy), Help grouped by task, About as a short identity page.
+
+### Backlog — finding What’s new (raised 2026-10-29 by Ryan; studied, not yet built)
+
+Study: [`mockups/whats-new.html`](../mockups/whats-new.html). About shows What’s new since item 39, but a painter
+finds it only if they open About. Nothing here is built. Each item waits for Ryan’s answers in the study.
+
+40. **A dot on ⋯ after an update** (study Part A) — **specified, not built.** Recommended: **A2.** After an update, ⋯
+    shows an 8px `--accent` dot (no number and no red: Apple’s HIG says not to copy the system badge). The dot goes
+    when ⋯ opens. A neutral **New** tag on About stays until About opens. An update is a change of
+    `WHATS_NEW.version`, so a patch with the same lines shows nothing. One new pref, `seenNews`. A first visit
+    and Delete show no dot. ⋯’s accessible name says “what’s new” while the dot shows. About 40 lines and 6
+    tests, one PR. Open questions: does `seenNews` go in the backup file (recommended: no)?
+41. **A notification log next to ⋯** (study Part B) — **studied; recommended: do not build now.** With no server,
+    the log can hold only what this device knows, and most of that has a better home already. The real gap is
+    that a toast is gone after 1.7 seconds. Recommended: B1 (no log) now, B2 (a “Recent” group in ⋯, this
+    visit only) later if needed, and no bell beside ⋯ (B3: empty most days, and a §3.6 change).
+
+### Follow-ups from the QA pass and code review (2026-10-29, v1.13.0 + the Help sheet; not yet scheduled)
+
+**QA pass (no faults found).** 340 unit tests pass. `validate-data` and `check-docs` pass. In Chromium, at 360, 768 and
+1180px in both themes: no console errors, no page wider than the screen (Studio, Schemes, Shelf), ⋯ → About and ⋯ →
+Help open, and Esc puts focus back on ⋯. At 320 × 256 (a stand-in for 400% zoom) with reduced motion, ⋯ covers the
+header and its rows scroll. Offline after one visit, the app loads and the Help sheet opens.
+
+**Code review: bugs to fix** (most severe first; nothing is fixed in this change):
+
+- **Restore deletes saved schemes with no warning** (`store.js inspectJSON`, `app.js confirmRestore`) — *confirmed
+  by running.* `importJSON` replaces `schemes`, but the confirm counts only owned and to-buy marks. A device with
+  saved schemes that restores a backup with no schemes loses all of them, and the confirm says nothing. Fix: count
+  the saved schemes that are not in the backup and show them as `lost` is shown.
+- **A store swap can delete an unsaved project** (`app.js applySwap` / `undoSwap`, `store.js dropUnused`) — *traced.*
+  If the swap is owned already, or is to buy for another unsaved project, removing the original drops that
+  project's last paint, so `dropUnused` deletes its scheme. The Recipe hold is then skipped, but the announce
+  still says the swap is the role's pot. Undo cannot bring the project back. Fix: write the hold before the
+  original's mark is cleared, keep the dropped scheme in `swapLog` for Undo, and announce only when the hold is written.
+- **Two schemes can have the same name** (`store.js uniqueName`) — *confirmed by running.* An 80-character name
+  plus " (2)" is 84 characters, and `cleanName` cuts it back to 80, the same as the first name. Fix: shorten the
+  base by the length of the suffix.
+- **A toast is gone after 1.7 seconds** (`app.js toast`) — *measured.* A long result such as an import summary
+  cannot be read in that time (`mockups/whats-new.html` Part B). Fix: a time that grows with the words, with a cap.
+- **A failed save is silent** (`store.js persist`) — *traced.* When `localStorage` refuses a write (storage full,
+  or a private window that refuses writes), the error is dropped, and the painter believes the shelf is saved. Fix: a note
+  the first time a save fails.
+
+Lower value: `applySwap` replaces the swap's own count instead of adding to it; `cleanName` can cut an emoji
+in half (cut by code points); `decodeList` drops a paint whose project number is 1000 or more.
+
+REVIEW2_PLACEHOLDER
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 

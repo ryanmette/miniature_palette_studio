@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What’s new study</title>
+<!-- the app's self-hosted webfonts (no external requests), so text widths in the frames match the app -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  /* ---------- tokens: the same blocks as src/styles/tokens.css (CLAUDE.md §3.1, Workbench+) ----------
+     The page follows the device theme until you pick one with "Page theme". Only colour changes. */
+  :root {
+    --r-card:6px; --r-ctrl:4px; --r-sw:3px; --r-tag:2px; --r-pill:999px; --tap:44px;
+    --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --fs-h1:26px; --fs-h2:20px; --fs-body:14px; --fs-small:12.5px; --fs-micro:11.5px;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  :root, [data-theme="light"] {
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6;
+    --border:#DCD8D0; --border-strong:#C9C4BA; --edge:#8A857B;
+    --text:#1D1C19; --text-muted:#5E5A52; --text-faint:#9C978D;
+    --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+    --buy:#2563EB; --buy-weak:#DBEAFE; --on-buy:#FFFFFF;
+    --success:#16A34A; --success-weak:#DCFCE7; --on-success:#FFFFFF;
+    --warning:#C2740B; --warning-weak:#FBEBD3;
+    --danger:#DC2647; --danger-weak:#FCE4EA;
+    --success-text:#0F7334; --warning-text:#945908; --danger-text:#C4203D; --buy-text:#1D4ED8;
+    --shadow:0 1px 2px rgba(29,28,25,.25);
+    --shadow-pop:0 0 0 1px rgba(29,28,25,.05), 0 12px 24px -10px rgba(29,28,25,.38);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  [data-theme="dark"] {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+    --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+    --warning:#E0803A; --warning-weak:#2E1D12;
+    --danger:#D2563F; --danger-weak:#2E1A14;
+    --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+      --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+      --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+      --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+      --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+      --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+      --warning:#E0803A; --warning-weak:#2E1D12;
+      --danger:#D2563F; --danger-weak:#2E1A14;
+      --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+      --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+      --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+    }
+  }
+
+  /* ---------- the page: regions with rules, no cards (§3.5) ---------- */
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:var(--fs-body); line-height:1.5; padding:24px 16px 48px; }
+  .page { max-width:1140px; margin:0 auto; }
+  h1 { font-family:var(--display); font-size:32px; font-weight:600; line-height:1.15; margin:0 0 8px; }
+  h2 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 4px; }
+  h2 .k { color:var(--accent); margin-right:6px; }
+  h3.lab, .micro { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  h3.lab { margin:24px 0 8px; }
+  a { color:var(--accent); }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); border-radius:var(--r-ctrl); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { border-top:1px solid var(--border); padding:24px 0; }
+  .sub, .why { color:var(--text-muted); font-size:var(--fs-small); max-width:80ch; margin:0 0 12px; }
+  .sub b, .why b, .notes b, td b { color:var(--text); }
+  ul.notes, ol.notes { margin:0; padding-left:20px; font-size:var(--fs-small); color:var(--text-muted); max-width:82ch; }
+  .notes li + li { margin-top:4px; }
+  .sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .pros { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:0 24px; }
+  .pros h3.lab { margin-top:16px; }
+  .trow { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; margin-top:12px; }
+  .trow > .txt { flex:1 1 300px; min-width:0; }
+  figure { margin:0; min-width:0; max-width:100%; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+  figcaption b { color:var(--text); }
+  pre.file { font-family:var(--mono); font-size:12px; line-height:1.45; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card);
+    padding:12px; margin:0; overflow-x:auto; max-width:100%; color:var(--text); }
+  pre.file .dim { color:var(--text-muted); }
+
+  /* the page-theme control */
+  .pc { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; margin:16px 0 0; }
+  .seg { display:inline-flex; }
+  .seg button { position:relative; height:30px; padding:0 12px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text);
+    font:inherit; font-size:12.5px; font-weight:500; cursor:pointer; margin-left:-1px; }
+  .seg button:first-child { border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); margin-left:0; }
+  .seg button:last-child { border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .seg button:hover { background:var(--surface-2); }
+  .seg button[aria-pressed="true"] { background:var(--accent-weak); }
+  .seg button[aria-pressed="true"]::after { content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--accent); }
+  .seg button:focus-visible { z-index:1; }
+  @media (pointer: coarse) { .seg button { height:var(--tap); } }
+
+  /* the study table */
+  .tablewrap { overflow-x:auto; max-width:100%; }
+  table.study { border-collapse:collapse; font-size:var(--fs-small); min-width:760px; width:100%; }
+  table.study th, table.study td { text-align:left; vertical-align:top; padding:8px 12px 8px 0; border-bottom:1px solid var(--border); }
+  table.study th { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.study td { color:var(--text-muted); }
+  table.study td:first-child { color:var(--text); font-weight:600; white-space:nowrap; }
+
+  /* the jobs strip */
+  .jobs { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:0 16px; counter-reset:job; margin:12px 0 0; padding:0; list-style:none; }
+  .jobs li { border-top:1px solid var(--border-strong); padding:8px 0 12px; font-size:var(--fs-small); color:var(--text-muted); }
+  .jobs li b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .jobs li::before { counter-increment:job; content:counter(job); font-family:var(--display); font-weight:700; font-size:20px; color:var(--accent); display:block; line-height:1; margin-bottom:4px; }
+
+  /* ---------- the app's components, as in src/styles/app.css ---------- */
+  .btn { position:relative; min-height:var(--tap); padding:0 14px; border-radius:var(--r-ctrl); border:1px solid var(--border);
+    background:var(--surface); color:var(--text); font:inherit; font-weight:500; font-size:13.5px; line-height:1.2;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .btn:hover { background:var(--surface-2); border-color:var(--border-strong); }
+  .btn:active { transform:scale(.96); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-size:14.5px; font-weight:600; padding:0 18px; min-height:calc(var(--tap) + 6px); }
+  .btn.primary:hover { background:var(--accent); filter:brightness(1.06); }
+  .btn.sm { min-height:32px; padding:0 10px; font-size:12.5px; }
+  @media (pointer: coarse) { .btn.sm { min-height:var(--tap); } }
+  .btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+  .textact { background:none; border:0; color:var(--accent); font:inherit; font-weight:500; min-height:var(--tap); min-width:var(--tap); padding:0 4px; cursor:pointer; }
+  .tag { display:inline-block; font-size:11px; font-weight:500; line-height:1; padding:3px 5px; border:1px solid var(--border-strong); border-radius:var(--r-tag); color:var(--text-muted); white-space:nowrap; }
+  .tag.success { border-color:var(--success); color:var(--success-text); }
+  .tag.warning { border-color:var(--warning); color:var(--warning-text); }
+  .tag.danger  { border-color:var(--danger);  color:var(--danger-text); }
+  .tag.buy     { border-color:var(--buy);     color:var(--buy-text); }
+  .de { font-family:var(--mono); font-size:11.5px; color:var(--text-muted); }
+  .sw { width:40px; height:40px; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; position:relative; overflow:hidden; }
+  .sw.sm { width:24px; height:24px; }
+  .sw.lg { width:48px; height:48px; }
+  /* finish overlay for metallics (§2): a sheen that never changes the colour */
+  .sw.metal::after { content:""; position:absolute; inset:0; background:linear-gradient(125deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.45) 50%, rgba(255,255,255,0) 68%); }
+
+
+  /* ---------- frames ---------- */
+  .ph { width:340px; max-width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border-strong); border-radius:20px;
+    overflow:hidden; display:flex; flex-direction:column; font-size:var(--fs-body); }
+  .ph .bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); min-height:52px; }
+  .ph .bar .ttl { font-family:var(--display); font-size:20px; font-weight:600; flex:1; min-width:0; }
+  .ph .body { padding:8px 12px 12px; }
+  .ph.dim { position:relative; }
+  .scrim { position:absolute; inset:0; background:rgba(0,0,0,.45); }
+  .sheet { position:absolute; left:0; right:0; bottom:0; top:64px; background:var(--surface); border-top:1px solid var(--border-strong);
+    border-radius:var(--r-card) var(--r-card) 0 0; box-shadow:var(--shadow-pop); display:flex; flex-direction:column; }
+  .sheethead { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); }
+  .sheethead h4 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0; flex:1; }
+  .sheetbody { padding:8px 12px 12px; overflow:hidden; flex:1; font-size:var(--fs-small); }
+  .sheetbody h5 { font-size:var(--fs-body); font-weight:600; margin:12px 0 4px; }
+  .sheetbody p { margin:0 0 8px; color:var(--text-muted); }
+  .x { width:32px; height:32px; border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text-muted); display:grid; place-items:center; font-size:14px; }
+  .toc { display:grid; gap:0; margin:4px 0 8px; padding:0; list-style:none; }
+  .toc li { border-bottom:1px solid var(--border); min-height:var(--tap); display:flex; align-items:center; justify-content:space-between; color:var(--text); font-size:var(--fs-body); }
+  .toc li span { color:var(--text-muted); font-size:var(--fs-small); }
+  .menu { background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:12px; width:340px; max-width:100%; }
+  .mrow { display:grid; grid-template-columns:110px 1fr; gap:12px; padding:8px 0; border-top:1px solid var(--border); align-items:start; }
+  .mrow:first-child { border-top:0; }
+  .mrow .micro { padding-top:12px; }
+  .mrow .btns { display:flex; flex-wrap:wrap; gap:8px; }
+  .mrow .hint { font-size:var(--fs-small); color:var(--text-muted); margin:4px 0 0; }
+  .tabs { display:flex; gap:16px; border-bottom:1px solid var(--border); padding:0 12px; }
+  .tabs button { position:relative; background:none; border:0; font:inherit; font-weight:500; color:var(--text-muted); min-height:var(--tap); cursor:pointer; padding:0 2px; }
+  .tabs button[aria-selected="true"] { color:var(--text); }
+  .tabs button[aria-selected="true"]::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:3px; background:var(--accent); }
+  .ver { font-family:var(--mono); font-size:12px; color:var(--text-muted); }
+  .bad { color:var(--danger-text); font-weight:600; }
+  .ok { color:var(--success-text); font-weight:600; }
+  .homes td:nth-child(n+2) { text-align:center; }
+  .verdict { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0 24px; margin-top:12px; }
+  .verdict > div { border-top:1px solid var(--border-strong); padding:8px 0; font-size:var(--fs-small); color:var(--text-muted); }
+  .verdict > div b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .score { font-family:var(--mono); font-size:12px; color:var(--text); }
+  ol.q { margin:12px 0 0; padding-left:24px; max-width:82ch; }
+  ol.q li { margin-bottom:12px; }
+  ol.q li b { display:block; }
+  ol.q li span { color:var(--text-muted); font-size:var(--fs-small); }
+  .reco { border-left:3px solid var(--accent); padding:8px 0 8px 16px; max-width:82ch; margin-top:12px; }
+  .reco b { color:var(--text); }
+  blockquote { margin:8px 0; padding:8px 12px; border-left:3px solid var(--border-strong); color:var(--text-muted); font-size:var(--fs-small); max-width:82ch; }
+  blockquote cite { display:block; font-style:normal; margin-top:4px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none !important; animation:none !important; } .btn:active { transform:none; } }
+  @media (forced-colors: active) { .seg button[aria-pressed="true"]::after, .tabs button[aria-selected="true"]::after { background:Highlight; } }
+
+  /* ---------- this study: the dot and the log ---------- */
+  .hdr { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); background:var(--bg); }
+  .hdr .wm { font-family:var(--display); font-size:20px; font-weight:600; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ibtn { position:relative; width:var(--tap); height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface);
+    color:var(--text); display:grid; place-items:center; font:inherit; font-size:15px; cursor:pointer; flex:none; }
+  .ibtn[aria-expanded="true"] { background:var(--surface-2); }
+  .ibtn:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); }
+  /* the dot: inside the button's own box (absolute → no reflow, §3.4); a --bg ring keeps it apart from the edge */
+  .dot { position:absolute; top:5px; right:5px; width:8px; height:8px; border-radius:var(--r-pill); background:var(--accent); box-shadow:0 0 0 2px var(--bg); pointer-events:none; }
+  .dot[hidden] { display:none; }
+  .newtag { margin-left:8px; }
+  .wn { margin:4px 0 0; padding-left:18px; color:var(--text-muted); font-size:var(--fs-small); }
+  .wn li + li { margin-top:2px; }
+  .bell { font-size:16px; }
+  .count { position:absolute; top:3px; right:3px; min-width:16px; height:16px; padding:0 4px; border-radius:var(--r-pill); background:var(--accent); color:var(--on-accent);
+    font-size:10.5px; font-weight:600; line-height:16px; text-align:center; box-shadow:0 0 0 2px var(--bg); }
+  .logpop { position:absolute; right:8px; top:60px; width:300px; max-width:calc(100% - 16px); background:var(--surface); border:1px solid var(--border-strong);
+    border-radius:var(--r-card); box-shadow:var(--shadow-pop); }
+  .logrow { display:grid; grid-template-columns:1fr auto; gap:4px 8px; padding:8px 12px; border-top:1px solid var(--border); font-size:var(--fs-small); }
+  .logrow:first-of-type { border-top:0; }
+  .logrow .when { color:var(--text-muted); font-family:var(--mono); font-size:11px; white-space:nowrap; }
+  .logrow p { margin:0; grid-column:1 / -1; color:var(--text-muted); }
+  .logrow b { color:var(--text); font-weight:600; }
+  .demo { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 0; }
+  .say { font-size:var(--fs-small); color:var(--text-muted); min-height:1.5em; margin:8px 0 0; }
+  .say b { color:var(--text); }
+  @media (forced-colors: active) { .dot, .count { background:Highlight; forced-color-adjust:none; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <p class="micro">Design study · not shipped · 2026-10-29 · not built</p>
+  <h1>What’s new: a dot on ⋯, and a notification log</h1>
+  <p class="sub">About shows “What’s new in 1.13.0” now (PLAN §5 item 39). But a painter finds it only if they open About.
+    This study does two things. <b>Part A</b> specifies a small dot on ⋯ after an update, ready to build. <b>Part B</b> studies a
+    notification log next to ⋯, which Ryan asked to study later (help-about.html, answer 5). Nothing here is built.</p>
+  <div class="pc">
+    <span class="micro" id="pthLab">Page theme</span>
+    <div class="seg" role="group" aria-labelledby="pthLab" id="pth">
+      <button type="button" data-v="device" aria-pressed="true">Device</button>
+      <button type="button" data-v="light" aria-pressed="false">Light</button>
+      <button type="button" data-v="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-now">
+  <h2 id="h-now"><span class="k">0</span>What we have now (measured, v1.13.0)</h2>
+  <ul class="notes">
+    <li><b>What’s new</b> is a list of 4 short lines in About (<code>version.js WHATS_NEW</code>). A test makes sure that its version is the app’s version.</li>
+    <li><b>The app does not remember a version.</b> No pref holds “the last version this device saw”, so the app cannot know that an update came.</li>
+    <li><b>The way to About is 2 taps:</b> ⋯ → Help &amp; info → About. The footer has an About link too, at the end of a long page.</li>
+    <li><b>The header</b> (measured in Chromium, both themes): at 360px it has two rows (116px). The top row holds the wordmark and ⋯, with
+      <b>142px free</b> between them. At 768px and 1180px it is one row with 244px and 662px free. ⋯ is 44 × 44 on touch and 38 × 38 with a mouse.</li>
+    <li><b>Toasts last 1.7 seconds.</b> They are <code>aria-hidden</code>, and <code>say()</code> speaks the same words into a live region.
+      After 1.7 seconds there is no way to read a toast again. Part B comes back to this.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-rules">
+  <h2 id="h-rules"><span class="k">1</span>The rules we must keep (primary sources)</h2>
+  <h3 class="lab" style="margin-top:0">Apple, Human Interface Guidelines → Notifications (read 2026-10-29)</h3>
+  <blockquote>“Use a badge only to show people how many unread notifications they have.”</blockquote>
+  <blockquote>“Make sure badging isn’t the only method you use to communicate essential information.”</blockquote>
+  <blockquote>“Avoid creating a custom image or component that mimics the appearance or behavior of a badge. People can turn off notification
+    badges if they choose, and will become frustrated if they have done so and then see what appears to be a badge.”
+    <cite>— developer.apple.com/design/human-interface-guidelines/notifications</cite></blockquote>
+  <ul class="notes">
+    <li><b>What this means for us.</b> Apple’s “badge” is the red oval with a number on an app icon. In the iPhone app, a red counter in our
+      header looks like that badge. So the dot has <b>no number and no red</b>. It is a small dot in the accent colour, and it is never
+      the only way to find What’s new (About always has it).</li>
+    <li><b>WCAG 2.1, 4.1.2 Name, Role, Value:</b> a screen reader must hear what the dot shows. The dot is a picture, so ⋯’s accessible name
+      must change with it.</li>
+    <li><b>WCAG 2.1, 1.4.11 Non-text Contrast:</b> a graphic that carries meaning needs 3:1 against what is next to it. <code>--accent</code> on
+      <code>--bg</code> is 6.34:1 in light and 6.61:1 in dark, so it passes.</li>
+    <li><b>WCAG 2.1, 1.4.1 Use of Color:</b> the dot is a shape that comes and goes, not only a colour change. It passes.</li>
+    <li><b>Our own rules.</b> §1: no server, so the app can know only what this device knows. §3.4: nothing moves when the dot shows
+      (it floats inside ⋯’s box), and a change that the painter did not make does not bounce. §3.5: a colour has one meaning.
+      <code>--danger</code> means failing or destructive, so the dot is not red. §3.6: the header holds only the mode switch and ⋯, and a new
+      header control needs a line there first.</li>
+  </ul>
+  <p class="why">The Material Design 3 page on badges (m3.material.io) was not reachable from this session, so it is not quoted here.</p>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-a">
+  <h2 id="h-a"><span class="k">A</span>The dot on ⋯ (ready to build)</h2>
+  <p class="sub">Three directions. Each one shows a dot after an update. They are different in <b>when the dot goes</b>.</p>
+  <div class="verdict">
+    <div><b>A1 · Dot until About opens</b><span class="score">Too sticky</span> — a painter who opens ⋯ for the theme and closes it sees
+      the dot again and again, so they learn to ignore it.</div>
+    <div><b>A2 · Dot on ⋯, “New” on About</b><span class="score">Recommended</span> — the dot leads to ⋯ and goes when ⋯ opens. Inside, a “New” tag
+      on About leads the rest of the way, and stays until About opens or the next update.</div>
+    <div><b>A3 · About opens by itself</b><span class="score">No</span> — a modal on load gets between the painter and their scheme
+      (principle 3, one click to value), and it takes focus away from what they came to do.</div>
+  </div>
+
+  <h3 class="lab">A2, step by step (try it)</h3>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone, 360px</b> · the top row of the header after an update</figcaption>
+      <div class="ph" style="height:auto">
+        <div class="hdr">
+          <span class="wm">Palette Studio</span>
+          <button type="button" class="ibtn" id="demoMore" aria-haspopup="dialog" aria-expanded="false" aria-label="Settings – what’s new in 1.14">⋯<span class="dot" id="demoDot" aria-hidden="true"></span></button>
+        </div>
+        <div class="body" id="demoBody">
+          <p class="why" style="margin:8px 0">The Studio is here.</p>
+        </div>
+      </div>
+      <div class="demo">
+        <button type="button" class="btn sm" id="demoUpdate">Simulate an update</button>
+      </div>
+      <p class="say" id="demoSay" aria-live="polite"></p>
+    </figure>
+    <div class="txt">
+      <ol class="notes">
+        <li><b>After an update</b>, ⋯ shows the dot. Its name becomes “Settings – what’s new in 1.14”, so a screen reader hears it.</li>
+        <li><b>Press ⋯.</b> The dot goes, and the name is “Settings” again. In the Help &amp; info group, About has a <span class="tag">New</span> tag.</li>
+        <li><b>Press About.</b> What’s new is near the top, under one paragraph about the app. The tag goes. Nothing shows again until the next update with new lines.</li>
+        <li><b>A painter who never opens ⋯</b> keeps the dot. It does not move, pulse or grow: it waits.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3 class="lab">The spec</h3>
+  <div class="tablewrap">
+    <table class="study">
+      <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+      <tbody>
+        <tr><td>What counts as an update?</td><td>A change of <code>WHATS_NEW.version</code>, <b>not</b> of <code>APP_VERSION</code>. A patch release (1.13.1) that keeps
+          the 1.13.0 lines shows no dot: there is nothing new to read.</td></tr>
+        <tr><td>What does the device keep?</td><td>One new pref, <code>seenNews</code>: the <code>WHATS_NEW.version</code> that this device last showed in About. Two flags
+          live in memory only: “⋯ was opened this visit” (the dot goes) and “About was opened” (the tag goes and <code>seenNews</code> is saved).
+          A reload before About opens brings the dot back. That is correct: the painter has not read it yet.</td></tr>
+        <tr><td>First visit?</td><td>No dot. <code>store.firstVisit</code> is true, so the app saves <code>seenNews</code> = the current version with no dot. A new
+          painter has nothing that changed. <b>Delete my shelf and settings…</b> makes the device new, so it also shows no dot.</td></tr>
+        <tr><td>A painter from before this feature?</td><td>They have a saved state but no <code>seenNews</code>. They get the dot once, for the version that ships
+          the dot. That is the one time an old painter learns where What’s new is.</td></tr>
+        <tr><td>In the backup file?</td><td><b>Question for Ryan.</b> The recommendation is <b>no</b>: it is a fact about this device, as the open tab is.
+          If it is in the file, a Restore of an old backup shows the dot again.</td></tr>
+        <tr><td>Two tabs?</td><td>The <code>storage</code> event (<code>onExternalChange</code>) carries the pref already. When one tab opens About, the other tab
+          drops its dot at its next repaint.</td></tr>
+        <tr><td>Look</td><td>8px circle, <code>--accent</code>, a 2px <code>--bg</code> ring, 5px from ⋯’s top-right corner, inside its box (absolute: no reflow).
+          It shows at load with the header, with no animation, so <code>prefers-reduced-motion</code> needs nothing. Forced colours: <code>Highlight</code>.
+          The tag is the shared <code>.tag</code> with no state colour (a neutral tag: “New” is not success, warning or buy).</td></tr>
+        <tr><td>Accessible name</td><td>⋯: “Settings – what’s new in {version}” while the dot shows (<code>data-i18n-aria</code> gets a second key). The dot is
+          <code>aria-hidden</code>. About: “About – new” while the tag shows. No live region: nothing changed under the painter’s hands.</td></tr>
+        <tr><td>Where it goes</td><td><code>version.js</code> (no change), <code>store.js</code> (the pref and its <code>PREF_OK</code> check), <code>app.js</code> (one
+          <code>renderNews()</code>: called at load, when ⋯ opens, when About opens and on <code>onExternalChange</code>), <code>index.html</code> (the dot
+          and the tag), <code>app.css</code> (two rules), <code>i18n.js</code> (two keys), tests in <code>store.test.mjs</code>, <code>sw.js</code> CACHE bump.</td></tr>
+        <tr><td>CLAUDE.md lines</td><td>§3.5: the dot, its token and its one meaning (“there is something new to read”). §3.6: ⋯ can carry the dot.
+          §4: no new file.</td></tr>
+        <tr><td>Size</td><td>About 40 lines of code and 6 tests. One PR.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="lab">⋯ and About with A2</h3>
+  <div class="trow">
+    <figure>
+      <figcaption><b>⋯ Settings</b> · the Help &amp; info group</figcaption>
+      <div class="menu" aria-hidden="true">
+        <div class="mrow"><span class="micro">Help &amp; info</span>
+          <div class="btns"><span class="btn">Help</span><span class="btn">About <span class="tag newtag">New</span></span></div></div>
+      </div>
+    </figure>
+    <figure>
+      <figcaption><b>About</b> · What’s new sits under the first paragraph (no change)</figcaption>
+      <div class="menu" aria-hidden="true">
+        <div class="sheethead" style="padding:0 0 8px"><h4>About</h4><span class="x">✕</span></div>
+        <p style="margin:8px 0 0"><b>What’s new in 1.14.0</b></p>
+        <ul class="wn"><li>A dot on ⋯ tells you when there is something new.</li><li>…</li></ul>
+        <p class="ver" style="margin:12px 0 0">Palette Studio 1.14.0 · paint data 1.6.0</p>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-b">
+  <h2 id="h-b"><span class="k">B</span>A notification log next to ⋯ (study only)</h2>
+  <p class="sub">A log is a list of things that happened, kept so that you can read them later. With no server (§1), the app can log only
+    what this device knows. So the first question is: <b>what would the log hold?</b></p>
+
+  <h3 class="lab" style="margin-top:0">What the device knows, and where the painter sees it now</h3>
+  <div class="tablewrap">
+    <table class="study">
+      <thead><tr><th>Event</th><th>Where it shows now</th><th>Does a log help?</th></tr></thead>
+      <tbody>
+        <tr><td>An update with new lines</td><td>About (and Part A’s dot)</td><td>Little. Part A covers it.</td></tr>
+        <tr><td>A toast (“Imported 120 paints · 3 not found”, “Saved as X”)</td><td>1.7 seconds, then gone</td><td><b>Yes.</b> This is the one gap.
+          A long toast is hard to read in 1.7 seconds, and an import result is worth reading again.</td></tr>
+        <tr><td>The shelf could not be saved (private mode, storage full)</td><td><b>Nowhere.</b> <code>store.js persist()</code> drops the error.</td><td><b>Yes</b>, but
+          a log is the wrong place: a painter who loses their shelf must see it at once (a note, not a list).</td></tr>
+        <tr><td>The last backup is old</td><td>Nowhere. The app does not record when it made a backup.</td><td>Maybe. It needs a new pref (the date of the last backup).</td></tr>
+        <tr><td>New paint data (the dataset version changed)</td><td>About shows the version only</td><td>Maybe. The app would need to keep the old version, and data release notes to show.</td></tr>
+        <tr><td>Another tab changed the shelf</td><td>The page repaints</td><td>No. The change is visible.</td></tr>
+        <tr><td>A list link or a “bought” link was opened</td><td>A confirm, before anything changes</td><td>No. The painter chose it seconds before.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="notes" style="margin-top:12px">
+    <li><b>The finding:</b> most events already have a better home. The log’s real content is <b>recent toasts</b>. Two other items (save failure,
+      old backup) are notices that deserve their own place.</li>
+    <li><b>Apps with a bell</b> (an inbox next to the menu) have a server that sends things to you: replies, mentions, invites. We have none of that,
+      so our bell would be empty most days. An empty bell teaches people to ignore it.</li>
+  </ul>
+
+  <h3 class="lab">Three directions</h3>
+  <div class="trow">
+    <figure>
+      <figcaption><b>B3 · A bell next to ⋯</b> · a popover with the log</figcaption>
+      <div class="ph dim" aria-hidden="true" style="height:330px">
+        <div class="hdr">
+          <span class="wm">Palette Studio</span>
+          <span class="ibtn bell">🔔<span class="count">2</span></span>
+          <span class="ibtn">⋯</span>
+        </div>
+        <div class="logpop">
+          <div class="sheethead"><h4 style="font-size:16px">Recent</h4><span class="textact" style="min-height:0">Clear</span></div>
+          <div class="logrow"><b>Imported 120 paints</b><span class="when">14:02</span><p>3 rows did not match a paint.</p></div>
+          <div class="logrow"><b>Saved “Blue knight”</b><span class="when">13:55</span></div>
+          <div class="logrow"><b>Updated to 1.14.0</b><span class="when">today</span><p>See What’s new in About.</p></div>
+        </div>
+      </div>
+    </figure>
+    <figure>
+      <figcaption><b>B2 · “Recent” in ⋯</b> · no new header control</figcaption>
+      <div class="menu" aria-hidden="true">
+        <div class="mrow"><span class="micro">Recent</span>
+          <div>
+            <div class="logrow" style="padding:8px 0"><b>Imported 120 paints</b><span class="when">14:02</span><p>3 rows did not match a paint.</p></div>
+            <div class="logrow" style="padding:8px 0"><b>Saved “Blue knight”</b><span class="when">13:55</span></div>
+          </div></div>
+        <div class="mrow"><span class="micro">Help &amp; info</span>
+          <div class="btns"><span class="btn">Help</span><span class="btn">About</span></div></div>
+      </div>
+    </figure>
+  </div>
+  <div class="verdict">
+    <div><b>B1 · No log</b><span class="score">Recommended now</span> — build Part A. Make toasts longer (below). Give a failed save its own note.
+      Nothing in the header changes.</div>
+    <div><b>B2 · “Recent” in ⋯</b><span class="score">Maybe later</span> — the last 5 toasts of this visit, in memory (no new saved data), in ⋯ above
+      Help &amp; info. It costs no header space. It shows only when it holds something.</div>
+    <div><b>B3 · A bell next to ⋯</b><span class="score">No</span> — it fits (142px free at 360px), but it is empty most days, and in the iPhone app a
+      counter looks like the system badge that Apple tells us not to copy.</div>
+  </div>
+  <ul class="notes" style="margin-top:12px">
+    <li><b>The cost of B3 in the header:</b> a second icon button beside ⋯, a second popover with its own focus and Esc rules, a third elevation
+      user (§3.4 allows it), and a §3.6 change (“the header holds only the mode switch and ⋯”). The cost is real for a list that is mostly empty.</li>
+    <li><b>If B2 is built,</b> it is a list (<code>ul</code>), not a live region. <code>say()</code> already speaks each toast. Each row has its time
+      as text. The group has a reserved height (§3.4), or it is last in ⋯, so that it does not push the other rows down when it fills.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-v">
+  <h2 id="h-v"><span class="k">5</span>Recommendation and questions</h2>
+  <div class="reco"><b>Recommendation:</b> build <b>A2</b> (a dot on ⋯, a “New” tag on About) as one small PR. Do <b>not</b> add a bell (B3). Fix
+    the two gaps that Part B found, without a log: (1) a toast stays long enough to read, and (2) a failed save shows a note. Come back to B2
+    (“Recent” in ⋯) only if painters ask for a toast again.</div>
+  <h3 class="lab">Questions for Ryan</h3>
+  <ol class="q">
+    <li><b>A1, A2 or A3?</b><span>A2 is recommended: the dot goes when you open ⋯, the tag on About stays until you read it.</span></li>
+    <li><b>Does <code>seenNews</code> go in the backup file?</b><span>Recommended: no. It is a fact about this device.</span></li>
+    <li><b>A dot for a patch release?</b><span>Recommended: only when the What’s new lines change.</span></li>
+    <li><b>B1, B2 or B3?</b><span>B1 now (no log). B2 later, if needed. B3 no.</span></li>
+    <li><b>Toast time:</b> 1.7 seconds now. Make it longer by length (for example 1.5 seconds + 60ms a word, at most 6 seconds)?<span>A long
+      import result is gone before it can be read. This is a QA finding too (PLAN §5, the QA pass).</span></li>
+  </ol>
+</section>
+
+</div>
+<script>
+(() => {
+  const pth = document.getElementById('pth');
+  pth.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    for (const x of pth.querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b));
+    if (b.dataset.v === 'device') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = b.dataset.v;
+  });
+  // A2 demo: the dot goes when ⋯ opens; the "New" tag on About stays until About opens.
+  const more = document.getElementById('demoMore'), dot = document.getElementById('demoDot');
+  const body = document.getElementById('demoBody'), sayEl = document.getElementById('demoSay');
+  let tag = true;
+  const studio = () => { body.innerHTML = '<p class="why" style="margin:8px 0">The Studio is here.</p>'; more.setAttribute('aria-expanded', 'false'); };
+  const menu = () => {
+    body.innerHTML = '<div class="mrow" style="border:0"><span class="micro">Help &amp; info</span><div class="btns">'
+      + '<button type="button" class="btn sm">Help</button>'
+      + '<button type="button" class="btn sm" id="demoAbout"' + (tag ? ' aria-label="About – new"' : '') + '>About' + (tag ? '<span class="tag newtag">New</span>' : '') + '</button></div></div>';
+    more.setAttribute('aria-expanded', 'true');
+  };
+  more.addEventListener('click', () => {
+    if (more.getAttribute('aria-expanded') === 'true') { studio(); return; }
+    dot.hidden = true; more.setAttribute('aria-label', 'Settings'); menu();
+    sayEl.innerHTML = tag ? '<b>⋯ opened:</b> the dot is gone. About still has its tag.' : '<b>⋯ opened.</b>';
+  });
+  body.addEventListener('click', e => {
+    if (!e.target.closest('#demoAbout')) return;
+    tag = false;
+    body.innerHTML = '<p style="margin:8px 0 0"><b>What’s new in 1.14.0</b></p><ul class="wn"><li>A dot on ⋯ tells you when there is something new.</li></ul>';
+    more.setAttribute('aria-expanded', 'false');
+    sayEl.innerHTML = '<b>About opened:</b> the tag is gone, and <code>seenNews</code> = 1.14.0 is saved.';
+  });
+  document.getElementById('demoUpdate').addEventListener('click', () => {
+    dot.hidden = false; tag = true; more.setAttribute('aria-label', 'Settings – what’s new in 1.14'); studio();
+    sayEl.innerHTML = '<b>Update:</b> the dot shows. ⋯ is now named “Settings – what’s new in 1.14”.';
+  });
+})();
+</script>
+</body>
+</html>
