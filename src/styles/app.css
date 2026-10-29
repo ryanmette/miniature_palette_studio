@@ -99,12 +99,13 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 /* position: relative makes the strip the chips' offsetParent, so scrollHarmonyActive (app.js) centres a chip
    from the strip's own edge. Before, it measured from the studio card, and scroll-snap hid the error. */
 #seg.harmscroll { position: relative; display: flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scroll-snap-type: x proximity;
-  scrollbar-width: thin; -webkit-overflow-scrolling: touch; padding: 4px; scroll-padding: 4px;
+  scrollbar-width: thin; -webkit-overflow-scrolling: touch; padding: 4px 4px 14px; scroll-padding: 4px;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
   mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent); }
 #seg.harmscroll button { flex: 0 0 auto; scroll-snap-align: center; }
 /* The scroll box clips: 4px of padding holds the 4px focus ring (§3.5), and the edge fade goes while a
-   chip has keyboard focus. */
+   chip has keyboard focus. The bottom is 14px: macOS draws its scrollbar OVER the content (an overlay bar,
+   about 8-11px), and on 4px it covered the chips and the pressed chip's accent bar (Ryan's report). */
 #seg.harmscroll:has(:focus-visible) { -webkit-mask-image: none; mask-image: none; }
 #seg.harmscroll::-webkit-scrollbar { height: 6px; }
 #seg.harmscroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
@@ -384,6 +385,9 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .btn.incl-contrast[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 .nogaps { color: var(--text-muted); align-self: center; }
 
+/* The chevron as a mask image, for the selects' ::picker-icon (a pseudo-element cannot hold <use>). Same path
+   and stroke as the sprite's i-chev, at the 2.25 weight the 12–14px icons use. */
+:root { --chev-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 8l4 4 4-4' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E"); }
 /* The icon set (§3.5): an inline sprite in index.html, drawn with <use>. One stroke for every icon, so
    a glyph never looks heavier than its neighbour; each context only sets the size. */
 .ic { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: square;
@@ -557,6 +561,9 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
   border: 1px solid var(--accent); border-radius: var(--r-tag); padding: 2px 8px 2px 6px; color: var(--text);
   font-size: 11.5px; font-weight: 600; box-shadow: var(--shadow); white-space: nowrap; }
 .seedchip .ic { width: 12px; height: 12px; stroke-width: 2.25; color: var(--accent); }
+.holdchip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; background: var(--accent); color: var(--on-accent);
+  border-radius: var(--r-tag); padding: 2px 8px 2px 6px; font-size: 11.5px; font-weight: 600; white-space: nowrap; box-shadow: var(--shadow); }
+.holdchip .ic { width: 12px; height: 12px; stroke-width: 2.25; }   /* a chosen pot is state: a filled tag (§3.5) */
 .dockbtn { width: 100%; min-height: 26px; border: 1.5px dashed var(--border-strong); background: transparent;
   color: var(--text-muted); font-size: 11.5px; font-weight: 600; border-radius: var(--r-ctrl); cursor: pointer; }   /* --text-faint was 2.4:1: under AA for a control's words */
 .dockbtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-weak); }
@@ -748,6 +755,39 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .frpick .sw { width: 24px; height: 24px; }
 .frsteps { margin: 0; padding-left: 24px; color: var(--text-muted); display: grid; gap: 4px; }
 .firstrun .textact { justify-self: start; }
+/* Holds (mockups/hold-flow.html, direction A): the card's controls, the note under the live palette, and the
+   pot chooser. A lock is a toggle (pressed = an --accent-weak fill + accent border, as .lcbtn.on); a chosen pot
+   is a filled tag (state). */
+.holdrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.holdrow .btn.sm { gap: 6px; padding: 0 12px 0 10px; }
+.holdrow .btn.sm .ic { width: 14px; height: 14px; stroke-width: 2; }
+.holdlock.on { background: var(--accent-weak); border-color: var(--accent); color: var(--text); }
+.holdrow .textact { min-width: 0; padding: 0 4px; font-size: 13px; }
+.slot.held .ivsa .ideal { opacity: .9; }
+#holdnote:empty { display: none; }
+.holdnote { display: grid; gap: 4px; margin-top: 8px; font-size: 13px; }
+.holdnote p { margin: 0; display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 8px; align-items: start; line-height: 1.5; }
+.holdnote p > .ic { width: 14px; height: 14px; stroke-width: 2; color: var(--accent); margin-top: 3px; }
+.holdnote .hnwarn > .ic { color: var(--warning); }
+/* the action sits inside the sentence; its 44px touch area is an invisible ::after (§3.6), as on the docks */
+.holdnote .textact { display: inline; min-height: 0; min-width: 0; padding: 0; font-size: 13px; position: relative; }
+.holdnote .textact::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%); }
+.potdlg { width: min(520px, 92vw); }
+.potbody { display: grid; gap: 8px; }
+.potbody input[type="search"] { width: 100%; }
+.potlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; max-height: min(52vh, 420px); overflow-y: auto; }
+.potrow { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%;
+  min-height: var(--tap); padding: 4px 8px; border: 0; border-radius: var(--r-ctrl); background: none; color: var(--text);
+  font: inherit; text-align: left; cursor: pointer; }
+.potrow:hover { background: var(--surface-2); }
+.potrow:focus-visible { outline: 2px solid transparent; outline-offset: -2px; box-shadow: var(--focus-inset); }
+.potrow[aria-current="true"] { background: var(--accent-weak); }
+.potrow .sw { width: 32px; height: 32px; }
+.potname { display: grid; min-width: 0; font-weight: 500; }
+.potname .br { font-weight: 400; font-size: 12px; color: var(--text-muted); }
+.potcur { color: var(--accent); font-weight: 600; }
+.potrow .de { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; white-space: nowrap; }
+.potnone { color: var(--text-muted); padding: 8px; }
 /* Empty states (UX 4): a heading, one sentence, one action. */
 .emptystate { padding: 32px 0 48px; display: grid; justify-items: start; gap: 8px; max-width: 60ch; }
 .emptystate h3 { margin: 0; font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; }
@@ -1145,11 +1185,14 @@ header { padding-top: env(safe-area-inset-top, 0px); }
   @media (pointer: fine) {
     select, select::picker(select) { appearance: base-select; }
     select { display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; cursor: pointer; }
-    /* The chevron: two token-coloured borders, 12px from the edge. It points up while the list is open. */
-    select::picker-icon { content: ''; flex: none; margin-inline-start: auto; width: 6px; height: 6px;
-      border-right: 2px solid var(--text-muted); border-bottom: 2px solid var(--text-muted);
-      transform: translateY(-2px) rotate(45deg); transition: transform 120ms cubic-bezier(.2,.7,.2,1); }
-    select:open::picker-icon { transform: translateY(2px) rotate(225deg); }
+    /* The chevron is the icon set's own (src/assets/icons/chev.svg, §3.5 Icons): a mask filled with the token
+       colour, so it matches every other icon. It was two rotated 2px borders, which read as a check mark
+       (Ryan, 2026-10-29). 12px from the edge; it turns to point up while the list is open. */
+    select::picker-icon { content: ''; flex: none; margin-inline-start: auto; width: 16px; height: 16px;
+      background-color: var(--text-muted);
+      -webkit-mask: var(--chev-mask) center / contain no-repeat; mask: var(--chev-mask) center / contain no-repeat;
+      transition: transform 120ms cubic-bezier(.2,.7,.2,1); }
+    select:open::picker-icon { transform: rotate(180deg); }
     /* Open is not focus (§3.5): the open select gets the --surface-2 fill, the ring stays for focus. */
     /* open is not focus (§3.5): the open fill wins over the Shelf's active-filter fill too */
     select:open, .shelffilters select.on:open { background-color: var(--surface-2); }

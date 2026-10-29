@@ -163,7 +163,7 @@ function tag(ops, measure, x, y, label, edge, color, T, px) {
 
 function delta(ops, measure, x, y, pot, seed, yourPaint, T, px, maxW) {
   // ΔE is plain mono text, never a chip, and always has its §3.2 label (§2: never imply a perfect match).
-  // The picked paint itself says "Your paint". A tag that does not fit beside the number goes under it.
+  // The picked paint itself says "Starting paint". A tag that does not fit beside the number goes under it.
   if (seed) { tag(ops, measure, x, y, yourPaint, T.borderStrong, T.muted, T, px); return; }
   const tier = pot.tier === 'success' ? [T.success, T.successText] : pot.tier === 'warning' ? [T.warning, T.warningText] : [T.danger, T.dangerText];
   const de = `ΔE ${pot.dE.toFixed(1)}`, mf = font(400, px, 'mono');

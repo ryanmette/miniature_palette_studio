@@ -86,10 +86,10 @@
       <kbd>↑</kbd> and <kbd>↓</kbd> move.</dd>
     <dt><kbd>Enter</kbd></dt>
     <dd>Paint field: start the scheme from the paint or the colour that the list shows as active. A hex such
-      as <code>#9A1115</code> changes your colour as you type; <code>9A1115</code> or <code>#9A1</code> needs
+      as <code>#9A1115</code> changes the starting colour as you type; <code>9A1115</code> or <code>#9A1</code> needs
       <kbd>Enter</kbd>. Other brands tab: show the matches for the palette colour that has focus.</dd>
     <dt><kbd>Shift</kbd> <kbd>F10</kbd></dt>
-    <dd>Open the mark menu: on the Shelf for the selection (Make this your paint, Mark owned, Add to shopping
+    <dd>Open the mark menu: on the Shelf for the selection (Start a scheme from this, Mark owned, Add to shopping
       list and Clear mark), and in the paint field's list for the active paint (Mark owned, Add to shopping list
       and Clear mark). The
       Menu key on a Windows keyboard does the same. On a touch screen, press and hold a paint; with a mouse,
@@ -97,8 +97,8 @@
     <dt><kbd>P</kbd> <kbd>U</kbd> <kbd>X</kbd></dt>
     <dd>Shelf: mark the selection as owned, add it to the shopping list, or clear its marks.</dd>
     <dt><kbd>Esc</kbd></dt>
-    <dd>Close a list, menu, sheet or dialog. In the paint field, after a hex that changed your colour as you
-      typed, Esc also puts back your paint from before. On the Shelf, clear the selection.</dd>
+    <dd>Close a list, menu, sheet or dialog. In the paint field, after a hex that changed the starting colour as you
+      typed, Esc also puts back the starting paint from before. On the Shelf, clear the selection.</dd>
   </dl>
 
   <h2>Common questions</h2>
@@ -108,7 +108,7 @@
     <kbd>Z</kbd>).</p>
   <ul>
     <li><strong>Roll a scheme</strong> (the die at the start of the row of harmonies; where that row is narrow, for
-      example on a phone, the button shows only “Roll”) picks a new harmony at random for your colour. Your paint
+      example on a phone, the button shows only “Roll”) picks a new harmony at random for the starting colour. The starting paint
       stays the same, in the same role (Main or Accent). The lightness, the colours you locked or added, and the pop
       accent do not change. It never picks Custom or the harmony you have now. For a neutral colour (a black, white
       or grey), it picks only from the schemes for neutrals: Neutral + pop, Duotone, Warm / cool and Shades.</li>
@@ -119,6 +119,19 @@
       white or grey colour, the scheme is one for neutrals. The new colour has a hue, so the scheme changes back to
       a harmony with a hue: the one you had before, or Complementary.</li>
   </ul>
+
+  <h3 id="holds">How do I keep a colour or a paint I already chose?</h3>
+  <p>On the <strong>Recipe</strong> tab, the Secondary, Accent and Metal cards each have two controls:</p>
+  <ul>
+    <li><strong>Lock colour</strong> keeps the role's target colour. When you change the harmony, roll a scheme or
+      press ↻, the other roles change and this one stays.</li>
+    <li><strong>📌 Choose pot…</strong> lets you pick the paint for the role, for example a gold you already used
+      on the model. The tone ladder then starts from that pot. The card still shows how far the pot is from the
+      target colour (ΔE), so you can see if it fits the scheme.</li>
+  </ul>
+  <p>A line under the live palette lists what you hold. Select <strong>Release</strong> to let a role change
+    again. Holds stay when you pick a new starting paint, and a shared link keeps them. The Primary role always
+    comes from the starting paint, so you cannot hold it.</p>
 
   <h3>Why doesn't a match look exactly like my paint?</h3>
   <p>The colour values for real paints are approximate. Every match shows its ΔE score and a

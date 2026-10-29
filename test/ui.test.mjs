@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
+import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, holdControls, holdNote, potRows, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -20,7 +20,7 @@ test('livePalette labels columns by role when a roleByHex map is supplied (unifi
   assert.match(html, /class="lctag">Primary</);   // base column reads as its role, not "Base"
   assert.match(html, /class="lctag">Accent</);
   assert.match(html, /class="lctag">Metal</);
-  assert.match(html, /class="lctag">Added</);     // free/extra colour keeps its node tag
+  assert.match(html, /class="lctag">Extra</);     // free/extra colour keeps its node tag
 });
 
 test('livePalette Metal column is display-only (no edit/lock/add controls)', () => {
@@ -155,7 +155,7 @@ test('seed docks: chip on the seeded role, switch dock on the other, reserved ro
     { id: 'metal', kind: 'metal', hex: '#C8A13A', match: null },
   ];
   const html = livePalette(dockVm, 'ideal', { '#87146E': 'Primary', '#146E24': 'Accent' });
-  assert.match(html, /class="seedchip" title="Faerzress Purple is your paint[^"]*">[^<]*<svg[^>]*>.*?<\/svg>Your paint</, 'the tag says Your paint and names the paint in its title');
+  assert.match(html, /class="seedchip" title="Faerzress Purple is the starting paint[^"]*">[^<]*<svg[^>]*>.*?<\/svg>Starting paint</, 'the tag says Starting paint and names the paint in its title');
   assert.ok(html.includes('data-seeddock="accent"'), 'switch dock targets the other role');
   assert.equal((html.match(/class="lcdock"/g) || []).length, 3, 'every column reserves the dock row (no-jiggle)');
   // disabled dock (neutral) carries the why and no live target semantics
@@ -298,4 +298,49 @@ test('a Poor match says what it means and what to do (UX 4)', () => {
   assert.match(matchChip(m(13.2)), /class="poornote"><strong>No pot within ΔE 10\.<\/strong>/);
   assert.doesNotMatch(matchChip(m(9.9)), /poornote/, 'Loose (ΔE 10 or less) gets no note');
   assert.match(matchChip(null), /class="poornote"><strong>No pot is close\.<\/strong>/);
+});
+
+test('livePalette: a held role column acts on the role; a chosen pot shows its tag (hold-flow, A)', () => {
+  const pot = { paint: { id: 'bg', name: 'Balthasar Gold', brand: 'Citadel', line: 'Base', hex: '#A77353', type: 'metal' }, deltaE: 22.9, quality: { label: 'Poor', tier: 'danger' } };
+  const html = livePalette([
+    { id: 'p0', kind: 'base', hex: '#6D774D', role: 'Primary', holdable: false, match: null },
+    { id: 'held-Secondary', kind: 'held', hex: '#2F4A6B', role: 'Secondary', holdable: true, hold: 'lock', match: null },
+    { id: 'metal', kind: 'metal', hex: '#A77353', role: 'Metal', holdable: true, hold: 'pot', match: pot },
+  ], 'ideal');
+  assert.match(html, /data-lock="r:Secondary"[^>]*aria-pressed="true"/, 'the lock toggles the role hold and shows pressed');
+  assert.match(html, /data-edit="r:Secondary"/, 'an edit becomes a lock on the role');
+  assert.match(html, /class="holdchip"[^>]*>.*?Pot chosen</, 'a chosen pot is a filled tag');
+  assert.doesNotMatch(html, /data-lock="r:Metal"/, 'a chosen pot is changed in the Recipe, not locked over');
+  assert.doesNotMatch(html, /data-lock="r:Primary"|data-lock="base"/, 'Primary is never held');
+});
+
+test('holdControls: a lock toggle with one fixed name, and a pot chooser; a chosen pot can be changed or released', () => {
+  assert.equal(holdControls({ role: 'Primary' }, false), '', 'a role that cannot be held has no controls');
+  const free = holdControls({ role: 'Metal' }, true);
+  assert.match(free, /data-hold-lock="Metal" aria-pressed="false"[^>]*>.*Lock colour</);
+  assert.match(free, /data-hold-pot="Metal" aria-haspopup="dialog">.*Choose pot…</);
+  assert.match(holdControls({ role: 'Metal', hold: 'lock' }, true), /aria-pressed="true"[^>]*>.*Lock colour</, 'the name stays; only the pressed state changes');
+  const pot = holdControls({ role: 'Metal', hold: 'pot' }, true);
+  assert.match(pot, /class="holdchip"/);
+  assert.match(pot, /data-hold-pot="Metal"[^>]*aria-label="Change the Metal pot">Change pot</);
+  assert.match(pot, /data-hold-release="Metal"/);
+});
+
+test('holdNote: lists the holds, names a Poor one and by how much; nothing held, nothing shown', () => {
+  assert.equal(holdNote([]), '');
+  const html = holdNote([{ role: 'Secondary', kind: 'lock', name: 'Abyss Blue', deltaE: 1.5, poor: false },
+    { role: 'Metal', kind: 'pot', name: 'Balthasar Gold', deltaE: 22.94, poor: true }]);
+  assert.match(html, /Secondary \(colour\) · Metal \(Balthasar Gold\)/);
+  assert.match(html, />Release both</);
+  assert.match(html, /<b>Metal:<\/b> Balthasar Gold is ΔE 22\.9 from this scheme's metal \(Poor\)/);
+  assert.equal((html.match(/class="hnwarn"/g) || []).length, 1, 'only the Poor hold gets a line');
+});
+
+test('potRows: each paint with its ΔE; the chosen one is marked; an empty search says what to try', () => {
+  const m = { paint: { id: 'bg', name: 'Balthasar Gold', brand: 'Citadel', line: 'Base', hex: '#A77353', type: 'metal' }, deltaE: 22.9, quality: { label: 'Poor', tier: 'danger' } };
+  const html = potRows([m], () => 'owned', 'bg');
+  assert.match(html, /data-potid="bg" aria-current="true"/);
+  assert.match(html, /ΔE 22\.9/);
+  assert.match(html, /owned/);
+  assert.match(potRows([]), /No paint matches/);
 });

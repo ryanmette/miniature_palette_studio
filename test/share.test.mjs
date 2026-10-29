@@ -194,3 +194,15 @@ test('shareUrl carries the theme on screen: t=dark when dark, no t when light, t
   assert.equal(new URL(shareUrl(bare + '&t=dark')).searchParams.get('t'), 'dark');
   assert.equal(shareUrl(bare, 'light'), bare);
 });
+
+test('holds round-trip through the link; an unknown pot becomes a lock on its hex', async () => {
+  const { encodeState, decodeState, encodeHolds, decodeHolds } = await import('../src/js/share.js');
+  const holds = { Secondary: { kind: 'lock', hex: '#2F4A6B' }, Metal: { kind: 'pot', id: 'citadel-base-balthasar-gold', hex: '#A77353' } };
+  const p = encodeState({ harmony: 'triadic', pickHex: '#6D774D', holds });
+  assert.equal(p.get('hd'), 'S.l.2F4A6B_M.p.citadel-base-balthasar-gold.A77353');
+  assert.deepEqual(decodeState(p.toString()).holds, holds);
+  assert.deepEqual(decodeHolds('M.p.gone.A77353', id => id !== 'gone'), { Metal: { kind: 'lock', hex: '#A77353' } });
+  assert.deepEqual(decodeHolds('P.l.FFFFFF_S.l.zz_X.l.000000'), {}, 'Primary is never held; bad tokens drop');
+  assert.equal(encodeHolds({}), '');
+  assert.equal(encodeState({ harmony: 'triadic' }).has('hd'), false, 'no holds, no parameter');
+});

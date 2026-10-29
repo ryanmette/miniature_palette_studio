@@ -5,17 +5,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Fixed
-- **The link card is no longer cut on a Mac.** Messages on a Mac shows the 1200 × 630 card at about 1.6 : 1, so it
-  cut about 96 px from each side, and the first letters of each line ("ick one paint", "RIMARY"). The card
-  (`src/og-image.png`) is redrawn with all its content inside the centre 960 px, a 120 px margin on each side. It
-  now names each paint's brand too. Drawn by `mockups/share-image.html` (§0).
-- **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role
-  card, the ring that links it to the wheel and the live palette sat 1px from the card's edges, with no
-  space on the left or right. The card now has 12px of room on each side (the content does not move), and
-  the ring is drawn inside it, 10px clear of the content.
-
 ### Added
+- **Hold a colour or a pot on a role** (UC-3, the study's direction A, Ryan's choice). Each Recipe card for
+  Secondary, Accent or Metal has two controls:
+  - **Lock colour** keeps the role's target colour. A harmony change, Roll a scheme or ↻ changes the other
+    roles only. The live palette, the Recipe and the shopping list all use the locked colour.
+  - **📌 Choose pot…** opens a list of paints. The pot you choose fills the role, and its tone ladder starts
+    from that pot. The match shows the true ΔE from the target colour, with the words "Chosen pot".
+  A line under the live palette lists the holds, with **Release** for each one. When a held pot is a Poor
+  match, the line says so and offers **Show pots**. Holds stay when you pick a new starting paint. A share
+  link (`hd`) and undo keep them. Primary is not holdable: the starting paint sets it.
+- **Design study: keep this, change the rest** (`mockups/hold-flow.html`, not shipped). Ryan asked for a study of
+  the whole flow: the starting paint, locks, pins and the rest. It measures today's controls and finds that a
+  lock never reaches the Recipe: after a harmony change, the palette keeps the locked colour as "Added" and the
+  Recipe's role changes, so the shopping list ignores the lock. It compares other tools (Coolors, Realtime
+  Colors, Huemint, Adobe Color, Material 3, Excel Solver, Onshape, Eat This Much), proposes one model (start,
+  hold, explore, filter), proposes "Starting paint" in place of "your paint" (which read as "owned"), and
+  scores three directions. The recommendation is A: one scheme with two holds, a locked colour and a chosen pot.
 - **Share as an image.** A shared link shows the same static card for every scheme, so the person who gets it
   cannot see the scheme before they open it. ⋯ → Share this palette now makes a picture of the scheme on the device
   (no server): a square 1080 px PNG of the four roles, each with its pot, a band of the target colour on top, the
@@ -38,6 +44,34 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   comes from the real engine (`mockups/share-image/engine-data.mjs`). The page also gives the share flow on touch, with
   a mouse and in the native app, the risks, an estimate and a commit plan. The recommendation is A, after a fix to the
   static card.
+
+### Changed
+- **"Your paint" is now "Starting paint"** (Ryan, after the study). "Your paint" read as a paint you own. The
+  tag on the live palette says "⚓ Starting paint", the dock says "⚓ Move here", and the Shelf's menu item says
+  "Start a scheme from this". A typed hex is the "starting colour".
+- **A colour you add to the live palette is tagged "Extra"** (it said "Added"). A locked role colour is no
+  longer an extra colour: it stays in its role.
+### Fixed
+- **The link card is no longer cut on a Mac.** Messages on a Mac shows the 1200 × 630 card at about 1.6 : 1, so it
+  cut about 96 px from each side, and the first letters of each line ("ick one paint", "RIMARY"). The card
+  (`src/og-image.png`) is redrawn with all its content inside the centre 960 px, a 120 px margin on each side. It
+  now names each paint's brand too. Drawn by `mockups/share-image.html` (§0).
+- **A lock now reaches the Recipe** (found by the study). Before, a locked colour stayed on the live palette
+  after a harmony change, but the Recipe and the shopping list used the new harmony's colour. A lock on a
+  role column is now a role hold, so all three agree.
+- **The dropdown arrows are the app's own chevron** (Ryan's report). With a mouse, the Shelf's brand, type and
+  sort lists and the paint list's Sort drew their arrow from two rotated borders, which read as a check mark.
+  They now use the chevron from the icon set, in the muted text colour, and it turns up while the list is open.
+- **The harmony strip's scrollbar no longer covers the chips** (Ryan's report). On a Mac the scrollbar floats
+  over the content, and with 4px of room under the chips it covered their lower edge and the pressed chip's
+  accent bar. The strip now has 14px of room under the chips.
+- **The dock on the live palette says what it does: "Move here"** (Ryan's report). It said "Make
+  this your paint", which read as "make this column's colour my paint". The button moves the starting paint
+  into that column's role (for example from Accent to Primary) and builds the scheme again around it.
+- **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role
+  card, the ring that links it to the wheel and the live palette sat 1px from the card's edges, with no
+  space on the left or right. The card now has 12px of room on each side (the content does not move), and
+  the ring is drawn inside it, 10px clear of the content.
 
 ## [1.11.0] - 2026-10-28
 ### Added

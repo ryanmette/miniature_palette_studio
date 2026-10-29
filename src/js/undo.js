@@ -32,6 +32,7 @@ export function snapPalette(s) {
     extraNodes: (s.extraNodes || []).map(n => ({ h: n.h, s: n.s, l: n.l ?? null, locked: !!n.locked })),
     dropOffsets: [...(s.dropOffsets || [])],
     wheelL: s.wheelL ?? null,
+    holds: s.holds && Object.keys(s.holds).length ? s.holds : null,
   });
 }
 
@@ -52,5 +53,6 @@ export function readSnap(json) {
     extraNodes: (o.extraNodes || []).map(n => ({ h: n.h, s: n.s, ...(n.l != null ? { l: n.l } : {}), ...(n.locked ? { locked: true } : {}) })),
     dropOffsets: [...(o.dropOffsets || [])],
     wheelL: typeof o.wheelL === 'number' ? o.wheelL : null,
+    holds: o.holds && typeof o.holds === 'object' ? o.holds : {},
   };
 }

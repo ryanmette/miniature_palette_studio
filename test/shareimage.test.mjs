@@ -26,7 +26,7 @@ function themeTokens(selector) {
 }
 const LIGHT = themeTokens('[data-theme="light"]'), DARK = themeTokens('[data-theme="dark"]');
 
-const WORDS = { from: 'From {name}', yourPaint: 'Your paint', noPot: 'No close pot', footer: 'ΔE 2000 · colours are approximate',
+const WORDS = { from: 'From {name}', yourPaint: 'Starting paint', noPot: 'No close pot', footer: 'ΔE 2000 · colours are approximate',
   finish: { metal: 'metallic', contrast: 'contrast', wash: 'wash', shade: 'shade', ink: 'ink', glaze: 'glaze', effect: 'effect' } };
 
 /* Real schemes from the real engine, with the app's default match options (app.js matchOpts). */
@@ -105,9 +105,9 @@ test('every text passes WCAG AA (4.5:1) on its ground, in both themes (§3.5, §
   }
 });
 
-test('§2: each match shows ΔE with its label; the picked paint says "Your paint"; the swatch is the pot\'s own hex', () => {
+test('§2: each match shows ΔE with its label; the picked paint says "Starting paint"; the swatch is the pot\'s own hex', () => {
   const v = CASES[0], L = layoutShareImage(v, LIGHT, measure), all = texts(L).map(o => o.text);
-  assert.equal(all.filter(s => s === 'Your paint').length, 1);
+  assert.equal(all.filter(s => s === 'Starting paint').length, 1);
   for (const r of v.roles.filter(x => x.pot && x.pot.id !== v.seed.id)) {
     assert.ok(all.includes(`ΔE ${r.pot.dE.toFixed(1)}`), r.role);
     assert.ok(all.includes(r.pot.label), r.pot.label);
