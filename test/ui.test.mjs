@@ -425,3 +425,45 @@ test('schemesList: saved first, then the projects under their own heading; nothi
   assert.match(empty, /<h3>noSchemesTitle<\/h3>/);
   assert.match(empty, /data-scgo="studio"/);
 });
+
+/* ---- the Shelf's list: the rack walk (PLAN §5 item 36) ---- */
+import { rackRow, rackGroups } from '../src/js/ui.js';
+const dawn = { id: 'c-layer-dawnstone', name: 'Dawnstone', dname: 'Dawnstone (Layer)', brand: 'Citadel', line: 'Layer', hex: '#70746D', type: 'layer' };
+const gold = { id: 'c-base-gold', name: 'Balthasar Gold', brand: 'Citadel', line: 'Base', hex: '#A77353', type: 'metal' };
+
+test('rackRow: the plain name shows; the tick names the twin in full; aria-pressed is the owned state', () => {
+  const html = rackRow({ paint: dawn, owned: false, countable: true, qty: 1, countOpen: false, forName: 'Plague Marine' }, tr);
+  assert.match(html, /class="rkname">Dawnstone</);
+  assert.match(html, /data-rktick="c-layer-dawnstone" aria-pressed="false" aria-label="ownedName\(name=Dawnstone \(Layer\)\)"/);
+  assert.match(html, /Citadel · Layer/);
+  assert.match(html, /class="rkfor">forName\(name=Plague Marine\)/);
+  assert.match(html, /data-rkcount="c-layer-dawnstone"/);
+  assert.doesNotMatch(html, /rkstep/);
+});
+
+test('rackRow: an open count is a stepper; owned keeps the slot (no height change) but empties it', () => {
+  const open = rackRow({ paint: dawn, owned: false, countable: true, qty: 2, countOpen: true }, tr);
+  assert.match(open, /data-rkqty="-1"/);
+  assert.match(open, /data-rkqty="1"/);
+  assert.match(open, /<output class="rkn">nPots\(n=2\)<\/output>/);
+  assert.doesNotMatch(open, /aria-live/, 'the count is said through say(), not a live region that is rebuilt');
+  const one = rackRow({ paint: dawn, owned: false, countable: true, qty: 1, countOpen: true }, tr);
+  assert.match(one, /onePot/);
+  const done = rackRow({ paint: dawn, owned: true, countable: true, qty: 1, countOpen: false }, tr);
+  assert.match(done, /class="rkrow done"/);
+  assert.match(done, /<span class="rkslot"><\/span>/, 'the slot stays, empty');
+  assert.match(done, /aria-pressed="true"/);
+  const plain = rackRow({ paint: gold, owned: true, countable: false, qty: 0 }, tr);
+  assert.doesNotMatch(plain, /rkslot/, 'a paint never on the list has no count slot');
+  assert.match(plain, /class="sw rksw metal"/, 'the finish overlay');
+});
+
+test('rackGroups: one section per group, its title and count, rows in the given order', () => {
+  const html = rackGroups([
+    { key: 'Citadel · Base', title: 'Citadel · Base', rows: [{ paint: gold, owned: false, countable: true, qty: 1 }] },
+    { key: '', title: 'Other paints', rows: [{ paint: dawn, owned: false, countable: true, qty: 1 }, { paint: gold, owned: true, countable: false, qty: 0 }] },
+  ], tr);
+  assert.equal((html.match(/<section class="rkgroup"/g) || []).length, 2);
+  assert.match(html, /<span>Citadel · Base<\/span><span class="rkcount">1<\/span>/);
+  assert.match(html, /<span>Other paints<\/span><span class="rkcount">2<\/span>/);
+});

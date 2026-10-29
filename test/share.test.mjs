@@ -231,3 +231,19 @@ test('m=schemes round-trips; shareUrl drops m and s (a saved-scheme id means not
   assert.equal(out.searchParams.get('s'), null);
   assert.equal(out.searchParams.get('h'), 'triadic');
 });
+
+test('sv=list and sg=project round-trip in the address bar; a shared link and a scheme link drop them', async () => {
+  const { encodeState, decodeState, shareUrl, schemeQuery } = await import('../src/js/share.js');
+  const p = encodeState({ mode: 'shelf', shelfView: 'list', shelfGroup: 'project' });
+  assert.equal(p.get('sv'), 'list');
+  assert.equal(p.get('sg'), 'project');
+  assert.equal(encodeState({ shelfView: 'grid', shelfGroup: 'rack' }).get('sv'), null, 'the defaults are not written');
+  const back = decodeState(p);
+  assert.equal(back.shelfView, 'list');
+  assert.equal(back.shelfGroup, 'project');
+  assert.equal(decodeState('?sv=table&sg=brand').shelfView, undefined);
+  const out = new URL(shareUrl('https://palette.ryanmette.com/?p=x&c=111111&m=shelf&sv=list&sg=project'));
+  assert.equal(out.searchParams.get('sv'), null);
+  assert.equal(out.searchParams.get('sg'), null);
+  assert.doesNotMatch(schemeQuery({ baseId: 'x', pickHex: '#111111', shelfView: 'list', shelfGroup: 'project' }), /sv=|sg=/);
+});

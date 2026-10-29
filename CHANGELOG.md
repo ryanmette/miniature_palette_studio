@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **A list to take to the store** (PLAN §5 item 36; `mockups/shopping-list.html` A + D). The Shelf has a
+  **Grid | List** switch. The list shows the paints the filters pick, grouped the way a store racks them
+  (brand, then range), or **By project** (one group per saved scheme, then Other paints). Each row has the
+  swatch, the name in large type, the brand and range, and "for Blue knight" when a scheme needs it.
+  - **Tick a paint when it is in your basket**: it is owned at once. Tap it again to undo: it goes back on the
+    shopping list with its count and project. A ticked row stays where it is while the list is open.
+  - **Add a count** turns into a − 2 pots + stepper.
+  - **Print** puts the list on paper, with a box for a pen.
+  - A reload keeps the list and its grouping (`sv`, `sg`); a shared link does not carry them.
 - **Save a scheme, and a Schemes mode to keep them** (PLAN §5 item 35; `mockups/scheme-library.html`).
   - **The Save line** above the starting paint says whether the scheme on screen is kept: *Not saved* with
     **Save**, its name with **Saved**, or its name with **Changed**, **Save** and **Save as new**. Nothing is

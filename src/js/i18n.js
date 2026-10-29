@@ -202,7 +202,32 @@ const LOCALES = {
     noSchemesBody: 'Make a scheme in the Studio and press Save on the line above its name. It waits for you here.',
     goStudio: 'Go to the Studio',
 
-    // the Restore and Delete confirms
+    // the Shelf's list: the rack walk (PLAN §5 item 36)
+    shelfViewName: 'Show the shelf as',
+    viewGrid: 'Grid',
+    viewList: 'List',
+    groupListName: 'Group the list',
+    groupRack: 'Rack order',
+    groupProject: 'By project',
+    printList: 'Print',
+    otherPaints: 'Other paints',
+    forName: 'for {name}',
+    ownedName: 'Owned: {name}',
+    addCount: 'Add a count',
+    addCountFor: 'Add a count for {name}',
+    potsOf: 'Pots of {name}',
+    oneMore: 'One more pot',
+    oneFewer: 'One fewer pot',
+    onePot: '1 pot',
+    nPots: '{n} pots',
+    potsSaid: '{name}: {count}',
+    rkHintWant: 'Tick a paint when it is in your basket: it is then owned. Tap again to undo.',
+    rkHintAll: 'A tick marks a paint owned. Tap again to undo.',
+    tickedOwned: '{name}: owned',
+    tickedBack: '{name}: back on the shopping list',
+    tickedNone: '{name}: not owned',
+
+
     restoreTitle: 'Replace your shelf and settings?',
     onDevice: 'On this device:',
     inBackup: 'In the backup:',

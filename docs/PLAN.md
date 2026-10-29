@@ -112,7 +112,7 @@ UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funn
 [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
 **Next planned work: the native app, Stage 1 (v2.0)** — the kickoff checklist is
 `IOS_APP_PLAN.md` §4b, and the native-track constitution is drafted (`CLAUDE_NATIVE.md`, dormant until
-kickoff). §5's live backlog is the buying-assistant plan (items 7–11) and the shopping-list turn (items 34–38, 34–35 built;
+kickoff). §5's live backlog is the buying-assistant plan (items 7–11) and the shopping-list turn (items 34–38, 34–36 built;
 studied and answered 2026-10-29); the pin-a-paint direction shipped as role holds in v1.12.0. Still outside this repo: the Mac/Xcode build, a designer for the asset
 library, and the optional palette-from-photo enhancement.
 
@@ -451,8 +451,13 @@ The build order. Each item needs the one before it:
     delete (a confirm; the paints stay on the list), the projects that were never saved, and the empty state.
     The address bar keeps the saved scheme's id (`s`, never in a shared link). CLAUDE.md §3.6 changed in the
     same commit. **Take to the store** is not in the Schemes actions yet: it comes with item 37.
-36. **The rack walk** (shopping-list direction A). The checklist grouped brand → line; a tick marks owned;
-    "Add a count" on a row; the "for" groups and "Other paints"; a print style (direction D).
+36. **The rack walk** (shopping-list direction A) — **built (`feat/rack-walk`).** Ryan chose where it lives
+    and how it groups (2026-10-29): a **Grid | List** switch on the Shelf (the list shows the paints the
+    filters pick), and **Rack order | By project** (brand · line, or one group per scheme + "Other paints").
+    A tick marks a paint owned at once; a second tap puts back its mark, count and project; a ticked row stays
+    in place while the list is open. "Add a count" turns into a − n pots + stepper. **Print** gives the list
+    on paper (direction D). The address bar keeps `sv=list` and `sg=project` (never in a shared link). A tick
+    redraws one row (a full rebuild of 3,225 rows took 660ms; one row takes about 11ms).
 37. **Take to the store.** The hand-off panel (link · QR code · Print · Save as text); "Which paints?" by
     project; the naming step at the first export; the name in the share link (`n=`); the "bought" link back,
     which only adds owned marks and asks first. The text file becomes the list only, in rack order, with
