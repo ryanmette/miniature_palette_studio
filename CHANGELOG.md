@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Design exploration: share as an image** (`mockups/share-image.html`, not shipped). A shared link shows the same
+  static card for every scheme, and Messages on a Mac cuts its sides: it shows the 1200 × 630 card at about 1.6 : 1, so
+  about 96 px goes from each side. The page measures this from a screenshot and proposes a 960 px safe zone. It then
+  shows three directions for an image that the device makes when the painter shares (no server): A, a recipe card of
+  the four roles; B, the wheel and the live palette; C, a pot shelf with the tone ladders. Each is square and wide, light
+  and dark, in Messages and Discord frames, with measured PNG sizes, draw times, text sizes and contrast. The data
+  comes from the real engine (`mockups/share-image/engine-data.mjs`). The page also gives the share flow on touch, with
+  a mouse and in the native app, the risks, an estimate and a commit plan. The recommendation is A, after a fix to the
+  static card.
 
 ## [1.11.0] - 2026-10-28
 ### Added

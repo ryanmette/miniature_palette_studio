@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Share as an image</title>
+<meta name="description" content="Design exploration: share a colour scheme as an image made on the device, with no server. Three directions, the share flow, risks and a plan.">
+<style>
+  /* The app's self-hosted webfonts (the mockup copies in mockups/fonts), so the canvas draws with the same faces. */
+  @font-face { font-family: "Barlow Condensed"; font-weight: 600; font-display: swap; src: url("fonts/barlow-condensed-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Barlow Condensed"; font-weight: 700; font-display: swap; src: url("fonts/barlow-condensed-latin-700-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Sans"; font-weight: 400; font-display: swap; src: url("fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Sans"; font-weight: 500; font-display: swap; src: url("fonts/ibm-plex-sans-latin-500-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Sans"; font-weight: 600; font-display: swap; src: url("fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2"); }
+
+  /* ---- tokens: CLAUDE.md §3.1 (Workbench+). The page follows the device; the canvas images take their own theme. ---- */
+  :root {
+    --r-card:6px; --r-ctrl:4px; --r-sw:3px; --r-tag:2px; --r-pill:999px; --tap:38px;
+    --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+    --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6; --border:#DCD8D0; --border-strong:#C9C4BA;
+    --text:#1D1C19; --text-muted:#5E5A52; --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+    --success-text:#0F7334; --warning-text:#945908; --danger-text:#C4203D; --danger:#DC2647;
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  @media (pointer: coarse), (max-width: 520px) { :root { --tap:44px; } }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --success-text:#86A559; --warning-text:#E0803A; --danger-text:#D86C58; --danger:#D2563F;
+  } }
+  :root[data-theme="dark"] {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A; --border:#3A302A; --border-strong:#4D4138;
+    --text:#ECE3D8; --text-muted:#A8998A; --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --success-text:#86A559; --warning-text:#E0803A; --danger-text:#D86C58; --danger:#D2563F;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 400 15px/1.55 var(--font); }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1.15; margin: 0; }
+  h1 { font-size: 34px; } h2 { font-size: 26px; margin-top: 8px; } h3 { font-size: 20px; margin: 20px 0 8px; }
+  p, li { max-width: 74ch; } p { margin: 8px 0; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+  code { font-family: var(--mono); font-size: .9em; background: var(--surface-2); padding: 1px 4px; border-radius: var(--r-tag); overflow-wrap: anywhere; }
+  .micro { font-size: 11.5px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); }
+  .muted { color: var(--text-muted); }
+  section { border-top: 1px solid var(--border); padding-top: 24px; margin-top: 32px; }
+  .lede { font-size: 16px; }
+  .verdict { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 16px 0; }
+  .toolbar { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 8px 16px; }
+  .toolbar label { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--text-muted); min-width: 0; flex: 1 1 260px; max-width: 520px; }
+  .toolbar select { min-width: 0; width: 100%; }
+  select, button { font: 500 14px var(--font); color: var(--text); background: var(--surface); border: 1px solid var(--edge, #8A857B);
+    border-radius: var(--r-ctrl); min-height: var(--tap); padding: 0 10px; max-width: 100%; }
+  @media (pointer: coarse) { select, button { font-size: 16px; } }
+  .seg { display: inline-flex; }
+  .seg button { border-color: var(--border-strong); border-radius: 0; position: relative; }
+  .seg button + button { margin-left: -1px; }
+  .seg button:first-child { border-radius: var(--r-ctrl) 0 0 var(--r-ctrl); }
+  .seg button:last-child { border-radius: 0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .seg button[aria-pressed="true"] { background: var(--accent-weak); }
+  .seg button[aria-pressed="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent); }
+  .status { font-size: 13px; color: var(--text-muted); min-height: 1.5em; }
+
+  /* image grids */
+  .imgs { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 12px 0; }
+  figure { margin: 0; }
+  figure img { display: block; width: 100%; height: auto; border: 1px solid var(--border); border-radius: var(--r-sw); background: var(--surface-2); }
+  figcaption { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+  figcaption b { color: var(--text); font-weight: 600; }
+  .alt { font-size: 12.5px; color: var(--text-muted); border-left: 2px solid var(--border-strong); padding-left: 8px; margin-top: 4px; }
+
+  /* checks table */
+  .tablewrap { overflow-x: auto; margin: 8px 0; }
+  table { border-collapse: collapse; font-size: 13px; min-width: 520px; width: 100%; }
+  th, td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; }
+  .ok { color: var(--success-text); } .warn { color: var(--warning-text); } .bad { color: var(--danger-text); }
+
+  /* ---- in-context frames: the apps' own chrome colours (not our tokens: these imitate other products' UI) ---- */
+  .frames { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin: 12px 0; }
+  .im { border-radius: 18px; padding: 16px 12px; font: 400 15px/1.3 -apple-system, system-ui, sans-serif; }
+  .im.light { background: #FFFFFF; color: #000; border: 1px solid #DDD; } .im.dark { background: #000; color: #FFF; border: 1px solid #333; }
+  .im .who { text-align: center; font-size: 11px; opacity: .6; margin-bottom: 8px; }
+  .im .row { display: flex; justify-content: flex-start; margin: 4px 0; }
+  .im .shot { width: 72%; border-radius: 18px; overflow: hidden; }
+  .im .shot img { display: block; width: 100%; height: auto; }
+  .im .bubble { max-width: 76%; border-radius: 18px; padding: 8px 12px; }
+  .im.light .bubble { background: #E9E9EB; } .im.dark .bubble { background: #262629; }
+  .im .link { width: 76%; border-radius: 18px; overflow: hidden; }
+  .im.light .link { background: #E9E9EB; } .im.dark .link { background: #262629; }
+  .im .link .crop { aspect-ratio: 1.6; overflow: hidden; }
+  .im .link .crop img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .im .link .meta { padding: 8px 12px; font-size: 13px; } .im .link .meta b { display: block; font-weight: 600; }
+  .im .link .meta span { opacity: .6; }
+  .dc { border-radius: 8px; padding: 16px; font: 400 15px/1.375 "gg sans", system-ui, sans-serif; }
+  .dc.dark { background: #313338; color: #DBDEE1; } .dc.light { background: #FFFFFF; color: #313338; border: 1px solid #DDD; }
+  .dc .msg { display: grid; grid-template-columns: 40px 1fr; gap: 12px; }
+  .dc .av { width: 40px; height: 40px; border-radius: 50%; background: #5865F2; }
+  .dc .name { font-weight: 600; } .dc .name small { font-weight: 400; opacity: .6; margin-left: 6px; font-size: 12px; }
+  .dc .url { overflow-wrap: anywhere; }
+  .dc.dark .url { color: #00A8FC; } .dc.light .url { color: #006CE7; }
+  .dc .att { margin-top: 8px; max-width: 400px; } .dc .att img { display: block; max-width: 100%; max-height: 300px; border-radius: 8px; }
+  .dc .embed { margin-top: 8px; max-width: 432px; border-left: 4px solid #1E1F22; border-radius: 4px; padding: 8px 16px 16px 12px; font-size: 14px; }
+  .dc.dark .embed { background: #2B2D31; border-left-color: #1E1F22; } .dc.light .embed { background: #F2F3F5; border-left-color: #E3E5E8; }
+  .dc .embed small { display: block; font-size: 12px; opacity: .7; margin-bottom: 4px; }
+  .dc .embed b { display: block; margin-bottom: 4px; }
+  .dc .embed img { display: block; width: 100%; border-radius: 4px; margin-top: 12px; }
+
+  /* the clipped-card study */
+  .cropstudy { position: relative; }
+  .cropstudy img { display: block; width: 100%; height: auto; border: 1px solid var(--border); }
+  .cropstudy .cut { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, rgba(220,38,71,.28) 0 6px, rgba(220,38,71,.10) 6px 12px); }
+  .cropstudy .safe { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--accent); border-right: 2px dashed var(--accent); }
+  details { margin: 8px 0; } summary { cursor: pointer; font-weight: 600; min-height: var(--tap); display: flex; align-items: center; }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 12px; overflow-x: auto; font: 12.5px/1.5 var(--mono); }
+  ol li, ul li { margin: 4px 0; }
+  .q li { margin: 8px 0; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="toolbar" role="region" aria-label="Mockup controls">
+  <label>Scheme
+    <select id="case"></select>
+  </label>
+  <span class="seg" role="group" aria-label="Page theme">
+    <button type="button" data-pt="auto" aria-pressed="true">Device</button><button type="button" data-pt="light" aria-pressed="false">Light</button><button type="button" data-pt="dark" aria-pressed="false">Dark</button>
+  </span>
+  <span class="status" id="status" role="status" aria-live="polite"></span>
+</div>
+<main>
+  <p class="micro">Design exploration · not shipped · 2026-10-29</p>
+  <h1>Share as an image</h1>
+  <p class="lede">The painter makes a picture of the scheme on the device and shares the picture with the link. No server makes or keeps the picture (CLAUDE.md §1).</p>
+  <p class="muted">Every colour and every paint name on this page comes from the real engine (<code>data.js</code>, <code>scheme.js</code>, <code>harmony.js</code>) on <code>paints.json</code> <span id="dsver"></span>. The script <code>mockups/share-image/engine-data.mjs</code> writes that data. The images are real PNG files. This page draws them with <code>&lt;canvas&gt;</code> and the self-hosted fonts, as the app would. The sizes and times under each image are measured on your device.</p>
+
+  <div class="verdict">
+    <p><b>Recommendation.</b> Fix the static link card first: it is a small change, and every link needs it. Then build direction A, the recipe card, as one square image (1080 × 1080) in the theme on screen. Put it in ⋯ → Share this palette as <b>Share image…</b> on touch, and as <b>Copy image</b> and <b>Save the image</b> with a mouse. Keep direction C (the tone ladders) for a later, taller image. Directions B and C are in the questions at the end.</p>
+  </div>
+
+  <!-- ============ 0. the clipped link card ============ -->
+  <section id="clip" aria-labelledby="clip-h">
+    <h2 id="clip-h">0. Why the link card is clipped on a Mac</h2>
+    <p>The file is correct: <code>src/og-image.png</code> is 1200 × 630, and the tags in <code>src/index.html</code> say so. Messages on the Mac shows the card at a different shape. It cuts the sides off.</p>
+    <p>Measurement from your screenshot: the word mark "Palette Studio" is 386 px wide in the file and 224 px wide on screen. The scale is 0.58. The visible image is about 585 px wide, so it shows about 1008 px of the 1200 px file. That is an aspect ratio of about 1.6 : 1, not 1.91 : 1. Messages keeps the centre and cuts about 96 px from each side.</p>
+    <p>The card text starts at x = 80. So Messages cuts the first 16 px of every line ("ick one paint", "RIMARY"). The Metal swatch ends at x = 1120, so Messages cuts its right edge too.</p>
+    <p><b>Fix.</b> Keep the size 1200 × 630: Discord, Slack and X use 1.91 : 1. Put all content inside the centre 960 px (a margin of 120 px each side). This gives 24 px of space inside the Mac crop. Keep the important content inside the centre 630 × 630 square too, because some apps show a square thumbnail. This is one PNG and one CHANGELOG line. It is a separate, small pull request.</p>
+    <div class="imgs" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <figure>
+        <div class="cropstudy" id="cropNow"><img id="ogNow" alt="The current link card, 1200 by 630, with the two side strips that Messages on the Mac cuts off marked in red." src="../src/og-image.png" onerror="this.onerror=null;this.src='og-image.png'"></div>
+        <figcaption><b>Now.</b> Red strips: the 96 px that Messages on the Mac cuts from each side.</figcaption>
+      </figure>
+      <figure>
+        <div class="cropstudy" id="cropFix"><img id="ogFix" alt=""></div>
+        <figcaption><b>Proposed.</b> The same card with a 120 px side margin. Dashed lines: the centre 960 px safe zone.</figcaption>
+      </figure>
+    </div>
+    <div class="frames" id="clipFrames"></div>
+  </section>
+
+  <!-- ============ the three directions (filled by script) ============ -->
+  <div id="directions"></div>
+
+  <!-- ============ 4. how it is drawn ============ -->
+  <section id="draw" aria-labelledby="draw-h">
+    <h2 id="draw-h">4. How the image is drawn</h2>
+    <p>The image is a <code>&lt;canvas&gt;</code> in vanilla JavaScript. There is no new runtime dependency (§6) and no external request.</p>
+    <ol>
+      <li><b>Layout is pure.</b> A new module, <code>src/js/shareimage.js</code>, gets the scheme, the size, the theme tokens and a <code>measure(font, text)</code> function. It returns a list of draw operations (rectangles, swatches, text, tags, finish icons). It has no DOM, so <code>node --test</code> can test it with a fake <code>measure</code>. This page uses that design: see <code>layoutA</code>, <code>layoutB</code> and <code>layoutC</code> in its source.</li>
+      <li><b>Painting is small.</b> A painter (about 120 lines) reads the operations and draws them on a canvas. It is the only part that touches the DOM. It lives in <code>app.js</code>, or in a new app-injected module like <code>wheel.js</code> (§6 then names it).</li>
+      <li><b>Fonts load first.</b> Before the draw, the painter calls <code>document.fonts.load()</code> for each face that it uses (Barlow Condensed 700, IBM Plex Sans 400/500/600). The fonts are self-hosted, so this is local. If a font does not load, the draw uses the system font. The layout measures with the font that the canvas really has, so long text cannot overflow.</li>
+      <li><b>The image is a PNG.</b> <code>canvas.toBlob(cb, 'image/png')</code> makes the file. Flat colour compresses well in PNG, and PNG keeps the paint colour exact. JPEG would change the colour at the edges of each swatch.</li>
+      <li><b>Text is fitted, not shrunk.</b> A name gets at most two lines, then an ellipsis (…). The full name goes in the alt text. A font size never goes below its minimum, so the image stays readable.</li>
+    </ol>
+    <details><summary>The share payload (sketch)</summary>
+<pre>// in the click handler: the PNG is already made (see risk R1)
+const file = new File([pngBlob], 'palette-studio-mephiston-red.png', { type: 'image/png' });
+const data = { files: [file], title: 'Palette Studio for Miniatures', text: altText + '\n' + url };
+if (navigator.canShare?.(data)) await navigator.share(data);      // touch: the system share sheet
+else showDesktopActions();                                         // Copy image · Save the image · Copy link</pre>
+    </details>
+  </section>
+
+  <!-- ============ 5. share flow ============ -->
+  <section id="flow" aria-labelledby="flow-h">
+    <h2 id="flow-h">5. The share flow on each platform</h2>
+    <h3>Where the action lives</h3>
+    <p>In ⋯, in the group <b>Share this palette</b> (§3.6). The group shares the colours on screen now, so an image belongs there. The rule for a pointer stays the same: the share sheet on touch only (<code>CAN_SHARE</code>), and direct actions with a mouse.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Input</th><th>Today</th><th>Proposed</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>Touch</td><td>Share link… · Save the shopping list</td><td><b>Share image…</b> · Share link… · Save the shopping list</td><td>Share image… opens the system share sheet with the PNG and the link.</td></tr>
+        <tr><td>Mouse</td><td>Copy link · Save the shopping list</td><td>Copy link · <b>Copy image</b> · <b>Save the image</b> · Save the shopping list</td><td>Copy image puts the PNG on the clipboard. Save the image downloads the PNG. Copy link is not changed.</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Words (§3.5, one name for one thing).</b> "Image" is the one word for the picture: not "card", not "snapshot", not "picture". "Save" is already the word for a file (Save my shelf (CSV), Save the shopping list), so the download is <b>Save the image</b>, not "Download". The ellipsis on <b>Share image…</b> follows <b>Share link…</b>: it opens a sheet. The toast after Copy image says "Image copied." Code names: <code>shareImage</code>, <code>copyImage</code>, <code>saveImage</code>.</p>
+
+    <h3>Touch: Web Share API Level 2</h3>
+    <ol>
+      <li>Make the PNG before the tap (when ⋯ opens). See risk R1.</li>
+      <li>In the tap handler, call <code>navigator.canShare({ files: [file] })</code>.</li>
+      <li>If it is true, call <code>navigator.share({ files, title, text })</code>. Put the link in <code>text</code>. Some share targets drop <code>url</code> when there is a file (verify on device).</li>
+      <li>If it is false, show the mouse actions (Save the image, Copy link).</li>
+      <li>If the painter closes the sheet (<code>AbortError</code>), do nothing and say nothing.</li>
+    </ol>
+    <h3>Desktop, or a browser with no file share</h3>
+    <ol>
+      <li><b>Copy image:</b> call <code>navigator.clipboard.write([new ClipboardItem({ 'image/png': pngPromise })])</code>. Give Safari a <i>promise</i> of the blob in the click, not the blob after an <code>await</code>. Safari needs the write to start inside the click.</li>
+      <li>The clipboard holds one thing for a paste. An app that gets an image paste takes the image and drops any text. So Copy image copies the image only. The image prints the address, and Copy link stays beside it. (Question 4.)</li>
+      <li><b>Save the image:</b> the same <code>download()</code> path as Save the shopping list (an <code>&lt;a download&gt;</code> with an object URL).</li>
+      <li>If <code>ClipboardItem</code> is not there, or the write fails, hide Copy image and keep Save the image.</li>
+    </ol>
+    <h3>The native app (docs/IOS_APP_PLAN.md, CLAUDE_NATIVE.md)</h3>
+    <ol>
+      <li>Try <code>navigator.share</code> with the file first. CLAUDE_NATIVE.md §4 allows <code>@capacitor/share</code> "only if <code>navigator.share</code> proves insufficient in-shell". Test this at Stage 1.</li>
+      <li>If the plugin is necessary: <code>Share.share()</code> takes <code>files</code> as file paths, not a Blob. So the app must write the PNG to the cache folder first. That needs <code>@capacitor/filesystem</code>, which is <b>not</b> on the allowlist. It needs a line in CLAUDE_NATIVE.md §4 and a row in the §3 divergence registry, in the same commit.</li>
+      <li><b>"Open in Palette Studio":</b> the link in the share is the same web link. With a Universal Link (an <code>apple-app-site-association</code> file at <code>palette.ryanmette.com/.well-known/</code>, a static file on GitHub Pages), iOS opens the link in the app when the app is installed, and on the web when it is not. There is no second link and no new server.</li>
+    </ol>
+  </section>
+
+  <!-- ============ 6. risks ============ -->
+  <section id="risks" aria-labelledby="risks-h">
+    <h2 id="risks-h">6. Risks and limits</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>#</th><th>Risk</th><th>What we do</th></tr></thead>
+      <tbody>
+        <tr><td>R1</td><td><b>iOS Safari and file share.</b> <code>share()</code> needs a recent tap (transient user activation). An <code>await</code> for fonts and <code>toBlob</code> in the tap can use up that time, and Safari then rejects with <code>NotAllowedError</code>.</td><td>Make the PNG before the tap: when ⋯ opens, and again after a scheme change while ⋯ is open. The tap then calls <code>share()</code> at once. Test on a real iPhone.</td></tr>
+        <tr><td>R2</td><td><b>Files and a link together.</b> Some share targets keep the file and drop the link, or the other way.</td><td>Put the link in <code>text</code>. The image also prints the address. Test: Messages, WhatsApp, Discord, Instagram, Mail, Save to Photos.</td></tr>
+        <tr><td>R3</td><td><b>Image size and share-sheet limits.</b></td><td>The measured PNG sizes on this page are about <span id="sizeRange">…</span>. That is far under any share or message limit. Messages can compress a sent image. Flat colour survives that well.</td></tr>
+        <tr><td>R4</td><td><b>Fonts not ready on the first draw.</b> A canvas does not wait for a font. A draw before the font loads uses the fallback.</td><td>Await <code>document.fonts.load()</code> for each face. Measure with the real font. If the load fails, draw with the system font (the layout still fits).</td></tr>
+        <tr><td>R5</td><td><b>Very long paint names.</b> The longest in the data has 49 characters.</td><td>Two lines, then an ellipsis. The full name goes in the alt text. See the "very long name" scheme in the menu.</td></tr>
+        <tr><td>R6</td><td><b>Neutral seeds.</b> Black, white and grey have no hue. The wheel cannot place them on the ring.</td><td>A and C do not show the wheel. B puts a neutral at the centre and draws the disc at a fixed 50% lightness, so the hues show. See "Abaddon Black".</td></tr>
+        <tr><td>R7</td><td><b>Harmonies with 5 colours</b> (square, tetradic, compound, shades: base + 3 or 4 + Metal).</td><td>A and C show the four roles (the recipe). B shows every column of the live palette. A colour with no role shows its hue step ("+90°"), as the live palette does. See "Caliban Green · square".</td></tr>
+        <tr><td>R8</td><td><b>The link carries the theme</b> (<code>t=dark</code>, from <code>shareUrl</code>).</td><td>The image uses the theme on screen, and the link opens in that theme too, so they agree. The static link card stays light. (Question 3.)</td></tr>
+        <tr><td>R9</td><td><b>A slow phone</b> (§6: first render under 100 ms).</td><td>The image is not part of the render. It is made only when ⋯ opens. The draw times on this page: <span id="timeRange">…</span>. A slow phone can be about 4 to 6 times slower (estimate, verify). That is still a short wait, and the painter is not dragging at that time.</td></tr>
+        <tr><td>R10</td><td><b>Alt text.</b> The Web Share API has no alt field for a file. Messages and Discord do not take one from the share sheet.</td><td>Put a short text summary of the scheme in <code>text</code> with the link. The full alt text is under each image on this page.</td></tr>
+        <tr><td>R11</td><td><b>Small text in a message bubble.</b> Messages shows a square image at about 240 px wide on a phone. 1080 px of image then shows at 0.22 scale.</td><td>Big type for the names, and the table under each direction gives the smallest text size as shown. A tap opens the image full screen.</td></tr>
+        <tr><td>R12</td><td><b>The link unfurls twice.</b> In Messages and Discord, the link in the text gets its own static card under the image.</td><td>This is why the static card fix comes first. A per-scheme card still needs a server (§1).</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ============ 7. estimate ============ -->
+  <section id="estimate" aria-labelledby="estimate-h">
+    <h2 id="estimate-h">7. Estimate</h2>
+    <h3>Files</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>File</th><th>Change</th><th>Size</th></tr></thead>
+      <tbody>
+        <tr><td><code>src/og-image.png</code></td><td>Redraw with a 120 px side margin.</td><td>1 file</td></tr>
+        <tr><td><code>src/js/shareimage.js</code> (new)</td><td>Pure: <code>layoutShareImage(view, size, tokens, measure)</code> → operations, <code>shareAlt(view)</code>, <code>shareFileName(view)</code>, <code>fitText()</code>.</td><td>~250 lines</td></tr>
+        <tr><td><code>test/shareimage.test.js</code> (new)</td><td>Fit and ellipsis, two-line names, every text inside the safe zone, the minimum font sizes, <code>textOn</code> on every swatch label, the alt text for 4 and 5 colours and a neutral seed, the file name.</td><td>~150 lines</td></tr>
+        <tr><td><code>src/js/app.js</code></td><td>The view from <code>currentScheme()</code>, the painter, the font gate, make-on-open, and the three actions.</td><td>~160 lines</td></tr>
+        <tr><td><code>src/index.html</code></td><td>The new buttons in ⋯ → Share this palette.</td><td>~6 lines</td></tr>
+        <tr><td><code>src/js/i18n.js</code></td><td>Button names, toasts, the role words in the image, the alt text template (en-US: "color").</td><td>~15 lines</td></tr>
+        <tr><td><code>src/sw.js</code></td><td>Bump <code>CACHE</code>, add <code>shareimage.js</code> to the shell (§8).</td><td>2 lines</td></tr>
+        <tr><td><code>CLAUDE.md</code></td><td>§3.5 the word table (image, Share image…, Copy image, Save the image) · §3.6 the ⋯ group 2 · §4 the tree (the new module and test; the og card line says "inside a 960 px safe zone") · §6 the module list, if the painter is its own module · §1 "Added in v1.x".</td><td>—</td></tr>
+        <tr><td>Docs</td><td><code>CHANGELOG.md</code>, <code>docs/USE_CASES.md</code> UC-13, <code>README.md</code>, <code>docs/PLAN.md</code>.</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Commit plan (one concern per commit, §8)</h3>
+    <ol>
+      <li><code>fix(og): keep the link card inside the Messages crop</code> — the PNG, CHANGELOG, the §4 tree line. (Its own pull request.)</li>
+      <li><code>feat(shareimage): lay out the recipe image</code> — the pure module and its tests, the §4 tree.</li>
+      <li><code>feat(share): draw the image on a canvas</code> — the painter and the font gate in <code>app.js</code>, §6 if needed.</li>
+      <li><code>feat(settings): Share image…, Copy image and Save the image</code> — <code>index.html</code>, <code>i18n.js</code>, the flows, CLAUDE.md §3.5 and §3.6, USE_CASES UC-13, README, CHANGELOG.</li>
+      <li><code>chore(sw): bump the cache for the share image</code>.</li>
+    </ol>
+    <p>CLAUDE.md changes go in the same commit as the code they describe (the header of CLAUDE.md, and §8). The release is a minor bump (1.12.0), not 2.0 (§8).</p>
+  </section>
+
+  <!-- ============ 8. questions ============ -->
+  <section id="questions" aria-labelledby="q-h">
+    <h2 id="q-h">8. Recommendation and questions</h2>
+    <p><b>Recommendation.</b> First, fix the static card (commit 1). Then build direction A as one square PNG in the theme on screen. A shows Priya's plan with names that you can read in a bubble. It is honest (a target band over each pot, ΔE with its label). It also works for 5-colour schemes and neutral seeds without special cases.</p>
+    <ol class="q">
+      <li><b>Direction.</b> Is A (the recipe card) correct for v1? Or do you want B (the wheel) for Sam, who explores?</li>
+      <li><b>Format.</b> One square image (1080 × 1080) for every app? Or also the wide image (1200 × 630) with a mouse, for Discord and Slack? A square shows well in Discord too, at about 300 × 300.</li>
+      <li><b>Theme.</b> Does the image use the theme on screen (dark when the app is dark)? Or is it always light, the same as the static link card?</li>
+      <li><b>Copy with a mouse.</b> Copy image copies the image only, and Copy link stays beside it. Is that correct? Or do you want one ClipboardItem with both the image and the link (a paste then gets only one of them, and the app chooses which)?</li>
+      <li><b>The static card.</b> Can I make the static card fix (commit 1) now, as its own small pull request?</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="src-h">
+    <h2 id="src-h">Sources and what to verify</h2>
+    <ul>
+      <li>The Mac crop: measured from your screenshot (scale 0.58, about 1008 of 1200 px). Verify on iPhone Messages too.</li>
+      <li>Web Share API Level 2 (<code>canShare</code>, <code>files</code>, user activation): W3C Web Share API, <a href="https://w3c.github.io/web-share/">w3c.github.io/web-share</a>. WebKit's work on Level 2: <a href="https://bugs.webkit.org/show_bug.cgi?id=198606">WebKit bug 198606</a>. Guide: <a href="https://web.dev/articles/web-share">web.dev/articles/web-share</a>.</li>
+      <li>ClipboardItem with a promise: <a href="https://w3c.github.io/clipboard-apis/">W3C Clipboard API</a> and <a href="https://webkit.org/blog/10855/async-clipboard-api/">WebKit: Async Clipboard API</a>.</li>
+      <li>Capacitor Share and Filesystem: <a href="https://capacitorjs.com/docs/apis/share">capacitorjs.com/docs/apis/share</a>, <a href="https://capacitorjs.com/docs/apis/filesystem">capacitorjs.com/docs/apis/filesystem</a>.</li>
+      <li>Rich links in Messages: <a href="https://developer.apple.com/documentation/technotes/tn3156-create-rich-previews-for-messages">Apple TN3156</a>.</li>
+      <li>The session that made this page could not open the W3C, MDN, Capacitor and Apple pages (network policy). Read them before the build. Each "verify" on this page is a device test.</li>
+    </ul>
+  </section>
+</main>
+
+<script src="share-image/engine-data.js"></script>
+<script>
+'use strict';
+/* =====================================================================================================
+   Colour helpers — copies of the §7 formulas in src/js/color.js (this page also works on its own).
+   ===================================================================================================== */
+const hexRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const lin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+const lum = h => { const [r, g, b] = hexRgb(h).map(lin); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+const textOn = h => ratio('#15150F', h) >= ratio('#FFFFFF', h) ? '#15150F' : '#FFFFFF';
+const hsl = h => { const [r, g, b] = hexRgb(h).map(v => v / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+  if (mx === mn) return [0, 0, l]; const d = mx - mn, s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn);
+  const hh = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [hh * 60, s, l]; };
+const hslToRgb = (h, s, l) => { const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  return [0, 8, 4].map(n => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))))); };
+
+/* =====================================================================================================
+   Tokens — CLAUDE.md §3.1, the two colour sets. The image is chrome around paint data.
+   ===================================================================================================== */
+const TOK = {
+  light: { bg: '#F6F5F2', surface: '#FFFFFF', surface2: '#EDEBE6', border: '#DCD8D0', borderStrong: '#C9C4BA',
+    text: '#1D1C19', muted: '#5E5A52', accent: '#0B6371', onAccent: '#FFFFFF',
+    success: '#0F7334', warning: '#945908', danger: '#C4203D', tagSuccess: '#16A34A', tagWarning: '#C2740B', tagDanger: '#DC2647' },
+  dark: { bg: '#141110', surface: '#1C1815', surface2: '#251F1A', border: '#3A302A', borderStrong: '#4D4138',
+    text: '#ECE3D8', muted: '#A8998A', accent: '#C2912F', onAccent: '#15100A',
+    success: '#86A559', warning: '#E0803A', danger: '#D86C58', tagSuccess: '#86A559', tagWarning: '#E0803A', tagDanger: '#D2563F' },
+};
+const FONT = { display: '"Barlow Condensed", "Arial Narrow", sans-serif', body: '"IBM Plex Sans", system-ui, sans-serif',
+  mono: 'Menlo, Consolas, "DejaVu Sans Mono", monospace' };
+const f = (w, px, fam = 'body') => `${w} ${px}px ${FONT[fam]}`;
+const HARM = { 'split-complementary': 'Split-complementary', 'neutral-pop': 'Neutral + pop', square: 'Square',
+  analogous: 'Analogous', complementary: 'Complementary' };
+const FINISH_WORD = { metal: 'metallic', contrast: 'contrast', wash: 'wash', shade: 'shade', ink: 'ink', glaze: 'glaze', effect: 'effect' };
+const GLYPH = { metal: 'M3 6l5-4 5 4-5 8z', contrast: 'M8 2c2.4 3.2 4 5.2 4 7.2A4 4 0 0 1 4 9.2C4 7.2 5.6 5.2 8 2z',
+  effect: 'M8 1l1.6 4.4L14 7l-4.4 1.6L8 13 6.4 8.6 2 7l4.4-1.6z' };
+['wash', 'shade', 'ink', 'glaze'].forEach(t => GLYPH[t] = GLYPH.contrast);
+const STEP_WORD = { wash: 'Wash', base: 'Base', highlight: 'Highlight', cool: 'Cool', warm: 'Warm', shadow: 'Shadow', mid: 'Mid' };
+const ROLE_LETTER = { Primary: 'P', Secondary: '2', Accent: 'A' };
+const tierTag = (t, T) => t === 'success' ? [T.success, T.tagSuccess] : t === 'warning' ? [T.warning, T.tagWarning] : [T.danger, T.tagDanger];
+
+/* =====================================================================================================
+   PURE LAYOUT (the shape of src/js/shareimage.js). No DOM: input → a list of draw operations.
+   measure(font, text) is injected, so a test can pass a fake one.
+   ===================================================================================================== */
+function fitText(measure, font, text, maxW, maxLines) {
+  const words = String(text).split(/\s+/), lines = [];
+  let cur = '';
+  const push = w => {
+    // a single word wider than the box breaks by characters
+    while (measure(font, w) > maxW) { let i = w.length; while (i > 1 && measure(font, w.slice(0, i)) > maxW) i--; lines.push(w.slice(0, i)); w = w.slice(i); }
+    return w;
+  };
+  for (const w of words) {
+    const t = cur ? cur + ' ' + w : w;
+    if (measure(font, t) <= maxW) { cur = t; continue; }
+    if (cur) lines.push(cur);
+    cur = push(w);
+  }
+  if (cur) lines.push(cur);
+  if (lines.length <= maxLines) return { lines, cut: false };
+  const keep = lines.slice(0, maxLines);
+  let last = keep[maxLines - 1] + '…';
+  while (measure(font, last) > maxW && last.length > 1) last = last.slice(0, -2) + '…';
+  keep[maxLines - 1] = last;
+  return { lines: keep, cut: true };
+}
+
+function header(ops, v, W, T, m, s) {
+  // s: the scale of this format (square 1, wide .74)
+  ops.push({ t: 'rect', x: 0, y: 0, w: W, h: 99999, fill: T.bg });
+  ops.push({ t: 'mark', x: m.x, y: m.top, size: 60 * s, ink: T.text, lid: T.accent });
+  const tf = f(700, Math.round(58 * s), 'display');
+  ops.push({ t: 'text', x: m.x + 76 * s, y: m.top + 50 * s, text: 'Palette Studio', font: tf, fill: T.text, ground: T.bg, px: Math.round(58 * s) });
+  return tf;
+}
+function seedLine(v, measure, font, maxW) {
+  // the harmony name always shows; only the seed name gets the ellipsis
+  const tail = ` · ${HARM[v.harmony]}`;
+  return fitText(measure, font, `From ${v.seed.name}`, maxW - measure(font, tail), 1).lines[0] + tail;
+}
+function footer(ops, v, W, H, T, m, s) {
+  const y = H - m.bottom;
+  ops.push({ t: 'line', x1: m.x, y1: y - 46 * s, x2: W - m.x, y2: y - 46 * s, stroke: T.border, w: 2 });
+  const px = Math.round(30 * s);
+  ops.push({ t: 'text', x: m.x, y, text: 'palette.ryanmette.com', font: f(600, px), fill: T.accent, ground: T.bg, px });
+  ops.push({ t: 'text', x: W - m.x, y, text: 'ΔE 2000 · colours are approximate', font: f(400, px), fill: T.muted, ground: T.bg, px, align: 'right' });
+}
+function tagOps(ops, measure, x, y, label, tier, T, px) {
+  // §3.5 tags: square, a border in the state's colour, the *-text colour, no fill
+  const [txt, edge] = tier === 'neutral' ? [T.muted, T.borderStrong] : tierTag(tier, T);
+  const font = f(500, px), w = measure(font, label) + px * .9, h = px * 1.5;
+  ops.push({ t: 'rect', x, y: y - h * .75, w, h, stroke: edge, lw: 2, r: 4 });
+  ops.push({ t: 'text', x: x + px * .45, y, text: label, font, fill: txt, ground: T.bg, px });
+  return w;
+}
+function deltaOps(ops, measure, x, y, pot, isSeed, T, px, maxW = Infinity) {
+  // ΔE is plain mono text, never a chip (§3.5); the label is a tag in the tier colour (§3.2).
+  // A tag that does not fit beside the number goes under it, never into the next column.
+  if (isSeed) { tagOps(ops, measure, x, y, 'Your paint', 'neutral', T, px); return y; }
+  const de = `ΔE ${pot.dE.toFixed(1)}`, mf = f(400, px, 'mono');
+  ops.push({ t: 'text', x, y, text: de, font: mf, fill: T.text, ground: T.bg, px });
+  const tagW = measure(f(500, px), pot.label) + px * .9, beside = measure(mf, de) + px * .6;
+  if (beside + tagW <= maxW) { tagOps(ops, measure, x + beside, y, pot.label, pot.tier, T, px); return y; }
+  tagOps(ops, measure, x, y + px * 1.7, pot.label, pot.tier, T, px);
+  return y + px * 1.7;
+}
+function metaLine(pot) { return pot.brand + (pot.line && pot.line !== '—' && pot.line !== pot.brand ? ' · ' + pot.line : ''); }
+function metaOps(ops, measure, x, y, pot, maxW, T, px) {
+  // brand · line, then the finish icon + word for a non-flat paint (§2 finish icons)
+  const font = f(400, px), fw = FINISH_WORD[pot.type];
+  const tail = fw ? `  ${fw}` : '', iconW = fw ? px * .9 : 0;
+  const fit = fitText(measure, font, metaLine(pot), maxW - (fw ? measure(font, tail) + iconW : 0), 1);
+  ops.push({ t: 'text', x, y, text: fit.lines[0], font, fill: T.muted, ground: T.bg, px });
+  if (fw) {
+    const gx = x + measure(font, fit.lines[0]) + px * .4;
+    ops.push({ t: 'glyph', type: pot.type, x: gx, y: y - px * .8, size: px * .8, fill: T.muted });
+    ops.push({ t: 'text', x: gx + iconW, y, text: fw, font, fill: T.muted, ground: T.bg, px });
+  }
+}
+const isSeedPot = (v, pot) => pot && pot.id === v.seed.id;
+
+/* ---------- Direction A: the recipe card ---------- */
+function layoutA(v, size, T, measure) {
+  const sq = size === 'square', W = sq ? 1080 : 1200, H = sq ? 1080 : 630, s = sq ? 1 : .74;
+  const m = sq ? { x: 72, top: 60, bottom: 56 } : { x: 120, top: 40, bottom: 40 };
+  const ops = [];
+  header(ops, v, W, T, m, s);
+  const subPx = Math.round(34 * s), subF = f(500, subPx);
+  const sub = seedLine(v, measure, subF, W - 2 * m.x);
+  ops.push({ t: 'text', x: m.x, y: m.top + 112 * s, text: sub, font: subF, fill: T.text, ground: T.bg, px: subPx });
+  const top = m.top + 150 * s;
+  const cols = sq ? 2 : 4, gap = sq ? 40 : 24, colW = (W - 2 * m.x - gap * (cols - 1)) / cols;
+  const swH = sq ? 112 : 150, band = sq ? 26 : 28, rowH = sq ? 400 : 0;
+  const px = { role: sq ? 26 : 20, name: sq ? 44 : 30, meta: sq ? 28 : 22, de: sq ? 28 : 22 };
+  const lh = px.name * 1.18;
+  v.roles.forEach((r, i) => {
+    const cx = m.x + (i % cols) * (colW + gap), cy = top + Math.floor(i / cols) * rowH;
+    ops.push({ t: 'swatch', x: cx, y: cy, w: colW, h: swH, hex: r.pot.hex, type: r.pot.type, fx: r.pot.fx, band: r.ideal, bandH: band });
+    let y = cy + swH + px.role * 1.7;
+    ops.push({ t: 'text', x: cx, y, text: `${r.role.toUpperCase()}  ${r.weight}`, font: f(600, px.role), fill: T.muted, ground: T.bg, px: px.role, spacing: .05 });
+    y += lh + 4;
+    // the name gets two lines at most; the lines under it follow the name (rows still start together)
+    const nm = fitText(measure, f(600, px.name), r.pot.name, colW, 2);
+    nm.lines.forEach((ln, k) => ops.push({ t: 'text', x: cx, y: y + k * lh, text: ln, font: f(600, px.name), fill: T.text, ground: T.bg, px: px.name , kind: 'name' }));
+    y += lh * (nm.lines.length - 1) + px.meta * 1.6;
+    metaOps(ops, measure, cx, y, r.pot, colW, T, px.meta);
+    y += px.de * 1.8;
+    deltaOps(ops, measure, cx, y, r.pot, isSeedPot(v, r.pot), T, px.de, colW);
+  });
+  footer(ops, v, W, H, T, m, s);
+  return { W, H, ops };
+}
+
+/* ---------- Direction B: the wheel and the live palette ---------- */
+function liveColumns(v) {
+  const metal = v.roles.find(r => r.role === 'Metal');
+  return [...v.live.map(c => ({ ...c, tag: c.role || (c.deg ? `${c.deg > 0 ? '+' : ''}${c.deg}°` : 'Tone') })),
+    { ideal: metal.ideal, pot: metal.pot, tag: 'Metal', metal: true }];
+}
+function layoutB(v, size, T, measure) {
+  const sq = size === 'square', W = sq ? 1080 : 1200, H = sq ? 1080 : 630, s = sq ? 1 : .74;
+  const m = sq ? { x: 72, top: 60, bottom: 56 } : { x: 120, top: 40, bottom: 40 };
+  const ops = [];
+  header(ops, v, W, T, m, s);
+  const subPx = Math.round(34 * s), subF = f(500, subPx);
+  ops.push({ t: 'text', x: m.x, y: m.top + 112 * s, text: seedLine(v, measure, subF, W - 2 * m.x), font: subF, fill: T.text, ground: T.bg, px: subPx });
+  const cols = liveColumns(v);
+  const R = sq ? 190 : 170, cx = sq ? W / 2 : m.x + R, cy = sq ? 410 : 340;
+  ops.push({ t: 'wheel', cx, cy, R, ring: T.borderStrong });
+  // nodes: hue = angle (0° at the top, clockwise, as wheel.js), saturation = radius; a neutral sits at the centre
+  const nodes = v.live.map(c => { const [h, sat] = hsl(c.ideal);
+    const rr = (c.pot && v.seed.chroma < 10 && c.ideal === v.seed.hex) ? 0 : sat * R;
+    return { x: cx + Math.sin(h * Math.PI / 180) * rr, y: cy - Math.cos(h * Math.PI / 180) * rr, hex: c.ideal, role: c.role }; });
+  const nr = sq ? 24 : 20;
+  nodes.forEach((n, i) => {
+    // a node that covers an earlier node moves out along its hue until it is clear (a neutral scheme puts
+    // the seed and a near-grey partner at almost the same point); its hue stays true, only its radius grows
+    const [h] = hsl(n.hex); let rad = Math.hypot(n.x - cx, n.y - cy);
+    while (nodes.slice(0, i).some(o => Math.hypot(o.x - n.x, o.y - n.y) < 2.6 * nr) && rad < R) {
+      rad += 4; n.x = cx + Math.sin(h * Math.PI / 180) * rad; n.y = cy - Math.cos(h * Math.PI / 180) * rad; n.moved = true;
+    }
+  });
+  nodes.slice(1).forEach(n => ops.push({ t: 'line', x1: nodes[0].x, y1: nodes[0].y, x2: n.x, y2: n.y, stroke: '#FFFFFF', w: 3, under: '#15150F' }));
+  nodes.forEach(n => ops.push({ t: 'node', x: n.x, y: n.y, r: nr, hex: n.hex, letter: ROLE_LETTER[n.role], badge: T.accent, onBadge: T.onAccent, px: sq ? 22 : 18 }));
+  if (sq) {
+    // the live palette: one column per colour, Metal last (display-only, as in the app)
+    const top = 650, gap = 16, n = cols.length, colW = (W - 2 * m.x - gap * (n - 1)) / n, swH = 120;
+    const px = { role: 22, name: n > 4 ? 26 : 30, de: 22 };
+    cols.forEach((c, i) => {
+      const x = m.x + i * (colW + gap);
+      ops.push({ t: 'swatch', x, y: top, w: colW, h: swH, hex: c.pot.hex, type: c.pot.type, fx: c.pot.fx, band: c.ideal, bandH: 24 });
+      ops.push({ t: 'text', x, y: top + swH + 36, text: c.tag.toUpperCase(), font: f(600, px.role), fill: T.muted, ground: T.bg, px: px.role, spacing: .05 });
+      const lh = px.name * 1.2, nm = fitText(measure, f(600, px.name), c.pot.name, colW, 2);
+      nm.lines.forEach((ln, k) => ops.push({ t: 'text', x, y: top + swH + 76 + k * lh, text: ln, font: f(600, px.name), fill: T.text, ground: T.bg, px: px.name , kind: 'name' }));
+      const de = isSeedPot(v, c.pot) ? 'Your paint' : `ΔE ${c.pot.dE.toFixed(1)}`;
+      ops.push({ t: 'text', x, y: top + swH + 76 + lh * 2 + 8, text: de, font: isSeedPot(v, c.pot) ? f(500, px.de) : f(400, px.de, 'mono'), fill: isSeedPot(v, c.pot) ? T.muted : T.text, ground: T.bg, px: px.de });
+      if (!isSeedPot(v, c.pot)) { const [txt] = tierTag(c.pot.tier, T);
+        ops.push({ t: 'text', x, y: top + swH + 76 + lh * 2 + 8 + px.de * 1.4, text: c.pot.label, font: f(500, px.de), fill: txt, ground: T.bg, px: px.de }); }
+    });
+  } else {
+    // wide: a list beside the wheel (columns would be too narrow for the names)
+    const x0 = m.x + 2 * R + 48, x1 = W - m.x, rowH = Math.min(78, 370 / cols.length), sw = rowH - 14, top = 128;
+    cols.forEach((c, i) => {
+      const y = top + i * rowH;
+      ops.push({ t: 'swatch', x: x0, y, w: sw, h: sw, hex: c.pot.hex, type: c.pot.type, fx: c.pot.fx, band: c.ideal, bandH: Math.round(sw * .2) });
+      const tx = x0 + sw + 16, px = 22, nameF = f(600, 26);
+      ops.push({ t: 'text', x: tx, y: y + 22, text: c.tag.toUpperCase(), font: f(600, 18), fill: T.muted, ground: T.bg, px: 18, spacing: .05 });
+      const de = isSeedPot(v, c.pot) ? 'Your paint' : `ΔE ${c.pot.dE.toFixed(1)} ${c.pot.label}`;
+      const deW = measure(f(400, 20, 'mono'), de);
+      ops.push({ t: 'text', x: x1, y: y + 22, text: de, font: isSeedPot(v, c.pot) ? f(500, 20) : f(400, 20, 'mono'), fill: isSeedPot(v, c.pot) ? T.muted : tierTag(c.pot.tier, T)[0], ground: T.bg, px: 20, align: 'right' });
+      ops.push({ t: 'text', x: tx, y: y + 52, text: fitText(measure, nameF, c.pot.name, x1 - tx, 1).lines[0], font: nameF, fill: T.text, ground: T.bg, px: 26 , kind: 'name' });
+    });
+  }
+  footer(ops, v, W, H, T, m, s);
+  return { W, H, ops };
+}
+
+/* ---------- Direction C: the pot shelf with tone ladders ---------- */
+function layoutC(v, size, T, measure) {
+  const sq = size === 'square', W = sq ? 1080 : 1200, H = sq ? 1080 : 630, s = sq ? 1 : .74;
+  const m = sq ? { x: 72, top: 60, bottom: 56 } : { x: 120, top: 40, bottom: 40 };
+  const ops = [];
+  header(ops, v, W, T, m, s);
+  const subPx = Math.round(34 * s), subF = f(500, subPx);
+  ops.push({ t: 'text', x: m.x, y: m.top + 112 * s, text: seedLine(v, measure, subF, W - 2 * m.x), font: subF, fill: T.text, ground: T.bg, px: subPx });
+  if (sq) {
+    const top = 222, rowH = 180, leftW = 300, lx = m.x + leftW + 32, lw = (W - m.x - lx - 2 * 16) / 3;
+    v.roles.forEach((r, i) => {
+      const y = top + i * rowH;
+      if (i) ops.push({ t: 'line', x1: m.x, y1: y - 18, x2: W - m.x, y2: y - 18, stroke: T.border, w: 2 });
+      ops.push({ t: 'text', x: m.x, y: y + 22, text: r.role.toUpperCase(), font: f(600, 22), fill: T.muted, ground: T.bg, px: 22, spacing: .05 });
+      const nm = fitText(measure, f(600, 32), r.pot.name, leftW, 2);
+      nm.lines.forEach((ln, k) => ops.push({ t: 'text', x: m.x, y: y + 62 + k * 38, text: ln, font: f(600, 32), fill: T.text, ground: T.bg, px: 32 , kind: 'name' }));
+      deltaOps(ops, measure, m.x, y + 62 + 38 * 2 + 4, r.pot, isSeedPot(v, r.pot), T, 22, leftW);
+      r.ladder.forEach((st, k) => {
+        const x = lx + k * (lw + 16);
+        if (!st.pot) return;
+        ops.push({ t: 'swatch', x, y, w: lw, h: 84, hex: st.pot.hex, type: st.pot.type, fx: st.pot.fx, band: st.ideal, bandH: 18 });
+        const word = (STEP_WORD[st.key] || st.key).toUpperCase() + (st.dilute ? ' · THIN' : '');
+        ops.push({ t: 'text', x, y: y + 84 + 28, text: word, font: f(600, 18), fill: T.muted, ground: T.bg, px: 18, spacing: .05 });
+        ops.push({ t: 'text', x, y: y + 84 + 58, text: fitText(measure, f(500, 22), st.pot.name, lw, 1).lines[0], font: f(500, 22), fill: T.text, ground: T.bg, px: 22 , kind: 'name' });
+      });
+    });
+  } else {
+    const top = 130, cols = 4, gap = 24, colW = (W - 2 * m.x - gap * 3) / cols;
+    v.roles.forEach((r, i) => {
+      const x = m.x + i * (colW + gap);
+      ops.push({ t: 'text', x, y: top + 18, text: r.role.toUpperCase(), font: f(600, 18), fill: T.muted, ground: T.bg, px: 18, spacing: .05 });
+      ops.push({ t: 'text', x, y: top + 50, text: fitText(measure, f(600, 26), r.pot.name, colW, 1).lines[0], font: f(600, 26), fill: T.text, ground: T.bg, px: 26 , kind: 'name' });
+      r.ladder.forEach((st, k) => {
+        const y = top + 76 + k * 92;
+        if (!st.pot) return;
+        ops.push({ t: 'swatch', x, y, w: 64, h: 64, hex: st.pot.hex, type: st.pot.type, fx: st.pot.fx, band: st.ideal, bandH: 12 });
+        ops.push({ t: 'text', x: x + 76, y: y + 22, text: (STEP_WORD[st.key] || st.key).toUpperCase(), font: f(600, 16), fill: T.muted, ground: T.bg, px: 16, spacing: .05 });
+        const nm = fitText(measure, f(500, 20), st.pot.name, colW - 76, 2);
+        nm.lines.forEach((ln, q) => ops.push({ t: 'text', x: x + 76, y: y + 46 + q * 22, text: ln, font: f(500, 20), fill: T.text, ground: T.bg, px: 20 , kind: 'name' }));
+      });
+    });
+  }
+  footer(ops, v, W, H, T, m, s);
+  return { W, H, ops };
+}
+
+/* ---------- the static link card, redrawn inside a 960 px safe zone ---------- */
+function layoutOg(og, T, measure) {
+  const W = 1200, H = 630, x0 = 120, ops = [];
+  ops.push({ t: 'rect', x: 0, y: 0, w: W, h: H, fill: T.bg });
+  ops.push({ t: 'mark', x: x0, y: 70, size: 64, ink: T.text, lid: T.accent });
+  ops.push({ t: 'text', x: x0 + 92, y: 128, text: 'Palette Studio', font: f(700, 64, 'display'), fill: T.text, ground: T.bg, px: 64 });
+  ops.push({ t: 'text', x: x0 + 92 + measure(f(700, 64, 'display'), 'Palette Studio') + 20, y: 128, text: 'for miniatures', font: f(400, 28), fill: T.muted, ground: T.bg, px: 28 });
+  ops.push({ t: 'text', x: x0, y: 206, text: 'Pick one paint. Get a colour scheme matched to', font: f(400, 34), fill: T.text, ground: T.bg, px: 34 });
+  ops.push({ t: 'text', x: x0, y: 252, text: 'real pots you can buy, in every brand.', font: f(400, 34), fill: T.text, ground: T.bg, px: 34 });
+  ops.push({ t: 'line', x1: x0, y1: 300, x2: W - x0, y2: 300, stroke: T.border, w: 2 });
+  const gap = 24, w = (W - 2 * x0 - 3 * gap) / 4, roles = ['Primary', 'Secondary', 'Accent', 'Metal'];
+  og.forEach((p, i) => {
+    const x = x0 + i * (w + gap);
+    ops.push({ t: 'swatch', x, y: 328, w, h: 120, hex: p.hex, type: p.type, fx: p.fx });
+    ops.push({ t: 'text', x, y: 488, text: roles[i].toUpperCase(), font: f(600, 20), fill: T.muted, ground: T.bg, px: 20, spacing: .05 });
+    ops.push({ t: 'text', x, y: 524, text: fitText(measure, f(600, 26), p.name, w, 1).lines[0], font: f(600, 26), fill: T.text, ground: T.bg, px: 26 });
+    ops.push({ t: 'text', x, y: 556, text: p.brand, font: f(400, 22), fill: T.muted, ground: T.bg, px: 22 });
+  });
+  return { W, H, ops };
+}
+
+/* ---------- alt text (the shape of shareAlt in shareimage.js) ---------- */
+function altText(v, dir) {
+  const rr = r => `${r.role}: ${r.pot.name} (${metaLine(r.pot)}${FINISH_WORD[r.pot.type] ? ', ' + FINISH_WORD[r.pot.type] : ''}), `
+    + (isSeedPot(v, r.pot) ? 'your paint' : `ΔE ${r.pot.dE.toFixed(1)}, ${r.pot.label.toLowerCase()} match`);
+  let s = `Colour scheme from ${v.seed.name} (${v.seed.brand}), ${HARM[v.harmony].toLowerCase()}. ` + v.roles.map(rr).join('. ') + '.';
+  if (dir === 'B') s = `Harmony wheel and live palette. ` + s;
+  if (dir === 'C') s += ' Each role has a wash, base and highlight paint.';
+  return s + ' Palette Studio, palette.ryanmette.com.';
+}
+
+/* =====================================================================================================
+   THE PAINTER (the only part that touches the DOM). Reads the operations, draws a canvas.
+   ===================================================================================================== */
+const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+const measure = (font, text) => { ctx.font = font; return ctx.measureText(text).width; };
+let discCache = {};
+function disc(R) {
+  // the hue/saturation disc at a fixed 50% lightness: chrome that shows the colour space, cached once per size
+  if (discCache[R]) return discCache[R];
+  const c = document.createElement('canvas'); c.width = c.height = 2 * R;
+  const x = c.getContext('2d'), img = x.createImageData(2 * R, 2 * R);
+  for (let j = 0; j < 2 * R; j++) for (let i = 0; i < 2 * R; i++) {
+    const dx = i - R + .5, dy = j - R + .5, d = Math.hypot(dx, dy), k = 4 * (j * 2 * R + i);
+    if (d > R) continue;
+    const [r, g, b] = hslToRgb((Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, d / R, .5);
+    img.data[k] = r; img.data[k + 1] = g; img.data[k + 2] = b; img.data[k + 3] = d > R - 1 ? 255 * (R - d) : 255;
+  }
+  x.putImageData(img, 0, 0);
+  return (discCache[R] = c);
+}
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function linGrad(x, y, w, h, deg, stops) {
+  // a CSS linear-gradient angle on a box (0deg = to top), as the app's finish overlays use
+  const a = deg * Math.PI / 180, vx = Math.sin(a), vy = -Math.cos(a), L = Math.abs(w * vx) + Math.abs(h * vy);
+  const cx = x + w / 2, cy = y + h / 2, g = ctx.createLinearGradient(cx - vx * L / 2, cy - vy * L / 2, cx + vx * L / 2, cy + vy * L / 2);
+  stops.forEach(([o, c]) => g.addColorStop(o, c)); return g;
+}
+function radial(x, y, w, h, ex, ey, ax, ay, stops) {
+  ctx.save(); ctx.translate(x + w * ax, y + h * ay); ctx.scale(ex * w, ey * h);
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); stops.forEach(([o, c]) => g.addColorStop(o, c));
+  ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore();
+}
+function finish(o) {
+  // §2/§3.5 finish overlays: non-tinting, they convey finish, never alter the colour (app.css .metal / .fx-*)
+  const { x, y, w, h } = o, kind = o.fx ? 'fx-' + o.fx : { metal: 'metal', wash: 'fx-wash', ink: 'fx-wash', shade: 'fx-wash', glaze: 'fx-wash', contrast: 'fx-contrast' }[o.type];
+  if (!kind) return;
+  if (kind === 'metal') ctx.fillStyle = linGrad(x, y, w, h, 158, [[0, 'rgba(255,255,255,.5)'], [.4, 'rgba(255,255,255,0)'], [1, 'rgba(0,0,0,.26)']]);
+  else if (kind === 'fx-wash') ctx.fillStyle = linGrad(x, y, w, h, 155, [[0, 'rgba(255,255,255,.40)'], [.48, 'rgba(255,255,255,0)'], [1, 'rgba(0,0,0,.16)']]);
+  else if (kind === 'fx-contrast') ctx.fillStyle = linGrad(x, y, w, h, 150, [[0, 'rgba(255,255,255,.30)'], [.42, 'rgba(255,255,255,0)'], [.96, 'rgba(0,0,0,.20)']]);
+  else if (kind === 'fx-gloss' || kind === 'fx-slime') {
+    radial(x, y, w, h, .58, .42, .34, .26, [[0, 'rgba(255,255,255,.82)'], [.6, 'rgba(255,255,255,0)']]);
+    ctx.fillStyle = linGrad(x, y, w, h, 180, [[.52, 'rgba(255,255,255,0)'], [1, 'rgba(0,0,0,.34)']]);
+  } else if (kind === 'fx-texture') {
+    for (let j = 0; j < h; j += 5) for (let i = (j / 5) % 2 ? 2 : 0; i < w; i += 5) { ctx.fillStyle = (i + j) % 3 ? 'rgba(0,0,0,.30)' : 'rgba(255,255,255,.12)'; ctx.fillRect(x + i, y + j, 1.5, 1.5); }
+    ctx.fillStyle = linGrad(x, y, w, h, 160, [[0, 'rgba(255,255,255,.05)'], [1, 'rgba(0,0,0,.12)']]);
+  }
+  ctx.fillRect(x, y, w, h);
+}
+function paint(L) {
+  canvas.width = L.W; canvas.height = L.H;
+  ctx.textBaseline = 'alphabetic';
+  for (const o of L.ops) {
+    if (o.t === 'rect') {
+      if (o.fill) { ctx.fillStyle = o.fill; ctx.fillRect(o.x, o.y, o.w, Math.min(o.h, L.H)); }
+      if (o.stroke) { ctx.strokeStyle = o.stroke; ctx.lineWidth = o.lw; rr(o.x + 1, o.y + 1, o.w - 2, o.h - 2, o.r || 0); ctx.stroke(); }
+    } else if (o.t === 'line') {
+      if (o.under) { ctx.strokeStyle = o.under; ctx.lineWidth = o.w + 3; ctx.beginPath(); ctx.moveTo(o.x1, o.y1); ctx.lineTo(o.x2, o.y2); ctx.stroke(); }
+      ctx.strokeStyle = o.stroke; ctx.lineWidth = o.w; ctx.beginPath(); ctx.moveTo(o.x1, o.y1); ctx.lineTo(o.x2, o.y2); ctx.stroke();
+    } else if (o.t === 'swatch') {
+      // square, --r-sw, an inset border so a white-ish paint still shows (§3.5); the paint colour is data, never tinted
+      ctx.save(); rr(o.x, o.y, o.w, o.h, 6); ctx.clip();
+      ctx.fillStyle = o.hex; ctx.fillRect(o.x, o.y, o.w, o.h);
+      finish(o);
+      if (o.band) {
+        // the target band: the ideal colour over the pot, so the gap between them shows (§2 "ideal vs actual")
+        ctx.fillStyle = o.band; ctx.fillRect(o.x, o.y, o.w, o.bandH);
+        ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(o.x, o.y + o.bandH, o.w, 2);
+      }
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 2; rr(o.x + 1, o.y + 1, o.w - 2, o.h - 2, 5); ctx.stroke();
+    } else if (o.t === 'text') {
+      ctx.font = o.font; ctx.fillStyle = o.fill; ctx.textAlign = o.align || 'left';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = o.spacing ? `${o.spacing * o.px}px` : '0px';
+      ctx.fillText(o.text, o.x, o.y);
+    } else if (o.t === 'glyph') {
+      ctx.save(); ctx.translate(o.x, o.y); ctx.scale(o.size / 16, o.size / 16); ctx.fillStyle = o.fill; ctx.fill(new Path2D(GLYPH[o.type])); ctx.restore();
+    } else if (o.t === 'wheel') {
+      ctx.drawImage(disc(o.R), o.cx - o.R, o.cy - o.R);
+      ctx.strokeStyle = o.ring; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(o.cx, o.cy, o.R + 1, 0, 7); ctx.stroke();
+    } else if (o.t === 'node') {
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.r + 5, 0, 7); ctx.fillStyle = '#15150F'; ctx.fill();
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.r + 3, 0, 7); ctx.fillStyle = '#FFFFFF'; ctx.fill();
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, 7); ctx.fillStyle = o.hex; ctx.fill();
+      if (o.letter) {
+        const bx = o.x + o.r * .85, by = o.y - o.r * .85, br = o.px * .75;
+        ctx.beginPath(); ctx.arc(bx, by, br, 0, 7); ctx.fillStyle = o.badge; ctx.fill();
+        ctx.font = f(700, o.px); ctx.fillStyle = o.onBadge; ctx.textAlign = 'center'; if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+        ctx.fillText(o.letter, bx, by + o.px * .36);
+      }
+    } else if (o.t === 'mark') {
+      // the mark (src/icon.svg): a dropper whose colour lands as a round pot lid
+      ctx.save(); ctx.translate(o.x, o.y); ctx.scale(o.size / 32, o.size / 32);
+      ctx.translate(20.27, 10.91); ctx.rotate(-140 * Math.PI / 180); ctx.scale(.7, .7);
+      ctx.fillStyle = o.ink; ctx.fillRect(-1.25, -15, 2.5, 2.4);
+      ctx.fill(new Path2D('M-1.6 -12.8h3.2L4.2 -4.6h-8.4z')); rr(-6.5, -5, 13, 17, 3); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -23.6, 6, 0, 7); ctx.fillStyle = o.lid; ctx.fill(); ctx.restore();
+    }
+  }
+}
+function toPng() { return new Promise(res => canvas.toBlob(res, 'image/png')); }
+
+/* ---------- audit: the facts each image must meet, read from its operations ---------- */
+function audit(L, safeX) {
+  const texts = L.ops.filter(o => o.t === 'text');
+  const minPx = Math.min(...texts.map(o => o.px));
+  const namePx = Math.min(...texts.filter(o => o.kind === 'name').map(o => o.px));
+  const minRatio = Math.min(...texts.map(o => ratio(o.fill, o.ground)));
+  const worst = texts.reduce((a, o) => (ratio(o.fill, o.ground) < ratio(a.fill, a.ground) ? o : a));
+  // every text and swatch inside the side margin (a text's right edge is measured with the real font)
+  let outside = 0;
+  for (const o of L.ops) {
+    if (o.t === 'text') { const w = measure(o.font, o.text), x0 = o.align === 'right' ? o.x - w : o.x; if (x0 < safeX - .5 || x0 + w > L.W - safeX + .5) outside++; }
+    if (o.t === 'swatch' && (o.x < safeX - .5 || o.x + o.w > L.W - safeX + .5)) outside++;
+  }
+  const boxes = texts.map(o => { const w = measure(o.font, o.text), x0 = o.align === 'right' ? o.x - w : o.x; return { x0, x1: x0 + w, y0: o.y - o.px, y1: o.y }; });
+  const tags = L.ops.filter(o => o.t === 'rect' && o.stroke).map(o => ({ x0: o.x, x1: o.x + o.w, y0: o.y, y1: o.y + o.h }));
+  const all = [...boxes, ...tags]; let overlaps = 0;
+  for (let i = 0; i < boxes.length; i++) for (let j = 0; j < all.length; j++) {
+    if (j === i) continue; const a = boxes[i], b = all[j];
+    const inside = b.x0 <= a.x0 + 1 && b.x1 >= a.x1 - 1 && b.y0 <= a.y0 + 1 && b.y1 >= a.y1 - 1;   // a tag's own label
+    if (!inside && a.x0 < b.x1 - 1 && b.x0 < a.x1 - 1 && a.y0 < b.y1 - 1 && b.y0 < a.y1 - 1) overlaps++;
+  }
+  const badge = L.ops.find(o => o.t === 'node' && o.letter);
+  return { minPx, namePx, minRatio, worst, outside, overlaps, badgeRatio: badge ? ratio(badge.onBadge, badge.badge) : null };
+}
+
+/* =====================================================================================================
+   PAGE
+   ===================================================================================================== */
+const D = window.SHARE_DATA;
+const DIRS = [
+  { id: 'A', name: 'A · The recipe card', layout: layoutA, who: 'Priya, who plans',
+    what: 'The four roles (Primary, Secondary, Accent, Metal) as large pots, with each paint name, brand, line, ΔE and its label. A thin band on top of each pot is the target colour, so the gap shows.',
+    why: 'Priya plans a unit and buys the paints. A friend who gets this image can read the whole recipe without the link, and take it to the shop. It answers "which pots?", which is the question the app exists for.',
+    weak: 'It does not show the wheel or the harmony shape, so it does not show how Sam found the scheme.' },
+  { id: 'B', name: 'B · The wheel and the live palette', layout: layoutB, who: 'Sam, who explores',
+    what: 'The harmony wheel with the role badges (P, 2, A) and every colour of the live palette, Metal last. A 5-colour harmony shows all five columns.',
+    why: 'Sam drags the wheel until something works, then wants to show the shape of the find. The wheel says "a square harmony from this green" at a glance, and it looks like the app.',
+    weak: 'The wheel takes half the image, so the names are smaller. The disc is a strong colour beside the paint (§2: the paint is the hero). In wide, the list beside the wheel is the readable part.' },
+  { id: 'C', name: 'C · The pot shelf with tone ladders', layout: layoutC, who: 'Priya, for a full recipe',
+    what: 'Each role in a row: the role paint, then its wash · base · highlight ladder, each step a real pot with its name. A wash step with no bottled wash says "thin" (the app\'s "watered down").',
+    why: 'This is the full painting recipe: 12 pots. A painter can follow it at the desk with no app.',
+    weak: 'Too much for one image. The ladder names are 18 to 22 px, which shows at about 4 to 5 px in a message bubble. A taller format (1080 × 1350) is a better fit for this direction later.' },
+];
+const SIZES = [['square', 'Square 1080 × 1080', 'iMessage, Instagram, WhatsApp'], ['wide', 'Wide 1200 × 630', 'Discord, Slack, X']];
+const urls = [];
+const blobUrl = b => { const u = URL.createObjectURL(b); urls.push(u); return u; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const kb = n => (n / 1024).toFixed(0) + ' KB';
+const say = t => { document.getElementById('status').textContent = t; };
+
+function iMessage(theme, img, alt, ogUrl, url) {
+  return `<div class="im ${theme}" role="img" aria-label="Mock-up: Messages in ${theme} mode. The image, then the link with its static card.">
+    <div class="who">Sam · Today 18:04</div>
+    ${img ? `<div class="row"><div class="shot"><img src="${img}" alt=""></div></div>` : ''}
+    <div class="row"><div class="link"><div class="crop"><img src="${ogUrl}" alt=""></div><div class="meta"><b>Palette Studio for Miniatures</b><span>palette.ryanmette.com</span></div></div></div>
+  </div>`;
+}
+function discord(theme, img, url, ogUrl) {
+  return `<div class="dc ${theme}" role="img" aria-label="Mock-up: Discord in ${theme} mode. A message with the link, the image, and the link embed.">
+    <div class="msg"><div class="av"></div><div><div class="name">Sam<small>Today at 18:04</small></div>
+    <div>new scheme for my Blood Angels <span class="url">${esc(url)}</span></div>
+    <div class="att"><img src="${img}" alt=""></div>
+    <div class="embed"><small>Palette Studio</small><b class="url">Palette Studio for Miniatures</b>Pick one paint. Get a colour scheme matched to real pots you can buy, in every brand.<img src="${ogUrl}" alt=""></div>
+    </div></div></div>`;
+}
+
+let ogFixUrl = { light: '', dark: '' };
+const allSizes = [], allTimes = [];
+async function renderAll() {
+  const v = D.cases[+document.getElementById('case').value];
+  say('Drawing…');
+  const host = document.getElementById('directions');
+  urls.splice(0).forEach(u => URL.revokeObjectURL(u));
+  allSizes.length = 0; allTimes.length = 0;
+  // the static card fix (once per render, both themes)
+  for (const th of ['light', 'dark']) { paint(layoutOg(D.og, TOK[th], measure)); ogFixUrl[th] = blobUrl(await toPng()); }
+  document.getElementById('ogFix').src = ogFixUrl.light;
+  document.getElementById('ogFix').alt = 'The proposed link card: the same content inside a 960 pixel safe zone.';
+  const ogNow = document.getElementById('ogNow').src;
+  document.getElementById('clipFrames').innerHTML =
+    `<figure>${iMessage('light', null, '', ogNow, '')}<figcaption><b>Now</b>, as a link card on a Mac (cropped to 1.6 : 1).</figcaption></figure>`
+    + `<figure>${iMessage('light', null, '', ogFixUrl.light, '')}<figcaption><b>Proposed</b>, the same crop. Nothing is cut.</figcaption></figure>`;
+
+  let html = '';
+  for (const [n, d] of DIRS.entries()) {
+    const shots = {};
+    let rows = '';
+    for (const [size, sizeName] of SIZES) for (const th of ['light', 'dark']) {
+      const t0 = performance.now();
+      const L = d.layout(v, size, TOK[th], measure);
+      paint(L);
+      const blob = await toPng();
+      const ms = performance.now() - t0;
+      allSizes.push(blob.size); allTimes.push(ms);
+      const a = audit(L, size === 'wide' ? 120 : 72);
+      // shown scale: a square in a Messages bubble (~240 px) and full screen on a phone (390 px); wide in Discord (~400 px)
+      const shown = size === 'square' ? 240 / 1080 : 400 / 1200, full = 390 / (size === 'square' ? 1080 : 1200);
+      const cls = px => px >= 9 ? 'ok' : px >= 7 ? 'warn' : 'bad';
+      shots[size + th] = { url: blobUrl(blob), a, ms, bytes: blob.size, L };
+      rows += `<tr><td>${sizeName}, ${th}</td><td>${kb(blob.size)}</td><td>${ms.toFixed(0)} ms</td>`
+        + `<td>${a.namePx} px → <span class="${cls(a.namePx * shown)}">${(a.namePx * shown).toFixed(1)}</span> / <span class="${cls(a.namePx * full)}">${(a.namePx * full).toFixed(1)} px</span></td>`
+        + `<td>${a.minPx} px → <span class="${cls(a.minPx * shown)}">${(a.minPx * shown).toFixed(1)}</span> / <span class="${cls(a.minPx * full)}">${(a.minPx * full).toFixed(1)} px</span></td>`
+        + `<td class="${a.minRatio >= 4.5 ? 'ok' : 'bad'}">${a.minRatio.toFixed(2)} : 1 <span class="muted">(${a.worst.fill} on ${a.worst.ground})</span></td>`
+        + `<td>${a.badgeRatio ? a.badgeRatio.toFixed(2) + ' : 1' : '—'}</td>`
+        + `<td class="${a.outside ? 'bad' : 'ok'}">${a.outside ? a.outside + ' outside' : 'all inside'}</td>`
+        + `<td class="${a.overlaps ? 'bad' : 'ok'}">${a.overlaps ? a.overlaps + ' overlap' : 'none'}</td></tr>`;
+    }
+    const alt = altText(v, d.id);
+    const figs = SIZES.flatMap(([size, sizeName, where]) => ['light', 'dark'].map(th => {
+      const sh = shots[size + th];
+      return `<figure><img src="${sh.url}" alt="${esc(alt)}" width="${sh.L.W}" height="${sh.L.H}"><figcaption><b>${sizeName}, ${th}.</b> For ${where}.</figcaption></figure>`;
+    })).join('');
+    html += `<section aria-labelledby="dir${d.id}"><h2 id="dir${d.id}">${n + 1}. ${d.name}</h2>
+      <p><b>What it shows.</b> ${d.what}</p>
+      <p><b>Why a painter wants it</b> (${d.who}). ${d.why}</p>
+      <p><b>The weak point.</b> ${d.weak}</p>
+      <div class="imgs">${figs}</div>
+      <p class="alt"><b>Alt text (in the share text):</b> ${esc(alt)}</p>
+      <h3>In context</h3>
+      <div class="frames">
+        <figure>${iMessage('light', shots.squarelight.url, alt, ogFixUrl.light, v.url)}<figcaption>Messages, light, the square image. The link under it unfurls into the static card (the proposed fix).</figcaption></figure>
+        <figure>${iMessage('dark', shots.squaredark.url, alt, ogFixUrl.light, v.url)}<figcaption>Messages, dark.</figcaption></figure>
+        <figure>${discord('dark', shots.widedark.url, v.url, ogFixUrl.light)}<figcaption>Discord, dark, the wide image (shown at most about 400 px wide).</figcaption></figure>
+        <figure>${discord('light', shots.widelight.url, v.url, ogFixUrl.light)}<figcaption>Discord, light.</figcaption></figure>
+      </div>
+      <h3>Checks (measured on this device)</h3>
+      <p class="muted">Text sizes are image pixels, then the size as shown. "In the message": a square at about 240 px wide in a Messages bubble, a wide image at about 400 px in Discord. "Full screen": the image tapped open on a 390 px phone. Green is 9 px or more, amber 7 px or more, red under 7 px (a target that we set, not a WCAG rule). The contrast is WCAG 2.1, text on its ground.</p>
+      <div class="tablewrap"><table><thead><tr><th>Image</th><th>PNG</th><th>Draw + encode</th><th>Paint names → in the message / full screen</th><th>Smallest text → in the message / full screen</th><th>Lowest text contrast</th><th>Badge on accent</th><th>Side margin</th><th>Text overlaps</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <ul>
+        <li><b>§2.</b> The swatch is the paint's own hex, with no tint. The target band shows the ideal colour beside the pot, so the gap is visible. Every match shows ΔE with its label from the §3.2 scale. The picked paint says "Your paint", not "ΔE 0.0". The footer says "colours are approximate".</li>
+        <li><b>§3.</b> Only §3.1 tokens for the chrome. Square swatches with the inset border. The finish overlays and the finish icon with its word come from the app's own rules (<code>app.css</code> <code>.metal</code>, <code>.fx-*</code>, and <code>finishTag</code>). Tags are square, with a border and no fill. Barlow Condensed for the name, IBM Plex Sans for the text, monospace for ΔE.</li>
+        <li><b>Accessibility.</b> All the text is on the image ground (<code>--bg</code>), not on paint. So each ratio above is a token pair. The only text on a colour is the role letter on the <code>--accent</code> badge (6.91 : 1 light, 6.65 : 1 dark).${d.id === 'B' ? ' The wheel nodes carry a black and white ring, so they show on any hue.' : ''}</li>
+      </ul>
+    </section>`;
+  }
+  host.innerHTML = html;
+  const mn = a => Math.min(...a), mx = a => Math.max(...a);
+  document.getElementById('sizeRange').textContent = `${kb(mn(allSizes))} to ${kb(mx(allSizes))}`;
+  document.getElementById('timeRange').textContent = `${mn(allTimes).toFixed(0)} to ${mx(allTimes).toFixed(0)} ms on this device (the first wheel draws the disc, then the disc is cached)`;
+  say(`Drew ${allSizes.length} images: ${v.label}.`);
+}
+
+// the crop study overlays on the current card: Messages on the Mac keeps the centre 1008 of 1200 px
+function overlays() {
+  const cut = 96 / 1200 * 100, safe = 120 / 1200 * 100;
+  document.getElementById('cropNow').insertAdjacentHTML('beforeend', `<span class="cut" style="left:0;width:${cut}%"></span><span class="cut" style="right:0;width:${cut}%"></span>`);
+  document.getElementById('cropFix').insertAdjacentHTML('beforeend', `<span class="cut" style="left:0;width:${cut}%"></span><span class="cut" style="right:0;width:${cut}%"></span><span class="safe" style="left:${safe}%;right:${safe}%"></span>`);
+}
+
+async function start() {
+  document.getElementById('dsver').textContent = `${D.dataset} (${D.paints.toLocaleString('en-GB')} paints)`;
+  const sel = document.getElementById('case');
+  D.cases.forEach((c, i) => sel.add(new Option(c.label, i)));
+  sel.addEventListener('change', renderAll);
+  document.querySelectorAll('[data-pt]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-pt]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    if (b.dataset.pt === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = b.dataset.pt;
+  }));
+  overlays();
+  // R4: the fonts load BEFORE the first draw — a canvas does not wait for a webfont
+  say('Loading fonts…');
+  try { await Promise.all(['700 58px "Barlow Condensed"', '400 20px "IBM Plex Sans"', '500 20px "IBM Plex Sans"', '600 20px "IBM Plex Sans"'].map(q => document.fonts.load(q))); }
+  catch { /* the draw falls back to the system fonts; the layout measures what the canvas really has */ }
+  await renderAll();
+}
+start();
+</script>
+</body>
+</html>
