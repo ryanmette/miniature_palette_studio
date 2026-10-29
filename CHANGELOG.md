@@ -5,6 +5,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **The storage model for saved schemes and a richer shopping list** (`store.js` v2; PLAN §5 item 34, from the
+  shopping-list, naming and library studies). No new screens yet: this is the model the next items build on.
+  - A to-buy paint can have a **count** (1 is the default and is not stored; 2–99) and a **project**: the
+    scheme it is bought for.
+  - **Kept schemes**: a name, the scheme's share-link query, saved or not, and the dates. A scheme's id never
+    changes, so a saved scheme that you change keeps its to-buy paints. A project that was never saved goes
+    when its last paint is bought; a saved scheme stays. Deleting a scheme keeps its paints on the list.
+  - The two new maps sit **beside** the v1 fields (`want` is still a list of ids), so an older build that meets
+    the new data still reads the whole shopping list. v1 data loads as one pot each, with no project.
+  - The backup file carries both maps, and Restore replaces them. Delete my shelf and settings… clears them.
+- **The shelf CSV has two more columns: `qty` and `project`** (after paintRack's `brand,name,status`, so a
+  reader that knows only those three still reads it). Import reads a count back for a to-buy paint; the
+  project column is for people (a CSV cannot hold a scheme's link).
+
 ### Changed
 - **The live palette shows the target and the pot together.** Each column's colour block is the target
   colour. A band along its foot shows the nearest pot, with the pot's hex and finish. The **Target / Pot**

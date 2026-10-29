@@ -1850,7 +1850,10 @@ function download(filename, text, type = 'text/plain') {
 function exportCollectionCsv() {
   const n = store.counts();
   if (!n.owned && !n.want) { toast('Your shelf is empty — nothing to export'); return; }
-  download('my-paint-shelf.csv', marksToCsv(state.idx, store.ownedIds(), store.wantIds()), 'text/csv');
+  // A project with no name writes an empty cell: the automatic name ("Death Guard Green · triadic") needs
+  // the scheme engine, and the project's UI (PLAN §5 items 35-37) is not built yet.
+  const projectName = id => { const sid = store.projectOf(id); return (sid && store.getScheme(sid)?.name) || ''; };
+  download('my-paint-shelf.csv', marksToCsv(state.idx, store.ownedIds(), store.wantIds(), { qtyOf: store.qtyOf, projectName }), 'text/csv');
   toast(`Exported ${n.owned} owned · ${n.want} on the shopping list`);
 }
 /** Import a paintRack CSV (merges) or a Palette Studio JSON backup (#27). A backup REPLACES the shelf
@@ -1885,6 +1888,9 @@ function applyCsv(text) {
   // and writes localStorage. A 1,500-row paintRack import did that 1,500 times over a growing array
   // inside one FileReader turn and froze the main thread — setMarks() exists for exactly this.
   for (const [mark, ids] of byMark) store.setMarks(ids, mark);   // merge onto the shelf (import wins; the toast says so)
+  // A count in the file (our own export writes one) comes back too, in one write. After the marks: a
+  // count is kept only for a paint that is to buy.
+  store.setQtys(res.marks.filter(m => m.qty).map(m => [m.id, m.qty]));
   return { ...res, added, changed };
 }
 /** Pull every pref out of the store into live state + chrome. No rendering, so it's safe at init —
