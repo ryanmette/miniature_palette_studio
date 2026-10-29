@@ -10,6 +10,11 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.12.0** — keep this, change the rest. On the Recipe, **Lock colour** keeps a role's colour and
+**Choose pot…** sets the paint for a role, so a scheme you started on the model stays put while you
+explore the rest. The pick is now the "starting paint", and you can share a scheme as an image (the
+link card is no longer cut on a Mac).
+
 **v1.11.0** — the UX pass, live. It makes the app easier to read and to use: one name for one thing
 ("starting paint", Recipe, Target / Pot, Other brands, the shopping list), a first-run guide, empty and
 error states that say what to do, 44px touch targets on every control, a shorter Studio on a phone,
