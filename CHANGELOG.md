@@ -18,7 +18,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   shopping-list study. Ryan said a project's name is asked on export or save. The page proposes "label now,
   name later": Add records the scheme silently, and a name is only a word on top. It compares four ways to ask
   and recommends B: ask once, at the first export, with the field pre-filled and a Skip. A name is changed in
-  place on the list. It has a working flow, a data sketch for `store.js`, and four questions for Ryan.
+  place on the list. It has a working flow and a data sketch for `store.js`. Ryan's answers: a project is one scheme, its name
+  goes in the share link, and a saved-scheme library is wanted next.
 
 ### Fixed
 - **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role

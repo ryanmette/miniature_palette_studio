@@ -210,7 +210,7 @@
 <div class="page">
 
 <header>
-  <p class="micro">Design study · not shipped · 2026-10-29 · follows <a href="shopping-list.html">shopping-list.html</a></p>
+  <p class="micro">Design study · not shipped · 2026-10-29 · follows <a href="shopping-list.html">shopping-list.html</a> · updated with Ryan’s answers</p>
   <h1>Naming a project — when and how the app asks</h1>
   <p class="sub">The shopping-list study gave each to-buy paint a <b>“for” label</b>: the project it is for. Ryan’s answer: the name is
     <b>asked on export or save</b>, not when a paint is added. This study asks <b>when</b> exactly, <b>what</b> the app suggests,
@@ -244,20 +244,21 @@
   want: [{ id: 'citadel-base-mephiston-red', qty: 1, for: 'k7f3' }, …],
   projects: { k7f3: { name: 'Blue knight', scheme: '?p=…&amp;h=triadic…' } },   <span class="dim">// no name yet → name: ''</span>
   prefs: {…} }</pre>
-  <p class="why" style="margin-top:8px">The key (<code>k7f3</code>) is a short hash of the scheme link. A paint added by hand on the Shelf has no <code>for</code>.
+  <p class="why" style="margin-top:8px">The key (<code>k7f3</code>) is a short hash of the scheme link. The share link gets the name as one more parameter (<code>&amp;n=Blue%20knight</code>, answer 3); a link with a name, opened on another device, brings the name with it. A paint added by hand on the Shelf has no <code>for</code>.
     The Back up file and the CSV carry the new fields; an old backup still restores (no <code>for</code>, a count of 1).</p>
 </section>
 
 <!-- ============================================================ -->
 <section aria-labelledby="h-when">
   <h2 id="h-when"><span class="k">1</span>The moments that count as “export or save”</h2>
-  <p class="why">The app has no Save button for a scheme: a scheme lives in its link. So “export or save” means the moments when the list <b>leaves the
-    app</b>. Four moments do; two do not.</p>
+  <p class="why">Today the app has no Save button for a scheme: a scheme lives in its link. Ryan’s answer 2: “save” means <b>all three</b> — saved
+    schemes, files and links. So five moments ask (one of them, Save this scheme, does not exist yet); two do not.</p>
   <div class="moments">
     <div><span class="t">1</span><b>Take to the store</b>The new hand-off panel: the link, the QR code, Print, Save as text. <i>The main moment.</i></div>
     <div><span class="t">2</span><b>⋯ → Save the shopping list</b>Today’s text file, until the panel replaces it.</div>
-    <div><span class="t">3</span><b>⋯ → Share link</b>A scheme’s link. It can carry the name (see question 3).</div>
+    <div><span class="t">3</span><b>⋯ → Share link</b>A scheme’s link. It carries the name (Ryan’s answer 3).</div>
     <div><span class="t">4</span><b>Shelf → Save my shelf (CSV)</b>The “for” column needs a word, or the key is all you see.</div>
+    <div><span class="t">5</span><b>Save this scheme</b>A saved-scheme library (D) — Ryan’s answer 2: wanted. It needs its own study.</div>
     <div class="no"><span class="t">—</span><b>+ Add to the shopping list</b>Not asked (Ryan). The label is kept silently.</div>
     <div class="no"><span class="t">—</span><b>Back up everything</b>Not asked: a backup keeps the keys and the names as they are.</div>
   </div>
@@ -302,7 +303,7 @@
   <h2 id="h-b"><span class="k">B</span>Once, at the first export — the recommended flow</h2>
   <p class="why">The first time a list with unnamed projects leaves the app, the hand-off panel opens on a short <b>“Name your projects”</b> step.
     Each field is <b>pre-filled with a suggestion and selected</b>, so typing replaces it and Enter keeps it. <b>Skip</b> uses the automatic names and
-    never asks for those projects again. This frame works: type, pick a suggestion, Skip, or Continue.</p>
+    never asks for those projects again. This frame works: type, Skip, or Continue.</p>
   <div class="trow">
     <figure>
       <figcaption><b>Desktop</b> · the hand-off panel, first export</figcaption>
@@ -313,14 +314,15 @@
       <ol class="notes">
         <li><b>A name you used before for this scheme</b> (it was renamed, then its paints were bought, then re-added).</li>
         <li><b>The paint and the harmony:</b> “Death Guard Green · triadic”. Always there, always true — the automatic name.</li>
-        <li><b>Your recent names</b> as one-tap choices under the field (“Plague Marine”). Picking one <b>joins</b> the two schemes into one project (question 1).</li>
+        <li>No “recent names” to pick: a project is <b>one scheme</b> (Ryan’s answer 1), so two schemes never share a project.</li>
       </ol>
       <h3 class="lab">Rules</h3>
       <ul class="notes">
         <li><b>Skip is one press,</b> and the export still happens. Asking must never block the list from going to the store.</li>
         <li><b>Asked once per project.</b> A skipped project keeps its automatic name and is not asked again; rename it later (below).</li>
         <li><b>The step shows only the unnamed ones.</b> A list where every project has a name goes straight to the panel.</li>
-        <li><b>A name already in use</b> is not an overwrite (the Adobe lesson): the app asks “Add these paints to Plague Marine?” — yes joins them, no keeps them apart as “Plague Marine (2)”.</li>
+        <li><b>A name another scheme already has</b> is not an overwrite (the Adobe lesson) and not a join (one scheme per project): the hint says “Another scheme is called Plague Marine”, and the app keeps both, the new one as “Plague Marine (2)” unless you change it.</li>
+        <li><b>The name goes in the scheme’s link</b> (Ryan’s answer 3). The hint under the fields says so once: “The name is part of the link you share.”</li>
         <li><b>Accessibility:</b> each field has its own label (“Name for the scheme from Death Guard Green, triadic”); focus starts in the first field; Continue says “2 projects named” in the panel’s live region (§3.5).</li>
       </ul>
     </div>
@@ -341,7 +343,7 @@
       <h3 class="lab">What a rename changes</h3>
       <ul class="notes">
         <li><b>Every paint with that label,</b> at once — the name lives in one place (<code>projects[key].name</code>), not on each paint.</li>
-        <li><b>A link already sent keeps the old name.</b> A link is a copy; this is the same as today’s share link.</li>
+        <li><b>A link already sent keeps the old name.</b> The name is in the link (answer 3), and a link is a copy.</li>
         <li><b>Clearing the name</b> goes back to the automatic name. The paints stay on the list.</li>
         <li><b>When every paint of a project is bought,</b> the group leaves the list, but the name stays with the scheme: re-add its paints, and the name comes back (suggestion 1).</li>
       </ul>
@@ -366,7 +368,7 @@
       <li>B’s Skip <b>is</b> C, for the painter who wants it. B is C plus one chance.</li></ul></div>
     <div><h3 class="lab">D · When you keep a scheme</h3><ul class="notes">
       <li>Needs a saved-scheme library: a new place to list, open, rename and delete schemes. It is local data, so §1 allows it, but it is a feature of its own.</li>
-      <li>If it comes, its Save asks the same question with the same field, and the shopping list reuses that name. Nothing in B blocks it.</li></ul></div>
+      <li>Ryan’s answer 2: <b>wanted</b>. Its Save asks the same question with the same field, and the shopping list reuses that name — a scheme saved with a name is never asked again at export. Nothing in B blocks it; it needs its own study.</li></ul></div>
   </div>
 </section>
 
@@ -377,16 +379,23 @@
     <div><b>A · Every export</b><span class="score">No</span> — nags; B keeps its one good ask.</div>
     <div><b>B · Once, first export</b><span class="score">Build</span> — one ask, a good suggestion, Skip, rename in place.</div>
     <div><b>C · Never block</b><span class="score">Inside B</span> — it is B’s Skip.</div>
-    <div><b>D · Save a scheme</b><span class="score">Later, if wanted</span> — a library is its own feature.</div>
+    <div><b>D · Save a scheme</b><span class="score">Wanted · next study</span> — asks with B’s field; B covers the files and links.</div>
   </div>
   <div class="reco"><b>Recommendation:</b> label silently on Add; ask <b>once</b>, at the first export, in the hand-off panel, with the field pre-filled
-    and selected and a one-press Skip; rename in place on the list’s group header. Same name → ask to join, never overwrite.</div>
-  <h3 class="lab">Questions for Ryan</h3>
+    and selected and a one-press Skip; rename in place on the list’s group header. One scheme per project; a repeated name gets “(2)”, never an overwrite. The name rides in the share link.
+    A saved-scheme library (D) asks with the same field, and comes next.</div>
+  <h3 class="lab">Ryan’s answers (2026-10-29)</h3>
+  <table class="study" style="min-width:0;max-width:82ch">
+    <tbody>
+      <tr><td>1 · One scheme or several</td><td><b>One scheme.</b> → a project is a scheme’s name; no joining; a repeated name gets “(2)”.</td></tr>
+      <tr><td>2 · What “save” means</td><td><b>Both: schemes, files and links.</b> → B for files and links; a saved-scheme library (D) is wanted and needs its own study.</td></tr>
+      <tr><td>3 · Name in the share link</td><td><b>Yes.</b> → <code>n=</code> in the link; the naming step says the name is part of the link.</td></tr>
+      <tr><td>4 · The automatic name</td><td><b>Yes</b> — “Death Guard Green · triadic”.</td></tr>
+    </tbody>
+  </table>
+  <h3 class="lab">Next</h3>
   <ol class="q">
-    <li><b>Is a project one scheme, or can it hold several?</b><span>An army may use two schemes (troops and a character). If one project can hold several, picking a recent name joins them; if not, a project is just a scheme’s name.</span></li>
-    <li><b>Did “save” mean a saved-scheme library (D)?</b><span>If yes, D becomes its own study. If “save” meant the files and links, B covers it.</span></li>
-    <li><b>Should a share link carry the project name?</b><span>It is nice for the person who opens it. But the name you typed then goes into every link you send — a small privacy point.</span></li>
-    <li><b>Is the automatic name right?</b><span>“Death Guard Green · triadic” is always true. Other options: the paint only, or the scheme’s three colours’ names.</span></li>
+    <li><b>A study: the saved-scheme library (D).</b><span>Where saved schemes live (a third mode beside Studio and Shelf, or a list in the Shelf), how one opens, renames and deletes, and how it fits the backup file.</span></li>
   </ol>
 </section>
 
@@ -408,7 +417,6 @@
     { key:'k2a9', auto:'Death Guard Green · triadic', name:'', hexes:['#6D774D','#A77353','#C2AE9D'], n:3 },
     { key:'k7f3', auto:'Kantor Blue · split-complementary', name:'', hexes:['#02134E','#960C09','#A77353'], n:3 },
   ];
-  const RECENT = ['Plague Marine', 'Ultramarine captain'];
   const mini = p => `<span class="mini" aria-hidden="true">${p.hexes.map(h => `<i style="background:${h}"></i>`).join('')}</span>`;
   const label = p => p.name || p.auto;
 
@@ -418,11 +426,11 @@
   function drawB() {
     if (stage === 'ask') {
       let h = `<div class="head"><h4>Take this list to the store</h4></div>
-        <p class="sub" style="margin:0 0 4px"><b>Name your projects</b> — once. The names show on the list and in the files.</p>`;
+        <p class="sub" style="margin:0 0 4px"><b>Name your projects</b> — once. The names show on the list, in the files and in the links you share.</p>`;
       P.forEach((p, i) => {
         h += `<div class="namerow">${mini(p)}<div class="fld"><label for="nm${i}">Project · ${p.n} paints</label>
           <input id="nm${i}" value="${esc(p.name || p.auto)}" aria-describedby="hn${i}" autocomplete="off">
-          <div class="sugg" id="hn${i}">From ${esc(p.auto)}. Recent: ${RECENT.map(r => `<button type="button" data-i="${i}" data-r="${esc(r)}">${esc(r)}</button>`).join('')}</div></div></div>`;
+          <div class="sugg" id="hn${i}">The automatic name: ${esc(p.auto)}.</div></div></div>`;
       });
       h += `<div class="acts"><button class="btn primary" type="button" data-act="go">Continue</button><button class="textact" type="button" data-act="skip">Skip — use these names</button></div>`;
       fB.innerHTML = h;
@@ -437,7 +445,6 @@
   }
   fB.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.dataset.r) { const inp = document.getElementById('nm' + b.dataset.i); inp.value = b.dataset.r; inp.focus(); inp.select(); return; }
     const act = b.dataset.act;
     if (act === 'go') { P.forEach((p, i) => { const v = document.getElementById('nm' + i).value.trim(); p.name = v && v !== p.auto ? v : ''; }); stage = 'named'; drawB(); drawR(); fB.querySelector('.seg button')?.focus(); }
     if (act === 'skip') { stage = 'skipped'; drawB(); fB.querySelector('.seg button')?.focus(); }
