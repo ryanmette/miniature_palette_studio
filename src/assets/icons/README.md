@@ -25,6 +25,7 @@ The harmony glyphs and the finish icons stay in code (`harmonyGlyph`, `finishTag
 | `target.svg` | ◎ | Use a palette colour as the base |
 | `chevl.svg`, `chevr.svg` | ◂ ▸ | Move a palette colour earlier or later |
 | `half.svg` | ◐ | The neutral note over the wheel |
+| `pin.svg` | — | A chosen pot on a role (mockups/hold-flow.html) |
 | `cart.svg` | — | Add to the shopping list (not used yet; the buy button uses `plus.svg`) |
 | `camera.svg`, `grid.svg`, `eye.svg`, `info.svg`, `chev.svg` | — | From photo, Browse, Colour check, the matching note, a select |
 | `brush.svg`, `pot.svg`, `drop.svg` | — (new) | Hobby icons: the recipe, a pot, a wash or ink |

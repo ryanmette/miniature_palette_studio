@@ -454,8 +454,9 @@ export function livePalette(vm, fill, roleByHex = {}) {
     const isBase = c.kind === 'base', isFree = c.kind === 'free';
     const isMetal = c.kind === 'metal', isPin = c.kind === 'pin';   // pin = the accent-seed colour riding along (display-only, like Metal)
     const cHex = safeColor(c.hex);                         // the swatch's own (ideal) colour — what "use as base"/edit start from
-    const role = roleByHex[cHex.toUpperCase()];            // unify with the Plan: show the role this colour plays
-    const tag = role || (isBase ? 'Base' : isFree ? 'Added' : isMetal ? 'Metal' : isPin ? 'Accent'
+    const role = c.role || roleByHex[cHex.toUpperCase()];   // unify with the Plan: show the role this colour plays
+    // An added colour is a sketch colour: no role, so not in the Recipe (mockups/hold-flow.html, "Extra").
+    const tag = role || (isBase ? 'Base' : isFree ? 'Extra' : isMetal ? 'Metal' : isPin ? 'Accent'
       : c.deg ? `${c.deg > 0 ? '+' : ''}${c.deg}°` : toneTag(c.hex, baseCol));   // deg 0 = a value partner, not a hue offset
     // Finish overlay: a real-fill column wears its matched paint's finish; the ideal Metal column wears the
     // metallic sheen (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
@@ -468,13 +469,19 @@ export function livePalette(vm, fill, roleByHex = {}) {
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
     const fi = isFree ? +c.id.slice(1) : -1;                                     // index among the added swatches
     const sw = isBase ? 'base' : isFree ? 'x:' + c.id.slice(1) : 'p:' + c.deg;   // addressable swatch key
-    const canDetach = isFree || (c.kind === 'partner' && c.detachable);          // value-harmony partners can't be pinned uniquely
-    const lockOn = !!c.locked;
-    // Metal + the pinned accent are display-only (no wheel node of their own to drive); every other
-    // column keeps its edit/lock/add controls.
-    const acts = (isMetal || isPin) ? '' : `<div class="lcact">`
-      +   ((isBase || canDetach) ? `<button type="button" class="lcbtn" data-edit="${sw}" title="Edit colour" aria-label="Edit ${esc(tag)} colour">${icon('edit')}</button>` : '')
-      +   (canDetach ? `<button type="button" class="lcbtn${lockOn ? ' on' : ''}" data-lock="${sw}" title="${lockOn ? 'Unlock' : 'Lock'} colour" aria-label="${lockOn ? 'Unlock' : 'Lock'} ${esc(tag)}" aria-pressed="${lockOn}">${icon(lockOn ? 'lock' : 'unlock')}</button>` : '')
+    // A role the painter can hold (Secondary, Accent, Metal — not the starting paint's role): its lock and
+    // edit act on the ROLE, so they reach the Recipe (direction A). Other columns keep the sketch controls.
+    const roleKey = c.holdable ? 'r:' + role : null;
+    const isPot = c.hold === 'pot';
+    const canDetach = !roleKey && (isFree || (c.kind === 'partner' && c.detachable));   // value-harmony partners can't be pinned uniquely
+    const lockKey = roleKey && !isPot ? roleKey : canDetach ? sw : null;
+    const editKey = roleKey && !isPot ? roleKey : (isBase || canDetach) ? sw : null;
+    const lockOn = roleKey ? c.hold === 'lock' : !!c.locked;
+    // The pinned accent (the starting paint, in accent mode) is display-only; Metal has no wheel node, but
+    // its colour can still be locked or edited, like any role's.
+    const acts = isPin || c.kind === 'held' && isPot ? '' : `<div class="lcact">`
+      +   (editKey ? `<button type="button" class="lcbtn" data-edit="${editKey}" title="Edit colour" aria-label="Edit ${esc(tag)} colour">${icon('edit')}</button>` : '')
+      +   (lockKey ? `<button type="button" class="lcbtn${lockOn ? ' on' : ''}" data-lock="${lockKey}" title="${lockOn ? 'Unlock' : 'Lock'} colour" aria-label="${lockOn ? 'Unlock' : 'Lock'} ${esc(tag)} colour" aria-pressed="${lockOn}">${icon(lockOn ? 'lock' : 'unlock')}</button>` : '')
       +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:-1"${fi === 0 ? ' disabled' : ''} title="Move earlier" aria-label="Move ${esc(tag)} earlier">${icon('chevl')}</button>` : '')
       +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:1"${fi === freeCount - 1 ? ' disabled' : ''} title="Move later" aria-label="Move ${esc(tag)} later">${icon('chevr')}</button>` : '')
       +   `<button type="button" class="lcbtn" data-setbase="${cHex}" title="Start from this colour" aria-label="Start from the ${esc(tag)} colour">${icon('target')}</button>`
@@ -486,13 +493,15 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // Seed dock (§3.5): the Main|Accent control folded into the palette. The chip IS the state
     // ("my pick seeds this role"); the dashed dock on the other eligible column is the control.
     // Every column reserves the row so switching never changes the bar's height (§3.4).
-    const dock = c.dock && c.dock.type === 'chip'
+    // A chosen pot is state, so it is a tag in the dock row (the column never takes the dock: see app.js).
+    const dock = isPot ? `<span class="holdchip" title="You chose this pot for ${esc(tag)}. Change or release it on the ${esc(tag)} card in the Recipe.">${icon('pin')}Pot chosen</span>`
+      : c.dock && c.dock.type === 'chip'
       // A tag, not the paint's name: the name is already in the column's footer (UX 7). The title keeps it.
       ? `<span class="seedchip" title="${esc(c.dock.name)} is your paint — it sets the ${esc(tag)} role">${icon('check')}Your paint</span>`
       : c.dock && c.dock.type === 'switch'
         ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with your paint as the ${esc(tag)}"`} aria-label="Move my paint here: ${esc(tag)}">${icon('anchor')}Move my paint here</button>`
         : '';
-    return `<div class="lcol${lockOn ? ' locked' : ''}${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
+    return `<div class="lcol${lockOn || isPot ? ' locked' : ''}${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
       + `<div class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}">`
       +   `<span class="lctag">${esc(tag)}${real ? ' · pot' : ''}</span>`
       +   `<span class="lchexrow"><span class="lchex">${bg}</span>`

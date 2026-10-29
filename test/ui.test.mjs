@@ -20,7 +20,7 @@ test('livePalette labels columns by role when a roleByHex map is supplied (unifi
   assert.match(html, /class="lctag">Primary</);   // base column reads as its role, not "Base"
   assert.match(html, /class="lctag">Accent</);
   assert.match(html, /class="lctag">Metal</);
-  assert.match(html, /class="lctag">Added</);     // free/extra colour keeps its node tag
+  assert.match(html, /class="lctag">Extra</);     // free/extra colour keeps its node tag
 });
 
 test('livePalette Metal column is display-only (no edit/lock/add controls)', () => {
@@ -298,4 +298,18 @@ test('a Poor match says what it means and what to do (UX 4)', () => {
   assert.match(matchChip(m(13.2)), /class="poornote"><strong>No pot within ΔE 10\.<\/strong>/);
   assert.doesNotMatch(matchChip(m(9.9)), /poornote/, 'Loose (ΔE 10 or less) gets no note');
   assert.match(matchChip(null), /class="poornote"><strong>No pot is close\.<\/strong>/);
+});
+
+test('livePalette: a held role column acts on the role; a chosen pot shows its tag (hold-flow, A)', () => {
+  const pot = { paint: { id: 'bg', name: 'Balthasar Gold', brand: 'Citadel', line: 'Base', hex: '#A77353', type: 'metal' }, deltaE: 22.9, quality: { label: 'Poor', tier: 'danger' } };
+  const html = livePalette([
+    { id: 'p0', kind: 'base', hex: '#6D774D', role: 'Primary', holdable: false, match: null },
+    { id: 'held-Secondary', kind: 'held', hex: '#2F4A6B', role: 'Secondary', holdable: true, hold: 'lock', match: null },
+    { id: 'metal', kind: 'metal', hex: '#A77353', role: 'Metal', holdable: true, hold: 'pot', match: pot },
+  ], 'ideal');
+  assert.match(html, /data-lock="r:Secondary"[^>]*aria-pressed="true"/, 'the lock toggles the role hold and shows pressed');
+  assert.match(html, /data-edit="r:Secondary"/, 'an edit becomes a lock on the role');
+  assert.match(html, /class="holdchip"[^>]*>.*?Pot chosen</, 'a chosen pot is a filled tag');
+  assert.doesNotMatch(html, /data-lock="r:Metal"/, 'a chosen pot is changed in the Recipe, not locked over');
+  assert.doesNotMatch(html, /data-lock="r:Primary"|data-lock="base"/, 'Primary is never held');
 });
