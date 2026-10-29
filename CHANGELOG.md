@@ -22,6 +22,29 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Colors, Huemint, Adobe Color, Material 3, Excel Solver, Onshape, Eat This Much), proposes one model (start,
   hold, explore, filter), proposes "Starting paint" in place of "your paint" (which read as "owned"), and
   scores three directions. The recommendation is A: one scheme with two holds, a locked colour and a chosen pot.
+- **Share as an image.** A shared link shows the same static card for every scheme, so the person who gets it
+  cannot see the scheme before they open it. ⋯ → Share this palette now makes a picture of the scheme on the device
+  (no server): a square 1080 px PNG of the four roles, each with its pot, a band of the target colour on top, the
+  paint name, brand and line, the finish icon, and ΔE with its label. It uses the theme on screen.
+  - On touch, **Share image…** opens the share sheet with the image, the paint names and the link. Where the sheet
+    takes no file, it saves the image.
+  - With a mouse, **Copy image** puts the image on the clipboard (the image only: a paste takes one thing, and the
+    image prints the address; **Copy link** is beside it), and **Save the image** downloads it.
+  - The image is made when ⋯ opens, so the tap that shares it does not wait (Safari refuses a share when the tap
+    is too old). It takes about 50 ms to make on a desktop.
+  - The layout is a pure module (`src/js/shareimage.js`) with 12 tests. The tests build the image from real
+    schemes in both themes and check the margins, the columns, the text sizes, WCAG AA for every text, ΔE and its
+    label on every match, and the finish overlays against `app.css`.
+- **Design exploration: share as an image** (`mockups/share-image.html`, not shipped). A shared link shows the same
+  static card for every scheme, and Messages on a Mac cuts its sides: it shows the 1200 × 630 card at about 1.6 : 1, so
+  about 96 px goes from each side. The page measures this from a screenshot and proposes a 960 px safe zone. It then
+  shows three directions for an image that the device makes when the painter shares (no server): A, a recipe card of
+  the four roles; B, the wheel and the live palette; C, a pot shelf with the tone ladders. Each is square and wide, light
+  and dark, in Messages and Discord frames, with measured PNG sizes, draw times, text sizes and contrast. The data
+  comes from the real engine (`mockups/share-image/engine-data.mjs`). The page also gives the share flow on touch, with
+  a mouse and in the native app, the risks, an estimate and a commit plan. The recommendation is A, after a fix to the
+  static card.
+
 ### Changed
 - **"Your paint" is now "Starting paint"** (Ryan, after the study). "Your paint" read as a paint you own. The
   tag on the live palette says "⚓ Starting paint", the dock says "⚓ Move here", and the Shelf's menu item says
@@ -29,6 +52,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **A colour you add to the live palette is tagged "Extra"** (it said "Added"). A locked role colour is no
   longer an extra colour: it stays in its role.
 ### Fixed
+- **The link card is no longer cut on a Mac.** Messages on a Mac shows the 1200 × 630 card at about 1.6 : 1, so it
+  cut about 96 px from each side, and the first letters of each line ("ick one paint", "RIMARY"). The card
+  (`src/og-image.png`) is redrawn with all its content inside the centre 960 px, a 120 px margin on each side. It
+  now names each paint's brand too. Drawn by `mockups/share-image.html` (§0).
 - **A lock now reaches the Recipe** (found by the study). Before, a locked colour stayed on the live palette
   after a harmony change, but the Recipe and the shopping list used the new harmony's colour. A lock on a
   role column is now a role hold, so all three agree.

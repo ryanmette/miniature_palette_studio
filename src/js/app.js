@@ -6,12 +6,13 @@ import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex, deltaE2000Hex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
 import { encodeState, decodeState, shareUrl } from './share.js';   // the share-link contract (state ⇄ URL)
+import { shareView, layoutShareImage, paintShareImage, shareText, shareFileName, SHARE_SIZE, SHARE_FONTS, SHARE_TOKENS } from './shareimage.js';   // the share image (pure layout + painter)
 import { snapPalette, readSnap } from './undo.js';   // the undo snapshot (palette state ⇄ JSON, exact)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
 import { createMarkMenu, isMenuKey } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf } from './data.js';
+import { loadDataset, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
@@ -1704,6 +1705,80 @@ async function doShare() {
   // the link itself, not the address bar: that one can carry m=shelf, and lacks the t=dark a share adds
   try { prompt(t('copyLink'), url); } catch { toast(url); }
 }
+
+/* ---- the share image (shareimage.js; mockups/share-image.html, direction A) ----
+   The device makes a PNG of the scheme on screen. A link preview cannot show a scheme: the preview bots run
+   no JavaScript, and a server to draw one is out of scope (§1). So the painter sends a picture with the link. */
+// A file in the share sheet needs navigator.canShare (Web Share Level 2). With a mouse, a PNG on the clipboard
+// needs ClipboardItem; Save the image works everywhere.
+const CAN_SHARE_FILES = CAN_SHARE && typeof navigator.canShare === 'function';
+const CAN_COPY_IMAGE = !CAN_SHARE && typeof ClipboardItem === 'function' && typeof navigator.clipboard?.write === 'function';
+let shareImg = { key: '', made: null };
+function shareImageView() {
+  const info = baseInfo();
+  return shareView(currentScheme(), {
+    seed: { id: info.id || null, name: info.name },
+    harmony: ui.harmonyLabel(state.harmony),
+    words: { from: t('imgFrom'), yourPaint: t('imgYourPaint'), noPot: t('imgNoPot'), footer: t('imgFooter'), finish: FINISH_WORDS },
+  });
+}
+/** The image of the scheme on screen now: { blob, name, text }. Made once for each scheme, theme and
+ *  language, so the tap that shares it does not wait (Safari needs the tap's activation, see openSettings). */
+function shareImage() {
+  const url = shareUrl(location.href, state.theme), view = shareImageView();
+  const key = `${url}|${state.theme}|${JSON.stringify(view)}`;
+  if (shareImg.key !== key) {
+    const made = makeShareImage(view, url);
+    shareImg = { key, made };
+    made.catch(() => { if (shareImg.made === made) shareImg.key = ''; });   // a failure is not kept: the next tap tries again
+  }
+  return shareImg.made;
+}
+async function makeShareImage(view, url) {
+  // A canvas does not wait for a webfont, so load the faces first (self-hosted: this is local). If one does not
+  // load, the canvas draws the fallback, and the layout measures that same font, so no text overflows.
+  await Promise.all(SHARE_FONTS.map(f => document.fonts.load(f).catch(() => null)));
+  // The theme on screen: the image takes its colours from the page's tokens, never from its own hex values.
+  const cs = getComputedStyle(document.documentElement);
+  const tokens = Object.fromEntries(Object.entries(SHARE_TOKENS).map(([k, v]) => [k, cs.getPropertyValue(v).trim()]));
+  const c = document.createElement('canvas');
+  c.width = c.height = SHARE_SIZE;
+  const ctx = c.getContext('2d');
+  const measure = (font, text) => { ctx.font = font; return ctx.measureText(text).width; };
+  paintShareImage(ctx, layoutShareImage(view, tokens, measure));
+  const blob = await new Promise((res, rej) => c.toBlob(b => (b ? res(b) : rej(new Error('toBlob'))), 'image/png'));
+  return { blob, name: shareFileName(view), text: shareText(view, url) };
+}
+/** Share image… (touch): the system share sheet with the PNG, and the link in the text (some apps drop a
+ *  `url` that comes with a file). Where the sheet takes no file, the image is saved instead. */
+async function doShareImage() {
+  let img;
+  try { img = await shareImage(); } catch { toast(t('imageFailed')); return; }
+  const data = { files: [new File([img.blob], img.name, { type: 'image/png' })], title: 'Palette Studio for Miniatures', text: img.text };
+  if (CAN_SHARE_FILES && navigator.canShare(data)) {
+    try { await navigator.share(data); return; }
+    catch (e) {
+      if (e && e.name === 'AbortError') return;   // the painter closed the sheet
+      // the tap's activation ran out while the image was made; it is made now, so the next tap shares at once
+      if (e && e.name === 'NotAllowedError') { toast(t('imageTapAgain')); return; }
+    }
+  }
+  saveImage(img);
+}
+function saveImage(img) {
+  download(img.name, img.blob, 'image/png');
+  toast(t('imageSaved'));
+}
+async function doSaveImage() {
+  try { saveImage(await shareImage()); } catch { toast(t('imageFailed')); }
+}
+/** Copy image (mouse): the PNG only. A paste takes one thing, and the image prints the address; Copy link
+ *  is beside it. Safari needs the write to start inside the click, so it gets a promise of the PNG. */
+function doCopyImage() {
+  const png = shareImage().then(img => img.blob);
+  navigator.clipboard.write([new ClipboardItem({ 'image/png': png })])
+    .then(() => toast(t('imageCopied')), () => toast(t('imageCopyFailed')));
+}
 function download(filename, text, type = 'text/plain') {
   const a = document.createElement('a');
   const href = URL.createObjectURL(new Blob([text], { type }));
@@ -1889,6 +1964,9 @@ function openSettings(opener = 'button') {
   $('#settingsBody').scrollTop = 0; syncSettingsFade();
   setSettingsExpanded(true);
   $('#collectionSeg [aria-pressed="true"]').focus();   // the first control (WAI-ARIA dialog pattern)
+  // Make the share image now, after the menu has painted. Then a tap on Share image… calls share() at once:
+  // Safari refuses a share whose tap is too old, and fonts + the PNG inside the tap could take that long.
+  setTimeout(() => { if (settingsOpen()) shareImage().catch(() => {}); }, 60);
 }
 /** `ret`: where focus goes — 'opener' (⋯ or the note line), 'button' (⋯: an action that closes the menu,
  *  such as Save shopping list), or null (focus is already going somewhere else). */
@@ -1966,6 +2044,9 @@ function setupSettings() {
   // Scheme: both actions act on the finished scheme and close the menu; focus goes back to ⋯
   $('#export').addEventListener('click', () => { closeSettings('button'); doExport(); });
   $('#share').addEventListener('click', () => { closeSettings('button'); doShare(); });
+  $('#shareImg').addEventListener('click', () => { closeSettings('button'); doShareImage(); });
+  $('#copyImg').addEventListener('click', () => { closeSettings('button'); doCopyImage(); });
+  $('#saveImg').addEventListener('click', () => { closeSettings('button'); doSaveImage(); });
   // Backup
   $('#backupBtn').addEventListener('click', () => {
     const name = saveBackup(), now = $('#backupNow');
@@ -2414,6 +2495,8 @@ async function init() {
   syncTabs();
   wire();
   $('#share').dataset.i18n = CAN_SHARE ? 'shareLink' : 'copyLinkBtn';   // Share link… on touch, Copy link with a mouse
+  // The image: Share image… on touch; with a mouse, Save the image, and Copy image where a PNG can go on the clipboard
+  $('#shareImg').hidden = !CAN_SHARE; $('#saveImg').hidden = CAN_SHARE; $('#copyImg').hidden = !CAN_COPY_IMAGE;
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
   syncLocaleStrings(); syncSettingsControls();
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is

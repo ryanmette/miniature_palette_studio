@@ -7,7 +7,9 @@
 <meta name="description" content="Pick a miniature paint and get colour harmonies matched to the real paints you can buy." />
 <!-- The link preview (iMessage, Discord, Slack…). Their bots read this HTML and do not run JavaScript, so
      the card is static: a shared scheme cannot draw its own image without a server (§1). The image is
-     1200 × 630 (src/og-image.png); without it, iMessage stretched the 180px icon. Absolute URLs: bots need them. -->
+     1200 × 630 (src/og-image.png); without it, iMessage stretched the 180px icon. Absolute URLs: bots need them.
+     All of its content is inside the centre 960 px: Messages on a Mac shows the card at about 1.6 : 1 and cuts
+     about 96 px from each side (mockups/share-image.html §0). -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Palette Studio" />
 <meta property="og:title" content="Palette Studio for Miniatures" />
@@ -125,6 +127,11 @@
           <!-- What these act on, in words (Ryan, 2026-10-28: "Scheme" did not say it): the palette on screen.
                The Backup group below acts on everything this device keeps. -->
           <div class="setbtns" role="group" aria-label="Share this palette" data-i18n-aria="scheme" aria-describedby="shareHint">
+            <!-- The image: Share image… on touch (the share sheet, the PNG + the link); with a mouse, Copy image and
+                 Save the image (app.js setupShareImage shows the right ones). -->
+            <button type="button" class="btn" id="shareImg" data-i18n="shareImage" hidden>Share image…</button>
+            <button type="button" class="btn" id="copyImg" data-i18n="copyImage" hidden>Copy image</button>
+            <button type="button" class="btn" id="saveImg" data-i18n="saveImage" hidden>Save the image</button>
             <button type="button" class="btn" id="share" data-i18n="shareLink">Share link…</button>
             <button type="button" class="btn" id="export" data-i18n="saveList">Save the shopping list</button>
           </div>
