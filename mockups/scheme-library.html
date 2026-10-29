@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scheme library study</title>
+<!-- the app's self-hosted webfonts (no external requests), so text widths in the frames match the app -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  /* ---------- tokens: the same blocks as src/styles/tokens.css (CLAUDE.md §3.1, Workbench+) ----------
+     The page follows the device theme until you pick one with "Page theme". Only colour changes. */
+  :root {
+    --r-card:6px; --r-ctrl:4px; --r-sw:3px; --r-tag:2px; --r-pill:999px; --tap:44px;
+    --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --fs-h1:26px; --fs-h2:20px; --fs-body:14px; --fs-small:12.5px; --fs-micro:11.5px;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  :root, [data-theme="light"] {
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6;
+    --border:#DCD8D0; --border-strong:#C9C4BA; --edge:#8A857B;
+    --text:#1D1C19; --text-muted:#5E5A52; --text-faint:#9C978D;
+    --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+    --buy:#2563EB; --buy-weak:#DBEAFE; --on-buy:#FFFFFF;
+    --success:#16A34A; --success-weak:#DCFCE7; --on-success:#FFFFFF;
+    --warning:#C2740B; --warning-weak:#FBEBD3;
+    --danger:#DC2647; --danger-weak:#FCE4EA;
+    --success-text:#0F7334; --warning-text:#945908; --danger-text:#C4203D; --buy-text:#1D4ED8;
+    --shadow:0 1px 2px rgba(29,28,25,.25);
+    --shadow-pop:0 0 0 1px rgba(29,28,25,.05), 0 12px 24px -10px rgba(29,28,25,.38);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  [data-theme="dark"] {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+    --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+    --warning:#E0803A; --warning-weak:#2E1D12;
+    --danger:#D2563F; --danger-weak:#2E1A14;
+    --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+      --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+      --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+      --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+      --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+      --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+      --warning:#E0803A; --warning-weak:#2E1D12;
+      --danger:#D2563F; --danger-weak:#2E1A14;
+      --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+      --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+      --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+    }
+  }
+
+  /* ---------- the page: regions with rules, no cards (§3.5) ---------- */
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:var(--fs-body); line-height:1.5; padding:24px 16px 48px; }
+  .page { max-width:1140px; margin:0 auto; }
+  h1 { font-family:var(--display); font-size:32px; font-weight:600; line-height:1.15; margin:0 0 8px; }
+  h2 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 4px; }
+  h2 .k { color:var(--accent); margin-right:6px; }
+  h3.lab, .micro { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  h3.lab { margin:24px 0 8px; }
+  a { color:var(--accent); }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); border-radius:var(--r-ctrl); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { border-top:1px solid var(--border); padding:24px 0; }
+  .sub, .why { color:var(--text-muted); font-size:var(--fs-small); max-width:80ch; margin:0 0 12px; }
+  .sub b, .why b, .notes b, td b { color:var(--text); }
+  ul.notes, ol.notes { margin:0; padding-left:20px; font-size:var(--fs-small); color:var(--text-muted); max-width:82ch; }
+  .notes li + li { margin-top:4px; }
+  .sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .pros { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:0 24px; }
+  .pros h3.lab { margin-top:16px; }
+  .trow { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; margin-top:12px; }
+  .trow > .txt { flex:1 1 300px; min-width:0; }
+  figure { margin:0; min-width:0; max-width:100%; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+  figcaption b { color:var(--text); }
+  pre.file { font-family:var(--mono); font-size:12px; line-height:1.45; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card);
+    padding:12px; margin:0; overflow-x:auto; max-width:100%; color:var(--text); }
+  pre.file .dim { color:var(--text-muted); }
+
+  /* the page-theme control */
+  .pc { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; margin:16px 0 0; }
+  .seg { display:inline-flex; }
+  .seg button { position:relative; height:30px; padding:0 12px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text);
+    font:inherit; font-size:12.5px; font-weight:500; cursor:pointer; margin-left:-1px; }
+  .seg button:first-child { border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); margin-left:0; }
+  .seg button:last-child { border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .seg button:hover { background:var(--surface-2); }
+  .seg button[aria-pressed="true"] { background:var(--accent-weak); }
+  .seg button[aria-pressed="true"]::after { content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--accent); }
+  .seg button:focus-visible { z-index:1; }
+  @media (pointer: coarse) { .seg button { height:var(--tap); } }
+
+  /* the study table */
+  .tablewrap { overflow-x:auto; max-width:100%; }
+  table.study { border-collapse:collapse; font-size:var(--fs-small); min-width:760px; width:100%; }
+  table.study th, table.study td { text-align:left; vertical-align:top; padding:8px 12px 8px 0; border-bottom:1px solid var(--border); }
+  table.study th { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.study td { color:var(--text-muted); }
+  table.study td:first-child { color:var(--text); font-weight:600; white-space:nowrap; }
+
+  /* the jobs strip */
+  .jobs { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:0 16px; counter-reset:job; margin:12px 0 0; padding:0; list-style:none; }
+  .jobs li { border-top:1px solid var(--border-strong); padding:8px 0 12px; font-size:var(--fs-small); color:var(--text-muted); }
+  .jobs li b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .jobs li::before { counter-increment:job; content:counter(job); font-family:var(--display); font-weight:700; font-size:20px; color:var(--accent); display:block; line-height:1; margin-bottom:4px; }
+
+  /* ---------- the app's components, as in src/styles/app.css ---------- */
+  .btn { position:relative; min-height:var(--tap); padding:0 14px; border-radius:var(--r-ctrl); border:1px solid var(--border);
+    background:var(--surface); color:var(--text); font:inherit; font-weight:500; font-size:13.5px; line-height:1.2;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .btn:hover { background:var(--surface-2); border-color:var(--border-strong); }
+  .btn:active { transform:scale(.96); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-size:14.5px; font-weight:600; padding:0 18px; min-height:calc(var(--tap) + 6px); }
+  .btn.primary:hover { background:var(--accent); filter:brightness(1.06); }
+  .btn.sm { min-height:32px; padding:0 10px; font-size:12.5px; }
+  @media (pointer: coarse) { .btn.sm { min-height:var(--tap); } }
+  .btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+  .textact { background:none; border:0; color:var(--accent); font:inherit; font-weight:500; min-height:var(--tap); min-width:var(--tap); padding:0 4px; cursor:pointer; }
+  .tag { display:inline-block; font-size:11px; font-weight:500; line-height:1; padding:3px 5px; border:1px solid var(--border-strong); border-radius:var(--r-tag); color:var(--text-muted); white-space:nowrap; }
+  .tag.success { border-color:var(--success); color:var(--success-text); }
+  .tag.warning { border-color:var(--warning); color:var(--warning-text); }
+  .tag.danger  { border-color:var(--danger);  color:var(--danger-text); }
+  .tag.buy     { border-color:var(--buy);     color:var(--buy-text); }
+  .de { font-family:var(--mono); font-size:11.5px; color:var(--text-muted); }
+  .sw { width:40px; height:40px; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; position:relative; overflow:hidden; }
+  .sw.sm { width:24px; height:24px; }
+  .sw.lg { width:48px; height:48px; }
+  /* finish overlay for metallics (§2): a sheen that never changes the colour */
+  .sw.metal::after { content:""; position:absolute; inset:0; background:linear-gradient(125deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.45) 50%, rgba(255,255,255,0) 68%); }
+
+
+  /* ---------- frames (this study) ---------- */
+  .ph { width:360px; max-width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border-strong); border-radius:20px; overflow:hidden; position:relative; }
+  .ph .hdr { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); }
+  .ph .body { padding:0 12px 12px; min-height:200px; }
+  .ph .ttlrow { display:flex; align-items:center; gap:8px; padding:12px 0 8px; }
+  .ph .ttlrow h4 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0; flex:1; }
+  .ph.sm { width:300px; }
+  .dots { width:var(--tap); height:var(--tap); border:1px solid var(--border); background:var(--surface); border-radius:var(--r-ctrl); color:var(--text); font:inherit; font-size:18px; line-height:1; cursor:pointer; }
+  .fake { pointer-events:none; }
+
+  /* the segmented control as in §3.5 (header modes) */
+  .seg.modes button { height:var(--tap); padding:0 12px; font-size:13.5px; }
+  .seg button.new::before { content:""; position:absolute; inset:-3px; border:1.5px dashed var(--accent); border-radius:var(--r-ctrl); pointer-events:none; }
+
+  /* a saved scheme in the list: a colour strip of its four roles (paint data, §2), the name, the facts */
+  .sc { display:grid; grid-template-columns:72px 1fr auto; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); }
+  .strip { display:grid; grid-template-columns:3fr 2fr 1fr 1fr; height:48px; border-radius:var(--r-sw); overflow:hidden; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  .strip i { display:block; position:relative; }
+  .strip i.metal::after { content:""; position:absolute; inset:0; background:linear-gradient(125deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.45) 50%, rgba(255,255,255,0) 68%); }
+  .sc .nm { font-family:var(--display); font-size:18px; font-weight:600; line-height:1.15; }
+  .sc .nm.auto { font-family:var(--font); font-size:15px; font-weight:500; font-style:italic; color:var(--text-muted); }
+  .sc .meta { font-size:var(--fs-small); color:var(--text-muted); }
+  .sc .open { all:unset; cursor:pointer; display:block; border-radius:var(--r-ctrl); }
+  .sc .open:focus-visible { box-shadow:var(--focus); }
+  .sc input { font:inherit; font-size:16px; min-height:var(--tap); padding:0 8px; border:1px solid var(--edge); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text); width:100%; }
+  .sc input:focus-visible { outline:2px solid transparent; box-shadow:var(--focus); }
+
+  /* the item menu, the confirm, the empty state */
+  .menu { position:absolute; right:12px; z-index:2; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:4px; min-width:200px; }
+  .menu .mt { font-size:12px; color:var(--text-muted); padding:4px 8px 6px; border-bottom:1px solid var(--border); margin-bottom:4px; }
+  .menu button { display:flex; width:100%; align-items:center; min-height:var(--tap); padding:0 8px; border:0; background:none; color:var(--text); font:inherit; text-align:left; border-radius:var(--r-ctrl); cursor:pointer; }
+  .menu button:hover { background:var(--surface-2); }
+  .menu button:focus-visible { outline:2px solid transparent; box-shadow:var(--focus-inset); }
+  .menu button.dz::before { content:"⚠"; color:var(--danger); margin-right:6px; }
+  .scrim { position:absolute; inset:0; background:var(--scrim, rgba(0,0,0,.45)); display:grid; place-items:center; z-index:3; padding:16px; }
+  .confirm { background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:16px; width:100%; }
+  .confirm h5 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 8px; }
+  .confirm p { font-size:var(--fs-small); color:var(--text-muted); margin:0 0 12px; }
+  .confirm .acts { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+  .btn.danger { border-color:var(--danger); }
+  .btn.danger::before { content:"⚠"; color:var(--danger); }
+  .empty { padding:24px 0; }
+  .empty h5 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 4px; }
+  .say { font-size:var(--fs-small); color:var(--text-muted); min-height:1.5em; margin:8px 0 0; }
+
+  /* the Studio hero line with Save */
+  .studio { width:560px; max-width:100%; background:var(--bg); border:1px solid var(--border-strong); border-radius:var(--r-card); padding:12px; position:relative; }
+  .hero { display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-height:var(--tap); }
+  .hero .chip { width:28px; height:28px; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; }
+  .hero .hn { font-family:var(--display); font-size:20px; font-weight:600; }
+  .hero .hx { font-family:var(--mono); font-size:12px; color:var(--text-muted); }
+  .hero .grow { flex:1; }
+  .bar4 { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; margin-top:12px; }
+  .bar4 div { height:64px; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); display:flex; align-items:flex-end; padding:4px 6px; font-size:11px; font-weight:500; }
+  .pop { position:absolute; top:56px; right:12px; width:300px; max-width:calc(100% - 24px); background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:12px; z-index:2; }
+  .fld { display:grid; gap:4px; margin:0 0 8px; }
+  .fld label { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  .fld input { font:inherit; font-size:15px; min-height:var(--tap); padding:0 10px; border:1px solid var(--edge); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text); width:100%; }
+  .fld input:focus-visible { outline:2px solid transparent; box-shadow:var(--focus); }
+  @media (pointer: coarse) { .fld input { font-size:16px; } }
+  .fld .hint { font-size:12px; color:var(--text-muted); }
+  .acts { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+
+  /* B, C, D pictures */
+  .subseg { margin:12px 0 4px; }
+  .overlay { background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:8px; margin-top:8px; }
+  .field { display:flex; align-items:center; gap:8px; min-height:var(--tap); border:1px solid var(--edge); border-radius:var(--r-ctrl); background:var(--surface); padding:0 4px 0 10px; color:var(--text-muted); }
+  .field .grow { flex:1; }
+  .tiles { display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; }
+  .tiles i { aspect-ratio:1; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  .grp { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); padding:8px 4px 4px; }
+  .srow { display:flex; align-items:center; gap:8px; padding:4px; min-height:var(--tap); }
+  .srow .strip { width:56px; height:28px; flex:none; }
+
+  .verdict { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0 24px; margin-top:12px; }
+  .verdict > div { border-top:1px solid var(--border-strong); padding:8px 0; font-size:var(--fs-small); color:var(--text-muted); }
+  .verdict > div b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .score { font-family:var(--mono); font-size:12px; color:var(--text); }
+  .reco { border-left:3px solid var(--accent); padding:8px 0 8px 16px; max-width:82ch; margin-top:12px; }
+  ol.q { margin:12px 0 0; padding-left:24px; max-width:82ch; }
+  ol.q li { margin-bottom:12px; }
+  ol.q li b { display:block; }
+  ol.q li span { color:var(--text-muted); font-size:var(--fs-small); }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none !important; animation:none !important; } .btn:active { transform:none; } }
+  @media (forced-colors: active) {
+    .strip, .strip i, .bar4 div, .hero .chip, .tiles i { forced-color-adjust:none; }
+    .seg button[aria-pressed="true"]::after { background:Highlight; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <p class="micro">Design study · not shipped · 2026-10-29 · follows <a href="shopping-list.html">shopping-list.html</a> and <a href="project-naming.html">project-naming.html</a></p>
+  <h1>The scheme library — keeping the schemes you make</h1>
+  <p class="sub">Ryan’s answer in the naming study: “save” means <b>schemes</b>, files and links. Today a scheme lives only in its link: close the tab and it is
+    gone unless you kept the link. This study asks <b>where saved schemes live</b>, <b>how Save works</b> when you change a saved scheme, and how a library
+    fits the shopping list, the names and the backup file.</p>
+  <p class="sub">The five schemes on this page are real: <code>scheme.js buildScheme</code> made each one from its paint and harmony, on the full dataset.</p>
+  <div class="pc">
+    <span class="micro" id="pthLab">Page theme</span>
+    <div class="seg" role="group" aria-labelledby="pthLab" id="pth">
+      <button type="button" data-v="device" aria-pressed="true">Device</button>
+      <button type="button" data-v="light" aria-pressed="false">Light</button>
+      <button type="button" data-v="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-model">
+  <h2 id="h-model"><span class="k">0</span>One model for all three studies</h2>
+  <p class="why">A saved scheme, a project on the shopping list, and a named link are <b>one thing</b>: a scheme with a name. Think of a folder.
+    The <b>link</b> is the folder’s contents (the paint, the harmony, the pop, the locks). The <b>name</b> is the label on the folder. The
+    <b>to-buy paints</b> are papers that point at the folder. A <b>store swap</b> is a sticky note on one role. The library is the drawer that holds the folders.</p>
+  <h3 class="lab">A correction to the naming study’s sketch</h3>
+  <p class="why">The naming study keyed a project by a <b>hash of its link</b>. That breaks once you can save and then change a scheme: a new harmony makes a
+    new link, so a new key, and the to-buy paints would lose their folder. A saved scheme needs a <b>key that never changes</b>: a short random id, made the
+    first time the scheme is saved or its paints are added. The link becomes a field that Save updates.</p>
+<pre class="file"><span class="dim">// store.js v2 — one map for saved schemes and shopping-list projects</span>
+schemes: {
+  s7k2: { name: 'Plague Marine', link: '?p=citadel-base-death-guard-green&amp;h=triadic…',
+          saved: true, created: '2026-10-20', changed: '2026-10-27',
+          pins: { accent: { id: 'vallejo-model-color-carmine-red', from: 'store-swap', was: 'citadel-base-mephiston-red' } } },
+  q3m9: { name: '', link: '?p=citadel-base-morghast-bone&amp;h=complementary…', saved: false }   <span class="dim">// a project only: its paints are on the list</span>
+},
+want: [{ id: 'citadel-base-death-guard-green', qty: 2, for: 's7k2' }, …]</pre>
+  <ul class="notes" style="margin-top:8px">
+    <li><b><code>saved: false</code></b> is a scheme the app keeps only because its paints are on the shopping list. It leaves when its last paint is bought — unless you save it.</li>
+    <li>The <b>backup file</b> carries the whole map, so Restore brings the library back. <b>Delete my shelf and settings…</b> clears it with the rest. The CSV does not carry schemes (it is a list of paints).</li>
+    <li>Size: a saved scheme is about 300 bytes. A thousand of them is about 0.3 MB, well inside what a browser keeps for one site.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-others">
+  <h2 id="h-others"><span class="k">1</span>How others keep saved work</h2>
+  <div class="tablewrap" tabindex="0" role="region" aria-label="How others keep saved work (scrolls sideways)">
+  <table class="study">
+    <thead><tr><th scope="col">Product</th><th scope="col">Where it lives</th><th scope="col">Change a saved one</th><th scope="col">The lesson for us</th></tr></thead>
+    <tbody>
+      <tr><td>Adobe Color</td><td>A <b>My Themes</b> tab, grouped in Libraries.</td><td>Edit opens it in the Create view; <b>Update</b> saves the change. Delete removes only your library copy, not a published one.</td><td>An explicit Update, not autosave. A saved copy and a shared copy are separate — the same as our link.</td></tr>
+      <tr><td>Coolors</td><td>Saved palettes, organised in projects and collections (a review; Coolors’ own help was not found).</td><td>—</td><td>The free tier caps saved palettes at 10 — a server cost we do not have. Folders came later, as lists grew.</td></tr>
+      <tr><td>Procreate</td><td>The <b>Gallery</b>: its own screen, thumbnails, newest first.</td><td>Tap the title to rename; swipe for Share · Duplicate · Delete. The handbook warns that <b>delete is final</b>.</td><td>A library as its own place, with the work as the picture. A destructive action needs a confirm (our §3.5 rule too).</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="why" style="margin-top:12px">Sources:
+    <a href="https://helpx.adobe.com/creative-cloud/adobe-color.html">Adobe Color FAQ</a> ·
+    <a href="https://www.digidop.com/tools/coolors/index.md">Digidop — Coolors overview</a> ·
+    <a href="https://mwm.ai/apps/coolors/956480678">Coolors app listing</a> ·
+    <a href="https://help.procreate.com/pocket/handbook/gallery/gallery-organize">Procreate Pocket handbook — organise the Gallery</a> ·
+    <a href="https://shrushdesign.substack.com/p/procreate-for-beginners-gallery">Procreate for beginners — Gallery</a>.</p>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-save">
+  <h2 id="h-save"><span class="k">2</span>Save in the Studio — and what happens when you change it</h2>
+  <p class="why">A <b>Save</b> button sits on the hero line, the one line that always names your colour. The first Save asks for the name with the naming
+    study’s field (pre-filled with the automatic name, selected). After that the hero shows the <b>name</b>. Change the scheme, and the hero says
+    <b>Changed</b> with <b>Save</b> (update this one) and <b>Save as new</b> — Adobe’s Update, with a way to branch. This frame works.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Desktop</b> · the top of the studio column</figcaption>
+      <div class="studio" id="studio"></div>
+    </figure>
+    <div class="txt">
+      <h3 class="lab">Why explicit, not autosave</h3>
+      <ul class="notes">
+        <li><b>The Studio is for exploring</b> (persona Sam): a drag changes the scheme sixty times a second. Autosave would write over a saved scheme with every
+          experiment. With an explicit Save, exploring is free, and the saved one stays as it was until you say so.</li>
+        <li><b>Undo stays as it is</b> (<code>undo.js</code>): Save is not a step in the undo history; it copies the current state into the library.</li>
+        <li><b>Changed</b> shows only while the current link differs from the saved link — a plain string compare.</li>
+        <li><b>Leaving with changes</b> (opening another scheme) does not block with a dialog: the changes stay in the browser’s history and in the undo stack, and the toast says “Plague Marine has changes you did not save · Go back”.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-where">
+  <h2 id="h-where"><span class="k">3</span>Where the library lives — four directions</h2>
+  <div class="verdict" style="margin-top:0">
+    <div><b>A · A third mode</b>“Studio · Schemes · Shelf” in the header. Its own full page, like Procreate’s Gallery. Becomes a tab in the iOS app.</div>
+    <div><b>B · Inside the Shelf</b>The Shelf gets Paints | Schemes. The header stays at two modes.</div>
+    <div><b>C · A list in the Studio</b>A “Saved” button in the seed toolbar opens an overlay list — switch schemes without leaving.</div>
+    <div><b>D · No page</b>Saved schemes show as a “Saved” group in the seed field’s Browse list. Rename and delete live in the hero.</div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-a">
+  <h2 id="h-a"><span class="k">A</span>A third mode: Schemes</h2>
+  <p class="why">A full page of saved schemes. Each row: a <b>colour strip</b> of the four roles at their 60-30-10 weights (paint data, with the metal sheen, §2),
+    the name, and the facts that matter for buying — the harmony, how many paints you own, how many are on the list. Tap a row to open it in the Studio.
+    <b>⋯</b> on a row opens the item menu: Open · Rename · Take to the store · Share link · Delete. This frame works.</p>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone</b> · try ⋯ → Rename, or ⋯ → Delete</figcaption>
+      <div class="ph" id="frameA"></div>
+    </figure>
+    <div class="txt">
+      <div class="pros" style="grid-template-columns:1fr">
+        <div><h3 class="lab">For</h3><ul class="notes">
+          <li>One place for all saved work; easy to explain (“Studio makes, Schemes keeps, Shelf owns”).</li>
+          <li>Maps straight onto a tab bar in the iOS app (<code>IOS_APP_PLAN.md</code>): three tabs.</li>
+          <li>Room for the buying facts — “2 to buy” makes the library a way into the shopping list.</li>
+          <li><b>Projects with no name</b> (paints on the list, never saved) show here too, in italics, under the saved ones: one model, one list.</li>
+        </ul></div>
+        <div><h3 class="lab">Against</h3><ul class="notes">
+          <li><b>Changes the constitution:</b> §3.6 says the header holds only Studio / Shelf + ⋯. A third mode needs that line changed in the same commit.</li>
+          <li>Three segments plus ⋯ on a 360px phone: about 300px. It fits, with less room to spare.</li>
+          <li>A page that is empty for a new painter. The empty state must say how to fill it (below).</li>
+        </ul></div>
+      </div>
+      <h3 class="lab">The empty state (§3.5: a heading, one sentence, one action)</h3>
+      <div class="empty" style="max-width:360px;border-top:1px solid var(--border)"><h5>No saved schemes yet</h5>
+        <p class="sub" style="margin:0 0 12px">Make a scheme in the Studio and press Save on its name line. It will wait for you here.</p>
+        <button class="btn" type="button" tabindex="-1">Go to the Studio</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-bcd">
+  <h2 id="h-bcd"><span class="k">B · C · D</span>The other three, as pictures</h2>
+  <div class="trow">
+    <figure>
+      <figcaption><b>B · inside the Shelf</b></figcaption>
+      <div class="ph sm fake" aria-hidden="true">
+        <div class="hdr"><div class="seg modes"><button type="button">Studio</button><button type="button" aria-pressed="true">Shelf</button></div><span style="flex:1"></span><button class="dots">⋯</button></div>
+        <div class="body"><div class="seg subseg"><button type="button">Paints</button><button type="button" aria-pressed="true" class="new">Schemes</button></div><div id="listB"></div></div>
+      </div>
+    </figure>
+    <figure>
+      <figcaption><b>C · a list in the Studio</b></figcaption>
+      <div class="ph sm fake" aria-hidden="true">
+        <div class="hdr"><div class="seg modes"><button type="button" aria-pressed="true">Studio</button><button type="button">Shelf</button></div><span style="flex:1"></span><button class="dots">⋯</button></div>
+        <div class="body" style="padding-top:12px"><div class="acts"><div class="field" style="flex:1">Paint or #hex</div><button class="btn new" type="button" style="position:relative">Saved ▾</button></div>
+          <div class="overlay"><div class="grp">Saved · 4</div><div id="listC"></div></div></div>
+      </div>
+    </figure>
+    <figure>
+      <figcaption><b>D · a group in Browse</b></figcaption>
+      <div class="ph sm fake" aria-hidden="true">
+        <div class="hdr"><div class="seg modes"><button type="button" aria-pressed="true">Studio</button><button type="button">Shelf</button></div><span style="flex:1"></span><button class="dots">⋯</button></div>
+        <div class="body" style="padding-top:12px"><div class="field"><span class="grow">Paint or #hex</span><span class="btn sm">Browse ▾</span></div>
+          <div class="overlay"><div class="grp">Saved schemes</div><div id="listD"></div><div class="grp">Recent</div><div class="tiles" id="tilesD"></div></div></div>
+      </div>
+    </figure>
+  </div>
+  <div class="pros">
+    <div><h3 class="lab">B · inside the Shelf</h3><ul class="notes">
+      <li>No header change. But the Shelf is <i>paints you own</i>; schemes are a different thing in the same drawer, and a nested switch is one more level to find.</li></ul></div>
+    <div><h3 class="lab">C · a list in the Studio</h3><ul class="notes">
+      <li>Fastest way to switch schemes while you work. But an overlay is a poor place to rename, delete, or see what is on the list. A good <b>shortcut</b>, not a home.</li></ul></div>
+    <div><h3 class="lab">D · a group in Browse</h3><ul class="notes">
+      <li>The smallest change: the seed field already has a Recent group. But a scheme is not a paint, and the Browse grid is built for paints; there is no place to manage them.</li></ul></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-v">
+  <h2 id="h-v"><span class="k">4</span>Verdict and questions</h2>
+  <div class="verdict">
+    <div><b>A · A third mode</b><span class="score">Build</span> — the home for saved schemes and unnamed projects.</div>
+    <div><b>B · Inside the Shelf</b><span class="score">No</span> — mixes paints and schemes.</div>
+    <div><b>C · A list in the Studio</b><span class="score">Later, as a shortcut</span> — opens A’s list.</div>
+    <div><b>D · A group in Browse</b><span class="score">No</span> — no room to manage.</div>
+  </div>
+  <div class="reco"><b>Recommendation:</b> A — a <b>Schemes</b> mode between Studio and Shelf (and a CLAUDE.md §3.6 change); an explicit <b>Save</b> on the hero
+    line with <b>Changed · Save · Save as new</b>; one <code>schemes</code> map in <code>store.js</code> with a stable id, shared by the library, the shopping-list
+    projects, the names and the store swaps; deleting a scheme never deletes paints from the list.</div>
+  <h3 class="lab">Questions for Ryan</h3>
+  <ol class="q">
+    <li><b>A third mode in the header — yes?</b><span>It changes the constitution (§3.6: “the header holds only Studio / Shelf + ⋯”). The iOS app would then have three tabs.</span></li>
+    <li><b>Explicit Save, or autosave?</b><span>This study says explicit, because the Studio is for exploring. Autosave would need a “versions” idea to get an old state back.</span></li>
+    <li><b>Does naming a project at export put it in the library?</b><span>This study says it shows there (in italics, as not saved) while its paints are on the list, and leaves when they are bought. The other choice: a name at export saves it for good.</span></li>
+    <li><b>Folders or tags, later?</b><span>Coolors added projects and collections as lists grew. This study has none: one list, newest first, and a search when it passes about 20 schemes.</span></li>
+    <li><b>The picture of a scheme:</b><span>the four-role strip at 60-30-10 (shown), or a small wheel, or the paint pots?</span></li>
+  </ol>
+</section>
+
+</div>
+
+<script>
+(() => {
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const textOn = hex => { const n = parseInt(hex.slice(1), 16); const lin = c => { c /= 255; return c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; };
+    const L = .2126 * lin(n >> 16) + .7152 * lin(n >> 8 & 255) + .0722 * lin(n & 255); return (L + .05) / .0531 > 1.05 / (L + .05) ? '#15150F' : '#FFFFFF'; };
+  /* ---- page theme ---- */
+  const pth = document.getElementById('pth');
+  pth.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    for (const x of pth.querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b));
+    if (b.dataset.v === 'device') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = b.dataset.v;
+  });
+
+  /* ---- data: five schemes made by scheme.js buildScheme (roles: [name, brand, hex, metal]) ---- */
+  const S = [
+    { id:'s7k2', name:'Plague Marine', auto:'Death Guard Green · triadic', harm:'triadic', saved:true, changed:'27 Oct', own:2, buy:2,
+      roles:[['Death Guard Green','Citadel','#6D774D',0],['Raf Pru Blue','AK Interactive','#526A76',0],['Deep Purple','AK Interactive','#7A4967',0],['Dark Steel','Vallejo','#737476',1]] },
+    { id:'b4n1', name:'Blue knight', auto:'Kantor Blue · split-complementary', harm:'split-complementary', saved:true, changed:'25 Oct', own:1, buy:3,
+      roles:[['Kantor Blue','Citadel','#02134E',0],['Rigid Leather','Army Painter','#521C02',0],['Medium Olive Green','AK Interactive','#3E501C',0],['White Aluminium','Vallejo','#BAB9BE',1]] },
+    { id:'r2d8', name:'Blood Angels sergeant', auto:'Mephiston Red · analogous', harm:'analogous', saved:true, changed:'21 Oct', own:4, buy:0,
+      roles:[['Mephiston Red','Citadel','#960C09',0],['Weapon Bronze','Army Painter','#955610',1],['Pink Horror','Citadel','#8E2757',0],['Keleshite Gold','Reaper','#BD9E44',1]] },
+    { id:'t6w3', name:'Sotek test', auto:'Sotek Green · compound', harm:'compound', saved:true, changed:'12 Oct', own:1, buy:0,
+      roles:[['Sotek Green','Citadel','#0B6371',0],['Ultramarine','AK Interactive','#1E357B',0],['Kobold Red','Army Painter','#6D1F0C',0],['White Aluminium','Vallejo','#BAB9BE',1]] },
+    { id:'q3m9', name:'', auto:'Morghast Bone · complementary', harm:'complementary', saved:false, changed:'', own:1, buy:2,
+      roles:[['Morghast Bone','Citadel','#C0A973',0],['Zombie Rot','Two Thin Coats','#B1B679',0],['Light Blue','Vallejo','#6B8DBB',0],['Keleshite Gold','Reaper','#BD9E44',1]] },
+  ];
+  const strip = s => `<span class="strip" aria-hidden="true">${s.roles.map(r => `<i class="${r[3] ? 'metal' : ''}" style="background:${r[2]}"></i>`).join('')}</span>`;
+  const label = s => s.name || s.auto;
+  const facts = s => `${s.harm} · ${s.own} of 4 owned${s.buy ? ` · <span class="tag buy">${s.buy} to buy</span>` : ''}`;
+
+  /* ---- A: the third mode ---- */
+  const fA = document.getElementById('frameA');
+  let menuFor = null, renaming = null, confirming = null, opened = null, sayA = '';
+  function drawA(focusSel) {
+    const list = S.filter(s => !s.gone);
+    const saved = list.filter(s => s.saved), proj = list.filter(s => !s.saved);
+    let h = `<div class="hdr"><div class="seg modes" role="group" aria-label="Mode"><button type="button" aria-pressed="false">Studio</button><button type="button" aria-pressed="true" class="new">Schemes</button><button type="button" aria-pressed="false">Shelf</button></div><span style="flex:1"></span><button class="dots" type="button" aria-label="Settings">⋯</button></div><div class="body">`;
+    if (opened) {
+      const s = S.find(x => x.id === opened);
+      h += `<div class="empty"><p class="micro">Studio</p><h5>${esc(label(s))}</h5><p class="sub">The Studio opens this scheme, with its name on the hero line.</p><button class="btn" type="button" data-back="1">Back to Schemes</button></div></div>`;
+      fA.innerHTML = h; fA.querySelector('[data-back]').focus(); return;
+    }
+    h += `<div class="ttlrow"><h4>Schemes</h4><span class="micro">${saved.length} saved</span></div>`;
+    const row = s => renaming === s.id
+      ? `<div class="sc">${strip(s)}<div><label class="sr" for="rn">Scheme name</label><input id="rn" value="${esc(label(s))}"><div class="meta">Enter to keep · Esc to cancel</div></div><button class="textact" type="button" data-done="${s.id}">Done</button></div>`
+      : `<div class="sc">${strip(s)}<button class="open" type="button" data-open="${s.id}"><span class="nm${s.name ? '' : ' auto'}">${esc(label(s))}</span><span class="meta" style="display:block">${facts(s)}</span>${s.changed ? `<span class="meta" style="display:block">Saved ${s.changed}</span>` : `<span class="meta" style="display:block">Not saved · kept while its paints are on the list</span>`}</button>
+          <button class="dots" type="button" data-menu="${s.id}" aria-haspopup="menu" aria-expanded="${menuFor === s.id}" aria-label="More for ${esc(label(s))}">⋯</button></div>`;
+    h += saved.map(row).join('');
+    if (proj.length) h += `<div class="micro" style="margin-top:16px">On the shopping list, not saved</div>` + proj.map(row).join('');
+    h += `<p class="say" role="status">${esc(sayA)}</p></div>`;
+    if (menuFor) {
+      const s = S.find(x => x.id === menuFor);
+      h += `<div class="menu" role="menu" aria-label="${esc(label(s))}" style="top:${fA.querySelector(`[data-menu="${menuFor}"]`)?.offsetTop + 48 || 120}px">
+        <div class="mt">${esc(label(s))}</div>
+        <button role="menuitem" type="button" data-mi="open">Open in the Studio</button>
+        <button role="menuitem" type="button" data-mi="rename">Rename</button>
+        ${s.saved ? '' : '<button role="menuitem" type="button" data-mi="save">Save</button>'}
+        <button role="menuitem" type="button" data-mi="store">Take to the store${s.buy ? ` · ${s.buy}` : ''}</button>
+        <button role="menuitem" type="button" data-mi="share">Share link</button>
+        <button role="menuitem" type="button" data-mi="delete" class="dz">Delete…</button></div>`;
+    }
+    if (confirming) {
+      const s = S.find(x => x.id === confirming);
+      h += `<div class="scrim"><div class="confirm" role="alertdialog" aria-modal="true" aria-labelledby="cfH" aria-describedby="cfP"><h5 id="cfH">Delete ${esc(label(s))}?</h5>
+        <p id="cfP">The scheme leaves your library. ${s.buy ? `Its ${s.buy} paints stay on the shopping list, under “Other paints”.` : 'No paints are on your shopping list for it.'} A link you shared still opens it.</p>
+        <div class="acts"><button class="btn" type="button" data-cf="no">Cancel</button><button class="btn danger" type="button" data-cf="yes">Delete</button></div></div></div>`;
+    }
+    fA.innerHTML = h;
+    if (focusSel) { const el = fA.querySelector(focusSel); el?.focus(); if (el?.tagName === 'INPUT') el.select(); }
+  }
+  // the old menu must be drawn first so its button has an offsetTop; draw twice when opening
+  fA.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.menu) { menuFor = menuFor === b.dataset.menu ? null : b.dataset.menu; drawA(); drawA(menuFor ? '.menu button' : `[data-menu="${b.dataset.menu}"]`); return; }
+    if (b.dataset.open) { opened = b.dataset.open; drawA(); return; }
+    if (b.dataset.back) { const id = opened; opened = null; drawA(`[data-open="${id}"]`); return; }
+    if (b.dataset.mi) {
+      const id = menuFor, mi = b.dataset.mi; menuFor = null;
+      if (mi === 'open') { opened = id; drawA(); return; }
+      if (mi === 'rename') { renaming = id; drawA('#rn'); return; }
+      if (mi === 'save') { S.find(x => x.id === id).saved = true; S.find(x => x.id === id).changed = '29 Oct'; sayA = `Saved ${label(S.find(x => x.id === id))}.`; drawA(`[data-menu="${id}"]`); return; }
+      if (mi === 'delete') { confirming = id; drawA('[data-cf="no"]'); return; }
+      sayA = mi === 'store' ? 'The hand-off panel opens with this project chosen.' : 'Link copied.'; drawA(`[data-menu="${id}"]`); return;
+    }
+    if (b.dataset.cf) { const id = confirming; confirming = null;
+      if (b.dataset.cf === 'yes') { const s = S.find(x => x.id === id); s.gone = true; sayA = `Deleted ${label(s)}.`; drawA('.open'); }
+      else drawA(`[data-menu="${id}"]`); return; }
+    if (b.dataset.done) finishRename(true);
+  });
+  function finishRename(keep) {
+    const s = S.find(x => x.id === renaming); const v = fA.querySelector('#rn').value.trim();
+    if (keep) { s.name = v && v !== s.auto ? v : ''; sayA = s.name ? `Renamed to ${s.name}.` : 'Back to the automatic name.'; }
+    const id = renaming; renaming = null; drawA(`[data-menu="${id}"]`);
+  }
+  fA.addEventListener('keydown', e => {
+    if (renaming && e.target.id === 'rn') { if (e.key === 'Enter') { e.preventDefault(); finishRename(true); } if (e.key === 'Escape') { e.preventDefault(); finishRename(false); } return; }
+    if (menuFor) {
+      const items = [...fA.querySelectorAll('.menu button')]; const i = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+      if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); const id = menuFor; menuFor = null; drawA(`[data-menu="${id}"]`); }
+      return;
+    }
+    if (confirming && e.key === 'Escape') { e.preventDefault(); const id = confirming; confirming = null; drawA(`[data-menu="${id}"]`); }
+  });
+  drawA();
+
+  /* ---- 2: Save in the Studio ---- */
+  const st = document.getElementById('studio');
+  const cur = { saved:false, name:'', changed:false, harm:'triadic', asking:false, msg:'' };
+  const base = S[0];
+  function drawS(focusSel) {
+    const roles = cur.harm === 'triadic' ? base.roles : [['Death Guard Green','Citadel','#6D774D',0], ['Army Green','Army Painter','#5D7554',0], ['Splittermuster Base','AK Interactive','#756C45',0], ['Dark Steel','Vallejo','#737476',1]];
+    let right;
+    if (!cur.saved) right = `<button class="btn" type="button" data-s="save">Save</button>`;
+    else if (cur.changed) right = `<span class="tag warning">Changed</span><button class="btn sm" type="button" data-s="update">Save</button><button class="btn sm" type="button" data-s="asnew">Save as new</button>`;
+    else right = `<span class="tag success">Saved</span>`;
+    st.innerHTML = `<div class="hero"><span class="chip" style="background:#6D774D" aria-hidden="true"></span>
+        ${cur.saved ? `<span class="hn">${esc(cur.name || base.auto)}</span><span class="hx">Death Guard Green · #6D774D</span>` : `<span class="hn">Death Guard Green</span><span class="hx">#6D774D · Citadel Base</span>`}
+        <span class="grow"></span>${right}</div>
+      <div class="bar4" aria-hidden="true">${roles.map((r, i) => `<div style="background:${r[2]};color:${textOn(r[2])}">${['Primary','Secondary','Accent','Metal'][i]}</div>`).join('')}</div>
+      <div class="acts" style="margin-top:12px"><span class="micro">Demo:</span><button class="btn sm" type="button" data-s="change">${cur.harm === 'triadic' ? 'Change the harmony to analogous' : 'Change back to triadic'}</button><button class="textact" type="button" data-s="reset">Start again</button></div>
+      <p class="say" role="status">${esc(cur.msg)}</p>
+      ${cur.asking ? `<div class="pop" role="dialog" aria-label="Save this scheme"><div class="fld"><label for="svn">Name</label><input id="svn" value="${esc(cur.asking === 'asnew' ? (cur.name || base.auto) + ' (2)' : base.auto)}">
+        <span class="hint">The name shows in Schemes, on the shopping list and in the links you share.</span></div>
+        <div class="acts"><button class="btn primary" type="button" data-s="ok">Save</button><button class="textact" type="button" data-s="cancel">Cancel</button></div></div>` : ''}`;
+    if (focusSel) { const el = st.querySelector(focusSel); el?.focus(); if (el?.tagName === 'INPUT') el.select(); }
+  }
+  st.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const a = b.dataset.s;
+    if (a === 'save' || a === 'asnew') { cur.asking = a; drawS('#svn'); }
+    if (a === 'ok') { const v = st.querySelector('#svn').value.trim(); cur.name = v && v !== base.auto ? v : ''; cur.msg = `Saved as ${cur.name || base.auto}.${cur.asking === 'asnew' ? ' The first one is unchanged.' : ''}`; cur.saved = true; cur.changed = false; cur.asking = false; drawS('[data-s="change"]'); }
+    if (a === 'cancel') { cur.asking = false; drawS('[data-s="save"], [data-s="asnew"]'); }
+    if (a === 'update') { cur.changed = false; cur.msg = `Saved the changes to ${cur.name || base.auto}.`; drawS('[data-s="change"]'); }
+    if (a === 'change') { cur.harm = cur.harm === 'triadic' ? 'analogous' : 'triadic'; if (cur.saved) cur.changed = true; cur.msg = ''; drawS('[data-s="change"]'); }
+    if (a === 'reset') { Object.assign(cur, { saved:false, name:'', changed:false, harm:'triadic', asking:false, msg:'' }); drawS('[data-s="save"]'); }
+  });
+  st.addEventListener('keydown', e => {
+    if (e.target.id !== 'svn') return;
+    if (e.key === 'Enter') { e.preventDefault(); st.querySelector('[data-s="ok"]').click(); }
+    if (e.key === 'Escape') { e.preventDefault(); st.querySelector('[data-s="cancel"]').click(); }
+  });
+  drawS();
+
+  /* ---- B, C, D pictures ---- */
+  const small = s => `<div class="srow">${strip(s)}<span style="flex:1;min-width:0"><b style="font-weight:600">${esc(label(s))}</b><span class="meta" style="display:block;font-size:12px;color:var(--text-muted)">${s.harm}</span></span></div>`;
+  document.getElementById('listB').innerHTML = S.filter(s => s.saved).map(s => `<div class="sc" style="grid-template-columns:56px 1fr">${strip(s).replace('class="strip"', 'class="strip" style="height:36px"')}<span><span class="nm" style="font-size:16px">${esc(label(s))}</span><span class="meta" style="display:block">${s.harm}</span></span></div>`).join('');
+  document.getElementById('listC').innerHTML = S.filter(s => s.saved).map(small).join('');
+  document.getElementById('listD').innerHTML = S.filter(s => s.saved).slice(0, 2).map(small).join('');
+  document.getElementById('tilesD').innerHTML = ['#6D774D','#02134E','#960C09','#C0A973','#0B6371'].map(h => `<i style="background:${h}"></i>`).join('');
+})();
+</script>
+</body>
+</html>

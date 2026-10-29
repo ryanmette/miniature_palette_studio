@@ -20,6 +20,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   and recommends B: ask once, at the first export, with the field pre-filled and a Skip. A name is changed in
   place on the list. It has a working flow and a data sketch for `store.js`. Ryan's answers: a project is one scheme, its name
   goes in the share link, and a saved-scheme library is wanted next.
+- **Design exploration: the scheme library** (`mockups/scheme-library.html`, not shipped). It follows the naming
+  study. A saved scheme, a shopping-list project and a named link become one `schemes` map in `store.js`, with a
+  key that never changes (the naming study's link hash would break when a saved scheme changes). It shows an
+  explicit Save on the hero line (Changed · Save · Save as new), four places for the library, and recommends a
+  third mode, Schemes, between Studio and Shelf. The frames work. Five questions for Ryan.
 
 ### Fixed
 - **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role
