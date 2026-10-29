@@ -27,6 +27,9 @@
    themes. It is also declared on ::backdrop because before Chrome 122 and Safari 17.4 a ::backdrop did
    not inherit custom properties from the page, so var(--scrim) there was empty. */
 :root, ::backdrop { --scrim: rgba(0,0,0,.45); }
+/* The QR code of the store link (item 37): black on white in both themes. A scanner looks for dark modules on a
+   light ground, and many cannot read a code in light-on-dark, so the code does not follow the theme. */
+:root { --qr-ink: #000000; --qr-paper: #FFFFFF; }
 
 /* LIGHT — "Workbench" (default). Warm, low-chroma paper greys (no hue bias toward the accent, so paint reads
    true, §2) and a real paint as the accent: Citadel Sotek Green #0B6371. The accent is ΔE 23.9 from --buy,

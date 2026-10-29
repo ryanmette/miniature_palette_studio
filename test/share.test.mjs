@@ -247,3 +247,50 @@ test('sv=list and sg=project round-trip in the address bar; a shared link and a 
   assert.equal(out.searchParams.get('sg'), null);
   assert.doesNotMatch(schemeQuery({ baseId: 'x', pickHex: '#111111', shelfView: 'list', shelfGroup: 'project' }), /sv=|sg=/);
 });
+
+/* ---- the store trip (PLAN §5 item 37) ---- */
+import { encodeList, decodeList, encodeBought, decodeBought, shareUrl, schemeQuery } from '../src/js/share.js';
+
+test('store list: round trip with counts, projects and names', () => {
+  const projects = [{ link: '?p=citadel-base-death-guard-green&c=6D774D&h=triadic', name: 'Plague Marine' },
+    { link: '?c=1E357B&h=complementary', name: '' }];
+  const items = [{ id: 'citadel-base-mephiston-red', qty: 2, project: 0 }, { id: 'vallejo-model-color-ivory' },
+    { id: 'citadel-layer-kantor-blue', project: 1 }];
+  const q = encodeList(items, projects);
+  assert.match(q, /^m=shelf&sv=list&j=/);
+  assert.match(q, /l=citadel-base-mephiston-red\*2_0\.vallejo-model-color-ivory\.citadel-layer-kantor-blue_1$/);
+  const back = decodeList(q);
+  assert.deepEqual(back.items, [{ id: 'citadel-base-mephiston-red', qty: 2, project: 0 },
+    { id: 'vallejo-model-color-ivory', qty: 1, project: -1 }, { id: 'citadel-layer-kantor-blue', qty: 1, project: 1 }]);
+  assert.deepEqual(back.projects, [{ link: projects[0].link, name: 'Plague Marine' }, { link: projects[1].link, name: '' }]);
+});
+
+test('store list: the name never stays in the scheme link, and a name with spaces and & survives', () => {
+  const q = encodeList([{ id: 'a', project: 0 }], [{ link: '?c=112233&h=triadic&n=old', name: '  Rock & roll   army ' }]);
+  const back = decodeList(q);
+  assert.equal(back.projects[0].name, 'Rock & roll army');
+  assert.equal(back.projects[0].link, '?c=112233&h=triadic');
+});
+
+test('store list: bad tokens, unknown paints, repeats and bad indexes are dropped, not thrown on', () => {
+  const back = decodeList('l=good*3_5.BAD..unknown.good.ok*0.also*999', { hasPaint: id => id !== 'unknown' });
+  assert.deepEqual(back.items, [{ id: 'good', qty: 3, project: -1 }, { id: 'ok', qty: 1, project: -1 }]);
+  assert.equal(decodeList('c=112233'), null);              // no list: not a store link
+  assert.deepEqual(decodeList('l=').items, []);
+});
+
+test('bought link: ids each once, known ones only; no b → null', () => {
+  const q = encodeBought(['a-1', 'b-2', 'a-1']);
+  assert.equal(q, 'm=shelf&b=a-1.b-2');
+  assert.deepEqual(decodeBought(q), ['a-1', 'b-2']);
+  assert.deepEqual(decodeBought('b=a-1.X.zz', { hasPaint: id => id !== 'zz' }), ['a-1']);
+  assert.equal(decodeBought('m=shelf'), null);
+});
+
+test('n: a saved scheme’s name goes in the shared link, is read back, and a trip never rides along', () => {
+  const u = shareUrl('https://x.test/?c=112233&h=triadic&m=shelf&l=a.b&j=c%3D1&b=a', 'light', 'Blue knight');
+  assert.equal(u, 'https://x.test/?c=112233&h=triadic&n=Blue+knight');
+  assert.equal(shareUrl('https://x.test/?c=112233&n=Old', 'light'), 'https://x.test/?c=112233');
+  assert.equal(decodeState('c=112233&n=%20Blue%20%20knight').name, 'Blue knight');
+  assert.equal(schemeQuery({ pickHex: '#112233', harmony: 'triadic', name: 'X' }), '?c=112233&h=triadic');
+});

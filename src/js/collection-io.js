@@ -116,3 +116,35 @@ export function marksToCsv(idx, ownedIds, wantIds, { qtyOf = () => 1, projectNam
   for (const id of wantIds) add(id, 'wishlist', qtyOf(id) || 1, projectName(id) || '');
   return out;
 }
+
+/* ---- the store list as a text file (PLAN §5 item 37; mockups/shopping-list.html §6, "A better text file") ----
+   One job: the paints to buy, as a store racks them (brand · line, then name), each with a box a pen or a notes
+   app can tick ("[ ]"; in Markdown "- [ ]" is a real checkbox). No hex: a hex does not help at a rack. A finish
+   word stays, because it tells you which pot. The date tells an old copy from a new one. */
+const FINISH_WORD = { metal: 'metallic', wash: 'wash', shade: 'shade', ink: 'ink', contrast: 'contrast', glaze: 'glaze', effect: 'effect' };
+const lineOf = p => (p.line && p.line !== '—' && p.line !== p.brand ? p.line : '');
+
+/**
+ * @param paints  dataset paints (brand, line, name, dname?, type)
+ * @param o.title     the first line ("Shopping list", or the project's name)
+ * @param o.date      the date line, already in words ("29 October 2026")
+ * @param o.qtyOf     id → pots (default 1)
+ * @param o.forName   id → the project's name, or '' (left out when the file is one project)
+ * @returns {string}
+ */
+export function listToText(paints, { title = 'Shopping list', date = '', qtyOf = () => 1, forName = () => '' } = {}) {
+  const rows = [...paints].sort((a, b) => a.brand.localeCompare(b.brand) || lineOf(a).localeCompare(lineOf(b))
+    || (a.dname || a.name).localeCompare(b.dname || b.name));
+  let out = `${title}${date ? ` — ${date}` : ''}\n${rows.length} paint${rows.length === 1 ? '' : 's'}\n`;
+  let key = null;
+  for (const p of rows) {
+    const k = [p.brand, lineOf(p)].filter(Boolean).join(' · ');
+    if (k !== key) {
+      key = k;
+      out += `\n${k} (${rows.filter(q => [q.brand, lineOf(q)].filter(Boolean).join(' · ') === k).length})\n`;
+    }
+    const qty = qtyOf(p.id) || 1, fin = FINISH_WORD[p.type], f = forName(p.id);
+    out += `[ ] ${p.dname || p.name}${qty > 1 ? ` ×${qty}` : ''}${fin ? ` · ${fin}` : ''}${f ? ` — for ${f}` : ''}\n`;
+  }
+  return out;
+}

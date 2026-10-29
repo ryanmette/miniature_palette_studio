@@ -532,3 +532,19 @@ test('v2: setQtys sets many counts in one write and skips paints that are not to
   assert.equal(store.setQtys([]), 0);
   assert.equal(writes, 1, 'nothing set → nothing written');
 });
+
+test('v2: asked — the naming step shows a project once; it survives a reload and does not move the scheme', async () => {
+  const { store, ls } = await freshStore();
+  const t0 = new Date('2026-10-29T10:00:00Z'), t1 = new Date('2026-10-29T11:00:00Z');
+  const sid = store.createScheme({ link: '?p=a&c=112233&h=triadic', now: t0 });
+  store.setMark('p1', 'want', { for: sid });
+  assert.equal(store.getScheme(sid).asked, undefined);
+  assert.equal(store.updateScheme(sid, { asked: true }, { now: t1 }), true);
+  assert.equal(store.getScheme(sid).asked, true);
+  assert.equal(store.getScheme(sid).changed, t0.toISOString());   // asked is not a change
+  store.updateScheme(sid, { name: 'Blue knight' }, { now: t1 });
+  assert.equal(store.getScheme(sid).asked, true);                  // a rename keeps it
+  const again = await freshStore({ 'ps-state': ls.getItem('ps-state') });
+  assert.equal(again.store.getScheme(sid).asked, true);
+  assert.equal(again.store.getScheme(sid).saved, false);           // asked and skipped: still not saved
+});

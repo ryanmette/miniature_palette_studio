@@ -5,7 +5,7 @@ import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
   isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony, startsNeutral } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex, deltaE2000Hex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
-import { encodeState, decodeState, shareUrl, schemeQuery } from './share.js';   // the share-link contract (state ⇄ URL)
+import { encodeState, decodeState, shareUrl, schemeQuery, encodeList, decodeList, encodeBought, decodeBought } from './share.js';   // the share-link contract (state ⇄ URL)
 import { shareView, layoutShareImage, paintShareImage, shareText, shareFileName, SHARE_SIZE, SHARE_FONTS, SHARE_TOKENS } from './shareimage.js';   // the share image (pure layout + painter)
 import { snapPalette, readSnap } from './undo.js';   // the undo snapshot (palette state ⇄ JSON, exact)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
@@ -14,7 +14,8 @@ import { setupPicker } from './picker.js';   // the seed field and its list — 
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
-import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
+import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
+import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
@@ -1068,6 +1069,7 @@ function renderShelfList(view) {
     : ae.dataset.rkqty ? `[data-rkqty="${ae.dataset.rkqty}"][data-id="${CSS.escape(ae.dataset.id)}"]` : null) : null;
   host.innerHTML = ui.rackGroups(groups, t);
   $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
+  syncSendBought();
   for (const b of $('#shelfGroupSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sg === state.shelfGroup));
   if (keep) host.querySelector(keep)?.focus({ preventScroll: true });
 }
@@ -1080,9 +1082,11 @@ function rackTick(id) {
     rk.prev.set(id, { mark, qty: store.qtyOf(id), for: store.projectOf(id) });
     rk.countOpen.delete(id);
     store.setMark(id, 'owned');
+    if (mark === 'want') boughtHere.add(id);
     say(t('tickedOwned', { name }));
   } else {
     const prev = rk.prev.get(id); rk.prev.delete(id);
+    boughtHere.delete(id);
     if (prev?.mark === 'want') {
       // its project may have gone with its last paint (a project that was never saved): then none
       store.setMark(id, 'want', { for: prev.for || undefined });
@@ -1091,6 +1095,7 @@ function rackTick(id) {
     } else { store.setMark(id, 'none'); say(t('tickedNone', { name })); }
   }
   render('marks', { ids: [id] });
+  syncSendBought();
 }
 function setupShelfList() {
   $('#shelfViewSeg').addEventListener('click', e => {
@@ -1646,6 +1651,15 @@ function updateUrl() {
    a saved scheme has, shows it as Saved again (findSchemeByLink). */
 let openSchemeId = null;
 const schemeLink = () => schemeQuery({ ...state, pickHex: pickHex() });
+/* A link's name (n=, item 37): a scheme shared with its name brings the name to this device. It is offered,
+   never saved by itself, and only while the scheme on screen is the one that link opened. */
+let linkName = '', linkNameFor = null;
+const linkNameNow = () => (linkName && schemeLink() === linkNameFor ? linkName : '');
+/** The name a Share link carries: the saved scheme's while it shows Saved, else a link's name. */
+function nameOnScreen() {
+  const st = schemeStatus();
+  return st.kind === 'saved' ? st.sc.name : st.kind === 'changed' ? '' : linkNameNow();
+}
 /** The automatic name: the starting paint and the harmony, "Death Guard Green · triadic" (Ryan, 2026-10-29). */
 const autoName = (paintName, harmony) => `${paintName} · ${ui.harmonyLabel(harmony).toLowerCase()}`;
 function schemeStatus() {
@@ -1672,7 +1686,7 @@ const saveDlg = { kind: null, opener: null, id: null, fallback: '' };
 function openSaveDialog(kind, opener, { id = null } = {}) {
   const st = schemeStatus();
   const pv = kind === 'project' ? previewScheme(store.getScheme(id)?.link) : null;
-  const fallback = kind === 'project' ? (pv?.auto || '') : kind === 'asnew' ? st.name : autoName(baseInfo().name, state.harmony);
+  const fallback = kind === 'project' ? (pv?.auto || '') : kind === 'asnew' ? st.name : (linkNameNow() || autoName(baseInfo().name, state.harmony));
   Object.assign(saveDlg, { kind, opener, id, fallback });
   $('#saveDlgTitle').textContent = t(kind === 'asnew' ? 'saveAsDlgTitle' : 'saveDlgTitle');
   $('#saveName').value = store.uniqueName(fallback, kind === 'project' ? id : null);
@@ -1823,9 +1837,10 @@ function setupSchemesPage() {
     if (ds.screname) { renamingId = ds.screname; renderSchemesPage(); const i = $('#scRename'); i?.focus(); i?.select(); return; }
     if (ds.scdone) { finishRename(true); return; }
     if (ds.scsave) { openSaveDialog('project', b, { id: ds.scsave }); return; }
+    if (ds.scstore) { openStore(b, ds.scstore); return; }
     if (ds.scshare) {
       const sc = store.getScheme(ds.scshare); if (!sc) return;
-      doShare(shareUrl(location.origin + location.pathname + sc.link, state.theme));
+      doShare(shareUrl(location.origin + location.pathname + sc.link, state.theme, sc.saved ? sc.name : ''));
       return;
     }
     if (ds.scdelete) {
@@ -2119,23 +2134,19 @@ function copyText(val) {
   if (navigator.clipboard) navigator.clipboard.writeText(val).then(() => toast(`Copied ${val}`)).catch(() => toast('Copy unavailable — select the value manually'));
   else toast('Copy unavailable — select the value manually');
 }
+/** Save the recipe: the scheme on screen, each role's pot with its hex and ΔE. One job per file (item 37):
+ *  the shopping list is a file of its own, from Take to the store. */
 function doExport() {
   const s = currentScheme();
-  let t = `Palette Studio for Miniatures — shopping list\nBase ${s.base} · ${s.harmony} scheme · ${s.ladder} ladder\n\n`;
+  let t = `Palette Studio for Miniatures — recipe\nBase ${s.base} · ${s.harmony} scheme · ${s.ladder} ladder\n\n`;
   for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}${r.owned ? '  ✓ owned' : ''}\n`;
-  // The accumulated to-buy collection (#5) — the SHOP output, independent of the current scheme.
-  const want = [...store.wantIds()].map(id => state.idx.byId.get(id)).filter(Boolean);
-  if (want.length) {
-    t += `\nYour shopping list (${want.length}):\n`;
-    for (const p of want) t += `  ${p.name} (${p.brand}${p.line && p.line !== '—' ? ' ' + p.line : ''}) ${p.hex}\n`;
-  }
   t += '\nHex values are approximate; ΔE = perceptual distance to the target colour.\n';
-  download('palette-shopping-list.txt', t);
-  toast(i18n.t('listSaved'));   // download is the artefact — no silent clipboard write (native-share direction)
+  download('palette-recipe.txt', t);
+  toast(i18n.t('recipeSaved'));   // download is the artefact — no silent clipboard write (native-share direction)
 }
 /** Share the current scheme URL. Prefers the native share sheet (Web Share → OS sheet under Capacitor),
  *  then clipboard, then a visible-URL prompt. No silent clipboard side-effects. */
-async function doShare(url = shareUrl(location.href, state.theme)) {
+async function doShare(url = shareUrl(location.href, state.theme, nameOnScreen())) {
   // The default is the scheme on screen: without m=shelf (a friend gets the scheme, not your Shelf), with the
   // theme on screen. The Schemes page passes a saved scheme's link.
   // The share sheet is a phone's way to send a link. With a mouse, Safari on a Mac has it too, but there
@@ -2170,7 +2181,7 @@ function shareImageView() {
 /** The image of the scheme on screen now: { blob, name, text }. Made once for each scheme, theme and
  *  language, so the tap that shares it does not wait (Safari needs the tap's activation, see openSettings). */
 function shareImage() {
-  const url = shareUrl(location.href, state.theme), view = shareImageView();
+  const url = shareUrl(location.href, state.theme, nameOnScreen()), view = shareImageView();
   const key = `${url}|${state.theme}|${JSON.stringify(view)}`;
   if (shareImg.key !== key) {
     const made = makeShareImage(view, url);
@@ -2520,6 +2531,257 @@ function setupSettings() {
   $('#aboutOpenMenu').addEventListener('click', () => { closeSettings(null); openAbout($('#settingsBtn')); });
 }
 
+/* ---- Take to the store (PLAN §5 item 37; mockups/shopping-list.html §6, mockups/project-naming.html B) ----
+   No server joins two devices (§1), so the list goes to the phone IN something: a link (shown as a QR code
+   too), paper, or a text file. On the phone the link adds the paints to that device's shopping list (it asks
+   first) and opens the list; what is ticked there comes back in a second link, "bought", which only adds owned
+   marks and asks first too. The first time a project with no name leaves the app, the panel asks for its name,
+   once (Skip keeps the automatic name for good). */
+const storeDlg = { opener: null, which: '', ids: [], url: '' };
+/** The paints to buy that this build knows, and the schemes they are for (newest first), with counts. */
+function storeChoices() {
+  const all = [...store.wantIds()].filter(id => state.idx.byId.has(id));
+  const n = new Map();
+  for (const id of all) { const sid = store.projectOf(id); if (sid) n.set(sid, (n.get(sid) || 0) + 1); }
+  const projects = store.listSchemes().filter(sc => n.has(sc.id)).map(sc => ({ id: sc.id, name: schemeNameOf(sc.id), n: n.get(sc.id) }));
+  return { all, projects };
+}
+/** The store link for these paints: each paint's count and project, and each project's own link and name. */
+function storeLinkFor(ids) {
+  const sids = [...new Set(ids.map(id => store.projectOf(id)).filter(Boolean))];
+  const projects = sids.map(sid => { const sc = store.getScheme(sid); return { link: sc.link, name: sc.name }; });
+  const items = ids.map(id => ({ id, qty: store.qtyOf(id), project: sids.indexOf(store.projectOf(id)) }));
+  return location.origin + location.pathname + '?' + encodeList(items, projects);
+}
+const paintsSaid = n => (n === 1 ? t('onePaint') : t('nPaints', { n }));
+/** "Mephiston Red, Kantor Blue and 4 more": the first names, so a long link stays one short line. */
+function namesSaid(ids, max = 5) {
+  const names = ids.map(id => state.idx.byId.get(id)).filter(Boolean).map(ui.pname);
+  return names.length > max ? t('namesMore', { names: names.slice(0, max).join(', '), n: names.length - max }) : names.join(', ');
+}
+/** Open the panel. `which`: a scheme id to start on that project ('' = every paint to buy). */
+function openStore(opener, which = '') {
+  const { all, projects } = storeChoices();
+  if (!all.length) { toast(t('listEmpty')); return; }
+  storeDlg.opener = opener;
+  storeDlg.which = projects.some(p => p.id === which) ? which : '';
+  // the naming step: the projects in this export that have no name and were never asked (asked once, for good)
+  const scope = storeDlg.which ? projects.filter(p => p.id === storeDlg.which) : projects;
+  const unnamed = scope.map(p => store.getScheme(p.id)).filter(sc => sc && !sc.saved && !sc.name && !sc.asked);
+  $('#storeDlg').showModal();
+  if (unnamed.length) showNameStep(unnamed); else showStorePanel();
+}
+function showNameStep(schemes) {
+  $('#storePanel').hidden = true; $('#storeNameStep').hidden = false;
+  $('#storeNameHead').textContent = t(schemes.length === 1 ? 'nameProjectHead' : 'nameProjectsHead');
+  $('#storeNameFields').innerHTML = schemes.map((sc, i) => {
+    const auto = previewScheme(sc.link)?.auto || '';
+    const suggestion = store.uniqueName((sc.link === linkNameFor && linkName) || auto, sc.id);
+    return `<div class="storefield"><label class="savelbl" for="storeNm${i}">${ui.esc(auto)}</label>`
+      + `<input id="storeNm${i}" class="saveinput" type="text" maxlength="80" autocomplete="off" data-sid="${ui.esc(sc.id)}"`
+      + ` data-auto="${ui.esc(auto)}" value="${ui.esc(suggestion)}" aria-label="${ui.esc(t('nameFor', { auto }))}" aria-describedby="storeNameLink"></div>`;
+  }).join('');
+  const first = $('#storeNameFields input');
+  first?.focus(); first?.select();
+}
+/** Continue (names) or Skip (`keep` false): every project shown is asked for good, then the panel. */
+function finishNameStep(keep) {
+  const fields = [...$('#storeNameFields').querySelectorAll('input')];
+  let named = 0;
+  for (const f of fields) {
+    const sid = f.dataset.sid, typed = f.value.trim();
+    if (keep && (typed || f.dataset.auto)) {
+      // a name saves the scheme for good (Ryan, scheme-library.html); a taken name becomes "(2)"
+      store.updateScheme(sid, { name: store.uniqueName(typed || f.dataset.auto, sid), saved: true, asked: true });
+      named++;
+    } else store.updateScheme(sid, { asked: true });
+  }
+  say(keep ? (named === 1 ? t('namedProject') : t('namedProjects', { n: named })) : t('skippedNames'));
+  showStorePanel();
+  if (state.mode === 'schemes') renderSchemesPage();
+  renderSchemeBar();
+}
+function showStorePanel() {
+  $('#storeNameStep').hidden = true; $('#storePanel').hidden = false;
+  renderStorePanel();
+  $('#storeCopy').focus({ preventScroll: true });   // not the select: iOS opens its picker when a select takes focus in a tap
+}
+function renderStorePanel() {
+  const { all, projects } = storeChoices();
+  if (storeDlg.which && !projects.some(p => p.id === storeDlg.which)) storeDlg.which = '';
+  $('#storeWhich').innerHTML = `<option value="">${ui.esc(t('whichAll', { n: all.length }))}</option>`
+    + projects.map(p => `<option value="${ui.esc(p.id)}">${ui.esc(t('whichOne', { name: p.name, n: p.n }))}</option>`).join('');
+  $('#storeWhich').value = storeDlg.which;
+  const ids = storeDlg.which ? all.filter(id => store.projectOf(id) === storeDlg.which) : all;
+  const url = storeLinkFor(ids);
+  Object.assign(storeDlg, { ids, url });
+  let code = null;
+  try { code = qrCode(url, { ecl: 'M' }); } catch { /* too long for a code: the link still works */ }
+  $('#storeQr').style.display = code ? '' : 'none';   // an <svg> does not take the hidden attribute everywhere
+  $('#storeQrLong').hidden = !!code;
+  if (code) {
+    const side = code.size + 8;   // 4 light modules round it: the quiet zone a scanner needs
+    $('#storeQr').setAttribute('viewBox', `0 0 ${side} ${side}`);
+    // About 4 CSS px a module, so a long link stays readable on a 1× screen (2.4 px did not scan): 184–320 px
+    $('#storeQr').style.setProperty('--qr-px', `${Math.max(184, Math.min(320, side * 4))}px`);
+    $('#storeQrPath').setAttribute('d', qrPath(code, 4));
+    $('#storeQrName').textContent = t('qrName', { count: paintsSaid(ids.length) });
+  }
+  $('#storeUrl').textContent = url;
+  $('#storeCopy').textContent = t(CAN_SHARE ? 'shareStoreLink' : 'copyStoreLink');
+}
+async function sendStoreLink() {
+  const url = storeDlg.url;
+  if (CAN_SHARE) {
+    try { await navigator.share({ title: t('listTitle'), url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  if (navigator.clipboard) {
+    try { await navigator.clipboard.writeText(url); toast(t('storeLinkCopied')); return; } catch { /* fall through */ }
+  }
+  try { prompt(t('copyLink'), url); } catch { toast(url); }
+}
+/** The chosen paints in rack order (brand · line, then name): the order a store racks them. */
+function storeRackGroups(ids, withFor) {
+  const names = new Map();
+  const rows = ids.map(id => state.idx.byId.get(id)).filter(Boolean).map(p => ({
+    paint: p, owned: false, countable: false, qty: store.qtyOf(p.id), countOpen: false,
+    forName: withFor ? schemeNameOf(store.projectOf(p.id), names) : '',
+  }));
+  rows.sort((a, b) => a.paint.brand.localeCompare(b.paint.brand) || rackLine(a.paint).localeCompare(rackLine(b.paint))
+    || ui.pname(a.paint).localeCompare(ui.pname(b.paint)));
+  const groups = [];
+  for (const r of rows) {
+    const key = [r.paint.brand, rackLine(r.paint)].filter(Boolean).join(' · '), g = groups[groups.length - 1];
+    if (g && g.key === key) g.rows.push(r); else groups.push({ key, title: key, rows: [r] });
+  }
+  return groups;
+}
+const storeTitle = () => (storeDlg.which ? schemeNameOf(storeDlg.which) : t('listTitle'));
+const longDate = () => new Intl.DateTimeFormat(i18n.deviceLocale(), { dateStyle: 'long' }).format(new Date());
+/** Print: the chosen paints only, on paper (the Shelf list's print look, §3.6), whatever the Shelf shows. */
+function printStoreList() {
+  const el = $('#storePrint');
+  el.innerHTML = `<h2 class="storeprinthead">${ui.esc(storeTitle())} — ${ui.esc(longDate())}</h2>`
+    + ui.rackGroups(storeRackGroups(storeDlg.ids, !storeDlg.which), t);
+  el.hidden = false;
+  document.body.classList.add('printstore');
+  const done = () => { document.body.classList.remove('printstore'); el.hidden = true; el.innerHTML = ''; window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done);
+  window.print();
+}
+function saveStoreText() {
+  const paints = storeDlg.ids.map(id => state.idx.byId.get(id)).filter(Boolean);
+  const names = new Map();
+  const txt = listToText(paints, {
+    title: storeTitle(), date: longDate(), qtyOf: store.qtyOf,
+    forName: storeDlg.which ? () => '' : id => schemeNameOf(store.projectOf(id), names),
+  });
+  const slug = storeDlg.which ? '-' + storeTitle().toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : '';
+  download(`shopping-list${slug && slug !== '-' ? slug : ''}.txt`, txt);
+  toast(t('listTextSaved'));
+}
+function setupStore() {
+  const d = $('#storeDlg');
+  $('#storeClose').addEventListener('click', () => d.close());
+  $('#storeNameStep').addEventListener('submit', e => { e.preventDefault(); finishNameStep(true); });
+  $('#storeSkip').addEventListener('click', () => finishNameStep(false));
+  $('#storeWhich').addEventListener('change', e => { storeDlg.which = e.target.value; renderStorePanel(); });
+  $('#storeCopy').addEventListener('click', sendStoreLink);
+  $('#storePrintBtn').addEventListener('click', printStoreList);
+  $('#storeText').addEventListener('click', saveStoreText);
+  d.addEventListener('close', () => {
+    const o = storeDlg.opener; storeDlg.opener = null;
+    const back = o && o.isConnected && o.getClientRects().length ? o : $('#settingsBtn');
+    back.focus({ preventScroll: true });
+  });
+  $('#storeOpenMenu').addEventListener('click', () => { closeSettings(null); openStore($('#settingsBtn')); });
+  $('#shelfStore').addEventListener('click', e => openStore(e.currentTarget));
+  $('#rkSend').addEventListener('click', sendBought);
+}
+
+/* The two links, opened on the other device. Each asks before it changes the shelf here: a link from someone
+   else must not change it without a yes. Neither removes a mark, and opening one twice changes nothing new. */
+function openTripLinks(url) {
+  const has = { hasPaint: id => state.idx.byId.has(id) };
+  const list = decodeList(url, has);
+  if (list) { openStoreList(list); return; }
+  const bought = decodeBought(url, has);
+  if (bought) openBoughtLink(bought);
+}
+/** Show the list: the Shelf's list of paints to buy, every other filter cleared, in rack order. */
+function showStoreListHere() {
+  state.shelfView = 'list'; state.shelfGroup = 'rack'; state.shelfMark = 'want';
+  state.shelfQ = state.shelfBrand = state.shelfType = '';
+  $('#shelfQ').value = $('#shelfBrand').value = $('#shelfType').value = '';
+  if (state.mode !== 'shelf') setMode('shelf'); else { resetRackSession(); renderShelf(); updateUrl(); }
+}
+function openStoreList({ items, projects }) {
+  if (!items.length) { toast(t('importNone')); return; }
+  const fresh = items.filter(it => store.markOf(it.id) === 'none');
+  const ownedHere = items.filter(it => store.isOwned(it.id)).length;
+  showStoreListHere();
+  if (!fresh.length) { toast(t(ownedHere === items.length ? 'boughtSame' : 'importSame')); return; }
+  openConfirm({
+    title: fresh.length === 1 ? t('importTitleOne') : t('importTitle', { n: fresh.length }),
+    body: () => `<p>${ui.esc(t('importBody', { names: namesSaid(fresh.map(it => it.id)) }))}</p>`
+      + (ownedHere ? `<p>${ui.esc(ownedHere === 1 ? t('importOwnedOne') : t('importOwned', { n: ownedHere }))}</p>` : ''),
+    okLabel: t('importOk'), plain: true, opener: null,
+    onOk: () => {
+      // each project the new paints are for: the same scheme here (its link), or a new one; a name saves it
+      const sidOf = new Map();
+      for (const it of fresh) {
+        if (it.project < 0 || sidOf.has(it.project)) continue;
+        const pr = projects[it.project];
+        let sid = store.findSchemeByLink(pr.link);
+        if (!sid) sid = store.createScheme({ link: pr.link, name: pr.name ? store.uniqueName(pr.name) : '', saved: !!pr.name });
+        else if (pr.name && !store.getScheme(sid).name) store.updateScheme(sid, { name: store.uniqueName(pr.name, sid), saved: true });
+        if (sid && pr.name) store.updateScheme(sid, { asked: true });
+        sidOf.set(it.project, sid);
+      }
+      for (const it of fresh) store.setMark(it.id, 'want', { for: sidOf.get(it.project) || undefined });
+      store.setQtys(fresh.filter(it => it.qty > 1).map(it => [it.id, it.qty]));
+      render('marks');
+      toast(t('importDone', { n: paintsSaid(fresh.length) }));
+      $('#shelfList [data-rktick]')?.focus({ preventScroll: true });
+    },
+  });
+}
+function openBoughtLink(ids) {
+  if (state.mode !== 'shelf') setMode('shelf');
+  if (!ids.length) { toast(t('importNone')); return; }
+  const toOwn = ids.filter(id => !store.isOwned(id));
+  if (!toOwn.length) { toast(t('boughtSame')); return; }
+  openConfirm({
+    title: toOwn.length === 1 ? t('boughtTitleOne') : t('boughtTitle', { n: toOwn.length }),
+    body: () => `<p>${ui.esc(t('boughtBody', { names: namesSaid(toOwn) }))}</p>`,
+    okLabel: t('boughtOk'), plain: true, opener: null,
+    onOk: () => { store.setMarks(toOwn, 'owned'); render('marks'); toast(t('boughtDone', { n: paintsSaid(toOwn.length) })); },
+  });
+}
+/** The paints ticked from the shopping list to owned on this device, in this visit (in memory only, like
+ *  Recent picks: no new saved data). Send "bought" sends them to the other device. */
+const boughtHere = new Set();
+function syncSendBought() {
+  const n = [...boughtHere].filter(id => store.isOwned(id)).length, b = $('#rkSend');
+  // the button's place is kept (visibility), so it never moves the tools row (§3.4)
+  b.classList.toggle('on', n > 0);
+  b.setAttribute('aria-label', n === 1 ? t('sendBoughtNameOne') : t('sendBoughtName', { n }));
+}
+async function sendBought() {
+  const ids = [...boughtHere].filter(id => store.isOwned(id));
+  if (!ids.length) return;
+  const url = location.origin + location.pathname + '?' + encodeBought(ids);
+  if (CAN_SHARE) {
+    try { await navigator.share({ title: t('listTitle'), text: t('boughtShareText', { names: namesSaid(ids) }), url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  if (navigator.clipboard) {
+    try { await navigator.clipboard.writeText(url); toast(t('boughtCopied', { n: paintsSaid(ids.length) })); return; } catch { /* fall through */ }
+  }
+  try { prompt(t('copyLink'), url); } catch { toast(url); }
+}
+
 /* ---- Back up / Restore / Delete ---- */
 /** Download the backup file (store.exportJSON, with its `saved` date). @returns the file name */
 function saveBackup() {
@@ -2532,8 +2794,12 @@ const cdlg = { onOk: null, opener: null, body: null };
  *  and focus goes back to `opener`. "Save a backup of this shelf" changes in place to "✓ Saved", and the
  *  file name shows in a status line INSIDE the dialog, where a screen reader still hears it. */
 /** `body()` builds the confirm's text; it runs again if another tab changes the shelf while it is open. */
-function openConfirm({ title, body, okLabel, onOk, opener }) {
+function openConfirm({ title, body, okLabel, onOk, opener, plain = false }) {
   const d = $('#confirmDlg');
+  // plain: the store links' asks (item 37) add marks and replace nothing, so no ⚠, no backup offer (§3.5:
+  // --danger is only for what you cannot undo)
+  if (plain) d.classList.add('plain', 'nobackup');
+  $('#cdlgOk').classList.toggle('danger', !plain); $('#cdlgOk').classList.toggle('primary', plain);
   $('#cdlgTitle').textContent = title;
   $('#cdlgBody').innerHTML = body();
   cdlg.body = body;
@@ -2577,7 +2843,7 @@ function setupConfirm() {
   d.addEventListener('close', () => {
     cdlg.onOk = null;
     if (d.classList.contains('notice')) { d.classList.remove('notice'); $('#cdlgCancel').textContent = t('cancel'); }
-    d.classList.remove('nobackup');
+    d.classList.remove('nobackup', 'plain');
     // the opener can have gone from view (the Shelf hidden); fall back to a control that stays
     const o = cdlg.opener && cdlg.opener.isConnected && cdlg.opener.getClientRects().length ? cdlg.opener
       : settingsOpen() ? $('#restoreBtn') : $('#settingsBtn');
@@ -2840,6 +3106,7 @@ function wire() {
   setupSettings(); setupConfirm(); setupMatchNote();   // ⋯ Settings, the Restore/Delete confirm, the matching note
   setupSaveDialog(); setupSchemesPage();   // saved schemes: the Save line and dialog, the Schemes page (item 35)
   setupShelfList();   // the Shelf's list: the rack walk (item 36)
+  setupStore();   // Take to the store: the panel, the naming step, the "bought" link back (item 37)
 
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
@@ -2931,6 +3198,7 @@ async function init() {
     validHarmony, hasPaint: id => state.idx.byId.has(id), validTab: t => TABS.includes(t), maxFree: MAX_FREE,
   }));
   if (!state.customHex && !state.baseId) state.baseId = state.idx.paints[0].id;   // no usable seed in the link
+  if (state.name) { linkName = state.name; delete state.name; }   // n=: offered by Save, never saved by itself
   // The saved scheme the address bar names (s=, this device only): a refresh keeps "Saved" / "Changed"
   if (store.getScheme(url.get('s'))?.saved) openSchemeId = url.get('s');
 
@@ -2966,11 +3234,15 @@ async function init() {
     restoreSeed, markPaint, histMark, takeModeNote,
     coarse: () => COARSE, phone: () => PHONE.matches,
   });
+  if (linkName) linkNameFor = schemeLink();
   renderAll();
   // A first visit with no paint in the link: show "Start a scheme" (after the first render, so that
   // render does not end it). A native shell that restored a shelf is not a first visit.
-  if (store.firstVisit && !restored && !url.get('p') && !url.get('c')) startFirstRun();
+  if (store.firstVisit && !restored && !url.get('p') && !url.get('c') && !url.has('l') && !url.has('b')) startFirstRun();
   if (url.get('m') === 'shelf' || url.get('m') === 'schemes') setMode(url.get('m'));   // deep-link / refresh stays in that mode
+  // A store list or a "bought" link (item 37). The first render has already written the address bar without
+  // them, so a reload does not ask again.
+  openTripLinks(url);
   // The first search letter would fold all 3,225 paints at once (about 70ms on a slow phone): do it now,
   // while the browser has nothing else to do.
   (window.requestIdleCallback || (f => setTimeout(f, 300)))(() => warmPaintSearch(state.idx));

@@ -401,6 +401,9 @@ test('schemeRow: the strip carries the pots and the metal sheen; the facts; one-
   assert.match(html, /data-scdelete="abcd1234"/);
   assert.doesNotMatch(html, /data-scsave/);
   assert.doesNotMatch(schemeRow({ ...row, toBuy: 0 }, tr), /tag buy/, 'no paints to buy → no tag');
+  // Take to the store (item 37): only a scheme with paints to buy offers it, named for its scheme
+  assert.match(html, /data-scstore="abcd1234" aria-haspopup="dialog" aria-label="storeNamed\(name=Plague Marine\)">takeToStoreShort/);
+  assert.doesNotMatch(schemeRow({ ...row, toBuy: 0 }, tr), /data-scstore/);
 });
 
 test('schemeRow: a project never saved shows its automatic name and offers Save; renaming shows the field', () => {

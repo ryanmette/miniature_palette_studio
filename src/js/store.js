@@ -71,6 +71,8 @@ function normalise(s) {
   for (const [sid, v] of Object.entries(isObj(s?.schemes) ? s.schemes : {})) {
     if (!SCHEME_ID.test(sid) || !isObj(v) || !isLink(v.link)) continue;   // a scheme without its link is nothing to open
     schemes[sid] = { name: cleanName(v.name), link: v.link, saved: v.saved === true, created: isoOrNull(v.created), changed: isoOrNull(v.changed) };
+    // `asked`: the naming step at the first export has shown this project (a Skip keeps it unnamed for good).
+    if (v.asked === true) schemes[sid].asked = true;
   }
   const wantInfo = {};
   const srcInfo = isObj(s?.wantInfo) ? s.wantInfo : {};
@@ -275,7 +277,7 @@ export function findSchemeByLink(link) {
   return hit;
 }
 /**
- * Change a kept scheme: any of `name`, `link`, `saved`. A link that is not a link changes nothing.
+ * Change a kept scheme: any of `name`, `link`, `saved`, and `asked: true` (the naming step has shown it). A link that is not a link changes nothing.
  * Un-saving a scheme that no paint points at removes it, as for any project.
  * @returns {boolean} false when there is no such scheme or the patch is not valid
  */
@@ -287,7 +289,9 @@ export function updateScheme(sid, patch = {}, { now = new Date() } = {}) {
   if ('name' in patch) next.name = cleanName(patch.name);
   if ('link' in patch) next.link = patch.link;
   if ('saved' in patch) next.saved = patch.saved === true;
-  next.changed = now.toISOString();
+  if (patch.asked === true) next.asked = true;   // once asked, never asked again (a rename does not clear it)
+  // Being asked is not a change to the scheme: it must not move the scheme up the Schemes list.
+  if (Object.keys(patch).some(k => k !== 'asked')) next.changed = now.toISOString();
   schemes.set(sid, next);
   dropUnused(new Set([sid]));
   persist();

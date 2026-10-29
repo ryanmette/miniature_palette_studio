@@ -134,7 +134,7 @@
             <button type="button" class="btn" id="copyImg" data-i18n="copyImage" hidden>Copy image</button>
             <button type="button" class="btn" id="saveImg" data-i18n="saveImage" hidden>Save the image</button>
             <button type="button" class="btn" id="share" data-i18n="shareLink">Share link…</button>
-            <button type="button" class="btn" id="export" data-i18n="saveList">Save the shopping list</button>
+            <button type="button" class="btn" id="export" data-i18n="saveRecipe">Save the recipe</button>
           </div>
           <p class="sethint" id="shareHint" data-i18n="shareHint">The colours on screen now.</p>
         </div>
@@ -145,6 +145,7 @@
         <span class="setlbl" aria-hidden="true" data-i18n="backup">Your shelf on this device</span>
         <div class="setctl">
           <div class="setbtns" role="group" aria-label="Your shelf on this device" data-i18n-aria="backup" aria-describedby="backupNow">
+            <button type="button" class="btn" id="storeOpenMenu" aria-haspopup="dialog" data-i18n="takeToStore">Take to the store…</button>
             <button type="button" class="btn" id="backupBtn" data-i18n="backUp">Back up everything</button>
             <button type="button" class="btn" id="restoreBtn" aria-haspopup="dialog" data-i18n="restore">Restore…</button>
           </div>
@@ -372,6 +373,9 @@
           <button data-sg="project" aria-pressed="false" data-i18n="groupProject">By project</button>
         </div>
         <button type="button" class="textact" id="shelfPrint" data-i18n="printList">Print</button>
+        <button type="button" class="textact" id="shelfStore" aria-haspopup="dialog" data-i18n="takeToStore">Take to the store…</button>
+        <!-- reserved: shown (visibility) once a paint is ticked bought on this device in this visit, so it never moves the row -->
+        <button type="button" class="textact rksend" id="rkSend" data-i18n="sendBought">Send “bought”…</button>
       </div>
       <p class="shelfhint rkhint" id="rkHint"></p>
       <div id="shelfList"></div>
@@ -453,6 +457,52 @@
   </form>
   <p class="sr-only" role="status" data-say></p>
 </dialog>
+
+<!-- Take to the store (PLAN §5 item 37; mockups/shopping-list.html §6, mockups/project-naming.html B). The list
+     goes to the phone in a link (a QR code of it, or the link itself), on paper, or as a text file. The first time
+     a project without a name leaves the app, a short naming step comes first (once per project; Skip keeps the
+     automatic name). Two views in one dialog: the step, then the panel. -->
+<dialog id="storeDlg" class="about storedlg" aria-labelledby="storeTitle">
+  <div class="abouthead sheethead">
+    <h2 id="storeTitle" data-i18n="storeTitle">Take the list to the store</h2>
+    <button class="iconbtn" id="storeClose" aria-label="Close" data-i18n-aria="close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="aboutbody storebody">
+    <form id="storeNameStep" class="storestep" hidden>
+      <h3 class="storesub" id="storeNameHead" data-i18n="nameProjectsHead">Name your projects</h3>
+      <p class="sethint" id="storeNameIntro" data-i18n="nameProjectsIntro">A name tells you what a paint is for, in the store and in Schemes. You are asked once.</p>
+      <div id="storeNameFields" class="storefields"></div>
+      <p class="sethint" id="storeNameLink" data-i18n="nameInLink">The name is part of the link you send.</p>
+      <div class="cdlgacts">
+        <button type="button" class="btn" id="storeSkip" data-i18n="skip">Skip</button>
+        <button type="submit" class="btn primary" id="storeContinue" data-i18n="continue">Continue</button>
+      </div>
+    </form>
+    <div id="storePanel" class="storestep">
+      <label class="setlbl" for="storeWhich" data-i18n="whichPaints">Which paints?</label>
+      <select id="storeWhich" class="storewhich"></select>
+      <div class="storeout">
+        <div class="qrbox" id="storeQrBox">
+          <svg id="storeQr" class="qr" role="img" shape-rendering="crispEdges" aria-labelledby="storeQrName"><title id="storeQrName"></title><path id="storeQrPath"/></svg>
+          <p class="sethint qrlong" id="storeQrLong" data-i18n="qrTooLong">Too many paints for one code. Choose one project, or send the link.</p>
+        </div>
+        <div class="storeacts">
+          <p class="sethint" id="storeHow" data-i18n="storeHow">Scan the code with your phone’s camera, or send the link to your phone. The list opens there, ready to tick.</p>
+          <p class="storeurl mono" id="storeUrl"></p>
+          <div class="setbtns">
+            <button type="button" class="btn primary" id="storeCopy"></button>
+            <button type="button" class="btn" id="storePrintBtn" data-i18n="printList">Print</button>
+            <button type="button" class="btn" id="storeText" data-i18n="saveAsText">Save as text</button>
+          </div>
+          <p class="sethint" id="storeBack" data-i18n="storeBack">On the phone, tick each paint you buy. Then Send “bought” marks them owned on this device too.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="sr-only" role="status" data-say></p>
+</dialog>
+<!-- the store list on paper (Print in the panel): filled just before window.print(), shown only in print -->
+<div id="storePrint" class="storeprint" hidden></div>
 
 <!-- The confirm for Restore… (and a .json picked through Import…) and for Delete. role=alertdialog,
      modal; focus starts on Cancel; Esc closes only this, and focus goes back to the button that opened it. -->
