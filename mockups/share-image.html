@@ -749,16 +749,16 @@ const say = t => { document.getElementById('status').textContent = t; };
 function iMessage(theme, img, alt, ogUrl, url) {
   return `<div class="im ${theme}" role="img" aria-label="Mock-up: Messages in ${theme} mode. The image, then the link with its static card.">
     <div class="who">Sam · Today 18:04</div>
-    ${img ? `<div class="row"><div class="shot"><img src="${img}" alt=""></div></div>` : ''}
-    <div class="row"><div class="link"><div class="crop"><img src="${ogUrl}" alt=""></div><div class="meta"><b>Palette Studio for Miniatures</b><span>palette.ryanmette.com</span></div></div></div>
+    ${img ? `<div class="row"><div class="shot"><img src="${esc(img)}" alt=""></div></div>` : ''}
+    <div class="row"><div class="link"><div class="crop"><img src="${esc(ogUrl)}" alt=""></div><div class="meta"><b>Palette Studio for Miniatures</b><span>palette.ryanmette.com</span></div></div></div>
   </div>`;
 }
 function discord(theme, img, url, ogUrl) {
   return `<div class="dc ${theme}" role="img" aria-label="Mock-up: Discord in ${theme} mode. A message with the link, the image, and the link embed.">
     <div class="msg"><div class="av"></div><div><div class="name">Sam<small>Today at 18:04</small></div>
     <div>new scheme for my Blood Angels <span class="url">${esc(url)}</span></div>
-    <div class="att"><img src="${img}" alt=""></div>
-    <div class="embed"><small>Palette Studio</small><b class="url">Palette Studio for Miniatures</b>Pick one paint. Get a colour scheme matched to real pots you can buy, in every brand.<img src="${ogUrl}" alt=""></div>
+    <div class="att"><img src="${esc(img)}" alt=""></div>
+    <div class="embed"><small>Palette Studio</small><b class="url">Palette Studio for Miniatures</b>Pick one paint. Get a colour scheme matched to real pots you can buy, in every brand.<img src="${esc(ogUrl)}" alt=""></div>
     </div></div></div>`;
 }
 
@@ -806,7 +806,7 @@ async function renderAll() {
     const alt = altText(v, d.id);
     const figs = SIZES.flatMap(([size, sizeName, where]) => ['light', 'dark'].map(th => {
       const sh = shots[size + th];
-      return `<figure><img src="${sh.url}" alt="${esc(alt)}" width="${sh.L.W}" height="${sh.L.H}"><figcaption><b>${sizeName}, ${th}.</b> For ${where}.</figcaption></figure>`;
+      return `<figure><img src="${esc(sh.url)}" alt="${esc(alt)}" width="${sh.L.W}" height="${sh.L.H}"><figcaption><b>${sizeName}, ${th}.</b> For ${where}.</figcaption></figure>`;
     })).join('');
     html += `<section aria-labelledby="dir${d.id}"><h2 id="dir${d.id}">${n + 1}. ${d.name}</h2>
       <p><b>What it shows.</b> ${d.what}</p>
