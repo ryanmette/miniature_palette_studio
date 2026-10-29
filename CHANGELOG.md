@@ -5,6 +5,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Design exploration: the shopping list in the store** (`mockups/shopping-list.html`, not shipped). Ryan asked how
+  the shopping list should look when you stand at a paint rack with a phone. The page studies seven other apps
+  (Citadel Colour, paintRack, Mini Forge, Paint Finder, AnyList, Apple Reminders, BrickLink) and gives five
+  directions with working phone frames: A, a checklist in rack order (brand → line) where a tick makes the paint
+  owned; B, "Not on the rack?" swaps from the brands the store carries, with the true ΔE; C, one list with a
+  "for" label per paint; D, a receipt to print; E, a rack map (not to build: the rack order is not published).
+  It also shows the hand-off from the desktop to the phone (a link or QR code) and a "bought" link back, because
+  each device keeps its own shelf. Ryan's answers are on the page. (CLAUDE.md §4 is updated.)
+
 ### Fixed
 - **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role
   card, the ring that links it to the wheel and the live palette sat 1px from the card's edges, with no
