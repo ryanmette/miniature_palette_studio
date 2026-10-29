@@ -24,7 +24,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   study. A saved scheme, a shopping-list project and a named link become one `schemes` map in `store.js`, with a
   key that never changes (the naming study's link hash would break when a saved scheme changes). It shows an
   explicit Save on the hero line (Changed · Save · Save as new), four places for the library, and recommends a
-  third mode, Schemes, between Studio and Shelf. The frames work. Five questions for Ryan.
+  third mode, Schemes, between Studio and Shelf. The frames work. Ryan chose the Schemes mode, an explicit Save,
+  a name that saves for good, no folders, and the colour strip; the page ends with one build order for all three studies.
 
 ### Fixed
 - **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role

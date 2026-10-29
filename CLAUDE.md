@@ -248,7 +248,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── style-directions.html  ← 5-way visual-direction exploration
 │   ├── quick-complement.html  ← P5 "quick complement" mode mock
 │   ├── persona-flows.html     ← end-to-end experience-flow storyboard
-│   ├── scheme-library.html    ← follows project-naming.html: keeping saved schemes — one schemes model (stable id) for the library, shopping-list projects, names and store swaps; explicit Save · Save as new on the hero; 4 places (third mode · in the Shelf · Studio list · Browse group); recommended: A, a Schemes mode (not built)
+│   ├── scheme-library.html    ← follows project-naming.html: keeping saved schemes — one schemes model (stable id) for the library, shopping-list projects, names and store swaps; explicit Save · Save as new on the hero; 4 places (third mode · in the Shelf · Studio list · Browse group); chosen (Ryan, 2026-10-29): A, a Schemes mode (not built); ends with one build order for the three studies
 │   ├── seed-role-unify.html   ← 3-way exploration: folding the Main|Accent toggle into the palette
 │   ├── equiv-source-picker.html ← 3-way exploration: picking WHICH colour's equivalents the tab shows
 │   ├── shelf-brand-filter.html ← 3-way exploration: folding the Shelf's brand-chip rows down (mobile)

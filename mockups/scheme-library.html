@@ -237,7 +237,7 @@
 <div class="page">
 
 <header>
-  <p class="micro">Design study · not shipped · 2026-10-29 · follows <a href="shopping-list.html">shopping-list.html</a> and <a href="project-naming.html">project-naming.html</a></p>
+  <p class="micro">Design study · not shipped · 2026-10-29 · follows <a href="shopping-list.html">shopping-list.html</a> and <a href="project-naming.html">project-naming.html</a> · updated with Ryan’s answers</p>
   <h1>The scheme library — keeping the schemes you make</h1>
   <p class="sub">Ryan’s answer in the naming study: “save” means <b>schemes</b>, files and links. Today a scheme lives only in its link: close the tab and it is
     gone unless you kept the link. This study asks <b>where saved schemes live</b>, <b>how Save works</b> when you change a saved scheme, and how a library
@@ -268,11 +268,11 @@ schemes: {
   s7k2: { name: 'Plague Marine', link: '?p=citadel-base-death-guard-green&amp;h=triadic…',
           saved: true, created: '2026-10-20', changed: '2026-10-27',
           pins: { accent: { id: 'vallejo-model-color-carmine-red', from: 'store-swap', was: 'citadel-base-mephiston-red' } } },
-  q3m9: { name: '', link: '?p=citadel-base-morghast-bone&amp;h=complementary…', saved: false }   <span class="dim">// a project only: its paints are on the list</span>
+  q3m9: { name: '', link: '?p=citadel-base-morghast-bone&amp;h=complementary…', saved: false }   <span class="dim">// no name (Skip at export): kept only while its paints are on the list</span>
 },
 want: [{ id: 'citadel-base-death-guard-green', qty: 2, for: 's7k2' }, …]</pre>
   <ul class="notes" style="margin-top:8px">
-    <li><b><code>saved: false</code></b> is a scheme the app keeps only because its paints are on the shopping list. It leaves when its last paint is bought — unless you save it.</li>
+    <li><b>A name saves for good</b> (Ryan’s answer 3): naming a project at export, or pressing Save, sets <code>saved: true</code>. Only a project you <b>skipped</b> at export stays <code>saved: false</code>: the app keeps it while its paints are on the list, and it leaves when its last paint is bought — unless you name or save it.</li>
     <li>The <b>backup file</b> carries the whole map, so Restore brings the library back. <b>Delete my shelf and settings…</b> clears it with the rest. The CSV does not carry schemes (it is a list of paints).</li>
     <li>Size: a saved scheme is about 300 bytes. A thousand of them is about 0.3 MB, well inside what a browser keeps for one site.</li>
   </ul>
@@ -351,10 +351,10 @@ want: [{ id: 'citadel-base-death-guard-green', qty: 2, for: 's7k2' }, …]</pre>
           <li>One place for all saved work; easy to explain (“Studio makes, Schemes keeps, Shelf owns”).</li>
           <li>Maps straight onto a tab bar in the iOS app (<code>IOS_APP_PLAN.md</code>): three tabs.</li>
           <li>Room for the buying facts — “2 to buy” makes the library a way into the shopping list.</li>
-          <li><b>Projects with no name</b> (paints on the list, never saved) show here too, in italics, under the saved ones: one model, one list.</li>
+          <li><b>Projects with no name</b> (skipped at export) show here too, in italics, under the saved ones: one model, one list. A name, given anywhere, moves it up into the saved list for good.</li>
         </ul></div>
         <div><h3 class="lab">Against</h3><ul class="notes">
-          <li><b>Changes the constitution:</b> §3.6 says the header holds only Studio / Shelf + ⋯. A third mode needs that line changed in the same commit.</li>
+          <li><b>Changes the constitution:</b> §3.6 says the header holds only Studio / Shelf + ⋯. Ryan said yes (answer 1); the line changes in the same commit that builds the mode, not before (§10: the constitution describes what ships).</li>
           <li>Three segments plus ⋯ on a 360px phone: about 300px. It fits, with less room to spare.</li>
           <li>A page that is empty for a new painter. The empty state must say how to fill it (below).</li>
         </ul></div>
@@ -409,21 +409,31 @@ want: [{ id: 'citadel-base-death-guard-green', qty: 2, for: 's7k2' }, …]</pre>
 <section aria-labelledby="h-v">
   <h2 id="h-v"><span class="k">4</span>Verdict and questions</h2>
   <div class="verdict">
-    <div><b>A · A third mode</b><span class="score">Build</span> — the home for saved schemes and unnamed projects.</div>
+    <div><b>A · A third mode</b><span class="score">Build · chosen</span> — the home for saved schemes and unnamed projects.</div>
     <div><b>B · Inside the Shelf</b><span class="score">No</span> — mixes paints and schemes.</div>
     <div><b>C · A list in the Studio</b><span class="score">Later, as a shortcut</span> — opens A’s list.</div>
     <div><b>D · A group in Browse</b><span class="score">No</span> — no room to manage.</div>
   </div>
-  <div class="reco"><b>Recommendation:</b> A — a <b>Schemes</b> mode between Studio and Shelf (and a CLAUDE.md §3.6 change); an explicit <b>Save</b> on the hero
+  <div class="reco"><b>Chosen (Ryan, 2026-10-29):</b> A — a <b>Schemes</b> mode between Studio and Shelf (and a CLAUDE.md §3.6 change); an explicit <b>Save</b> on the hero
     line with <b>Changed · Save · Save as new</b>; one <code>schemes</code> map in <code>store.js</code> with a stable id, shared by the library, the shopping-list
     projects, the names and the store swaps; deleting a scheme never deletes paints from the list.</div>
-  <h3 class="lab">Questions for Ryan</h3>
+  <h3 class="lab">Ryan’s answers (2026-10-29)</h3>
+  <table class="study" style="min-width:0;max-width:82ch">
+    <tbody>
+      <tr><td>1 · A third mode</td><td><b>Yes.</b> → Studio · Schemes · Shelf; CLAUDE.md §3.6 changes with the build.</td></tr>
+      <tr><td>2 · Save</td><td><b>Explicit.</b> → Save on the hero; Changed · Save · Save as new.</td></tr>
+      <tr><td>3 · A name at export</td><td><b>Saves for good.</b> → only a skipped project is kept for a while.</td></tr>
+      <tr><td>4 · Folders or tags</td><td><b>None.</b> → one list, newest first.</td></tr>
+      <tr><td>5 · The picture</td><td><b>The strip</b> — the four roles at 60-30-10.</td></tr>
+    </tbody>
+  </table>
+  <h3 class="lab">Next: the three studies, as one build order</h3>
   <ol class="q">
-    <li><b>A third mode in the header — yes?</b><span>It changes the constitution (§3.6: “the header holds only Studio / Shelf + ⋯”). The iOS app would then have three tabs.</span></li>
-    <li><b>Explicit Save, or autosave?</b><span>This study says explicit, because the Studio is for exploring. Autosave would need a “versions” idea to get an old state back.</span></li>
-    <li><b>Does naming a project at export put it in the library?</b><span>This study says it shows there (in italics, as not saved) while its paints are on the list, and leaves when they are bought. The other choice: a name at export saves it for good.</span></li>
-    <li><b>Folders or tags, later?</b><span>Coolors added projects and collections as lists grew. This study has none: one list, newest first, and a search when it passes about 20 schemes.</span></li>
-    <li><b>The picture of a scheme:</b><span>the four-role strip at 60-30-10 (shown), or a small wheel, or the paint pots?</span></li>
+    <li><b>The model first:</b> <code>store.js</code> v2 — the <code>schemes</code> map with a stable id; <code>want</code> entries with <code>qty</code> and <code>for</code>; the backup and the CSV; old data migrates (a count of 1, no project). No UI yet; unit tests.</li>
+    <li><b>Save and Schemes:</b> Save on the hero (Changed · Save · Save as new), the Schemes mode (§3.6 change), rename, delete, the empty state.</li>
+    <li><b>The rack walk (shopping list A):</b> the checklist in brand → line order; a tick marks owned; the count after the fact; “for” groups.</li>
+    <li><b>Take to the store:</b> the hand-off panel (link · QR · print · text), the naming step at the first export, the name in the share link, the “bought” link back.</li>
+    <li><b>Not on the rack (shopping list B):</b> swaps from the brands the store carries, kept to the same finish class, and a swap pinned to its role with the original flagged (one model with <code>pin-a-paint.html</code>).</li>
   </ol>
 </section>
 
