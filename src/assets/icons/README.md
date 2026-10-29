@@ -12,8 +12,8 @@ The harmony glyphs and the finish icons stay in code (`harmonyGlyph`, `finishTag
 | `menu.svg` | ☰ | Filters, a list |
 | `more.svg` | ⋯ | Settings |
 | `reroll.svg` | ↻ | Pick a colour for me |
-| `check.svg` | ✓ | Owned, your paint |
-| `anchor.svg` | ⚓ | The seed dock (only if the word "seed" stays) |
+| `check.svg` | ✓ | Owned |
+| `anchor.svg` | ⚓ | The starting paint: its tag and the dock that moves it |
 | `warning.svg` | ⚠ | Warnings and the Delete button |
 | `empty.svg` | ○ | Not marked |
 | `search.svg` | ⌕ | Search fields |

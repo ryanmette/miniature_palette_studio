@@ -155,7 +155,7 @@ test('seed docks: chip on the seeded role, switch dock on the other, reserved ro
     { id: 'metal', kind: 'metal', hex: '#C8A13A', match: null },
   ];
   const html = livePalette(dockVm, 'ideal', { '#87146E': 'Primary', '#146E24': 'Accent' });
-  assert.match(html, /class="seedchip" title="Faerzress Purple is your paint[^"]*">[^<]*<svg[^>]*>.*?<\/svg>Your paint</, 'the tag says Your paint and names the paint in its title');
+  assert.match(html, /class="seedchip" title="Faerzress Purple is the starting paint[^"]*">[^<]*<svg[^>]*>.*?<\/svg>Starting paint</, 'the tag says Starting paint and names the paint in its title');
   assert.ok(html.includes('data-seeddock="accent"'), 'switch dock targets the other role');
   assert.equal((html.match(/class="lcdock"/g) || []).length, 3, 'every column reserves the dock row (no-jiggle)');
   // disabled dock (neutral) carries the why and no live target semantics

@@ -11,7 +11,7 @@ no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
 **v1.11.0** — the UX pass, live. It makes the app easier to read and to use: one name for one thing
-("your paint", Recipe, Target / Pot, Other brands, the shopping list), a first-run guide, empty and
+("starting paint", Recipe, Target / Pot, Other brands, the shopping list), a first-run guide, empty and
 error states that say what to do, 44px touch targets on every control, a shorter Studio on a phone,
 tone ladders that show their pots, a ⋯ menu whose groups say what they act on, a language that
 follows the device, and a sharp link-preview card.

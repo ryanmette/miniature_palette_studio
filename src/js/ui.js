@@ -547,9 +547,9 @@ export function livePalette(vm, fill, roleByHex = {}) {
     const dock = isPot ? `<span class="holdchip" title="You chose this pot for ${esc(tag)}. Change or release it on the ${esc(tag)} card in the Recipe.">${icon('pin')}Pot chosen</span>`
       : c.dock && c.dock.type === 'chip'
       // A tag, not the paint's name: the name is already in the column's footer (UX 7). The title keeps it.
-      ? `<span class="seedchip" title="${esc(c.dock.name)} is your paint — it sets the ${esc(tag)} role">${icon('check')}Your paint</span>`
+      ? `<span class="seedchip" title="${esc(c.dock.name)} is the starting paint — it sets the ${esc(tag)} role">${icon('anchor')}Starting paint</span>`
       : c.dock && c.dock.type === 'switch'
-        ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with your paint as the ${esc(tag)}"`} aria-label="Move my paint here: ${esc(tag)}">${icon('anchor')}Move my paint here</button>`
+        ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with the starting paint as the ${esc(tag)}"`} aria-label="Move the starting paint to ${esc(tag)}">${icon('anchor')}Move here</button>`
         : '';
     return `<div class="lcol${lockOn || isPot ? ' locked' : ''}${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
       + `<div class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}">`

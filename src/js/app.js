@@ -497,7 +497,7 @@ function ensureHarmonyMode() {
     harmonyNote = n
       ? { full: 'Neutral colour — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.',
           short: 'Neutral colour — hue harmonies are unavailable for a neutral.' }
-      : { full: `Your colour has a hue again — back to the ${state.harmony} scheme.`, short: 'Your colour has a hue again.' };
+      : { full: `The starting colour has a hue again — back to the ${state.harmony} scheme.`, short: 'The starting colour has a hue again.' };
     notes.push(harmonyNote.full);
   }
   // The seed role parks and restores SYMMETRICALLY with the harmony above. A neutral seed always
@@ -510,7 +510,7 @@ function ensureHarmonyMode() {
   } else if (restoring) {
     state.seedRole = 'accent';
     preNeutralSeedRole = null;
-    notes.push('Your paint sets the Accent role again.');
+    notes.push('The starting paint sets the Accent role again.');
   }
   // Hand the notes to announce() rather than writing #status here: they used to land in the live
   // region and be overwritten a statement later by the caller's own announce(), so the one thing a
@@ -784,7 +784,7 @@ function renderEquiv() {
       + ui.equivalentsPanel(`${ui.pname(p)} (${p.brand})`, eq, store.markOf);
   } else {
     const role = (state.roleByHex || {})[srcHex];
-    const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
+    const name = role ? `${role} · ${srcHex}` : `the starting colour ${srcHex}`;   // name the role when the column plays one
     // The Metal column's matches float true metallics first — a flat near the hex isn't an equivalent (§7).
     // Any other colour is a flat target (the Plan matches roles with finishes excluded), so washes, contrasts,
     // texture paints and metals rank FINISH_PENALTY further, as for a picked flat paint (data.js closestPaints,
