@@ -140,7 +140,8 @@
   <p class="muted">Every colour and every paint name on this page comes from the real engine (<code>data.js</code>, <code>scheme.js</code>, <code>harmony.js</code>) on <code>paints.json</code> <span id="dsver"></span>. The script <code>mockups/share-image/engine-data.mjs</code> writes that data. The images are real PNG files. This page draws them with <code>&lt;canvas&gt;</code> and the self-hosted fonts, as the app would. The sizes and times under each image are measured on your device.</p>
 
   <div class="verdict">
-    <p><b>Recommendation.</b> Fix the static link card first: it is a small change, and every link needs it. Then build direction A, the recipe card, as one square image (1080 × 1080) in the theme on screen. Put it in ⋯ → Share this palette as <b>Share image…</b> on touch, and as <b>Copy image</b> and <b>Save the image</b> with a mouse. Keep direction C (the tone ladders) for a later, taller image. Directions B and C are in the questions at the end.</p>
+    <p><b>Decided (Ryan, 2026-10-29), and built.</b> Direction A. One square image (1080 × 1080): a wide image doubles the layout and the device tests and needs a choice of shape. The theme on screen. Copy image copies the image only, the way most apps do it: a paste takes one thing, and Copy link stays beside it. The static card fix goes in the same pull request as the image. Code: <code>src/js/shareimage.js</code>.</p>
+    <p><b>Recommendation (before the decision).</b> Fix the static link card first: it is a small change, and every link needs it. Then build direction A, the recipe card, as one square image (1080 × 1080) in the theme on screen. Put it in ⋯ → Share this palette as <b>Share image…</b> on touch, and as <b>Copy image</b> and <b>Save the image</b> with a mouse. Keep direction C (the tone ladders) for a later, taller image. Directions B and C are in the questions at the end.</p>
   </div>
 
   <!-- ============ 0. the clipped link card ============ -->
