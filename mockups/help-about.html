@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help and About study</title>
+<!-- the app's self-hosted webfonts (no external requests), so text widths in the frames match the app -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  /* ---------- tokens: the same blocks as src/styles/tokens.css (CLAUDE.md §3.1, Workbench+) ----------
+     The page follows the device theme until you pick one with "Page theme". Only colour changes. */
+  :root {
+    --r-card:6px; --r-ctrl:4px; --r-sw:3px; --r-tag:2px; --r-pill:999px; --tap:44px;
+    --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --fs-h1:26px; --fs-h2:20px; --fs-body:14px; --fs-small:12.5px; --fs-micro:11.5px;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  :root, [data-theme="light"] {
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6;
+    --border:#DCD8D0; --border-strong:#C9C4BA; --edge:#8A857B;
+    --text:#1D1C19; --text-muted:#5E5A52; --text-faint:#9C978D;
+    --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+    --buy:#2563EB; --buy-weak:#DBEAFE; --on-buy:#FFFFFF;
+    --success:#16A34A; --success-weak:#DCFCE7; --on-success:#FFFFFF;
+    --warning:#C2740B; --warning-weak:#FBEBD3;
+    --danger:#DC2647; --danger-weak:#FCE4EA;
+    --success-text:#0F7334; --warning-text:#945908; --danger-text:#C4203D; --buy-text:#1D4ED8;
+    --shadow:0 1px 2px rgba(29,28,25,.25);
+    --shadow-pop:0 0 0 1px rgba(29,28,25,.05), 0 12px 24px -10px rgba(29,28,25,.38);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  [data-theme="dark"] {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+    --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+    --warning:#E0803A; --warning-weak:#2E1D12;
+    --danger:#D2563F; --danger-weak:#2E1A14;
+    --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+    --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+      --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+      --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+      --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+      --buy:#5E93C9; --buy-weak:#16242F; --on-buy:#0E1620;
+      --success:#86A559; --success-weak:#232A16; --on-success:#14190A;
+      --warning:#E0803A; --warning-weak:#2E1D12;
+      --danger:#D2563F; --danger-weak:#2E1A14;
+      --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+      --shadow:0 1px 2px rgba(0,0,0,.45); --shadow-pop:0 14px 28px -10px rgba(0,0,0,.8);
+      --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+    }
+  }
+
+  /* ---------- the page: regions with rules, no cards (§3.5) ---------- */
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:var(--fs-body); line-height:1.5; padding:24px 16px 48px; }
+  .page { max-width:1140px; margin:0 auto; }
+  h1 { font-family:var(--display); font-size:32px; font-weight:600; line-height:1.15; margin:0 0 8px; }
+  h2 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 4px; }
+  h2 .k { color:var(--accent); margin-right:6px; }
+  h3.lab, .micro { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  h3.lab { margin:24px 0 8px; }
+  a { color:var(--accent); }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); border-radius:var(--r-ctrl); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { border-top:1px solid var(--border); padding:24px 0; }
+  .sub, .why { color:var(--text-muted); font-size:var(--fs-small); max-width:80ch; margin:0 0 12px; }
+  .sub b, .why b, .notes b, td b { color:var(--text); }
+  ul.notes, ol.notes { margin:0; padding-left:20px; font-size:var(--fs-small); color:var(--text-muted); max-width:82ch; }
+  .notes li + li { margin-top:4px; }
+  .sr { position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .pros { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:0 24px; }
+  .pros h3.lab { margin-top:16px; }
+  .trow { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; margin-top:12px; }
+  .trow > .txt { flex:1 1 300px; min-width:0; }
+  figure { margin:0; min-width:0; max-width:100%; }
+  figcaption { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+  figcaption b { color:var(--text); }
+  pre.file { font-family:var(--mono); font-size:12px; line-height:1.45; background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card);
+    padding:12px; margin:0; overflow-x:auto; max-width:100%; color:var(--text); }
+  pre.file .dim { color:var(--text-muted); }
+
+  /* the page-theme control */
+  .pc { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; margin:16px 0 0; }
+  .seg { display:inline-flex; }
+  .seg button { position:relative; height:30px; padding:0 12px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text);
+    font:inherit; font-size:12.5px; font-weight:500; cursor:pointer; margin-left:-1px; }
+  .seg button:first-child { border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); margin-left:0; }
+  .seg button:last-child { border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .seg button:hover { background:var(--surface-2); }
+  .seg button[aria-pressed="true"] { background:var(--accent-weak); }
+  .seg button[aria-pressed="true"]::after { content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--accent); }
+  .seg button:focus-visible { z-index:1; }
+  @media (pointer: coarse) { .seg button { height:var(--tap); } }
+
+  /* the study table */
+  .tablewrap { overflow-x:auto; max-width:100%; }
+  table.study { border-collapse:collapse; font-size:var(--fs-small); min-width:760px; width:100%; }
+  table.study th, table.study td { text-align:left; vertical-align:top; padding:8px 12px 8px 0; border-bottom:1px solid var(--border); }
+  table.study th { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.study td { color:var(--text-muted); }
+  table.study td:first-child { color:var(--text); font-weight:600; white-space:nowrap; }
+
+  /* the jobs strip */
+  .jobs { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:0 16px; counter-reset:job; margin:12px 0 0; padding:0; list-style:none; }
+  .jobs li { border-top:1px solid var(--border-strong); padding:8px 0 12px; font-size:var(--fs-small); color:var(--text-muted); }
+  .jobs li b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .jobs li::before { counter-increment:job; content:counter(job); font-family:var(--display); font-weight:700; font-size:20px; color:var(--accent); display:block; line-height:1; margin-bottom:4px; }
+
+  /* ---------- the app's components, as in src/styles/app.css ---------- */
+  .btn { position:relative; min-height:var(--tap); padding:0 14px; border-radius:var(--r-ctrl); border:1px solid var(--border);
+    background:var(--surface); color:var(--text); font:inherit; font-weight:500; font-size:13.5px; line-height:1.2;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .btn:hover { background:var(--surface-2); border-color:var(--border-strong); }
+  .btn:active { transform:scale(.96); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); font-size:14.5px; font-weight:600; padding:0 18px; min-height:calc(var(--tap) + 6px); }
+  .btn.primary:hover { background:var(--accent); filter:brightness(1.06); }
+  .btn.sm { min-height:32px; padding:0 10px; font-size:12.5px; }
+  @media (pointer: coarse) { .btn.sm { min-height:var(--tap); } }
+  .btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+  .textact { background:none; border:0; color:var(--accent); font:inherit; font-weight:500; min-height:var(--tap); min-width:var(--tap); padding:0 4px; cursor:pointer; }
+  .tag { display:inline-block; font-size:11px; font-weight:500; line-height:1; padding:3px 5px; border:1px solid var(--border-strong); border-radius:var(--r-tag); color:var(--text-muted); white-space:nowrap; }
+  .tag.success { border-color:var(--success); color:var(--success-text); }
+  .tag.warning { border-color:var(--warning); color:var(--warning-text); }
+  .tag.danger  { border-color:var(--danger);  color:var(--danger-text); }
+  .tag.buy     { border-color:var(--buy);     color:var(--buy-text); }
+  .de { font-family:var(--mono); font-size:11.5px; color:var(--text-muted); }
+  .sw { width:40px; height:40px; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); flex:none; position:relative; overflow:hidden; }
+  .sw.sm { width:24px; height:24px; }
+  .sw.lg { width:48px; height:48px; }
+  /* finish overlay for metallics (§2): a sheen that never changes the colour */
+  .sw.metal::after { content:""; position:absolute; inset:0; background:linear-gradient(125deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.45) 50%, rgba(255,255,255,0) 68%); }
+
+
+  /* ---------- frames ---------- */
+  .ph { width:340px; max-width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border-strong); border-radius:20px;
+    overflow:hidden; display:flex; flex-direction:column; font-size:var(--fs-body); }
+  .ph .bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); min-height:52px; }
+  .ph .bar .ttl { font-family:var(--display); font-size:20px; font-weight:600; flex:1; min-width:0; }
+  .ph .body { padding:8px 12px 12px; }
+  .ph.dim { position:relative; }
+  .scrim { position:absolute; inset:0; background:rgba(0,0,0,.45); }
+  .sheet { position:absolute; left:0; right:0; bottom:0; top:64px; background:var(--surface); border-top:1px solid var(--border-strong);
+    border-radius:var(--r-card) var(--r-card) 0 0; box-shadow:var(--shadow-pop); display:flex; flex-direction:column; }
+  .sheethead { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border); }
+  .sheethead h4 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0; flex:1; }
+  .sheetbody { padding:8px 12px 12px; overflow:hidden; flex:1; font-size:var(--fs-small); }
+  .sheetbody h5 { font-size:var(--fs-body); font-weight:600; margin:12px 0 4px; }
+  .sheetbody p { margin:0 0 8px; color:var(--text-muted); }
+  .x { width:32px; height:32px; border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); color:var(--text-muted); display:grid; place-items:center; font-size:14px; }
+  .toc { display:grid; gap:0; margin:4px 0 8px; padding:0; list-style:none; }
+  .toc li { border-bottom:1px solid var(--border); min-height:var(--tap); display:flex; align-items:center; justify-content:space-between; color:var(--text); font-size:var(--fs-body); }
+  .toc li span { color:var(--text-muted); font-size:var(--fs-small); }
+  .menu { background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-card); box-shadow:var(--shadow-pop); padding:12px; width:340px; max-width:100%; }
+  .mrow { display:grid; grid-template-columns:110px 1fr; gap:12px; padding:8px 0; border-top:1px solid var(--border); align-items:start; }
+  .mrow:first-child { border-top:0; }
+  .mrow .micro { padding-top:12px; }
+  .mrow .btns { display:flex; flex-wrap:wrap; gap:8px; }
+  .mrow .hint { font-size:var(--fs-small); color:var(--text-muted); margin:4px 0 0; }
+  .tabs { display:flex; gap:16px; border-bottom:1px solid var(--border); padding:0 12px; }
+  .tabs button { position:relative; background:none; border:0; font:inherit; font-weight:500; color:var(--text-muted); min-height:var(--tap); cursor:pointer; padding:0 2px; }
+  .tabs button[aria-selected="true"] { color:var(--text); }
+  .tabs button[aria-selected="true"]::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:3px; background:var(--accent); }
+  .ver { font-family:var(--mono); font-size:12px; color:var(--text-muted); }
+  .bad { color:var(--danger-text); font-weight:600; }
+  .ok { color:var(--success-text); font-weight:600; }
+  .homes td:nth-child(n+2) { text-align:center; }
+  .verdict { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0 24px; margin-top:12px; }
+  .verdict > div { border-top:1px solid var(--border-strong); padding:8px 0; font-size:var(--fs-small); color:var(--text-muted); }
+  .verdict > div b { display:block; color:var(--text); font-size:var(--fs-body); }
+  .score { font-family:var(--mono); font-size:12px; color:var(--text); }
+  ol.q { margin:12px 0 0; padding-left:24px; max-width:82ch; }
+  ol.q li { margin-bottom:12px; }
+  ol.q li b { display:block; }
+  ol.q li span { color:var(--text-muted); font-size:var(--fs-small); }
+  .reco { border-left:3px solid var(--accent); padding:8px 0 8px 16px; max-width:82ch; margin-top:12px; }
+  .reco b { color:var(--text); }
+  blockquote { margin:8px 0; padding:8px 12px; border-left:3px solid var(--border-strong); color:var(--text-muted); font-size:var(--fs-small); max-width:82ch; }
+  blockquote cite { display:block; font-style:normal; margin-top:4px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none !important; animation:none !important; } .btn:active { transform:none; } }
+  @media (forced-colors: active) { .seg button[aria-pressed="true"]::after, .tabs button[aria-selected="true"]::after { background:Highlight; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <p class="micro">Design study · not shipped · 2026-10-29 · updated with Ryan’s answers (B chosen)</p>
+  <h1>Help and About — what goes where, and how each opens</h1>
+  <p class="sub">Two buttons sit side by side in ⋯ → <b>Help &amp; info</b>. <b>Help</b> leaves the app for a separate page.
+    <b>About &amp; data</b> opens over the app. They overlap in content, and the long Help page has started to drift from the
+    app. This study lists what is there now, the rules we must keep, three directions, and questions for Ryan.</p>
+  <div class="pc">
+    <span class="micro" id="pthLab">Page theme</span>
+    <div class="seg" role="group" aria-labelledby="pthLab" id="pth">
+      <button type="button" data-v="device" aria-pressed="true">Device</button>
+      <button type="button" data-v="light" aria-pressed="false">Light</button>
+      <button type="button" data-v="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-now">
+  <h2 id="h-now"><span class="k">0</span>What we have now</h2>
+  <div class="trow">
+    <figure>
+      <figcaption><b>⋯ → Help &amp; info</b> today: two buttons, two behaviours</figcaption>
+      <div class="menu" aria-hidden="true">
+        <div class="mrow"><span class="micro">Help &amp; info</span>
+          <div><div class="btns"><span class="btn">Help</span><span class="btn">About &amp; data</span></div>
+          <p class="hint">Help → a new page (support.html). About → a dialog over the app.</p></div></div>
+      </div>
+    </figure>
+    <div class="txt">
+      <h3 class="lab" style="margin-top:0">Why they are different (on purpose)</h3>
+      <ul class="notes">
+        <li><b>Help and Privacy are web pages</b> because the App Store needs a public Support URL and a privacy policy that anyone can open
+          in a browser, also without the app (§1 below).</li>
+        <li><b>About is a dialog</b> because it shows things about <i>this</i> device: the version, your shelf, and
+          <b>Delete my shelf and settings…</b>.</li>
+        <li>Nothing in the app says this. So the two buttons look the same and act differently.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="lab">What each one holds today</h3>
+  <div class="tablewrap">
+  <table class="study homes">
+    <thead><tr><th scope="col">Topic</th><th scope="col">About (dialog)</th><th scope="col">Help (support.html)</th><th scope="col">Privacy (privacy.html)</th></tr></thead>
+    <tbody>
+      <tr><td>What the app is</td><td>✓</td><td>✓</td><td>—</td></tr>
+      <tr><td>How the matching works (ΔE)</td><td>✓ short</td><td>✓ long</td><td>—</td></tr>
+      <tr><td>Use my paints</td><td>—</td><td>✓</td><td>—</td></tr>
+      <tr><td>Data &amp; credits</td><td>✓</td><td>one line</td><td>—</td></tr>
+      <tr><td>Fonts (licence credit)</td><td>✓</td><td>—</td><td>—</td></tr>
+      <tr><td>Privacy summary</td><td>✓</td><td>✓</td><td>✓ full</td></tr>
+      <tr><td>How to contact</td><td>a link to Help</td><td>✓</td><td>✓</td></tr>
+      <tr><td>Keyboard shortcuts</td><td>a link</td><td>✓</td><td>—</td></tr>
+      <tr><td>13 common questions</td><td>—</td><td>✓ one long list</td><td>—</td></tr>
+      <tr><td>Your shelf + Delete</td><td>✓</td><td>✓ how to</td><td>—</td></tr>
+      <tr><td>Version</td><td>✓</td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 class="lab">The cost of two copies: Help has already drifted</h3>
+  <ul class="notes">
+    <li><span class="bad">Out of date:</span> “A backup holds … your settings: theme, <b>language</b> …”. Language is no longer a setting:
+      it follows the device (2026-10-28).</li>
+    <li><span class="bad">Out of date:</span> “Delete … removes your owned marks, your shopping list and your settings”. It also removes your
+      <b>saved schemes</b> (since item 35).</li>
+    <li><span class="bad">Order, not task:</span> the 13 questions are in the order the features were built. The four store questions sit
+      between “Where is my shelf saved?” and “How do I move my shelf?”.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-rules">
+  <h2 id="h-rules"><span class="k">1</span>The rules we must keep (primary sources)</h2>
+  <blockquote>“People need to know how to reach you with questions and support issues. Make sure your app and its Support URL include an easy
+    way to contact you …”<cite>— App Store Review Guidelines, 1.5 Developer Information (developer.apple.com/app-store/review/guidelines)</cite></blockquote>
+  <blockquote>“All apps must include a link to their privacy policy in the App Store Connect metadata field and within the app in an easily
+    accessible manner.”<cite>— App Store Review Guidelines, 5.1.1 (i) Privacy Policies</cite></blockquote>
+  <blockquote>Support URL: “This URL must lead to actual contact information … This property is required …”<cite>— App Store Connect Help,
+    Platform version information</cite></blockquote>
+  <ul class="notes">
+    <li><b>So:</b> <code>support.html</code> and <code>privacy.html</code> stay as public web pages, with a way to contact Ryan. Every direction
+      below keeps them.</li>
+    <li><b>Inside the app</b>, a privacy policy link must be easy to reach, and the app must show a way to make contact.</li>
+    <li><b>What we can change:</b> how Help opens in the app, what each place says, and the names.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-others">
+  <h2 id="h-others"><span class="k">2</span>Common patterns in other apps</h2>
+  <ul class="notes">
+    <li><b>Help as a web page, opened in a sheet over the app.</b> On iOS, many apps open their help site in an in-app browser sheet
+      (Safari View Controller), so you never leave the app. For us that needs a Capacitor plugin that is not on the allowlist
+      (CLAUDE_NATIVE.md §4), and the web app cannot do it.</li>
+    <li><b>Help built into the app</b>, with the same text also on the web for the store. The risk is two copies; the fix is one source.</li>
+    <li><b>About as a short identity page</b>: name, version, credits, licences, legal links. It does not explain how to use the app.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-dirs">
+  <h2 id="h-dirs"><span class="k">3</span>Three directions</h2>
+
+  <h3 class="lab">A · Keep the page, make it belong</h3>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone</b> · Help is still a page, with the app's header and a contents list</figcaption>
+      <div class="ph" aria-hidden="true">
+        <div class="bar"><span class="btn sm">← Back to the app</span><span class="ttl" style="text-align:right">Help</span></div>
+        <div class="body">
+          <ul class="toc">
+            <li>Start a scheme <span>3</span></li><li>Matching and ΔE <span>2</span></li><li>Your shelf <span>3</span></li>
+            <li>Schemes <span>1</span></li><li>Shopping and the store <span>4</span></li><li>Backup and other devices <span>2</span></li>
+            <li>Keyboard <span>›</span></li><li>Contact and privacy <span>›</span></li>
+          </ul>
+        </div>
+      </div>
+    </figure>
+    <div class="txt">
+      <ul class="notes">
+        <li><b>For:</b> the smallest change. Group the questions by task, add a contents list, fix the drift, trim About.</li>
+        <li><b>Against:</b> Help still leaves the app. In the iPhone app the page replaces the Studio until you press Back.</li>
+        <li><b>Against:</b> two buttons in ⋯ still act in two ways.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="lab">B · Help opens over the app, from one source (recommended)</h3>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone</b> · Help is a sheet, like About; the text is the same as support.html</figcaption>
+      <div class="ph dim" aria-hidden="true" style="height:520px">
+        <div class="bar"><span class="ttl">Palette Studio</span><span class="btn sm">⋯</span></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="sheethead"><h4>Help</h4><span class="x">✕</span></div>
+          <div class="sheetbody">
+            <ul class="toc">
+              <li>Start a scheme <span>3</span></li><li>Matching and ΔE <span>2</span></li><li>Your shelf <span>3</span></li>
+              <li>Schemes <span>1</span></li><li>Shopping and the store <span>4</span></li><li>Backup and other devices <span>2</span></li>
+              <li>Keyboard <span>›</span></li>
+            </ul>
+            <h5>Contact and privacy</h5>
+            <p>Questions, a missing paint, a problem: <a href="#" tabindex="-1">ryanmette.com/contact</a>. No personal data leaves this device:
+              <a href="#" tabindex="-1">privacy policy</a>.</p>
+          </div>
+        </div>
+      </div>
+    </figure>
+    <div class="txt">
+      <ul class="notes">
+        <li><b>One source:</b> <code>support.html</code> stays the public page and the only copy of the text. The app reads that same file
+          (it is in the offline cache already) and shows its contents in a sheet. No build step, no second copy, so no drift.</li>
+        <li><b>For:</b> Help and About open the same way. You never leave the Studio, on the web or in the iPhone app.</li>
+        <li><b>For:</b> a link such as “How the matching works” opens Help at that section, in place.</li>
+        <li><b>Against:</b> a little more code: the sheet, and the in-page links inside it. Two places show the text (page and sheet), so
+          the page's styles must suit both.</li>
+        <li><b>About becomes short:</b> what the app is, the version, data &amp; credits, fonts, your shelf + Delete, links to Help and Privacy.
+          The matching text moves to Help only.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="lab">C · One “Help &amp; about” sheet with tabs</h3>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Phone</b> · one button in ⋯, three tabs (try them)</figcaption>
+      <div class="ph dim" style="height:520px">
+        <div class="bar" aria-hidden="true"><span class="ttl">Palette Studio</span><span class="btn sm">⋯</span></div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="sheethead"><h4>Help &amp; about</h4><span class="x" aria-hidden="true">✕</span></div>
+          <div class="tabs" role="tablist" id="ctabs">
+            <button role="tab" aria-selected="true" data-t="help">Help</button><button role="tab" aria-selected="false" data-t="about">About</button><button role="tab" aria-selected="false" data-t="priv">Privacy</button>
+          </div>
+          <div class="sheetbody" id="cbody" role="tabpanel"></div>
+        </div>
+      </div>
+    </figure>
+    <div class="txt">
+      <ul class="notes">
+        <li><b>For:</b> one entry point, one place to look. The ⋯ row has one button.</li>
+        <li><b>Against:</b> three kinds of content in one sheet. Privacy in a tab is still the full policy, which is long.</li>
+        <li><b>Against:</b> the footer's “About &amp; data” link then opens the same sheet on a tab, which is less direct.</li>
+        <li>It needs B's one-source idea too, or the Help tab is a second copy.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-plan">
+  <h2 id="h-plan"><span class="k">4</span>One home for each fact</h2>
+  <div class="tablewrap">
+  <table class="study homes">
+    <thead><tr><th scope="col">Fact</th><th scope="col">Help</th><th scope="col">About</th><th scope="col">Privacy</th></tr></thead>
+    <tbody>
+      <tr><td>How to do a task</td><td class="ok">here</td><td>—</td><td>—</td></tr>
+      <tr><td>How the matching works</td><td class="ok">here</td><td>a link</td><td>—</td></tr>
+      <tr><td>Keyboard shortcuts</td><td class="ok">here</td><td>—</td><td>—</td></tr>
+      <tr><td>Contact</td><td class="ok">here</td><td>a link</td><td>a link</td></tr>
+      <tr><td>What the app is, version</td><td>—</td><td class="ok">here</td><td>—</td></tr>
+      <tr><td>Data &amp; credits, fonts</td><td>a link</td><td class="ok">here</td><td>—</td></tr>
+      <tr><td>Your shelf on this device + Delete</td><td>a link</td><td class="ok">here</td><td>—</td></tr>
+      <tr><td>What data stays where</td><td>one line + link</td><td>one line + link</td><td class="ok">here</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3 class="lab">Help, grouped by task</h3>
+  <ol class="notes">
+    <li><b>Start a scheme</b>: Roll a scheme and ↻; keep a colour or a pot (holds); Lightness.</li>
+    <li><b>Matching and ΔE</b>: the labels; Use my paints; why a match does not look exact.</li>
+    <li><b>Your shelf</b>: mark paints; the list; where it is saved; delete it.</li>
+    <li><b>Schemes</b>: save, open, rename, share.</li>
+    <li><b>Shopping and the store</b>: the list in a store; not on the rack; to the phone and back; counts and print.</li>
+    <li><b>Backup and other devices</b>: back up, restore, import a paintRack list; offline.</li>
+    <li><b>Keyboard</b> and <b>Contact and privacy</b>.</li>
+  </ol>
+  <h3 class="lab">Names</h3>
+  <ul class="notes">
+    <li>⋯ group: <b>Help &amp; info</b> → keep. Buttons: <b>Help</b> and <b>About</b> (drop “&amp; data”: the credits are one part of it).</li>
+    <li>The page title: <b>Help</b> (not “Help and support”). The footer link: <b>About</b>.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-v">
+  <h2 id="h-v"><span class="k">5</span>Verdict and questions</h2>
+  <div class="verdict">
+    <div><b>A · Keep the page</b><span class="score">Small</span> — fixes the content, not the jump out of the app.</div>
+    <div><b>B · Sheet from one source</b><span class="score">Chosen</span> — same behaviour as About, no second copy, no drift.</div>
+    <div><b>C · One tabbed sheet</b><span class="score">Maybe later</span> — tidy, but mixes three kinds of content.</div>
+  </div>
+  <div class="reco"><b>Recommendation:</b> B. Help opens in a sheet over the app, built from <code>support.html</code> itself, so the public page
+    (for the App Store) and the app always say the same thing. Regroup Help by task, fix the two drifted facts, and make About a short
+    identity page with Data &amp; credits and your shelf. Privacy stays a page, linked from both.</div>
+  <h3 class="lab">Ryan’s answers (2026-10-29)</h3>
+  <table class="study" style="min-width:0;max-width:82ch">
+    <tbody>
+      <tr><td>1 · A, B or C</td><td><b>B.</b> Help opens in a sheet over the app, built from <code>support.html</code> itself.</td></tr>
+      <tr><td>2 · Task grouping</td><td><b>Good</b> as it is.</td></tr>
+      <tr><td>3 · Contact</td><td><b>Keep</b> ryanmette.com/contact. Ryan asked if the app can add its own details to the contact, to make support easier,
+        and if that fits the privacy promise. → <b>Yes, with “Copy support details”</b> (below).</td></tr>
+      <tr><td>4 · Names</td><td><b>Yes:</b> “About” and “Help”.</td></tr>
+      <tr><td>5 · What’s new</td><td><b>Yes, for now</b> in About. Later maybe a notification log next to ⋯ (a study of its own).</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="lab">Answer 3 in detail: support details, and the privacy promise</h3>
+  <blockquote>“‘Collect’ refers to transmitting data off the device in a way that allows you and/or your third-party partners to access it
+    for a period longer than what is necessary to service the transmitted request in real time.”
+    <cite>— Apple, App privacy details on the App Store (developer.apple.com/app-store/app-privacy-details)</cite></blockquote>
+  <blockquote>Data is optional to disclose only when, among other criteria, “it is clear to the user what data is collected … and the user
+    affirmatively chooses to provide the data for collection each time.” Example: “data collected in optional feedback forms or customer
+    service requests”.<cite>— the same page, Optional Disclosure</cite></blockquote>
+  <ul class="notes">
+    <li><b>Do not put the details in the contact link.</b> A link such as <code>…/contact?version=1.13.0&amp;device=…</code> sends the details
+      to the website’s server (and its logs) the moment the page opens, before the painter decides to send anything. That breaks “nothing
+      leaves this device” in spirit, and the painter cannot see it.</li>
+    <li><b>Do this instead: a “Copy support details” button</b> in Help’s Contact section. It shows a short block first, then copies it, and the
+      painter pastes it into the message (or not):
+      <code>Palette Studio 1.13.0 · paint data 1.6.0 · iPhone app (iOS 27) · Safari 27 · 390 × 844 · dark theme</code>.
+      An optional line holds the scheme on screen (its share link). <b>Never</b> the shelf, the shopping list or the saved schemes.</li>
+    <li><b>Why this is safe:</b> nothing is sent by the app; the painter sees every word and sends it on purpose, each time. That is exactly
+      Apple’s optional case, so the app can keep “Data Not Collected”. The privacy policy gets one sentence: what the button copies,
+      and that it is sent only if you paste it.</li>
+  </ul>
+
+  <h3 class="lab">Answer 5 in detail: “What’s new”, and a notification log later</h3>
+  <ul class="notes">
+    <li><b>Now:</b> About shows “What’s new in 1.13.0”: three or four lines, taken from the release notes.</li>
+    <li><b>Possible next step, small:</b> the app remembers the last version you opened (on this device). After an update, ⋯ shows a small dot,
+      and About opens on What’s new. No server is needed.</li>
+    <li><b>Later, its own study:</b> a notification log next to ⋯. With no server, it can only hold things this device knows (an update, a
+      backup that is old, a “bought” link opened). The header is kept small on purpose (CLAUDE.md §3.6), so a new header control needs
+      a reason and a line there first.</li>
+  </ul>
+
+  <h3 class="lab">Questions for Ryan (answered above)</h3>
+  <ol class="q">
+    <li><b>A, B or C?</b><span>B keeps you in the app; A is the least work; C is one button.</span></li>
+    <li><b>Is the task grouping right?</b><span>Is a topic missing, or in the wrong group?</span></li>
+    <li><b>Contact:</b> keep ryanmette.com/contact, or add an email address too?<span>Apple asks for “an easy way to contact you” in the app and on the Support URL.</span></li>
+    <li><b>Rename “About &amp; data” to “About”?</b><span>And the page “Help and support” to “Help”.</span></li>
+    <li><b>“What's new”?</b><span>Should About show the latest release's highlights (from the CHANGELOG)?</span></li>
+  </ol>
+</section>
+
+</div>
+<script>
+(() => {
+  const pth = document.getElementById('pth');
+  pth.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    for (const x of pth.querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b));
+    if (b.dataset.v === 'device') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = b.dataset.v;
+  });
+  const PANES = {
+    help: '<ul class="toc"><li>Start a scheme <span>3</span></li><li>Matching and ΔE <span>2</span></li><li>Your shelf <span>3</span></li><li>Schemes <span>1</span></li><li>Shopping and the store <span>4</span></li><li>Backup and other devices <span>2</span></li><li>Keyboard <span>›</span></li></ul>',
+    about: '<h5>Palette Studio for Miniatures</h5><p>Pick a paint or a colour; get a scheme matched to real paints you can buy.</p><p class="ver">Palette Studio 1.13.0 · paint data 1.6.0</p><h5>Data &amp; credits</h5><p>3,225 paints, 10 brands, from Arcturus5404/miniature-paints (MIT).</p><h5>Your shelf on this device</h5><p>Kept only in this browser. <span class="btn sm">Delete my shelf and settings…</span></p>',
+    priv: '<h5>The short version</h5><p>Palette Studio collects no personal data. Your shelf, your schemes and your settings stay on this device.</p><p><a href="#" tabindex="-1">Read the full privacy policy</a></p>',
+  };
+  const tabs = document.getElementById('ctabs'), body = document.getElementById('cbody');
+  const show = k => { for (const b of tabs.children) b.setAttribute('aria-selected', String(b.dataset.t === k)); body.innerHTML = PANES[k]; };
+  tabs.addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) show(b.dataset.t); });
+  show('help');
+})();
+</script>
+</body>
+</html>

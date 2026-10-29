@@ -13,6 +13,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+- **A study of Help and About** (`mockups/help-about.html`; PLAN §5 item 39). What each holds now, where they overlap,
+  two facts on the Help page that are out of date, Apple's rules that keep Help and Privacy as public pages, and
+  three directions. Ryan chose B: Help opens over the app like About, built from `support.html` itself, so the
+  public page and the app never differ. Support details are copied by the painter, never sent in a link. Not
+  built yet.
 ### Fixed
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
