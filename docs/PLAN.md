@@ -526,7 +526,24 @@ header and its rows scroll. Offline after one visit, the app loads and the Help 
 Lower value: `applySwap` replaces the swap's own count instead of adding to it; `cleanName` can cut an emoji
 in half (cut by code points); `decodeList` drops a paint whose project number is 1000 or more.
 
-REVIEW2_PLACEHOLDER
+**Code review: the Help sheet, the store panel, the list and `sw.js`** (most severe first; not fixed here):
+
+- **The Help sheet can show an old `support.html`** (`sw.js isShell`) — *confirmed in a browser.* The sheet's
+  `fetch('support.html')` is not a navigation and not `.js`/`.css`, so the service worker serves it from the cache.
+  A visit to the page gets the network copy. After a deploy that does not bump `CACHE`, the page and the sheet
+  differ, which §3.5 does not permit. Fix: treat `support.html` and `privacy.html` as shell (network first, `{cache:'reload'}`).
+- **Focus goes to ⋯, not to the Schemes row** (`app.js finishNameStep`, the store panel's close) — *confirmed in a
+  browser.* After the naming step, the Schemes page is drawn again, and the row button that opened the panel is
+  gone. Fix: keep the scheme id, and on close focus that row's new button.
+- **"Copy support details" is said twice** (`app.js` Copy handler, `support.html #supportSaid`) — *confirmed.* It
+  calls `say()` and also writes into `#supportSaid`, which is a status region too. Fix: remove the `say()` call.
+- **A failed Help fetch leaves the app** (`app.js openHelp`) — *traced.* It goes to `support.html` at once, so the
+  toast cannot be read. With no network and no service worker yet, the app is replaced by the browser's error page.
+  Fix: show a note with a link to the page, and stay in the app.
+
+Lower value: `support.html`'s `id="shelf"` and `id="schemes"` repeat the app's ids inside the sheet (two
+elements with one id); `#supportSaid` has no reserved slot, so the dialog grows when it fills (§3.4); Print
+in the store panel shows the print list on screen behind the dialog while the print dialog is open.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
