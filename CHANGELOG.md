@@ -26,6 +26,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   explicit Save on the hero line (Changed · Save · Save as new), four places for the library, and recommends a
   third mode, Schemes, between Studio and Shelf. The frames work. Ryan chose the Schemes mode, an explicit Save,
   a name that saves for good, no folders, and the colour strip; the page ends with one build order for all three studies.
+- **The shopping-list turn in the plan** (`docs/PLAN.md` §5, items 34–38): the decisions from the three studies and
+  one build order — the data model, Save and the Schemes mode, the rack walk, Take to the store, Not on the rack.
 
 ### Fixed
 - **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role

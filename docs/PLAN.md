@@ -111,8 +111,8 @@ UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funn
 [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
 **Next planned work: the native app, Stage 1 (v2.0)** — the kickoff checklist is
 `IOS_APP_PLAN.md` §4b, and the native-track constitution is drafted (`CLAUDE_NATIVE.md`, dormant until
-kickoff). §5's live backlog is the buying-assistant plan (items 7–11) and the pin-a-paint direction
-(`mockups/pin-a-paint.html`). Still outside this repo: the Mac/Xcode build, a designer for the asset
+kickoff). §5's live backlog is the buying-assistant plan (items 7–11), the pin-a-paint direction
+(`mockups/pin-a-paint.html`) and the shopping-list turn (items 34–38, studied and answered 2026-10-29). Still outside this repo: the Mac/Xcode build, a designer for the asset
 library, and the optional palette-from-photo enhancement.
 
 ### Native Stage-1 kickoff — greenlit (2026-07-09)
@@ -415,6 +415,45 @@ checks need a real device, another browser or a real screen reader.
     strip up about 29px, and the next tap at the same place can miss ↻. The 1–3px change at other widths is fixed.
     Older than this build (↻ on a grey seed did the same), and the same cause as item 13 (b). Fix direction: as
     13 (b), keep the hero on a fixed number of lines (an ellipsis on the name, or a reserved slot for the pill).
+
+### Backlog — the shopping-list turn (raised 2026-10-29 by Ryan; studied, not yet built)
+
+**The signal.** Ryan plans at a desktop and buys in hobby stores that carry only some brands. Today the shopping
+list is a filter of the Shelf, and its file mixes the scheme's recipe with the paints to buy. Three studies, each
+answered by Ryan: [`mockups/shopping-list.html`](../mockups/shopping-list.html) (the list in the store),
+[`mockups/project-naming.html`](../mockups/project-naming.html) (when to ask for a name) and
+[`mockups/scheme-library.html`](../mockups/scheme-library.html) (keeping saved schemes). The decisions:
+
+- **One list,** in rack order (brand → line). **A tick marks the paint owned at once**; a second tap undoes it.
+- **A count is set after the fact,** on the list. One pot is the default.
+- **Brand-agnostic:** the "this store carries" choice comes from the brands on the list.
+- **A swap goes back to the scheme,** with the original paint flagged.
+- **A project is one scheme.** Its name is asked **once, at the first export**, with a Skip. **A name saves the
+  scheme for good**, and it goes in the share link.
+- **Saved schemes get a third mode, Schemes** (Studio · Schemes · Shelf), with an **explicit Save** (Changed ·
+  Save · Save as new), no folders, and a colour strip of the four roles.
+- **Both devices:** the list goes to the phone in a link or a QR code, and a "bought" link comes back.
+
+The build order. Each item needs the one before it:
+
+34. **The data model** (`store.js` v2). One `schemes` map with a key that never changes (a short random id;
+    not a hash of the link, which changes when a saved scheme changes): `{ name, link, saved, created,
+    changed, pins }`. `want` entries become `{ id, qty, for }`. The backup file carries the map; the CSV gets
+    the count and the project; old data migrates (a count of 1, no project). Unit tests, no UI.
+35. **Save and the Schemes mode.** Save on the hero line (the naming field, pre-filled with the automatic
+    name "Death Guard Green · triadic"); Changed · Save · Save as new; the Schemes mode with open, rename,
+    take to the store, share and delete (a confirm; the paints stay on the list); the empty state. Change
+    CLAUDE.md §3.6 (the header's modes) in the same commit.
+36. **The rack walk** (shopping-list direction A). The checklist grouped brand → line; a tick marks owned;
+    "Add a count" on a row; the "for" groups and "Other paints"; a print style (direction D).
+37. **Take to the store.** The hand-off panel (link · QR code · Print · Save as text); "Which paints?" by
+    project; the naming step at the first export; the name in the share link (`n=`); the "bought" link back,
+    which only adds owned marks and asks first. The text file becomes the list only, in rack order, with
+    boxes; the recipe gets its own file.
+38. **Not on the rack** (shopping-list direction B). Swaps from the brands the store carries, kept to the same
+    finish class (a wash's swap is a wash, or none); a swap is pinned to its role with the original flagged.
+    Design the pin once, with `mockups/pin-a-paint.html`. This is backlog item 8 (the substitute finder),
+    met in the store.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
