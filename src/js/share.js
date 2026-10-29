@@ -11,8 +11,9 @@
 //   x   added swatches, hex with '!' = locked   d   harmony offsets detached by lock/edit
 //       (RRGGBB, and an old link's h.s.l tokens still decode)
 //   pp  neutral mode's pop accent               f   '1' = live palette filled with real paint
-//   v   active output tab (omitted for 'plan')  m   'shelf' = deep-link to the Shelf (address bar only,
-//                                                     never in a shared link — see shareUrl)
+//   v   active output tab (omitted for 'plan')  m   'shelf' or 'schemes' = deep-link to that mode
+//                                                     (address bar only, never in a shared link — shareUrl)
+//   s   the id of the saved scheme on screen (store.js): address bar only, never in a shared link
 //   t   'dark' theme. The address bar has it only for a link's theme (app.js updateUrl); a shared
 //       link has it whenever the scheme shows dark (shareUrl).
 
@@ -41,7 +42,7 @@ export function encodeState(s) {
   if (!s.customHex && s.baseId) p.set('p', s.baseId);
   if (s.pickHex) p.set('c', s.pickHex.replace('#', ''));
   if (s.harmony) p.set('h', s.harmony);
-  if (s.mode === 'shelf') p.set('m', 'shelf');
+  if (s.mode === 'shelf' || s.mode === 'schemes') p.set('m', s.mode);
   if (s.tab && s.tab !== 'plan') p.set('v', s.tab);
   if (s.seedRole === 'accent') p.set('r', 'accent');
   if (s.theme === 'dark') p.set('t', 'dark');
@@ -83,9 +84,10 @@ export function decodeHolds(hd, hasPaint = () => true) {
 }
 
 /**
- * The link that Share link hands out: the address-bar URL without `m`. `m=shelf` keeps a refresh on
- * the Shelf, but a friend who opens a shared link wants the SCHEME, so a link shared from the Shelf
- * must open the Studio. Everything else stays, the output tab (`v`) too.
+ * The link that Share link hands out: the address-bar URL without `m` and `s`. `m=shelf` keeps a refresh
+ * on the Shelf, but a friend who opens a shared link wants the SCHEME, so a link shared from the Shelf
+ * must open the Studio. `s` is the id of a scheme saved on THIS device (store.js): it means nothing on
+ * another one. Everything else stays, the output tab (`v`) too.
  * `theme` is the theme on screen. A shared scheme carries the theme it was made in, so `t=dark` goes
  * in when it is dark, also when the address bar has no `t` (the address bar has `t` only for a link's
  * theme, see app.js updateUrl). Leave it out to keep the address bar's `t`.
@@ -93,9 +95,19 @@ export function decodeHolds(hd, hasPaint = () => true) {
 export function shareUrl(href, theme) {
   const u = new URL(href);
   u.searchParams.delete('m');
+  u.searchParams.delete('s');
   if (theme === 'dark') u.searchParams.set('t', 'dark');
   else if (theme) u.searchParams.delete('t');
   return u.href;
+}
+
+/**
+ * A scheme's own link: the query a saved scheme keeps (store.js `link`), "?p=…&c=…&h=…". It is the
+ * scheme and nothing else: no mode (`m`), output tab (`v`), theme (`t`) or saved-scheme id (`s`), so the
+ * Studio can tell "Saved" from "Changed" with a plain string compare, whatever tab or theme is on screen.
+ */
+export function schemeQuery(s) {
+  return '?' + encodeState({ ...s, mode: 'studio', tab: 'plan', theme: null }).toString();
 }
 
 /** Parse the `x` param back into added swatches. Malformed entries are dropped, never thrown on —
@@ -137,7 +149,7 @@ export function decodeState(search, { validHarmony = () => true, hasPaint = () =
   const v = u.get('v'); if (v && validTab(v)) out.tab = v;
   if (u.get('r') === 'accent') out.seedRole = 'accent';
   if (u.get('t') === 'dark') out.theme = 'dark';
-  if (u.get('m') === 'shelf') out.mode = 'shelf';
+  const m = u.get('m'); if (m === 'shelf' || m === 'schemes') out.mode = m;
   const x = u.get('x'); if (x) out.extraNodes = decodeNodes(x, maxFree);
   const d = u.get('d'); if (d) out.dropOffsets = decodeOffsets(d);
   const hd = u.get('hd'); if (hd) out.holds = decodeHolds(hd, hasPaint);

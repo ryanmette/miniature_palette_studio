@@ -600,3 +600,73 @@ export function a11yPanel(model) {
     + `<div class="micro" style="margin:18px 0 8px">Contrast (WCAG 2.1)</div><div class="ctr">${ctr}</div>${coll}`;
 }
 
+
+/* ---- saved schemes (PLAN §5 item 35; mockups/scheme-library.html, direction A) ---- */
+
+/** The line above the hero that says whether the scheme on screen is kept. `o.kind`:
+ *  'none'    — not saved: "Not saved" + Save
+ *  'saved'   — the saved scheme, unchanged: its name + a Saved tag
+ *  'changed' — the saved scheme, changed since: its name + a Changed tag + Save + Save as new
+ *  The name is a landing spot for focus after a save (tabindex -1, no ring). The tag is state, so a
+ *  tag (§3.5): Saved is success, Changed is warning (it needs an action, it is not an error). */
+export function schemeBar(o, tr) {
+  if (o.kind === 'none') {
+    return `<span class="sbname sbnone" id="sbName" tabindex="-1">${esc(tr('notSaved'))}</span>`
+      + `<span class="sbacts"><button type="button" class="btn sm" data-sb="save">${esc(tr('saveScheme'))}</button></span>`;
+  }
+  const tag = o.kind === 'changed'
+    ? `<span class="tag warning">${esc(tr('changedTag'))}</span>`
+    : `<span class="tag success">${esc(tr('savedTag'))}</span>`;
+  const acts = o.kind === 'changed'
+    ? `<span class="sbacts"><button type="button" class="btn sm" data-sb="update">${esc(tr('saveScheme'))}</button>`
+      + `<button type="button" class="btn sm" data-sb="asnew">${esc(tr('saveAsNew'))}</button></span>`
+    : '';
+  // title: a long name ends in an ellipsis on a phone; the element's text is the whole name
+  return `<span class="sbname" id="sbName" tabindex="-1" title="${esc(o.name)}">${esc(o.name)}</span>${tag}${acts}`;
+}
+
+/** A scheme's picture: its four roles' pots at their 60-30-10 weights, with the finish overlay (§2: the
+ *  colours are paint data). `pots`: [{hex, paint?}] in role order. aria-hidden: the row's name says it. */
+export function schemeStrip(pots) {
+  return `<span class="scstrip" aria-hidden="true">${pots.map(p => swatch(p.hex, fxCls(p.paint).trim())).join('')}</span>`;
+}
+
+/**
+ * One row of the Schemes page. `r`: { id, name, auto, saved, harmony, pots, owned, roles, toBuy, date,
+ * renaming }. The row's main button opens the scheme; the actions under it are text actions, one tap
+ * away (no menu to find). A project that was never saved has no name: it shows its automatic name in
+ * italics, and Save in place of Rename.
+ */
+export function schemeRow(r, tr) {
+  const name = r.name || r.auto;
+  const facts = [esc(harmonyLabel(r.harmony)), esc(tr('ownedOf', { n: r.owned, of: r.roles }))].join(' · ')
+    + (r.toBuy ? ` <span class="tag buy">${esc(tr('nToBuy', { n: r.toBuy }))}</span>` : '');
+  const when = r.saved ? tr('savedOn', { date: r.date }) : tr('notSavedKept');
+  const head = r.renaming
+    ? `<span class="screname"><label class="sr-only" for="scRename">${esc(tr('schemeName'))}</label>`
+      + `<input id="scRename" class="scinput" type="text" maxlength="80" value="${esc(name)}" autocomplete="off" data-scid="${esc(r.id)}">`
+      + `<span class="schint">${esc(tr('renameKeys'))}</span></span>`
+    : `<button type="button" class="scopen" data-scopen="${esc(r.id)}">`
+      + `<span class="scname${r.name ? '' : ' auto'}">${esc(name)}</span>`
+      + `<span class="scfacts">${facts}</span><span class="scwhen">${esc(when)}</span></button>`;
+  const acts = r.renaming
+    ? `<button type="button" class="textact" data-scdone="${esc(r.id)}">${esc(tr('done'))}</button>`
+    : (r.saved
+      ? `<button type="button" class="textact" data-screname="${esc(r.id)}" aria-label="${esc(tr('renameNamed', { name }))}">${esc(tr('rename'))}</button>`
+      : `<button type="button" class="textact" data-scsave="${esc(r.id)}" aria-label="${esc(tr('saveNamed', { name }))}">${esc(tr('saveScheme'))}</button>`)
+      + `<button type="button" class="textact" data-scshare="${esc(r.id)}" aria-label="${esc(tr('shareNamed', { name }))}">${esc(tr('shareLinkShort'))}</button>`
+      + `<button type="button" class="textact" data-scdelete="${esc(r.id)}" aria-label="${esc(tr('deleteNamed', { name }))}">${esc(tr('deleteDots'))}</button>`;
+  return `<li class="scrow" data-scrow="${esc(r.id)}">${schemeStrip(r.pots)}<div class="scmain">${head}<div class="scacts">${acts}</div></div></li>`;
+}
+
+/** The Schemes page body: the saved schemes newest first, then the projects that were never saved, or
+ *  the empty state (§3.5: a heading, one sentence, one action). */
+export function schemesList(rows, tr) {
+  const saved = rows.filter(r => r.saved), proj = rows.filter(r => !r.saved);
+  if (!rows.length) {
+    return `<div class="scempty"><h3>${esc(tr('noSchemesTitle'))}</h3><p>${esc(tr('noSchemesBody'))}</p>`
+      + `<button type="button" class="btn" data-scgo="studio">${esc(tr('goStudio'))}</button></div>`;
+  }
+  return (saved.length ? `<ul class="sclist" aria-label="${esc(tr('savedSchemes'))}">${saved.map(r => schemeRow(r, tr)).join('')}</ul>` : '')
+    + (proj.length ? `<h3 class="micro scgroup">${esc(tr('projectsNotSaved'))}</h3><ul class="sclist" aria-label="${esc(tr('projectsNotSaved'))}">${proj.map(r => schemeRow(r, tr)).join('')}</ul>` : '');
+}

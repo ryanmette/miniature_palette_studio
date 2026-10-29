@@ -6,6 +6,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Save a scheme, and a Schemes mode to keep them** (PLAN §5 item 35; `mockups/scheme-library.html`).
+  - **The Save line** above the starting paint says whether the scheme on screen is kept: *Not saved* with
+    **Save**, its name with **Saved**, or its name with **Changed**, **Save** and **Save as new**. Nothing is
+    saved until you press Save, so exploring never writes over a saved scheme. Going back (↶) to a saved
+    scheme shows it as Saved again.
+  - **Save** asks for a name, pre-filled with "Death Guard Green · triadic" and selected, so typing replaces
+    it. A name another scheme has gets "(2)", and the dialog says so before you save.
+  - **Schemes**, between Studio and Shelf: your saved schemes, newest first, each with a strip of its four
+    pots, its harmony, how many of its pots you own and how many are on your shopping list. Open, rename,
+    share the link, or delete (it asks first; the scheme's paints stay on the shopping list). A reload keeps
+    the mode and the saved scheme on screen (`m=schemes`, `s`, never in a shared link).
+  - The Help page says how to keep a scheme, and that a backup holds the saved schemes.
 - **The storage model for saved schemes and a richer shopping list** (`store.js` v2; PLAN §5 item 34, from the
   shopping-list, naming and library studies). No new screens yet: this is the model the next items build on.
   - A to-buy paint can have a **count** (1 is the default and is not stored; 2–99) and a **project**: the

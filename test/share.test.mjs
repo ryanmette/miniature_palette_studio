@@ -211,3 +211,23 @@ test('holds round-trip through the link; an unknown pot becomes a lock on its he
   assert.equal(encodeHolds({}), '');
   assert.equal(encodeState({ harmony: 'triadic' }).has('hd'), false, 'no holds, no parameter');
 });
+
+test('schemeQuery is the scheme only: no mode, tab, theme or saved-scheme id', async () => {
+  const { schemeQuery } = await import('../src/js/share.js');
+  const base = { baseId: 'citadel-base-death-guard-green', pickHex: '#6D774D', harmony: 'triadic', seedRole: 'main' };
+  const q = schemeQuery({ ...base, mode: 'shelf', tab: 'equiv', theme: 'dark' });
+  assert.equal(q, '?p=citadel-base-death-guard-green&c=6D774D&h=triadic');
+  assert.equal(q, schemeQuery({ ...base, mode: 'studio', tab: 'plan', theme: 'light' }), 'the same scheme in another view is the same link');
+  assert.notEqual(q, schemeQuery({ ...base, harmony: 'analogous' }));
+});
+
+test('m=schemes round-trips; shareUrl drops m and s (a saved-scheme id means nothing on another device)', async () => {
+  const { encodeState, decodeState, shareUrl } = await import('../src/js/share.js');
+  assert.equal(encodeState({ mode: 'schemes' }).get('m'), 'schemes');
+  assert.equal(decodeState('?m=schemes').mode, 'schemes');
+  assert.equal(decodeState('?m=other').mode, undefined);
+  const out = new URL(shareUrl('https://palette.ryanmette.com/?p=x&c=111111&h=triadic&m=schemes&s=ab12cd34'));
+  assert.equal(out.searchParams.get('m'), null);
+  assert.equal(out.searchParams.get('s'), null);
+  assert.equal(out.searchParams.get('h'), 'triadic');
+});
