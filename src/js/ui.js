@@ -43,7 +43,7 @@ export const pname = p => p.dname || p.name;
 
 /** The one spoken/labelled vocabulary for a paint's mark — aria-labels and live-region strings must
  *  not drift between surfaces (the seed list vs the Shelf vs announcements). */
-export const markLabel = mark => (mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'not owned');
+export const markLabel = mark => (mark === 'owned' ? 'owned' : mark === 'want' ? 'on the shopping list' : 'not owned');
 
 /** A paint's line, where it tells you something: not "—", and not the brand again. */
 const lineOf = p => (p.line && p.line !== '—' && p.line !== p.brand ? p.line : '');
@@ -104,6 +104,19 @@ export function pickUseRow(hex, { id, k, live = false, coarse = false }, t = x =
     + `<span class="pktx"><b>${esc(head)}</b><span class="pksub">${esc(sub)}</span></span></div>`;
 }
 
+/** The Shelf with nothing to show (UX 4): a heading, one sentence and one action, outside the grid (a
+ *  listbox holds only options). kind: 'owned' (the Owned filter, nothing owned yet) · 'want' (the shopping
+ *  list is empty) · 'filter' (the search or filters match nothing). The action clears every filter. */
+export function shelfEmpty(kind, q = '') {
+  const [h, p] = kind === 'owned'
+    ? ['No paints marked as owned yet', 'Show all paints, then tap or click a paint you own to mark it.']
+    : kind === 'want'
+      ? ['Your shopping list is empty', 'Add pots from a Recipe, or mark paints here.']
+      : ['No paints match', q ? `Nothing on the shelf matches “${q}” with these filters.` : 'Nothing on the shelf matches these filters.'];
+  const act = kind === 'filter' ? 'Clear the search and filters' : 'Show all paints';
+  return `<h3>${esc(h)}</h3><p>${esc(p)}</p><button type="button" class="btn" data-shelfclear>${esc(act)}</button>`;
+}
+
 /** A labelled group of rows in the search listbox (the APG grouped listbox: the label is a presentation
  *  child the group points at). `inner` is markup from pickRow / pickUseRow. */
 export const pickGroup = (id, title, inner) =>
@@ -114,7 +127,7 @@ export const pickGroup = (id, title, inner) =>
  *  outline (interaction, §3.5) — never a border-width change, so neighbours never reflow (§3.4 no-jiggle).
  *  `markOf(id)` → 'owned'|'want'|'none'; `selected` is a Set of selected ids. */
 export function shelfGrid(paints, markOf, selected = new Set()) {
-  if (!paints.length) return `<div class="placeholder">No paints match this filter.</div>`;
+  if (!paints.length) return '';   // the grid stays empty; shelfEmpty() says why, outside the listbox
   return paints.map(p => {
     const mark = markOf(p.id), sel = selected.has(p.id);
     const badge = markBadge(mark);
@@ -147,7 +160,7 @@ export function shelfBar(count) {
   return `<span class="barcount">${count} selected</span>`
     + `<span class="baracts">`
     + `<button class="btn sm" data-act="owned">Mark owned</button>`
-    + `<button class="btn sm" data-act="want">Mark to buy</button>`
+    + `<button class="btn sm" data-act="want">Add to shopping list</button>`
     + `<button class="btn sm" data-act="none">Clear</button>`
     + `<button class="btn sm ghost" data-act="deselect">Deselect</button>`
     + `</span>`;
@@ -251,12 +264,12 @@ const tierText = t => `var(--${t}-text)`;
 /** A per-paint "to-buy" toggle (#5). Hidden for paints already owned. `mark` ∈ 'owned'|'want'|'none'. */
 const buyBtn = (id, mark) => mark === 'owned' ? '' :
   `<button type="button" class="buybtn${mark === 'want' ? ' on' : ''}" data-buy="${esc(id)}" aria-pressed="${mark === 'want'}"`
-  + ` title="${mark === 'want' ? 'On your buy list — click to remove' : 'Add to your buy list'}">`
-  + `${mark === 'want' ? `${icon('check')}on buy list` : `${icon('plus')}buy`}</button>`;
+  + ` title="${mark === 'want' ? 'On the shopping list — click to remove' : 'Add to the shopping list'}">`
+  + `${mark === 'want' ? `${icon('check')}On the list` : `${icon('plus')}Add`}</button>`;
 
 /** Render a nearest-paint match (or a graceful empty state). `markOf(id)` adds owned/adjust + a buy toggle. */
 export function matchChip(m, markOf) {
-  if (!m) return '<div class="br" style="color:var(--text-faint)">no close paint — consider mixing</div>';
+  if (!m) return '<div class="poornote"><strong>No pot is close.</strong> Mix it from the nearest paints, or see Other brands.</div>';
   const p = m.paint, q = m.quality;
   const mark = markOf ? markOf(p.id) : 'none';
   // "Boost owned, but honest" (#6): flag what you own + how to nudge it, never hiding the ΔE gap.
@@ -264,12 +277,14 @@ export function matchChip(m, markOf) {
     ? `<div class="ownline"><span class="owntag">${icon('check')}owned</span>${m.adjust ? `<span class="adjust">${esc(m.adjust)}</span>` : ''}</div>`
     : '';
   return swatch(p.hex, 'act' + fxCls(p))
-    + `<div style="min-width:0"><div class="ttl">Nearest real paint</div>`
+    + `<div style="min-width:0"><div class="ttl">Nearest pot</div>`
     + `<div class="nm">${esc(p.name)}</div>`
     + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
     + `<span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
     + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
+    // Poor (over ΔE 10, §3.2): say what that means and what to do, not only the tag (UX 4)
+    + (m.deltaE > 10 ? `<div class="poornote"><strong>No pot within ΔE 10.</strong> A mix or a glaze gets closer, or see Other brands.</div>` : '')
     + ownTag + buyBtn(p.id, mark) + `</div>`;
 }
 
@@ -283,8 +298,8 @@ export function planControls(ladder, includeContrast, gapCount) {
     + `<div class="ctlgrp"><span class="micro">Tone ladder</span><div class="seg ladsel" role="group" aria-label="Tone ladder">${lad}</div></div>`
     + `<button class="btn sm incl-contrast" id="inclContrast" aria-pressed="${!!includeContrast}" title="Washes, shades and effects are kept out of suggestions; tick to include Contrast paints (used as one-coat base colours)">Include Contrast</button>`
     + (gapCount > 0
-      ? `<button class="btn sm primary" id="addGaps">+ Add ${gapCount} to buy</button>`
-      : `<span class="micro nogaps">Nothing new to buy for this scheme</span>`)
+      ? `<button class="btn sm primary" id="addGaps">+ Add ${gapCount} to the shopping list</button>`
+      : `<span class="micro nogaps">Everything for this scheme is owned or on the list</span>`)
     + `</div>`;
 }
 
@@ -333,7 +348,9 @@ export function roleSlots(scheme, markOf) {
   // tap via sticky hover) and in the step's aria-label, so nothing is lost — just not always-on.
   const step = s => {
     const p = s.match && s.match.paint;
-    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}"` : ''}>${swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
+    // The chip shows the POT, the paint named under it, with its finish overlay (§2): a painter reads the
+    // ladder as "these three pots". With no pot (none close enough), it shows the target colour.
+    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
       + `<div class="pn">${p ? esc(p.name) : '—'}</div>`
       + (p ? `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>` : '')
       // wash-step honesty: a real wash/shade/ink shows its finish pill; no close medium → "watered down"
@@ -352,7 +369,7 @@ export function roleSlots(scheme, markOf) {
     : '';
   return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}" data-hex="${safeColor(r.idealHex)}">`
     + `<div class="shead"><span class="role">${esc(r.role)}</span>`
-    +   `<span class="sheadr"><button type="button" class="eqjump" data-goequiv="${safeColor(r.idealHex)}" title="Show this colour's cross-brand equivalents" aria-label="Show equivalents for ${esc(r.role)}">${icon('swap')}equivalents</button><span class="wt">${esc(r.weight)}</span></span></div>`
+    +   `<span class="sheadr"><button type="button" class="eqjump" data-goequiv="${safeColor(r.idealHex)}" title="Show this colour in other brands" aria-label="Show other brands for ${esc(r.role)}">${icon('swap')}Other brands</button><span class="wt">${esc(r.weight)}</span></span></div>`
     + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match, markOf)}</div>`
     + subNote(r)
     + sharedNote(r)
@@ -370,8 +387,8 @@ export function roleSlots(scheme, markOf) {
  *  affects — the only entry point a phone can actually see. cols: [{hex, label}]. */
 export function equivSourceChips(cols, activeHex) {
   const a = (activeHex || '').toUpperCase();
-  return `<div class="micro" style="margin:12px 0 7px">Show equivalents for</div>`
-    + `<div class="eqsrcrow" role="group" aria-label="Show equivalents for">`
+  return `<div class="micro" style="margin:12px 0 7px">Other brands for</div>`
+    + `<div class="eqsrcrow" role="group" aria-label="Other brands for">`
     + cols.map(c => `<button type="button" class="eqchip" data-eqsrc="${safeColor(c.hex)}" aria-pressed="${c.hex.toUpperCase() === a}">`
       + `<span class="sw" style="background-color:${safeColor(c.hex)}"></span>${esc(c.label)}</button>`).join('')
     + `</div>`;
@@ -460,7 +477,7 @@ export function livePalette(vm, fill, roleByHex = {}) {
       +   (canDetach ? `<button type="button" class="lcbtn${lockOn ? ' on' : ''}" data-lock="${sw}" title="${lockOn ? 'Unlock' : 'Lock'} colour" aria-label="${lockOn ? 'Unlock' : 'Lock'} ${esc(tag)}" aria-pressed="${lockOn}">${icon(lockOn ? 'lock' : 'unlock')}</button>` : '')
       +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:-1"${fi === 0 ? ' disabled' : ''} title="Move earlier" aria-label="Move ${esc(tag)} earlier">${icon('chevl')}</button>` : '')
       +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:1"${fi === freeCount - 1 ? ' disabled' : ''} title="Move later" aria-label="Move ${esc(tag)} later">${icon('chevr')}</button>` : '')
-      +   `<button type="button" class="lcbtn" data-setbase="${cHex}" title="Use as base colour" aria-label="Use ${esc(tag)} as the base colour">${icon('target')}</button>`
+      +   `<button type="button" class="lcbtn" data-setbase="${cHex}" title="Start from this colour" aria-label="Start from the ${esc(tag)} colour">${icon('target')}</button>`
       +   (isFree ? `<button type="button" class="lcbtn" data-delnode="${c.id.slice(1)}" title="Remove this colour" aria-label="Remove ${esc(tag)}">${icon('close')}</button>` : '')
       + `</div>`;
     // Swatch is a plain div now; copying moved to its own button beside the hex (so the swatch-click stays
@@ -470,13 +487,14 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // ("my pick seeds this role"); the dashed dock on the other eligible column is the control.
     // Every column reserves the row so switching never changes the bar's height (§3.4).
     const dock = c.dock && c.dock.type === 'chip'
-      ? `<span class="seedchip" title="Your pick — it seeds the ${esc(tag)} role"><span class="scsw" style="background-color:${safeColor(c.dock.hex)}"></span><span class="scnm">${esc(c.dock.name)}</span><span class="scanchor" aria-hidden="true">${icon('anchor')}</span></span>`
+      // A tag, not the paint's name: the name is already in the column's footer (UX 7). The title keeps it.
+      ? `<span class="seedchip" title="${esc(c.dock.name)} is your paint — it sets the ${esc(tag)} role">${icon('check')}Your paint</span>`
       : c.dock && c.dock.type === 'switch'
-        ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with your pick as the ${esc(tag)}"`} aria-label="Seed as ${esc(tag)}">${icon('anchor')}seed here</button>`
+        ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with your paint as the ${esc(tag)}"`} aria-label="Make this your paint: ${esc(tag)}">${icon('anchor')}Make this your paint</button>`
         : '';
     return `<div class="lcol${lockOn ? ' locked' : ''}${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
       + `<div class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}">`
-      +   `<span class="lctag">${esc(tag)}${real ? ' · real' : ''}</span>`
+      +   `<span class="lctag">${esc(tag)}${real ? ' · pot' : ''}</span>`
       +   `<span class="lchexrow"><span class="lchex">${bg}</span>`
       +     `<button type="button" class="lccopy${t === '#FFFFFF' ? ' light' : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}">${COPY_ICON}</button>`
       +   `</span></div>`

@@ -63,7 +63,7 @@ const validHarmony = t => isHarmony(t) || isNeutralHarmony(t);
 const NEUTRAL_OK = new Set(NEUTRAL_HARMONY_TYPES);
 const NEUTRAL_STRIP = [...NEUTRAL_HARMONY_TYPES, ...HARMONY_TYPES.filter(t => !NEUTRAL_OK.has(t))];
 const NEUTRAL_DISABLED = new Set(HARMONY_TYPES.filter(t => !NEUTRAL_OK.has(t)));
-const NEUTRAL_DISABLED_WHY = 'Needs a hue to rotate — unavailable for a neutral seed';
+const NEUTRAL_DISABLED_WHY = 'Needs a hue to rotate — unavailable for a neutral colour';
 /** Suggested pops — classic neutral pairings (locked ideal hexes, not paint hexes). */
 const POPS = [
   { hex: '#9C1626', name: 'Crimson' }, { hex: '#0F6B6E', name: 'Teal' }, { hex: '#C4581A', name: 'Ember' },
@@ -129,7 +129,7 @@ function renderPlan() {
   // No overview colour bar here — the role-labelled live palette (beside the wheel) is now the single
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
-    + '<div class="micro" style="margin:14px 0 0">Each role: ideal colour → nearest real paint (ΔE 2000), plus the selected tone ladder</div>'
+    + '<div class="micro" style="margin:14px 0 0">Each role: target colour → nearest pot (ΔE 2000), plus the selected tone ladder</div>'
     + ui.roleSlots(state.scheme, store.markOf);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
@@ -195,7 +195,7 @@ function renderLive() {
     if (!switchPlaced && role === otherRoleName) {
       switchPlaced = true;
       const disabled = otherRoleName === 'Accent' && neutralSeed()
-        ? 'A neutral seed always holds Primary — pick a pop accent on the wheel instead' : null;
+        ? 'A neutral colour always holds Primary — pick a pop accent on the wheel instead' : null;
       return { type: 'switch', target: otherRoleName === 'Accent' ? 'accent' : 'main', disabled };
     }
     return null;
@@ -258,7 +258,7 @@ function applyEquivSelect() {
     const top = el.querySelector('.lctop'); if (!top) continue;
     if (on) {   // the swatch becomes a keyboard-operable "show equivalents" button — only on this tab
       top.setAttribute('role', 'button'); top.setAttribute('tabindex', '0');
-      top.setAttribute('aria-label', `Show equivalents for ${(top.querySelector('.lctag')?.textContent || el.dataset.hex).trim()}`);
+      top.setAttribute('aria-label', `Show other brands for ${(top.querySelector('.lctag')?.textContent || el.dataset.hex).trim()}`);
     } else { top.removeAttribute('role'); top.removeAttribute('tabindex'); top.removeAttribute('aria-label'); }
   }
 }
@@ -268,7 +268,7 @@ function setEquivSource(hex) {
   state.equivSource = h;
   renderEquiv();
   applyEquivSelect();
-  const st = $('#status'); if (st) st.textContent = `Showing equivalents for ${(state.roleByHex || {})[h] ? (state.roleByHex[h] + ' ') : ''}${h}`;
+  const st = $('#status'); if (st) st.textContent = `Showing other brands for ${(state.roleByHex || {})[h] ? (state.roleByHex[h] + ' ') : ''}${h}`;
 }
 /** Re-render the harmony strip for the current mode: neutral seeds get the neutral-native schemes
  *  first with the hue rotations greyed in place (visible + tooltip'd, never removed — §3.4). */
@@ -344,9 +344,9 @@ function ensureHarmonyMode() {
     if (n) { preNeutralHarmony = state.harmony; state.harmony = 'neutral-pop'; }
     else { state.harmony = validHarmony(preNeutralHarmony) && !isNeutralHarmony(preNeutralHarmony) ? preNeutralHarmony : 'complementary'; preNeutralHarmony = null; }
     harmonyNote = n
-      ? { full: 'Neutral seed — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.',
-          short: 'Neutral seed — hue harmonies are unavailable for a neutral.' }
-      : { full: `Seed has a hue again — back to the ${state.harmony} scheme.`, short: 'Seed has a hue again.' };
+      ? { full: 'Neutral colour — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.',
+          short: 'Neutral colour — hue harmonies are unavailable for a neutral.' }
+      : { full: `Your colour has a hue again — back to the ${state.harmony} scheme.`, short: 'Your colour has a hue again.' };
     notes.push(harmonyNote.full);
   }
   // The seed role parks and restores SYMMETRICALLY with the harmony above. A neutral seed always
@@ -359,7 +359,7 @@ function ensureHarmonyMode() {
   } else if (restoring) {
     state.seedRole = 'accent';
     preNeutralSeedRole = null;
-    notes.push('Your pick seeds the Accent role again.');
+    notes.push('Your paint sets the Accent role again.');
   }
   // Hand the notes to announce() rather than writing #status here: they used to land in the live
   // region and be overwritten a statement later by the caller's own announce(), so the one thing a
@@ -445,6 +445,7 @@ let dragFrame = false, exactEquivT = 0;
 function render(reason = 'scheme', { speak = true, ids = null, keepWheelL = false } = {}) {
   if (reason === 'settle') { updateUrl(); if (speak) announce(); return; }
   if (reason === 'marks') { renderMarks(ids); return; }
+  endFirstRun();   // the painter changed the scheme: the first-run block has done its job
 
   // A pick, a typed hex, undo/redo, a share link or a harmony/seed-role change ends a lightness run.
   // Wheel drags and ↻ render as 'drag': the slider sees their new pick for itself. A pop change
@@ -679,6 +680,8 @@ function renderA11y() {
 // name such as __proto__ or toString found the prototype's member (?v=__proto__ crashed the app on load;
 // ?v=toString showed no tab).
 const TABS = ['plan', 'equiv', 'a11y'];
+// what a screen reader hears for each tab: its visible name, not the code name
+const TAB_SAID = { plan: 'Recipe', equiv: 'Other brands', a11y: 'Accessibility' };
 function renderActive() {
   if (state.tab === 'equiv') renderEquiv();
   else if (state.tab === 'a11y') renderA11y();
@@ -687,6 +690,7 @@ function renderActive() {
 
 /* ---- shelf (collection) — Finder-style bulk stocking, wired to store.setMark ---- */
 const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle; mouse = multi-select (locked decisions)
+const CAN_SHARE = COARSE && typeof navigator.share === 'function';   // the share sheet on touch only
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
 const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false, viewIds: null };   // ids; selection is transient (not persisted); viewIds = the drawn order (set by renderShelf)
 const shelfPaints = () => {
@@ -705,13 +709,13 @@ const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComput
 
 function shelfHint() {
   if (COARSE) return shelf.selectMode
-    ? 'Select mode: tap swatches, then Owned / To buy / Clear below. Long-press a swatch for the menu.'
-    : 'Tap a swatch to cycle owned → to buy → clear · “Select” for multi · long-press for the menu.';
-  return 'Click to select · ⇧ or ⌘ for many · drag a box · then P (owned) · U (to buy) · X (clear). Right-click for options.';
+    ? 'Select mode: tap paints, then Owned, Shopping list or Clear below. Hold a paint for the menu.'
+    : 'Tap a paint to mark it. Hold for more.';
+  return 'Click a paint, then P owned · U shopping list · X clear. Right-click for more.';
 }
 function renderShelfStats() {
   const c = store.counts(), total = state.idx.paints.length;
-  $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} to buy</span> · ${total} total`;
+  $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} on the shopping list</span> · ${total} total`;
 }
 function renderShelfBar() {
   $('#shelfBar').innerHTML = ui.shelfBar(shelf.sel.size);
@@ -721,6 +725,12 @@ function renderShelf() {
   for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
   const view = shelfPaints();
   $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel);
+  // Nothing to show: say why and offer the way out (UX 4). Only the status filter alone gets its own words.
+  const onlyMark = state.shelfMark && !state.shelfQ && !state.shelfBrand && !state.shelfType;
+  const kind = onlyMark && !store.counts()[state.shelfMark] ? state.shelfMark : 'filter';
+  $('#shelfEmpty').hidden = view.length > 0;
+  $('#shelfGrid').hidden = !view.length;
+  if (!view.length) $('#shelfEmpty').innerHTML = ui.shelfEmpty(kind, state.shelfQ);
   // tag each cell with a DOM id for aria-activedescendant (keyboard cursor); the empty-state
   // placeholder has no data-id and must not become "sc-undefined"
   for (const c of $('#shelfGrid').children) if (c.dataset.id) c.id = 'sc-' + c.dataset.id;
@@ -734,6 +744,13 @@ function renderShelf() {
 /** A shelf filter (brand/status/type/search) changed → membership changes, so drop the selection
  *  (its ids may no longer be visible) and re-render. Sorting uses renderShelf directly (keeps selection). */
 function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null }); renderShelf(); revealShelfResults(); }
+/** The empty state's action: clear the search and every filter, then put focus on the grid. */
+function clearShelfFilters() {
+  state.shelfQ = state.shelfMark = state.shelfBrand = state.shelfType = '';
+  $('#shelfQ').value = $('#shelfBrand').value = $('#shelfType').value = '';
+  shelfFilterChanged();
+  $('#shelfGrid').focus({ preventScroll: true });
+}
 
 /* ---- Shelf dock (§3.6; mockups/shelf-landing.html "Chosen" + its design critique) ----
    Desktop: a sticky filter bar, always open. Phone (≤520px): the bar tucks up under the header on a
@@ -962,8 +979,8 @@ function applyMark(mark) {
   const cells = ids.map(cellEl).filter(Boolean);
   for (const c of cells) c.classList.remove('flash');
   if (cells.length) { void cells[0].offsetWidth; for (const c of cells) c.classList.add('flash'); }
-  const verb = mark === 'owned' ? 'owned' : mark === 'want' ? 'to buy' : 'cleared';
-  announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} marked ${verb}.`);
+  const verb = mark === 'owned' ? 'marked owned' : mark === 'want' ? 'added to the shopping list' : 'cleared';
+  announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} ${verb}.`);
 }
 function updateCell(c, mark) {
   c.dataset.mark = mark;
@@ -999,7 +1016,7 @@ function setupShelf() {
       } else {                                    // tap cycles this swatch's mark (approach C)
         const id = c.dataset.id, next = { none: 'owned', owned: 'want', want: 'none' }[c.dataset.mark || 'none'];
         store.setMark(id, next);
-        render('marks', { ids: [id] });          // the cell and the stats; it leaves an Owned / To buy view
+        render('marks', { ids: [id] });          // the cell and the stats; it leaves an Owned / Shopping list view
         const cc = cellEl(id);
         if (cc) { cc.classList.remove('flash'); void cc.offsetWidth; cc.classList.add('flash'); }
         const p = state.idx.byId.get(id);
@@ -1212,7 +1229,7 @@ function announce() {
   // names the harmony ("Rolled: Compound") replaces "compound scheme" in the summary: one name, said once.
   const lead = newsLead, named = newsNamesHarmony; newsLead = ''; newsNamesHarmony = false;
   $('#status').textContent = (lead ? lead + '. ' : '') + (note ? note + ' ' : '')
-    + `${baseInfo().name}, ${named ? '' : state.harmony + ' scheme, '}${state.tab} view.` + subTxt;
+    + `${baseInfo().name}, ${named ? '' : state.harmony + ' scheme, '}${TAB_SAID[state.tab] || state.tab} view.` + subTxt;
 }
 function updateUrl() {
   if (urlTimer) { clearTimeout(urlTimer); urlTimer = null; }
@@ -1290,6 +1307,23 @@ function scheduleAnnounce() {
   announceTimer = setTimeout(announce, 400);
 }
 const renderAll = () => render('all');   // init / a paint pick
+/* ---- First run (UX 1) ---- */
+const FIRST_PICKS = ['citadel-base-mephiston-red', 'citadel-base-macragge-blue', 'citadel-base-caliban-green', 'citadel-base-retributor-armour'];
+let firstRun = false;   // the block shows; set in init, after the first render
+function startFirstRun() {
+  const picks = FIRST_PICKS.map(id => state.idx.byId.get(id)).filter(Boolean);
+  $('#firstRunPicks').innerHTML = picks.map(p => `<button type="button" class="btn frpick" data-firstpick="${ui.esc(p.id)}">`
+    + `${ui.swatch(p.hex, ui.fxCls(p).trim())}${ui.esc(p.name)}</button>`).join('');
+  $('#firstRun').hidden = false;
+  firstRun = true;
+}
+/** The first change to the scheme ends the block, and saving makes the next visit a return visit. */
+function endFirstRun() {
+  if (!firstRun) return;
+  firstRun = false;
+  $('#firstRun').hidden = true;
+  store.keep();
+}
 /** The device's light/dark setting. The app follows it, live, until the painter picks a theme (§3.1). */
 const osDark = matchMedia('(prefers-color-scheme: dark)');
 const deviceTheme = () => (osDark.matches ? 'dark' : 'light');
@@ -1308,10 +1342,6 @@ function setTheme(t, { save = false } = {}) {
   const sw = document.querySelector('#themeToggle');   // keep the settings-menu theme switch in sync
   if (sw) sw.setAttribute('aria-checked', String(state.theme === 'dark'));
   syncThemeSlot();
-}
-function syncLocaleSeg() {                            // reflect the active locale in the settings-menu control
-  const cur = i18n.getLocale(), seg = $('#localeSeg');
-  if (seg) for (const x of seg.children) x.setAttribute('aria-pressed', String(x.dataset.locale === cur));
 }
 function setMode(mode) {
   state.mode = mode === 'shelf' ? 'shelf' : 'studio';
@@ -1439,7 +1469,7 @@ function addGapsToBuy() {
   const ids = [...new Set(schemeGaps(state.scheme, store.ownedIds()).map(g => g.paint.id))].filter(id => store.markOf(id) !== 'want');
   const n = ids.length;
   if (n) { store.setMarks(ids, 'want'); render('marks', { ids }); }   // one write, one repaint
-  toast(n ? `Added ${n} paint${n > 1 ? 's' : ''} to your buy list` : 'Nothing new to add');
+  toast(n ? `Added ${n} paint${n > 1 ? 's' : ''} to the shopping list` : 'Nothing new to add');
 }
 function setLadder(v) {                          // #7 — tone-ladder style (persisted)
   if (!['wash', 'tone', 'both'].includes(v)) return;
@@ -1485,10 +1515,10 @@ function doExport() {
   // The accumulated to-buy collection (#5) — the SHOP output, independent of the current scheme.
   const want = [...store.wantIds()].map(id => state.idx.byId.get(id)).filter(Boolean);
   if (want.length) {
-    t += `\nYour to-buy list (${want.length}):\n`;
+    t += `\nYour shopping list (${want.length}):\n`;
     for (const p of want) t += `  ${p.name} (${p.brand}${p.line && p.line !== '—' ? ' ' + p.line : ''}) ${p.hex}\n`;
   }
-  t += '\nHex values are approximate; ΔE = perceptual distance to the ideal colour.\n';
+  t += '\nHex values are approximate; ΔE = perceptual distance to the target colour.\n';
   download('palette-shopping-list.txt', t);
   toast(i18n.t('listSaved'));   // download is the artefact — no silent clipboard write (native-share direction)
 }
@@ -1496,7 +1526,9 @@ function doExport() {
  *  then clipboard, then a visible-URL prompt. No silent clipboard side-effects. */
 async function doShare() {
   const url = shareUrl(location.href, state.theme);   // without m=shelf (a friend gets the scheme, not your Shelf), with the theme on screen
-  if (navigator.share) {
+  // The share sheet is a phone's way to send a link. With a mouse, Safari on a Mac has it too, but there
+  // the expected action is a copy (Ryan, 2026-10-28), so the button says Copy link and copies.
+  if (CAN_SHARE) {
     try { await navigator.share({ title: 'Palette Studio for Miniatures', url }); return; }
     catch (e) { if (e && e.name === 'AbortError') return; }   // user dismissed the sheet
   }
@@ -1517,7 +1549,7 @@ function exportCollectionCsv() {
   const n = store.counts();
   if (!n.owned && !n.want) { toast('Your shelf is empty — nothing to export'); return; }
   download('my-paint-shelf.csv', marksToCsv(state.idx, store.ownedIds(), store.wantIds()), 'text/csv');
-  toast(`Exported ${n.owned} owned · ${n.want} to buy`);
+  toast(`Exported ${n.owned} owned · ${n.want} on the shopping list`);
 }
 /** Import a paintRack CSV (merges) or a Palette Studio JSON backup (#27). A backup REPLACES the shelf
  *  and settings, so it goes through the same confirm as ⋯ → Restore… — one rule for every .json. */
@@ -1533,7 +1565,7 @@ function importCollectionFile(file, opener) {
     toast(`Imported ${matched} paint${matched === 1 ? '' : 's'} · ${bits.join(' · ')}`);
     render('marks');   // many paints at once: the Shelf rebuilds, the Studio repaints where it shows
   };
-  reader.onerror = () => toast(t('readFail'));
+  reader.onerror = () => fileNotice('readFail', opener);
   reader.readAsText(file);
 }
 function applyCsv(text) {
@@ -1563,7 +1595,6 @@ function applyPrefsToState({ keepLinkTheme = false } = {}) {
     linkTheme = null;   // a restored or deleted theme wins over a link's (init applies the link's after this)
     setTheme(th === 'light' || th === 'dark' ? th : deviceTheme());
   }
-  i18n.applyLocale(store.getPref('locale')); syncLocaleSeg();
   const lp = store.getPref('ladder'); state.ladder = ['wash', 'tone', 'both'].includes(lp) ? lp : 'wash';
   const cp = store.getPref('collection'); state.collection = ['off', 'prefer', 'only'].includes(cp) ? cp : 'off';
   state.includeContrast = !!store.getPref('contrast');
@@ -1651,7 +1682,7 @@ function buildSlotSizers() {
 }
 /** Every settings control from the current state — before the menu shows, so nothing is announced. */
 function syncSettingsControls() {
-  syncCollectionSeg(); syncUmpHint(); syncThemeSlot(); syncLocaleSeg();
+  syncCollectionSeg(); syncUmpHint(); syncThemeSlot();
 }
 /** The Backup row's status line goes back to its hint. Only while the menu is closed (on open and on
  *  close): it is a live region, and a reset while you can hear it would read the hint out again. */
@@ -1759,10 +1790,10 @@ function setupSettings() {
     $('#themeToggle').focus();   // the button it was on is now the "Follows your device" text
     say(t('themeFollowsSaid'));
   });
-  $('#localeSeg').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    i18n.setLocale(b.dataset.locale);   // persists the pref + re-applies static [data-i18n] strings
-    syncLocaleSeg(); syncLocaleStrings(); syncUmpHint();
+  // The language follows the device (no ⋯ row). A change while the app is open applies at once.
+  addEventListener('languagechange', () => {
+    i18n.followDevice();
+    syncLocaleStrings(); syncUmpHint();
     renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
     wheelDraw();                        // …and the lightness slider's spoken value
   });
@@ -1784,7 +1815,7 @@ function setupSettings() {
     if (!f) return;
     const reader = new FileReader();
     reader.onload = () => confirmRestore(String(reader.result || ''), $('#restoreBtn'));
-    reader.onerror = () => toast(t('readFail'));
+    reader.onerror = () => fileNotice('readFail', $('#restoreBtn'));
     reader.readAsText(f);
   });
   // Help & info
@@ -1819,6 +1850,20 @@ function openConfirm({ title, body, okLabel, onOk, opener }) {
   d.showModal();
   $('#cdlgCancel').focus();
 }
+/** A file that is not a backup, or that could not be read (UX 4): a notice that stays until the painter
+ *  acts, in place of a toast that went after a few seconds. It is the confirm in its notice form: no
+ *  backup offer and no destructive action. "Pick another file" opens the same file picker again. */
+function fileNotice(key, opener) {
+  const d = $('#confirmDlg');
+  d.classList.add('notice');
+  $('#cdlgCancel').textContent = t('close');
+  openConfirm({
+    title: t(key === 'readFail' ? 'readFailTitle' : 'notBackupTitle'),
+    body: () => `<p>${ui.esc(t(key === 'readFail' ? 'readFailBody' : 'notBackupBody'))}</p>`,
+    okLabel: t('pickAnother'), opener,
+    onOk: () => opener?.click(),   // still inside the click: the file picker may open
+  });
+}
 function refreshConfirm() { if ($('#confirmDlg').open && cdlg.body) $('#cdlgBody').innerHTML = cdlg.body(); }
 function setupConfirm() {
   const d = $('#confirmDlg');
@@ -1833,6 +1878,7 @@ function setupConfirm() {
   });
   d.addEventListener('close', () => {
     cdlg.onOk = null;
+    if (d.classList.contains('notice')) { d.classList.remove('notice'); $('#cdlgCancel').textContent = t('cancel'); }
     // the opener can have gone from view (the Shelf hidden); fall back to a control that stays
     const o = cdlg.opener && cdlg.opener.isConnected && cdlg.opener.getClientRects().length ? cdlg.opener
       : settingsOpen() ? $('#restoreBtn') : $('#settingsBtn');
@@ -1850,7 +1896,7 @@ function datedLabel(date) {
 /** Restore… and a .json through Import…: read the file, show what Replace would do, apply nothing yet. */
 function confirmRestore(text, opener) {
   const info = store.inspectJSON(text);
-  if (!info.ok) { toast(t('notBackup')); opener?.focus({ preventScroll: true }); return; }
+  if (!info.ok) { fileNotice('notBackup', opener); return; }
   const date = info.saved ? new Intl.DateTimeFormat(i18n.getLocale(), { dateStyle: 'medium' }).format(new Date(info.saved)) : null;
   openConfirm({
     title: t('restoreTitle'),
@@ -1864,7 +1910,7 @@ function confirmRestore(text, opener) {
     },
     okLabel: t('replace'), opener,
     onOk: () => {
-      if (!store.importJSON(text)) { toast(t('notBackup')); return; }
+      if (!store.importJSON(text)) { fileNotice('notBackup', opener); return; }
       // The confirm is closed by now, so this shows in the menu or on the page. It goes first: a screen
       // reader then hears the news, and after it the Use my paints hint if the backup changed it.
       toast(t('restored'));
@@ -1954,7 +2000,7 @@ function setupEyedropper() {
   };
   const at = e => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * (cv.width / r.width)), Math.round((e.clientY - r.top) * (cv.height / r.height))]; };
   const inBounds = (x, y) => x >= 0 && y >= 0 && x < cv.width && y < cv.height;
-  const commit = (x, y) => {                           // lock the sampled colour in (what "Use as base colour" applies)
+  const commit = (x, y) => {                           // lock the sampled colour in (what "Use this colour" applies)
     const c = avg(x, y); if (!c) return;               // a fully-transparent spot has no colour to lock
     pick = c; chip.style.background = pick; hexEl.textContent = pick; useBtn.disabled = false;
   };
@@ -2114,6 +2160,9 @@ function wire() {
     shelfFilterChanged();
   });
   $('#shelfType').addEventListener('change', e => { state.shelfType = e.target.value; shelfFilterChanged(); });
+  $('#firstRunPicks').addEventListener('click', e => { const b = e.target.closest('[data-firstpick]'); if (b) selectPaint(b.dataset.firstpick); });
+  $('#firstRunShelf').addEventListener('click', () => { endFirstRun(); setMode('shelf'); });
+  $('#shelfEmpty').addEventListener('click', e => { if (e.target.closest('[data-shelfclear]')) clearShelfFilters(); });
   // Sorting doesn't change which paints are shown, so keep the selection — just re-render in the new order.
   $('#shelfSort').addEventListener('change', e => { state.shelfSort = e.target.value; renderShelf(); revealShelfResults(); });
   $('#shelfBar').addEventListener('click', e => {
@@ -2159,7 +2208,7 @@ async function init() {
   // ran TWICE — the second call was byte-identical dead work — and neither re-applied what it
   // restored, so on a shell whose storage had been evicted the recovered theme/locale sat in state
   // while the DOM kept the pre-hydrate one. applyPrefsToState() below applies it.
-  await store.hydrate();
+  const restored = await store.hydrate();
   applyPrefsToState();   // hydrate may have restored theme/locale/plan prefs — apply them, don't strand them
   if (tParam) { linkTheme = tParam; setTheme(tParam); }   // ...but the link's theme still outranks the stored pref
   // Another tab saved a mark or a setting, or deleted or restored the shelf (store.js): show it here too.
@@ -2197,8 +2246,9 @@ async function init() {
   if (!state.customHex) recentPicks = addRecent([], state.baseId);   // the paint the visit starts on is the first Recent pick
   syncTabs();
   wire();
+  $('#share').dataset.i18n = CAN_SHARE ? 'shareLink' : 'copyLinkBtn';   // Share link… on touch, Copy link with a mouse
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
-  syncLocaleSeg(); syncLocaleStrings(); syncSettingsControls();
+  syncLocaleStrings(); syncSettingsControls();
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
   ({ draw: wheelDraw, endLightnessRun } = setupWheel({
@@ -2218,6 +2268,9 @@ async function init() {
     coarse: () => COARSE, phone: () => PHONE.matches,
   });
   renderAll();
+  // A first visit with no paint in the link: show "Start a scheme" (after the first render, so that
+  // render does not end it). A native shell that restored a shelf is not a first visit.
+  if (store.firstVisit && !restored && !url.get('p') && !url.get('c')) startFirstRun();
   if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf
   // The first search letter would fold all 3,225 paints at once (about 70ms on a slow phone): do it now,
   // while the browser has nothing else to do.

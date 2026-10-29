@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Palette Studio for Miniatures</title>
 <meta name="description" content="Pick a miniature paint and get colour harmonies matched to the real paints you can buy." />
+<!-- The link preview (iMessage, Discord, Slack…). Their bots read this HTML and do not run JavaScript, so
+     the card is static: a shared scheme cannot draw its own image without a server (§1). The image is
+     1200 × 630 (src/og-image.png); without it, iMessage stretched the 180px icon. Absolute URLs: bots need them. -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Palette Studio" />
+<meta property="og:title" content="Palette Studio for Miniatures" />
+<meta property="og:description" content="Pick one paint. Get a colour scheme matched to real pots you can buy, in every brand." />
+<meta property="og:image" content="https://palette.ryanmette.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Palette Studio for miniatures: a scheme of four real paints — Mephiston Red, Skrag Brown, Hydra Turquoise and Keleshite Gold." />
+<meta name="twitter:card" content="summary_large_image" />
 <link rel="stylesheet" href="styles/fonts.css" />
 <link rel="stylesheet" href="styles/tokens.css" />
 <link rel="stylesheet" href="styles/app.css" />
@@ -83,7 +95,7 @@
                 <p class="sethint" id="umpHint" aria-live="polite"></p>
                 <button type="button" class="btn" id="umpOpenShelf" data-i18n="openShelf" hidden>Open Shelf</button>
               </div>
-              <p class="sethint umpshared" id="umpShared" data-i18n="umpShared">Equivalents still lists every paint.</p>
+              <p class="sethint umpshared" id="umpShared" data-i18n="umpShared">Other brands still lists every paint.</p>
             </div>
           </div>
         </div>
@@ -104,37 +116,33 @@
           </button>
         </div>
       </div>
+    </div>
+    <div class="setgrp">
       <div class="setrow">
-        <span class="setlbl" aria-hidden="true" data-i18n="language">Language</span>
+        <span class="setlbl" aria-hidden="true" data-i18n="scheme">Share this palette</span>
         <div class="setctl">
-          <div class="seg setseg" id="localeSeg" role="group" aria-label="Language" data-i18n-aria="language">
-            <button type="button" data-locale="en-GB" aria-pressed="true" data-i18n="langUK">English (UK)</button>
-            <button type="button" data-locale="en-US" aria-pressed="false" data-i18n="langUS">English (US)</button>
+          <!-- What these act on, in words (Ryan, 2026-10-28: "Scheme" did not say it): the palette on screen.
+               The Backup group below acts on everything this device keeps. -->
+          <div class="setbtns" role="group" aria-label="Share this palette" data-i18n-aria="scheme" aria-describedby="shareHint">
+            <button type="button" class="btn" id="share" data-i18n="shareLink">Share link…</button>
+            <button type="button" class="btn" id="export" data-i18n="saveList">Save the shopping list</button>
           </div>
+          <p class="sethint" id="shareHint" data-i18n="shareHint">The colours on screen now.</p>
         </div>
       </div>
     </div>
     <div class="setgrp">
       <div class="setrow">
-        <span class="setlbl" aria-hidden="true" data-i18n="scheme">Scheme</span>
-        <div class="setctl setbtns" role="group" aria-label="Scheme" data-i18n-aria="scheme">
-          <button type="button" class="btn" id="export" data-i18n="saveList">Save shopping list</button>
-          <button type="button" class="btn" id="share" data-i18n="shareLink">Share link</button>
-        </div>
-      </div>
-    </div>
-    <div class="setgrp">
-      <div class="setrow">
-        <span class="setlbl" aria-hidden="true" data-i18n="backup">Backup</span>
+        <span class="setlbl" aria-hidden="true" data-i18n="backup">Your shelf on this device</span>
         <div class="setctl">
-          <div class="setbtns" role="group" aria-label="Backup" data-i18n-aria="backup" aria-describedby="backupNow">
-            <button type="button" class="btn" id="backupBtn" data-i18n="backUp">Back up</button>
+          <div class="setbtns" role="group" aria-label="Your shelf on this device" data-i18n-aria="backup" aria-describedby="backupNow">
+            <button type="button" class="btn" id="backupBtn" data-i18n="backUp">Back up everything</button>
             <button type="button" class="btn" id="restoreBtn" aria-haspopup="dialog" data-i18n="restore">Restore…</button>
           </div>
           <input id="restoreFile" type="file" accept=".json,application/json" hidden />
           <!-- fixed slot: the hint, or the name of the file a backup just saved -->
           <div class="fixslot" id="backupSlot">
-            <p class="sethint" id="backupNow" role="status">Saves your shelf and settings to a file.</p>
+            <p class="sethint" id="backupNow" role="status">Owned paints, your shopping list and settings, in one file.</p>
           </div>
         </div>
       </div>
@@ -194,25 +202,42 @@
       </div>
       <p class="sr-only" id="seedKeys" data-i18n="seedKeys">The down arrow opens the list. The arrow keys move in it. Enter picks a paint. Shift+F10 opens the mark menu. Escape closes the list.</p>
     </div>
+    <!-- First run (UX 1): shown only when this device has nothing saved and the link names no paint. The
+         first change to the scheme (a pick, a hex, a drag, a harmony) ends it for good (app.js firstRun). -->
+    <section class="firstrun" id="firstRun" aria-labelledby="firstRunTitle" hidden>
+      <h2 id="firstRunTitle">Start a scheme</h2>
+      <p>Pick one paint you want on the model: type it in the field above, or start from one of these. The app builds a scheme around it and finds the pots to buy.</p>
+      <div class="frpicks" id="firstRunPicks" role="group" aria-label="Start from a paint"></div>
+      <ol class="frsteps">
+        <li>Pick a paint, or drag the wheel.</li>
+        <li>Pick a harmony, or roll one.</li>
+        <li>Add the pots you do not have to your shopping list.</li>
+      </ol>
+      <button type="button" class="textact" id="firstRunShelf">I own paints — mark my shelf first</button>
+    </section>
     <div class="wsplit">
       <div class="card pad studio">
         <div class="herowrap">
           <div class="hero" id="hero" tabindex="-1"></div>
         </div>
         <div class="wheelcol">
-          <div class="noverlay" id="neutralOverlay" hidden>
-            <button type="button" class="nbanner" id="neutralBanner" aria-controls="neutralPill" title="Collapse this note"><span class="nb-ic" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-half"/></svg></span>
-              <span><strong data-i18n="neutralHead">Neutral seed</strong> — <span data-i18n="neutralBody">hue harmonies can't move a colour with no hue, so these schemes are built for neutrals. Your colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.</span></span></button>
-            <button type="button" class="npill" id="neutralPill" aria-expanded="false" aria-controls="neutralBanner" title="Neutral seed — schemes adapted. Click for details." hidden><span aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-half"/></svg></span> <span data-i18n="neutralPill">neutral seed</span></button>
-          </div>
           <div class="wheelrow">
-            <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
+            <!-- The box is exactly the wheel, so the neutral note over it never reaches the lightness gutter
+                 (PLAN §5 follow-up 13). -->
+            <div class="wbox">
+              <div class="noverlay" id="neutralOverlay" hidden>
+                <button type="button" class="nbanner" id="neutralBanner" aria-controls="neutralPill" title="Collapse this note"><span class="nb-ic" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-half"/></svg></span>
+                  <span><strong data-i18n="neutralHead">Neutral colour</strong> — <span data-i18n="neutralBody">hue harmonies can't move a colour with no hue, so these schemes are built for neutrals. Your colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.</span></span></button>
+                <button type="button" class="npill" id="neutralPill" aria-expanded="false" aria-controls="neutralBanner" title="Neutral colour — schemes adapted. Click for details." hidden><span aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-half"/></svg></span> <span data-i18n="neutralPill">neutral colour</span></button>
+              </div>
+              <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
+            </div>
             <div class="wlcol" title="Lightness">
               <label class="wl-lab" for="wl" data-i18n="lightness">Lightness</label>
               <span class="wl-end" aria-hidden="true" data-i18n="lighter">Lighter</span>
               <input id="wl" class="wl-range" type="range" min="6" max="94" step="1" />
               <span class="wl-end" aria-hidden="true" data-i18n="darker">Darker</span>
-              <button class="btn icon" id="wrand" title="Generate a random base colour" aria-label="Generate a random base colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-reroll"/></svg></button>
+              <button class="btn icon" id="wrand" title="Pick a colour for me" aria-label="Pick a colour for me"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-reroll"/></svg></button>
             </div>
           </div>
           <div class="wkey">
@@ -230,15 +255,15 @@
           <div class="seg harmscroll" id="seg" role="group" aria-label="Harmony type"></div>
         </div>
         <div class="palhead">
-          <div class="micro">Live palette → nearest paint</div>
+          <div class="micro">Live palette → nearest pot</div>
           <div class="palctl">
             <button class="btn" id="undo" aria-label="Undo" title="Undo (Ctrl/⌘+Z)" disabled><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-undo"/></svg></button>
             <button class="btn" id="redo" aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)" disabled><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-redo"/></svg></button>
             <button class="btn" id="addnode" aria-label="Add a colour" title="Add a colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
             <button class="btn" id="delnode" aria-label="Remove the last added colour" title="Remove the last added colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg></button>
             <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">
-              <button data-fill="ideal" aria-pressed="true">Ideal</button>
-              <button data-fill="real" aria-pressed="false">Real</button>
+              <button data-fill="ideal" aria-pressed="true">Target</button>
+              <button data-fill="real" aria-pressed="false">Pot</button>
             </div>
           </div>
         </div>
@@ -250,8 +275,8 @@
       </div>
       <div class="card pad output">
         <div class="tabs" id="tabs" role="tablist" aria-label="Scheme views">
-          <button role="tab" id="tab-plan" data-tab="plan" aria-controls="panel-plan" aria-selected="true" tabindex="0">Plan · roles</button>
-          <button role="tab" id="tab-equiv" data-tab="equiv" aria-controls="panel-equiv" aria-selected="false" tabindex="-1"><svg class="tglyph" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13l-3.5-3.5"/><path d="M20 15H7l3.5 3.5"/></svg>Equivalents</button>
+          <button role="tab" id="tab-plan" data-tab="plan" aria-controls="panel-plan" aria-selected="true" tabindex="0">Recipe</button>
+          <button role="tab" id="tab-equiv" data-tab="equiv" aria-controls="panel-equiv" aria-selected="false" tabindex="-1"><svg class="tglyph" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13l-3.5-3.5"/><path d="M20 15H7l3.5 3.5"/></svg>Other brands</button>
           <button role="tab" id="tab-a11y" data-tab="a11y" aria-controls="panel-a11y" aria-selected="false" tabindex="-1"><svg class="tglyph" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><circle cx="12" cy="4.2" r="2.2"/><path d="M20.3 8.1c-.13.74-.84 1.18-1.6 1.05L14.6 8.5l1.2 11.7a1.25 1.25 0 01-2.49.26L12.4 14h-.8l-.9 6.46a1.25 1.25 0 01-2.49-.26L9.4 8.5l-4.1.66c-.76.13-1.47-.31-1.6-1.05-.13-.74.37-1.45 1.13-1.58L11 5.4h2l6.17 1.12c.76.13 1.26.84 1.13 1.58z"/></svg>Accessibility</button>
         </div>
         <div data-panel="plan" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0"></div>
@@ -267,8 +292,8 @@
         <h2 data-i18n="myShelf">My paint shelf</h2>
         <div class="shelftools">
           <button class="btn sm shelf-select" id="shelfSelect" aria-pressed="false" title="Select multiple swatches to mark at once">Select</button>
-          <button class="btn sm" id="importColl" title="Import a paintRack CSV or a Palette Studio JSON backup">Import<span class="lgonly">…</span></button>
-          <button class="btn sm" id="exportColl" title="Download your collection as CSV" aria-label="Export CSV">Export<span class="lgonly"> CSV</span></button>
+          <button type="button" class="textact" id="importColl" title="Import a paintRack CSV or a Palette Studio JSON backup">Import<span class="lgonly">…</span></button>
+          <button type="button" class="textact" id="exportColl" title="Save your shelf as a CSV file" aria-label="Save my shelf (CSV)">Save my shelf<span class="lgonly">&nbsp;(CSV)</span></button>
           <input id="importFile" type="file" accept=".csv,.json,text/csv,application/json" hidden />
         </div>
       </div>
@@ -287,7 +312,7 @@
         <div class="seg" id="shelfMarkSeg" role="group" aria-label="Filter by status">
           <button data-mark="" aria-pressed="true" data-i18n="filterAll">All</button>
           <button data-mark="owned" aria-pressed="false" data-i18n="filterOwned">Owned</button>
-          <button data-mark="want" aria-pressed="false" data-i18n="filterToBuy">To buy</button>
+          <button data-mark="want" aria-pressed="false" data-i18n="filterToBuy">Shopping list</button>
         </div>
         <div class="shelfscrim" id="shelfScrim" hidden></div>
         <div class="shelfmore" id="shelfMore" role="group" aria-label="More filters">
@@ -312,7 +337,8 @@
       </button>
     </div>
     <div class="shelfgrid lpress" id="shelfGrid" role="listbox" aria-multiselectable="true"
-         aria-label="Paints — select swatches, then press P for owned, U for to buy, X to clear, or Shift+F10 for the menu" data-i18n-aria="shelfGridName" tabindex="0"></div>
+         aria-label="Paints — select swatches, then press P for owned, U to add to the shopping list, X to clear, or Shift+F10 for the menu" data-i18n-aria="shelfGridName" tabindex="0"></div>
+      <div class="emptystate" id="shelfEmpty" hidden></div>
     <div class="shelfbar" id="shelfBar"></div>
   </section>
 </main>
@@ -336,7 +362,7 @@
     <p data-i18n-html="aboutMatchHtml">Colours are converted sRGB → CIELAB (D65) and matched by <strong>CIEDE2000 (ΔE 2000)</strong>;
       harmonies rotate hue in HSL. That maths is exact and unit-tested. But paint hex values are
       <strong>approximate</strong> (most are community-sourced and tagged “approx”), so every match
-      shows its <strong>ΔE and a plain-language quality label</strong> — “ideal vs actual” always
+      shows its <strong>ΔE and a plain-language quality label</strong> — “target vs pot” always
       surfaces the gap and never implies a perfect match.</p>
     <p data-i18n-html="aboutMoreHtml">The Help page explains <a href="support.html#matching">how the matching works</a> in plain
       words, and lists the <a href="support.html#shortcuts">keyboard shortcuts</a>.</p>
@@ -351,7 +377,7 @@
 
     <h3>Privacy &amp; support</h3>
     <p data-i18n-html="aboutPrivacyHtml">Runs entirely in your browser — no accounts, no server, no tracking, and no external requests.
-      Your shelf (owned and to-buy paints) and your settings stay on this device. Read the full
+      Your shelf (owned paints, your shopping list) and your settings stay on this device. Read the full
       <a href="privacy.html">privacy policy</a>.</p>
     <p data-i18n-html="aboutSupportHtml">A question, a missing paint, or something not working? See <a href="support.html">Help and support</a>.</p>
 
@@ -360,7 +386,7 @@
 
     <div class="aboutshelf">
       <h3 data-i18n="yourShelfHead">Your shelf on this device</h3>
-      <p data-i18n="yourShelfBody">Your owned and to-buy paints and your settings are kept only in this browser. To keep a copy, use ⋯ → Back up.</p>
+      <p data-i18n="yourShelfBody">Your owned paints, your shopping list and your settings are kept only in this browser. To keep a copy, use ⋯ → Back up everything.</p>
       <button type="button" class="btn danger" id="deleteOpen" aria-haspopup="dialog"><span class="dangerglyph" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-warning"/></svg></span><span data-i18n="deleteOpen">Delete my shelf and settings…</span></button>
     </div>
 
@@ -399,7 +425,7 @@
       <span class="sw" id="edChip" style="width:46px;height:46px"></span>
       <div style="min-width:0"><div class="micro">Sampled colour</div><div class="mono" id="edHex" style="font-size:15px">—</div></div>
       <span style="flex:1"></span>
-      <button class="btn primary" id="edUse" disabled>Use as base colour</button>
+      <button class="btn primary" id="edUse" disabled>Use this colour</button>
     </div>
     <p class="aboutfine">Move or tap on the photo to sample (3×3 average). The image is processed on your device and never uploaded.</p>
   </div>

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
+import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -71,14 +71,14 @@ test('pickTile: your pick has the pick ring and says so; a metallic has its over
   const metal = pickTile(LEAD, { id: 'pko1', k: 1, mark: 'want' }, tk);
   assert.match(metal, /class="sw metal"/);
   assert.match(metal, /class="pkb"><svg/);                  // the finish icon before the brand (§2)
-  assert.match(metal, /Leadbelcher, Citadel Base, metallic, to buy/);
+  assert.match(metal, /Leadbelcher, Citadel Base, metallic, on the shopping list/);
   assert.match(metal, /cbadge want/);
 });
 
 test('pickRow: an option row with brand · line · mark and the finish tag; a hex match shows the TRUE ΔE', () => {
   const plain = pickRow(TWIN, { id: 'pko5', k: 5, mark: 'want' }, tk);
   assert.match(plain, /role="option" id="pko5" data-k="5" aria-selected="false"/);
-  assert.match(plain, /<b>Dawnstone<\/b><span class="pksub">Citadel · Layer · to buy /);   // the row shows the line
+  assert.match(plain, /<b>Dawnstone<\/b><span class="pksub">Citadel · Layer · on the shopping list /);   // the row shows the line
   assert.doesNotMatch(plain, /pkde/);
   const m = { deltaE: 2.44, quality: { label: 'Good', tier: 'success' } };
   const hex = pickRow(LEAD, { id: 'pko6', k: 6, current: true, match: m }, tk);
@@ -128,6 +128,26 @@ test('ladder steps: short visible name; full identity in the tip + aria-label', 
   assert.ok(html.includes('tabindex="0"'), 'steps are keyboard-reachable');
 });
 
+test('ladder steps show the pot: the matched paint\'s colour and finish, not the target', async () => {
+  const { indexDataset } = await import('../src/js/data.js');
+  const { buildScheme } = await import('../src/js/scheme.js');
+  const { roleSlots } = await import('../src/js/ui.js');
+  const idx = indexDataset({ version: 't', paints: [
+    { id: 'c-layer-a', brand: 'Citadel', line: 'Layer', name: 'Pot A', hex: '#72766F', type: 'layer' },
+    { id: 'c-shade-b', brand: 'Citadel', line: 'Shade', name: 'Wash B', hex: '#3A3C38', type: 'shade' },
+  ] });
+  const scheme = buildScheme(idx, '#70746D', 'shades', { ladder: 'wash' });
+  const html = roleSlots(scheme, () => 'none');
+  const steps = scheme.roles[0].ladders[0].steps.filter(s => s.match && s.match.paint);
+  assert.ok(steps.length, 'the ladder has pots');
+  for (const s of steps) {
+    const p = s.match.paint;
+    if (p.hex.toUpperCase() !== s.idealHex.toUpperCase())
+      assert.ok(html.includes(`background-color:${p.hex}`), `the ${s.key} chip draws the pot ${p.hex}`);
+  }
+  assert.match(html, /class="sw fx-wash" style="background-color:#3A3C38/, 'a wash pot keeps its finish overlay');
+});
+
 test('seed docks: chip on the seeded role, switch dock on the other, reserved row everywhere', () => {
   const dockVm = [
     { id: 'p0', kind: 'base', deg: 0, hex: '#87146E', match: null, dock: { type: 'chip', name: 'Faerzress Purple', hex: '#87146E' } },
@@ -135,7 +155,7 @@ test('seed docks: chip on the seeded role, switch dock on the other, reserved ro
     { id: 'metal', kind: 'metal', hex: '#C8A13A', match: null },
   ];
   const html = livePalette(dockVm, 'ideal', { '#87146E': 'Primary', '#146E24': 'Accent' });
-  assert.ok(html.includes('class="seedchip"') && html.includes('Faerzress Purple'), 'chip renders with the pick name');
+  assert.match(html, /class="seedchip" title="Faerzress Purple is your paint[^"]*">[^<]*<svg[^>]*>.*?<\/svg>Your paint</, 'the tag says Your paint and names the paint in its title');
   assert.ok(html.includes('data-seeddock="accent"'), 'switch dock targets the other role');
   assert.equal((html.match(/class="lcdock"/g) || []).length, 3, 'every column reserves the dock row (no-jiggle)');
   // disabled dock (neutral) carries the why and no live target semantics
@@ -261,4 +281,21 @@ test('matchNote: the "·" ends the bold head (no-break space), so a wrapped expl
     assert.match(html, /<\/b> · <span class="mt">[^·]/);
     assert.doesNotMatch(html, /class="mt">·/);
   }
+});
+
+test('empty states: a heading, one sentence, one action that clears the filters (UX 4)', () => {
+  assert.equal(shelfGrid([], () => 'none'), '', 'an empty grid holds no fake option');
+  for (const [kind, head] of [['owned', 'No paints marked as owned yet'], ['want', 'Your shopping list is empty'], ['filter', 'No paints match']]) {
+    const html = shelfEmpty(kind, 'red');
+    assert.ok(html.startsWith(`<h3>${head}</h3><p>`), `${kind}: heading first`);
+    assert.equal((html.match(/data-shelfclear/g) || []).length, 1, `${kind}: one action`);
+  }
+  assert.match(shelfEmpty('filter', '<b>'), /&lt;b&gt;/, 'the search words are escaped');
+});
+
+test('a Poor match says what it means and what to do (UX 4)', () => {
+  const m = d => ({ paint: { id: 'x', name: 'X', brand: 'B', line: 'L', hex: '#123456', type: 'layer' }, deltaE: d, quality: { label: d > 10 ? 'Poor' : 'Loose', tier: d > 10 ? 'danger' : 'warning' } });
+  assert.match(matchChip(m(13.2)), /class="poornote"><strong>No pot within ΔE 10\.<\/strong>/);
+  assert.doesNotMatch(matchChip(m(9.9)), /poornote/, 'Loose (ΔE 10 or less) gets no note');
+  assert.match(matchChip(null), /class="poornote"><strong>No pot is close\.<\/strong>/);
 });

@@ -168,7 +168,7 @@ main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-tem
   border-radius: var(--r-ctrl); padding: 7px 10px; line-height: 1.45; }
 .warnpill { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
   color: var(--warning-text); background: var(--surface); border: 1px solid var(--warning); border-radius: var(--r-tag); padding: 0 5px; margin-right: 5px; }
-.sharednote .br { color: var(--text-faint); }
+.sharednote .br { color: var(--text-muted); }
 
 input[type="search"], select { height: var(--tap); border: 1px solid var(--edge); border-radius: var(--r-ctrl);
   background: var(--surface); color: var(--text); padding: 0 10px; font-family: inherit; font-size: 13px; width: 100%; }
@@ -312,7 +312,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
   margin-right: auto;   /* collapsed state parks at the LEFT of the wheel area (banner stays centred) */
   background: var(--accent-weak); border: 1px solid var(--accent); color: var(--accent); box-shadow: var(--shadow-pop);
   border-radius: var(--r-tag); padding: 4px 10px; font-size: 11.5px; font-weight: 600; font-family: var(--font);
-  animation: mh-pop .42s cubic-bezier(.34,1.56,.64,1) both; }
+  animation: mh-fade .18s ease both; }   /* a fade, no bounce: the painter did nothing, the note only folded away (§3.4) */
 
 /* Quick pops (neutral mode): shortcuts that move the wheel's pop node. */
 .pops { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
@@ -326,7 +326,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .hexline:hover { color: var(--text); background: var(--surface-2); }
 .hexline:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
 
-.hint { color: var(--text-faint); font-size: 12px; margin: 6px 0 0; }
+/* Readable text uses --text-muted (5.76:1 or more); --text-faint (2.4:1) is for decoration only (§3.3). */
+.hint { color: var(--text-muted); font-size: 12px; margin: 6px 0 0; }
 
 /* tabs + panels */
 .tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--border); margin: 8px -4px 0; padding: 0 4px; overflow-x: auto; }
@@ -353,33 +354,33 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .slot { border-top: 1px solid var(--border); padding: 14px 0; }   /* a role is a row under a rule, not a card in a card */
 .slot .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .slot .role { font-family: var(--display); font-weight: 600; font-size: 18px; }
-.slot .wt { font-size: 11px; color: var(--text-faint); }
+.slot .wt { font-size: 11px; color: var(--text-muted); }
 .ivsa { display: flex; align-items: center; gap: 10px; }
 .ivsa .ideal, .ivsa .act { width: 44px; height: 44px; flex: none; }
 .ivsa .arr { color: var(--text-faint); }
 .ivsa .nm { font-size: 12.5px; font-weight: 500; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ivsa .br { font-size: 11px; color: var(--text-muted); }
-.ttl { font-size: 11px; color: var(--text-faint); font-weight: 500; margin-bottom: 2px; }
+.ttl { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 2px; }
 .de { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; font-weight: 500; }
 .de .dot { width: 7px; height: 7px; border-radius: 50%; }
 .badge { font-family: var(--mono); font-size: 11px; padding: 0 2px; background: none; color: var(--text-muted); white-space: nowrap; }
 .ladder { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); }
 .ladder .step { flex: 1; min-width: 0; text-align: center; position: relative; }   /* min-width:0 → names ellipsize instead of shoving the row past the card */
 .ladder .step:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); border-radius: var(--r-ctrl); }
-.ladder .step .sw { width: 100%; height: 30px; }
+.ladder .step .sw { display: block; width: 100%; height: 30px; }   /* block: an inline span has no size (it drew nothing before 1.10) */
 .ladder .step .cap { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
 .ladder .step .pn { font-size: 10.5px; font-weight: 500; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .steptag { font-size: 9.5px; line-height: 1.3; }
 .steptag.dilute { color: var(--warning-text); font-weight: 600; }
 .nmmcap { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 12px; }
-.ladcap { font-size: 10px; font-weight: 600; letter-spacing: .03em; color: var(--text-faint); margin-top: 12px; text-transform: capitalize; }
+.ladcap { font-size: 10px; font-weight: 600; letter-spacing: .03em; color: var(--text-muted); margin-top: 12px; text-transform: capitalize; }
 
 /* plan controls — tone ladder · prefer-owned · add-to-buy (#5/#6/#7) */
 .planctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
 .ctlgrp { display: flex; align-items: center; gap: 8px; }
 .ladsel button { font-size: 12px; }
 .btn.incl-contrast[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
-.nogaps { color: var(--text-faint); align-self: center; }
+.nogaps { color: var(--text-muted); align-self: center; }
 
 /* The icon set (§3.5): an inline sprite in index.html, drawn with <use>. One stroke for every icon, so
    a glyph never looks heavier than its neighbour; each context only sets the size. */
@@ -422,7 +423,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .eq { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: 24px; margin-top: 14px; }
 .eqc { display: flex; gap: 9px; align-items: center; border-bottom: 1px solid var(--border); padding: 9px 0; }
 .eqc .sw { width: 38px; height: 38px; }
-.placeholder { color: var(--text-faint); font-size: 13px; padding: 24px 4px; }
+.placeholder { color: var(--text-muted); font-size: 13px; padding: 24px 4px; }
 
 /* explore wheel (M5) */
 /* split-sticky Studio layout: a full-width seed+hero bar, then a sticky studio beside the scrolling output */
@@ -434,7 +435,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
    a touch screen and when a safe-area inset pads it, so the studio never slides under the header. */
 .studio { position: sticky; top: calc(var(--hdr-h) + 16px); display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .output { min-width: 0; padding-left: 24px; border-left: 1px solid var(--border); align-self: stretch; }
-.wheelcol { position: relative; display: flex; flex-direction: column; align-items: center; }   /* anchors the neutral overlay */
+.wheelcol { display: flex; flex-direction: column; align-items: center; }
+.wbox { position: relative; flex: none; }   /* anchors the neutral overlay to the wheel itself, not the column */
 .wcanvas { touch-action: none; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 /* The lightness slider (§3.5 Slider, §3.6 wheel module; mockups/lightness-slider.html "B, fixed"). It
@@ -549,14 +551,12 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
    seeds this role"), the dashed dock is the control. Reserved on every column so switching roles
    never changes the bar's height (§3.4 no-jiggle). */
 .lcdock { min-height: 34px; padding: 5px 7px 0; display: flex; align-items: center; justify-content: center; }
-.seedchip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; background: var(--surface);
-  border: 1px solid var(--accent); border-radius: var(--r-tag); padding: 2px 8px 2px 3px;
-  font-size: 11px; font-weight: 600; box-shadow: var(--shadow); }
-.seedchip .scsw { width: 18px; height: 18px; border-radius: var(--r-sw); box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); flex: none; }
-.seedchip .scnm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.seedchip .scanchor { color: var(--accent); font-size: 10px; flex: none; }
+.seedchip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; background: var(--surface);
+  border: 1px solid var(--accent); border-radius: var(--r-tag); padding: 2px 8px 2px 6px; color: var(--text);
+  font-size: 11.5px; font-weight: 600; box-shadow: var(--shadow); white-space: nowrap; }
+.seedchip .ic { width: 12px; height: 12px; stroke-width: 2.25; color: var(--accent); }
 .dockbtn { width: 100%; min-height: 26px; border: 1.5px dashed var(--border-strong); background: transparent;
-  color: var(--text-faint); font-size: 10.5px; font-weight: 600; border-radius: var(--r-ctrl); cursor: pointer; }
+  color: var(--text-muted); font-size: 11.5px; font-weight: 600; border-radius: var(--r-ctrl); cursor: pointer; }   /* --text-faint was 2.4:1: under AA for a control's words */
 .dockbtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-weak); }
 /* inset: an outer ring ran 1px from the column's colour-link outline (.lcol.linkhi) */
 .dockbtn:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus-inset); }
@@ -590,7 +590,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 
 /* compare + toast (M8) */
 .compare { border: 1px solid var(--border); border-radius: var(--r-ctrl); padding: 10px 12px; margin: 4px 0 10px; background: var(--surface-2); }
-.cmphead { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
+.cmphead { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
 .cmprow { display: flex; align-items: center; gap: 10px; margin: 5px 0; flex-wrap: wrap; }
 .cmplab { font-size: 12px; min-width: 180px; }
 .cmppal { display: flex; flex: 1; min-width: 160px; height: 22px; border-radius: var(--r-sw); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
@@ -609,7 +609,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfstats { color: var(--text-muted); }
 .shelfstats .s-owned { color: var(--success-text); }
 .shelfstats .s-want { color: var(--buy-text); }
-.shelfhint { margin: 0; font-size: 12.5px; color: var(--text-faint); }
+.shelfhint { margin: 0; font-size: 12.5px; color: var(--text-muted); }
 /* Shelf filter bar: search + status + brand + type + sort on one wrapping row (search grows, controls
    size to content). Brand is a select (a dropdown) — the old wrapped chip rows cost three rows on a phone
    (mockups/shelf-brand-filter.html, direction A). */
@@ -733,6 +733,25 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   font: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer; }
 .textact:hover { text-decoration: underline; }
 .textact:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+/* The confirm in its notice form (a file that is not a backup, UX 4): no backup offer, no destructive
+   action. The action is a plain secondary button and the ⚠ goes. */
+.cdlg.notice .cdlgsave, .cdlg.notice #cdlgSaveSlot, .cdlg.notice .dangerglyph { display: none; }
+.cdlg.notice #cdlgOk { border-color: var(--border); }
+/* First run (UX 1): a band under the seed toolbar, on the page like every region (no card). */
+.firstrun { display: grid; gap: 12px; padding-block: 16px 24px; border-bottom: 1px solid var(--border); }
+.firstrun h2 { margin: 0; font-family: var(--display); font-size: var(--fs-h1); font-weight: 600; }
+.firstrun p { margin: 0; max-width: 72ch; }   /* the text keeps a reading width; the rule spans the page */
+.frpicks { display: flex; flex-wrap: wrap; gap: 8px; }
+.frpick { gap: 8px; padding-left: 8px; }
+.frpick .sw { width: 24px; height: 24px; }
+.frsteps { margin: 0; padding-left: 24px; color: var(--text-muted); display: grid; gap: 4px; }
+.firstrun .textact { justify-self: start; }
+/* Empty states (UX 4): a heading, one sentence, one action. */
+.emptystate { padding: 32px 0 48px; display: grid; justify-items: start; gap: 8px; max-width: 60ch; }
+.emptystate h3 { margin: 0; font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; }
+.emptystate p { margin: 0; color: var(--text-muted); }
+.poornote { margin-top: 4px; font-size: 12px; color: var(--text-muted); max-width: 40ch; }
+.poornote strong { color: var(--danger-text); font-weight: 600; }
 /* Destructive button (§3.5): a secondary button with a 1px --danger border. The label stays --text
    (--danger as text is 4.3:1 on the dark surface); the ⚠ is a graphic (3:1 is enough) and aria-hidden. */
 .btn.danger { border-color: var(--danger); }
@@ -852,7 +871,7 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
   font-size: 13px; cursor: pointer; border-radius: var(--r-ctrl); }
 .footlink:hover { text-decoration: underline; }
 .footlink:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
-.footnote { font-size: 12px; color: var(--text-faint); }
+.footnote { font-size: 12px; color: var(--text-muted); }
 
 .about { width: min(620px, 92vw); max-height: 86vh; padding: 0; border: 1px solid var(--border-strong);
   border-radius: var(--r-card); background: var(--surface); color: var(--text); box-shadow: var(--shadow-pop); overflow: hidden; }
@@ -913,6 +932,9 @@ a.btn { text-decoration: none; }
   .wsplit { grid-template-columns: 1fr; }   /* studio stacks above the output; both span the full width */
   .output { padding-left: 0; border-left: 0; padding-top: 16px; border-top: 1px solid var(--border); }
   .studio { position: static; }
+  /* One column: the tabs pin under the header once you reach them, so Plan · Equivalents · Accessibility
+     stay one tap away down a long tab (UX 2). The --bg fill hides the content that scrolls under them. */
+  .tabs { position: sticky; top: var(--hdr-h); z-index: 6; background: var(--bg); }
 }
 @media (max-width: 860px) {
   main { gap: 16px; }
@@ -968,13 +990,16 @@ a.btn { text-decoration: none; }
   @media (forced-colors: none) {
     .wl-range::-moz-range-track { background: linear-gradient(to right, var(--wl-stops, var(--border), var(--border))); }
   }
-  .livepal { flex-direction: column; }            /* live palette stacks to readable rows on phones */
-  .lcol { flex-direction: row; flex-wrap: wrap; }
-  .lcdock { flex: 1 1 100%; order: 3; min-height: 0; justify-content: flex-start; padding: 4px 8px 7px; }
-  .lcdock:empty { display: none; }                /* stacked rows: an empty dock line is just dead space */
-  .dockbtn { width: auto; padding: 3px 12px; }
-  .lctop { flex: 0 0 76px; min-height: 0; justify-content: center; }
-  .lcfoot { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  /* The live palette on a phone (UX 2, mockups/visual-identity.html): columns side by side, three to a row,
+     with the same subgrid as the desktop, so the colour blocks, docks and paint names line up. A fourth or
+     fifth colour wraps to a new row. Stacked full-width rows took 306px for three colours; this is about half. */
+  .livepal { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 8px; row-gap: 0; }
+  .lcol { display: grid; grid-row: span 3; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); margin-bottom: 8px; }
+  .lctop { min-height: 72px; padding: 7px 8px; }
+  .lchexrow { flex-wrap: wrap; gap: 4px; }
+  .lcact { gap: 4px 12px; }
+  /* ↶ ↷ + − and Ideal / Real share one row: Ideal / Real takes what the four buttons leave */
+  #realtoggle { width: auto; flex: 1 1 0; min-width: 0; }
   .shelfgrid { grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); }   /* fit more swatches per row on phones */
   .modenav { order: 2; }
 
@@ -1075,6 +1100,23 @@ a.btn { text-decoration: none; }
   button, .btn, .seg, [role="switch"], [role="tab"] {
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
   }
+}
+
+/* 44px touch targets for the small fixed-size controls (§3.6; PLAN §5 follow-up 12). Where the control
+   has room, it grows (the palette toolbar, the tabs, the source chips). Where a bigger box would crowd
+   its text, an invisible ::after grows only the hit area, centred on the control, as the theme switch's
+   ::before does: the look does not change. The live palette's column buttons step 44px apart, so their
+   hit areas meet but do not overlap. */
+@media (pointer: coarse), (max-width: 520px) {
+  #undo, #redo, #addnode, #delnode { width: var(--tap); height: var(--tap); }
+  .tabs button { min-height: var(--tap); }
+  .eqchip { min-height: var(--tap); }
+  .lcact { gap: 12px; }
+  .lcbtn, .lccopy { width: 32px; height: 32px; }
+  .hexline, .buybtn, .eqjump, .dockbtn, .footlink, .lcbtn, .lccopy { position: relative; }
+  .hexline::after, .buybtn::after, .eqjump::after, .dockbtn::after, .footlink::after, .lcbtn::after, .lccopy::after {
+    content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px);
+    transform: translate(-50%, -50%); }
 }
 
 /* motion — fades + gentle bounce (§3.4) */

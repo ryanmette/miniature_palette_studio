@@ -5,6 +5,78 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.11.0] - 2026-10-28
+### Added
+- **A sharp link preview.** A shared link showed the 180px home-screen icon stretched to fill the card in
+  iMessage, and Discord had no image to show. The page now has Open Graph tags and a 1200 × 630 card
+  (`src/og-image.png`): the mark, the name, one line on what the app does, and a real four-paint scheme. The
+  card is the same for every link: the preview bots do not run JavaScript, so a card per scheme would need a
+  server.
+- **A first-run guide.** On a first visit (nothing saved on this device, and no paint in the link), a "Start
+  a scheme" band under the paint field says what to do: one sentence, four starter paints (Mephiston Red,
+  Macragge Blue, Caliban Green, Retributor Armour), three steps, and "I own paints — mark my shelf first". The
+  first change to the scheme (a pick, a hex, a drag or a harmony) removes it for good. Delete my shelf and
+  settings makes the next visit a first visit again.
+
+### Changed
+- **⋯ says what each group acts on.** "Scheme" is now **Share this palette** ("The colours on screen now."),
+  and "Backup" is **Your shelf on this device** ("Owned paints, your shopping list and settings, in one
+  file."). The groups stay on one screen, with no submenus.
+- **The language follows your device.** ⋯ no longer has a Language row. A US device shows US spelling
+  ("color"), every other device UK spelling, and a change of the device's language applies at once.
+- **Copy link with a mouse, Share link… on touch.** On a Mac, Safari opened Apple's share menu from ⋯ → Share
+  link. With a mouse the button is now "Copy link": it copies the link and says so. Touch screens keep the
+  system share sheet.
+- **Empty and error states say what happened and what to do next** (UX 4):
+  - A Shelf filter with no paints shows a heading, one sentence and one action ("Show all paints", or "Clear
+    the search and filters"). The Owned filter with nothing owned, and an empty shopping list, have their own
+    words.
+  - A file that is not a backup, or that cannot be read, now opens a notice that stays until you close it,
+    with "Pick another file". It was a toast that went after a few seconds.
+  - A Poor match (over ΔE 10) in the Recipe now says "No pot within ΔE 10. A mix or a glaze gets closer, or
+    see Other brands." With no match at all it says "No pot is close."
+- **The dock on the live palette is easier to read.** The column with your paint shows a "✓ Your paint" tag
+  in place of a cut-off copy of the paint's name (the name is in the column's footer). The "Make this your
+  paint" dock on the other column uses readable text (it was 2.4:1).
+- **Minor actions are text actions.** On the Shelf, "Import…" and "Save my shelf (CSV)" are now text actions,
+  so the shelf's search reads as the main control.
+- **One name for one thing.** The app used several names for the same thing. Now each has one:
+  - The paint you start from is **your paint** (or **your colour** for a typed hex). "Seed", "base colour" and
+    "seed here" are gone. The dock button is "Make this your paint", and ↻ is "Pick a colour for me".
+  - The tab of role cards is **Recipe** (was "Plan · roles"). The live palette shows **Target / Pot** (was
+    "Ideal / Real"), and a role card says "Nearest pot".
+  - Cross-brand matches are **Other brands** (was "Equivalents").
+  - Paints to buy go on the **shopping list**, and the action is **Add** (was "to buy", "buy list", "+ buy").
+  - The files: "Save my shelf (CSV)", "Save the shopping list" and "Back up everything".
+  - The Help page, the Privacy page and the screen-reader names use the same words. Links and saved data do
+    not change.
+- **Shorter help on the Shelf.** With a mouse: "Click a paint, then P owned · U shopping list · X clear.
+  Right-click for more." On touch: "Tap a paint to mark it. Hold for more." The full list of keys is still on
+  the Help page and in the grid's screen-reader name.
+- **A shorter Studio on a phone.** The live palette shows its colours side by side, three to a row, in place of
+  one full-width row each, and Undo, Redo, + and − share one row with Ideal / Real. From the seed field to the
+  first Plan card is now 1,294px at 390 × 844 (was 1,445px). In the one-column layout (1024px and narrower) the
+  Plan, Equivalents and Accessibility tabs stay pinned under the header once you reach them.
+- **The neutral note no longer bounces when it folds away.** The ◐ pill now fades in (180ms). Only an action
+  of the painter bounces. The service-worker cache is `ps-v66`.
+
+### Fixed
+- **Hints and labels are readable.** The Shelf help line, the Recipe's labels ("Nearest pot", the ladder
+  captions, the role weights), the empty-filter message, the compare header, the footer note and "no close
+  paint" used `--text-faint` (2.4:1 on the light page, under WCAG AA). They now use `--text-muted`
+  (5.76:1 or more). `--text-faint` stays for decoration only: the → arrow and the logo's tagline.
+- **Every small control has a 44px touch target.** On a touch screen and on a phone, Undo, Redo, + and −, the
+  output tabs and the Equivalents source chips are now 44px tall. The live palette's column buttons are 32px
+  and 44px apart. The seed docks, the buy buttons, the "equivalents" jump, the hex-copy button and the footer
+  link keep their look but get an invisible 44px touch area (PLAN §5 follow-up 12).
+- **The neutral note no longer covers the lightness slider.** It now sits inside a box the size of the wheel,
+  so it ends before the slider at every width (PLAN §5 follow-up 13).
+- **The tone ladder shows its pots.** Each wash, base and highlight step drew an inline swatch with no size, so
+  the ladder showed only words. Each step now shows the pot named under it, in the pot's own colour and with its
+  finish overlay (a wash or a metallic shows as one). With no pot close enough, it shows the target colour.
+
+## [1.10.0] - 2026-10-28
 ### Added
 - **Design exploration: a visual identity that does not look "made by AI"** (`mockups/visual-identity.html`, not
   shipped). Ryan said that parts of the design look "AI", for example the radius and the padding of the buttons.
