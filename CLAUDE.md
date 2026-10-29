@@ -52,8 +52,8 @@ User accounts, server/database, payments, paint inventory sync, a "buy" checkout
 native mobile apps, AI color suggestions.
 These are parked in [`docs/PLAN.md`](docs/PLAN.md) §Future; a native iPhone app is explored
 separately in [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) (v2 only) and governed by its own
-constitution, [`CLAUDE_NATIVE.md`](CLAUDE_NATIVE.md) (a draft, dormant until Stage-1's
-`npx cap add ios` commit activates it).
+constitution, [`CLAUDE_NATIVE.md`](CLAUDE_NATIVE.md) (active since Stage 1 began on 2026-10-29, when the
+`ios/` platform folder was committed).
 
 ### Non-negotiables
 - **No backend.** Everything runs in the browser. The dataset is a static JSON file.
@@ -235,13 +235,15 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 ```
 /
 ├── CLAUDE.md                  ← this file (constitution)
-├── CLAUDE_NATIVE.md           ← native-track constitution (v2, DRAFT — dormant until Stage-1's npx cap add ios; CLAUDE.md wins on shared code)
+├── CLAUDE_NATIVE.md           ← native-track constitution (v2; active since Stage 1, 2026-10-29; CLAUDE.md wins on shared code)
 ├── README.md                  ← what it is, how to run/deploy
 ├── LICENSE                    ← proprietary, all rights reserved (code only; dataset = see SOURCES.md)
 ├── SECURITY.md                ← security policy (static/no-backend scope; private vuln reporting)
 ├── CHANGELOG.md               ← Keep a Changelog format
-├── package.json               ← dev config (ESM + npm scripts) — NOT shipped
-├── capacitor.config.json      ← v2 native-wrap scaffold (webDir=src); built with Xcode later, not from this repo (IOS_APP_PLAN §4a)
+├── package.json               ← dev config (ESM + npm scripts; the Capacitor devDependencies, CLAUDE_NATIVE §4) — NOT shipped
+├── package-lock.json          ← the npm lockfile, committed since Stage 1 so a Capacitor bump is deliberate (CLAUDE_NATIVE §11)
+├── capacitor.config.json      ← the native shell's config (webDir=src; ios.contentInset "never": the CSS owns the safe areas); built with Xcode on a Mac, not from this repo's CI
+├── ios/                       ← Capacitor platform project (Stage 1, Swift Package Manager); its rules are CLAUDE_NATIVE.md §5. public/ and the synced config are generated, never committed
 ├── docs/
 │   ├── PLAN.md                ← roadmap, milestones, decisions
 │   ├── USE_CASES.md           ← personas, entry modes, scheme roles, UC catalog
@@ -395,7 +397,7 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
 
 - ES2020+, modules, `const`/`let`, no transpilation assumed.
 - **Dependencies: none at runtime, and zero third-party runtime requests.** The webfonts (Barlow Condensed, IBM Plex Sans) are **self-hosted** (§3.3), so the app makes no external calls at all. Tests use Node's **built-in** runner (`node --test` / `node:assert`) — no install, no devDependency. Anything else needs a line here.
-  (One standing exception, dormant until Stage-1 kickoff: the native track's **dev-only** Capacitor
+  (One standing exception, active since Stage 1: the native track's **dev-only** Capacitor
   packages, allowlisted in [`CLAUDE_NATIVE.md`](CLAUDE_NATIVE.md) §4 — they never enter the web runtime.) We hand-roll colour math (it's small and well-specified) rather than pull a library.
 - Pure functions for math; side effects only in `ui.js`/`app.js` and the app-injected DOM modules (`wheel.js`, `markmenu.js`, `picker.js`), which get state and actions from `app.js` and hold no scheme state of their own.
 - Accessibility: semantic HTML, labelled controls, keyboard operable, visible focus, `aria-live` for dynamic palette updates, respects `prefers-reduced-motion`.

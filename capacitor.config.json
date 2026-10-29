@@ -3,5 +3,5 @@
   "appName": "Palette Studio",
   "webDir": "src",
   "server": { "androidScheme": "https" },
-  "ios": { "contentInset": "always" }
+  "ios": { "contentInset": "never" }
 }

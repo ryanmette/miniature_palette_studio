@@ -1,8 +1,9 @@
 # CLAUDE_NATIVE.md — Native-Track Constitution (v2)
 
-> **Status: DRAFT — dormant until Stage-1 kickoff.** This file **activates at the commit that
-> adds the `ios/` platform folder** (`npx cap add ios` — [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md)
-> §4b step 7). Until that commit exists it constrains **nothing** — web work answers to
+> **Status: ACTIVE since 2026-10-29** — Stage 1 began with commit `673a17c` ("feat: add the Capacitor iOS
+> project (Stage 1)", branch `feat/capacitor-ios`), which added the `ios/` platform folder (`npx cap add ios` —
+> [`docs/IOS_APP_PLAN.md`](docs/IOS_APP_PLAN.md) §4b step 7). *(Was: DRAFT, dormant until that commit.)*
+> Before that commit it constrained **nothing** — web work answers to
 > [`CLAUDE.md`](CLAUDE.md) alone, and the Stage-1 groundwork already shipped in v1.8 (safe-areas,
 > the in-shell SW skip, the `store.js` Preferences mirror, `native/assets/`) remains governed
 > there. *(One exception: the §3 registry rows describing those shipped guards are live
@@ -132,7 +133,10 @@ item is moot)* (IOS_APP_PLAN §4b step 5); camera photo intake (step 8); the liv
 (step 9); wheel haptics (its §4a/§5).
 
 *Not a divergence:* safe-area handling (`viewport-fit=cover` + `env(safe-area-inset-*)`) — it
-resolves to 0 on ordinary browsers; one stylesheet, no guard. *Not wired yet — do not assume:* no
+resolves to 0 on ordinary browsers; one stylesheet, no guard. It needs **`ios.contentInset: "never"`**
+in `capacitor.config.json` (2026-10-29): with `"always"` the web view inset its own content as well, so
+the safe areas were added twice — a white strip of the web view's background behind the status bar and
+the home indicator, and a double gap above the header. The CSS alone owns the insets. *Not wired yet — do not assume:* no
 StatusBar/`theme-color` sync (`setTheme()` doesn't touch the hard-coded meta), no deep-link handler
 beyond ordinary URL-param parsing at load, no native Camera/Share plugin calls anywhere in `src/`.
 Wiring any of these adds a registry row in the same commit.
@@ -324,6 +328,10 @@ recommendations, the third overrides this file's earlier default):
 **Open — resolve when building; stamp resolutions inline, don't delete:**
 1. **CocoaPods vs Swift Package Manager** for `ios/` — take what the Capacitor CLI defaults to at
    kickoff, commit its lockfile (§5), record the choice here, and don't churn it.
+   ✅ resolved 2026-10-29: **Swift Package Manager** (the Capacitor 8 default: `ios/App/CapApp-SPM/`,
+   `capacitor-swift-pm` 8.5.3); its lockfile, `App.xcodeproj/…/swiftpm/Package.resolved`, is committed. The
+   npm side is pinned too: `package-lock.json` is committed (the root `.gitignore` stopped ignoring it), so
+   a Capacitor bump is a deliberate, reviewable change (§4).
 2. **Dataset-update storage** (§7): Preferences is sized for prefs, not a 2,500-paint JSON —
    likely the filesystem or Cache API; decide when building, record here.
 3. **Does a PWA install affordance exist to hide?** (§4b step 5 names one; none found in `src/`

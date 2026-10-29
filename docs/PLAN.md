@@ -110,9 +110,9 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 **v1.12.0 released** — role holds (UC-3) and share as an image. The visual identity is done: v1.10.0 is the look (Workbench+) and v1.11.0 the
 UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funnel)** — see
 [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
-**Next planned work: the native app, Stage 1 (v2.0)** — the kickoff checklist is
-`IOS_APP_PLAN.md` §4b, and the native-track constitution is drafted (`CLAUDE_NATIVE.md`, dormant until
-kickoff). §5's live backlog is the buying-assistant plan (items 7–11) and the shopping-list turn (items 34–38, 34–37 built;
+**Native app, Stage 1 (v2.0): started 2026-10-29** — the `ios/` project is committed and runs in the
+simulator; the checklist is `IOS_APP_PLAN.md` §4b (next: a device, then camera intake), and the
+native-track constitution is active (`CLAUDE_NATIVE.md`). §5's live backlog is the buying-assistant plan (items 7–11) and the shopping-list turn (items 34–38, 34–37 built;
 studied and answered 2026-10-29); the pin-a-paint direction shipped as role holds in v1.12.0. Still outside this repo: the Mac/Xcode build, a designer for the asset
 library, and the optional palette-from-photo enhancement.
 
