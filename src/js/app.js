@@ -30,7 +30,7 @@ const state = {
   seedRole: 'main', tab: 'plan', theme: 'light',
   compareA: null, wheelL: null, hiHex: null,   // hiHex = the colour link-highlighted across wheel/plan/live palette
 
-  extraNodes: [], showReal: false,   // editable swatches [{h,s,l?,locked?}] (S5); live-palette ideal↔real fill
+  extraNodes: [],   // editable swatches [{h,s,l?,locked?}] (S5)
   dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
   mode: 'studio', shelfBrand: '', shelfMark: '', shelfQ: '', shelfType: '', shelfSort: '', brands: [],   // Studio/Shelf mode; shelf brand · status · search · type · sort
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
@@ -162,7 +162,10 @@ function releaseAllHolds() {
 }
 
 /* ---- Choose a pot (direction A) ---- */
-const pot = { role: null, opener: null, target: null };
+// One dialog, two jobs. `role` set: choose the pot a role holds (the Recipe's Choose pot…, a role column's
+// pencil). `sw` set instead: choose a paint for a live-palette column that is no holdable role (the base,
+// an added colour); the paint's colour becomes that column's colour. Its last row is a custom colour.
+const pot = { role: null, sw: null, opener: null, target: null };
 function potItems(q) {
   const role = pot.role, metal = role === 'Metal', target = pot.target;
   const rank = p => { const dE = deltaE2000Hex(p.hex, target); return { paint: p, deltaE: dE, quality: matchQuality(dE) }; };
@@ -176,40 +179,68 @@ function renderPotList() {
   const q = $('#potQ').value;
   const items = potItems(q), cur = state.holds[pot.role]?.kind === 'pot' ? state.holds[pot.role].id : null;
   $('#potList').innerHTML = ui.potRows(items, store.markOf, cur);
+  const what = pot.role ? `this scheme's ${pot.role.toLowerCase()}` : 'this colour';
   $('#potHint').textContent = q.trim()
-    ? `${items.length} paint${items.length === 1 ? '' : 's'}. ΔE is the distance from this scheme's ${pot.role.toLowerCase()}.`
-    : `Closest to this scheme's ${pot.role.toLowerCase()} first${pot.role === 'Metal' ? ', metallics first' : ''}. Or search any paint.`;
+    ? `${items.length} paint${items.length === 1 ? '' : 's'}. ΔE is the distance from ${what}.`
+    : `Closest to ${what} first${pot.role === 'Metal' ? ', metallics first' : ''}. Or search any paint.`;
 }
-function openPotDialog(role, opener) {
-  if (!holdableRoles().includes(role)) return;
-  pot.role = role; pot.opener = opener;
-  // the target the rule makes for this role (not a held colour): the list ranks against the scheme's own pick
-  const d = roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() }).find(x => x.role === role);
-  pot.target = d ? d.idealHex : '#808080';
-  $('#potTitle').textContent = `Choose a pot for ${role}`;
+function showPotDialog(title, opener) {
+  pot.opener = opener;
+  $('#potTitle').textContent = title;
   $('#potQ').value = '';
+  $('#potColor').value = pot.target.toLowerCase();
   renderPotList();
   $('#potDlg').showModal();
   $('#potQ').focus();
 }
+function openPotDialog(role, opener) {
+  if (!holdableRoles().includes(role)) return;
+  pot.role = role; pot.sw = null;
+  // the target the rule makes for this role (not a held colour): the list ranks against the scheme's own pick
+  const d = roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() }).find(x => x.role === role);
+  pot.target = d ? d.idealHex : '#808080';
+  showPotDialog(`Choose a pot for ${role}`, opener);
+}
+/** The live palette's pencil: a role column chooses the role's pot; any other column chooses a paint
+ *  for its colour. (It had opened the system colour picker from a hidden input: some browsers never
+ *  showed it, and it gave a hex, not a paint.) */
+function openPaintDialog(sw, opener) {
+  if (sw.startsWith('r:')) { openPotDialog(sw.slice(2), opener); return; }
+  pot.role = null; pot.sw = sw; pot.target = swatchHex(sw);
+  showPotDialog(sw === 'base' ? 'Choose a paint for Primary' : 'Choose a paint for this colour', opener);
+}
 function choosePot(id) {
   const p = state.idx.byId.get(id); if (!p) return;
-  const role = pot.role;
+  const role = pot.role, sw = pot.sw;
   $('#potDlg').close();
-  setHold(role, { kind: 'pot', id: p.id, hex: p.hex });
-  say(`${ui.pname(p)} is the ${role} pot. It stays when you roll or change the harmony.`);
-  refocusHold(`.slot [data-hold-pot="${role}"]`, '#holdnote [data-hold-releaseall]');
+  if (role) {
+    setHold(role, { kind: 'pot', id: p.id, hex: p.hex });
+    say(`${ui.pname(p)} is the ${role} pot. It stays when you roll or change the harmony.`);
+    refocusHold(`.slot [data-hold-pot="${role}"]`, '#holdnote [data-hold-releaseall]');
+  } else if (sw === 'base' && state.seedRole === 'main') selectPaint(p.id);   // the base IS the starting paint: keep the paint, not only its hex
+  else { editSwatch(sw, p.hex); say(`${ui.pname(p)}: ${p.hex}.`); }
+}
+/** The dialog's custom-colour row: a colour, not a paint. A role locks that colour; a column takes it. */
+function chooseColour(hex) {
+  hex = normHex(hex); if (!hex) return;
+  const role = pot.role, sw = pot.sw;
+  $('#potDlg').close();
+  if (role) { setHold(role, { kind: 'lock', hex }); say(`${role} colour locked at ${hex}.`); }
+  else editSwatch(sw, hex);
 }
 function setupPotDialog() {
   const d = $('#potDlg');
   let timer = 0;
   $('#potQ').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(renderPotList, 120); });
   $('#potList').addEventListener('click', e => { const b = e.target.closest('[data-potid]'); if (b) choosePot(b.dataset.potid); });
+  // `change` fires once, when the system picker closes on a colour (`input` would fire on every move)
+  $('#potColor').addEventListener('change', e => chooseColour(e.target.value.toUpperCase()));
   $('#potClose').addEventListener('click', () => d.close());
   d.addEventListener('close', () => {
     const o = pot.opener;
     if (o && o.isConnected && o.getClientRects().length) o.focus({ preventScroll: true });
-    else refocusHold(`.slot [data-hold-pot="${pot.role}"]`, `.slot [data-hold-lock="${pot.role}"]`);
+    else if (pot.role) refocusHold(`.slot [data-hold-pot="${pot.role}"]`, `.slot [data-hold-lock="${pot.role}"]`, `#livepal [data-edit="r:${pot.role}"]`);
+    else refocusHold(`#livepal [data-edit="${pot.sw}"]`, '#undo');
   });
 }
 /** The hold controls, on the Recipe cards and in the hold note (delegated from main). */
@@ -266,18 +297,45 @@ let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony c
 // the colour, the harmony or the seed role, so the slider's next move starts a new run from the colour
 // now (wheel.js).
 let endLightnessRun = () => {};
-/** node ideal-hex (UPPER) → role glyph (P/A/2) for the current scheme. Keyed off schemeBase() so it's
+/** The colour each role has now, as the Recipe has it: a held role's colour (its lock, or its pot's
+ *  colour) in place of the one the rule made (`genHex`). Metal is left out: it has no wheel node.
+ *  The wheel, its legend and the live palette all read the roles from here, so none of them can show a
+ *  role the others lack (Custom has no rule partners, and its Secondary and Accent had been Recipe-only). */
+function roleColours() {
+  const holds = activeHolds(), holdable = new Set(holdableRoles());
+  return roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() }).filter(d => !d.metal).map(d => {
+    const h = holds[d.role];
+    const hex = !h ? d.idealHex : (h.kind === 'pot' && state.idx.byId.get(h.id)?.hex) || h.hex;
+    return { role: d.role, genHex: d.idealHex.toUpperCase(), hex: hex.toUpperCase(), held: !!h, holdable: holdable.has(d.role) };
+  });
+}
+/** node hex (UPPER) → role glyph (P/A/2) for the current scheme. Keyed off schemeBase() so it's
  *  correct in accent-seed mode (the base node is then the Accent); Metal has no wheel node. */
 function wheelRoleGlyphs() {
   const m = {};
   // The wheel now draws in the SAME frame the roles are computed in (schemeBase()), so the badges are
   // correct in accent-seed mode too — they used to be suppressed there because the two frames were
   // 180° apart and every glyph would have landed on the wrong node.
-  for (const d of roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() })) {
-    if (d.metal) continue;
-    m[d.idealHex.toUpperCase()] = d.role === 'Primary' ? 'P' : d.role === 'Accent' ? 'A' : '2';
-  }
+  for (const r of roleColours()) m[r.hex] = r.role === 'Primary' ? 'P' : r.role === 'Accent' ? 'A' : '2';
   return m;
+}
+/** The role nodes the wheel draws beyond its rule: a role the rule makes no node for (Custom's Secondary
+ *  and Accent, Complementary's Secondary, the starting paint as Accent in a harmony without a 180°
+ *  partner), and a held role at its held colour. `hide`: the rule partners a hold replaced. A role node
+ *  drags (`drag`) when the role can be held; the drag locks it. Hue harmonies only: a value or neutral
+ *  harmony's partners share the base's hue, so they stay in the live palette (§7). */
+function wheelRoles() {
+  const out = { nodes: [], hide: [] };
+  if (!isHueHarmony(state.harmony)) return out;
+  const partners = paletteNodes().filter(n => n.kind === 'partner');
+  for (const r of roleColours()) {
+    if (r.role === 'Primary') continue;   // the base node
+    const onRule = partners.find(p => p.hex.toUpperCase() === r.genHex);
+    if (onRule && !r.held) continue;      // the rule's node already is this role
+    if (onRule) out.hide.push(onRule.deg);
+    out.nodes.push({ role: r.role, hex: r.hex, held: r.held, drag: r.holdable });
+  }
+  return out;
 }
 /** Derived palette: harmony-rule colours (never stored) + any free/added nodes. Feeds wheel + live palette. */
 function paletteNodes() {
@@ -310,9 +368,10 @@ function renderLive() {
   const sp = basePaint();
   const optsFor = hex => sp && hex.toUpperCase() === sp.hex.toUpperCase() ? { ...opts, preferIds: new Set([sp.id]) } : opts;
   const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, optsFor(n.hex)) }));
-  // Holds (direction A): a held role's column shows the held colour and its pot, as the Recipe does. A held
-  // role with no column here (Secondary in Complementary) gets a display-only column, so the bar stays the
-  // whole scheme. Columns that are no role (added colours, a fourth harmony colour) stay sketch colours.
+  // Holds (direction A): a held role's column shows the held colour and its pot, as the Recipe does. A role
+  // with no rule column here (Secondary in Complementary, Secondary and Accent in Custom) gets a column of
+  // its own, so the bar is always the whole scheme, as the Recipe and the wheel have it. Columns that are
+  // no role (added colours, a fourth harmony colour) stay sketch colours.
   const holds = activeHolds(), holdable = new Set(holdableRoles());
   const heldColumn = (c, role) => {
     const h = holds[role];
@@ -325,11 +384,17 @@ function renderLive() {
     return c;
   };
   for (const c of vm) { const role = roleByHex[c.hex.toUpperCase()]; if (role && c.kind !== 'free') heldColumn(c, role); }
+  const pin = accentPin();
+  const ORDER = ['Primary', 'Secondary', 'Accent'];
   for (const d of ideals) {
-    if (d.metal || !holds[d.role] || vm.some(c => c.role === d.role)) continue;
-    const col = heldColumn({ id: 'held-' + d.role, kind: 'held', hex: d.idealHex }, d.role);
-    // in role order: a held Secondary sits right after the base (Primary) column, as in the Recipe
-    const at = d.role === 'Secondary' ? vm.findIndex(c => c.kind === 'base') + 1 : vm.length;
+    if (d.metal || vm.some(c => c.role === d.role)) continue;
+    if (d.role === 'Accent' && pin) continue;   // the starting paint as Accent: its own column, below
+    const col = heldColumn({ id: 'role-' + d.role, kind: 'role', hex: d.idealHex }, d.role);
+    if (!col.match) col.match = nearestPaint(state.idx, col.hex, optsFor(col.hex));
+    // in role order, as in the Recipe: after the last role column that comes before it
+    const rank = ORDER.indexOf(d.role);
+    let at = 1;
+    vm.forEach((c, i) => { const k = ORDER.indexOf(c.role); if (c.kind !== 'free' && k > -1 && k < rank) at = i + 1; });
     vm.splice(at, 0, col);
   }
   // Seed docks — the Main|Accent control lives ON the palette now (§3.5): the pick's chip sits in
@@ -355,7 +420,6 @@ function renderLive() {
   for (const c of vm) c.dock = placeDock(c);
   // Metal has no wheel node, so it rides along as a display-only column → the live palette is the complete
   // scheme summary (one bar, all four roles), letting the Plan drop its duplicate overview strip.
-  const pin = accentPin();
   if (pin && !vm.some(c => c.hex.toUpperCase() === pin.toUpperCase())) {   // non-180° harmonies: no rule column carries the pick
     const pc = { id: 'accentpin', kind: 'pin', hex: pin, match: nearestPaint(state.idx, pin, optsFor(pin)) };
     pc.dock = placeDock(pc);
@@ -363,7 +427,7 @@ function renderLive() {
   }
   const metal = ideals.find(d => d.metal);
   vm.push(heldColumn({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: nearestPaint(state.idx, metal.idealHex, { ...opts, types: new Set(['metal']) }) }, 'Metal'));
-  el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal', roleByHex);
+  el.innerHTML = ui.livePalette(vm, roleByHex);
   applyLinkHighlight();   // re-assert any active hover-link after the columns are rebuilt
   applyEquivSelect();     // re-assert the Equivalents-source ring after the columns are rebuilt
 }
@@ -737,9 +801,6 @@ function editSwatch(sw, hex) {
   else if (sw.startsWith('x:')) { const i = +sw.slice(2); if (state.extraNodes[i]) state.extraNodes[i] = { ...state.extraNodes[i], h, s, l }; }
   syncNodeBtns(); render('palette');
 }
-let swEditTarget = null;   // swatch key being edited via the native colour picker
-/** Open the per-swatch colour editor (native picker), seeded with the swatch's current colour. */
-function openSwatchEditor(sw) { const inp = $('#swEdit'); if (!inp) return; swEditTarget = sw; inp.value = swatchHex(sw); inp.click(); }
 /** Move an added swatch within the free list (drag-reorder). */
 function moveFreeNode(from, to) {
   const a = state.extraNodes;
@@ -759,6 +820,8 @@ function equivSourceCols() {
       : n.deg ? `${n.deg > 0 ? '+' : ''}${n.deg}°` : ui.toneTag(n.hex, baseCol)) }));   // deg 0 = value partner (§F13)
   const pin = accentPin();
   if (pin && !cols.some(c => c.hex.toUpperCase() === pin.toUpperCase())) cols.push({ hex: pin, label: 'Accent' });
+  // a role with no rule colour, or a held role: the live palette has a column for it, so a chip too
+  for (const r of roleColours()) if (!cols.some(c => c.hex.toUpperCase() === r.hex)) cols.push({ hex: r.hex, label: r.role });
   const metal = ideals.find(d => d.metal);
   cols.push({ hex: metal.idealHex, label: 'Metal' });
   const seen = new Set();   // a free node can duplicate a rule colour — one chip per colour
@@ -1441,7 +1504,6 @@ function applySnap(json) {
   state.customHex = o.customHex; state.baseId = o.baseId;
   state.harmony = validHarmony(o.harmony) ? o.harmony : state.harmony;
   state.seedRole = o.seedRole;
-  state.showReal = o.showReal;
   state.popHex = o.popHex;
   state.extraNodes = o.extraNodes;
   state.dropOffsets = o.dropOffsets;
@@ -1453,7 +1515,6 @@ function applySnap(json) {
   preNeutralSeedRole = o.preSeedRole;   // parked seed role travels with the snapshot too
   lastNeutral = null;   // force ensureHarmonyMode (via refreshStudio) to re-sync banner/strip/pops for the restored seed
   syncSeg();
-  for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
   syncNodeBtns();
 }
@@ -2308,7 +2369,7 @@ function wire() {
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
     const mv = e.target.closest('[data-move]'); if (mv) { e.stopPropagation(); const [i, dir] = mv.dataset.move.split(':').map(Number); moveFreeNode(i, i + dir); return; }  // reorder (keyboard/touch path)
     const lk = e.target.closest('[data-lock]'); if (lk) { e.stopPropagation(); lockSwatch(lk.dataset.lock); return; }              // lock / unlock a swatch
-    const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openSwatchEditor(ed.dataset.edit); return; }        // edit a swatch's hex
+    const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openPaintDialog(ed.dataset.edit, ed); return; }   // choose a paint for a column
     const sb = e.target.closest('[data-setbase]'); if (sb) { e.stopPropagation(); seedFromSchemeBase(sb.dataset.setbase); return; }   // promote a swatch to the SCHEME base (accent-seed stores the pick 180° away)
     const dn = e.target.closest('[data-delnode]'); if (dn) { e.stopPropagation(); removeFreeNode(+dn.dataset.delnode); return; }  // delete an added swatch
     if (state.tab === 'equiv') {   // on the Equivalents tab, clicking a palette column drills into that colour's matches
@@ -2348,17 +2409,10 @@ function wire() {
     const lc = top.closest('.lcol[data-hex]'); if (!lc) return;
     e.preventDefault(); setEquivSource(lc.dataset.hex);
   });
-  $('#realtoggle').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    state.showReal = b.dataset.fill === 'real';
-    for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
-    renderLive(); scheduleAnnounce(); updateUrl();
-  });
   $('#addnode').addEventListener('click', addFreeNode);
   $('#delnode').addEventListener('click', () => removeFreeNode());
   $('#undo').addEventListener('click', undo);
   $('#redo').addEventListener('click', redo);
-  $('#swEdit').addEventListener('change', e => { if (swEditTarget) { editSwatch(swEditTarget, e.target.value.toUpperCase()); swEditTarget = null; } });
   // drag-reorder the added swatches (delegated on #livepal so it survives re-renders)
   const lp = $('#livepal');
   lp.addEventListener('dragstart', e => { const col = e.target.closest('[data-dragidx]'); if (!col) return; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', col.dataset.dragidx); col.classList.add('dragging'); });
@@ -2489,7 +2543,6 @@ async function init() {
   // tells the mode (harmony.js startsNeutral). Live changes keep the hysteresis rule.
   neutralMode = startsNeutral(labChroma(schemeBase()), state.harmony);
   ensureHarmonyMode();   // seed is now known: sync the strip (incl. neutral mode) + banner + pops
-  for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   syncNodeBtns();
   if (!state.customHex) recentPicks = addRecent([], state.baseId);   // the paint the visit starts on is the first Recent pick
   syncTabs();
@@ -2502,7 +2555,7 @@ async function init() {
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
   ({ draw: wheelDraw, endLightnessRun } = setupWheel({
-    state, render, pickHex, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs,
+    state, render, pickHex, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs, wheelRoles,
     addFreeNode, removeFreeNode, collapseBanner, seedNews,
     setDragging: v => { wheelDragging = v; },   // gates mid-drag history snapshots (one undo entry per drag)
   }));

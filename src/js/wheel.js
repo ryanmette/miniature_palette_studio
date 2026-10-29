@@ -23,7 +23,7 @@ const $ = sel => document.querySelector(sel);
 /**
  * Bind the wheel canvas. `ctx` supplies the app's state and the operations the wheel triggers:
  *   state · render(reason) · pickHex() · schemeBase() · activePop() · matchOpts() · basePaint()
- *   wheelRoleGlyphs() · addFreeNode() · removeFreeNode() · collapseBanner() · seedNews(msg) · setDragging(bool)
+ *   wheelRoleGlyphs() · wheelRoles() · addFreeNode() · removeFreeNode() · collapseBanner() · seedNews(msg) · setDragging(bool)
  * `setDragging` exists because the app gates mid-drag history snapshots on it — a drag must produce
  * ONE undo entry, not one per frame.
  * @returns {{ draw: () => void, endLightnessRun: () => void }} the redraw (canvas + slider paint), and
@@ -32,7 +32,7 @@ const $ = sel => document.querySelector(sel);
  */
 export function setupWheel(app) {
   const { state, render, pickHex, schemeBase, activePop, matchOpts, basePaint,
-          wheelRoleGlyphs, addFreeNode, removeFreeNode, collapseBanner, seedNews, setDragging } = app;
+          wheelRoleGlyphs, wheelRoles, addFreeNode, removeFreeNode, collapseBanner, seedNews, setDragging } = app;
   const cv = $('#wheel'), ctx = cv.getContext('2d');
   const COARSE = matchMedia('(pointer:coarse)').matches;
   const NODE = COARSE ? { base: 15, part: 12, hit: 26 } : { base: 11, part: 8, hit: 18 };  // hit: used in S4
@@ -84,13 +84,22 @@ export function setupWheel(app) {
     buildDisc(); ctx.drawImage(disc, 0, 0, W, H);   // filled HSV colour field (replaces the dotted hue ring)
     const offs = HARMONY_OFFSETS[state.harmony];
     const hueH = isHueHarmony(state.harmony);   // value harmonies (shades/mono) have no ring partners to draw
+    const roles = wheelRoles();                 // roles the rule has no node for, and held roles (app.js)
+    const skip = o => state.dropOffsets.includes(o) || roles.hide.includes(o);   // detached, or replaced by a hold
     ctx.strokeStyle = spoke; ctx.lineWidth = 1.5;
     const spokeTo = (hh, ss) => { const [x, y] = pos(hh, ss); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); };
     spokeTo(h, s);                                          // base — a spoke to every colour (Adobe-style)
-    if (hueH) for (const o of offs) if (!state.dropOffsets.includes(o)) spokeTo(h + o, s);   // hue partners (skip detached)
+    if (hueH) for (const o of offs) if (!skip(o)) spokeTo(h + o, s);   // hue partners
     for (const o of state.extraNodes) spokeTo(o.h, o.s);   // free/added
-    if (hueH) for (const o of offs) { if (state.dropOffsets.includes(o)) continue; const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
+    for (const r of roles.nodes) { const [rh, rs] = rgbToHsl(hexToRgb(r.hex)); spokeTo(rh, rs); }
+    if (hueH) for (const o of offs) { if (skip(o)) continue; const [x, y] = pos(h + o, s), ph = rotateHue(b, o); ctx.fillStyle = ph; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = textOn(ph); ctx.stroke(); }
     const accent = cs.getPropertyValue('--accent').trim() || '#0B6371';
+    // Role nodes: drawn like a partner; a held one wears the locked ring of an added colour
+    for (const r of roles.nodes) {
+      const [rh, rs] = rgbToHsl(hexToRgb(r.hex)), [x, y] = pos(rh, rs);
+      ctx.fillStyle = r.hex; ctx.beginPath(); ctx.arc(x, y, NODE.part, 0, 7); ctx.fill();
+      ctx.lineWidth = r.held ? 3.5 : 2; ctx.strokeStyle = r.held ? accent : textOn(r.hex); ctx.stroke();
+    }
     if (popNodeOn()) {   // neutral mode: the pop node is the wheel's draggable accent (the seed sits at the hueless centre)
       const pop = activePop(), [ph, psat] = rgbToHsl(hexToRgb(pop)), [px, py] = pos(ph, psat);
       spokeTo(ph, psat);
@@ -104,14 +113,15 @@ export function setupWheel(app) {
     // Primary/Accent/Secondary (legend below decodes it). Token pair (--accent / --on-accent + --surface
     // ring) → legible on any node colour in both themes; clamped inside the disc so a rim node's badge
     // can't fall off the edge. The map is keyed by drawn hex, so it's correct in accent-seed mode too.
-    const rg = wheelRoleGlyphs();
+    const rg = wheelRoleGlyphs(), shown = new Set();
     if (Object.keys(rg).length) {
       const surf = cs.getPropertyValue('--surface').trim() || '#fff';
       const onAcc = cs.getPropertyValue('--on-accent').trim() || '#fff';
       const r = COARSE ? 10 : 8.5;
       for (const n of hitNodes()) {
         const nh = nodeHex(n).toUpperCase();
-        const g = rg[nh]; if (!g) continue;
+        const g = rg[nh]; if (!g || shown.has(g)) continue;
+        shown.add(g);
         let bxr = n.x + 12, byr = n.y - 12;
         const vx = bxr - cx, vy = byr - cy, dd = Math.hypot(vx, vy), lim = R - r - 1;
         if (dd > lim) { bxr = cx + vx / dd * lim; byr = cy + vy / dd * lim; }
@@ -122,6 +132,9 @@ export function setupWheel(app) {
         ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';   // reset so later canvas text is unaffected
       }
     }
+    // The legend names only the badges on the wheel now (a value harmony's partners are not on it).
+    // visibility, not display: the legend keeps its width, so nothing moves (§3.4).
+    for (const k of document.querySelectorAll('.wkey-i')) k.classList.toggle('off', !shown.has(k.querySelector('.wk-badge')?.textContent));
     // Colour link (hover a role/column elsewhere): ring whichever node is that same colour — recomputing
     // each node's drawn hex the way it's filled, so the match is exact (no wheelL/rounding drift).
     if (state.hiHex) for (const n of hitNodes()) {
@@ -131,7 +144,7 @@ export function setupWheel(app) {
   }
   /** A node's drawn hex, matching how it's filled — the single mapping for badges/link rings/announce. */
   const nodeHex = n => n.kind === 'base' ? schemeBase() : n.kind === 'pop' ? activePop()
-    : n.kind === 'partner' ? rotateHue(schemeBase(), n.deg)
+    : n.kind === 'partner' ? rotateHue(schemeBase(), n.deg) : n.kind === 'role' ? n.hex
     : rgbToHex(hslToRgb([n.h, n.s, state.extraNodes[n.idx]?.l ?? state.wheelL]));
   /** One live wheel frame — coalescing, the output tabs and the debounced URL/speech all live in
    *  render('drag') now, so the wheel no longer keeps its own (divergent) idea of what to repaint. */
@@ -155,13 +168,22 @@ export function setupWheel(app) {
     state.customHex = pickForSchemeBase(rgbToHex(hslToRgb([h, s, state.wheelL])), state.seedRole);
     commit();
   }
+  /** Drag/nudge a role node: it locks that role at the new hue and saturation, with the role's own
+   *  lightness (a hold, as the Recipe's Lock colour: it stays when you roll or change the harmony). */
+  function setRole(n, h, s) {
+    if (!n.drag) return;   // the starting paint as Accent: it moves with the starting paint
+    state.holds = { ...state.holds, [n.role]: { kind: 'lock', hex: rgbToHex(hslToRgb([((h % 360) + 360) % 360, Math.max(0, Math.min(1, s)), n.l])) } };
+    commit();
+  }
   const pointerXY = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * (W / r.width), (e.clientY - r.top) * (H / r.height)]; };
   const pointerPolar = e => { const [px, py] = pointerXY(e), dx = px - cx, dy = py - cy; return [(Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360, Math.max(0, Math.min(1, Math.hypot(dx, dy) / R))]; };
   function hitNodes() {                  // every grabbable node: kind, its hue/sat, and screen position
     const [h, s] = rgbToHsl(hexToRgb(schemeBase())), [bx, by] = pos(h, s);
     const ns = [{ kind: 'base', h, s, x: bx, y: by }];
-    if (isHueHarmony(state.harmony)) HARMONY_OFFSETS[state.harmony].forEach(o => { if (state.dropOffsets.includes(o)) return; const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
+    const roles = wheelRoles();
+    if (isHueHarmony(state.harmony)) HARMONY_OFFSETS[state.harmony].forEach(o => { if (state.dropOffsets.includes(o) || roles.hide.includes(o)) return; const ph = ((h + o) % 360 + 360) % 360, [x, y] = pos(ph, s); ns.push({ kind: 'partner', deg: o, h: ph, s, x, y }); });
     if (popNodeOn()) { const [ph, psat] = rgbToHsl(hexToRgb(activePop())), [x, y] = pos(ph, psat); ns.push({ kind: 'pop', h: ph, s: psat, x, y }); }
+    for (const r of roles.nodes) { const [rh, rs, rl] = rgbToHsl(hexToRgb(r.hex)), [x, y] = pos(rh, rs); ns.push({ kind: 'role', role: r.role, hex: r.hex, drag: r.drag, h: rh, s: rs, l: rl, x, y }); }
     state.extraNodes.forEach((o, i) => { const [x, y] = pos(o.h, o.s); ns.push({ kind: 'free', idx: i, h: o.h, s: o.s, x, y }); });
     return ns;
   }
@@ -170,7 +192,7 @@ export function setupWheel(app) {
     let best = null;
     hitNodes().forEach((n, i) => {
       const d = Math.hypot(n.x - px, n.y - py); if (d > NODE.hit) return;
-      const pri = n.kind === 'free' || n.kind === 'pop' ? 0 : n.kind === 'partner' ? 1 : 2;
+      const pri = n.kind === 'free' || n.kind === 'pop' ? 0 : n.kind === 'partner' || n.kind === 'role' ? 1 : 2;
       if (!best || d < best.d - 4 || (d < best.d + 4 && pri < best.pri)) best = { ...n, d, pri, index: i };
     });
     return best;
@@ -183,6 +205,7 @@ export function setupWheel(app) {
     // a drag must move its hue/sat WITHOUT unpinning it or snapping its colour to the wheel slider
     else if (active && active.kind === 'free') { state.extraNodes[active.idx] = { ...state.extraNodes[active.idx], h: ph, s: ps }; commit(); }
     else if (active && active.kind === 'pop') setPop(ph, ps);   // neutral mode: the pop is the draggable accent
+    else if (active && active.kind === 'role') setRole(active, ph, ps);
     else setBase(ph, ps);               // base node, or empty space → move the base
   }
   cv.addEventListener('pointerdown', e => { collapseBanner(); dragging = true; setDragging(true); active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });   // interacting with the wheel dismisses the explainer — it must never block a drag
@@ -196,7 +219,8 @@ export function setupWheel(app) {
   function announceActive() {
     const ns = hitNodes(); if (!ns.length) return;
     const n = ns[Math.min(activeIdx, ns.length - 1)];
-    const label = n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added colour' : n.kind === 'pop' ? 'Pop accent' : `Partner ${Math.round(n.deg)} degrees`;
+    const label = n.kind === 'base' ? 'Base' : n.kind === 'free' ? 'Added colour' : n.kind === 'pop' ? 'Pop accent'
+      : n.kind === 'role' ? (n.drag ? 'colour, arrows lock it here' : 'the starting paint') : `Partner ${Math.round(n.deg)} degrees`;
     // announce the node's DRAWN colour (nodeHex) — a free node with its own lightness is NOT at
     // wheelL, and the spoken hex / nearest paint must match what the eye (and live palette) sees
     const hex = nodeHex(n).toUpperCase();
@@ -213,6 +237,7 @@ export function setupWheel(app) {
     const nh = ((n.h + dh) % 360 + 360) % 360, nsv = Math.max(0, Math.min(1, n.s + ds));
     if (n.kind === 'free') { state.extraNodes[n.idx] = { ...state.extraNodes[n.idx], h: nh, s: nsv }; commit(); }
     else if (n.kind === 'pop') setPop(nh, nsv);
+    else if (n.kind === 'role') setRole(n, nh, nsv);
     else setBase(n.kind === 'partner' ? ((nh - n.deg) % 360 + 360) % 360 : nh, nsv);
   }
   cv.addEventListener('focus', () => { focused = true; const ns = hitNodes(); activeIdx = Math.min(activeIdx, ns.length - 1); announceActive(); draw(); });

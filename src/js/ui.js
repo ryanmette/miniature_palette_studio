@@ -493,13 +493,14 @@ export function toneTag(hex, baseHex) {
   return ds >= 0 ? 'Richer' : 'Softer';
 }
 
-export function livePalette(vm, fill, roleByHex = {}) {
+export function livePalette(vm, roleByHex = {}) {
   if (!vm.length) return '';
-  const real = fill === 'real';
   const baseCol = (vm.find(c => c.kind === 'base') || vm[0]).hex;   // reference for value-partner tone labels
   const freeCount = vm.filter(c => c.kind === 'free').length;   // added swatches are the reorderable ones
   return `<div class="livepal">${vm.map(c => {
-    const bg = safeColor(real && c.match ? c.match.paint.hex : c.hex);   // hex label + copy follow the fill
+    // Target on top, pot under it (§2: show the gap, never hide it). This replaced a Target / Pot toggle that
+    // swapped one fill for the other: with a close match nothing changed, so the toggle read as broken.
+    const bg = safeColor(c.hex);
     const t = textOn(bg), m = c.match;
     const isBase = c.kind === 'base', isFree = c.kind === 'free';
     const isMetal = c.kind === 'metal', isPin = c.kind === 'pin';   // pin = the accent-seed colour riding along (display-only, like Metal)
@@ -508,9 +509,14 @@ export function livePalette(vm, fill, roleByHex = {}) {
     // An added colour is a sketch colour: no role, so not in the Recipe (mockups/hold-flow.html, "Extra").
     const tag = role || (isBase ? 'Base' : isFree ? 'Extra' : isMetal ? 'Metal' : isPin ? 'Accent'
       : c.deg ? `${c.deg > 0 ? '+' : ''}${c.deg}°` : toneTag(c.hex, baseCol));   // deg 0 = a value partner, not a hue offset
-    // Finish overlay: a real-fill column wears its matched paint's finish; the ideal Metal column wears the
-    // metallic sheen (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
-    const fx = real && m ? fxCls(m.paint).trim() : (isMetal ? 'metal' : '');
+    // Finish overlay: the pot band wears its paint's finish; the Metal target wears the metallic sheen
+    // (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
+    const fx = isMetal ? 'metal' : '';
+    const potHex = m ? safeColor(m.paint.hex) : null;
+    const potBand = m
+      ? `<span class="lcpot ${fxCls(m.paint).trim()}" style="background-color:${potHex};color:${textOn(potHex)}">`
+        + `<span class="lcpotlbl">Pot</span><span class="lchex">${potHex}</span></span>`
+      : `<span class="lcpot none"><span class="lcpotlbl">No close pot</span></span>`;
     const foot = m
       ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
@@ -525,12 +531,15 @@ export function livePalette(vm, fill, roleByHex = {}) {
     const isPot = c.hold === 'pot';
     const canDetach = !roleKey && (isFree || (c.kind === 'partner' && c.detachable));   // value-harmony partners can't be pinned uniquely
     const lockKey = roleKey && !isPot ? roleKey : canDetach ? sw : null;
-    const editKey = roleKey && !isPot ? roleKey : (isBase || canDetach) ? sw : null;
+    // The pencil chooses a PAINT for the column (the pot dialog; a custom colour is its last row). It had
+    // opened the system colour picker from a hidden input, which some browsers never show, and which
+    // gave a hex, not a paint. On a held pot it changes the pot.
+    const editKey = roleKey || ((isBase || canDetach) ? sw : null);
     const lockOn = roleKey ? c.hold === 'lock' : !!c.locked;
     // The pinned accent (the starting paint, in accent mode) is display-only; Metal has no wheel node, but
     // its colour can still be locked or edited, like any role's.
-    const acts = isPin || c.kind === 'held' && isPot ? '' : `<div class="lcact">`
-      +   (editKey ? `<button type="button" class="lcbtn" data-edit="${editKey}" title="Edit colour" aria-label="Edit ${esc(tag)} colour">${icon('edit')}</button>` : '')
+    const acts = isPin ? '' : `<div class="lcact">`
+      +   (editKey ? `<button type="button" class="lcbtn" data-edit="${editKey}" title="Choose a paint" aria-label="Choose a paint for ${esc(tag)}">${icon('edit')}</button>` : '')
       +   (lockKey ? `<button type="button" class="lcbtn${lockOn ? ' on' : ''}" data-lock="${lockKey}" title="${lockOn ? 'Unlock' : 'Lock'} colour" aria-label="${lockOn ? 'Unlock' : 'Lock'} ${esc(tag)} colour" aria-pressed="${lockOn}">${icon(lockOn ? 'lock' : 'unlock')}</button>` : '')
       +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:-1"${fi === 0 ? ' disabled' : ''} title="Move earlier" aria-label="Move ${esc(tag)} earlier">${icon('chevl')}</button>` : '')
       +   (isFree ? `<button type="button" class="lcbtn" data-move="${fi}:1"${fi === freeCount - 1 ? ' disabled' : ''} title="Move later" aria-label="Move ${esc(tag)} later">${icon('chevr')}</button>` : '')
@@ -551,12 +560,15 @@ export function livePalette(vm, fill, roleByHex = {}) {
       : c.dock && c.dock.type === 'switch'
         ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with the starting paint as the ${esc(tag)}"`} aria-label="Move the starting paint to ${esc(tag)}">${icon('anchor')}Move here</button>`
         : '';
-    return `<div class="lcol${lockOn || isPot ? ' locked' : ''}${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
+    // A lock is STATE, so it is a badge on the tag line (§3.5), never a ring: rings mean hover (the colour
+    // link) and the Equivalents selection. It had been an inset shadow that the colour block covered.
+    const lockBadge = lockOn ? `<span class="lclock" title="Locked: it stays when you roll or change the harmony">${icon('lock')}<span class="sr-only"> locked</span></span>` : '';
+    return `<div class="lcol${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
       + `<div class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}">`
-      +   `<span class="lctag">${esc(tag)}${real ? ' · pot' : ''}</span>`
+      +   `<span class="lctag">${esc(tag)}${lockBadge}</span>`
       +   `<span class="lchexrow"><span class="lchex">${bg}</span>`
-      +     `<button type="button" class="lccopy${t === '#FFFFFF' ? ' light' : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} colour ${bg}">${COPY_ICON}</button>`
-      +   `</span></div>`
+      +     `<button type="button" class="lccopy${t === '#FFFFFF' ? ' light' : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} target ${bg}">${COPY_ICON}</button>`
+      +   `</span>${potBand}</div>`
       + `<div class="lcdock">${dock}</div>`
       + acts
       + `<span class="lcfoot">${foot}</span></div>`;
