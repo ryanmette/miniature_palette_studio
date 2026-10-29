@@ -5,7 +5,7 @@ import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
   isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony, startsNeutral } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex, deltaE2000Hex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
-import { encodeState, decodeState, shareUrl } from './share.js';   // the share-link contract (state ⇄ URL)
+import { encodeState, decodeState, shareUrl, schemeQuery } from './share.js';   // the share-link contract (state ⇄ URL)
 import { shareView, layoutShareImage, paintShareImage, shareText, shareFileName, SHARE_SIZE, SHARE_FONTS, SHARE_TOKENS } from './shareimage.js';   // the share image (pure layout + painter)
 import { snapPalette, readSnap } from './undo.js';   // the undo snapshot (palette state ⇄ JSON, exact)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
@@ -101,7 +101,7 @@ function baseInfo() {
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
 /** The roles a painter can hold. Primary never: the harmony is built from it (from the starting paint, or
  *  from its opposite in accent mode). The role that holds the starting paint never: it is already chosen. */
-function holdableRoles() { return state.seedRole === 'accent' ? ['Secondary', 'Metal'] : ['Secondary', 'Accent', 'Metal']; }
+function holdableRoles(seedRole = state.seedRole) { return seedRole === 'accent' ? ['Secondary', 'Metal'] : ['Secondary', 'Accent', 'Metal']; }
 /** The holds that apply now (a hold on Accent waits, unused, while the starting paint is the Accent). */
 function activeHolds() {
   const out = {};
@@ -703,6 +703,8 @@ function render(reason = 'scheme', { speak = true, ids = null, keepWheelL = fals
    setMode('shelf') rebuilds its grid. The ⋯ Use my paints hint does not follow marks (§3.6). */
 let studioMarksStale = false;
 function renderMarks(ids) {
+  renderSchemeBar();   // a Restore, a Delete or another tab can add or remove the saved scheme on screen
+  if (state.mode === 'schemes') { renderSchemesPage(); studioMarksStale = true; return; }
   if (state.mode === 'shelf') { renderShelfMarks(ids); studioMarksStale = true; return; }
   paintStudioMarks(ids);
 }
@@ -1467,6 +1469,10 @@ function updateUrl() {
   // back over "Follows your device" after the device changed; a saved one came back over a newer saved
   // pick. Share link adds the theme on screen (shareUrl).
   const p = encodeState({ ...state, theme: linkTheme, pickHex: pickHex() });
+  // The saved scheme on screen (item 35): `s` keeps it through a refresh, on this device only (shareUrl
+  // drops it). renderSchemeBar works out which scheme that is, so it runs first.
+  renderSchemeBar();
+  if (openSchemeId) p.set('s', openSchemeId);
   // WebKit throws after 100 calls in 10 seconds (a held Enter on ↻ or Roll): the address bar can wait for
   // the next write, the undo step below cannot
   try { history.replaceState(null, '', '?' + p.toString()); } catch { /* SecurityError */ }
@@ -1475,6 +1481,225 @@ function updateUrl() {
   // back to a mid-drag colour instead of the pre-drag state. The drag's settling updateUrl (pointerup/
   // pointercancel) runs after the flag clears and takes the one real snapshot.
   if (!wheelDragging) pushHistory();
+}
+
+/* ---- saved schemes: the Save line, the Save dialog and the Schemes page (PLAN §5 item 35) ----
+   A saved scheme is store.js's `schemes` record: a name and the scheme's own link (share.js schemeQuery).
+   `openSchemeId` is the saved scheme on screen. The Studio shows Saved while the link now is its link, and
+   Changed after any change; Save writes the link now into it, and Save as new keeps both (Ryan: an
+   explicit Save, so exploring never writes over a saved scheme). Undo back to a saved link, or any link
+   a saved scheme has, shows it as Saved again (findSchemeByLink). */
+let openSchemeId = null;
+const schemeLink = () => schemeQuery({ ...state, pickHex: pickHex() });
+/** The automatic name: the starting paint and the harmony, "Death Guard Green · triadic" (Ryan, 2026-10-29). */
+const autoName = (paintName, harmony) => `${paintName} · ${ui.harmonyLabel(harmony).toLowerCase()}`;
+function schemeStatus() {
+  const link = schemeLink();
+  const hit = store.findSchemeByLink(link);
+  if (hit && store.getScheme(hit).saved) openSchemeId = hit;
+  const sc = openSchemeId ? store.getScheme(openSchemeId) : null;
+  if (!sc || !sc.saved) { openSchemeId = null; return { kind: 'none' }; }
+  return { kind: sc.link === link ? 'saved' : 'changed', name: sc.name || autoName(baseInfo().name, state.harmony), sc };
+}
+let barHtml = '';
+function renderSchemeBar() {
+  const el = $('#schemeBar'); if (!el) return;
+  const html = ui.schemeBar(schemeStatus(), t);
+  if (html === barHtml) return;   // unchanged → keep the DOM (and focus)
+  const had = el.contains(document.activeElement) ? document.activeElement.dataset.sb : null;
+  el.innerHTML = barHtml = html;
+  // A button that was focused and is still there keeps focus; one that went leaves it on the name
+  if (had) (el.querySelector(`[data-sb="${had}"]`) || $('#sbName')).focus({ preventScroll: true });
+}
+/** The Save dialog. `kind`: 'new' (Save on a scheme that is not saved) · 'asnew' (Save as new) · 'project'
+ *  (Save on the Schemes page, for a project that was never saved: `id`). */
+const saveDlg = { kind: null, opener: null, id: null, fallback: '' };
+function openSaveDialog(kind, opener, { id = null } = {}) {
+  const st = schemeStatus();
+  const pv = kind === 'project' ? previewScheme(store.getScheme(id)?.link) : null;
+  const fallback = kind === 'project' ? (pv?.auto || '') : kind === 'asnew' ? st.name : autoName(baseInfo().name, state.harmony);
+  Object.assign(saveDlg, { kind, opener, id, fallback });
+  $('#saveDlgTitle').textContent = t(kind === 'asnew' ? 'saveAsDlgTitle' : 'saveDlgTitle');
+  $('#saveName').value = store.uniqueName(fallback, kind === 'project' ? id : null);
+  syncSaveTaken();
+  $('#saveDlg').showModal();
+  $('#saveName').select();
+}
+/** The name the Save would write: what is typed, or the suggestion when the field is empty, made unique. */
+function saveName() {
+  const typed = $('#saveName').value.trim().replace(/\s+/g, ' ');
+  return { typed, unique: store.uniqueName(typed || saveDlg.fallback, saveDlg.kind === 'project' ? saveDlg.id : null) };
+}
+function syncSaveTaken() {
+  const { typed, unique } = saveName();
+  const taken = typed && unique.toLowerCase() !== typed.toLowerCase();
+  const msg = taken ? t('nameTaken', { name: typed, unique }) : '';
+  if ($('#saveTaken').textContent !== msg) $('#saveTaken').textContent = msg;   // a live region: written only when its words change
+  // one slot, two lines (.fixslot): the taken line covers the hint, so nothing moves (§3.4)
+  $('#saveHint').style.visibility = taken ? 'hidden' : '';
+  $('#saveTaken').style.visibility = taken ? '' : 'hidden';
+}
+function setupSaveDialog() {
+  const d = $('#saveDlg');
+  $('#saveName').addEventListener('input', syncSaveTaken);
+  $('#saveCancel').addEventListener('click', () => d.close());
+  $('#saveForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const { unique } = saveName();
+    if (saveDlg.kind === 'project') {
+      store.updateScheme(saveDlg.id, { name: unique, saved: true });
+      saveDlg.opener = null;   // the row's Save becomes Rename: focus goes there after the render
+      d.close();
+      renderSchemesPage();
+      $(`[data-screname="${CSS.escape(saveDlg.id)}"]`)?.focus();
+    } else {
+      openSchemeId = store.createScheme({ link: schemeLink(), name: unique, saved: true });
+      saveDlg.opener = null;
+      d.close();
+      updateUrl();   // the bar shows the name, and the address bar keeps it (s=)
+      $('#sbName')?.focus({ preventScroll: true });
+    }
+    toast(t('savedAs', { name: unique }));
+  });
+  d.addEventListener('close', () => {
+    const o = saveDlg.opener;
+    saveDlg.opener = null;
+    if (o && o.isConnected && o.getClientRects().length) o.focus({ preventScroll: true });
+  });
+  $('#schemeBar').addEventListener('click', e => {
+    const b = e.target.closest('[data-sb]'); if (!b) return;
+    const k = b.dataset.sb;
+    if (k === 'save' || k === 'asnew') { openSaveDialog(k === 'save' ? 'new' : 'asnew', b); return; }
+    if (k === 'update') {
+      const st = schemeStatus(); if (st.kind !== 'changed') return;
+      store.updateScheme(st.sc.id, { link: schemeLink() });
+      renderSchemeBar();
+      $('#sbName')?.focus({ preventScroll: true });
+      toast(t('savedChanges', { name: st.name }));
+    }
+  });
+}
+/** A kept scheme built from its link alone, as the Recipe builds it (currentScheme), without changing
+ *  the scheme on screen. The link was made from a scheme on screen, so its harmony already suits its
+ *  starting paint (neutral or not). @returns {{harmony, auto, scheme}|null} */
+function previewScheme(link) {
+  if (!link) return null;
+  const d = decodeState(link, { validHarmony, hasPaint: id => state.idx.byId.has(id), maxFree: MAX_FREE });
+  const paint = d.baseId ? state.idx.byId.get(d.baseId) : null;
+  const pick = paint ? paint.hex : d.customHex;
+  if (!pick) return null;
+  const seedRole = d.seedRole === 'accent' ? 'accent' : 'main';
+  const harmony = d.harmony || 'complementary';
+  const holds = {};
+  for (const r of holdableRoles(seedRole)) if (d.holds?.[r]) holds[r] = d.holds[r];
+  const scheme = buildScheme(state.idx, schemeBaseOf(pick, seedRole), harmony, {
+    ...matchOpts(), pop: d.popHex || DEFAULT_POP, holds, accentHex: seedRole === 'accent' ? pick : null,
+    seed: paint ? { id: paint.id, name: ui.pname(paint), hex: paint.hex } : null,
+  });
+  return { harmony, auto: autoName(paint ? ui.pname(paint) : 'Custom ' + pick, harmony), scheme };
+}
+let renamingId = null;
+function schemeRows() {
+  const fmt = iso => { try { return new Date(iso).toLocaleDateString(i18n.deviceLocale(), { day: 'numeric', month: 'short' }); } catch { return ''; } };
+  const want = [...store.wantIds()];
+  return store.listSchemes().map(sc => {
+    const pv = previewScheme(sc.link);
+    if (!pv) return null;
+    const roles = pv.scheme.roles;
+    return {
+      id: sc.id, name: sc.name, auto: pv.auto, saved: sc.saved, harmony: pv.harmony,
+      pots: roles.map(r => (r.match?.paint ? { hex: r.match.paint.hex, paint: r.match.paint } : { hex: r.idealHex })),
+      owned: roles.filter(r => r.match?.paint && store.isOwned(r.match.paint.id)).length, roles: roles.length,
+      toBuy: want.filter(id => store.projectOf(id) === sc.id).length,
+      date: fmt(sc.changed || sc.created), renaming: renamingId === sc.id,
+    };
+  }).filter(Boolean);
+}
+function renderSchemesPage() {
+  if (state.mode !== 'schemes') return;
+  const rows = schemeRows();
+  const n = rows.filter(r => r.saved).length;
+  $('#schemesCount').textContent = n === 1 ? t('oneSaved') : t('nSaved', { n });
+  $('#schemesList').innerHTML = ui.schemesList(rows, t);
+}
+/** Open a kept scheme in the Studio: its link becomes the scheme on screen, as a share link does on load,
+ *  and it is one ↶ step (updateUrl). The holds, the added colours and the pop come with it. */
+function openScheme(id) {
+  const sc = store.getScheme(id); if (!sc) return;
+  const d = decodeState(sc.link, { validHarmony, hasPaint: pid => state.idx.byId.has(pid), maxFree: MAX_FREE });
+  if (!d.baseId && !d.customHex) return;
+  takeModeNote(); newsLead = ''; newsNamesHarmony = false;   // news about the scheme that is going away
+  state.baseId = d.baseId || null; state.customHex = d.baseId ? null : d.customHex;
+  state.harmony = d.harmony || 'complementary';
+  state.seedRole = d.seedRole === 'accent' ? 'accent' : 'main';
+  state.popHex = d.popHex || null;
+  state.extraNodes = d.extraNodes || []; state.dropOffsets = d.dropOffsets || []; state.holds = d.holds || {};
+  // As on load: nothing holds a mode yet, so the link's harmony tells it (harmony.js startsNeutral)
+  neutralMode = startsNeutral(labChroma(schemeBase()), state.harmony);
+  preNeutralHarmony = null; preNeutralSeedRole = null; lastNeutral = null;
+  syncSeg(); syncNodeBtns();
+  if (!state.customHex) recentPicks = addRecent(recentPicks, state.baseId);
+  openSchemeId = id;
+  setMode('studio');
+  seedNews(t('openedScheme', { name: sc.name || previewScheme(sc.link)?.auto || '' }));
+  render('all');
+  $('#sbName')?.focus({ preventScroll: true });
+}
+function finishRename(keep) {
+  const id = renamingId; if (!id) return;
+  const inp = $('#scRename');
+  renamingId = null;
+  if (keep && inp) {
+    const sc = store.getScheme(id);
+    const name = store.uniqueName(inp.value || previewScheme(sc?.link)?.auto || '', id);
+    if (name && name !== sc?.name) { store.updateScheme(id, { name }); toast(t('renamedTo', { name })); }
+  }
+  renderSchemesPage();
+  renderSchemeBar();
+  $(`[data-screname="${CSS.escape(id)}"]`)?.focus();
+}
+function setupSchemesPage() {
+  const list = $('#schemesList');
+  list.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const ds = b.dataset;
+    if (ds.scopen) { openScheme(ds.scopen); return; }
+    if (ds.scgo) { setMode('studio'); $('#modeNav [data-mode="studio"]').focus({ preventScroll: true }); return; }
+    if (ds.screname) { renamingId = ds.screname; renderSchemesPage(); const i = $('#scRename'); i?.focus(); i?.select(); return; }
+    if (ds.scdone) { finishRename(true); return; }
+    if (ds.scsave) { openSaveDialog('project', b, { id: ds.scsave }); return; }
+    if (ds.scshare) {
+      const sc = store.getScheme(ds.scshare); if (!sc) return;
+      doShare(shareUrl(location.origin + location.pathname + sc.link, state.theme));
+      return;
+    }
+    if (ds.scdelete) {
+      const id = ds.scdelete, sc = store.getScheme(id); if (!sc) return;
+      const name = sc.name || previewScheme(sc.link)?.auto || '';
+      const n = [...store.wantIds()].filter(pid => store.projectOf(pid) === id).length;
+      $('#confirmDlg').classList.add('nobackup');   // a scheme is not the shelf: no backup offer here
+      openConfirm({
+        title: t('deleteSchemeTitle', { name }),
+        body: () => `<p>${ui.esc(n === 0 ? t('deleteSchemeBodyNone') : n === 1 ? t('deleteSchemeBodyOne') : t('deleteSchemeBodyMany', { n }))}</p>`,
+        okLabel: t('deleteBtn'), opener: b,
+        onOk: () => {
+          // the row goes: focus moves to the next row, or the one before, or the page's heading
+          const rows = [...list.querySelectorAll('[data-scrow]')], at = rows.findIndex(r => r.dataset.scrow === id);
+          const next = (rows[at + 1] || rows[at - 1])?.dataset.scrow;
+          store.deleteScheme(id);
+          if (openSchemeId === id) openSchemeId = null;
+          renderSchemesPage(); renderSchemeBar(); updateUrl();
+          cdlg.opener = (next && list.querySelector(`[data-scopen="${CSS.escape(next)}"]`)) || list.querySelector('[data-scgo]') || $('#schemesTitle');
+          toast(t('schemeDeleted', { name }));
+        },
+      });
+    }
+  });
+  list.addEventListener('keydown', e => {
+    if (e.target.id !== 'scRename') return;
+    if (e.key === 'Enter') { e.preventDefault(); finishRename(true); }
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finishRename(false); }
+  });
 }
 
 /* ---- undo / redo: snapshot the palette at each settled change (updateUrl is the single chokepoint) ---- */
@@ -1572,14 +1797,15 @@ function setTheme(t, { save = false } = {}) {
   syncThemeSlot();
 }
 function setMode(mode) {
-  state.mode = mode === 'shelf' ? 'shelf' : 'studio';
+  state.mode = mode === 'shelf' || mode === 'schemes' ? mode : 'studio';
   const on = state.mode === 'shelf';
   picker.close();   // the seed field's list is a Studio control: never left open across a mode switch
   document.querySelector('main').dataset.mode = state.mode;
   document.body.dataset.mode = state.mode;   // the phone header drops its rule in Shelf mode (app.css)
   if (!on) closeShelfSheet({ returnFocus: false });
-  document.querySelector('.workspace').hidden = on;
+  document.querySelector('.workspace').hidden = state.mode !== 'studio';
   $('#shelf').hidden = !on;
+  $('#schemes').hidden = state.mode !== 'schemes';
   for (const b of $('#modeNav').children) b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
   // Open the Shelf at its top. focus() alone scrolls the page to the grid and hides the search + filters;
   // the grid still takes focus so arrows and P/U/X work at once.
@@ -1588,6 +1814,7 @@ function setMode(mode) {
     Object.assign(dock, { open: true, acc: 0, lastY: 0, stuck: false }); applyDock();
     $('#shelfGrid').focus({ preventScroll: true });
   }
+  else if (state.mode === 'schemes') { renamingId = null; renderSchemesPage(); window.scrollTo(0, 0); }
   else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows
   updateUrl();
 }
@@ -1752,8 +1979,9 @@ function doExport() {
 }
 /** Share the current scheme URL. Prefers the native share sheet (Web Share → OS sheet under Capacitor),
  *  then clipboard, then a visible-URL prompt. No silent clipboard side-effects. */
-async function doShare() {
-  const url = shareUrl(location.href, state.theme);   // without m=shelf (a friend gets the scheme, not your Shelf), with the theme on screen
+async function doShare(url = shareUrl(location.href, state.theme)) {
+  // The default is the scheme on screen: without m=shelf (a friend gets the scheme, not your Shelf), with the
+  // theme on screen. The Schemes page passes a saved scheme's link.
   // The share sheet is a phone's way to send a link. With a mouse, Safari on a Mac has it too, but there
   // the expected action is a copy (Ryan, 2026-10-28), so the button says Copy link and copies.
   if (CAN_SHARE) {
@@ -2193,6 +2421,7 @@ function setupConfirm() {
   d.addEventListener('close', () => {
     cdlg.onOk = null;
     if (d.classList.contains('notice')) { d.classList.remove('notice'); $('#cdlgCancel').textContent = t('cancel'); }
+    d.classList.remove('nobackup');
     // the opener can have gone from view (the Shelf hidden); fall back to a control that stays
     const o = cdlg.opener && cdlg.opener.isConnected && cdlg.opener.getClientRects().length ? cdlg.opener
       : settingsOpen() ? $('#restoreBtn') : $('#settingsBtn');
@@ -2453,6 +2682,7 @@ function wire() {
     if (state.tab === 'plan') renderPlan();
   });
   setupSettings(); setupConfirm(); setupMatchNote();   // ⋯ Settings, the Restore/Delete confirm, the matching note
+  setupSaveDialog(); setupSchemesPage();   // saved schemes: the Save line and dialog, the Schemes page (item 35)
 
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
@@ -2544,6 +2774,8 @@ async function init() {
     validHarmony, hasPaint: id => state.idx.byId.has(id), validTab: t => TABS.includes(t), maxFree: MAX_FREE,
   }));
   if (!state.customHex && !state.baseId) state.baseId = state.idx.paints[0].id;   // no usable seed in the link
+  // The saved scheme the address bar names (s=, this device only): a refresh keeps "Saved" / "Changed"
+  if (store.getScheme(url.get('s'))?.saved) openSchemeId = url.get('s');
 
   // Nothing holds a mode yet, and the link has no mode in it. In the 10–14 band, the link's harmony
   // tells the mode (harmony.js startsNeutral). Live changes keep the hysteresis rule.
@@ -2581,7 +2813,7 @@ async function init() {
   // A first visit with no paint in the link: show "Start a scheme" (after the first render, so that
   // render does not end it). A native shell that restored a shelf is not a first visit.
   if (store.firstVisit && !restored && !url.get('p') && !url.get('c')) startFirstRun();
-  if (url.get('m') === 'shelf') setMode('shelf');   // deep-link / refresh stays on the shelf
+  if (url.get('m') === 'shelf' || url.get('m') === 'schemes') setMode(url.get('m'));   // deep-link / refresh stays in that mode
   // The first search letter would fold all 3,225 paints at once (about 70ms on a slow phone): do it now,
   // while the browser has nothing else to do.
   (window.requestIdleCallback || (f => setTimeout(f, 300)))(() => warmPaintSearch(state.idx));

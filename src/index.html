@@ -61,6 +61,7 @@
     <div class="logo"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><g transform="translate(20.27 10.91) rotate(-140) scale(0.7)"><rect x="-1.25" y="-15" width="2.5" height="2.4" fill="currentColor"/><path d="M-1.6 -12.8h3.2L4.2 -4.6h-8.4z" fill="currentColor"/><rect x="-6.5" y="-5" width="13" height="17" rx="3" fill="currentColor"/><circle cx="0" cy="-23.6" r="6" class="lid"/></g></svg><span class="t">Palette Studio<small data-i18n="tagline">for miniatures</small></span></div>
     <div class="seg modenav" id="modeNav" role="group" aria-label="View">
       <button data-mode="studio" aria-pressed="true" data-i18n="studio">Studio</button>
+      <button data-mode="schemes" aria-pressed="false" data-i18n="schemes">Schemes</button>
       <button data-mode="shelf" aria-pressed="false" data-i18n="shelf">Shelf</button>
     </div>
     <div class="spacer"></div>
@@ -225,6 +226,9 @@
     </section>
     <div class="wsplit">
       <div class="card pad studio">
+        <!-- The Save line (PLAN §5 item 35): is the scheme on screen kept? Not saved + Save · its name + Saved ·
+             its name + Changed + Save + Save as new. One --tap tall row in every state, so nothing moves (§3.4). -->
+        <div class="schemebar" id="schemeBar" role="group" aria-label="Saved scheme"></div>
         <div class="herowrap">
           <div class="hero" id="hero" tabindex="-1"></div>
         </div>
@@ -288,6 +292,16 @@
         <div data-panel="a11y" id="panel-a11y" role="tabpanel" aria-labelledby="tab-a11y" tabindex="0" hidden></div>
       </div>
     </div>
+  </section>
+
+  <!-- Schemes (PLAN §5 item 35; mockups/scheme-library.html, direction A): the saved schemes, newest first,
+       then the projects that were never saved. A row opens its scheme in the Studio. -->
+  <section class="card pad schemes" id="schemes" aria-labelledby="schemesTitle" hidden>
+    <div class="schemeshead">
+      <h2 id="schemesTitle" tabindex="-1" data-i18n="schemesTitle">Schemes</h2>
+      <span class="micro" id="schemesCount"></span>
+    </div>
+    <div id="schemesList"></div>
   </section>
 
   <section class="card pad shelf" id="shelf" aria-label="My paint shelf" hidden>
@@ -398,6 +412,26 @@
       for identification only.</p>
     <p class="aboutfine" id="aboutVersion"></p>
   </div>
+  <p class="sr-only" role="status" data-say></p>
+</dialog>
+
+<!-- Save a scheme (PLAN §5 item 35; mockups/project-naming.html): one field, pre-filled with the automatic name
+     and selected, so typing replaces it and Enter keeps it. The hint slot holds both lines (.fixslot), so a
+     name that another scheme has changes the words, never the layout (§3.4). -->
+<dialog id="saveDlg" class="cdlg" aria-labelledby="saveDlgTitle">
+  <form method="dialog" id="saveForm">
+    <h2 id="saveDlgTitle"></h2>
+    <label class="savelbl" for="saveName" data-i18n="schemeName">Name</label>
+    <input id="saveName" class="saveinput" type="text" maxlength="80" autocomplete="off" aria-describedby="saveHint saveTaken" />
+    <div class="fixslot savehints">
+      <p class="sethint" id="saveHint" data-i18n="nameHint">The name shows in Schemes and on your shopping list.</p>
+      <p class="sethint" id="saveTaken" aria-live="polite"></p>
+    </div>
+    <div class="cdlgacts">
+      <button type="button" class="btn" id="saveCancel" data-i18n="cancel">Cancel</button>
+      <button type="submit" class="btn primary" id="saveOk" data-i18n="saveScheme">Save</button>
+    </div>
+  </form>
   <p class="sr-only" role="status" data-say></p>
 </dialog>
 

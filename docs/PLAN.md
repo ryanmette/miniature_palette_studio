@@ -112,7 +112,7 @@ UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funn
 [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
 **Next planned work: the native app, Stage 1 (v2.0)** — the kickoff checklist is
 `IOS_APP_PLAN.md` §4b, and the native-track constitution is drafted (`CLAUDE_NATIVE.md`, dormant until
-kickoff). §5's live backlog is the buying-assistant plan (items 7–11) and the shopping-list turn (items 34–38,
+kickoff). §5's live backlog is the buying-assistant plan (items 7–11) and the shopping-list turn (items 34–38, 34–35 built;
 studied and answered 2026-10-29); the pin-a-paint direction shipped as role holds in v1.12.0. Still outside this repo: the Mac/Xcode build, a designer for the asset
 library, and the optional palette-from-photo enhancement.
 
@@ -437,17 +437,20 @@ answered by Ryan: [`mockups/shopping-list.html`](../mockups/shopping-list.html) 
 
 The build order. Each item needs the one before it:
 
-34. **The data model** (`store.js` v2) — **in ryanmette/miniature_palette_studio#54.** One `schemes` map with a key
+34. **The data model** (`store.js` v2) — **done, ryanmette/miniature_palette_studio#54.** One `schemes` map with a key
     that never changes (a short random id; not a hash of the link, which changes when a saved scheme
     changes): `{ name, link, saved, created, changed }`. No `pins` field: role holds (v1.12.0) already live in
     the scheme's link (`hd`). A to-buy paint's count and project are a second map, `wantInfo: { id: { qty,
     for } }`, **beside** `want`, which stays a list of ids — so an older build still reads the whole list. The
     backup file carries both maps; the CSV gets `qty` and `project` columns; old data loads as one pot each,
     with no project. Unit tests, no UI.
-35. **Save and the Schemes mode.** Save on the hero line (the naming field, pre-filled with the automatic
-    name "Death Guard Green · triadic"); Changed · Save · Save as new; the Schemes mode with open, rename,
-    take to the store, share and delete (a confirm; the paints stay on the list); the empty state. Change
-    CLAUDE.md §3.6 (the header's modes) in the same commit.
+35. **Save and the Schemes mode** — **built (`feat/schemes-mode`).** The Save line above the hero (Not saved
+    + Save · the name + Saved · the name + Changed + Save + Save as new), one `--tap` row in every state; the
+    Save dialog (the name pre-filled with "Death Guard Green · triadic" and selected; a taken name becomes
+    "(2)", and the hint says so); the Schemes mode (Studio · Schemes · Shelf) with open, rename, share and
+    delete (a confirm; the paints stay on the list), the projects that were never saved, and the empty state.
+    The address bar keeps the saved scheme's id (`s`, never in a shared link). CLAUDE.md §3.6 changed in the
+    same commit. **Take to the store** is not in the Schemes actions yet: it comes with item 37.
 36. **The rack walk** (shopping-list direction A). The checklist grouped brand → line; a tick marks owned;
     "Add a count" on a row; the "for" groups and "Other paints"; a print style (direction D).
 37. **Take to the store.** The hand-off panel (link · QR code · Print · Save as text); "Which paints?" by

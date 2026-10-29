@@ -1227,6 +1227,66 @@ header { padding-top: env(safe-area-inset-top, 0px); }
   }
 }
 
+/* Saved schemes (PLAN §5 item 35; mockups/scheme-library.html, direction A) ------------------------------ */
+/* A tag (§3.5): square, a 1px border in the state's colour, the state's *-text colour, no fill. */
+.tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; line-height: 1.2; padding: 1px 5px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-tag); color: var(--text-muted); background: none; white-space: nowrap; }
+.tag.success { border-color: var(--success); color: var(--success-text); }
+.tag.warning { border-color: var(--warning); color: var(--warning-text); }
+.tag.buy { border-color: var(--buy); color: var(--buy-text); }
+/* The Save line above the hero: one --tap tall row in every state (Not saved · Saved · Changed), so the
+   wheel under it never moves (§3.4). A long name gets an ellipsis; the actions never wrap away. */
+.schemebar { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding-bottom: 8px;
+  min-height: calc(var(--tap) + 9px);   /* border-box: the --tap content + the 8px padding + the 1px rule, in every state */
+  border-bottom: 1px solid var(--border); min-width: 0; }
+.sbname { font-family: var(--display); font-size: 18px; font-weight: 600; line-height: 1.2; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sbname:focus { outline: 2px solid transparent; }   /* a landing spot after a save, not a control (as .hero) */
+.sbnone { font-family: var(--font); font-size: var(--fs-small); font-weight: 400; color: var(--text-muted); }
+.sbacts { margin-left: auto; display: flex; gap: 8px; flex: none; }
+/* The Schemes page: a region like the Shelf, full width, one list (Ryan: no folders). */
+main[data-mode="schemes"] { grid-template-columns: 1fr; }
+.schemes { grid-column: 1 / -1; }
+.schemeshead { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.schemeshead h2 { font-size: var(--fs-h1); margin: 0; }
+.schemeshead h2:focus { outline: 2px solid transparent; }
+.sclist { list-style: none; margin: 0; padding: 0; max-width: 760px; }
+.scrow { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px 0;
+  border-bottom: 1px solid var(--border); }
+/* The scheme's picture: its four pots at 60-30-10 (paint data, §2), with the finish overlay */
+.scstrip { display: grid; grid-template-columns: 3fr 2fr 1fr 1fr; height: 56px; border-radius: var(--r-sw); overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); margin-top: 4px; }
+.scstrip .sw { display: block; height: 100%; border-radius: 0; box-shadow: none; }
+.scmain { min-width: 0; }
+.scopen { display: block; width: 100%; padding: 4px; margin: -4px 0 0 -4px; border: 0; border-radius: var(--r-ctrl);
+  background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.scopen:hover .scname { text-decoration: underline; }
+.scopen:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+.scname { display: block; font-family: var(--display); font-size: 19px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+.scname.auto { font-family: var(--font); font-size: 15px; font-weight: 500; font-style: italic; color: var(--text-muted); }
+.scfacts, .scwhen { display: block; font-size: var(--fs-small); color: var(--text-muted); }
+.scfacts .tag { margin-left: 4px; vertical-align: 1px; }
+.scacts { display: flex; flex-wrap: wrap; gap: 0 16px; }
+.scacts .textact { min-width: 0; padding: 0 2px; }
+.screname { display: grid; gap: 4px; padding-top: 2px; }
+.schint { font-size: 12px; color: var(--text-muted); }
+.scinput, .saveinput { height: var(--tap); width: 100%; border: 1px solid var(--edge); border-radius: var(--r-ctrl);
+  background: var(--surface); color: var(--text); padding: 0 10px; font: inherit; font-size: 15px; }
+@media (pointer: coarse) { .scinput, .saveinput { font-size: 16px; } }   /* iOS zooms the page for a smaller field (§3.6) */
+.scgroup { margin: 24px 0 0; }
+.scempty { padding: 16px 0; max-width: 46ch; }
+.scempty h3 { font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; margin: 0 0 4px; }
+.scempty p { color: var(--text-muted); margin: 0 0 12px; }
+@media (max-width: 520px) { .scrow { grid-template-columns: 72px minmax(0, 1fr); } .scstrip { height: 48px; } }
+/* The Save dialog: the confirm's box, a micro-caps label (§3.5), and a reserved slot for the hint. */
+.savelbl { display: block; margin-bottom: 4px; font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--text-muted); }
+.savehints { margin: 8px 0 16px; }
+/* The confirm for deleting a scheme: a scheme is not the shelf, so no backup offer. */
+.cdlg.nobackup .cdlgsave, .cdlg.nobackup #cdlgSaveSlot { display: none; }
+.cdlg.nobackup .cdlgbody { margin-bottom: 12px; }
+@media (forced-colors: active) { .scstrip { forced-color-adjust: none; } .tag { forced-color-adjust: auto; } }
+
 /* Forced colours (Windows High Contrast) paint every background in the system Canvas colour, so every
    paint went white: the Browse grid, the live palette, the Shelf and the Plan showed no colour. A swatch's
    colour is paint data, not chrome (§2), so swatches keep their own colours, finish overlays and inset edge.

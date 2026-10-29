@@ -361,3 +361,67 @@ test('potRows: each paint with its ΔE; the chosen one is marked; an empty searc
   assert.match(html, /owned/);
   assert.match(potRows([]), /No paint matches/);
 });
+
+/* ---- saved schemes (PLAN §5 item 35) ---- */
+import { schemeBar, schemeRow, schemesList } from '../src/js/ui.js';
+const tr = (k, v = {}) => k + (Object.keys(v).length ? '(' + Object.entries(v).map(([a, b]) => `${a}=${b}`).join(',') + ')' : '');
+
+test('schemeBar: not saved → Save; saved → name + Saved tag, no buttons; changed → name + Changed + Save + Save as new', () => {
+  const none = schemeBar({ kind: 'none' }, tr);
+  assert.match(none, /notSaved/);
+  assert.match(none, /data-sb="save"/);
+  assert.doesNotMatch(none, /data-sb="asnew"/);
+  const saved = schemeBar({ kind: 'saved', name: 'Plague <Marine>' }, tr);
+  assert.match(saved, /Plague &lt;Marine&gt;/, 'the name is escaped');
+  assert.match(saved, /class="tag success">savedTag/);
+  assert.doesNotMatch(saved, /data-sb=/);
+  const changed = schemeBar({ kind: 'changed', name: 'Plague Marine' }, tr);
+  assert.match(changed, /class="tag warning">changedTag/);
+  assert.match(changed, /data-sb="update"/);
+  assert.match(changed, /data-sb="asnew"/);
+  for (const html of [none, saved, changed]) assert.match(html, /id="sbName" tabindex="-1"/, 'one landing spot for focus in every state');
+});
+
+const row = {
+  id: 'abcd1234', name: 'Plague Marine', auto: 'Death Guard Green · triadic', saved: true, harmony: 'triadic',
+  pots: [{ hex: '#6D774D' }, { hex: '#526A76' }, { hex: '#7A4967' }, { hex: '#737476', paint: { type: 'metal' } }],
+  owned: 2, roles: 4, toBuy: 3, date: '29 Oct', renaming: false,
+};
+
+test('schemeRow: the strip carries the pots and the metal sheen; the facts; one-tap actions with names', () => {
+  const html = schemeRow(row, tr);
+  assert.match(html, /class="scstrip" aria-hidden="true"/);
+  assert.equal((html.match(/class="sw /g) || []).length, 4);
+  assert.match(html, /class="sw metal"/);
+  assert.match(html, /data-scopen="abcd1234"/);
+  assert.match(html, /Triadic · ownedOf\(n=2,of=4\)/);
+  assert.match(html, /class="tag buy">nToBuy\(n=3\)/);
+  assert.match(html, /data-screname="abcd1234" aria-label="renameNamed\(name=Plague Marine\)"/);
+  assert.match(html, /data-scshare="abcd1234"/);
+  assert.match(html, /data-scdelete="abcd1234"/);
+  assert.doesNotMatch(html, /data-scsave/);
+  assert.doesNotMatch(schemeRow({ ...row, toBuy: 0 }, tr), /tag buy/, 'no paints to buy → no tag');
+});
+
+test('schemeRow: a project never saved shows its automatic name and offers Save; renaming shows the field', () => {
+  const proj = schemeRow({ ...row, name: '', saved: false }, tr);
+  assert.match(proj, /class="scname auto">Death Guard Green · triadic/);
+  assert.match(proj, /data-scsave="abcd1234"/);
+  assert.doesNotMatch(proj, /data-screname/);
+  assert.match(proj, /notSavedKept/);
+  const ren = schemeRow({ ...row, renaming: true }, tr);
+  assert.match(ren, /<input id="scRename"[^>]*value="Plague Marine"/);
+  assert.match(ren, /<label class="sr-only" for="scRename">/);
+  assert.match(ren, /data-scdone="abcd1234"/);
+  assert.doesNotMatch(ren, /data-scopen/);
+});
+
+test('schemesList: saved first, then the projects under their own heading; nothing → the empty state', () => {
+  const html = schemesList([{ ...row, id: 'p1aaaaaa', name: '', saved: false }, row], tr);
+  assert.ok(html.indexOf('abcd1234') < html.indexOf('p1aaaaaa'), 'saved schemes come first');
+  assert.match(html, /projectsNotSaved/);
+  assert.doesNotMatch(schemesList([row], tr), /projectsNotSaved/);
+  const empty = schemesList([], tr);
+  assert.match(empty, /<h3>noSchemesTitle<\/h3>/);
+  assert.match(empty, /data-scgo="studio"/);
+});
