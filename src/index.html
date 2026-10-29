@@ -171,6 +171,12 @@
   <p class="sr-only" id="setStatus" role="status" data-say></p>
 </dialog>
 
+<!-- The Molten Harmonics loader (§3.4; loader.js): shown only when the paint data takes a while. The canvas is
+     the picture; the progress bar is what assistive tech reads. -->
+<div class="loadwrap" id="loader" hidden role="progressbar" aria-labelledby="loadCap" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <canvas class="loadcv" id="loadCanvas" width="320" height="320" aria-hidden="true"></canvas>
+  <p class="loadcap" id="loadCap" data-i18n="loadingPaints">Loading the paints…</p>
+</div>
 <main>
   <section class="workspace">
     <div class="card pad seedtoolbar">
@@ -377,6 +383,8 @@
         <!-- reserved: shown (visibility) once a paint is ticked bought on this device in this visit, so it never moves the row -->
         <button type="button" class="textact rksend" id="rkSend" data-i18n="sendBought">Send “bought”…</button>
       </div>
+      <!-- This store carries (item 38): one toggle per brand on the list; a brand switched off shows swaps -->
+      <div class="rkstore" id="rkStore" hidden></div>
       <p class="shelfhint rkhint" id="rkHint"></p>
       <div id="shelfList"></div>
     </div>

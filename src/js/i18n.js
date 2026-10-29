@@ -282,6 +282,28 @@ const LOCALES = {
     boughtDone: 'Marked {n} owned',
     boughtSame: 'These paints are owned here already',
 
+    loadingPaints: 'Loading the paints…',
+    // Not on the rack (PLAN §5 item 38): swaps in the store
+    notOnRack: 'Not on the rack?',
+    notOnRackFor: 'Not on the rack? Swaps for {name}',
+    swapsFor: 'Swaps for {name}',
+    notCarried: 'This store does not carry {brand}. The closest here:',
+    noSwap: 'No pot of this finish from these brands. Keep it on the list for another store.',
+    noCloseSwap: 'None is close. Keep it on the list for another store, or take the closest:',
+    useSwap: 'Use',
+    useInPlace: 'Use {name} in place of {was}',
+    ownedWord: 'owned',
+    inPlaceOf: 'in place of {name}',
+    undo: 'Undo',
+    undoSwapFor: 'Undo: put {name} back on the list',
+    storeCarries: 'This store carries',
+    swappedList: '{name} is on the list in place of {was}.',
+    swappedRole: '{name} is on the list in place of {was}, and is now the {role} pot of {scheme}.',
+    swapUndone: '{was} is back on the list.',
+    brandOff: '{brand} off: its paints show swaps.',
+    brandOn: '{brand} on.',
+    originalBack: '{role} uses {name} again.',
+
 
     restoreTitle: 'Replace your shelf and settings?',
     onDevice: 'On this device:',

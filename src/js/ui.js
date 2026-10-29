@@ -349,9 +349,13 @@ export function holdControls(r, holdable) {
   if (!holdable) return '';
   const role = esc(r.role);
   if (r.hold === 'pot') {
+    // a store swap (item 38) names the pot it replaced in one muted line (state as words, §3.5), with the way back
+    const was = r.swappedFrom;
     return `<div class="holdrow"><span class="holdchip">${icon('pin')}Pot chosen</span>`
       + `<button type="button" class="textact" data-hold-pot="${role}" aria-haspopup="dialog" aria-label="Change the ${role} pot">Change pot</button>`
-      + `<button type="button" class="textact" data-hold-release="${role}" aria-label="Release the ${role} pot">Release</button></div>`;
+      + `<button type="button" class="textact" data-hold-release="${role}" aria-label="Release the ${role} pot">Release</button></div>`
+      + (was ? `<p class="swapnote">${swatch(was.hex, 'swapsw' + fxCls(was))}<span>Swapped in the store for ${esc(pname(was))}</span>`
+        + `<button type="button" class="textact" data-hold-original="${role}" aria-label="Use the original pot, ${esc(pname(was))}, for ${role}">Use the original</button></p>` : '');
   }
   const locked = r.hold === 'lock';
   return `<div class="holdrow">`
@@ -687,6 +691,12 @@ const CHECK = '<svg viewBox="0 0 20 20" class="rkcheck" aria-hidden="true" focus
 export function rackRow(r, tr) {
   const p = r.paint, name = pname(p);
   const line = [esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ');
+  // Not on the rack? (item 38): a to-buy row that is not a swap already can open its swaps; the word hides on
+  // a phone (the icon stays, the name says it all), so the stepper and the toggle share one --tap row
+  const swapBtn = r.canSwap
+    ? `<button type="button" class="textact rknot" data-rknot="${esc(p.id)}" aria-expanded="${!!r.swaps}" aria-controls="rks-${esc(p.id)}"`
+      + ` aria-label="${esc(tr('notOnRackFor', { name }))}" title="${esc(tr('notOnRack'))}">${icon('swap')}<span class="rknotw">${esc(tr('notOnRack'))}</span></button>`
+    : '';
   let slot = '';
   if (r.countable) {
     const inner = r.owned ? ''
@@ -696,7 +706,7 @@ export function rackRow(r, tr) {
           + `<output class="rkn">${esc(r.qty === 1 ? tr('onePot') : tr('nPots', { n: r.qty }))}</output>`
           + `<button type="button" class="btn sm" data-rkqty="1" data-id="${esc(p.id)}" aria-label="${esc(tr('oneMore'))}">+</button></span>`
         : `<button type="button" class="textact rkadd" data-rkcount="${esc(p.id)}" aria-label="${esc(tr('addCountFor', { name }))}">${esc(tr('addCount'))}</button>`;
-    slot = `<span class="rkslot">${inner}</span>`;
+    slot = `<span class="rkslot">${inner}${r.owned ? '' : swapBtn}</span>`;
   }
   return `<li class="rkrow${r.owned ? ' done' : ''}" data-rk="${esc(p.id)}">`
     + swatch(p.hex, 'rksw' + fxCls(p), '')
@@ -704,9 +714,45 @@ export function rackRow(r, tr) {
     // display name, so twins (Dawnstone (Layer) / (Dry)) stay apart for a screen reader
     + `<span class="rkmain"><span class="rkname">${esc(p.name)}</span>`
     + `<span class="rkline">${line}${finishTag(p.type)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
+    // a swap made in this visit says what it replaced; Undo only while it is still to buy (once ticked, it was bought)
+    + (r.insteadOf ? `<span class="rkinst">${esc(tr('inPlaceOf', { name: pname(r.insteadOf) }))}`
+      + (r.owned ? '' : ` <button type="button" class="textact" data-rkunswap="${esc(p.id)}" aria-label="${esc(tr('undoSwapFor', { name: pname(r.insteadOf) }))}">${esc(tr('undo'))}</button>`) + '</span>' : '')
     + slot + '</span>'
     + `<button type="button" class="rktick" data-rktick="${esc(p.id)}" aria-pressed="${r.owned}" aria-label="${esc(tr('ownedName', { name }))}">${CHECK}</button>`
+    + (r.swaps ? rackSwaps(r, tr) : '')
     + '</li>';
+}
+
+/** The swaps under a row (item 38): the closest pots from the brands the store carries, in the paint's own
+ *  finish class, each with its true ΔE and label (§2). `r.swaps`: { list: [{paint, deltaE, quality, owned}],
+ *  notCarried: the row's brand is switched off }. */
+function rackSwaps(r, tr) {
+  const p = r.paint, s = r.swaps, name = pname(p);
+  const best = s.list[0];
+  let h = `<div class="rkswaps" id="rks-${esc(p.id)}" role="group" aria-label="${esc(tr('swapsFor', { name }))}">`;
+  if (s.notCarried) h += `<p class="rksnote">${esc(tr('notCarried', { brand: p.brand }))}</p>`;
+  if (!best) h += `<p class="rksnote">${esc(tr('noSwap'))}</p>`;
+  else if (best.deltaE > 10) h += `<p class="rksnote">${esc(tr('noCloseSwap'))}</p>`;
+  for (const m of s.list) {
+    const q = m.paint, qn = pname(q);
+    h += `<div class="rkswap">${swatch(q.hex, 'rkssw' + fxCls(q))}`
+      + `<span class="rksmain"><span class="rksname">${esc(qn)}</span>`
+      + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q.type)}`
+      + ` <span class="mono">ΔE ${m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
+      + `${m.owned ? ` <span class="ownmini">${icon('check')}${esc(tr('ownedWord'))}</span>` : ''}</span></span>`
+      + `<button type="button" class="btn sm" data-rkuse="${esc(q.id)}" data-for="${esc(p.id)}" aria-label="${esc(tr('useInPlace', { name: qn, was: name }))}">${esc(tr('useSwap'))}</button></div>`;
+  }
+  return h + '</div>';
+}
+
+/** "This store carries" (item 38): one toggle per brand on the list, all on at first. A brand switched off
+ *  shows the closest pots from the others on each of its rows. A choice for this trip, not saved. */
+export function storeCarries(brands, off, tr) {
+  if (!brands.length) return '';
+  return `<span class="micro" id="rkStoreLab">${esc(tr('storeCarries'))}</span>`
+    + `<span class="rkchips" role="group" aria-labelledby="rkStoreLab">`
+    + brands.map(b => `<button type="button" class="rkchip" data-rkbrand="${esc(b)}" aria-pressed="${!off.has(b)}">${icon('check')}${esc(b)}</button>`).join('')
+    + '</span>';
 }
 
 /** The list body: one group per brand · line (rack order) or per scheme (by project), each a heading with

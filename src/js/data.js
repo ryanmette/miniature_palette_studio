@@ -215,6 +215,23 @@ export function equivalents(indexed, paint, { n = 6 } = {}) {
     .map(({ paint, deltaE }) => ({ paint, deltaE, quality: matchQuality(deltaE) }));
 }
 
+/**
+ * Swaps for a pot that is not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B): the
+ * nearest paints from the brands the store carries, kept STRICTLY to the paint's own finish class. A wash's
+ * swap is a wash, or there is none: a wash's hex is its colour on white, so a flat paint can look close to it
+ * and still be no swap at all (a strict tier, not the Equivalents tab's penalty). Reported ΔE is true (§2).
+ * @param opts.notCarried  brands the store does not carry (a Set): no swap comes from them
+ * @returns {Array<{paint, deltaE, quality}>} best first, at most `n`
+ */
+export function storeSwaps(indexed, paint, { notCarried = new Set(), n = 3 } = {}) {
+  const lab = paint.lab || hexToLab(paint.hex), cls = finishClass(paint.type);
+  return indexed.paints.filter(p => p.id !== paint.id && !notCarried.has(p.brand) && finishClass(p.type) === cls)
+    .map(p => ({ paint: p, deltaE: deltaE2000(lab, p.lab) }))
+    .sort((a, b) => a.deltaE - b.deltaE)
+    .slice(0, n)
+    .map(m => ({ ...m, quality: matchQuality(m.deltaE) }));
+}
+
 /** The paints closest to a typed colour, best first. They rank as the Equivalents tab ranks a flat colour:
  *  a paint of another finish class (a wash, a contrast, an effect, a metallic) ranks FINISH_PENALTY ΔE
  *  further, so it shows only when it is clearly closer. Each match reports its TRUE ΔE (§2, §7). The seed
@@ -354,8 +371,23 @@ export function browseOrder(indexed, key = 'hue', { pickHex = null, ownedIds = n
 }
 
 /** Fetch + index the dataset (browser). Tests use indexDataset() with a fixture instead. */
-export async function loadDataset(url = './data/paints.json') {
+export async function loadDataset(url = './data/paints.json', { onProgress } = {}) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`failed to load dataset: ${res.status}`);
-  return indexDataset(await res.json());
+  if (!onProgress || !res.body?.getReader) return indexDataset(await res.json());
+  // Read it in pieces to report the real progress (the loader, §3.4). `total` is the file's size, or 0 when
+  // it is not known: a compressed response's Content-Length counts the compressed bytes, not these.
+  const total = res.headers.get('content-encoding') ? 0 : Number(res.headers.get('content-length')) || 0;
+  const reader = res.body.getReader(), parts = [];
+  let got = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    parts.push(value); got += value.length;
+    onProgress(got, total);
+  }
+  const all = new Uint8Array(got);
+  let at = 0;
+  for (const part of parts) { all.set(part, at); at += part.length; }
+  return indexDataset(JSON.parse(new TextDecoder().decode(all)));
 }

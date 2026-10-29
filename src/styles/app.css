@@ -1234,6 +1234,7 @@ header { padding-top: env(safe-area-inset-top, 0px); }
 .tag.success { border-color: var(--success); color: var(--success-text); }
 .tag.warning { border-color: var(--warning); color: var(--warning-text); }
 .tag.buy { border-color: var(--buy); color: var(--buy-text); }
+.tag.danger { border-color: var(--danger); color: var(--danger-text); }   /* a Poor swap (item 38): failing, §3.5 */
 /* The Save line above the hero: one --tap tall row in every state (Not saved · Saved · Changed), so the
    wheel under it never moves (§3.4). A long name gets an ellipsis; the actions never wrap away. */
 .schemebar { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding-bottom: 8px;
@@ -1287,6 +1288,15 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
 .cdlg.nobackup .cdlgbody { margin-bottom: 12px; }
 @media (forced-colors: active) { .scstrip { forced-color-adjust: none; } .tag { forced-color-adjust: auto; } }
 
+/* The Molten Harmonics loader (§3.4): over the page under the header, while the paint data loads */
+.loadwrap { position: fixed; inset: var(--hdr-h, 64px) 0 0 0; z-index: 40; background: var(--bg);
+  display: grid; place-content: center; justify-items: center; gap: 8px; transition: opacity .2s cubic-bezier(.2,.7,.2,1); }
+.loadwrap[hidden] { display: none; }
+.loadwrap.out { opacity: 0; }
+.loadcv { width: min(320px, 72vw); height: auto; aspect-ratio: 1; }
+.loadcap { margin: 0; font-size: var(--fs-small); color: var(--text-muted); }
+@media (prefers-reduced-motion: reduce) { .loadwrap { transition: none; } }
+
 /* A plain confirm (the store links' asks, item 37): it only adds marks, so no ⚠ and a primary button. */
 .cdlg.plain .dangerglyph { display: none; }
 
@@ -1328,6 +1338,43 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
 }
 .rktools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 8px 0 4px; }
 .rkhint { margin: 0 0 8px; }
+/* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B) ------------------------------- */
+.rkstore { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 4px 0 8px; }
+.rkchips { display: flex; flex-wrap: wrap; gap: 8px; }
+/* A brand the store carries: a toggle (aria-pressed). On: the accent edge and a check, so it is not colour alone;
+   off: the plain edge, the label muted and struck through */
+.rkchip { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); padding: 0 12px 0 8px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-ctrl); background: var(--surface); color: var(--text-muted);
+  font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.rkchip .ic { width: 14px; height: 14px; visibility: hidden; }
+.rkchip[aria-pressed="true"] { border-color: var(--accent); color: var(--text); }
+.rkchip[aria-pressed="true"] .ic { visibility: visible; color: var(--accent); }
+.rkchip[aria-pressed="false"] { text-decoration: line-through; }
+.rkchip:hover { background: var(--surface-2); }
+.rkchip:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+/* The toggle shares the count's --tap row; on a phone only its icon shows (its name stays the same) */
+.rkslot { gap: 12px; }
+.rknot { gap: 6px; }
+.rknot .ic { width: 18px; height: 18px; flex: none; }
+@media (max-width: 520px) {
+  .rknot { width: var(--tap); justify-content: center !important; }
+  .rknotw { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+.rkinst { font-size: var(--fs-small); color: var(--text-muted); display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; }
+.rkinst .textact { min-height: var(--tap); min-width: 0; padding: 0 2px; }
+/* The swaps open under the row, the full width; they push the rows below down, one way only (§3.4) */
+.rkswaps { grid-column: 1 / -1; display: grid; gap: 8px; padding: 4px 0 4px 52px; }
+.rksnote { margin: 0; font-size: var(--fs-small); color: var(--text-muted); }
+.rkswap { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.rkssw { display: block; width: 28px; height: 28px; }
+.rksmain { display: grid; min-width: 0; }
+.rksname { font-weight: 600; overflow-wrap: anywhere; }
+.rkswap .mono { font-size: 12px; }
+@media (max-width: 520px) { .rkswaps { padding-left: 0; } }
+/* The Recipe's line for a swapped pot: what it replaced, and the way back */
+.swapnote { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: -4px 0 12px; font-size: var(--fs-small); color: var(--text-muted); }
+.swapnote .swapsw { width: 14px; height: 14px; }
+.swapnote .textact { min-height: var(--tap); min-width: 0; padding: 0 2px; }
 .rkgroup { max-width: 760px; content-visibility: auto; contain-intrinsic-block-size: auto 600px; }   /* "All" is 3,225 rows: lay out only what is on screen; the estimate is a height only (a width estimate widened a phone page to 628px) */
 .rkhead { display: flex; justify-content: space-between; gap: 12px; margin: 16px 0 0; padding-bottom: 4px;
   border-bottom: 1px solid var(--border); font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em;
@@ -1365,7 +1412,7 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
 }
 /* Print (direction D): only the list, on paper — the boxes are for a pen, the colours print as they are. */
 @media print {
-  header, .appfoot, .workspace, .schemes, .shelfhead, .shelfsentinel, .shelfdock, .shelfbar, .rktools, .rkhint,
+  header, .appfoot, .workspace, .schemes, .shelfhead, .shelfsentinel, .shelfdock, .shelfbar, .rktools, .rkhint, .rkstore, .rkswaps, .rkinst .textact,
   .rkslot, #shelfGrid, #shelfEmpty, .toast, dialog { display: none !important; }
   body, main, .shelf { background: #fff !important; color: #000 !important; padding: 0; margin: 0; }
   .rkgroup { break-inside: avoid-page; max-width: none; content-visibility: visible; }

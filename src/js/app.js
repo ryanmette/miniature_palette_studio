@@ -5,17 +5,18 @@ import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
   isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony, startsNeutral } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex, deltaE2000Hex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
-import { encodeState, decodeState, shareUrl, schemeQuery, encodeList, decodeList, encodeBought, decodeBought } from './share.js';   // the share-link contract (state ⇄ URL)
+import { encodeState, decodeState, shareUrl, schemeQuery, encodeList, decodeList, encodeBought, decodeBought, setHoldInLink, decodeHolds } from './share.js';   // the share-link contract (state ⇄ URL)
 import { shareView, layoutShareImage, paintShareImage, shareText, shareFileName, SHARE_SIZE, SHARE_FONTS, SHARE_TOKENS } from './shareimage.js';   // the share image (pure layout + painter)
 import { snapPalette, readSnap } from './undo.js';   // the undo snapshot (palette state ⇄ JSON, exact)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
 import { createMarkMenu, isMenuKey } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf } from './data.js';
+import { loadDataset, storeSwaps, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
+import { loaderRoles, drawLoader, LOADER_TOKENS } from './loader.js';   // the Molten Harmonics loader (§3.4)
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
@@ -251,6 +252,8 @@ function holdClick(e) {
   if (lk) { const r = lk.dataset.holdLock; toggleLock(r); refocusHold(`.slot [data-hold-lock="${r}"]`); return true; }
   const pp = e.target.closest('[data-hold-pot]');
   if (pp) { openPotDialog(pp.dataset.holdPot, pp); return true; }
+  const og = e.target.closest('[data-hold-original]');
+  if (og) { const r = og.dataset.holdOriginal; useOriginal(r); refocusHold(`.slot [data-hold-pot="${r}"]`); return true; }
   const rl = e.target.closest('[data-hold-release]');
   if (rl) { const r = rl.dataset.holdRelease; releaseHold(r); refocusHold(`.slot [data-hold-pot="${r}"]`); return true; }
   if (e.target.closest('[data-hold-releaseall]')) { releaseAllHolds(); refocusHold('#undo'); return true; }
@@ -1010,8 +1013,13 @@ function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null })
    or by the scheme each is bought for. A tick marks the paint owned at once (Ryan: no Done step); a second tap
    undoes it, back to what it was, count and project too. A ticked row stays where it is while this list is
    open (rk.kept), and the count's slot keeps its height, so nothing under the finger moves (§3.4). */
-const rk = { kept: new Set(), prev: new Map(), countOpen: new Set() };
-function resetRackSession() { rk.kept.clear(); rk.prev.clear(); rk.countOpen.clear(); }
+const rk = { kept: new Set(), prev: new Map(), countOpen: new Set(), swapOpen: new Map() };
+function resetRackSession() { rk.kept.clear(); rk.prev.clear(); rk.countOpen.clear(); rk.swapOpen.clear(); }
+/* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B). For this visit only (in memory,
+   like Recent picks): the brands this store does not carry, and the swaps made (swap id → what it replaced,
+   so a row can say "in place of" and Undo puts everything back). */
+const storeOff = new Set();
+const swapLog = new Map();
 const rackLine = p => (p.line && p.line !== '—' && p.line !== p.brand ? p.line : '');
 /** A scheme's name for the list: its name, or its automatic name when it has none. `cache`: a Map per render. */
 function schemeNameOf(sid, cache = new Map()) {
@@ -1021,8 +1029,14 @@ function schemeNameOf(sid, cache = new Map()) {
 }
 /** One row's data, as the list draws it (renderShelfList and updateRackRow share it). */
 function rackRowData(p) {
-  const mark = store.markOf(p.id), prev = rk.prev.get(p.id);
+  const mark = store.markOf(p.id), prev = rk.prev.get(p.id), sw = swapLog.get(p.id);
+  // a to-buy row can open its swaps; a row whose brand the store does not carry opens them by itself
+  const canSwap = mark === 'want' && !sw, notCarried = canSwap && storeOff.has(p.brand);
+  const open = canSwap && (rk.swapOpen.has(p.id) ? rk.swapOpen.get(p.id) : notCarried);
   return {
+    canSwap,
+    swaps: open ? { notCarried, list: storeSwaps(state.idx, p, { notCarried: storeOff }).map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
+    insteadOf: sw ? state.idx.byId.get(sw.orig) : null,
     paint: p, owned: mark === 'owned',
     // a paint on the list, or one ticked off it just now (its slot stays, empty, so the row keeps its height)
     countable: mark === 'want' || (rk.kept.has(p.id) && prev?.mark === 'want'),
@@ -1036,7 +1050,8 @@ function updateRackRow(id) {
   const li = $(`[data-rk="${CSS.escape(id)}"]`), p = state.idx.byId.get(id);
   if (!li || !p) return;
   const ae = document.activeElement, had = li.contains(ae)
-    ? (ae.dataset.rktick ? '[data-rktick]' : ae.dataset.rkqty ? `[data-rkqty="${ae.dataset.rkqty}"]` : ae.dataset.rkcount ? '[data-rkcount]' : null) : null;
+    ? (ae.dataset.rktick ? '[data-rktick]' : ae.dataset.rkqty ? `[data-rkqty="${ae.dataset.rkqty}"]` : ae.dataset.rkcount ? '[data-rkcount]'
+      : ae.dataset.rknot ? '[data-rknot]' : null) : null;
   const r = rackRowData(p);
   if (state.shelfGroup !== 'project') r.forName = schemeNameOf(r.sid);
   li.outerHTML = ui.rackRow(r, t);
@@ -1070,6 +1085,12 @@ function renderShelfList(view) {
   host.innerHTML = ui.rackGroups(groups, t);
   $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
   syncSendBought();
+  // This store carries: the brands of the paints to buy here, and any switched off (so they can come back)
+  const brands = [...new Set([...view.filter(p => store.markOf(p.id) === 'want').map(p => p.brand), ...storeOff])].sort((a, b) => a.localeCompare(b));
+  const chip = document.activeElement?.dataset?.rkbrand;
+  $('#rkStore').innerHTML = ui.storeCarries(brands, storeOff, t);
+  $('#rkStore').hidden = !brands.length;
+  if (chip) $(`[data-rkbrand="${CSS.escape(chip)}"]`)?.focus({ preventScroll: true });
   for (const b of $('#shelfGroupSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sg === state.shelfGroup));
   if (keep) host.querySelector(keep)?.focus({ preventScroll: true });
 }
@@ -1097,6 +1118,92 @@ function rackTick(id) {
   render('marks', { ids: [id] });
   syncSendBought();
 }
+/** Draw `paint`'s row where the row `oldId` is now (a swap, or its Undo): the same place in the list, so
+ *  nothing under the finger moves (§3.4). A row of that paint already in the list takes the place instead. */
+function swapRackRow(oldId, paint) {
+  const li = $(`[data-rk="${CSS.escape(oldId)}"]`); if (!li) return;
+  if ($(`[data-rk="${CSS.escape(paint.id)}"]`)) { li.remove(); return; }
+  const r = rackRowData(paint);
+  if (state.shelfGroup !== 'project') r.forName = schemeNameOf(r.sid);
+  li.outerHTML = ui.rackRow(r, t);
+}
+/** The role of `link`'s scheme whose pot is `id`, when that role can hold a pot (not Primary, not the
+ *  starting paint's role): there a swap becomes the role's pot. Else null: only the list changes. */
+function roleForPot(link, id) {
+  const pv = previewScheme(link); if (!pv) return null;
+  const d = decodeState(link, { validHarmony, hasPaint: pid => state.idx.byId.has(pid), maxFree: MAX_FREE });
+  const holdable = holdableRoles(d.seedRole === 'accent' ? 'accent' : 'main');
+  return pv.scheme.roles.find(r => holdable.includes(r.role) && r.match?.paint?.id === id)?.role || null;
+}
+/** Write one role's hold into a kept scheme's link. When that scheme is the one on screen, the Studio takes
+ *  the same hold, so it still shows as Saved (the link now equals the saved link). */
+function holdInScheme(sid, role, hold) {
+  const sc = store.getScheme(sid); if (!sc) return;
+  const onScreen = schemeLink() === sc.link;
+  store.updateScheme(sid, { link: setHoldInLink(sc.link, role, hold, pid => state.idx.byId.has(pid)) });
+  if (onScreen) {
+    const next = { ...state.holds };
+    if (hold) next[role] = hold; else delete next[role];
+    state.holds = next;
+    render('scheme');
+  }
+}
+/** Use a swap (item 38): the swap goes on the list in the original's place, with its count and project, and
+ *  the original comes off. When the original is a role's pot in the scheme it is for, the swap becomes that
+ *  role's pot, with the original on record (`was`), so the Recipe says so and can go back. */
+function applySwap(origId, swapId) {
+  const orig = state.idx.byId.get(origId), sw = state.idx.byId.get(swapId);
+  if (!orig || !sw || store.markOf(origId) !== 'want') return;
+  const origQty = store.qtyOf(origId), origFor = store.projectOf(origId);
+  const swapPrev = { mark: store.markOf(swapId), qty: store.qtyOf(swapId), for: store.projectOf(swapId) };
+  const sc = origFor ? store.getScheme(origFor) : null;
+  const role = sc ? roleForPot(sc.link, origId) : null;
+  const scheme = role ? { sid: origFor, role, before: decodeHolds(new URLSearchParams(sc.link.slice(1)).get('hd'))[role] || null } : null;
+  // the swap first, so a project whose last paint was the original is not dropped on the way (store.js)
+  if (swapPrev.mark !== 'owned') {
+    store.setMark(swapId, 'want', { for: origFor || undefined });
+    if (origQty > 1) store.setQty(swapId, origQty);
+  }
+  store.setMark(origId, 'none');
+  if (scheme) holdInScheme(origFor, role, { kind: 'pot', id: swapId, hex: sw.hex, was: origId });
+  swapLog.set(swapId, { orig: origId, origQty, origFor, swapPrev, scheme });
+  rk.swapOpen.delete(origId);
+  swapRackRow(origId, sw);
+  render('marks', { ids: [swapId] });
+  ($(`[data-rkunswap="${CSS.escape(swapId)}"]`) || $(`[data-rktick="${CSS.escape(swapId)}"]`))?.focus({ preventScroll: true });
+  say(scheme ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
+    : t('swappedList', { name: ui.pname(sw), was: ui.pname(orig) }));
+}
+/** Undo a swap made in this visit: the original back on the list (count and project), the swap back to the
+ *  mark it had, and the scheme's role back to what it held. */
+function undoSwap(swapId) {
+  const e = swapLog.get(swapId), orig = e && state.idx.byId.get(e.orig);
+  if (!e || !orig) return;
+  store.setMark(e.orig, 'want', { for: e.origFor || undefined });
+  if (e.origQty > 1) store.setQty(e.orig, e.origQty);
+  if (e.swapPrev.mark !== 'owned') {
+    if (e.swapPrev.mark === 'want') { store.setMark(swapId, 'want', { for: e.swapPrev.for || undefined }); if (e.swapPrev.qty > 1) store.setQty(swapId, e.swapPrev.qty); }
+    else store.setMark(swapId, 'none');
+  }
+  if (e.scheme) holdInScheme(e.scheme.sid, e.scheme.role, e.scheme.before);
+  swapLog.delete(swapId);
+  swapRackRow(swapId, orig);
+  render('marks', { ids: [e.orig] });
+  $(`[data-rknot="${CSS.escape(e.orig)}"]`)?.focus({ preventScroll: true });
+  say(t('swapUndone', { was: ui.pname(orig) }));
+}
+/** The Recipe's "Use the original" on a swapped role: back to the pot the swap replaced. If the scheme picks
+ *  that pot by itself, the hold goes; else the original is held as the role's pot. One undo step. */
+function useOriginal(role) {
+  const h = state.holds[role], was = h && h.was && state.idx.byId.get(h.was);
+  if (!was) return;
+  const without = { ...state.holds }; delete without[role];
+  state.holds = without;
+  const auto = currentScheme().roles.find(r => r.role === role)?.match?.paint?.id;
+  if (auto !== was.id) state.holds = { ...without, [role]: { kind: 'pot', id: was.id, hex: was.hex } };
+  render('scheme');
+  say(t('originalBack', { role, name: ui.pname(was) }));
+}
 function setupShelfList() {
   $('#shelfViewSeg').addEventListener('click', e => {
     const b = e.target.closest('[data-sv]'); if (!b || b.dataset.sv === state.shelfView) return;
@@ -1110,9 +1217,25 @@ function setupShelfList() {
     renderShelf(); updateUrl();
   });
   $('#shelfPrint').addEventListener('click', () => window.print());
+  $('#rkStore').addEventListener('click', e => {
+    const b = e.target.closest('[data-rkbrand]'); if (!b) return;
+    const brand = b.dataset.rkbrand;
+    if (storeOff.has(brand)) storeOff.delete(brand); else storeOff.add(brand);
+    rk.swapOpen.clear();   // each row of that brand opens (or folds) its swaps again
+    renderShelf();
+    say(t(storeOff.has(brand) ? 'brandOff' : 'brandOn', { brand }));
+  });
   $('#shelfList').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.rktick) { rackTick(b.dataset.rktick); return; }
+    if (b.dataset.rknot) {
+      const id = b.dataset.rknot, r = rackRowData(state.idx.byId.get(id));
+      rk.swapOpen.set(id, !r.swaps);
+      updateRackRow(id);
+      return;
+    }
+    if (b.dataset.rkuse) { applySwap(b.dataset.for, b.dataset.rkuse); return; }
+    if (b.dataset.rkunswap) { undoSwap(b.dataset.rkunswap); return; }
     if (b.dataset.rkcount) {
       const id = b.dataset.rkcount;
       rk.countOpen.add(id); updateRackRow(id);
@@ -1722,7 +1845,11 @@ function setupSaveDialog() {
       renderSchemesPage();
       $(`[data-screname="${CSS.escape(saveDlg.id)}"]`)?.focus();
     } else {
-      openSchemeId = store.createScheme({ link: schemeLink(), name: unique, saved: true });
+      // Save on a scheme whose paints are on the list already: that project (same link, never saved) takes
+      // the name, so its paints keep pointing at it. Save as new always makes a new scheme.
+      const proj = saveDlg.kind === 'new' ? store.findSchemeByLink(schemeLink()) : null;
+      if (proj && !store.getScheme(proj).saved) { store.updateScheme(proj, { name: unique, saved: true }); openSchemeId = proj; }
+      else openSchemeId = store.createScheme({ link: schemeLink(), name: unique, saved: true });
       saveDlg.opener = null;
       d.close();
       updateUrl();   // the bar shows the name, and the address bar keeps it (s=)
@@ -2084,17 +2211,26 @@ function setTab(tab, focusActive = false) {
   syncTabs(focusActive);
   renderActive(); applyEquivSelect(); announce(); updateUrl();   // show/clear the Equivalents-source ring with the tab
 }
+/** The project a paint added from the Studio is for: the scheme on screen (mockups/project-naming.html, "label
+ *  now, name later"). The saved scheme while it shows Saved; else a kept scheme with this exact link; else a
+ *  new project with no name, which lives while a paint on the list points at it (store.js). */
+function projectOnScreen() {
+  const link = schemeLink(), open = openSchemeId && store.getScheme(openSchemeId);
+  if (open && open.link === link) return openSchemeId;
+  return store.findSchemeByLink(link) || store.createScheme({ link });
+}
 /** Toggle a paint on/off the to-buy list (#5). Owned paints have no buy control, but guard anyway. */
 function toggleBuy(id) {
   if (store.isOwned(id)) return;
-  store.setMark(id, store.isWant(id) ? 'none' : 'want');
+  if (store.isWant(id)) store.setMark(id, 'none');
+  else store.setMark(id, 'want', { for: projectOnScreen() || undefined });
   render('marks', { ids: [id] });   // the hero and the Plan can both show this paint's toggle
 }
 /** One click: flag every paint this scheme needs (that you don't own) as to-buy (#5). */
 function addGapsToBuy() {
   const ids = [...new Set(schemeGaps(state.scheme, store.ownedIds()).map(g => g.paint.id))].filter(id => store.markOf(id) !== 'want');
   const n = ids.length;
-  if (n) { store.setMarks(ids, 'want'); render('marks', { ids }); }   // one write, one repaint
+  if (n) { store.setMarks(ids, 'want', { for: projectOnScreen() || undefined }); render('marks', { ids }); }   // one write, one repaint
   toast(n ? `Added ${n} paint${n > 1 ? 's' : ''} to the shopping list` : 'Nothing new to add');
 }
 function setLadder(v) {                          // #7 — tone-ladder style (persisted)
@@ -3165,7 +3301,12 @@ async function init() {
   const tParam = url.get('t') === 'dark' ? 'dark' : null;
   setTheme(tParam || store.getPref('theme') || deviceTheme());
 
-  state.idx = await loadDataset('./data/paints.json');
+  loader = startLoader(url);
+  // the data's real progress drives the loader: the bytes read, or (size unknown) a curve that never says done
+  state.idx = await loadDataset('./data/paints.json', {
+    onProgress: (got, total) => loader.progress(total ? got / total : got / (got + 400000)),
+  });
+  loader.done();   // it finishes over the drawn app, in about 0.4 s, then fades out
   // Native shell: recover the collection if WKWebView evicted localStorage (no-op on the web). This
   // ran TWICE — the second call was byte-identical dead work — and neither re-applied what it
   // restored, so on a shell whose storage had been evicted the recovered theme/locale sat in state
@@ -3256,11 +3397,64 @@ async function init() {
   });
 }
 
+/* ---- the Molten Harmonics loader (CLAUDE.md §3.4; loader.js) ----
+   It shows only when the paint data takes a while (after LOADER_DELAY): a fast load, such as the cached or the
+   bundled data, never flashes it. The frame follows the real progress, eases toward it and never goes back;
+   when the data is in, it finishes in about 0.4 s and fades out. With reduced motion it is one still frame:
+   the finished palette. Its colours are the page's tokens and the scheme the link names. */
+const LOADER_DELAY = 250;
+let loader = null;
+function startLoader(url) {
+  const el = $('#loader'), cv = $('#loadCanvas'), ctx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let target = 0, p = 0, raf = 0, shown = false, last = 0, finishing = false, size = 0, look = null;
+  const timer = setTimeout(show, LOADER_DELAY);
+  function show() {
+    shown = true;
+    const cs = getComputedStyle(document.documentElement);
+    const colors = Object.fromEntries(Object.entries(LOADER_TOKENS).map(([k, v]) => [k, cs.getPropertyValue(v).trim()]));
+    look = { colors, roles: loaderRoles(url.get('c'), url.get('h') || 'complementary', colors.accent),
+      dark: document.documentElement.dataset.theme === 'dark', font: getComputedStyle(document.body).fontFamily };
+    // under the header as it is now (its height follows --tap; --hdr-h is not set yet this early)
+    el.style.top = Math.round($('header').getBoundingClientRect().bottom) + 'px';
+    el.hidden = false;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    size = Math.round((cv.getBoundingClientRect().width || 320) * dpr);
+    cv.width = cv.height = size;
+    look.labelPx = Math.max(size * 0.034, 11 * dpr);   // the role names stay readable on a phone
+    if (reduce) { still(); return; }
+    last = performance.now();
+    raf = requestAnimationFrame(tick);
+  }
+  function tick(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    p = finishing ? Math.min(1, p + Math.max(dt / 0.4, (1 - p) * 0.2)) : p + Math.max(0, target - p) * Math.min(1, dt * 4);
+    drawLoader(ctx, size, size, p, look);
+    el.setAttribute('aria-valuenow', String(Math.round(p * 100)));
+    if (finishing && p >= 1) { hide(); return; }
+    raf = requestAnimationFrame(tick);
+  }
+  /* reduced motion: one frame, the finished palette; only the progress line moves with the real load */
+  function still() { drawLoader(ctx, size, size, 1, { ...look, bar: target }); el.setAttribute('aria-valuenow', String(Math.round(target * 100))); }
+  function hide() {
+    cancelAnimationFrame(raf); clearTimeout(timer);
+    if (!shown || reduce) { el.hidden = true; return; }
+    el.classList.add('out');
+    setTimeout(() => { el.hidden = true; el.classList.remove('out'); }, 220);
+  }
+  return {
+    progress(f) { target = Math.max(target, Math.min(0.95, f)); if (reduce && shown) still(); },
+    done() { clearTimeout(timer); if (!shown || reduce) hide(); else finishing = true; },
+    hide,
+  };
+}
+
 // iOS WebKit only applies :active styles on touch when a touchstart listener exists. The touch styles
 // remove the grey tap flash (app.css), so :active (buttons press to .96) is now the press feedback.
 document.addEventListener('touchstart', () => {}, { passive: true });
 
 init().catch(err => {
+  loader?.hide();   // the error below must not sit under the loader
   // err.message is not under the app's control (fetch/parse errors can echo response bodies) — the
   // ONE innerHTML sink that must escape (every other render path goes through ui.js esc()).
   $('main').innerHTML = `<p style="padding:24px;color:var(--danger-text);max-width:60ch">Couldn't load the paint data: ${ui.esc(err.message)}.

@@ -365,3 +365,15 @@ test('holds: an unknown pot acts as a lock on its hex', () => {
   assert.equal(sec.idealHex, '#119A96');
   assert.equal(sec.match.paint.id, 't');
 });
+
+test('holds: a store swap (item 38) keeps the paint it replaced as swappedFrom', () => {
+  const s = buildScheme(HOLD_DATA, '#9A1115', 'complementary', { holds: { Accent: { kind: 'pot', id: 't', hex: '#119A96', was: 'g' } } });
+  const acc = s.roles.find(r => r.role === 'Accent');
+  assert.equal(acc.hold, 'pot');
+  assert.equal(acc.match.paint.id, 't');
+  assert.equal(acc.swappedFrom.id, 'g');
+  const plain = buildScheme(HOLD_DATA, '#9A1115', 'complementary', { holds: { Accent: { kind: 'pot', id: 't', hex: '#119A96' } } });
+  assert.equal('swappedFrom' in plain.roles.find(r => r.role === 'Accent'), false, 'a chosen pot is not a swap');
+  const gone = buildScheme(HOLD_DATA, '#9A1115', 'complementary', { holds: { Accent: { kind: 'pot', id: 't', hex: '#119A96', was: 'nope' } } });
+  assert.equal('swappedFrom' in gone.roles.find(r => r.role === 'Accent'), false, 'an unknown original is dropped');
+});
