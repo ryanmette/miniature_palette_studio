@@ -99,12 +99,13 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 /* position: relative makes the strip the chips' offsetParent, so scrollHarmonyActive (app.js) centres a chip
    from the strip's own edge. Before, it measured from the studio card, and scroll-snap hid the error. */
 #seg.harmscroll { position: relative; display: flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scroll-snap-type: x proximity;
-  scrollbar-width: thin; -webkit-overflow-scrolling: touch; padding: 4px; scroll-padding: 4px;
+  scrollbar-width: thin; -webkit-overflow-scrolling: touch; padding: 4px 4px 14px; scroll-padding: 4px;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
   mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent); }
 #seg.harmscroll button { flex: 0 0 auto; scroll-snap-align: center; }
 /* The scroll box clips: 4px of padding holds the 4px focus ring (§3.5), and the edge fade goes while a
-   chip has keyboard focus. */
+   chip has keyboard focus. The bottom is 14px: macOS draws its scrollbar OVER the content (an overlay bar,
+   about 8-11px), and on 4px it covered the chips and the pressed chip's accent bar (Ryan's report). */
 #seg.harmscroll:has(:focus-visible) { -webkit-mask-image: none; mask-image: none; }
 #seg.harmscroll::-webkit-scrollbar { height: 6px; }
 #seg.harmscroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }

@@ -14,6 +14,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   hold, explore, filter), proposes "Starting paint" in place of "your paint" (which read as "owned"), and
   scores three directions. The recommendation is A: one scheme with two holds, a locked colour and a chosen pot.
 ### Fixed
+- **The harmony strip's scrollbar no longer covers the chips** (Ryan's report). On a Mac the scrollbar floats
+  over the content, and with 4px of room under the chips it covered their lower edge and the pressed chip's
+  accent bar. The strip now has 14px of room under the chips.
 - **The dock on the live palette says what it does: "Move my paint here"** (Ryan's report). It said "Make
   this your paint", which read as "make this column's colour my paint". The button moves your paint into
   that column's role (for example from Accent to Primary) and builds the scheme again around it.
