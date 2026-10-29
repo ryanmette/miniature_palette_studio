@@ -5,7 +5,7 @@ It exists so v1 is built in a way that makes a future app cheap (it already is �
 
 > v1 stays a static web app embedded in Squarespace. Everything below is optional, future, and
 > gets its own constitution before any code — **drafted 2026-07-09: [`CLAUDE_NATIVE.md`](../CLAUDE_NATIVE.md)**
-> (dormant until Stage-1 kickoff; it activates at `npx cap add ios`, §4b step 7).
+> (active since 2026-10-29: Stage 1 began when the `ios/` folder was committed, §4b step 7).
 
 > **Update (2026-07-05 — v2 kickoff review).** The plan below survives review with one big correction
 > and one shrink: **colour-from-photo is no longer a native-only draw** — the on-device photo
@@ -171,6 +171,9 @@ carry the decisions.)*
 **On the Mac (the §4a commands), then:**
 7. `npx cap add ios && npx cap sync && npx cap open ios` → run on a device — the whole Studio/Shelf
    should just work; fix what doesn't (expect: file pickers, share sheet, status-bar overlap).
+   ✅ **started 2026-10-29:** the `ios/` project is committed (Swift Package Manager) and runs in the iPhone
+   simulator. The status-bar overlap was `contentInset: "always"`, now `"never"`. Still to check on a device:
+   file pickers, the share sheet, the camera.
 8. **Feature 1 — camera intake:** `@capacitor/camera` photo → existing eyedropper dialog (small).
 9. **Feature 2 — live eyedropper:** camera-preview stream → per-frame `nearestPaint` (the engine
    already does this in <16ms) → the v2.0 App-Store headline and the "genuine native value" for §7.

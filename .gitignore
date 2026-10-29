@@ -5,10 +5,10 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Node (dev tooling only — never required at runtime)
+# Node (dev tooling only — never required at runtime). package-lock.json is committed since Stage 1: it pins
+# the Capacitor devDependencies, so a version bump is a deliberate change (CLAUDE_NATIVE.md §4, §11)
 node_modules/
 npm-debug.log*
-package-lock.json
 
 # Build/scratch
 dist/

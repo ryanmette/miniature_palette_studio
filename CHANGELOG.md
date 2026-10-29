@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
+  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
+  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
+  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
+  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
+  has its own releases later.
 - **Take the list to the store** (PLAN §5 item 37; `mockups/shopping-list.html` §6, `mockups/project-naming.html` B).
   There is no server, so the list goes from one device to the other in a link.
   - **Take to the store…** opens a panel: in ⋯, in the Shelf's list (beside Print), and on a Schemes row that has
@@ -98,6 +104,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   mean only "linked to what you point at" and "the Equivalents source".
 
 ### Fixed
+- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
+  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
+  padding. The web view's white background showed behind the clock and the home bar, with a double gap
+  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
+  clear of the notch and the home bar.
 - **A lock drew half a border.** The colour block covered the lock's inner shadow, so only the footer
   showed it.
 - **Custom (and Complementary) showed roles that were in the Recipe only.** The Recipe makes a Secondary
