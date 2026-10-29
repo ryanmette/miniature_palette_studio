@@ -19,7 +19,28 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **The shelf CSV has two more columns: `qty` and `project`** (after paintRack's `brand,name,status`, so a
   reader that knows only those three still reads it). Import reads a count back for a to-buy paint; the
   project column is for people (a CSV cannot hold a scheme's link).
-
+- **Design exploration: the shopping list in the store** (`mockups/shopping-list.html`, not shipped). Ryan asked how
+  the shopping list should look when you stand at a paint rack with a phone. The page studies seven other apps
+  (Citadel Colour, paintRack, Mini Forge, Paint Finder, AnyList, Apple Reminders, BrickLink) and gives five
+  directions with working phone frames: A, a checklist in rack order (brand → line) where a tick makes the paint
+  owned; B, "Not on the rack?" swaps from the brands the store carries, with the true ΔE; C, one list with a
+  "for" label per paint; D, a receipt to print; E, a rack map (not to build: the rack order is not published).
+  It also shows the hand-off from the desktop to the phone (a link or QR code) and a "bought" link back, because
+  each device keeps its own shelf. Ryan's answers are on the page. (CLAUDE.md §4 is updated.)
+- **Design exploration: naming a project** (`mockups/project-naming.html`, not shipped). It follows the
+  shopping-list study. Ryan said a project's name is asked on export or save. The page proposes "label now,
+  name later": Add records the scheme silently, and a name is only a word on top. It compares four ways to ask
+  and recommends B: ask once, at the first export, with the field pre-filled and a Skip. A name is changed in
+  place on the list. It has a working flow and a data sketch for `store.js`. Ryan's answers: a project is one scheme, its name
+  goes in the share link, and a saved-scheme library is wanted next.
+- **Design exploration: the scheme library** (`mockups/scheme-library.html`, not shipped). It follows the naming
+  study. A saved scheme, a shopping-list project and a named link become one `schemes` map in `store.js`, with a
+  key that never changes (the naming study's link hash would break when a saved scheme changes). It shows an
+  explicit Save on the hero line (Changed · Save · Save as new), four places for the library, and recommends a
+  third mode, Schemes, between Studio and Shelf. The frames work. Ryan chose the Schemes mode, an explicit Save,
+  a name that saves for good, no folders, and the colour strip; the page ends with one build order for all three studies.
+- **The shopping-list turn in the plan** (`docs/PLAN.md` §5, items 34–38): the decisions from the three studies and
+  one build order — the data model, Save and the Schemes mode, the rack walk, Take to the store, Not on the rack.
 ### Changed
 - **The live palette shows the target and the pot together.** Each column's colour block is the target
   colour. A band along its foot shows the nearest pot, with the pot's hex and finish. The **Target / Pot**
