@@ -1034,6 +1034,8 @@ function rackRowData(p) {
   const canSwap = mark === 'want' && !sw, notCarried = canSwap && storeOff.has(p.brand);
   const open = canSwap && (rk.swapOpen.has(p.id) ? rk.swapOpen.get(p.id) : notCarried);
   return {
+    // struck through: bought from the shopping list in this list's visit (a checklist's tick-off), not every owned paint
+    struck: mark === 'owned' && rk.kept.has(p.id) && prev?.mark === 'want',
     canSwap,
     swaps: open ? { notCarried, list: storeSwaps(state.idx, p, { notCarried: storeOff }).map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
     insteadOf: sw ? state.idx.byId.get(sw.orig) : null,
@@ -1065,7 +1067,11 @@ function renderShelfList(view) {
   rows.sort((a, b) => a.paint.brand.localeCompare(b.paint.brand) || rackLine(a.paint).localeCompare(rackLine(b.paint))
     || ui.pname(a.paint).localeCompare(ui.pname(b.paint)));
   const groups = [];
-  if (state.shelfGroup === 'project') {
+  // By project means something only when a paint here is for a scheme (a paint to buy, or one just ticked
+  // off); else the switch hides and the list stays in rack order
+  const hasProject = rows.some(r => r.sid);
+  $('#shelfGroupSeg').hidden = !hasProject;
+  if (hasProject && state.shelfGroup === 'project') {
     const by = new Map();
     for (const r of rows) { const k = r.sid && nameOf(r.sid) ? r.sid : ''; if (!by.has(k)) by.set(k, []); by.get(k).push(r); }
     for (const sc of store.listSchemes()) if (by.has(sc.id)) groups.push({ key: sc.id, title: nameOf(sc.id), rows: by.get(sc.id) });

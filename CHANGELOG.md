@@ -120,6 +120,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   mean only "linked to what you point at" and "the Equivalents source".
 
 ### Fixed
+- **The Shelf's list is clearer** (Ryan's review, 2026-10-29):
+  - The line through a name now means "ticked off the shopping list" only. Before, every owned paint had it, so
+    the Owned view looked like a list of removed paints. An owned paint keeps its green tick.
+  - **Rack order | By project** shows only when a paint in the list is for a scheme. With no project, both gave
+    the same rows, so the switch looked broken.
+  - The rows run the full width, so the ticks line up with the right edge of the filters above.
 - **Paints added from the Studio now remember their scheme.** The Recipe's **Add** and **+ Add N to the shopping
   list** did not record the project, so the list's "for Blue knight" and By project showed nothing for them.
   They now record the scheme on screen. **Save** on a scheme whose paints are on the list names that project, in

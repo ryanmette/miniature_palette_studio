@@ -708,7 +708,8 @@ export function rackRow(r, tr) {
         : `<button type="button" class="textact rkadd" data-rkcount="${esc(p.id)}" aria-label="${esc(tr('addCountFor', { name }))}">${esc(tr('addCount'))}</button>`;
     slot = `<span class="rkslot">${inner}${r.owned ? '' : swapBtn}</span>`;
   }
-  return `<li class="rkrow${r.owned ? ' done' : ''}" data-rk="${esc(p.id)}">`
+  // the line through the name is "ticked off the shopping list" (r.struck), not "owned": an owned paint has the filled tick
+  return `<li class="rkrow${r.struck ? ' done' : ''}" data-rk="${esc(p.id)}">`
     + swatch(p.hex, 'rksw' + fxCls(p), '')
     // the plain name: the line is in the row (and the rack group) already; the tick's name keeps the full
     // display name, so twins (Dawnstone (Layer) / (Dry)) stay apart for a screen reader

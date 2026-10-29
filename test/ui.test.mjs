@@ -452,8 +452,10 @@ test('rackRow: an open count is a stepper; owned keeps the slot (no height chang
   assert.doesNotMatch(open, /aria-live/, 'the count is said through say(), not a live region that is rebuilt');
   const one = rackRow({ paint: dawn, owned: false, countable: true, qty: 1, countOpen: true }, tr);
   assert.match(one, /onePot/);
-  const done = rackRow({ paint: dawn, owned: true, countable: true, qty: 1, countOpen: false }, tr);
+  const done = rackRow({ paint: dawn, owned: true, struck: true, countable: true, qty: 1, countOpen: false }, tr);
   assert.match(done, /class="rkrow done"/);
+  // owned before the list opened: the filled tick says so; the line through the name is only "ticked off the list"
+  assert.match(rackRow({ paint: dawn, owned: true, countable: false, qty: 0 }, tr), /class="rkrow"/);
   assert.match(done, /<span class="rkslot"><\/span>/, 'the slot stays, empty');
   assert.match(done, /aria-pressed="true"/);
   const plain = rackRow({ paint: gold, owned: true, countable: false, qty: 0 }, tr);

@@ -1375,7 +1375,7 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
 .swapnote { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: -4px 0 12px; font-size: var(--fs-small); color: var(--text-muted); }
 .swapnote .swapsw { width: 14px; height: 14px; }
 .swapnote .textact { min-height: var(--tap); min-width: 0; padding: 0 2px; }
-.rkgroup { max-width: 760px; content-visibility: auto; contain-intrinsic-block-size: auto 600px; }   /* "All" is 3,225 rows: lay out only what is on screen; the estimate is a height only (a width estimate widened a phone page to 628px) */
+.rkgroup { content-visibility: auto; contain-intrinsic-block-size: auto 600px; }   /* "All" is 3,225 rows: lay out only what is on screen; the estimate is a height only (a width estimate widened a phone page to 628px) */
 .rkhead { display: flex; justify-content: space-between; gap: 12px; margin: 16px 0 0; padding-bottom: 4px;
   border-bottom: 1px solid var(--border); font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em;
   text-transform: uppercase; color: var(--text-muted); }
