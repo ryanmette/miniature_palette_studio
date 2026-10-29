@@ -6,6 +6,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Fixed
+- **The dock on the live palette says what it does: "Move my paint here"** (Ryan's report). It said "Make
+  this your paint", which read as "make this column's colour my paint". The button moves your paint into
+  that column's role (for example from Accent to Primary) and builds the scheme again around it.
 - **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role
   card, the ring that links it to the wheel and the live palette sat 1px from the card's edges, with no
   space on the left or right. The card now has 12px of room on each side (the content does not move), and
