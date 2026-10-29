@@ -452,8 +452,10 @@ test('rackRow: an open count is a stepper; owned keeps the slot (no height chang
   assert.doesNotMatch(open, /aria-live/, 'the count is said through say(), not a live region that is rebuilt');
   const one = rackRow({ paint: dawn, owned: false, countable: true, qty: 1, countOpen: true }, tr);
   assert.match(one, /onePot/);
-  const done = rackRow({ paint: dawn, owned: true, countable: true, qty: 1, countOpen: false }, tr);
+  const done = rackRow({ paint: dawn, owned: true, struck: true, countable: true, qty: 1, countOpen: false }, tr);
   assert.match(done, /class="rkrow done"/);
+  // owned before the list opened: the filled tick says so; the line through the name is only "ticked off the list"
+  assert.match(rackRow({ paint: dawn, owned: true, countable: false, qty: 0 }, tr), /class="rkrow"/);
   assert.match(done, /<span class="rkslot"><\/span>/, 'the slot stays, empty');
   assert.match(done, /aria-pressed="true"/);
   const plain = rackRow({ paint: gold, owned: true, countable: false, qty: 0 }, tr);
@@ -469,4 +471,53 @@ test('rackGroups: one section per group, its title and count, rows in the given 
   assert.equal((html.match(/<section class="rkgroup"/g) || []).length, 2);
   assert.match(html, /<span>Citadel · Base<\/span><span class="rkcount">1<\/span>/);
   assert.match(html, /<span>Other paints<\/span><span class="rkcount">2<\/span>/);
+});
+
+/* ---- Not on the rack (PLAN §5 item 38) ---- */
+import { rackRow as rackRow38, storeCarries } from '../src/js/ui.js';
+const t38 = (k, v = {}) => k + (Object.keys(v).length ? '(' + Object.entries(v).map(([a, b]) => `${a}=${b}`).join(',') + ')' : '');
+const red = { id: 'cit-red', brand: 'Citadel', line: 'Base', name: 'Mephiston Red', hex: '#960C09', type: 'base' };
+const carm = { id: 'val-carm', brand: 'Vallejo', line: 'Model Color', name: 'Carmine Red', hex: '#97211F', type: 'base' };
+
+test('rackRow: a to-buy row has Not on the rack? in its count row; open, it lists swaps with true ΔE, label and Use', () => {
+  const closed = rackRow38({ paint: red, countable: true, owned: false, qty: 1, canSwap: true }, t38);
+  assert.match(closed, /data-rknot="cit-red" aria-expanded="false" aria-controls="rks-cit-red"/);
+  assert.match(closed, /aria-label="notOnRackFor\(name=Mephiston Red\)"/);
+  assert.doesNotMatch(closed, /rkswaps/);
+  const open = rackRow38({ paint: red, countable: true, owned: false, qty: 1, canSwap: true,
+    swaps: { notCarried: true, list: [{ paint: carm, deltaE: 4.2, quality: { label: 'Fair', tier: 'warning' }, owned: true }] } }, t38);
+  assert.match(open, /aria-expanded="true"/);
+  assert.match(open, /id="rks-cit-red" role="group"/);
+  assert.match(open, /notCarried\(brand=Citadel\)/);
+  assert.match(open, /ΔE 4\.2<\/span> <span class="tag warning">Fair/);
+  assert.match(open, /data-rkuse="val-carm" data-for="cit-red" aria-label="useInPlace\(name=Carmine Red,was=Mephiston Red\)"/);
+  assert.match(open, /ownmini/, 'an owned swap says so');
+  const poor = rackRow38({ paint: red, countable: true, qty: 1, canSwap: true,
+    swaps: { list: [{ paint: carm, deltaE: 12, quality: { label: 'Poor', tier: 'danger' } }] } }, t38);
+  assert.match(poor, /noCloseSwap/); assert.match(poor, /tag danger/);
+  assert.match(rackRow38({ paint: red, countable: true, qty: 1, canSwap: true, swaps: { list: [] } }, t38), /noSwap/);
+  assert.doesNotMatch(rackRow38({ paint: red, countable: true, owned: true, qty: 0, canSwap: false }, t38), /data-rknot/, 'a ticked row has no toggle');
+});
+
+test('rackRow: a swap made in this visit says what it replaced; Undo only while it is still to buy', () => {
+  const sw = rackRow38({ paint: carm, countable: true, owned: false, qty: 1, insteadOf: red }, t38);
+  assert.match(sw, /inPlaceOf\(name=Mephiston Red\)/);
+  assert.match(sw, /data-rkunswap="val-carm"/);
+  assert.doesNotMatch(sw, /data-rknot/, 'a swap row does not swap again');
+  assert.doesNotMatch(rackRow38({ paint: carm, countable: true, owned: true, qty: 0, insteadOf: red }, t38), /data-rkunswap/);
+});
+
+test('storeCarries: one toggle per brand, pressed while the store carries it; nothing with no brands', () => {
+  const html = storeCarries(['Citadel', 'Vallejo'], new Set(['Vallejo']), t38);
+  assert.match(html, /data-rkbrand="Citadel" aria-pressed="true"/);
+  assert.match(html, /data-rkbrand="Vallejo" aria-pressed="false"/);
+  assert.match(html, /role="group" aria-labelledby="rkStoreLab"/);
+  assert.equal(storeCarries([], new Set(), t38), '');
+});
+
+test('holdControls: a swapped pot names the pot it replaced, with Use the original', () => {
+  const html = holdControls({ role: 'Accent', hold: 'pot', swappedFrom: red }, true);
+  assert.match(html, /Swapped in the store for Mephiston Red/);
+  assert.match(html, /data-hold-original="Accent"/);
+  assert.doesNotMatch(holdControls({ role: 'Accent', hold: 'pot' }, true), /swapnote/);
 });

@@ -6,6 +6,22 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 ### Added
+- **Not on the rack: swaps in the store** (PLAN §5 item 38; `mockups/shopping-list.html` direction B).
+  - In the Shelf's list, each paint to buy has **Not on the rack?**. It shows the three closest pots, from the
+    brands the store carries, each with its true ΔE and label. **A swap keeps the finish:** a wash only gets
+    washes, a metallic only metallics. If none is close, the list says so.
+  - **This store carries** has one switch for each brand on your list. Switch a brand off, and each of its paints
+    shows its closest pots from the other brands.
+  - **Use** puts the swap on the list in the same place, with the count and the project, and takes the original
+    off. **Undo** puts it back.
+  - When the original was a pot in the scheme it was bought for, the swap becomes that role's pot. The link
+    keeps the original (`hd`, a fifth part), and the Recipe says "Swapped in the store for Mephiston Red", with
+    **Use the original**.
+- **The Molten Harmonics loader** (CLAUDE.md §3.4; `src/js/loader.js`). When the paint data takes more than a
+  quarter of a second to arrive, a drop of colour falls, finds its place on a colour wheel, and pours into four
+  paint wells: the Primary, Secondary, Accent and Metal targets of the scheme that loads. It follows the real
+  download, and it ends on the finished palette. A fast or cached load never shows it. With reduced motion it is
+  one still picture, and only the progress line moves.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
@@ -104,6 +120,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   mean only "linked to what you point at" and "the Equivalents source".
 
 ### Fixed
+- **The Shelf's list is clearer** (Ryan's review, 2026-10-29):
+  - The line through a name now means "ticked off the shopping list" only. Before, every owned paint had it, so
+    the Owned view looked like a list of removed paints. An owned paint keeps its green tick.
+  - **Rack order | By project** shows only when a paint in the list is for a scheme. With no project, both gave
+    the same rows, so the switch looked broken.
+  - The rows run the full width, so the ticks line up with the right edge of the filters above.
+- **Paints added from the Studio now remember their scheme.** The Recipe's **Add** and **+ Add N to the shopping
+  list** did not record the project, so the list's "for Blue knight" and By project showed nothing for them.
+  They now record the scheme on screen. **Save** on a scheme whose paints are on the list names that project, in
+  place of a second copy of the scheme.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap

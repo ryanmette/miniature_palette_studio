@@ -511,3 +511,25 @@ test('browseOrder "owned" and "name": owned first, then A to Z by display name (
   for (let i = 1; i < byName.length; i++) assert.ok(byName[i - 1].localeCompare(byName[i]) <= 0);
   assert.ok(byName.indexOf('Dawnstone (Dry)') < byName.indexOf('Dawnstone (Layer)'));
 });
+
+test('storeSwaps (item 38): same finish class only, carried brands only, true ΔE, best first', async () => {
+  const { storeSwaps } = await import('../src/js/data.js');
+  const sx = indexDataset({ version: 't', paints: [
+    { id: 'cit-red', brand: 'Citadel', line: 'Base', name: 'Red', hex: '#9A1115', type: 'base' },
+    { id: 'val-red', brand: 'Vallejo', line: 'MC', name: 'Carmine', hex: '#97211F', type: 'base' },
+    { id: 'ap-red', brand: 'Army Painter', line: 'W', name: 'Crimson', hex: '#9C1A1D', type: 'layer' },
+    { id: 'val-wash', brand: 'Vallejo', line: 'W', name: 'Red Wash', hex: '#9A1216', type: 'wash' },
+    { id: 'cit-wash', brand: 'Citadel', line: 'Shade', name: 'Carroburg', hex: '#5A1A22', type: 'shade' },
+    { id: 'ap-wash', brand: 'Army Painter', line: 'Q', name: 'Red Tone', hex: '#7A1A1E', type: 'wash' },
+  ] });
+  const red = sx.byId.get('cit-red');
+  const all = storeSwaps(sx, red);
+  assert.deepEqual(all.map(m => m.paint.id), ['ap-red', 'val-red'], 'the flat red never gets a wash, even the nearest');
+  assert.ok(all[0].deltaE <= all[1].deltaE);
+  assert.equal(all[0].quality.label, matchQuality(all[0].deltaE).label);
+  assert.deepEqual(storeSwaps(sx, red, { notCarried: new Set(['Army Painter']) }).map(m => m.paint.id), ['val-red']);
+  const wash = sx.byId.get('cit-wash');
+  assert.deepEqual(storeSwaps(sx, wash).map(m => m.paint.id).sort(), ['ap-wash', 'val-wash'], 'a wash or shade swaps for a wash');
+  assert.deepEqual(storeSwaps(sx, wash, { notCarried: new Set(['Vallejo', 'Army Painter']) }), [], 'none: an empty list, never a flat');
+  assert.equal(storeSwaps(sx, red, { n: 1 }).length, 1);
+});

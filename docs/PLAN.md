@@ -112,7 +112,7 @@ UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funn
 [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
 **Native app, Stage 1 (v2.0): started 2026-10-29** — the `ios/` project is committed and runs in the
 simulator; the checklist is `IOS_APP_PLAN.md` §4b (next: a device, then camera intake), and the
-native-track constitution is active (`CLAUDE_NATIVE.md`). §5's live backlog is the buying-assistant plan (items 7–11) and the shopping-list turn (items 34–38, 34–37 built;
+native-track constitution is active (`CLAUDE_NATIVE.md`). §5's live backlog is the buying-assistant plan (items 7–11) and the shopping-list turn (items 34–38, all built;
 studied and answered 2026-10-29); the pin-a-paint direction shipped as role holds in v1.12.0. Still outside this repo: the Mac/Xcode build, a designer for the asset
 library, and the optional palette-from-photo enhancement.
 
@@ -465,10 +465,12 @@ The build order. Each item needs the one before it:
     Save the recipe). The QR code is hand-rolled (`qr.js`, no dependency) and checked against an independent
     encoder. The list link carries each project's scheme link and name, so the phone gets the same projects.
     Not built from the study: rename in place on the list's group header (Schemes → Rename does it).
-38. **Not on the rack** (shopping-list direction B). Swaps from the brands the store carries, kept to the same
-    finish class (a wash's swap is a wash, or none); a swap becomes a pot hold on its role (role holds,
-    v1.12.0) with the original flagged — the one new field, kept on the scheme. This is backlog item 8 (the
-    substitute finder), met in the store.
+38. **Not on the rack** (shopping-list direction B) — **built (`feat/rack-swaps-and-loader`).** Swaps from the
+    brands the store carries, kept to the same finish class (a wash's swap is a wash, or none); a swap becomes a
+    pot hold on its role (role holds, v1.12.0) with the original flagged — the one new field (`was`), kept on the
+    scheme. This is backlog item 8 (the substitute finder), met in the store. Built with it: the Studio's Add
+    labels paints with their project (the study's "label now", never wired before), and Save names an
+    existing project. **The Molten Harmonics loader** (§3.4) shipped on the same branch.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 

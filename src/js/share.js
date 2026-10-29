@@ -67,7 +67,9 @@ export function encodeState(s) {
 
 /* Holds (mockups/hold-flow.html, direction A): one token per held role, joined by "_".
    Role letter · kind · (paint id ·) hex:  S.l.2F4A6B (Secondary locked to a colour)
-   M.p.citadel-base-balthasar-gold.A77353 (Metal's chosen pot, its hex as the fallback). No paint id has
+   M.p.citadel-base-balthasar-gold.A77353 (Metal's chosen pot, its hex as the fallback).
+   A store swap (item 38) adds the paint it replaced: A.p.vallejo-model-color-carmine-red.97211F.citadel-base-
+   mephiston-red. A build from before item 38 drops a 5-part token (that hold is lost there, the link opens). No paint id has
    "." or "_" (checked over data 1.6.0), and URLSearchParams leaves both as they are. Primary is never held:
    the harmony is built from it. */
 const HOLD_ROLES = { S: 'Secondary', A: 'Accent', M: 'Metal' };
@@ -75,7 +77,10 @@ const HOLD_LETTER = { Secondary: 'S', Accent: 'A', Metal: 'M' };
 export function encodeHolds(holds) {
   if (!holds) return '';
   return Object.entries(holds).filter(([r, h]) => HOLD_LETTER[r] && h && normHex(h.hex))
-    .map(([r, h]) => [HOLD_LETTER[r], h.kind === 'pot' && h.id ? 'p' : 'l', ...(h.kind === 'pot' && h.id ? [h.id] : []), normHex(h.hex).slice(1)].join('.'))
+    .map(([r, h]) => {
+      const pot = h.kind === 'pot' && h.id;
+      return [HOLD_LETTER[r], pot ? 'p' : 'l', ...(pot ? [h.id] : []), normHex(h.hex).slice(1), ...(pot && h.was ? [h.was] : [])].join('.');
+    })
     .join('_');
 }
 /** The `hd` param → holds. A bad token is dropped; a pot this build does not have becomes a lock on its
@@ -87,12 +92,25 @@ export function decodeHolds(hd, hasPaint = () => true) {
     const parts = tok.split('.'), role = HOLD_ROLES[parts[0]];
     if (!role || out[role]) continue;
     if (parts[1] === 'l' && parts.length === 3) { const hex = normHex(parts[2]); if (hex) out[role] = { kind: 'lock', hex }; }
-    else if (parts[1] === 'p' && parts.length === 4) {
+    else if (parts[1] === 'p' && (parts.length === 4 || parts.length === 5)) {
       const hex = normHex(parts[3]); if (!hex) continue;
-      out[role] = parts[2] && hasPaint(parts[2]) ? { kind: 'pot', id: parts[2], hex } : { kind: 'lock', hex };
+      // the swap's original (5th part) is kept only when this build knows that paint
+      const was = parts[4] && hasPaint(parts[4]) ? parts[4] : null;
+      out[role] = parts[2] && hasPaint(parts[2]) ? { kind: 'pot', id: parts[2], hex, ...(was ? { was } : {}) } : { kind: 'lock', hex };
     }
   }
   return out;
+}
+
+/** A scheme's link with one role's hold set (or removed, with `hold` null), the rest as it was. A store swap
+ *  writes its pot into the scheme it was bought for this way (item 38). Pure: a query in, a query out. */
+export function setHoldInLink(link, role, hold, hasPaint = () => true) {
+  const u = new URLSearchParams(String(link || '').replace(/^\?/, ''));
+  const holds = decodeHolds(u.get('hd'), hasPaint);
+  if (hold) holds[role] = hold; else delete holds[role];
+  const hd = encodeHolds(holds);
+  if (hd) u.set('hd', hd); else u.delete('hd');
+  return '?' + u.toString();
 }
 
 /**

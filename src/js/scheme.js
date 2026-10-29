@@ -102,7 +102,8 @@ export function roleIdeals(baseHex, harmony, popHex = DEFAULT_POP, { accentHex =
  * `opts.ladder` ∈ {'wash'(default),'tone','both'} picks the tone-ladder style (#7).
  * `opts.holds` (mockups/hold-flow.html, direction A): what the painter holds on a role, by role name.
  *   { kind: 'lock', hex }  — the role's TARGET colour is `hex`; its pot is the nearest, as for any role.
- *   { kind: 'pot', id, hex } — the role's POT is that paint. The generated target stays as `idealHex`, so
+ *   { kind: 'pot', id, hex, was? } — the role's POT is that paint (`was`: the paint a store swap replaced;
+ *     the role then carries it as `swappedFrom`). The generated target stays as `idealHex`, so
  *     the gap shows (§2 honesty): the match's ΔE is the pot's distance from it. The ladders step from the
  *     pot's own colour. If `id` is not in the dataset, the hold acts as a lock on `hex`.
  * A held role is flagged `hold` ('lock' | 'pot'), with `generatedHex` (the target the rule made).
@@ -114,7 +115,9 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     const h = holds[d.role];
     if (!h) return d;
     const pot = h.kind === 'pot' ? idx.byId.get(h.id) : null;
-    if (pot) return { ...d, hold: 'pot', pot, generatedHex: d.idealHex };
+    // a store swap (item 38) remembers the paint it replaced, so the Recipe can say so and go back to it
+    const was = pot && h.was ? idx.byId.get(h.was) : null;
+    if (pot) return { ...d, hold: 'pot', pot, generatedHex: d.idealHex, ...(was ? { swappedFrom: was } : {}) };
     return h.hex ? { ...d, idealHex: h.hex.toUpperCase(), hold: 'lock', generatedHex: d.idealHex } : d;
   });
   const styles = LADDER_STYLES[opts.ladder] || LADDER_STYLES.wash;
@@ -233,7 +236,7 @@ function chosenPotRole(idx, d, opts, styles) {
     nmm = m.nmm;
   }
   return { role: d.role, weight: d.weight, idealHex: d.generatedHex, match, shared: false, differentiate: null, buy: null,
-    substituted: null, nmm, ladders, hold: 'pot', generatedHex: d.generatedHex };
+    substituted: null, nmm, ladders, hold: 'pot', generatedHex: d.generatedHex, ...(d.swappedFrom ? { swappedFrom: d.swappedFrom } : {}) };
 }
 
 /** The Metal ladders and NMM steps from a given metal colour (a chosen metal pot's), as buildScheme makes them. */

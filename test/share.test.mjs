@@ -294,3 +294,17 @@ test('n: a saved scheme’s name goes in the shared link, is read back, and a tr
   assert.equal(decodeState('c=112233&n=%20Blue%20%20knight').name, 'Blue knight');
   assert.equal(schemeQuery({ pickHex: '#112233', harmony: 'triadic', name: 'X' }), '?c=112233&h=triadic');
 });
+
+test('holds: a store swap carries the paint it replaced (5th part); setHoldInLink changes one role', async () => {
+  const { encodeHolds, decodeHolds, setHoldInLink } = await import('../src/js/share.js');
+  const holds = { Accent: { kind: 'pot', id: 'vallejo-carmine', hex: '#97211F', was: 'citadel-mephiston' } };
+  const hd = encodeHolds(holds);
+  assert.equal(hd, 'A.p.vallejo-carmine.97211F.citadel-mephiston');
+  assert.deepEqual(decodeHolds(hd), holds);
+  assert.deepEqual(decodeHolds(hd, id => id !== 'citadel-mephiston'), { Accent: { kind: 'pot', id: 'vallejo-carmine', hex: '#97211F' } }, 'an unknown original drops, the pot stays');
+  assert.deepEqual(decodeHolds('A.p.x.97211F'), { Accent: { kind: 'pot', id: 'x', hex: '#97211F' } }, 'a 4-part token still reads');
+  // setHoldInLink: the rest of the link is kept, in order; hd is added at the end, as encodeState puts it
+  assert.equal(setHoldInLink('?p=a&c=112233&h=triadic', 'Accent', holds.Accent), '?p=a&c=112233&h=triadic&hd=A.p.vallejo-carmine.97211F.citadel-mephiston');
+  assert.equal(setHoldInLink('?c=112233&hd=S.l.2F4A6B', 'Accent', holds.Accent), '?c=112233&hd=S.l.2F4A6B_A.p.vallejo-carmine.97211F.citadel-mephiston');
+  assert.equal(setHoldInLink('?c=112233&hd=A.p.x.97211F', 'Accent', null), '?c=112233', 'removing the last hold drops hd');
+});
