@@ -10,6 +10,12 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.13.0** — the shopping-list release. **Schemes** keeps the schemes you save; the Shelf has a **List** to
+read at the rack, with counts, and a tick marks a paint owned as you buy it. **Take to the store…** sends
+the list to your phone in a link or a QR code, and a "bought" link brings what you bought back. When a pot
+is not on the rack, the list offers the closest pots in the same finish from the brands the store carries,
+and the swap goes back into the scheme. A loader shows while the paint data arrives on a slow line.
+
 **v1.12.0** — keep this, change the rest. On the Recipe, **Lock colour** keeps a role's colour and
 **Choose pot…** sets the paint for a role, so a scheme you started on the model stays put while you
 explore the rest. The pick is now the "starting paint", and you can share a scheme as an image (the
