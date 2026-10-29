@@ -266,11 +266,11 @@
 <pre class="file"><span class="dim">// store.js v2 — one map for saved schemes and shopping-list projects</span>
 schemes: {
   s7k2: { name: 'Plague Marine', link: '?p=citadel-base-death-guard-green&amp;h=triadic…',
-          saved: true, created: '2026-10-20', changed: '2026-10-27',
-          pins: { accent: { id: 'vallejo-model-color-carmine-red', from: 'store-swap', was: 'citadel-base-mephiston-red' } } },
+          saved: true, created: '2026-10-20', changed: '2026-10-27' },   <span class="dim">// no pins: role holds (v1.12.0) are in the link (hd)</span>
   q3m9: { name: '', link: '?p=citadel-base-morghast-bone&amp;h=complementary…', saved: false }   <span class="dim">// no name (Skip at export): kept only while its paints are on the list</span>
 },
-want: [{ id: 'citadel-base-death-guard-green', qty: 2, for: 's7k2' }, …]</pre>
+want: ['citadel-base-death-guard-green', …],   <span class="dim">// still a list of ids, so an older build reads it</span>
+wantInfo: { 'citadel-base-death-guard-green': { qty: 2, for: 's7k2' } }   <span class="dim">// as built (ryanmette/miniature_palette_studio#54)</span></pre>
   <ul class="notes" style="margin-top:8px">
     <li><b>A name saves for good</b> (Ryan’s answer 3): naming a project at export, or pressing Save, sets <code>saved: true</code>. Only a project you <b>skipped</b> at export stays <code>saved: false</code>: the app keeps it while its paints are on the list, and it leaves when its last paint is bought — unless you name or save it.</li>
     <li>The <b>backup file</b> carries the whole map, so Restore brings the library back. <b>Delete my shelf and settings…</b> clears it with the rest. The CSV does not carry schemes (it is a list of paints).</li>
@@ -433,7 +433,7 @@ want: [{ id: 'citadel-base-death-guard-green', qty: 2, for: 's7k2' }, …]</pre>
     <li><b>Save and Schemes:</b> Save on the hero (Changed · Save · Save as new), the Schemes mode (§3.6 change), rename, delete, the empty state.</li>
     <li><b>The rack walk (shopping list A):</b> the checklist in brand → line order; a tick marks owned; the count after the fact; “for” groups.</li>
     <li><b>Take to the store:</b> the hand-off panel (link · QR · print · text), the naming step at the first export, the name in the share link, the “bought” link back.</li>
-    <li><b>Not on the rack (shopping list B):</b> swaps from the brands the store carries, kept to the same finish class, and a swap pinned to its role with the original flagged (one model with <code>pin-a-paint.html</code>).</li>
+    <li><b>Not on the rack (shopping list B):</b> swaps from the brands the store carries, kept to the same finish class, and a swap held on its role (role holds, v1.12.0) with the original flagged.</li>
   </ol>
 </section>
 

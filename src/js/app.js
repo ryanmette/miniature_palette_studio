@@ -3,15 +3,16 @@
 
 import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
   isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony, startsNeutral } from './harmony.js';
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex } from './color.js';
+import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex, deltaE2000Hex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
 import { encodeState, decodeState, shareUrl } from './share.js';   // the share-link contract (state ⇄ URL)
+import { shareView, layoutShareImage, paintShareImage, shareText, shareFileName, SHARE_SIZE, SHARE_FONTS, SHARE_TOKENS } from './shareimage.js';   // the share image (pure layout + painter)
 import { snapPalette, readSnap } from './undo.js';   // the undo snapshot (palette state ⇄ JSON, exact)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
 import { createMarkMenu, isMenuKey } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, equivalents, nearestPaints, nearestPaint, closestPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf } from './data.js';
+import { loadDataset, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
@@ -29,12 +30,15 @@ const state = {
   seedRole: 'main', tab: 'plan', theme: 'light',
   compareA: null, wheelL: null, hiHex: null,   // hiHex = the colour link-highlighted across wheel/plan/live palette
 
-  extraNodes: [], showReal: false,   // editable swatches [{h,s,l?,locked?}] (S5); live-palette ideal↔real fill
+  extraNodes: [],   // editable swatches [{h,s,l?,locked?}] (S5)
   dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
   mode: 'studio', shelfBrand: '', shelfMark: '', shelfQ: '', shelfType: '', shelfSort: '', brands: [],   // Studio/Shelf mode; shelf brand · status · search · type · sort
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
   includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
   popHex: null,                        // neutral mode's pop accent (null = DEFAULT_POP); drives the hue math when the seed is neutral
+  // What the painter holds on a role (mockups/hold-flow.html, direction A): { Secondary: {kind:'lock', hex},
+  // Metal: {kind:'pot', id, hex} }. Held roles keep through every reroll; a new starting paint keeps them too.
+  holds: {},
 };
 const OWNED_BOOST = 6;   // ΔE the soft owned-boost is "worth" — owned paints up to ~6 ΔE worse can still win (#6)
 const METAL_DEMOTE = 4;  // ΔE handicap on metallics for COLOUR roles (they read differently on the model); the
@@ -95,12 +99,168 @@ function baseInfo() {
   return { id: p.id, hex: p.hex, name: ui.pname(p), brand: p.brand, line: lined ? '—' : p.line, type: p.type, approx: p.approx };
 }
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
+/** The roles a painter can hold. Primary never: the harmony is built from it (from the starting paint, or
+ *  from its opposite in accent mode). The role that holds the starting paint never: it is already chosen. */
+function holdableRoles() { return state.seedRole === 'accent' ? ['Secondary', 'Metal'] : ['Secondary', 'Accent', 'Metal']; }
+/** The holds that apply now (a hold on Accent waits, unused, while the starting paint is the Accent). */
+function activeHolds() {
+  const out = {};
+  for (const r of holdableRoles()) if (state.holds[r]) out[r] = state.holds[r];
+  return out;
+}
+const holdCount = () => Object.keys(activeHolds()).length;
+/** A held role's match for the live palette, as the Recipe makes it (scheme.js buildScheme holds). */
+function holdMatch(role, h, genHex, opts) {
+  const pot = h.kind === 'pot' ? state.idx.byId.get(h.id) : null;
+  if (pot) {
+    const dE = deltaE2000Hex(pot.hex, genHex);
+    return { paint: pot, deltaE: dE, quality: matchQuality(dE), chosen: true, ...(opts.knownOwnedIds ? { owned: opts.knownOwnedIds.has(pot.id) } : {}) };
+  }
+  return nearestPaint(state.idx, h.hex, role === 'Metal' ? { ...opts, types: new Set(['metal']) } : opts);
+}
+/** Hold, change or release one role. One undo step; the link carries it (share.js `hd`). */
+function setHold(role, hold) {
+  if (!holdableRoles().includes(role)) return;
+  const next = { ...state.holds };
+  if (hold) next[role] = hold; else delete next[role];
+  state.holds = next;
+  render('scheme');
+}
+let holdNoteHtml = '';
+/** The note under the live palette: what is held, Release all, and a line for each Poor hold. */
+function renderHoldNote() {
+  const el = $('#holdnote'); if (!el) return;
+  let html = '';
+  if (holdCount()) {
+    const held = currentScheme().roles.filter(r => r.hold).map(r => ({
+      role: r.role, kind: r.hold, name: r.match ? ui.pname(r.match.paint) : '',
+      deltaE: r.match ? r.match.deltaE : 0, poor: !r.match || r.match.deltaE > 10 }));
+    html = ui.holdNote(held);
+  }
+  if (html !== holdNoteHtml) { el.innerHTML = html; holdNoteHtml = html; }   // unchanged → keep the DOM (and focus)
+}
+/** After a hold changes, the cards are rebuilt: put focus back on the same control, or on the next best one. */
+function refocusHold(...sels) {
+  for (const s of sels) { const el = document.querySelector(s); if (el && el.getClientRects().length) { el.focus({ preventScroll: true }); return; } }
+}
+function toggleLock(role) {
+  const h = state.holds[role];
+  setHold(role, h && h.kind === 'lock' ? null : { kind: 'lock', hex: swatchHex('r:' + role) });
+  say(state.holds[role] ? `${role} colour locked. It stays when you roll or change the harmony.` : `${role} colour released. The scheme picks it again.`);
+}
+function releaseHold(role) {
+  setHold(role, null);
+  say(`${role} released. The scheme picks it again.`);
+}
+function releaseAllHolds() {
+  const n = holdCount(); if (!n) return;
+  const next = { ...state.holds };
+  for (const r of holdableRoles()) delete next[r];
+  state.holds = next;
+  render('scheme');
+  say(n === 1 ? 'Hold released.' : `${n} holds released.`);
+}
+
+/* ---- Choose a pot (direction A) ---- */
+// One dialog, two jobs. `role` set: choose the pot a role holds (the Recipe's Choose pot…, a role column's
+// pencil). `sw` set instead: choose a paint for a live-palette column that is no holdable role (the base,
+// an added colour); the paint's colour becomes that column's colour. Its last row is a custom colour.
+const pot = { role: null, sw: null, opener: null, target: null };
+function potItems(q) {
+  const role = pot.role, metal = role === 'Metal', target = pot.target;
+  const rank = p => { const dE = deltaE2000Hex(p.hex, target); return { paint: p, deltaE: dE, quality: matchQuality(dE) }; };
+  if (q.trim()) return searchPaints(state.idx, q, { ownedIds: store.ownedIds() }).slice(0, 40).map(rank);
+  // No words yet: the closest paints to the role's target, metallics first for Metal (a flat or NMM metal next)
+  const near = nearestPaints(state.idx, target, 24, metal ? {} : { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY });
+  const list = metal ? [...near.filter(m => m.paint.type === 'metal'), ...near.filter(m => m.paint.type !== 'metal')] : near;
+  return list.slice(0, 24).map(m => rank(m.paint));
+}
+function renderPotList() {
+  const q = $('#potQ').value;
+  const items = potItems(q), cur = state.holds[pot.role]?.kind === 'pot' ? state.holds[pot.role].id : null;
+  $('#potList').innerHTML = ui.potRows(items, store.markOf, cur);
+  const what = pot.role ? `this scheme's ${pot.role.toLowerCase()}` : 'this colour';
+  $('#potHint').textContent = q.trim()
+    ? `${items.length} paint${items.length === 1 ? '' : 's'}. ΔE is the distance from ${what}.`
+    : `Closest to ${what} first${pot.role === 'Metal' ? ', metallics first' : ''}. Or search any paint.`;
+}
+function showPotDialog(title, opener) {
+  pot.opener = opener;
+  $('#potTitle').textContent = title;
+  $('#potQ').value = '';
+  $('#potColor').value = pot.target.toLowerCase();
+  renderPotList();
+  $('#potDlg').showModal();
+  $('#potQ').focus();
+}
+function openPotDialog(role, opener) {
+  if (!holdableRoles().includes(role)) return;
+  pot.role = role; pot.sw = null;
+  // the target the rule makes for this role (not a held colour): the list ranks against the scheme's own pick
+  const d = roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() }).find(x => x.role === role);
+  pot.target = d ? d.idealHex : '#808080';
+  showPotDialog(`Choose a pot for ${role}`, opener);
+}
+/** The live palette's pencil: a role column chooses the role's pot; any other column chooses a paint
+ *  for its colour. (It had opened the system colour picker from a hidden input: some browsers never
+ *  showed it, and it gave a hex, not a paint.) */
+function openPaintDialog(sw, opener) {
+  if (sw.startsWith('r:')) { openPotDialog(sw.slice(2), opener); return; }
+  pot.role = null; pot.sw = sw; pot.target = swatchHex(sw);
+  showPotDialog(sw === 'base' ? 'Choose a paint for Primary' : 'Choose a paint for this colour', opener);
+}
+function choosePot(id) {
+  const p = state.idx.byId.get(id); if (!p) return;
+  const role = pot.role, sw = pot.sw;
+  $('#potDlg').close();
+  if (role) {
+    setHold(role, { kind: 'pot', id: p.id, hex: p.hex });
+    say(`${ui.pname(p)} is the ${role} pot. It stays when you roll or change the harmony.`);
+    refocusHold(`.slot [data-hold-pot="${role}"]`, '#holdnote [data-hold-releaseall]');
+  } else if (sw === 'base' && state.seedRole === 'main') selectPaint(p.id);   // the base IS the starting paint: keep the paint, not only its hex
+  else { editSwatch(sw, p.hex); say(`${ui.pname(p)}: ${p.hex}.`); }
+}
+/** The dialog's custom-colour row: a colour, not a paint. A role locks that colour; a column takes it. */
+function chooseColour(hex) {
+  hex = normHex(hex); if (!hex) return;
+  const role = pot.role, sw = pot.sw;
+  $('#potDlg').close();
+  if (role) { setHold(role, { kind: 'lock', hex }); say(`${role} colour locked at ${hex}.`); }
+  else editSwatch(sw, hex);
+}
+function setupPotDialog() {
+  const d = $('#potDlg');
+  let timer = 0;
+  $('#potQ').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(renderPotList, 120); });
+  $('#potList').addEventListener('click', e => { const b = e.target.closest('[data-potid]'); if (b) choosePot(b.dataset.potid); });
+  // `change` fires once, when the system picker closes on a colour (`input` would fire on every move)
+  $('#potColor').addEventListener('change', e => chooseColour(e.target.value.toUpperCase()));
+  $('#potClose').addEventListener('click', () => d.close());
+  d.addEventListener('close', () => {
+    const o = pot.opener;
+    if (o && o.isConnected && o.getClientRects().length) o.focus({ preventScroll: true });
+    else if (pot.role) refocusHold(`.slot [data-hold-pot="${pot.role}"]`, `.slot [data-hold-lock="${pot.role}"]`, `#livepal [data-edit="r:${pot.role}"]`);
+    else refocusHold(`#livepal [data-edit="${pot.sw}"]`, '#undo');
+  });
+}
+/** The hold controls, on the Recipe cards and in the hold note (delegated from main). */
+function holdClick(e) {
+  const lk = e.target.closest('[data-hold-lock]');
+  if (lk) { const r = lk.dataset.holdLock; toggleLock(r); refocusHold(`.slot [data-hold-lock="${r}"]`); return true; }
+  const pp = e.target.closest('[data-hold-pot]');
+  if (pp) { openPotDialog(pp.dataset.holdPot, pp); return true; }
+  const rl = e.target.closest('[data-hold-release]');
+  if (rl) { const r = rl.dataset.holdRelease; releaseHold(r); refocusHold(`.slot [data-hold-pot="${r}"]`); return true; }
+  if (e.target.closest('[data-hold-releaseall]')) { releaseAllHolds(); refocusHold('#undo'); return true; }
+  return false;
+}
+
 function currentScheme() {
   // seed identity → buildScheme prefers the pick on exact ties and flags honest substitutions, in
   // BOTH seed modes (the slot whose ideal is the pick's hex gets it — Primary or Accent).
   const p = basePaint();
   const seed = p ? { id: p.id, name: ui.pname(p), hex: p.hex } : null;
-  return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop(), seed, accentHex: accentPin() });
+  return buildScheme(state.idx, schemeBase(), state.harmony, { ...matchOpts(), pop: activePop(), seed, accentHex: accentPin(), holds: activeHolds() });
 }
 
 /** Sort the Shelf's paints by `key` (state.shelfSort; a stable copy, '' keeps dataset order). The seed
@@ -130,25 +290,52 @@ function renderPlan() {
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
     + '<div class="micro" style="margin:14px 0 0">Each role: target colour → nearest pot (ΔE 2000), plus the selected tone ladder</div>'
-    + ui.roleSlots(state.scheme, store.markOf);
+    + ui.roleSlots(state.scheme, store.markOf, new Set(holdableRoles()));
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
 // Set by setupWheel() too. render() calls it when something other than the lightness slider changes
 // the colour, the harmony or the seed role, so the slider's next move starts a new run from the colour
 // now (wheel.js).
 let endLightnessRun = () => {};
-/** node ideal-hex (UPPER) → role glyph (P/A/2) for the current scheme. Keyed off schemeBase() so it's
+/** The colour each role has now, as the Recipe has it: a held role's colour (its lock, or its pot's
+ *  colour) in place of the one the rule made (`genHex`). Metal is left out: it has no wheel node.
+ *  The wheel, its legend and the live palette all read the roles from here, so none of them can show a
+ *  role the others lack (Custom has no rule partners, and its Secondary and Accent had been Recipe-only). */
+function roleColours() {
+  const holds = activeHolds(), holdable = new Set(holdableRoles());
+  return roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() }).filter(d => !d.metal).map(d => {
+    const h = holds[d.role];
+    const hex = !h ? d.idealHex : (h.kind === 'pot' && state.idx.byId.get(h.id)?.hex) || h.hex;
+    return { role: d.role, genHex: d.idealHex.toUpperCase(), hex: hex.toUpperCase(), held: !!h, holdable: holdable.has(d.role) };
+  });
+}
+/** node hex (UPPER) → role glyph (P/A/2) for the current scheme. Keyed off schemeBase() so it's
  *  correct in accent-seed mode (the base node is then the Accent); Metal has no wheel node. */
 function wheelRoleGlyphs() {
   const m = {};
   // The wheel now draws in the SAME frame the roles are computed in (schemeBase()), so the badges are
   // correct in accent-seed mode too — they used to be suppressed there because the two frames were
   // 180° apart and every glyph would have landed on the wrong node.
-  for (const d of roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() })) {
-    if (d.metal) continue;
-    m[d.idealHex.toUpperCase()] = d.role === 'Primary' ? 'P' : d.role === 'Accent' ? 'A' : '2';
-  }
+  for (const r of roleColours()) m[r.hex] = r.role === 'Primary' ? 'P' : r.role === 'Accent' ? 'A' : '2';
   return m;
+}
+/** The role nodes the wheel draws beyond its rule: a role the rule makes no node for (Custom's Secondary
+ *  and Accent, Complementary's Secondary, the starting paint as Accent in a harmony without a 180°
+ *  partner), and a held role at its held colour. `hide`: the rule partners a hold replaced. A role node
+ *  drags (`drag`) when the role can be held; the drag locks it. Hue harmonies only: a value or neutral
+ *  harmony's partners share the base's hue, so they stay in the live palette (§7). */
+function wheelRoles() {
+  const out = { nodes: [], hide: [] };
+  if (!isHueHarmony(state.harmony)) return out;
+  const partners = paletteNodes().filter(n => n.kind === 'partner');
+  for (const r of roleColours()) {
+    if (r.role === 'Primary') continue;   // the base node
+    const onRule = partners.find(p => p.hex.toUpperCase() === r.genHex);
+    if (onRule && !r.held) continue;      // the rule's node already is this role
+    if (onRule) out.hide.push(onRule.deg);
+    out.nodes.push({ role: r.role, hex: r.hex, held: r.held, drag: r.holdable });
+  }
+  return out;
 }
 /** Derived palette: harmony-rule colours (never stored) + any free/added nodes. Feeds wheel + live palette. */
 function paletteNodes() {
@@ -181,6 +368,35 @@ function renderLive() {
   const sp = basePaint();
   const optsFor = hex => sp && hex.toUpperCase() === sp.hex.toUpperCase() ? { ...opts, preferIds: new Set([sp.id]) } : opts;
   const vm = paletteNodes().map(n => ({ ...n, match: nearestPaint(state.idx, n.hex, optsFor(n.hex)) }));
+  // Holds (direction A): a held role's column shows the held colour and its pot, as the Recipe does. A role
+  // with no rule column here (Secondary in Complementary, Secondary and Accent in Custom) gets a column of
+  // its own, so the bar is always the whole scheme, as the Recipe and the wheel have it. Columns that are
+  // no role (added colours, a fourth harmony colour) stay sketch colours.
+  const holds = activeHolds(), holdable = new Set(holdableRoles());
+  const heldColumn = (c, role) => {
+    const h = holds[role];
+    c.role = role; c.holdable = holdable.has(role);
+    if (!h) return c;
+    c.genHex = c.hex; c.hold = state.idx.byId.get(h.id) && h.kind === 'pot' ? 'pot' : 'lock';
+    c.hex = c.hold === 'pot' ? state.idx.byId.get(h.id).hex : h.hex;
+    c.match = holdMatch(role, h, c.genHex, opts);
+    roleByHex[c.hex.toUpperCase()] = role;
+    return c;
+  };
+  for (const c of vm) { const role = roleByHex[c.hex.toUpperCase()]; if (role && c.kind !== 'free') heldColumn(c, role); }
+  const pin = accentPin();
+  const ORDER = ['Primary', 'Secondary', 'Accent'];
+  for (const d of ideals) {
+    if (d.metal || vm.some(c => c.role === d.role)) continue;
+    if (d.role === 'Accent' && pin) continue;   // the starting paint as Accent: its own column, below
+    const col = heldColumn({ id: 'role-' + d.role, kind: 'role', hex: d.idealHex }, d.role);
+    if (!col.match) col.match = nearestPaint(state.idx, col.hex, optsFor(col.hex));
+    // in role order, as in the Recipe: after the last role column that comes before it
+    const rank = ORDER.indexOf(d.role);
+    let at = 1;
+    vm.forEach((c, i) => { const k = ORDER.indexOf(c.role); if (c.kind !== 'free' && k > -1 && k < rank) at = i + 1; });
+    vm.splice(at, 0, col);
+  }
   // Seed docks — the Main|Accent control lives ON the palette now (§3.5): the pick's chip sits in
   // the column whose role it seeds; the other eligible column offers a "seed here" dock. First
   // matching column only (a free node can duplicate a role colour). Neutral seeds always hold
@@ -190,12 +406,13 @@ function renderLive() {
   const info = baseInfo();
   let chipPlaced = false, switchPlaced = false;
   const placeDock = c => {
-    const role = roleByHex[c.hex.toUpperCase()];
+    const role = c.role || roleByHex[c.hex.toUpperCase()];
     if (!chipPlaced && role === seedRoleName) { chipPlaced = true; return { type: 'chip', name: info.name, hex: info.hex }; }
     if (!switchPlaced && role === otherRoleName) {
       switchPlaced = true;
       const disabled = otherRoleName === 'Accent' && neutralSeed()
-        ? 'A neutral colour always holds Primary — pick a pop accent on the wheel instead' : null;
+        ? 'A neutral colour always holds Primary — pick a pop accent on the wheel instead'
+        : state.holds[otherRoleName] ? `Release the ${otherRoleName} hold first: it holds a colour you chose` : null;
       return { type: 'switch', target: otherRoleName === 'Accent' ? 'accent' : 'main', disabled };
     }
     return null;
@@ -203,15 +420,14 @@ function renderLive() {
   for (const c of vm) c.dock = placeDock(c);
   // Metal has no wheel node, so it rides along as a display-only column → the live palette is the complete
   // scheme summary (one bar, all four roles), letting the Plan drop its duplicate overview strip.
-  const pin = accentPin();
   if (pin && !vm.some(c => c.hex.toUpperCase() === pin.toUpperCase())) {   // non-180° harmonies: no rule column carries the pick
     const pc = { id: 'accentpin', kind: 'pin', hex: pin, match: nearestPaint(state.idx, pin, optsFor(pin)) };
     pc.dock = placeDock(pc);
     vm.push(pc);
   }
   const metal = ideals.find(d => d.metal);
-  vm.push({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: nearestPaint(state.idx, metal.idealHex, { ...opts, types: new Set(['metal']) }) });
-  el.innerHTML = ui.livePalette(vm, state.showReal ? 'real' : 'ideal', roleByHex);
+  vm.push(heldColumn({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: nearestPaint(state.idx, metal.idealHex, { ...opts, types: new Set(['metal']) }) }, 'Metal'));
+  el.innerHTML = ui.livePalette(vm, roleByHex);
   applyLinkHighlight();   // re-assert any active hover-link after the columns are rebuilt
   applyEquivSelect();     // re-assert the Equivalents-source ring after the columns are rebuilt
 }
@@ -346,7 +562,7 @@ function ensureHarmonyMode() {
     harmonyNote = n
       ? { full: 'Neutral colour — switched to the Neutral + pop scheme. Hue harmonies are unavailable for a neutral.',
           short: 'Neutral colour — hue harmonies are unavailable for a neutral.' }
-      : { full: `Your colour has a hue again — back to the ${state.harmony} scheme.`, short: 'Your colour has a hue again.' };
+      : { full: `The starting colour has a hue again — back to the ${state.harmony} scheme.`, short: 'The starting colour has a hue again.' };
     notes.push(harmonyNote.full);
   }
   // The seed role parks and restores SYMMETRICALLY with the harmony above. A neutral seed always
@@ -359,7 +575,7 @@ function ensureHarmonyMode() {
   } else if (restoring) {
     state.seedRole = 'accent';
     preNeutralSeedRole = null;
-    notes.push('Your paint sets the Accent role again.');
+    notes.push('The starting paint sets the Accent role again.');
   }
   // Hand the notes to announce() rather than writing #status here: they used to land in the live
   // region and be overwritten a statement later by the caller's own announce(), so the one thing a
@@ -397,7 +613,7 @@ function collapseBanner() {
   nb.hidden = true; np.hidden = false; np.setAttribute('aria-expanded', 'false');
 }
 /** Repaint the always-visible studio column (wheel + live palette + pop chips). */
-function drawStudio() { wheelDraw(); renderLive(); renderPops(); }
+function drawStudio() { wheelDraw(); renderLive(); renderPops(); renderHoldNote(); }
 /** Re-derive the wheel's lightness from the seed. Only needed when the seed changed from OUTSIDE the
  *  wheel (a paint pick, a typed hex, undo, init) — during a drag the slider is already the source. */
 function syncWheelL() {
@@ -539,6 +755,12 @@ function syncNodeBtns() {
 }
 /** Current hex of an addressable swatch key ('base' | 'p:<deg>' | 'x:<idx>'). */
 function swatchHex(sw) {
+  if (sw.startsWith('r:')) {   // a role column: its held colour, else the colour the rule made for it
+    const role = sw.slice(2), h = state.holds[role];
+    if (h) return (h.kind === 'pot' && state.idx.byId.get(h.id)?.hex) || h.hex;
+    const d = roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() }).find(x => x.role === role);
+    return d ? d.idealHex : '#808080';
+  }
   // Resolved in the SCHEME frame: the live palette mints 'p:<deg>' keys relative to schemeBase(), so
   // resolving them against the pick landed 180° away in accent-seed mode (the editor opened on the
   // wrong colour and locking visibly recoloured the column).
@@ -558,6 +780,13 @@ function detachPartner(deg, extra) {
 /** Lock toggle for a swatch — locked swatches survive Generate + harmony changes. The base can't be locked. */
 function lockSwatch(sw) {
   if (sw === 'base') return;
+  // A role column: the lock holds the role's colour, in the palette AND the Recipe (direction A). It used
+  // to detach the colour into an "Added" swatch that the Recipe never saw (mockups/hold-flow.html §1).
+  if (sw.startsWith('r:')) {
+    const role = sw.slice(2), h = state.holds[role];
+    setHold(role, h ? null : { kind: 'lock', hex: swatchHex(sw) });
+    return;
+  }
   if (sw.startsWith('p:')) detachPartner(+sw.slice(2), { locked: true });
   else if (sw.startsWith('x:')) { const o = state.extraNodes[+sw.slice(2)]; if (o) o.locked = !o.locked; }
   syncNodeBtns(); render('palette');
@@ -566,14 +795,12 @@ function lockSwatch(sw) {
 function editSwatch(sw, hex) {
   hex = normHex(hex); if (!hex) return;
   if (sw === 'base') { seedFromSchemeBase(hex); return; }   // the base column IS the scheme base (§seed.js frame)
+  if (sw.startsWith('r:')) { setHold(sw.slice(2), { kind: 'lock', hex }); return; }   // an edited role colour is a locked one
   const [h, s, l] = rgbToHsl(hexToRgb(hex));
   if (sw.startsWith('p:')) detachPartner(+sw.slice(2), { h, s, l });
   else if (sw.startsWith('x:')) { const i = +sw.slice(2); if (state.extraNodes[i]) state.extraNodes[i] = { ...state.extraNodes[i], h, s, l }; }
   syncNodeBtns(); render('palette');
 }
-let swEditTarget = null;   // swatch key being edited via the native colour picker
-/** Open the per-swatch colour editor (native picker), seeded with the swatch's current colour. */
-function openSwatchEditor(sw) { const inp = $('#swEdit'); if (!inp) return; swEditTarget = sw; inp.value = swatchHex(sw); inp.click(); }
 /** Move an added swatch within the free list (drag-reorder). */
 function moveFreeNode(from, to) {
   const a = state.extraNodes;
@@ -593,6 +820,8 @@ function equivSourceCols() {
       : n.deg ? `${n.deg > 0 ? '+' : ''}${n.deg}°` : ui.toneTag(n.hex, baseCol)) }));   // deg 0 = value partner (§F13)
   const pin = accentPin();
   if (pin && !cols.some(c => c.hex.toUpperCase() === pin.toUpperCase())) cols.push({ hex: pin, label: 'Accent' });
+  // a role with no rule colour, or a held role: the live palette has a column for it, so a chip too
+  for (const r of roleColours()) if (!cols.some(c => c.hex.toUpperCase() === r.hex)) cols.push({ hex: r.hex, label: r.role });
   const metal = ideals.find(d => d.metal);
   cols.push({ hex: metal.idealHex, label: 'Metal' });
   const seen = new Set();   // a free node can duplicate a rule colour — one chip per colour
@@ -619,7 +848,7 @@ function renderEquiv() {
       + ui.equivalentsPanel(`${ui.pname(p)} (${p.brand})`, eq, store.markOf);
   } else {
     const role = (state.roleByHex || {})[srcHex];
-    const name = role ? `${role} · ${srcHex}` : `your colour ${srcHex}`;   // name the role when the column plays one
+    const name = role ? `${role} · ${srcHex}` : `the starting colour ${srcHex}`;   // name the role when the column plays one
     // The Metal column's matches float true metallics first — a flat near the hex isn't an equivalent (§7).
     // Any other colour is a flat target (the Plan matches roles with finishes excluded), so washes, contrasts,
     // texture paints and metals rank FINISH_PENALTY further, as for a picked flat paint (data.js closestPaints,
@@ -1275,10 +1504,10 @@ function applySnap(json) {
   state.customHex = o.customHex; state.baseId = o.baseId;
   state.harmony = validHarmony(o.harmony) ? o.harmony : state.harmony;
   state.seedRole = o.seedRole;
-  state.showReal = o.showReal;
   state.popHex = o.popHex;
   state.extraNodes = o.extraNodes;
   state.dropOffsets = o.dropOffsets;
+  state.holds = o.holds || {};
   // the slider's own value, not the seed's lightness: an added colour with no lightness follows it
   state.wheelL = o.wheelL ?? rgbToHsl(hexToRgb(schemeBase()))[2];
   neutralMode = o.neutral;   // restore the hysteresis holder with the snapshot
@@ -1286,7 +1515,6 @@ function applySnap(json) {
   preNeutralSeedRole = o.preSeedRole;   // parked seed role travels with the snapshot too
   lastNeutral = null;   // force ensureHarmonyMode (via refreshStudio) to re-sync banner/strip/pops for the restored seed
   syncSeg();
-  for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   const wl = $('#wl'); if (wl) wl.value = Math.round(state.wheelL * 100);
   syncNodeBtns();
 }
@@ -1538,6 +1766,80 @@ async function doShare() {
   // the link itself, not the address bar: that one can carry m=shelf, and lacks the t=dark a share adds
   try { prompt(t('copyLink'), url); } catch { toast(url); }
 }
+
+/* ---- the share image (shareimage.js; mockups/share-image.html, direction A) ----
+   The device makes a PNG of the scheme on screen. A link preview cannot show a scheme: the preview bots run
+   no JavaScript, and a server to draw one is out of scope (§1). So the painter sends a picture with the link. */
+// A file in the share sheet needs navigator.canShare (Web Share Level 2). With a mouse, a PNG on the clipboard
+// needs ClipboardItem; Save the image works everywhere.
+const CAN_SHARE_FILES = CAN_SHARE && typeof navigator.canShare === 'function';
+const CAN_COPY_IMAGE = !CAN_SHARE && typeof ClipboardItem === 'function' && typeof navigator.clipboard?.write === 'function';
+let shareImg = { key: '', made: null };
+function shareImageView() {
+  const info = baseInfo();
+  return shareView(currentScheme(), {
+    seed: { id: info.id || null, name: info.name },
+    harmony: ui.harmonyLabel(state.harmony),
+    words: { from: t('imgFrom'), yourPaint: t('imgYourPaint'), noPot: t('imgNoPot'), footer: t('imgFooter'), finish: FINISH_WORDS },
+  });
+}
+/** The image of the scheme on screen now: { blob, name, text }. Made once for each scheme, theme and
+ *  language, so the tap that shares it does not wait (Safari needs the tap's activation, see openSettings). */
+function shareImage() {
+  const url = shareUrl(location.href, state.theme), view = shareImageView();
+  const key = `${url}|${state.theme}|${JSON.stringify(view)}`;
+  if (shareImg.key !== key) {
+    const made = makeShareImage(view, url);
+    shareImg = { key, made };
+    made.catch(() => { if (shareImg.made === made) shareImg.key = ''; });   // a failure is not kept: the next tap tries again
+  }
+  return shareImg.made;
+}
+async function makeShareImage(view, url) {
+  // A canvas does not wait for a webfont, so load the faces first (self-hosted: this is local). If one does not
+  // load, the canvas draws the fallback, and the layout measures that same font, so no text overflows.
+  await Promise.all(SHARE_FONTS.map(f => document.fonts.load(f).catch(() => null)));
+  // The theme on screen: the image takes its colours from the page's tokens, never from its own hex values.
+  const cs = getComputedStyle(document.documentElement);
+  const tokens = Object.fromEntries(Object.entries(SHARE_TOKENS).map(([k, v]) => [k, cs.getPropertyValue(v).trim()]));
+  const c = document.createElement('canvas');
+  c.width = c.height = SHARE_SIZE;
+  const ctx = c.getContext('2d');
+  const measure = (font, text) => { ctx.font = font; return ctx.measureText(text).width; };
+  paintShareImage(ctx, layoutShareImage(view, tokens, measure));
+  const blob = await new Promise((res, rej) => c.toBlob(b => (b ? res(b) : rej(new Error('toBlob'))), 'image/png'));
+  return { blob, name: shareFileName(view), text: shareText(view, url) };
+}
+/** Share image… (touch): the system share sheet with the PNG, and the link in the text (some apps drop a
+ *  `url` that comes with a file). Where the sheet takes no file, the image is saved instead. */
+async function doShareImage() {
+  let img;
+  try { img = await shareImage(); } catch { toast(t('imageFailed')); return; }
+  const data = { files: [new File([img.blob], img.name, { type: 'image/png' })], title: 'Palette Studio for Miniatures', text: img.text };
+  if (CAN_SHARE_FILES && navigator.canShare(data)) {
+    try { await navigator.share(data); return; }
+    catch (e) {
+      if (e && e.name === 'AbortError') return;   // the painter closed the sheet
+      // the tap's activation ran out while the image was made; it is made now, so the next tap shares at once
+      if (e && e.name === 'NotAllowedError') { toast(t('imageTapAgain')); return; }
+    }
+  }
+  saveImage(img);
+}
+function saveImage(img) {
+  download(img.name, img.blob, 'image/png');
+  toast(t('imageSaved'));
+}
+async function doSaveImage() {
+  try { saveImage(await shareImage()); } catch { toast(t('imageFailed')); }
+}
+/** Copy image (mouse): the PNG only. A paste takes one thing, and the image prints the address; Copy link
+ *  is beside it. Safari needs the write to start inside the click, so it gets a promise of the PNG. */
+function doCopyImage() {
+  const png = shareImage().then(img => img.blob);
+  navigator.clipboard.write([new ClipboardItem({ 'image/png': png })])
+    .then(() => toast(t('imageCopied')), () => toast(t('imageCopyFailed')));
+}
 function download(filename, text, type = 'text/plain') {
   const a = document.createElement('a');
   const href = URL.createObjectURL(new Blob([text], { type }));
@@ -1723,6 +2025,9 @@ function openSettings(opener = 'button') {
   $('#settingsBody').scrollTop = 0; syncSettingsFade();
   setSettingsExpanded(true);
   $('#collectionSeg [aria-pressed="true"]').focus();   // the first control (WAI-ARIA dialog pattern)
+  // Make the share image now, after the menu has painted. Then a tap on Share image… calls share() at once:
+  // Safari refuses a share whose tap is too old, and fonts + the PNG inside the tap could take that long.
+  setTimeout(() => { if (settingsOpen()) shareImage().catch(() => {}); }, 60);
 }
 /** `ret`: where focus goes — 'opener' (⋯ or the note line), 'button' (⋯: an action that closes the menu,
  *  such as Save shopping list), or null (focus is already going somewhere else). */
@@ -1800,6 +2105,9 @@ function setupSettings() {
   // Scheme: both actions act on the finished scheme and close the menu; focus goes back to ⋯
   $('#export').addEventListener('click', () => { closeSettings('button'); doExport(); });
   $('#share').addEventListener('click', () => { closeSettings('button'); doShare(); });
+  $('#shareImg').addEventListener('click', () => { closeSettings('button'); doShareImage(); });
+  $('#copyImg').addEventListener('click', () => { closeSettings('button'); doCopyImage(); });
+  $('#saveImg').addEventListener('click', () => { closeSettings('button'); doSaveImage(); });
   // Backup
   $('#backupBtn').addEventListener('click', () => {
     const name = saveBackup(), now = $('#backupNow');
@@ -2045,6 +2353,7 @@ function wire() {
   $('main').addEventListener('mouseover', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('focusin', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('click', e => {
+    if (holdClick(e)) { e.stopPropagation(); return; }
     const eqs = e.target.closest('[data-eqsrc]');
     if (eqs) { e.stopPropagation(); setEquivSource(eqs.dataset.eqsrc); return; }   // tab-local source chips (A)
     const gq = e.target.closest('[data-goequiv]');
@@ -2060,7 +2369,7 @@ function wire() {
     const lad = e.target.closest('[data-ladder]'); if (lad) { setLadder(lad.dataset.ladder); return; }
     const mv = e.target.closest('[data-move]'); if (mv) { e.stopPropagation(); const [i, dir] = mv.dataset.move.split(':').map(Number); moveFreeNode(i, i + dir); return; }  // reorder (keyboard/touch path)
     const lk = e.target.closest('[data-lock]'); if (lk) { e.stopPropagation(); lockSwatch(lk.dataset.lock); return; }              // lock / unlock a swatch
-    const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openSwatchEditor(ed.dataset.edit); return; }        // edit a swatch's hex
+    const ed = e.target.closest('[data-edit]'); if (ed) { e.stopPropagation(); openPaintDialog(ed.dataset.edit, ed); return; }   // choose a paint for a column
     const sb = e.target.closest('[data-setbase]'); if (sb) { e.stopPropagation(); seedFromSchemeBase(sb.dataset.setbase); return; }   // promote a swatch to the SCHEME base (accent-seed stores the pick 180° away)
     const dn = e.target.closest('[data-delnode]'); if (dn) { e.stopPropagation(); removeFreeNode(+dn.dataset.delnode); return; }  // delete an added swatch
     if (state.tab === 'equiv') {   // on the Equivalents tab, clicking a palette column drills into that colour's matches
@@ -2100,17 +2409,10 @@ function wire() {
     const lc = top.closest('.lcol[data-hex]'); if (!lc) return;
     e.preventDefault(); setEquivSource(lc.dataset.hex);
   });
-  $('#realtoggle').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    state.showReal = b.dataset.fill === 'real';
-    for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
-    renderLive(); scheduleAnnounce(); updateUrl();
-  });
   $('#addnode').addEventListener('click', addFreeNode);
   $('#delnode').addEventListener('click', () => removeFreeNode());
   $('#undo').addEventListener('click', undo);
   $('#redo').addEventListener('click', redo);
-  $('#swEdit').addEventListener('change', e => { if (swEditTarget) { editSwatch(swEditTarget, e.target.value.toUpperCase()); swEditTarget = null; } });
   // drag-reorder the added swatches (delegated on #livepal so it survives re-renders)
   const lp = $('#livepal');
   lp.addEventListener('dragstart', e => { const col = e.target.closest('[data-dragidx]'); if (!col) return; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', col.dataset.dragidx); col.classList.add('dragging'); });
@@ -2241,22 +2543,24 @@ async function init() {
   // tells the mode (harmony.js startsNeutral). Live changes keep the hysteresis rule.
   neutralMode = startsNeutral(labChroma(schemeBase()), state.harmony);
   ensureHarmonyMode();   // seed is now known: sync the strip (incl. neutral mode) + banner + pops
-  for (const x of $('#realtoggle').children) x.setAttribute('aria-pressed', String((x.dataset.fill === 'real') === state.showReal));
   syncNodeBtns();
   if (!state.customHex) recentPicks = addRecent([], state.baseId);   // the paint the visit starts on is the first Recent pick
   syncTabs();
   wire();
   $('#share').dataset.i18n = CAN_SHARE ? 'shareLink' : 'copyLinkBtn';   // Share link… on touch, Copy link with a mouse
+  // The image: Share image… on touch; with a mouse, Save the image, and Copy image where a PNG can go on the clipboard
+  $('#shareImg').hidden = !CAN_SHARE; $('#saveImg').hidden = CAN_SHARE; $('#copyImg').hidden = !CAN_COPY_IMAGE;
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
   syncLocaleStrings(); syncSettingsControls();
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
   ({ draw: wheelDraw, endLightnessRun } = setupWheel({
-    state, render, pickHex, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs,
+    state, render, pickHex, schemeBase, activePop, matchOpts, basePaint, wheelRoleGlyphs, wheelRoles,
     addFreeNode, removeFreeNode, collapseBanner, seedNews,
     setDragging: v => { wheelDragging = v; },   // gates mid-drag history snapshots (one undo entry per drag)
   }));
   setupEyedropper();
+  setupPotDialog();
   picker = setupPicker({
     state, t, say, markMenu,
     getPick: () => ({ id: state.customHex ? null : state.baseId, hex: pickHex() }),

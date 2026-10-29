@@ -10,8 +10,13 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.12.0** — keep this, change the rest. On the Recipe, **Lock colour** keeps a role's colour and
+**Choose pot…** sets the paint for a role, so a scheme you started on the model stays put while you
+explore the rest. The pick is now the "starting paint", and you can share a scheme as an image (the
+link card is no longer cut on a Mac).
+
 **v1.11.0** — the UX pass, live. It makes the app easier to read and to use: one name for one thing
-("your paint", Recipe, Target / Pot, Other brands, the shopping list), a first-run guide, empty and
+("starting paint", Recipe, Target / Pot, Other brands, the shopping list), a first-run guide, empty and
 error states that say what to do, 44px touch targets on every control, a shorter Studio on a phone,
 tone ladders that show their pots, a ⋯ menu whose groups say what they act on, a language that
 follows the device, and a sharp link-preview card.
@@ -37,7 +42,7 @@ what's next.
 | [`mockups/index.html`](mockups/index.html) | Design-reference mockup (open in a browser). Not the app. |
 | [`src/data/paints.json`](src/data/paints.json) · [`SOURCES.md`](src/data/SOURCES.md) | The imported paint dataset — **3,225 paints across 10 brands** — + provenance. |
 | `scripts/` | `build-dataset.mjs` (assemble dataset) · `validate-data.mjs` (data QA) · `check-docs.mjs` (doc-freshness QA) — dev-only, all run in CI. |
-| `src/` | The app — `index.html`, `styles/`, `js/` (color · harmony · seed · a11y · data · scheme · share · wheel · markmenu · picker · ui · app · store · collection-io · i18n · infopage · version), `data/`, PWA files, and the Help and privacy pages. |
+| `src/` | The app — `index.html`, `styles/`, `js/` (color · harmony · seed · a11y · data · scheme · share · shareimage · wheel · markmenu · picker · ui · app · store · collection-io · i18n · infopage · version), `data/`, PWA files, and the Help and privacy pages. |
 
 ## Run, test, deploy
 - **App:** `cd src && python3 -m http.server`, then open the printed `localhost` URL (the app fetches `data/paints.json` over http, so a file:// open won't work).

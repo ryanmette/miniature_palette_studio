@@ -24,7 +24,7 @@ export function snapPalette(s) {
   return JSON.stringify({
     customHex: s.customHex || null,
     baseId: s.customHex ? null : s.baseId,
-    harmony: s.harmony, seedRole: s.seedRole, showReal: s.showReal, popHex: s.popHex || null,
+    harmony: s.harmony, seedRole: s.seedRole, popHex: s.popHex || null,
     // the hysteresis holder + parked harmony are palette state too: without them, undoing to a seed in
     // the 10–14 chroma deadband is re-classified with the CURRENT mode and the restored harmony is
     // forced away (and the parked hue harmony is lost when undoing across a neutral entry)
@@ -32,6 +32,7 @@ export function snapPalette(s) {
     extraNodes: (s.extraNodes || []).map(n => ({ h: n.h, s: n.s, l: n.l ?? null, locked: !!n.locked })),
     dropOffsets: [...(s.dropOffsets || [])],
     wheelL: s.wheelL ?? null,
+    holds: s.holds && Object.keys(s.holds).length ? s.holds : null,
   });
 }
 
@@ -46,11 +47,12 @@ export function readSnap(json) {
   return {
     customHex: o.customHex ?? null, baseId: o.baseId ?? null, harmony: o.harmony,
     seedRole: o.seedRole === 'accent' ? 'accent' : 'main',
-    showReal: !!o.showReal, popHex: o.popHex || null,
+    popHex: o.popHex || null,
     neutral: typeof o.neutral === 'boolean' ? o.neutral : null,
     preNeutral: o.preNeutral ?? null, preSeedRole: o.preSeedRole ?? null,
     extraNodes: (o.extraNodes || []).map(n => ({ h: n.h, s: n.s, ...(n.l != null ? { l: n.l } : {}), ...(n.locked ? { locked: true } : {}) })),
     dropOffsets: [...(o.dropOffsets || [])],
     wheelL: typeof o.wheelL === 'number' ? o.wheelL : null,
+    holds: o.holds && typeof o.holds === 'object' ? o.holds : {},
   };
 }

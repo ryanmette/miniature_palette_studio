@@ -454,7 +454,7 @@
         <li><b>The original stays on record</b> in one muted line: “Swapped in the store for Mephiston Red”, with <b>Use the original</b> to go back.
           In the app, the ΔE shown is the swap’s true ΔE to the <i>role’s target</i>, not to the original pot (§2); this picture uses the pot-to-pot value.</li>
         <li>A swap is <b>state</b> (what the pot is), so it is a line of text, not a ring or a colour (§3.5).</li>
-        <li><b>Data:</b> a swap is a pin of a paint to a role — the same idea as <code>mockups/pin-a-paint.html</code> (direction A, not built). Build both on one model: a pinned pot per role, plus where the pin came from (“you”, “a store swap”).</li>
+        <li><b>Data:</b> a swap is a pot held on a role — the same idea as <code>mockups/pin-a-paint.html</code>, now built as <b>role holds</b> (v1.12.0, in the scheme’s link as <code>hd</code>). A store swap is a pot hold plus one new field: the paint it replaced.</li>
         <li>The scheme lives in the URL, so a share link carries the pinned pot too, and the flag with it.</li>
       </ul>
     </div>
@@ -675,7 +675,7 @@
   <h3 class="lab">Next</h3>
   <ol class="q">
     <li><b>A study: naming a project on export or save</b> — started: <a href="project-naming.html">project-naming.html</a>.<span>When the name is asked (each export, or once per scheme), what it suggests (the paint and harmony, the last name used), what happens to paints with no name, and how a name is changed later.</span></li>
-    <li><b>One model for pins and swaps.</b><span>A store swap and a <code>pin-a-paint.html</code> pin are the same thing: a pot fixed to a role. Decide the model once, before either is built.</span></li>
+    <li><b>One model for holds and swaps.</b><span>A store swap is a role hold (v1.12.0, built since this study): a pot fixed to a role. Only “swapped from” is new.</span></li>
   </ol>
   <details style="margin-top:12px"><summary class="micro" style="cursor:pointer;min-height:var(--tap);display:flex;align-items:center">The first questions (answered above)</summary>
   <ol class="q">

@@ -7,7 +7,9 @@
 <meta name="description" content="Pick a miniature paint and get colour harmonies matched to the real paints you can buy." />
 <!-- The link preview (iMessage, Discord, Slack…). Their bots read this HTML and do not run JavaScript, so
      the card is static: a shared scheme cannot draw its own image without a server (§1). The image is
-     1200 × 630 (src/og-image.png); without it, iMessage stretched the 180px icon. Absolute URLs: bots need them. -->
+     1200 × 630 (src/og-image.png); without it, iMessage stretched the 180px icon. Absolute URLs: bots need them.
+     All of its content is inside the centre 960 px: Messages on a Mac shows the card at about 1.6 : 1 and cuts
+     about 96 px from each side (mockups/share-image.html §0). -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Palette Studio" />
 <meta property="og:title" content="Palette Studio for Miniatures" />
@@ -51,6 +53,7 @@
   <symbol id="i-chevr" viewBox="0 0 20 20"><path d="M8 5l5 5-5 5"/></symbol>
   <symbol id="i-check" viewBox="0 0 20 20"><path d="M4 10.5l3.75 3.75L16 6"/></symbol>
   <symbol id="i-empty" viewBox="0 0 20 20"><circle cx="10" cy="10" r="5.5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 20 20"><path d="M7 3h6M8 3v5l-3 4h10l-3-4V3M10 12v5"/></symbol>
   <symbol id="i-half" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.25"/><path d="M10 3.75a6.25 6.25 0 0 0 0 12.5z" fill="currentColor" stroke="none"/></symbol>
 </svg>
 <header>
@@ -124,6 +127,11 @@
           <!-- What these act on, in words (Ryan, 2026-10-28: "Scheme" did not say it): the palette on screen.
                The Backup group below acts on everything this device keeps. -->
           <div class="setbtns" role="group" aria-label="Share this palette" data-i18n-aria="scheme" aria-describedby="shareHint">
+            <!-- The image: Share image… on touch (the share sheet, the PNG + the link); with a mouse, Copy image and
+                 Save the image (app.js setupShareImage shows the right ones). -->
+            <button type="button" class="btn" id="shareImg" data-i18n="shareImage" hidden>Share image…</button>
+            <button type="button" class="btn" id="copyImg" data-i18n="copyImage" hidden>Copy image</button>
+            <button type="button" class="btn" id="saveImg" data-i18n="saveImage" hidden>Save the image</button>
             <button type="button" class="btn" id="share" data-i18n="shareLink">Share link…</button>
             <button type="button" class="btn" id="export" data-i18n="saveList">Save the shopping list</button>
           </div>
@@ -227,7 +235,7 @@
             <div class="wbox">
               <div class="noverlay" id="neutralOverlay" hidden>
                 <button type="button" class="nbanner" id="neutralBanner" aria-controls="neutralPill" title="Collapse this note"><span class="nb-ic" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-half"/></svg></span>
-                  <span><strong data-i18n="neutralHead">Neutral colour</strong> — <span data-i18n="neutralBody">hue harmonies can't move a colour with no hue, so these schemes are built for neutrals. Your colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.</span></span></button>
+                  <span><strong data-i18n="neutralHead">Neutral colour</strong> — <span data-i18n="neutralBody">hue harmonies can't move a colour with no hue, so these schemes are built for neutrals. The starting colour holds Primary; drag the wheel node to pick the pop accent that drives the rest.</span></span></button>
                 <button type="button" class="npill" id="neutralPill" aria-expanded="false" aria-controls="neutralBanner" title="Neutral colour — schemes adapted. Click for details." hidden><span aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-half"/></svg></span> <span data-i18n="neutralPill">neutral colour</span></button>
               </div>
               <canvas id="wheel" class="wcanvas" width="280" height="280" tabindex="0" role="application" aria-label="Colour wheel. Drag a node, or focus here and use arrow keys to adjust the focused colour, [ and ] to move between colours, and + or − to add or remove a colour."></canvas>
@@ -261,17 +269,13 @@
             <button class="btn" id="redo" aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)" disabled><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-redo"/></svg></button>
             <button class="btn" id="addnode" aria-label="Add a colour" title="Add a colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
             <button class="btn" id="delnode" aria-label="Remove the last added colour" title="Remove the last added colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg></button>
-            <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">
-              <button data-fill="ideal" aria-pressed="true">Target</button>
-              <button data-fill="real" aria-pressed="false">Pot</button>
-            </div>
           </div>
         </div>
         <div id="livepal" aria-live="off"></div>
         <!-- the matching note: one line per setting that changes the matches (ui.js matchNote) -->
         <div id="matchnote" class="matchnote"></div>
+        <div id="holdnote"></div>
         <div id="pops" class="pops" role="group" aria-label="Quick pop accents" hidden></div>
-        <input type="color" id="swEdit" hidden aria-hidden="true" tabindex="-1" />
       </div>
       <div class="card pad output">
         <div class="tabs" id="tabs" role="tablist" aria-label="Scheme views">
@@ -411,6 +415,23 @@
   <p class="sr-only" role="status" data-say></p>
 </dialog>
 
+<!-- Choose a pot for a role (mockups/hold-flow.html, direction A). The one dialog anatomy (§3.5): the h2 in
+     a .sheethead with ✕, a search field, the closest paints to the role's target first (metallics first for
+     Metal), each with its ΔE. A pick holds that pot on the role; focus returns to the card's control. -->
+<dialog id="potDlg" class="about potdlg" aria-labelledby="potTitle">
+  <div class="abouthead sheethead">
+    <h2 id="potTitle">Choose a pot</h2>
+    <button class="iconbtn" id="potClose" aria-label="Close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="aboutbody potbody">
+    <label class="setlbl" for="potQ">Search paints</label>
+    <input id="potQ" type="search" placeholder="Name, brand or type" autocomplete="off" aria-describedby="potHint" />
+    <p class="sethint" id="potHint"></p>
+    <ul class="potlist" id="potList"></ul>
+    <label class="potcolour" for="potColor"><span>Or a custom colour</span><input id="potColor" type="color" /></label>
+  </div>
+  <p class="sr-only" role="status" data-say></p>
+</dialog>
 <dialog id="eyedropper" class="about eyedrop" aria-labelledby="edTitle">
   <div class="abouthead sheethead">
     <h2 id="edTitle">Pick a colour from a photo</h2>

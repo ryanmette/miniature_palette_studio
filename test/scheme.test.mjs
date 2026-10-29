@@ -318,3 +318,50 @@ test('accent-seed pinning: the substituted honesty note now fires in non-180 har
   assert.ok(acc.substituted, 'honesty note fires');
   assert.equal(acc.substituted.name, 'Blue Wash');
 });
+
+// Holds (mockups/hold-flow.html, direction A): a lock holds a role's target colour; a chosen pot holds the paint.
+const HOLD_DATA = indexDataset({ version: 't', paints: [
+  { id: 'r', brand: 'B', line: 'L', name: 'Red', hex: '#9A1115', type: 'layer' },
+  { id: 'g', brand: 'B', line: 'L', name: 'Green', hex: '#119A2E', type: 'layer' },
+  { id: 'b', brand: 'B', line: 'L', name: 'Blue', hex: '#2F4A6B', type: 'layer' },
+  { id: 't', brand: 'B', line: 'L', name: 'Teal', hex: '#119A96', type: 'layer' },
+  { id: 'gold', brand: 'B', line: 'L', name: 'Gold', hex: '#A77353', type: 'metal' },
+  { id: 'steel', brand: 'B', line: 'L', name: 'Steel', hex: '#6E7177', type: 'metal' },
+] });
+
+test('holds: a lock sets the role target; the generated target is kept', () => {
+  const free = buildScheme(HOLD_DATA, '#9A1115', 'complementary');
+  const held = buildScheme(HOLD_DATA, '#9A1115', 'complementary', { holds: { Secondary: { kind: 'lock', hex: '#2f4a6b' } } });
+  const sec = held.roles.find(r => r.role === 'Secondary');
+  assert.equal(sec.hold, 'lock');
+  assert.equal(sec.idealHex, '#2F4A6B', 'the locked colour is the target');
+  assert.equal(sec.generatedHex, free.roles.find(r => r.role === 'Secondary').idealHex, 'the rule\'s target is kept beside it');
+  assert.equal(sec.match.paint.id, 'b', 'the pot is the nearest to the locked colour');
+  // the lock holds across a harmony change
+  const tri = buildScheme(HOLD_DATA, '#9A1115', 'triadic', { holds: { Secondary: { kind: 'lock', hex: '#2F4A6B' } } });
+  assert.equal(tri.roles.find(r => r.role === 'Secondary').idealHex, '#2F4A6B');
+  assert.equal(free.roles.find(r => r.role === 'Secondary').hold, undefined, 'no hold, no flag');
+});
+
+test('holds: a chosen pot is the match, measured from the generated target, and is not reused', () => {
+  const s = buildScheme(HOLD_DATA, '#9A1115', 'complementary', { holds: { Metal: { kind: 'pot', id: 'steel', hex: '#6E7177' }, Accent: { kind: 'pot', id: 'gold', hex: '#A77353' } } });
+  const metal = s.roles.find(r => r.role === 'Metal'), acc = s.roles.find(r => r.role === 'Accent');
+  assert.equal(metal.hold, 'pot');
+  assert.equal(metal.match.paint.id, 'steel');
+  assert.equal(metal.idealHex, metal.generatedHex, 'the card keeps the generated target on the left');
+  assert.ok(metal.match.deltaE > 10 && metal.match.quality.label === 'Poor', 'the gap from the gold target is shown, not hidden');
+  assert.equal(acc.match.paint.id, 'gold', 'a pot holds under a type the role would not pick (a metal on Accent)');
+  for (const r of s.roles.filter(r => !r.hold)) assert.ok(!['steel', 'gold'].includes(r.match.paint.id), `${r.role} does not reuse a chosen pot`);
+  const base = acc.ladders[0].steps.find(st => st.key === 'base');
+  assert.equal(base.match.paint.id, 'gold', 'the base rung is the chosen pot');
+  assert.equal(base.idealHex, '#A77353', 'the ladder steps from the pot\'s colour');
+  assert.ok(Array.isArray(metal.nmm) && metal.nmm.length === 3, 'a chosen metal keeps its NMM steps');
+});
+
+test('holds: an unknown pot acts as a lock on its hex', () => {
+  const s = buildScheme(HOLD_DATA, '#9A1115', 'complementary', { holds: { Secondary: { kind: 'pot', id: 'gone', hex: '#119A96' } } });
+  const sec = s.roles.find(r => r.role === 'Secondary');
+  assert.equal(sec.hold, 'lock');
+  assert.equal(sec.idealHex, '#119A96');
+  assert.equal(sec.match.paint.id, 't');
+});

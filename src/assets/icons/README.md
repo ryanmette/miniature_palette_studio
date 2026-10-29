@@ -12,8 +12,8 @@ The harmony glyphs and the finish icons stay in code (`harmonyGlyph`, `finishTag
 | `menu.svg` | ☰ | Filters, a list |
 | `more.svg` | ⋯ | Settings |
 | `reroll.svg` | ↻ | Pick a colour for me |
-| `check.svg` | ✓ | Owned, your paint |
-| `anchor.svg` | ⚓ | The seed dock (only if the word "seed" stays) |
+| `check.svg` | ✓ | Owned |
+| `anchor.svg` | ⚓ | The starting paint: its tag and the dock that moves it |
 | `warning.svg` | ⚠ | Warnings and the Delete button |
 | `empty.svg` | ○ | Not marked |
 | `search.svg` | ⌕ | Search fields |
@@ -25,6 +25,7 @@ The harmony glyphs and the finish icons stay in code (`harmonyGlyph`, `finishTag
 | `target.svg` | ◎ | Use a palette colour as the base |
 | `chevl.svg`, `chevr.svg` | ◂ ▸ | Move a palette colour earlier or later |
 | `half.svg` | ◐ | The neutral note over the wheel |
+| `pin.svg` | — | A chosen pot on a role (mockups/hold-flow.html) |
 | `cart.svg` | — | Add to the shopping list (not used yet; the buy button uses `plus.svg`) |
 | `camera.svg`, `grid.svg`, `eye.svg`, `info.svg`, `chev.svg` | — | From photo, Browse, Colour check, the matching note, a select |
 | `brush.svg`, `pot.svg`, `drop.svg` | — (new) | Hobby icons: the recipe, a pot, a wash or ink |

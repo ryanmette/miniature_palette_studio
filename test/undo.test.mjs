@@ -9,7 +9,7 @@ const hexOf = (n, wheelL = 0.5) => rgbToHex(hslToRgb([n.h, n.s, n.l ?? wheelL]))
 /** A palette state as app.js passes it to snapPalette: `state` plus the neutral-mode holders. */
 const S = (over = {}) => ({
   customHex: '#9A1115', baseId: 'citadel-base-mephiston-red', harmony: 'complementary', seedRole: 'main',
-  showReal: false, popHex: null, neutral: false, preNeutral: null, preSeedRole: null,
+  popHex: null, neutral: false, preNeutral: null, preSeedRole: null,
   extraNodes: [], dropOffsets: [], wheelL: 0.35, ...over,
 });
 
@@ -41,7 +41,7 @@ test('state → snapshot → state → snapshot gives the same string (pushHisto
   const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < 1000; i++) {
     const s = S({
-      customHex: i % 2 ? '#2D567C' : null, seedRole: i % 3 ? 'main' : 'accent', showReal: i % 5 === 0,
+      customHex: i % 2 ? '#2D567C' : null, seedRole: i % 3 ? 'main' : 'accent',
       popHex: i % 4 ? null : '#9C1626', neutral: [true, false, null][i % 3], preNeutral: i % 2 ? 'triadic' : null,
       extraNodes: Array.from({ length: i % 7 }, () => ({ h: rand() * 360, s: rand(), ...(rand() < 0.8 ? { l: rand() } : {}) })),
       dropOffsets: i % 2 ? [180] : [], wheelL: i % 9 ? 0.06 + rand() * 0.88 : null,
@@ -72,12 +72,12 @@ test('a swatch that was unlocked comes back with no lock flag', () => {
 });
 
 test('the seed and the neutral-mode holders come back as they went in', () => {
-  const o = readSnap(snapPalette(S({ customHex: null, seedRole: 'accent', showReal: true, popHex: '#0F6B6E',
+  const o = readSnap(snapPalette(S({ customHex: null, seedRole: 'accent', popHex: '#0F6B6E',
     neutral: true, preNeutral: 'triadic', preSeedRole: 'accent', dropOffsets: [120, 240], wheelL: 0.42 })));
   assert.deepEqual(o, {
     customHex: null, baseId: 'citadel-base-mephiston-red', harmony: 'complementary', seedRole: 'accent',
-    showReal: true, popHex: '#0F6B6E', neutral: true, preNeutral: 'triadic', preSeedRole: 'accent',
-    extraNodes: [], dropOffsets: [120, 240], wheelL: 0.42,
+    popHex: '#0F6B6E', neutral: true, preNeutral: 'triadic', preSeedRole: 'accent',
+    extraNodes: [], dropOffsets: [120, 240], wheelL: 0.42, holds: {},
   });
   // A custom hex wins over the paint id, as on screen; a mode not held yet stays null
   const c = readSnap(snapPalette(S({ neutral: null })));
@@ -120,4 +120,10 @@ test('a snapshot from before the wheel had a lightness reads back null (the call
   assert.equal(readSnap(snapPalette(S({ wheelL: null }))).wheelL, null);
   assert.equal(readSnap(snapPalette(S({ wheelL: undefined }))).wheelL, null);
   assert.equal(readSnap('{"customHex":"#9A1115"}').wheelL, null);   // a snapshot made before this field
+});
+
+test('holds come back with the snapshot, and a snapshot with none clears them', () => {
+  const holds = { Metal: { kind: 'pot', id: 'citadel-base-balthasar-gold', hex: '#A77353' } };
+  assert.deepEqual(readSnap(snapPalette(S({ holds }))).holds, holds);
+  assert.deepEqual(readSnap(snapPalette(S({ holds: {} }))).holds, {}, 'an empty hold set reads back empty, so undo clears holds');
 });

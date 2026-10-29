@@ -45,11 +45,41 @@ export function encodeState(s) {
   if (s.tab && s.tab !== 'plan') p.set('v', s.tab);
   if (s.seedRole === 'accent') p.set('r', 'accent');
   if (s.theme === 'dark') p.set('t', 'dark');
-  if (s.showReal) p.set('f', '1');
   if (s.extraNodes && s.extraNodes.length) p.set('x', s.extraNodes.map(n => encodeNode(n, s.wheelL)).join('-'));
   if (s.dropOffsets && s.dropOffsets.length) p.set('d', s.dropOffsets.join('.'));
   if (s.popHex) p.set('pp', s.popHex.replace('#', ''));
+  const hd = encodeHolds(s.holds); if (hd) p.set('hd', hd);
   return p;
+}
+
+/* Holds (mockups/hold-flow.html, direction A): one token per held role, joined by "_".
+   Role letter · kind · (paint id ·) hex:  S.l.2F4A6B (Secondary locked to a colour)
+   M.p.citadel-base-balthasar-gold.A77353 (Metal's chosen pot, its hex as the fallback). No paint id has
+   "." or "_" (checked over data 1.6.0), and URLSearchParams leaves both as they are. Primary is never held:
+   the harmony is built from it. */
+const HOLD_ROLES = { S: 'Secondary', A: 'Accent', M: 'Metal' };
+const HOLD_LETTER = { Secondary: 'S', Accent: 'A', Metal: 'M' };
+export function encodeHolds(holds) {
+  if (!holds) return '';
+  return Object.entries(holds).filter(([r, h]) => HOLD_LETTER[r] && h && normHex(h.hex))
+    .map(([r, h]) => [HOLD_LETTER[r], h.kind === 'pot' && h.id ? 'p' : 'l', ...(h.kind === 'pot' && h.id ? [h.id] : []), normHex(h.hex).slice(1)].join('.'))
+    .join('_');
+}
+/** The `hd` param → holds. A bad token is dropped; a pot this build does not have becomes a lock on its
+ *  hex (the colour is kept, as `c` is the fallback for `p`). */
+export function decodeHolds(hd, hasPaint = () => true) {
+  const out = {};
+  if (!hd) return out;
+  for (const tok of String(hd).split('_')) {
+    const parts = tok.split('.'), role = HOLD_ROLES[parts[0]];
+    if (!role || out[role]) continue;
+    if (parts[1] === 'l' && parts.length === 3) { const hex = normHex(parts[2]); if (hex) out[role] = { kind: 'lock', hex }; }
+    else if (parts[1] === 'p' && parts.length === 4) {
+      const hex = normHex(parts[3]); if (!hex) continue;
+      out[role] = parts[2] && hasPaint(parts[2]) ? { kind: 'pot', id: parts[2], hex } : { kind: 'lock', hex };
+    }
+  }
+  return out;
 }
 
 /**
@@ -105,12 +135,12 @@ export function decodeState(search, { validHarmony = () => true, hasPaint = () =
   const h = u.get('h'); if (h && validHarmony(h)) out.harmony = h;
   const pp = normHex(u.get('pp')); if (pp) out.popHex = clampPop(pp);
   const v = u.get('v'); if (v && validTab(v)) out.tab = v;
-  if (u.get('f') === '1') out.showReal = true;
   if (u.get('r') === 'accent') out.seedRole = 'accent';
   if (u.get('t') === 'dark') out.theme = 'dark';
   if (u.get('m') === 'shelf') out.mode = 'shelf';
   const x = u.get('x'); if (x) out.extraNodes = decodeNodes(x, maxFree);
   const d = u.get('d'); if (d) out.dropOffsets = decodeOffsets(d);
+  const hd = u.get('hd'); if (hd) out.holds = decodeHolds(hd, hasPaint);
   // Seed last: a known paint id wins, else the hex fallback. Neither present → caller's default.
   const pid = u.get('p'), c = normHex(u.get('c'));
   if (pid && hasPaint(pid)) out.baseId = pid;

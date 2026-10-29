@@ -11,13 +11,13 @@
 // fresh index.html (the v1.3.0 bug). 'reload' always hits the origin and refreshes the HTTP cache.
 // Bump CACHE on any shell/asset change. skipWaiting + clients.claim hand control to the new SW promptly.
 
-const CACHE = 'ps-v67';
+const CACHE = 'ps-v71';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './icon.svg', './icon-app.svg', './apple-touch-icon.png',
   './privacy.html', './support.html', './js/infopage.js',
   './styles/fonts.css', './styles/tokens.css', './styles/app.css',
   './js/app.js', './js/color.js', './js/harmony.js', './js/data.js', './js/a11y.js',
-  './js/scheme.js', './js/seed.js', './js/share.js', './js/undo.js', './js/wheel.js', './js/markmenu.js', './js/picker.js',
+  './js/scheme.js', './js/seed.js', './js/share.js', './js/shareimage.js', './js/undo.js', './js/wheel.js', './js/markmenu.js', './js/picker.js',
   './js/ui.js', './js/store.js', './js/collection-io.js', './js/i18n.js', './js/version.js',
   './assets/fonts/ibm-plex-sans-400.woff2', './assets/fonts/ibm-plex-sans-500.woff2', './assets/fonts/ibm-plex-sans-600.woff2',
   './assets/fonts/barlow-condensed-600.woff2', './assets/fonts/barlow-condensed-700.woff2',
