@@ -242,6 +242,19 @@
   .arrows div.back::after { left:-1px; right:auto; border-left:0; border-right:8px solid var(--danger); }
   @media (max-width: 600px) { .sync { grid-template-columns:1fr; } .arrows { padding:8px 24px; } }
 
+  /* the swap flag on a Recipe role card, and the count stepper */
+  .rcard { width:340px; max-width:100%; border-top:1px solid var(--border); padding:12px 0; }
+  .rcard .rr { display:flex; align-items:center; gap:12px; }
+  .rcard .role { font-family:var(--display); font-size:18px; font-weight:600; margin-bottom:8px; }
+  .was { font-size:12px; color:var(--text-muted); margin-top:2px; }
+  .was .sw { display:inline-block; vertical-align:-3px; margin-right:4px; }
+  .step { display:inline-flex; align-items:center; border:1px solid var(--border-strong); border-radius:var(--r-ctrl); }
+  .step button { width:32px; height:32px; border:0; background:var(--surface); color:var(--text); font:inherit; font-size:16px; cursor:pointer; }
+  .step button:first-child { border-right:1px solid var(--border-strong); border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); }
+  .step button:last-child { border-left:1px solid var(--border-strong); border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .step output { min-width:56px; text-align:center; font-size:13px; }
+  @media (pointer: coarse) { .step button { width:var(--tap); height:var(--tap); } }
+
   /* the verdict + questions */
   .verdict { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0 24px; margin-top:12px; }
   .verdict > div { border-top:1px solid var(--border-strong); padding:8px 0; font-size:var(--fs-small); color:var(--text-muted); }
@@ -270,7 +283,7 @@
 <div class="page">
 
 <header>
-  <p class="micro">Design study · not shipped · 2026-10-29 · updated with Ryan’s answers</p>
+  <p class="micro">Design study · not shipped · 2026-10-29 · updated with Ryan’s answers (two rounds)</p>
   <h1>The shopping list — five ways to take it to the store</h1>
   <p class="sub">Today the shopping list is a <b>filter of the Shelf</b>: the same colour grid, with only the paints marked “to buy”.
     That view is good for <b>planning</b> at a desk. This study asks what the list must be when you <b>stand in front of a paint rack</b>
@@ -381,9 +394,15 @@
           <li>Does not help when the pot is not on the rack.</li>
         </ul></div>
       </div>
+      <h3 class="lab">The count: set after the fact (Ryan, 2026-10-29)</h3>
+      <p class="why">Every paint goes on the list as one pot. You change the count <b>later, on the list</b>, only when you want more — nothing asks
+        for a number on Add. The row has an <b>“Add a count”</b> text action; it turns into a stepper in the same reserved slot (§3.4). At 1 the stepper
+        goes back to the text action, and the “pots” tag goes away.</p>
+      <div class="item" style="max-width:360px"><span class="sw" style="background:#6D774D" aria-hidden="true"></span>
+        <div class="grow"><div class="nm">Death Guard Green</div><div class="ln">Citadel Base</div></div>
+        <div class="step" role="group" aria-label="Pots of Death Guard Green" id="stepDemo"><button type="button" aria-label="One fewer pot">−</button><output aria-live="polite">2 pots</output><button type="button" aria-label="One more pot">+</button></div></div>
       <h3 class="lab">Open question</h3>
-      <ul class="notes"><li>Where does this view live: a third Shelf view, a mode of the Shelf’s “Shopping list” filter, or a page a link opens (§6)?</li>
-          <li>Where do you set the count — on the Recipe’s Add button, in the mark menu, or only on this list?</li></ul>
+      <ul class="notes"><li>Where does this view live: a third Shelf view, a mode of the Shelf’s “Shopping list” filter, or a page a link opens (§6)?</li></ul>
     </div>
   </div>
 </section>
@@ -411,9 +430,33 @@
         <div><h3 class="lab">Against</h3><ul class="notes">
           <li>More on each row. It must stay folded until asked.</li>
           <li><b>Finishes:</b> a swap for a wash must be a wash (§7 finish ranking). The dataset’s hex for a wash is the colour on white, so a flat paint can look “Good” for Agrax Earthshade when it is not a swap at all. For a wash, contrast or metallic, the swap list must keep to the same finish class — or say there is none.</li>
-          <li>A swap changes the scheme. Should the swap go back to the scheme, or only to the shelf?</li>
+          <li>A swap changes the scheme (see the next figure).</li>
         </ul></div>
       </div>
+    </div>
+  </div>
+  <div class="trow">
+    <figure>
+      <figcaption><b>Recipe, after the trip</b> · the swap goes back to the scheme, with the original flagged</figcaption>
+      <div class="rcard">
+        <div class="role">Accent</div>
+        <div class="rr"><span class="sw lg" style="background:#97211F" aria-hidden="true"></span>
+          <div style="flex:1;min-width:0"><div style="font-weight:600">Carmine Red</div>
+            <div style="font-size:var(--fs-small);color:var(--text-muted)">Vallejo Model Color · <span class="de">ΔE 4.2</span> <span class="tag warning">Fair</span> <span class="tag success">Owned</span></div>
+            <div class="was"><span class="sw sm" style="background:#960C09;width:14px;height:14px" aria-hidden="true"></span>Swapped in the store for Mephiston Red · <button class="textact" type="button" tabindex="-1" style="min-height:0;min-width:0;padding:0;font-size:12px">Use the original</button></div>
+          </div></div>
+      </div>
+    </figure>
+    <div class="txt">
+      <h3 class="lab">Swaps go back to the scheme, flagged (Ryan, 2026-10-29)</h3>
+      <ul class="notes">
+        <li><b>The swap becomes the role’s pot</b> in the Recipe, so next time you paint from what you bought.</li>
+        <li><b>The original stays on record</b> in one muted line: “Swapped in the store for Mephiston Red”, with <b>Use the original</b> to go back.
+          In the app, the ΔE shown is the swap’s true ΔE to the <i>role’s target</i>, not to the original pot (§2); this picture uses the pot-to-pot value.</li>
+        <li>A swap is <b>state</b> (what the pot is), so it is a line of text, not a ring or a colour (§3.5).</li>
+        <li><b>Data:</b> a swap is a pin of a paint to a role — the same idea as <code>mockups/pin-a-paint.html</code> (direction A, not built). Build both on one model: a pinned pot per role, plus where the pin came from (“you”, “a store swap”).</li>
+        <li>The scheme lives in the URL, so a share link carries the pinned pot too, and the flag with it.</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -438,7 +481,7 @@
           <li>Much smaller than projects: no saved schemes, no list management. A label is the scheme’s name and its share link, kept with the mark.</li>
         </ul></div>
         <div><h3 class="lab">Against</h3><ul class="notes">
-          <li>A scheme has <b>no name</b> today (it lives in the URL). The label needs one: ask on Add (“For: Plague Marine”), or make one from the paint and harmony (“Death Guard Green · triadic”).</li>
+          <li>A scheme has <b>no name</b> today (it lives in the URL). Ryan’s answer: the name is <b>asked on export or save</b>, not on Add. When and how to ask is a UX flow of its own and <b>needs its own study</b> (see “Next”).</li>
           <li>A paint added by hand on the Shelf has no label. It goes under “No project”.</li>
           <li>Same data change as the quantity: a field per want mark in <code>store.js</code>.</li>
         </ul></div>
@@ -611,7 +654,7 @@
     <div><b>E · Rack map</b><span class="score">Do not build</span> — invented data; one brand only.</div>
   </div>
   <div class="reco"><b>Recommendation (after Ryan’s answers):</b> A + B together, ticked <b>in the app</b>, opened on the phone <b>from a link or a QR code</b>,
-    with a <b>“bought” link back</b> to the other device. Add a quantity and a “for” label to each to-buy mark (one <code>store.js</code> change for both).
+    with a <b>“bought” link back</b> to the other device. Add a quantity (set after the fact) and a “for” label to each to-buy mark (one <code>store.js</code> change for both). A swap goes back to the scheme as a pinned pot, with the original flagged.
     D is the print view of A, and the fixed text file is the durable fallback.</div>
 
   <h3 class="lab">Ryan’s answers (2026-10-29)</h3>
@@ -623,14 +666,16 @@
       <tr><td>4 · Tick → owned</td><td><b>At once.</b> → A has no Done step; a second tap undoes.</td></tr>
       <tr><td>5 · Quantity</td><td><b>Nice to have.</b> One pot is the default; the tag shows from 2.</td></tr>
       <tr><td>6 · Paper or app</td><td><b>In the app.</b> → A is the main view; D is a print style only.</td></tr>
+      <tr><td>7 · Swap → scheme</td><td><b>Yes, but flag the original.</b> → the swap is the role’s pot; one muted line names the original, with “Use the original” (B).</td></tr>
+      <tr><td>8 · Where the count is set</td><td><b>After the fact,</b> when the painter says how many. → One pot on Add; “Add a count” on the list row (A).</td></tr>
+      <tr><td>9 · A project’s name</td><td><b>Asked on export or save.</b> A UX flow that needs its own study.</td></tr>
     </tbody>
   </table>
 
-  <h3 class="lab">Still open</h3>
+  <h3 class="lab">Next</h3>
   <ol class="q">
-    <li><b>Should a swap in the store go back to the scheme?</b><span>If you buy Carmine Red in place of Mephiston Red, should the recipe show Carmine Red next time? (Question 7, not answered yet.)</span></li>
-    <li><b>Where do you set the count?</b><span>On the Recipe’s Add button, in the mark menu, or only on the list.</span></li>
-    <li><b>What is a project’s name?</b><span>Asked on Add, or made from the paint and harmony.</span></li>
+    <li><b>A study: naming a project on export or save.</b><span>When the name is asked (each export, or once per scheme), what it suggests (the paint and harmony, the last name used), what happens to paints with no name, and how a name is changed later.</span></li>
+    <li><b>One model for pins and swaps.</b><span>A store swap and a <code>pin-a-paint.html</code> pin are the same thing: a pot fixed to a role. Decide the model once, before either is built.</span></li>
   </ol>
   <details style="margin-top:12px"><summary class="micro" style="cursor:pointer;min-height:var(--tap);display:flex;align-items:center">The first questions (answered above)</summary>
   <ol class="q">
@@ -821,6 +866,11 @@
   document.getElementById('rack').innerHTML = hrk + '<span class="shelfrule"></span>';
   document.getElementById('legendE').innerHTML = want.map((p, i) => `<li><b class="n">${i + 1}</b>${sw(p, 'sm')}${esc(p.name)}${fin(p)}</li>`).join('');
   document.getElementById('eCount').textContent = `${want.length} of the list’s ${LIST.length} paints are on this rack`;
+
+  /* ---- A: the count stepper (a picture that works; in the app, 1 would go back to “Add a count”) ---- */
+  const st = document.getElementById('stepDemo'); let q = 2;
+  st.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+    q = Math.max(1, q + (b === st.lastElementChild ? 1 : -1)); st.querySelector('output').textContent = q === 1 ? '1 pot' : `${q} pots`; });
 
   /* ---- 6: the link + a QR-like picture (NOT a real code: the finder squares + a seeded pattern) ---- */
   const ids = ['citadel-base-mephiston-red','citadel-base-death-guard-green','citadel-base-kantor-blue','citadel-base-balthasar-gold','vallejo-model-color-ivory','army-painter-warpaints-skeleton-bone'];
