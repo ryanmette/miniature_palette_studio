@@ -5,6 +5,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 took only the web entries. -->
+### Added
+- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
+  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
+  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
+  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
+  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
+  has its own releases later.
+### Fixed
+- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
+  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
+  padding. The web view's white background showed behind the clock and the home bar, with a double gap
+  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
+  clear of the notch and the home bar.
+
+## [1.13.0] - 2026-10-29
 ### Added
 - **Not on the rack: swaps in the store** (PLAN §5 item 38; `mockups/shopping-list.html` direction B).
   - In the Shelf's list, each paint to buy has **Not on the rack?**. It shows the three closest pots, from the
@@ -22,12 +38,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   paint wells: the Primary, Secondary, Accent and Metal targets of the scheme that loads. It follows the real
   download, and it ends on the finished palette. A fast or cached load never shows it. With reduced motion it is
   one still picture, and only the progress line moves.
-- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
-  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
-  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
-  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
-  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
-  has its own releases later.
 - **Take the list to the store** (PLAN §5 item 37; `mockups/shopping-list.html` §6, `mockups/project-naming.html` B).
   There is no server, so the list goes from one device to the other in a link.
   - **Take to the store…** opens a panel: in ⋯, in the Shelf's list (beside Print), and on a Schemes row that has
@@ -118,7 +128,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   a hex, not a paint.
 - **A lock is a badge, not a border.** A locked column shows a lock icon after its role name. Rings now
   mean only "linked to what you point at" and "the Equivalents source".
-
 ### Fixed
 - **The Shelf's list is clearer** (Ryan's review, 2026-10-29):
   - The line through a name now means "ticked off the shopping list" only. Before, every owned paint had it, so
@@ -130,11 +139,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   list** did not record the project, so the list's "for Blue knight" and By project showed nothing for them.
   They now record the scheme on screen. **Save** on a scheme whose paints are on the list names that project, in
   place of a second copy of the scheme.
-- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
-  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
-  padding. The web view's white background showed behind the clock and the home bar, with a double gap
-  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
-  clear of the notch and the home bar.
 - **A lock drew half a border.** The colour block covered the lock's inner shadow, so only the footer
   showed it.
 - **Custom (and Complementary) showed roles that were in the Recipe only.** The Recipe makes a Secondary
@@ -2040,9 +2044,12 @@ The **collection release**: a paint shelf, collection-aware planning, portabilit
 ### Verified
 - CIEDE2000 implementation validated against 9 Sharma et al. reference pairs (exact to 4 dp).
 
-[Unreleased]: https://github.com/ryanmette/miniature_palette_studio/commits/main
+[Unreleased]: https://github.com/ryanmette/miniature_palette_studio/compare/v1.13.0...main
+[1.13.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.13.0
+[1.12.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.12.0
+[1.11.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.11.0
+[1.10.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.10.0
 [1.9.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.9.0
 [1.8.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.8.0
 [0.1.0]: https://github.com/ryanmette/miniature_palette_studio
-<!-- Release headings above aren't linked: no git tags have been pushed yet. When tags land
-     (see CLAUDE.md §8 release checklist), add per-version definitions here. -->
+<!-- Tags exist from v1.8.0 on (Actions → Tag release, CLAUDE.md §8); headings before 1.8.0 stay unlinked. -->
