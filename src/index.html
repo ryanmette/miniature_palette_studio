@@ -269,10 +269,6 @@
             <button class="btn" id="redo" aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)" disabled><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-redo"/></svg></button>
             <button class="btn" id="addnode" aria-label="Add a colour" title="Add a colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></button>
             <button class="btn" id="delnode" aria-label="Remove the last added colour" title="Remove the last added colour"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg></button>
-            <div class="seg" id="realtoggle" role="group" aria-label="Palette fill">
-              <button data-fill="ideal" aria-pressed="true">Target</button>
-              <button data-fill="real" aria-pressed="false">Pot</button>
-            </div>
           </div>
         </div>
         <div id="livepal" aria-live="off"></div>
@@ -280,7 +276,6 @@
         <div id="matchnote" class="matchnote"></div>
         <div id="holdnote"></div>
         <div id="pops" class="pops" role="group" aria-label="Quick pop accents" hidden></div>
-        <input type="color" id="swEdit" hidden aria-hidden="true" tabindex="-1" />
       </div>
       <div class="card pad output">
         <div class="tabs" id="tabs" role="tablist" aria-label="Scheme views">
@@ -433,6 +428,7 @@
     <input id="potQ" type="search" placeholder="Name, brand or type" autocomplete="off" aria-describedby="potHint" />
     <p class="sethint" id="potHint"></p>
     <ul class="potlist" id="potList"></ul>
+    <label class="potcolour" for="potColor"><span>Or a custom colour</span><input id="potColor" type="color" /></label>
   </div>
   <p class="sr-only" role="status" data-say></p>
 </dialog>

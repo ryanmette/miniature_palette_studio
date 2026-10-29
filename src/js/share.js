@@ -45,7 +45,6 @@ export function encodeState(s) {
   if (s.tab && s.tab !== 'plan') p.set('v', s.tab);
   if (s.seedRole === 'accent') p.set('r', 'accent');
   if (s.theme === 'dark') p.set('t', 'dark');
-  if (s.showReal) p.set('f', '1');
   if (s.extraNodes && s.extraNodes.length) p.set('x', s.extraNodes.map(n => encodeNode(n, s.wheelL)).join('-'));
   if (s.dropOffsets && s.dropOffsets.length) p.set('d', s.dropOffsets.join('.'));
   if (s.popHex) p.set('pp', s.popHex.replace('#', ''));
@@ -136,7 +135,6 @@ export function decodeState(search, { validHarmony = () => true, hasPaint = () =
   const h = u.get('h'); if (h && validHarmony(h)) out.harmony = h;
   const pp = normHex(u.get('pp')); if (pp) out.popHex = clampPop(pp);
   const v = u.get('v'); if (v && validTab(v)) out.tab = v;
-  if (u.get('f') === '1') out.showReal = true;
   if (u.get('r') === 'accent') out.seedRole = 'accent';
   if (u.get('t') === 'dark') out.theme = 'dark';
   if (u.get('m') === 'shelf') out.mode = 'shelf';

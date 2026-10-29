@@ -5,6 +5,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **The live palette shows the target and the pot together.** Each column's colour block is the target
+  colour. A band along its foot shows the nearest pot, with the pot's hex and finish. The **Target / Pot**
+  toggle is gone: with a close match it changed nothing you could see, so it looked broken. An old link
+  with the toggle in it (`f=1`) still opens.
+- **The pencil on a live-palette column chooses a paint.** It opens the pot dialog. On Secondary, Accent
+  or Metal it chooses the role's pot. On another column the column takes the paint's colour, and on the
+  Primary column it changes the starting paint. The dialog's last row is a custom colour. Before, the
+  pencil opened the system colour picker from a hidden input. Some browsers did not show it, and it gave
+  a hex, not a paint.
+- **A lock is a badge, not a border.** A locked column shows a lock icon after its role name. Rings now
+  mean only "linked to what you point at" and "the Equivalents source".
+
+### Fixed
+- **A lock drew half a border.** The colour block covered the lock's inner shadow, so only the footer
+  showed it.
+- **Custom (and Complementary) showed roles that were in the Recipe only.** The Recipe makes a Secondary
+  and an Accent when the harmony has no partner for them, but the wheel and the live palette did not show
+  them. Now every role in the Recipe is a column and a wheel node. A drag of such a node locks the role.
+- **A held role stayed at its old place on the wheel.** The wheel now shows a held role at its held
+  colour. The legend under the wheel hides an entry when its badge is not on the wheel.
 
 ## [1.12.0] - 2026-10-29
 ### Added

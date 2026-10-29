@@ -29,7 +29,7 @@ test('a custom hex seed omits the paint id', () => {
 test('full round trip preserves every palette field', () => {
   const s = {
     customHex: null, baseId: 'vallejo-blue', pickHex: '#2D567C', harmony: 'shades',
-    seedRole: 'accent', theme: 'dark', showReal: true, tab: 'equiv', mode: 'shelf',
+    seedRole: 'accent', theme: 'dark', tab: 'equiv', mode: 'shelf',
     popHex: '#9C1626', wheelL: 0.5,
     extraNodes: [{ h: 120, s: 0.5, l: 0.4 }, { h: 300, s: 0.8, l: 0.6, locked: true }],
     dropOffsets: [180, 240],
@@ -39,7 +39,6 @@ test('full round trip preserves every palette field', () => {
   assert.equal(back.harmony, 'shades');
   assert.equal(back.seedRole, 'accent');
   assert.equal(back.theme, 'dark');
-  assert.equal(back.showReal, true);
   assert.equal(back.tab, 'equiv');
   assert.equal(back.mode, 'shelf');
   assert.equal(back.popHex, '#9C1626');
@@ -51,8 +50,14 @@ test('full round trip preserves every palette field', () => {
 
 test('defaults are omitted from the link (short, pasteable URLs)', () => {
   const p = encodeState({ baseId: 'citadel-red', pickHex: '#9A1115', harmony: 'complementary',
-    tab: 'plan', mode: 'studio', seedRole: 'main', theme: 'light', showReal: false });
+    tab: 'plan', mode: 'studio', seedRole: 'main', theme: 'light' });
   assert.deepEqual([...p.keys()].sort(), ['c', 'h', 'p']);
+});
+
+test('an old link with the Target / Pot fill (f=1) still opens, and the fill is gone', () => {
+  const back = decodeState('p=citadel-red&c=9A1115&f=1', V);
+  assert.equal(back.baseId, 'citadel-red');
+  assert.equal('showReal' in back, false);
 });
 
 test('an added swatch without its own lightness falls back to the wheel slider on encode', () => {
