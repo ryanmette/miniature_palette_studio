@@ -14,6 +14,8 @@ npm-debug.log*
 dist/
 .cache/
 *.local
+# Browser-test screenshots at the repository root (the app is src/; design images go in mockups/)
+/*.png
 
 # Claude Code local session tooling (worktrees, preview launch config) — never shipped
 .claude/
