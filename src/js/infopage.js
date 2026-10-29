@@ -3,6 +3,8 @@
 // pages also open inside the installed PWA and the iOS app, where there is no browser back button,
 // so the in-page link is the only way back.
 import { getPref } from './store.js';
+import { describeDevice, supportLine } from './help.js';
+import { APP_VERSION } from './version.js';
 
 // Same precedence as the app's own start-up (app.js): the stored pref, else the device setting.
 const theme = getPref('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -22,3 +24,19 @@ document.querySelector('#backToApp')?.addEventListener('click', e => {
     history.back();
   }
 });
+
+// Support details (help.js; mockups/help-about.html, answer 3): shown, then copied only on a press. On this page
+// there is no scheme, so the scheme option stays hidden; the paint data's version is not loaded here either.
+const box = document.querySelector('#supportDetails');
+if (box) {
+  const native = !!globalThis.Capacitor?.isNativePlatform?.();
+  const line = supportLine({ version: APP_VERSION, device: describeDevice(navigator.userAgent, { native }),
+    width: innerWidth, height: innerHeight, theme: document.documentElement.dataset.theme, locale: navigator.language });
+  box.querySelector('#supportLine').textContent = line;
+  box.hidden = false;
+  box.querySelector('#supportCopy').addEventListener('click', async () => {
+    const said = box.querySelector('#supportSaid');
+    try { await navigator.clipboard.writeText(line); said.textContent = 'Copied. Paste it into your message.'; }
+    catch { said.textContent = 'Copy is not available here. Select the line and copy it.'; }
+  });
+}

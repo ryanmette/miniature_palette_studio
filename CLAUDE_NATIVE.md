@@ -74,7 +74,7 @@ crash-reporting SDKs of any kind, and Stage-2/3 native screens (they need §2 ad
   camera, offline, haptics, the pocket Shelf — never a wrapped iframe.
 - **Honesty travels.** ΔE is always shown with its plain-language label (CLAUDE.md §2/§3.2), and
   match ranking stays pure — money never reorders ΔE results (MONETIZATION guardrails).
-- **Attribution travels.** The in-app "About & data" credits ship in every native build — App
+- **Attribution travels.** The in-app "About" credits ship in every native build — App
   Store review will read that screen.
 - **WCAG 2.1 AA holds in the shell** (§9). The accessibility tool stays accessible.
 
@@ -127,7 +127,8 @@ never **look**.
 | 1 | Service worker registration skipped in-shell *(v1.8)* | `src/index.html` | assets are bundled — a SW adds only staleness risk |
 | 2 | `store.js` write-through to the Preferences plugin + `hydrate()` recovery, awaited before first render; localStorage stays authoritative *(v1.8)* | `src/js/store.js` | WKWebView can evict localStorage at the OS's discretion |
 
-Approved-pending — each earns its row when it lands: the ⋯ menu's "About & data" wording swap and
+Approved-pending — each earns its row when it lands (the ⋯ menu's "About & data" wording swap is moot:
+the shared web code says "About" on every platform since PLAN §5 item 39):
 hiding any PWA install affordance *(none exists in `src/` today — confirm at kickoff whether that
 item is moot)* (IOS_APP_PLAN §4b step 5); camera photo intake (step 8); the live eyedropper
 (step 9); wheel haptics (its §4a/§5).
@@ -250,7 +251,7 @@ github-actions-only (CLAUDE.md §4); Capacitor version bumps are deliberate, han
   kickoff.
 - **App Store Connect URLs.** Privacy policy: `https://palette.ryanmette.com/privacy.html`;
   support: `https://palette.ryanmette.com/support.html` (both in `src/`, so they also ship inside
-  the app). Guideline 5.1.1(i) also wants the policy reachable in-app — About & data links both.
+  the app). Guideline 5.1.1(i) also wants the policy reachable in-app — About links both.
   The policy states what the app does with data, so any change to that (a network request, the
   camera, storage) updates `privacy.html` and its date **in the same commit**.
 - **Guideline 4.2 (minimum functionality):** cleared by design — live eyedropper, offline

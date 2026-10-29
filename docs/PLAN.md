@@ -474,7 +474,7 @@ The build order. Each item needs the one before it:
     existing project. **The Molten Harmonics loader** (§3.4) shipped on the same branch.
 39. **Help and About** — studied (`mockups/help-about.html`, 2026-10-29); **chosen: B** (Ryan, 2026-10-29), with the task
     grouping, the names Help and About, "Copy support details" in Help's Contact (shown, then copied; never sent
-    in the contact link), and What's new in About. Not built yet. A notification log next to ⋯ is a later study. Help is a page and
+    in the contact link), and What's new in About. **Built** (`help.js`, `#helpDlg`, 2026-10-29). A notification log next to ⋯ is a later study. Help is a page and
     About a dialog: the split is required in part (the App Store needs a public Support URL and privacy policy,
     guidelines 1.5 and 5.1.1(i)), but the two overlap and Help has drifted (it still names a language setting, and
     Delete's answer misses saved schemes). B: Help in a sheet built from `support.html` itself (one source, no
