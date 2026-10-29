@@ -286,7 +286,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
     ├── privacy.html · support.html  ← privacy policy + Help and support (how the matching works, keyboard shortcuts, backup FAQ): the App Store Connect URLs, linked from ⋯ (Help) and About & data (CLAUDE_NATIVE.md §8)
     ├── CNAME · .nojekyll       ← GitHub Pages: custom domain (palette.ryanmette.com) + disable Jekyll (M9)
     ├── manifest.webmanifest · sw.js  ← PWA: installable + offline app shell (collection branch)
-    ├── og-image.png           ← the 1200 × 630 link-preview card (Open Graph; static — a per-scheme card needs a server, §1)
+    ├── og-image.png           ← the 1200 × 630 link-preview card (Open Graph; static — a per-scheme card needs a server, §1); all content inside the centre 960 px (Messages on a Mac crops it to ~1.6:1)
     ├── icon.svg · icon-app.svg · apple-touch-icon.png  ← the mark (mockups/logo.html 4a): the tab icon (follows the device theme) · the installed-app icon (white on Sotek Green, inside the maskable safe zone) · its 180px PNG for iOS
     ├── styles/fonts.css       ← @font-face for the self-hosted webfonts (§3.3/§6)
     ├── styles/tokens.css      ← §3 tokens, nothing else (M3)

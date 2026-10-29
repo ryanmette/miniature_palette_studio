@@ -5,6 +5,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- **The link card is no longer cut on a Mac.** Messages on a Mac shows the 1200 × 630 card at about 1.6 : 1, so it
+  cut about 96 px from each side, and the first letters of each line ("ick one paint", "RIMARY"). The card
+  (`src/og-image.png`) is redrawn with all its content inside the centre 960 px, a 120 px margin on each side. It
+  now names each paint's brand too. Drawn by `mockups/share-image.html` (§0).
+
 ### Added
 - **Design exploration: share as an image** (`mockups/share-image.html`, not shipped). A shared link shows the same
   static card for every scheme, and Messages on a Mac cuts its sides: it shows the 1200 × 630 card at about 1.6 : 1, so
