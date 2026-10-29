@@ -755,6 +755,39 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .frpick .sw { width: 24px; height: 24px; }
 .frsteps { margin: 0; padding-left: 24px; color: var(--text-muted); display: grid; gap: 4px; }
 .firstrun .textact { justify-self: start; }
+/* Holds (mockups/hold-flow.html, direction A): the card's controls, the note under the live palette, and the
+   pot chooser. A lock is a toggle (pressed = an --accent-weak fill + accent border, as .lcbtn.on); a chosen pot
+   is a filled tag (state). */
+.holdrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.holdrow .btn.sm { gap: 6px; padding: 0 12px 0 10px; }
+.holdrow .btn.sm .ic { width: 14px; height: 14px; stroke-width: 2; }
+.holdlock.on { background: var(--accent-weak); border-color: var(--accent); color: var(--text); }
+.holdrow .textact { min-width: 0; padding: 0 4px; font-size: 13px; }
+.slot.held .ivsa .ideal { opacity: .9; }
+#holdnote:empty { display: none; }
+.holdnote { display: grid; gap: 4px; margin-top: 8px; font-size: 13px; }
+.holdnote p { margin: 0; display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 8px; align-items: start; line-height: 1.5; }
+.holdnote p > .ic { width: 14px; height: 14px; stroke-width: 2; color: var(--accent); margin-top: 3px; }
+.holdnote .hnwarn > .ic { color: var(--warning); }
+/* the action sits inside the sentence; its 44px touch area is an invisible ::after (§3.6), as on the docks */
+.holdnote .textact { display: inline; min-height: 0; min-width: 0; padding: 0; font-size: 13px; position: relative; }
+.holdnote .textact::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%); }
+.potdlg { width: min(520px, 92vw); }
+.potbody { display: grid; gap: 8px; }
+.potbody input[type="search"] { width: 100%; }
+.potlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; max-height: min(52vh, 420px); overflow-y: auto; }
+.potrow { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%;
+  min-height: var(--tap); padding: 4px 8px; border: 0; border-radius: var(--r-ctrl); background: none; color: var(--text);
+  font: inherit; text-align: left; cursor: pointer; }
+.potrow:hover { background: var(--surface-2); }
+.potrow:focus-visible { outline: 2px solid transparent; outline-offset: -2px; box-shadow: var(--focus-inset); }
+.potrow[aria-current="true"] { background: var(--accent-weak); }
+.potrow .sw { width: 32px; height: 32px; }
+.potname { display: grid; min-width: 0; font-weight: 500; }
+.potname .br { font-weight: 400; font-size: 12px; color: var(--text-muted); }
+.potcur { color: var(--accent); font-weight: 600; }
+.potrow .de { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; white-space: nowrap; }
+.potnone { color: var(--text-muted); padding: 8px; }
 /* Empty states (UX 4): a heading, one sentence, one action. */
 .emptystate { padding: 32px 0 48px; display: grid; justify-items: start; gap: 8px; max-width: 60ch; }
 .emptystate h3 { margin: 0; font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; }

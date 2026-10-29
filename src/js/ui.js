@@ -277,14 +277,15 @@ export function matchChip(m, markOf) {
     ? `<div class="ownline"><span class="owntag">${icon('check')}owned</span>${m.adjust ? `<span class="adjust">${esc(m.adjust)}</span>` : ''}</div>`
     : '';
   return swatch(p.hex, 'act' + fxCls(p))
-    + `<div style="min-width:0"><div class="ttl">Nearest pot</div>`
+    + `<div style="min-width:0"><div class="ttl">${m.chosen ? 'Chosen pot' : 'Nearest pot'}</div>`
     + `<div class="nm">${esc(p.name)}</div>`
     + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
     + `<span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
     + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
     // Poor (over ΔE 10, §3.2): say what that means and what to do, not only the tag (UX 4)
-    + (m.deltaE > 10 ? `<div class="poornote"><strong>No pot within ΔE 10.</strong> A mix or a glaze gets closer, or see Other brands.</div>` : '')
+    // (not for a chosen pot: the painter picked it on purpose; the hold note says how far it is)
+    + (m.deltaE > 10 && !m.chosen ? `<div class="poornote"><strong>No pot within ΔE 10.</strong> A mix or a glaze gets closer, or see Other brands.</div>` : '')
     + ownTag + buyBtn(p.id, mark) + `</div>`;
 }
 
@@ -341,7 +342,55 @@ export function matchNote({ collection = 'off', owned = 0, contrast = false, exp
 /** Role slots: each role's ideal → nearest real paint, plus the selected tone ladder(s) (#7). Each slot
  *  carries `data-hex` so hovering/focusing it rings the same colour's wheel node + live-palette column —
  *  the colour link that ties this detail tab to the wheel (app.js linkHighlight; §3.5). */
-export function roleSlots(scheme, markOf) {
+/** The hold controls on a Recipe role card (mockups/hold-flow.html, direction A). `holdable`: this role can
+ *  be held (not Primary, not the starting paint's role). Lock colour is a toggle with one fixed name; a
+ *  chosen pot shows as a filled tag (state), with Change pot and Release. */
+export function holdControls(r, holdable) {
+  if (!holdable) return '';
+  const role = esc(r.role);
+  if (r.hold === 'pot') {
+    return `<div class="holdrow"><span class="holdchip">${icon('pin')}Pot chosen</span>`
+      + `<button type="button" class="textact" data-hold-pot="${role}" aria-haspopup="dialog" aria-label="Change the ${role} pot">Change pot</button>`
+      + `<button type="button" class="textact" data-hold-release="${role}" aria-label="Release the ${role} pot">Release</button></div>`;
+  }
+  const locked = r.hold === 'lock';
+  return `<div class="holdrow">`
+    + `<button type="button" class="btn sm holdlock${locked ? ' on' : ''}" data-hold-lock="${role}" aria-pressed="${locked}"`
+    + ` title="Keep this colour when you roll or change the harmony">${icon(locked ? 'lock' : 'unlock')}Lock colour</button>`
+    + `<button type="button" class="btn sm" data-hold-pot="${role}" aria-haspopup="dialog">${icon('pin')}Choose pot…</button></div>`;
+}
+
+/** Rows of the pot chooser: each paint with its distance from the role's target. `items`: [{paint, deltaE, quality}]. */
+export function potRows(items, markOf = () => 'none', currentId = null) {
+  if (!items.length) return '<li class="potnone">No paint matches. Try a brand, a colour word, or a shorter name.</li>';
+  return items.map(m => {
+    const p = m.paint, mark = markOf(p.id), cur = p.id === currentId;
+    return `<li><button type="button" class="potrow" data-potid="${esc(p.id)}"${cur ? ' aria-current="true"' : ''}>`
+      + `${swatch(p.hex, fxCls(p).trim())}`
+      + `<span class="potname">${esc(pname(p))}${cur ? ' <span class="potcur">· chosen</span>' : ''}`
+      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${mark === 'owned' ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span></span>`
+      + `<span class="de"><span class="dot" style="background:${tier(m.quality.tier)}"></span><span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span><span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>`
+      + `</button></li>`;
+  }).join('');
+}
+
+/** The hold note under the live palette: what is held, Release all, and a line for each held role that is
+ *  Poor (over ΔE 10) against the scheme — which hold, and by how much (Solver's Feasibility Report, Onshape's
+ *  red constraint). `held`: [{role, kind, name, deltaE, poor}] in role order. '' when nothing is held. */
+export function holdNote(held) {
+  if (!held.length) return '';
+  const list = held.map(h => `${esc(h.role)} (${h.kind === 'pot' ? esc(h.name) : 'colour'})`).join(' · ');
+  const warn = held.filter(h => h.poor).map(h => `<p class="hnwarn">${icon('warning')}<span><b>${esc(h.role)}:</b> `
+    + (h.kind === 'pot'
+      ? `${esc(h.name)} is ΔE ${h.deltaE.toFixed(1)} from this scheme's ${esc(h.role.toLowerCase())} (Poor).`
+      : `your locked colour has no pot within ΔE 10 (the nearest is ΔE ${h.deltaE.toFixed(1)}).`)
+    + ` <button type="button" class="textact" data-hold-pot="${esc(h.role)}" aria-haspopup="dialog">Show pots</button></span></p>`).join('');
+  const rel = held.length === 1 ? 'Release it' : held.length === 2 ? 'Release both' : `Release all ${held.length}`;
+  return `<div class="holdnote"><p class="hnsum">${icon('pin')}<span><b>Held:</b> ${list}. `
+    + `<button type="button" class="textact" data-hold-releaseall>${rel}</button></span></p>${warn}</div>`;
+}
+
+export function roleSlots(scheme, markOf, holdable = new Set()) {
   // Ladder rows show the SHORT paint name — long display names ("Brainmatter Beige (Warpaints
   // Fanatic)") used to blow the three-column row past the card edge on phones. The full identity
   // (disambiguated name · brand) lives in the same clamped tooltip the Shelf uses (hover / focus /
@@ -367,9 +416,10 @@ export function roleSlots(scheme, markOf) {
   const subNote = r => r.substituted
     ? `<div class="sharednote"><span class="warnpill">pick replaced</span> <strong>${esc(r.substituted.name)}</strong> is ${esc(r.substituted.why)} — nearest eligible paint shown.</div>`
     : '';
-  return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}" data-hex="${safeColor(r.idealHex)}">`
+  return `<div class="slots">${scheme.roles.map(r => `<div class="slot${r.shared ? ' is-shared' : ''}${r.hold ? ' held' : ''}" data-hex="${safeColor(r.hold === 'pot' ? r.match.paint.hex : r.idealHex)}">`
     + `<div class="shead"><span class="role">${esc(r.role)}</span>`
     +   `<span class="sheadr"><button type="button" class="eqjump" data-goequiv="${safeColor(r.idealHex)}" title="Show this colour in other brands" aria-label="Show other brands for ${esc(r.role)}">${icon('swap')}Other brands</button><span class="wt">${esc(r.weight)}</span></span></div>`
+    + holdControls(r, holdable.has(r.role))
     + `<div class="ivsa">${swatch(r.idealHex, 'ideal', `color:${textOn(r.idealHex)}`)}<span class="arr">→</span>${matchChip(r.match, markOf)}</div>`
     + subNote(r)
     + sharedNote(r)

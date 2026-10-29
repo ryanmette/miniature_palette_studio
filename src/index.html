@@ -271,6 +271,7 @@
         <div id="livepal" aria-live="off"></div>
         <!-- the matching note: one line per setting that changes the matches (ui.js matchNote) -->
         <div id="matchnote" class="matchnote"></div>
+        <div id="holdnote"></div>
         <div id="pops" class="pops" role="group" aria-label="Quick pop accents" hidden></div>
         <input type="color" id="swEdit" hidden aria-hidden="true" tabindex="-1" />
       </div>
@@ -412,6 +413,22 @@
   <p class="sr-only" role="status" data-say></p>
 </dialog>
 
+<!-- Choose a pot for a role (mockups/hold-flow.html, direction A). The one dialog anatomy (§3.5): the h2 in
+     a .sheethead with ✕, a search field, the closest paints to the role's target first (metallics first for
+     Metal), each with its ΔE. A pick holds that pot on the role; focus returns to the card's control. -->
+<dialog id="potDlg" class="about potdlg" aria-labelledby="potTitle">
+  <div class="abouthead sheethead">
+    <h2 id="potTitle">Choose a pot</h2>
+    <button class="iconbtn" id="potClose" aria-label="Close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="aboutbody potbody">
+    <label class="setlbl" for="potQ">Search paints</label>
+    <input id="potQ" type="search" placeholder="Name, brand or type" autocomplete="off" aria-describedby="potHint" />
+    <p class="sethint" id="potHint"></p>
+    <ul class="potlist" id="potList"></ul>
+  </div>
+  <p class="sr-only" role="status" data-say></p>
+</dialog>
 <dialog id="eyedropper" class="about eyedrop" aria-labelledby="edTitle">
   <div class="abouthead sheethead">
     <h2 id="edTitle">Pick a colour from a photo</h2>

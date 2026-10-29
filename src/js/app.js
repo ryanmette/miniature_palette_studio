@@ -11,7 +11,7 @@ import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, r
 import { createMarkMenu, isMenuKey } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf } from './data.js';
+import { loadDataset, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv } from './collection-io.js';   // collection portability (#27)
 import * as ui from './ui.js';
@@ -125,6 +125,104 @@ function setHold(role, hold) {
   state.holds = next;
   render('scheme');
 }
+let holdNoteHtml = '';
+/** The note under the live palette: what is held, Release all, and a line for each Poor hold. */
+function renderHoldNote() {
+  const el = $('#holdnote'); if (!el) return;
+  let html = '';
+  if (holdCount()) {
+    const held = currentScheme().roles.filter(r => r.hold).map(r => ({
+      role: r.role, kind: r.hold, name: r.match ? ui.pname(r.match.paint) : '',
+      deltaE: r.match ? r.match.deltaE : 0, poor: !r.match || r.match.deltaE > 10 }));
+    html = ui.holdNote(held);
+  }
+  if (html !== holdNoteHtml) { el.innerHTML = html; holdNoteHtml = html; }   // unchanged → keep the DOM (and focus)
+}
+/** After a hold changes, the cards are rebuilt: put focus back on the same control, or on the next best one. */
+function refocusHold(...sels) {
+  for (const s of sels) { const el = document.querySelector(s); if (el && el.getClientRects().length) { el.focus({ preventScroll: true }); return; } }
+}
+function toggleLock(role) {
+  const h = state.holds[role];
+  setHold(role, h && h.kind === 'lock' ? null : { kind: 'lock', hex: swatchHex('r:' + role) });
+  say(state.holds[role] ? `${role} colour locked. It stays when you roll or change the harmony.` : `${role} colour released. The scheme picks it again.`);
+}
+function releaseHold(role) {
+  setHold(role, null);
+  say(`${role} released. The scheme picks it again.`);
+}
+function releaseAllHolds() {
+  const n = holdCount(); if (!n) return;
+  const next = { ...state.holds };
+  for (const r of holdableRoles()) delete next[r];
+  state.holds = next;
+  render('scheme');
+  say(n === 1 ? 'Hold released.' : `${n} holds released.`);
+}
+
+/* ---- Choose a pot (direction A) ---- */
+const pot = { role: null, opener: null, target: null };
+function potItems(q) {
+  const role = pot.role, metal = role === 'Metal', target = pot.target;
+  const rank = p => { const dE = deltaE2000Hex(p.hex, target); return { paint: p, deltaE: dE, quality: matchQuality(dE) }; };
+  if (q.trim()) return searchPaints(state.idx, q, { ownedIds: store.ownedIds() }).slice(0, 40).map(rank);
+  // No words yet: the closest paints to the role's target, metallics first for Metal (a flat or NMM metal next)
+  const near = nearestPaints(state.idx, target, 24, metal ? {} : { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY });
+  const list = metal ? [...near.filter(m => m.paint.type === 'metal'), ...near.filter(m => m.paint.type !== 'metal')] : near;
+  return list.slice(0, 24).map(m => rank(m.paint));
+}
+function renderPotList() {
+  const q = $('#potQ').value;
+  const items = potItems(q), cur = state.holds[pot.role]?.kind === 'pot' ? state.holds[pot.role].id : null;
+  $('#potList').innerHTML = ui.potRows(items, store.markOf, cur);
+  $('#potHint').textContent = q.trim()
+    ? `${items.length} paint${items.length === 1 ? '' : 's'}. ΔE is the distance from this scheme's ${pot.role.toLowerCase()}.`
+    : `Closest to this scheme's ${pot.role.toLowerCase()} first${pot.role === 'Metal' ? ', metallics first' : ''}. Or search any paint.`;
+}
+function openPotDialog(role, opener) {
+  if (!holdableRoles().includes(role)) return;
+  pot.role = role; pot.opener = opener;
+  // the target the rule makes for this role (not a held colour): the list ranks against the scheme's own pick
+  const d = roleIdeals(schemeBase(), state.harmony, activePop(), { accentHex: accentPin() }).find(x => x.role === role);
+  pot.target = d ? d.idealHex : '#808080';
+  $('#potTitle').textContent = `Choose a pot for ${role}`;
+  $('#potQ').value = '';
+  renderPotList();
+  $('#potDlg').showModal();
+  $('#potQ').focus();
+}
+function choosePot(id) {
+  const p = state.idx.byId.get(id); if (!p) return;
+  const role = pot.role;
+  $('#potDlg').close();
+  setHold(role, { kind: 'pot', id: p.id, hex: p.hex });
+  say(`${ui.pname(p)} is the ${role} pot. It stays when you roll or change the harmony.`);
+  refocusHold(`.slot [data-hold-pot="${role}"]`, '#holdnote [data-hold-releaseall]');
+}
+function setupPotDialog() {
+  const d = $('#potDlg');
+  let timer = 0;
+  $('#potQ').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(renderPotList, 120); });
+  $('#potList').addEventListener('click', e => { const b = e.target.closest('[data-potid]'); if (b) choosePot(b.dataset.potid); });
+  $('#potClose').addEventListener('click', () => d.close());
+  d.addEventListener('close', () => {
+    const o = pot.opener;
+    if (o && o.isConnected && o.getClientRects().length) o.focus({ preventScroll: true });
+    else refocusHold(`.slot [data-hold-pot="${pot.role}"]`, `.slot [data-hold-lock="${pot.role}"]`);
+  });
+}
+/** The hold controls, on the Recipe cards and in the hold note (delegated from main). */
+function holdClick(e) {
+  const lk = e.target.closest('[data-hold-lock]');
+  if (lk) { const r = lk.dataset.holdLock; toggleLock(r); refocusHold(`.slot [data-hold-lock="${r}"]`); return true; }
+  const pp = e.target.closest('[data-hold-pot]');
+  if (pp) { openPotDialog(pp.dataset.holdPot, pp); return true; }
+  const rl = e.target.closest('[data-hold-release]');
+  if (rl) { const r = rl.dataset.holdRelease; releaseHold(r); refocusHold(`.slot [data-hold-pot="${r}"]`); return true; }
+  if (e.target.closest('[data-hold-releaseall]')) { releaseAllHolds(); refocusHold('#undo'); return true; }
+  return false;
+}
+
 function currentScheme() {
   // seed identity → buildScheme prefers the pick on exact ties and flags honest substitutions, in
   // BOTH seed modes (the slot whose ideal is the pick's hex gets it — Primary or Accent).
@@ -160,7 +258,7 @@ function renderPlan() {
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
     + '<div class="micro" style="margin:14px 0 0">Each role: target colour → nearest pot (ΔE 2000), plus the selected tone ladder</div>'
-    + ui.roleSlots(state.scheme, store.markOf);
+    + ui.roleSlots(state.scheme, store.markOf, new Set(holdableRoles()));
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
 // Set by setupWheel() too. render() calls it when something other than the lightness slider changes
@@ -450,7 +548,7 @@ function collapseBanner() {
   nb.hidden = true; np.hidden = false; np.setAttribute('aria-expanded', 'false');
 }
 /** Repaint the always-visible studio column (wheel + live palette + pop chips). */
-function drawStudio() { wheelDraw(); renderLive(); renderPops(); }
+function drawStudio() { wheelDraw(); renderLive(); renderPops(); renderHoldNote(); }
 /** Re-derive the wheel's lightness from the seed. Only needed when the seed changed from OUTSIDE the
  *  wheel (a paint pick, a typed hex, undo, init) — during a drag the slider is already the source. */
 function syncWheelL() {
@@ -2113,6 +2211,7 @@ function wire() {
   $('main').addEventListener('mouseover', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('focusin', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('click', e => {
+    if (holdClick(e)) { e.stopPropagation(); return; }
     const eqs = e.target.closest('[data-eqsrc]');
     if (eqs) { e.stopPropagation(); setEquivSource(eqs.dataset.eqsrc); return; }   // tab-local source chips (A)
     const gq = e.target.closest('[data-goequiv]');
@@ -2325,6 +2424,7 @@ async function init() {
     setDragging: v => { wheelDragging = v; },   // gates mid-drag history snapshots (one undo entry per drag)
   }));
   setupEyedropper();
+  setupPotDialog();
   picker = setupPicker({
     state, t, say, markMenu,
     getPick: () => ({ id: state.customHex ? null : state.baseId, hex: pickHex() }),

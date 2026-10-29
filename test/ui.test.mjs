@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
+import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, holdControls, holdNote, potRows, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -312,4 +312,35 @@ test('livePalette: a held role column acts on the role; a chosen pot shows its t
   assert.match(html, /class="holdchip"[^>]*>.*?Pot chosen</, 'a chosen pot is a filled tag');
   assert.doesNotMatch(html, /data-lock="r:Metal"/, 'a chosen pot is changed in the Recipe, not locked over');
   assert.doesNotMatch(html, /data-lock="r:Primary"|data-lock="base"/, 'Primary is never held');
+});
+
+test('holdControls: a lock toggle with one fixed name, and a pot chooser; a chosen pot can be changed or released', () => {
+  assert.equal(holdControls({ role: 'Primary' }, false), '', 'a role that cannot be held has no controls');
+  const free = holdControls({ role: 'Metal' }, true);
+  assert.match(free, /data-hold-lock="Metal" aria-pressed="false"[^>]*>.*Lock colour</);
+  assert.match(free, /data-hold-pot="Metal" aria-haspopup="dialog">.*Choose pot…</);
+  assert.match(holdControls({ role: 'Metal', hold: 'lock' }, true), /aria-pressed="true"[^>]*>.*Lock colour</, 'the name stays; only the pressed state changes');
+  const pot = holdControls({ role: 'Metal', hold: 'pot' }, true);
+  assert.match(pot, /class="holdchip"/);
+  assert.match(pot, /data-hold-pot="Metal"[^>]*aria-label="Change the Metal pot">Change pot</);
+  assert.match(pot, /data-hold-release="Metal"/);
+});
+
+test('holdNote: lists the holds, names a Poor one and by how much; nothing held, nothing shown', () => {
+  assert.equal(holdNote([]), '');
+  const html = holdNote([{ role: 'Secondary', kind: 'lock', name: 'Abyss Blue', deltaE: 1.5, poor: false },
+    { role: 'Metal', kind: 'pot', name: 'Balthasar Gold', deltaE: 22.94, poor: true }]);
+  assert.match(html, /Secondary \(colour\) · Metal \(Balthasar Gold\)/);
+  assert.match(html, />Release both</);
+  assert.match(html, /<b>Metal:<\/b> Balthasar Gold is ΔE 22\.9 from this scheme's metal \(Poor\)/);
+  assert.equal((html.match(/class="hnwarn"/g) || []).length, 1, 'only the Poor hold gets a line');
+});
+
+test('potRows: each paint with its ΔE; the chosen one is marked; an empty search says what to try', () => {
+  const m = { paint: { id: 'bg', name: 'Balthasar Gold', brand: 'Citadel', line: 'Base', hex: '#A77353', type: 'metal' }, deltaE: 22.9, quality: { label: 'Poor', tier: 'danger' } };
+  const html = potRows([m], () => 'owned', 'bg');
+  assert.match(html, /data-potid="bg" aria-current="true"/);
+  assert.match(html, /ΔE 22\.9/);
+  assert.match(html, /owned/);
+  assert.match(potRows([]), /No paint matches/);
 });
