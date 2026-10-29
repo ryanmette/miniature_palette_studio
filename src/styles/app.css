@@ -951,6 +951,28 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .aboutbody a { color: var(--accent); font-weight: 500; }
 .aboutbody .aboutfine { margin-top: 16px; font-size: 11.5px; color: var(--text-muted); }   /* --text-faint is 2.39:1, under AA */
 .aboutbody .aboutfine + .aboutfine { margin-top: 4px; }
+/* Help (mockups/help-about.html, B): the sheet shows support.html's own <main>, so the page's .doc styles carry over.
+   Inside the sheet the headings are the page's, not About's, and a part scrolls to the sheet's top (no header). */
+.helpdlg { width: min(720px, 92vw); }
+.helpdlg .aboutbody h2 { font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; margin: 24px 0 8px; scroll-margin-top: 8px; }
+.helpdlg .aboutbody h2:first-of-type { margin-top: 8px; }
+.helpdlg .aboutbody h3 { font-family: var(--font); font-size: var(--fs-body); font-weight: 600; margin: 16px 0 4px; scroll-margin-top: 8px; }
+.helpdlg .aboutbody p, .helpdlg .aboutbody li, .helpdlg .aboutbody dd { font-size: 13.5px; line-height: 1.6; }
+/* The contents list (support.html): one --tap row per part, on the page and in the sheet */
+.doc .toc { list-style: none; margin: 8px 0 16px; padding: 0; border-top: 1px solid var(--border); }
+.doc .toc li { margin: 0; border-bottom: 1px solid var(--border); }
+.doc .toc a { display: flex; align-items: center; min-height: var(--tap); text-decoration: none; }
+.doc .toc a:hover { text-decoration: underline; }
+/* Support details: the line is shown before it is copied, so the painter sees every word (help.js) */
+.supportdetails { margin: 8px 0 16px; padding: 12px; border: 1px solid var(--border-strong); border-radius: var(--r-ctrl); background: var(--surface); }
+.supportline { margin: 8px 0; padding: 8px; font-family: var(--mono); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere;
+  background: var(--surface-2); border-radius: var(--r-ctrl); color: var(--text); }
+.supportscheme { display: flex; align-items: center; gap: 8px; min-height: var(--tap); font-size: 13px; }
+.supportscheme input { width: 18px; height: 18px; accent-color: var(--accent); }
+.supportdetails .sethint { margin: 8px 0 0; min-height: 1.5em; }
+/* What's new in About */
+.whatsnew { margin: 0 0 8px; padding-left: 20px; font-size: 13px; line-height: 1.6; }
+.whatsnew li + li { margin-top: 4px; }
 .aboutshelf { margin-top: 24px; padding-top: 4px; border-top: 1px solid var(--border); }
 .aboutshelf .btn { margin-top: 4px; }
 @media (prefers-reduced-motion: no-preference) {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Help and support · Palette Studio for Miniatures</title>
+<title>Help · Palette Studio for Miniatures</title>
 <meta name="description" content="Get help with Palette Studio for Miniatures: how the matching works, keyboard shortcuts, common questions, and how to back up your shelf or move it to another device." />
 <link rel="stylesheet" href="styles/fonts.css" />
 <link rel="stylesheet" href="styles/tokens.css" />
@@ -23,22 +23,63 @@
 </header>
 
 <main class="doc">
-  <h1>Help and support</h1>
+  <h1>Help</h1>
   <p class="docdate">Palette Studio for Miniatures</p>
 
   <p>Palette Studio is a free tool for miniature painters. Pick a paint or a colour, and it builds a
-    colour scheme matched to real paints you can buy.</p>
+    colour scheme matched to real paints you can buy. A question or a problem? See
+    <a href="#contact">Contact and privacy</a>.</p>
 
-  <h2>Get help</h2>
-  <p>Use the <a href="https://ryanmette.com/contact" target="_blank" rel="noopener">contact page at ryanmette.com</a>.
-    To help me fix a problem quickly, include:</p>
+  <!-- The contents: one link per group (mockups/help-about.html, grouped by task, Ryan 2026-10-29). The app shows
+       this page in its Help sheet too, so every link here stays inside the page. -->
+  <nav aria-label="Contents">
+    <ul class="toc">
+      <li><a href="#start">Start a scheme</a></li>
+      <li><a href="#matching-group">Matching and ΔE</a></li>
+      <li><a href="#shelf">Your shelf</a></li>
+      <li><a href="#schemes">Schemes</a></li>
+      <li><a href="#store">Shopping and the store</a></li>
+      <li><a href="#devices">Backup and other devices</a></li>
+      <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+      <li><a href="#contact">Contact and privacy</a></li>
+    </ul>
+  </nav>
+
+  <h2 id="start">Start a scheme</h2>
+  <h3 id="random">What do Roll a scheme and ↻ (Pick a colour for me) do?</h3>
+  <p>Both give you a random idea. You can undo each one with <strong>↶ Undo</strong> (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>
+    <kbd>Z</kbd>).</p>
   <ul>
-    <li>what you were doing when it went wrong;</li>
-    <li>your device and browser, or your iPhone or iPad model and iOS version;</li>
-    <li>if the problem is with a scheme, a link to it (<strong>⋯ → Share link</strong>).</li>
+    <li><strong>Roll a scheme</strong> (the die at the start of the row of harmonies; where that row is narrow, for
+      example on a phone, the button shows only “Roll”) picks a new harmony at random for the starting colour. The starting paint
+      stays the same, in the same role (Main or Accent). The lightness, the colours you locked or added, and the pop
+      accent do not change. It never picks Custom or the harmony you have now. For a neutral colour (a black, white
+      or grey), it picks only from the schemes for neutrals: Neutral + pop, Duotone, Warm / cool and Shades.</li>
+    <li><strong>↻ Pick a colour for me</strong> (under the lightness slider; beside it on a phone) gives
+      the scheme a new random colour: a random hue and strength. For most colours, it keeps the lightness and the
+      harmony. On black, on white, and on colours near them, every hue looks grey. So there, ↻ moves the lightness
+      by the smallest step that lets the new colour show, and a message tells you the new lightness. On a black,
+      white or grey colour, the scheme is one for neutrals. The new colour has a hue, so the scheme changes back to
+      a harmony with a hue: the one you had before, or Complementary.</li>
   </ul>
 
-  <h2 id="matching">How the matching works</h2>
+  <h3 id="holds">How do I keep a colour or a paint I already chose?</h3>
+  <p>On the <strong>Recipe</strong> tab, the Secondary, Accent and Metal cards each have two controls:</p>
+  <ul>
+    <li><strong>Lock colour</strong> keeps the role's target colour. When you change the harmony, roll a scheme or
+      press ↻, the other roles change and this one stays.</li>
+    <li><strong>📌 Choose pot…</strong> lets you pick the paint for the role, for example a gold you already used
+      on the model. The tone ladder then starts from that pot. The card still shows how far the pot is from the
+      target colour (ΔE), so you can see if it fits the scheme.</li>
+  </ul>
+  <p>On the live palette, the pencil on a column opens the same list of paints. Its last row lets you set a
+    custom colour. On the wheel, drag a role's node to lock that role at a new colour.</p>
+  <p>A line under the live palette lists what you hold. Select <strong>Release</strong> to let a role change
+    again. Holds stay when you pick a new starting paint, and a shared link keeps them. The Primary role always
+    comes from the starting paint, so you cannot hold it.</p>
+
+  <h2 id="matching-group">Matching and ΔE</h2>
+  <h3 id="matching">How the matching works</h3>
   <p>For each colour in your scheme, Palette Studio finds the nearest real paint. It measures how
     different two colours look with <strong>ΔE 2000</strong> (say “delta E”), a standard measure of colour
     difference. A lower number is a closer match.</p>
@@ -53,7 +94,7 @@
   </ul>
   <p>The colour values for real paints are approximate. So a match is never exact, and the ΔE tells you
     how close it is.</p>
-  <h3>Use my paints</h3>
+  <h3 id="use-my-paints">Use my paints</h3>
   <p>Set it in <strong>⋯ → Use my paints</strong>. It changes the matches in the live palette, the Recipe,
     the shopping list and the Accessibility tab. The Other brands tab always lists every paint.</p>
   <ul>
@@ -64,6 +105,78 @@
   </ul>
   <p>While Prefer or Only is on, a note under the live palette says so. To use this setting, first mark
     the paints you own on the <strong>Shelf</strong>.</p>
+
+  <h3>Why doesn't a match look exactly like my paint?</h3>
+  <p>The colour values for real paints are approximate. Every match shows its ΔE score and a
+    plain-language label, so you can see how close it is (see <a href="#matching">How the matching
+    works</a>). The paint data comes from the community dataset
+    <a href="https://github.com/Arcturus5404/miniature-paints" target="_blank" rel="noopener">Arcturus5404/miniature-paints</a>.</p>
+
+  <h3>A paint is missing, or its colour is wrong</h3>
+  <p>Tell me through the contact page. Include the brand, the paint name, and what looks wrong.</p>
+
+  <h2 id="shelf">Your shelf</h2>
+  <h3>Where is my shelf saved?</h3>
+  <p>Only in this browser, on this device. Palette Studio has no accounts and no server, so there is no
+    other copy. Clearing the site's data or using a private window removes it. Safari can also clear it
+    when you do not open the site for some time. To keep your shelf safe, add the app to your Home Screen,
+    or back it up now and then (<strong>⋯ → Back up everything</strong>).</p>
+
+  <h3>How do I delete my shelf?</h3>
+  <p>Open <strong>⋯ → About</strong> and choose <strong>Delete my shelf and settings…</strong>.
+    It asks first, and it lets you save a backup. Then it removes your owned marks, your shopping list, your saved schemes and your
+    settings from this device. You cannot undo this.</p>
+
+  <h2 id="schemes">Schemes</h2>
+  <h3>How do I keep a scheme?</h3>
+  <p>Press <strong>Save</strong> on the line above the starting paint, give the scheme a name, and press
+    <strong>Save</strong> again. It goes to <strong>Schemes</strong>, next to Studio and Shelf at the top. When
+    you change a saved scheme, the line says <strong>Changed</strong>: <strong>Save</strong> keeps the change
+    in it, and <strong>Save as new</strong> keeps both. Nothing is saved until you press Save. In Schemes you
+    can open, rename, share or delete a scheme. Deleting a scheme keeps its paints on your shopping list.</p>
+
+  <h2 id="store">Shopping and the store</h2>
+  <h3>How do I use my shopping list in a store?</h3>
+  <p>Open the <strong>Shelf</strong>, press <strong>List</strong>, then <strong>Shopping list</strong>. The paints
+    show in the order a store racks them: brand, then range. <strong>By project</strong> groups them by the
+    scheme they are for. Tick a paint when it is in your basket: it is then owned. Tap it again to undo.
+    <strong>Add a count</strong> sets how many pots you want. <strong>Print</strong> puts the list on paper.</p>
+
+  <h3>What if the store does not have a paint?</h3>
+  <p>In the Shelf's list, press <strong>Not on the rack?</strong> on the paint (on a phone, the arrows button beside
+    its count). You see the three closest pots, each with how close it is (ΔE) and a word for that (Good, Fair…).
+    A wash only gets washes, and a metallic only metallics. Press <strong>Use</strong>: the new pot goes on your list in
+    its place, and if the paint was a pot in a scheme, the scheme uses the new pot too. The Recipe then says
+    “Swapped in the store for …”, with <strong>Use the original</strong> to go back.</p>
+  <p>If the store does not carry a brand at all, switch it off under <strong>This store carries</strong>. Every paint
+    of that brand then shows its closest pots from the other brands.</p>
+
+  <h3>How do I get my list from my computer to my phone?</h3>
+  <p>On the computer, open <strong>⋯ → Take to the store…</strong> (or <strong>Take to the store…</strong> in the
+    Shelf's list). Choose all your paints or one project. Scan the QR code with your phone's camera, or send the
+    link to your phone. On the phone, the app asks before it adds the paints to the shopping list there. Paints
+    you own on the phone stay owned. Nothing goes to a server: the list is in the link.</p>
+  <p>In the store, tick each paint as you buy it. Then press <strong>Send “bought”…</strong> above the list, and
+    open that link on the computer. The app asks, then marks those paints owned there too. It only adds owned
+    marks, and opening the link again changes nothing.</p>
+  <p>The first time a project without a name leaves the app, it asks for a name once. <strong>Skip</strong> keeps
+    the automatic name (for example “Death Guard Green · triadic”). The name is part of the link you send.</p>
+  <p><strong>Save as text</strong> in the same panel gives a plain file of the list: each paint with a
+    <code>[ ]</code> box, in rack order, with no colour codes. <strong>⋯ → Save the recipe</strong> saves the
+    scheme on screen.</p>
+
+  <h2 id="devices">Backup and other devices</h2>
+  <h3>How do I move my shelf to another device?</h3>
+  <p><strong>⋯ → Back up everything</strong> here, then <strong>⋯ → Restore…</strong> on the other device. It
+    replaces the shelf there. To add paints from a paintRack list without replacing anything, use
+    <strong>Import…</strong> on the Shelf.</p>
+  <p>A backup holds your owned marks, your shopping list, your saved schemes and your settings: theme, Use my paints, the
+    tone ladder and Include Contrast. Before Restore… replaces anything, it shows what is on this device
+    and what is in the backup, and it lets you save a backup of this shelf first.</p>
+
+  <h3>Does it work offline?</h3>
+  <p>Yes. After your first visit, the website works without a connection, and you can add it to your
+    home screen. The iPhone and iPad app works offline from the start.</p>
 
   <h2 id="shortcuts">Keyboard shortcuts</h2>
   <dl class="keys">
@@ -101,109 +214,24 @@
       typed, Esc also puts back the starting paint from before. On the Shelf, clear the selection.</dd>
   </dl>
 
-  <h2>Common questions</h2>
-
-  <h3 id="random">What do Roll a scheme and ↻ (Pick a colour for me) do?</h3>
-  <p>Both give you a random idea. You can undo each one with <strong>↶ Undo</strong> (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>
-    <kbd>Z</kbd>).</p>
+  <h2 id="contact">Contact and privacy</h2>
+  <p>Use the <a href="https://ryanmette.com/contact" target="_blank" rel="noopener">contact page at ryanmette.com</a>.
+    To help me fix a problem quickly, include:</p>
   <ul>
-    <li><strong>Roll a scheme</strong> (the die at the start of the row of harmonies; where that row is narrow, for
-      example on a phone, the button shows only “Roll”) picks a new harmony at random for the starting colour. The starting paint
-      stays the same, in the same role (Main or Accent). The lightness, the colours you locked or added, and the pop
-      accent do not change. It never picks Custom or the harmony you have now. For a neutral colour (a black, white
-      or grey), it picks only from the schemes for neutrals: Neutral + pop, Duotone, Warm / cool and Shades.</li>
-    <li><strong>↻ Pick a colour for me</strong> (under the lightness slider; beside it on a phone) gives
-      the scheme a new random colour: a random hue and strength. For most colours, it keeps the lightness and the
-      harmony. On black, on white, and on colours near them, every hue looks grey. So there, ↻ moves the lightness
-      by the smallest step that lets the new colour show, and a message tells you the new lightness. On a black,
-      white or grey colour, the scheme is one for neutrals. The new colour has a hue, so the scheme changes back to
-      a harmony with a hue: the one you had before, or Complementary.</li>
+    <li>what you were doing when it went wrong;</li>
+    <li>your device and browser, or your iPhone or iPad model and iOS version;</li>
+    <li>if the problem is with a scheme, a link to it (<strong>⋯ → Share link</strong>).</li>
   </ul>
-
-  <h3 id="holds">How do I keep a colour or a paint I already chose?</h3>
-  <p>On the <strong>Recipe</strong> tab, the Secondary, Accent and Metal cards each have two controls:</p>
-  <ul>
-    <li><strong>Lock colour</strong> keeps the role's target colour. When you change the harmony, roll a scheme or
-      press ↻, the other roles change and this one stays.</li>
-    <li><strong>📌 Choose pot…</strong> lets you pick the paint for the role, for example a gold you already used
-      on the model. The tone ladder then starts from that pot. The card still shows how far the pot is from the
-      target colour (ΔE), so you can see if it fits the scheme.</li>
-  </ul>
-  <p>On the live palette, the pencil on a column opens the same list of paints. Its last row lets you set a
-    custom colour. On the wheel, drag a role's node to lock that role at a new colour.</p>
-  <p>A line under the live palette lists what you hold. Select <strong>Release</strong> to let a role change
-    again. Holds stay when you pick a new starting paint, and a shared link keeps them. The Primary role always
-    comes from the starting paint, so you cannot hold it.</p>
-
-  <h3>Why doesn't a match look exactly like my paint?</h3>
-  <p>The colour values for real paints are approximate. Every match shows its ΔE score and a
-    plain-language label, so you can see how close it is (see <a href="#matching">How the matching
-    works</a>). The paint data comes from the community dataset
-    <a href="https://github.com/Arcturus5404/miniature-paints" target="_blank" rel="noopener">Arcturus5404/miniature-paints</a>.</p>
-
-  <h3>A paint is missing, or its colour is wrong</h3>
-  <p>Tell me through the contact page. Include the brand, the paint name, and what looks wrong.</p>
-
-  <h3>Where is my shelf saved?</h3>
-  <p>Only in this browser, on this device. Palette Studio has no accounts and no server, so there is no
-    other copy. Clearing the site's data or using a private window removes it. Safari can also clear it
-    when you do not open the site for some time. To keep your shelf safe, add the app to your Home Screen,
-    or back it up now and then (<strong>⋯ → Back up everything</strong>).</p>
-
-  <h3>How do I use my shopping list in a store?</h3>
-  <p>Open the <strong>Shelf</strong>, press <strong>List</strong>, then <strong>Shopping list</strong>. The paints
-    show in the order a store racks them: brand, then range. <strong>By project</strong> groups them by the
-    scheme they are for. Tick a paint when it is in your basket: it is then owned. Tap it again to undo.
-    <strong>Add a count</strong> sets how many pots you want. <strong>Print</strong> puts the list on paper.</p>
-
-  <h3>What if the store does not have a paint?</h3>
-  <p>In the Shelf's list, press <strong>Not on the rack?</strong> on the paint (on a phone, the arrows button beside
-    its count). You see the three closest pots, each with how close it is (ΔE) and a word for that (Good, Fair…).
-    A wash only gets washes, and a metallic only metallics. Press <strong>Use</strong>: the new pot goes on your list in
-    its place, and if the paint was a pot in a scheme, the scheme uses the new pot too. The Recipe then says
-    “Swapped in the store for …”, with <strong>Use the original</strong> to go back.</p>
-  <p>If the store does not carry a brand at all, switch it off under <strong>This store carries</strong>. Every paint
-    of that brand then shows its closest pots from the other brands.</p>
-
-  <h3>How do I get my list from my computer to my phone?</h3>
-  <p>On the computer, open <strong>⋯ → Take to the store…</strong> (or <strong>Take to the store…</strong> in the
-    Shelf's list). Choose all your paints or one project. Scan the QR code with your phone's camera, or send the
-    link to your phone. On the phone, the app asks before it adds the paints to the shopping list there. Paints
-    you own on the phone stay owned. Nothing goes to a server: the list is in the link.</p>
-  <p>In the store, tick each paint as you buy it. Then press <strong>Send “bought”…</strong> above the list, and
-    open that link on the computer. The app asks, then marks those paints owned there too. It only adds owned
-    marks, and opening the link again changes nothing.</p>
-  <p>The first time a project without a name leaves the app, it asks for a name once. <strong>Skip</strong> keeps
-    the automatic name (for example “Death Guard Green · triadic”). The name is part of the link you send.</p>
-  <p><strong>Save as text</strong> in the same panel gives a plain file of the list: each paint with a
-    <code>[ ]</code> box, in rack order, with no colour codes. <strong>⋯ → Save the recipe</strong> saves the
-    scheme on screen.</p>
-
-  <h3>How do I keep a scheme?</h3>
-  <p>Press <strong>Save</strong> on the line above the starting paint, give the scheme a name, and press
-    <strong>Save</strong> again. It goes to <strong>Schemes</strong>, next to Studio and Shelf at the top. When
-    you change a saved scheme, the line says <strong>Changed</strong>: <strong>Save</strong> keeps the change
-    in it, and <strong>Save as new</strong> keeps both. Nothing is saved until you press Save. In Schemes you
-    can open, rename, share or delete a scheme. Deleting a scheme keeps its paints on your shopping list.</p>
-
-  <h3>How do I move my shelf to another device?</h3>
-  <p><strong>⋯ → Back up everything</strong> here, then <strong>⋯ → Restore…</strong> on the other device. It
-    replaces the shelf there. To add paints from a paintRack list without replacing anything, use
-    <strong>Import…</strong> on the Shelf.</p>
-  <p>A backup holds your owned marks, your shopping list, your saved schemes and your settings: theme, language, Use my paints, the
-    tone ladder and Include Contrast. Before Restore… replaces anything, it shows what is on this device
-    and what is in the backup, and it lets you save a backup of this shelf first.</p>
-
-  <h3>How do I delete my shelf?</h3>
-  <p>Open <strong>⋯ → About &amp; data</strong> and choose <strong>Delete my shelf and settings…</strong>.
-    It asks first, and it lets you save a backup. Then it removes your owned marks, your shopping list and your
-    settings from this device. You cannot undo this.</p>
-
-  <h3>Does it work offline?</h3>
-  <p>Yes. After your first visit, the website works without a connection, and you can add it to your
-    home screen. The iPhone and iPad app works offline from the start.</p>
-
-  <h2>Privacy</h2>
+  <!-- Support details (mockups/help-about.html, answer 3): shown first, copied only on a press, never sent by the
+       app. The page's script (infopage.js) or the app's Help sheet (app.js) fills the line and shows the block. -->
+  <div class="supportdetails" id="supportDetails" hidden>
+    <p>The app can write these details for you. Nothing is sent: you copy them, and you choose to paste them
+      into your message.</p>
+    <pre class="supportline" id="supportLine"></pre>
+    <label class="supportscheme" id="supportSchemeRow" hidden><input type="checkbox" id="supportScheme" /> Add the scheme on screen (its link)</label>
+    <button type="button" class="btn" id="supportCopy">Copy support details</button>
+    <p class="sethint" id="supportSaid" role="status"></p>
+  </div>
   <p>Palette Studio collects no personal data. Read the <a href="privacy.html">privacy policy</a>.</p>
 </main>
 </body>

@@ -23,3 +23,10 @@ test('check-docs: the real version.js passes', () => {
   const src = readFileSync(new URL('../src/js/version.js', import.meta.url), 'utf8');
   assert.equal(appVersionProblem(pkg.version, src), null);
 });
+
+test('WHATS_NEW is for this version: a release updates About’s “What’s new” with the version (CLAUDE.md §8)', async () => {
+  const { WHATS_NEW } = await import('../src/js/version.js');
+  assert.equal(WHATS_NEW.version, APP_VERSION);
+  assert.ok(WHATS_NEW.items.length >= 1 && WHATS_NEW.items.length <= 5, 'a few short lines');
+  for (const line of WHATS_NEW.items) assert.ok(line.length <= 120, `short: ${line}`);
+});

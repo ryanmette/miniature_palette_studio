@@ -20,7 +20,8 @@ import { loaderRoles, drawLoader, LOADER_TOKENS } from './loader.js';   // the M
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
-import { APP_VERSION } from './version.js';   // the one app-version constant (check-docs.mjs holds it to package.json)
+import { APP_VERSION, WHATS_NEW } from './version.js';
+import { describeDevice, supportLine } from './help.js';   // the support details line (Help's Contact)   // the one app-version constant (check-docs.mjs holds it to package.json)
 
 const t = i18n.t;
 
@@ -3036,14 +3037,90 @@ function confirmDelete() {
   });
 }
 
-/* ---- About & data ---- */
+/* ---- About ---- */
 let aboutOpener = null;
 function openAbout(opener) { aboutOpener = opener; $('#about').showModal(); }
-/** Strings built in JS that follow the language: the version line and the slot sizes. */
+/** Strings built in JS that follow the language: the version line, What's new and the slot sizes. */
 function syncLocaleStrings() {
   $('#aboutVersion').textContent = t('versionLine', { app: APP_VERSION, data: (state.idx && state.idx.version) || '—' });
+  $('#whatsNewHead').textContent = t('whatsNewIn', { version: WHATS_NEW.version });
+  $('#whatsNew').innerHTML = WHATS_NEW.items.map(x => `<li>${ui.esc(x)}</li>`).join('');
   buildSlotSizers();
   renderMatchNote();
+}
+
+/* ---- Help (mockups/help-about.html, B) ----
+   Help opens in a sheet over the app, as About does. Its body is support.html's own <main>, read on the first open:
+   the public page (the App Store's Support URL) and the app show one text, so they cannot drift apart. The page is
+   in the offline cache (sw.js), and if it cannot be read the app opens the page itself. */
+let helpOpener = null, helpLoaded = null;
+function loadHelp() {
+  if (!helpLoaded) {
+    helpLoaded = fetch('support.html').then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }).then(html => {
+      const doc = new DOMParser().parseFromString(html, 'text/html'), main = doc.querySelector('main.doc');
+      if (!main) throw new Error('no help');
+      // the sheet has its own title; the page's h1 and its line under it are the page's
+      main.querySelector('h1')?.remove(); main.querySelector('.docdate')?.remove();
+      const body = $('#helpBody');
+      body.replaceChildren(...[...main.childNodes].map(n => document.importNode(n, true)));
+      wireSupportDetails(body);
+    }).catch(err => { helpLoaded = null; throw err; });
+  }
+  return helpLoaded;
+}
+/** Open Help, at a section when `hash` names one ("#matching"). */
+async function openHelp(opener, hash = '') {
+  try { await loadHelp(); }
+  catch { toast(t('helpFailed')); location.href = 'support.html' + hash; return; }
+  helpOpener = opener;
+  helpShowDetails?.();   // the details hold the window's size and the theme: fresh each time Help opens
+  const d = $('#helpDlg');
+  if (!d.open) d.showModal();
+  const target = hash && $('#helpBody').querySelector(hash.replace(/[^#\w-]/g, ''));
+  if (target) target.scrollIntoView({ block: 'start' }); else $('#helpBody').scrollTop = 0;
+}
+/** Help's Contact section: the support details line (help.js), with the scheme on screen as an option. Shown,
+ *  then copied only on a press; the app sends nothing (Apple's optional case, so "Data Not Collected"). */
+function wireSupportDetails(root) {
+  const box = root.querySelector('#supportDetails'); if (!box) return;
+  const native = !!globalThis.Capacitor?.isNativePlatform?.();
+  const line = () => supportLine({
+    version: APP_VERSION, dataVersion: state.idx?.version || '', device: describeDevice(navigator.userAgent, { native }),
+    width: innerWidth, height: innerHeight, theme: state.theme, locale: navigator.language,
+    scheme: box.querySelector('#supportScheme').checked ? shareUrl(location.href, state.theme, nameOnScreen()) : '',
+  });
+  const show = () => { box.querySelector('#supportLine').textContent = line(); };
+  box.querySelector('#supportSchemeRow').hidden = false;
+  box.querySelector('#supportScheme').addEventListener('change', show);
+  box.querySelector('#supportCopy').addEventListener('click', async () => {
+    show();
+    try { await navigator.clipboard.writeText(line()); say(t('supportCopied')); box.querySelector('#supportSaid').textContent = t('supportCopied'); }
+    catch { box.querySelector('#supportSaid').textContent = t('supportCopyFailed'); }
+  });
+  box.hidden = false;
+  helpShowDetails = show;
+}
+let helpShowDetails = null;
+function setupHelp() {
+  const d = $('#helpDlg');
+  $('#helpClose').addEventListener('click', () => d.close());
+  d.addEventListener('click', e => {
+    if (e.target === d) { d.close(); return; }
+    // a link to a part of Help moves inside the sheet; other links (the privacy policy, the contact page) go out
+    const a = e.target.closest('a[href^="#"]');
+    if (a) { e.preventDefault(); $('#helpBody').querySelector(a.getAttribute('href'))?.scrollIntoView({ block: 'start' }); }
+  });
+  d.addEventListener('close', () => { (helpOpener && helpOpener.isConnected ? helpOpener : $('#settingsBtn')).focus({ preventScroll: true }); helpOpener = null; });
+  $('#helpOpenMenu').addEventListener('click', () => { closeSettings(null); openHelp($('#settingsBtn')); });
+  // About's links to the Help page ("how the matching works", "keyboard shortcuts") open the sheet at that part
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="support.html"]');
+    if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.closest('#helpDlg')) return;
+    e.preventDefault();
+    const about = $('#about'), opener = about.open ? (aboutOpener || $('#aboutOpen')) : a;
+    if (about.open) { aboutOpener = null; about.close(); }
+    openHelp(opener, a.hash);
+  });
 }
 
 /* ---- the matching note under the live palette (ui.js matchNote) ---- */
@@ -3249,6 +3326,7 @@ function wire() {
   setupSaveDialog(); setupSchemesPage();   // saved schemes: the Save line and dialog, the Schemes page (item 35)
   setupShelfList();   // the Shelf's list: the rack walk (item 36)
   setupStore();   // Take to the store: the panel, the naming step, the "bought" link back (item 37)
+  setupHelp();   // Help: a sheet built from support.html (mockups/help-about.html, B)
 
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });

@@ -16,14 +16,27 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **A study of Help and About** (`mockups/help-about.html`; PLAN §5 item 39). What each holds now, where they overlap,
   two facts on the Help page that are out of date, Apple's rules that keep Help and Privacy as public pages, and
   three directions. Ryan chose B: Help opens over the app like About, built from `support.html` itself, so the
-  public page and the app never differ. Support details are copied by the painter, never sent in a link. Not
-  built yet.
+  public page and the app never differ. Support details are copied by the painter, never sent in a link.
+- **Help opens over the app** (PLAN §5 item 39, direction B). ⋯ → Help, and each link to Help in the app, open a
+  sheet like About. The sheet shows the Help page itself (`support.html`), so the public page and the app always
+  say the same. Its contents links move inside the sheet. If the page cannot load, the link opens the page.
+- **Copy support details**, in Help's Contact section. It shows the app version, the paint data version, your
+  browser and system, the window size, the theme and the language. You can add the scheme's link. You see the
+  line before you copy it. The app does not send it: it goes to us only if you paste it into a message.
+- **What’s new in About.** About shows the main changes in this version (`WHATS_NEW` in `version.js`).
+### Changed
+- **The names "Help" and "About".** "About & data" is now "About". About no longer explains the matching:
+  that is in Help, and About links to it.
+- **The Help page is in groups by task:** start a scheme, matching, your shelf, schemes, the store, backup,
+  shortcuts and contact, with a contents list at the top.
 ### Fixed
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap
   above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
   clear of the notch and the home bar.
+- **Help and Privacy said things that are not true now.** They named a language setting (the language follows
+  the device), and Help's Delete answer did not name the saved schemes.
 
 ## [1.13.0] - 2026-10-29
 ### Added

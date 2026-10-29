@@ -161,8 +161,9 @@
       <div class="setrow">
         <span class="setlbl" aria-hidden="true" data-i18n="helpInfo">Help &amp; info</span>
         <div class="setctl setbtns" role="group" aria-label="Help &amp; info" data-i18n-aria="helpInfo">
-          <a class="btn" id="helpLink" href="support.html" data-i18n="help">Help</a>
-          <button type="button" class="btn" id="aboutOpenMenu" aria-haspopup="dialog" data-i18n="aboutData">About &amp; data</button>
+          <!-- Help opens in a sheet built from support.html itself (mockups/help-about.html, B): one source -->
+          <button type="button" class="btn" id="helpOpenMenu" aria-haspopup="dialog" data-i18n="help">Help</button>
+          <button type="button" class="btn" id="aboutOpenMenu" aria-haspopup="dialog" data-i18n="aboutData">About</button>
         </div>
       </div>
     </div>
@@ -393,7 +394,7 @@
 </main>
 
 <footer class="appfoot">
-  <button class="footlink" id="aboutOpen" aria-haspopup="dialog">About &amp; data</button>
+  <button class="footlink" id="aboutOpen" aria-haspopup="dialog" data-i18n="aboutData">About</button>
   <span class="footnote">Hex values are approximate · runs locally, no tracking</span>
 </footer>
 
@@ -407,12 +408,9 @@
       matched to real paints you can buy — with cross-brand equivalents, colour-blindness simulation
       and WCAG contrast checks.</p>
 
-    <h3 data-i18n="aboutMatchHead">How the matching works — and why it’s honest</h3>
-    <p data-i18n-html="aboutMatchHtml">Colours are converted sRGB → CIELAB (D65) and matched by <strong>CIEDE2000 (ΔE 2000)</strong>;
-      harmonies rotate hue in HSL. That maths is exact and unit-tested. But paint hex values are
-      <strong>approximate</strong> (most are community-sourced and tagged “approx”), so every match
-      shows its <strong>ΔE and a plain-language quality label</strong> — “target vs pot” always
-      surfaces the gap and never implies a perfect match.</p>
+    <!-- What's new (mockups/help-about.html, answer 5): the release's highlights, from version.js WHATS_NEW -->
+    <h3 id="whatsNewHead"></h3>
+    <ul class="whatsnew" id="whatsNew"></ul>
     <p data-i18n-html="aboutMoreHtml">The Help page explains <a href="support.html#matching">how the matching works</a> in plain
       words, and lists the <a href="support.html#shortcuts">keyboard shortcuts</a>.</p>
 
@@ -424,7 +422,7 @@
       its hex values myself — they come from that project; this tool only adds the matching on top. <strong>DakkaDakka</strong> is
       credited for the cross-reference concept; its chart was not copied.</p>
 
-    <h3>Privacy &amp; support</h3>
+    <h3>Privacy and help</h3>
     <p data-i18n-html="aboutPrivacyHtml">Runs entirely in your browser — no accounts, no server, no tracking, and no external requests.
       Your shelf (owned paints, your shopping list) and your settings stay on this device. Read the full
       <a href="privacy.html">privacy policy</a>.</p>
@@ -443,6 +441,17 @@
       for identification only.</p>
     <p class="aboutfine" id="aboutVersion"></p>
   </div>
+  <p class="sr-only" role="status" data-say></p>
+</dialog>
+
+<!-- Help (mockups/help-about.html, B): a sheet over the app, like About. Its body is support.html's own <main>,
+     read on first open (the page is in the offline cache), so the public page and the app show one text. -->
+<dialog id="helpDlg" class="about helpdlg" aria-labelledby="helpTitle">
+  <div class="abouthead sheethead">
+    <h2 id="helpTitle" data-i18n="help">Help</h2>
+    <button class="iconbtn" id="helpClose" aria-label="Close" data-i18n-aria="close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="aboutbody doc" id="helpBody"></div>
   <p class="sr-only" role="status" data-say></p>
 </dialog>
 
