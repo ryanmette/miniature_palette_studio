@@ -12,6 +12,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   now names each paint's brand too. Drawn by `mockups/share-image.html` (§0).
 
 ### Added
+- **Share as an image.** A shared link shows the same static card for every scheme, so the person who gets it
+  cannot see the scheme before they open it. ⋯ → Share this palette now makes a picture of the scheme on the device
+  (no server): a square 1080 px PNG of the four roles, each with its pot, a band of the target colour on top, the
+  paint name, brand and line, the finish icon, and ΔE with its label. It uses the theme on screen.
+  - On touch, **Share image…** opens the share sheet with the image, the paint names and the link. Where the sheet
+    takes no file, it saves the image.
+  - With a mouse, **Copy image** puts the image on the clipboard (the image only: a paste takes one thing, and the
+    image prints the address; **Copy link** is beside it), and **Save the image** downloads it.
+  - The image is made when ⋯ opens, so the tap that shares it does not wait (Safari refuses a share when the tap
+    is too old). It takes about 50 ms to make on a desktop.
+  - The layout is a pure module (`src/js/shareimage.js`) with 12 tests. The tests build the image from real
+    schemes in both themes and check the margins, the columns, the text sizes, WCAG AA for every text, ΔE and its
+    label on every match, and the finish overlays against `app.css`.
 - **Design exploration: share as an image** (`mockups/share-image.html`, not shipped). A shared link shows the same
   static card for every scheme, and Messages on a Mac cuts its sides: it shows the 1200 × 630 card at about 1.6 : 1, so
   about 96 px goes from each side. The page measures this from a screenshot and proposes a 960 px safe zone. It then

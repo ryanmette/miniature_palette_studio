@@ -126,6 +126,11 @@
           <!-- What these act on, in words (Ryan, 2026-10-28: "Scheme" did not say it): the palette on screen.
                The Backup group below acts on everything this device keeps. -->
           <div class="setbtns" role="group" aria-label="Share this palette" data-i18n-aria="scheme" aria-describedby="shareHint">
+            <!-- The image: Share image… on touch (the share sheet, the PNG + the link); with a mouse, Copy image and
+                 Save the image (app.js setupShareImage shows the right ones). -->
+            <button type="button" class="btn" id="shareImg" data-i18n="shareImage" hidden>Share image…</button>
+            <button type="button" class="btn" id="copyImg" data-i18n="copyImage" hidden>Copy image</button>
+            <button type="button" class="btn" id="saveImg" data-i18n="saveImage" hidden>Save the image</button>
             <button type="button" class="btn" id="share" data-i18n="shareLink">Share link…</button>
             <button type="button" class="btn" id="export" data-i18n="saveList">Save the shopping list</button>
           </div>
