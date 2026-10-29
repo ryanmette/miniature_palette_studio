@@ -195,7 +195,7 @@
 <div class="page">
 
 <header>
-  <p class="micro">Design study · not shipped · 2026-10-29</p>
+  <p class="micro">Design study · not shipped · 2026-10-29 · updated with Ryan’s answers (B chosen)</p>
   <h1>Help and About — what goes where, and how each opens</h1>
   <p class="sub">Two buttons sit side by side in ⋯ → <b>Help &amp; info</b>. <b>Help</b> leaves the app for a separate page.
     <b>About &amp; data</b> opens over the app. They overlap in content, and the long Help page has started to drift from the
@@ -425,13 +425,55 @@
   <h2 id="h-v"><span class="k">5</span>Verdict and questions</h2>
   <div class="verdict">
     <div><b>A · Keep the page</b><span class="score">Small</span> — fixes the content, not the jump out of the app.</div>
-    <div><b>B · Sheet from one source</b><span class="score">Recommended</span> — same behaviour as About, no second copy, no drift.</div>
+    <div><b>B · Sheet from one source</b><span class="score">Chosen</span> — same behaviour as About, no second copy, no drift.</div>
     <div><b>C · One tabbed sheet</b><span class="score">Maybe later</span> — tidy, but mixes three kinds of content.</div>
   </div>
   <div class="reco"><b>Recommendation:</b> B. Help opens in a sheet over the app, built from <code>support.html</code> itself, so the public page
     (for the App Store) and the app always say the same thing. Regroup Help by task, fix the two drifted facts, and make About a short
     identity page with Data &amp; credits and your shelf. Privacy stays a page, linked from both.</div>
-  <h3 class="lab">Questions for Ryan</h3>
+  <h3 class="lab">Ryan’s answers (2026-10-29)</h3>
+  <table class="study" style="min-width:0;max-width:82ch">
+    <tbody>
+      <tr><td>1 · A, B or C</td><td><b>B.</b> Help opens in a sheet over the app, built from <code>support.html</code> itself.</td></tr>
+      <tr><td>2 · Task grouping</td><td><b>Good</b> as it is.</td></tr>
+      <tr><td>3 · Contact</td><td><b>Keep</b> ryanmette.com/contact. Ryan asked if the app can add its own details to the contact, to make support easier,
+        and if that fits the privacy promise. → <b>Yes, with “Copy support details”</b> (below).</td></tr>
+      <tr><td>4 · Names</td><td><b>Yes:</b> “About” and “Help”.</td></tr>
+      <tr><td>5 · What’s new</td><td><b>Yes, for now</b> in About. Later maybe a notification log next to ⋯ (a study of its own).</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="lab">Answer 3 in detail: support details, and the privacy promise</h3>
+  <blockquote>“‘Collect’ refers to transmitting data off the device in a way that allows you and/or your third-party partners to access it
+    for a period longer than what is necessary to service the transmitted request in real time.”
+    <cite>— Apple, App privacy details on the App Store (developer.apple.com/app-store/app-privacy-details)</cite></blockquote>
+  <blockquote>Data is optional to disclose only when, among other criteria, “it is clear to the user what data is collected … and the user
+    affirmatively chooses to provide the data for collection each time.” Example: “data collected in optional feedback forms or customer
+    service requests”.<cite>— the same page, Optional Disclosure</cite></blockquote>
+  <ul class="notes">
+    <li><b>Do not put the details in the contact link.</b> A link such as <code>…/contact?version=1.13.0&amp;device=…</code> sends the details
+      to the website’s server (and its logs) the moment the page opens, before the painter decides to send anything. That breaks “nothing
+      leaves this device” in spirit, and the painter cannot see it.</li>
+    <li><b>Do this instead: a “Copy support details” button</b> in Help’s Contact section. It shows a short block first, then copies it, and the
+      painter pastes it into the message (or not):
+      <code>Palette Studio 1.13.0 · paint data 1.6.0 · iPhone app (iOS 27) · Safari 27 · 390 × 844 · dark theme</code>.
+      An optional line holds the scheme on screen (its share link). <b>Never</b> the shelf, the shopping list or the saved schemes.</li>
+    <li><b>Why this is safe:</b> nothing is sent by the app; the painter sees every word and sends it on purpose, each time. That is exactly
+      Apple’s optional case, so the app can keep “Data Not Collected”. The privacy policy gets one sentence: what the button copies,
+      and that it is sent only if you paste it.</li>
+  </ul>
+
+  <h3 class="lab">Answer 5 in detail: “What’s new”, and a notification log later</h3>
+  <ul class="notes">
+    <li><b>Now:</b> About shows “What’s new in 1.13.0”: three or four lines, taken from the release notes.</li>
+    <li><b>Possible next step, small:</b> the app remembers the last version you opened (on this device). After an update, ⋯ shows a small dot,
+      and About opens on What’s new. No server is needed.</li>
+    <li><b>Later, its own study:</b> a notification log next to ⋯. With no server, it can only hold things this device knows (an update, a
+      backup that is old, a “bought” link opened). The header is kept small on purpose (CLAUDE.md §3.6), so a new header control needs
+      a reason and a line there first.</li>
+  </ul>
+
+  <h3 class="lab">Questions for Ryan (answered above)</h3>
   <ol class="q">
     <li><b>A, B or C?</b><span>B keeps you in the app; A is the least work; C is one button.</span></li>
     <li><b>Is the task grouping right?</b><span>Is a topic missing, or in the wrong group?</span></li>
