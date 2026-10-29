@@ -670,3 +670,47 @@ export function schemesList(rows, tr) {
   return (saved.length ? `<ul class="sclist" aria-label="${esc(tr('savedSchemes'))}">${saved.map(r => schemeRow(r, tr)).join('')}</ul>` : '')
     + (proj.length ? `<h3 class="micro scgroup">${esc(tr('projectsNotSaved'))}</h3><ul class="sclist" aria-label="${esc(tr('projectsNotSaved'))}">${proj.map(r => schemeRow(r, tr)).join('')}</ul>` : '');
 }
+
+/* ---- the Shelf's list: the rack walk (PLAN §5 item 36; mockups/shopping-list.html, direction A) ---- */
+
+const CHECK = '<svg viewBox="0 0 20 20" class="rkcheck" aria-hidden="true" focusable="false"><path d="M4 10.5l3.75 3.75L16 6"/></svg>';
+
+/**
+ * One row of the list. `r`: { paint, owned, countable, qty, countOpen, forName }.
+ * - The tick is the row's one big control (a toggle, `aria-pressed` = owned): in a store, a tick is "bought".
+ * - The count lives in a slot every countable row keeps, so "Add a count" turning into the stepper, and a
+ *   tick that makes the paint owned, change no row height (§3.4). Owned, the slot keeps its height, empty.
+ * - `forName` (rack order only): the scheme the paint is bought for, as a small label.
+ */
+export function rackRow(r, tr) {
+  const p = r.paint, name = pname(p);
+  const line = [esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ');
+  let slot = '';
+  if (r.countable) {
+    const inner = r.owned ? ''
+      : r.countOpen
+        ? `<span class="rkstep" role="group" aria-label="${esc(tr('potsOf', { name }))}">`
+          + `<button type="button" class="btn sm" data-rkqty="-1" data-id="${esc(p.id)}" aria-label="${esc(tr('oneFewer'))}">−</button>`
+          + `<output class="rkn">${esc(r.qty === 1 ? tr('onePot') : tr('nPots', { n: r.qty }))}</output>`
+          + `<button type="button" class="btn sm" data-rkqty="1" data-id="${esc(p.id)}" aria-label="${esc(tr('oneMore'))}">+</button></span>`
+        : `<button type="button" class="textact rkadd" data-rkcount="${esc(p.id)}" aria-label="${esc(tr('addCountFor', { name }))}">${esc(tr('addCount'))}</button>`;
+    slot = `<span class="rkslot">${inner}</span>`;
+  }
+  return `<li class="rkrow${r.owned ? ' done' : ''}" data-rk="${esc(p.id)}">`
+    + swatch(p.hex, 'rksw' + fxCls(p), '')
+    // the plain name: the line is in the row (and the rack group) already; the tick's name keeps the full
+    // display name, so twins (Dawnstone (Layer) / (Dry)) stay apart for a screen reader
+    + `<span class="rkmain"><span class="rkname">${esc(p.name)}</span>`
+    + `<span class="rkline">${line}${finishTag(p.type)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
+    + slot + '</span>'
+    + `<button type="button" class="rktick" data-rktick="${esc(p.id)}" aria-pressed="${r.owned}" aria-label="${esc(tr('ownedName', { name }))}">${CHECK}</button>`
+    + '</li>';
+}
+
+/** The list body: one group per brand · line (rack order) or per scheme (by project), each a heading with
+ *  its count and a list. `groups`: [{ key, title, rows }]. */
+export function rackGroups(groups, tr) {
+  return groups.map(g => `<section class="rkgroup" aria-label="${esc(g.title)}">`
+    + `<h3 class="rkhead"><span>${esc(g.title)}</span><span class="rkcount">${g.rows.length}</span></h3>`
+    + `<ul class="rklist">${g.rows.map(r => rackRow(r, tr)).join('')}</ul></section>`).join('');
+}

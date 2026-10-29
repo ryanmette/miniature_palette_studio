@@ -309,6 +309,11 @@
       <div class="shelftop">
         <h2 data-i18n="myShelf">My paint shelf</h2>
         <div class="shelftools">
+          <!-- Grid | List (PLAN §5 item 36): the same paints, as the colour grid or as the list you take to a store -->
+          <div class="seg" id="shelfViewSeg" role="group" aria-label="Show the shelf as" data-i18n-aria="shelfViewName">
+            <button data-sv="grid" aria-pressed="true" data-i18n="viewGrid">Grid</button>
+            <button data-sv="list" aria-pressed="false" data-i18n="viewList">List</button>
+          </div>
           <button class="btn sm shelf-select" id="shelfSelect" aria-pressed="false" title="Select multiple swatches to mark at once">Select</button>
           <button type="button" class="textact" id="importColl" title="Import a paintRack CSV or a Palette Studio JSON backup">Import<span class="lgonly">…</span></button>
           <button type="button" class="textact" id="exportColl" title="Save your shelf as a CSV file" aria-label="Save my shelf (CSV)">Save my shelf<span class="lgonly">&nbsp;(CSV)</span></button>
@@ -357,6 +362,20 @@
     <div class="shelfgrid lpress" id="shelfGrid" role="listbox" aria-multiselectable="true"
          aria-label="Paints — select swatches, then press P for owned, U to add to the shopping list, X to clear, or Shift+F10 for the menu" data-i18n-aria="shelfGridName" tabindex="0"></div>
       <div class="emptystate" id="shelfEmpty" hidden></div>
+    <!-- The list (PLAN §5 item 36; mockups/shopping-list.html, direction A): the paints the filters pick, grouped
+         as a store racks them (brand · line) or by scheme. A tick marks a paint owned at once; a second tap undoes
+         it, and a ticked row stays in place while the list is open. Print gives the same list on paper. -->
+    <div class="shelflistview" id="shelfListView" hidden>
+      <div class="rktools">
+        <div class="seg" id="shelfGroupSeg" role="group" aria-label="Group the list" data-i18n-aria="groupListName">
+          <button data-sg="rack" aria-pressed="true" data-i18n="groupRack">Rack order</button>
+          <button data-sg="project" aria-pressed="false" data-i18n="groupProject">By project</button>
+        </div>
+        <button type="button" class="textact" id="shelfPrint" data-i18n="printList">Print</button>
+      </div>
+      <p class="shelfhint rkhint" id="rkHint"></p>
+      <div id="shelfList"></div>
+    </div>
     <div class="shelfbar" id="shelfBar"></div>
   </section>
 </main>

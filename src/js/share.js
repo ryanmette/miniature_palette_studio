@@ -14,6 +14,8 @@
 //   v   active output tab (omitted for 'plan')  m   'shelf' or 'schemes' = deep-link to that mode
 //                                                     (address bar only, never in a shared link — shareUrl)
 //   s   the id of the saved scheme on screen (store.js): address bar only, never in a shared link
+//   sv  'list' = the Shelf shows the list, not the grid   sg  'project' = the list grouped by scheme
+//       (both address bar only, never in a shared link)
 //   t   'dark' theme. The address bar has it only for a link's theme (app.js updateUrl); a shared
 //       link has it whenever the scheme shows dark (shareUrl).
 
@@ -43,6 +45,8 @@ export function encodeState(s) {
   if (s.pickHex) p.set('c', s.pickHex.replace('#', ''));
   if (s.harmony) p.set('h', s.harmony);
   if (s.mode === 'shelf' || s.mode === 'schemes') p.set('m', s.mode);
+  if (s.shelfView === 'list') p.set('sv', 'list');
+  if (s.shelfGroup === 'project') p.set('sg', 'project');
   if (s.tab && s.tab !== 'plan') p.set('v', s.tab);
   if (s.seedRole === 'accent') p.set('r', 'accent');
   if (s.theme === 'dark') p.set('t', 'dark');
@@ -96,6 +100,8 @@ export function shareUrl(href, theme) {
   const u = new URL(href);
   u.searchParams.delete('m');
   u.searchParams.delete('s');
+  u.searchParams.delete('sv');   // how this device shows its own Shelf: not part of the scheme
+  u.searchParams.delete('sg');
   if (theme === 'dark') u.searchParams.set('t', 'dark');
   else if (theme) u.searchParams.delete('t');
   return u.href;
@@ -107,7 +113,7 @@ export function shareUrl(href, theme) {
  * Studio can tell "Saved" from "Changed" with a plain string compare, whatever tab or theme is on screen.
  */
 export function schemeQuery(s) {
-  return '?' + encodeState({ ...s, mode: 'studio', tab: 'plan', theme: null }).toString();
+  return '?' + encodeState({ ...s, mode: 'studio', tab: 'plan', theme: null, shelfView: null, shelfGroup: null }).toString();
 }
 
 /** Parse the `x` param back into added swatches. Malformed entries are dropped, never thrown on —
@@ -150,6 +156,8 @@ export function decodeState(search, { validHarmony = () => true, hasPaint = () =
   if (u.get('r') === 'accent') out.seedRole = 'accent';
   if (u.get('t') === 'dark') out.theme = 'dark';
   const m = u.get('m'); if (m === 'shelf' || m === 'schemes') out.mode = m;
+  if (u.get('sv') === 'list') out.shelfView = 'list';
+  if (u.get('sg') === 'project') out.shelfGroup = 'project';
   const x = u.get('x'); if (x) out.extraNodes = decodeNodes(x, maxFree);
   const d = u.get('d'); if (d) out.dropOffsets = decodeOffsets(d);
   const hd = u.get('hd'); if (hd) out.holds = decodeHolds(hd, hasPaint);

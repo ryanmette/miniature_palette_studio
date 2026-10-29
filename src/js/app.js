@@ -33,6 +33,7 @@ const state = {
   extraNodes: [],   // editable swatches [{h,s,l?,locked?}] (S5)
   dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
   mode: 'studio', shelfBrand: '', shelfMark: '', shelfQ: '', shelfType: '', shelfSort: '', brands: [],   // Studio/Shelf mode; shelf brand · status · search · type · sort
+  shelfView: 'grid', shelfGroup: 'rack',   // the Shelf as the grid or the list (item 36); the list in rack order or by project
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
   includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
   popHex: null,                        // neutral mode's pop accent (null = DEFAULT_POP); drives the hue math when the seed is neutral
@@ -723,6 +724,13 @@ function paintStudioMarks(ids = null) {
   else if (aeId && !ae.isConnected) document.getElementById(aeId)?.focus({ preventScroll: true });
 }
 function renderShelfMarks(ids) {
+  // The list: a tick (or one mark from elsewhere) redraws only its row. A full rebuild of 3,225 rows took
+  // 660ms per tick; a row is about 1ms. Many paints (an import, another tab) rebuild the list.
+  if (state.shelfView === 'list') {
+    if (ids && ids.length <= 20 && ids.every(id => $(`[data-rk="${CSS.escape(id)}"]`))) { ids.forEach(updateRackRow); renderShelfStats(); }
+    else renderShelf();
+    return;
+  }
   // An Owned or To buy filter no longer shows a paint whose new mark differs: it leaves the view, and the
   // selection and the cursor let go of it.
   const gone = new Set(state.shelfMark && ids ? ids.filter(id => store.markOf(id) !== state.shelfMark) : []);
@@ -930,7 +938,9 @@ const shelfPaints = () => {
   const match = paintMatcher(state.shelfQ);
   const list = state.idx.paints.filter(p =>
     (!state.shelfBrand || p.brand === state.shelfBrand) &&
-    (!state.shelfMark || store.markOf(p.id) === state.shelfMark) &&   // status filter: '' (all) | owned | want
+    // status filter: '' (all) | owned | want. A paint ticked in the list this time stays in it (rk.kept), so a
+    // tick never makes a row jump out from under the finger (§3.4); it goes the next time the list opens.
+    (!state.shelfMark || store.markOf(p.id) === state.shelfMark || (state.shelfView === 'list' && rk.kept.has(p.id))) &&
     (!state.shelfType || p.type === state.shelfType) &&               // type filter (base/layer/shade/metal/…)
     (!match || match(p)));
   return sortPaints(list, state.shelfSort);
@@ -954,14 +964,26 @@ function renderShelfBar() {
 function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
   for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
+  const list = state.shelfView === 'list';
+  for (const b of $('#shelfViewSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sv === state.shelfView));
+  // The grid's own tools and how-to go in the list: a tick is the list's one mark, with no selection
+  $('#shelfSelect').hidden = list; $('#shelfHint').hidden = list; $('#shelfBar').hidden = list;
   const view = shelfPaints();
+  if (list) {
+    $('#shelfGrid').hidden = true;
+    $('#shelfListView').hidden = !view.length;
+    $('#shelfEmpty').hidden = view.length > 0;
+    if (!view.length) $('#shelfEmpty').innerHTML = ui.shelfEmpty(shelfEmptyKind(), state.shelfQ);
+    else renderShelfList(view);
+    shelf.viewIds = view.map(p => p.id);
+    renderShelfStats(); syncShelfFilterUi();
+    return;
+  }
+  $('#shelfListView').hidden = true;
   $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel);
-  // Nothing to show: say why and offer the way out (UX 4). Only the status filter alone gets its own words.
-  const onlyMark = state.shelfMark && !state.shelfQ && !state.shelfBrand && !state.shelfType;
-  const kind = onlyMark && !store.counts()[state.shelfMark] ? state.shelfMark : 'filter';
   $('#shelfEmpty').hidden = view.length > 0;
   $('#shelfGrid').hidden = !view.length;
-  if (!view.length) $('#shelfEmpty').innerHTML = ui.shelfEmpty(kind, state.shelfQ);
+  if (!view.length) $('#shelfEmpty').innerHTML = ui.shelfEmpty(shelfEmptyKind(), state.shelfQ);
   // tag each cell with a DOM id for aria-activedescendant (keyboard cursor); the empty-state
   // placeholder has no data-id and must not become "sc-undefined"
   for (const c of $('#shelfGrid').children) if (c.dataset.id) c.id = 'sc-' + c.dataset.id;
@@ -972,15 +994,146 @@ function renderShelf() {
   shelf.viewIds = view.map(p => p.id);   // cache the visible order: keyboard nav must not re-filter+sort 2,508 paints per keypress
   renderShelfStats(); renderShelfBar(); syncShelfFilterUi();
 }
+/** Nothing to show: say why and offer the way out (UX 4). Only the status filter alone gets its own words. */
+function shelfEmptyKind() {
+  const onlyMark = state.shelfMark && !state.shelfQ && !state.shelfBrand && !state.shelfType;
+  return onlyMark && !store.counts()[state.shelfMark] ? state.shelfMark : 'filter';
+}
 /** A shelf filter (brand/status/type/search) changed → membership changes, so drop the selection
- *  (its ids may no longer be visible) and re-render. Sorting uses renderShelf directly (keeps selection). */
-function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null }); renderShelf(); revealShelfResults(); }
+ *  (its ids may no longer be visible) and re-render. Sorting uses renderShelf directly (keeps selection).
+ *  The list starts a new session too: the paints ticked before leave it now. */
+function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null }); resetRackSession(); renderShelf(); revealShelfResults(); }
+
+/* ---- the Shelf's list: the rack walk (PLAN §5 item 36; mockups/shopping-list.html, direction A) ----
+   The paints the filters pick, as a list you can read at a rack: grouped brand · line (how stores rack paints)
+   or by the scheme each is bought for. A tick marks the paint owned at once (Ryan: no Done step); a second tap
+   undoes it, back to what it was, count and project too. A ticked row stays where it is while this list is
+   open (rk.kept), and the count's slot keeps its height, so nothing under the finger moves (§3.4). */
+const rk = { kept: new Set(), prev: new Map(), countOpen: new Set() };
+function resetRackSession() { rk.kept.clear(); rk.prev.clear(); rk.countOpen.clear(); }
+const rackLine = p => (p.line && p.line !== '—' && p.line !== p.brand ? p.line : '');
+/** A scheme's name for the list: its name, or its automatic name when it has none. `cache`: a Map per render. */
+function schemeNameOf(sid, cache = new Map()) {
+  if (!sid) return '';
+  if (!cache.has(sid)) { const sc = store.getScheme(sid); cache.set(sid, sc ? (sc.name || previewScheme(sc.link)?.auto || '') : ''); }
+  return cache.get(sid);
+}
+/** One row's data, as the list draws it (renderShelfList and updateRackRow share it). */
+function rackRowData(p) {
+  const mark = store.markOf(p.id), prev = rk.prev.get(p.id);
+  return {
+    paint: p, owned: mark === 'owned',
+    // a paint on the list, or one ticked off it just now (its slot stays, empty, so the row keeps its height)
+    countable: mark === 'want' || (rk.kept.has(p.id) && prev?.mark === 'want'),
+    qty: store.qtyOf(p.id), countOpen: rk.countOpen.has(p.id) || store.qtyOf(p.id) > 1,
+    sid: mark === 'want' ? store.projectOf(p.id) : (prev?.for || null),
+  };
+}
+/** Redraw one row in place (a tick, a count). Its group does not change: a ticked paint keeps its project
+ *  (rk.prev) and its brand · line. Focus goes back to the same control. */
+function updateRackRow(id) {
+  const li = $(`[data-rk="${CSS.escape(id)}"]`), p = state.idx.byId.get(id);
+  if (!li || !p) return;
+  const ae = document.activeElement, had = li.contains(ae)
+    ? (ae.dataset.rktick ? '[data-rktick]' : ae.dataset.rkqty ? `[data-rkqty="${ae.dataset.rkqty}"]` : ae.dataset.rkcount ? '[data-rkcount]' : null) : null;
+  const r = rackRowData(p);
+  if (state.shelfGroup !== 'project') r.forName = schemeNameOf(r.sid);
+  li.outerHTML = ui.rackRow(r, t);
+  if (had) $(`[data-rk="${CSS.escape(id)}"] ${had}`)?.focus({ preventScroll: true });
+}
+function renderShelfList(view) {
+  const names = new Map();
+  const nameOf = sid => schemeNameOf(sid, names);
+  const rows = view.map(rackRowData);
+  // Rack order inside every group: brand, line, then name (Ryan: the order a store racks its paints)
+  rows.sort((a, b) => a.paint.brand.localeCompare(b.paint.brand) || rackLine(a.paint).localeCompare(rackLine(b.paint))
+    || ui.pname(a.paint).localeCompare(ui.pname(b.paint)));
+  const groups = [];
+  if (state.shelfGroup === 'project') {
+    const by = new Map();
+    for (const r of rows) { const k = r.sid && nameOf(r.sid) ? r.sid : ''; if (!by.has(k)) by.set(k, []); by.get(k).push(r); }
+    for (const sc of store.listSchemes()) if (by.has(sc.id)) groups.push({ key: sc.id, title: nameOf(sc.id), rows: by.get(sc.id) });
+    if (by.has('')) groups.push({ key: '', title: t('otherPaints'), rows: by.get('') });
+  } else {
+    for (const r of rows) {
+      r.forName = nameOf(r.sid);
+      const key = [r.paint.brand, rackLine(r.paint)].filter(Boolean).join(' · ');
+      const g = groups[groups.length - 1];
+      if (g && g.key === key) g.rows.push(r); else groups.push({ key, title: key, rows: [r] });
+    }
+  }
+  // The list is rebuilt: focus goes back to the same control of the same paint
+  const ae = document.activeElement, host = $('#shelfList');
+  const keep = host.contains(ae) ? (ae.dataset.rktick ? `[data-rktick="${CSS.escape(ae.dataset.rktick)}"]`
+    : ae.dataset.rkqty ? `[data-rkqty="${ae.dataset.rkqty}"][data-id="${CSS.escape(ae.dataset.id)}"]` : null) : null;
+  host.innerHTML = ui.rackGroups(groups, t);
+  $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
+  for (const b of $('#shelfGroupSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sg === state.shelfGroup));
+  if (keep) host.querySelector(keep)?.focus({ preventScroll: true });
+}
+/** A tick: owned at once; a second tap puts back the mark it had (to buy, with its count and project). */
+function rackTick(id) {
+  const p = state.idx.byId.get(id); if (!p) return;
+  const name = ui.pname(p), mark = store.markOf(id);
+  rk.kept.add(id);
+  if (mark !== 'owned') {
+    rk.prev.set(id, { mark, qty: store.qtyOf(id), for: store.projectOf(id) });
+    rk.countOpen.delete(id);
+    store.setMark(id, 'owned');
+    say(t('tickedOwned', { name }));
+  } else {
+    const prev = rk.prev.get(id); rk.prev.delete(id);
+    if (prev?.mark === 'want') {
+      // its project may have gone with its last paint (a project that was never saved): then none
+      store.setMark(id, 'want', { for: prev.for || undefined });
+      if (prev.qty > 1) store.setQty(id, prev.qty);
+      say(t('tickedBack', { name }));
+    } else { store.setMark(id, 'none'); say(t('tickedNone', { name })); }
+  }
+  render('marks', { ids: [id] });
+}
+function setupShelfList() {
+  $('#shelfViewSeg').addEventListener('click', e => {
+    const b = e.target.closest('[data-sv]'); if (!b || b.dataset.sv === state.shelfView) return;
+    state.shelfView = b.dataset.sv;
+    setSelection([], { anchor: null, cursor: null }); resetRackSession();
+    renderShelf(); updateUrl();
+  });
+  $('#shelfGroupSeg').addEventListener('click', e => {
+    const b = e.target.closest('[data-sg]'); if (!b || b.dataset.sg === state.shelfGroup) return;
+    state.shelfGroup = b.dataset.sg;
+    renderShelf(); updateUrl();
+  });
+  $('#shelfPrint').addEventListener('click', () => window.print());
+  $('#shelfList').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.rktick) { rackTick(b.dataset.rktick); return; }
+    if (b.dataset.rkcount) {
+      const id = b.dataset.rkcount;
+      rk.countOpen.add(id); updateRackRow(id);
+      $(`[data-rkqty="1"][data-id="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
+      return;
+    }
+    if (b.dataset.rkqty) {
+      const id = b.dataset.id, p = state.idx.byId.get(id);
+      const q = store.qtyOf(id) + Number(b.dataset.rkqty);
+      if (q < 1) {
+        // − at one pot: back to "Add a count", where the stepper was
+        rk.countOpen.delete(id); updateRackRow(id);
+        $(`[data-rkcount="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
+        return;
+      }
+      store.setQty(id, q); rk.countOpen.add(id); updateRackRow(id);
+      say(t('potsSaid', { name: ui.pname(p), count: q === 1 ? t('onePot') : t('nPots', { n: q }) }));
+    }
+  });
+}
 /** The empty state's action: clear the search and every filter, then put focus on the grid. */
 function clearShelfFilters() {
   state.shelfQ = state.shelfMark = state.shelfBrand = state.shelfType = '';
   $('#shelfQ').value = $('#shelfBrand').value = $('#shelfType').value = '';
   shelfFilterChanged();
-  $('#shelfGrid').focus({ preventScroll: true });
+  (state.shelfView === 'list' ? $('#shelfList [data-rktick]') : $('#shelfGrid'))?.focus({ preventScroll: true });
 }
 
 /* ---- Shelf dock (§3.6; mockups/shelf-landing.html "Chosen" + its design critique) ----
@@ -1002,7 +1155,7 @@ function applyDock() {
   // corners, app.css). Keyed to that state, not to a gesture: a tap, a drag, a scroll-up reveal and a focused
   // search all look the same. Layout values (header + dock height vs the grid's top), so the slide's
   // transform can't make it flicker; just after pinning only the title is under the panel, so no shadow.
-  const over = PHONE.matches && dock.stuck && !tucked && $('#shelfGrid').getBoundingClientRect().top < hh + dh;
+  const over = PHONE.matches && dock.stuck && !tucked && shelfBody().getBoundingClientRect().top < hh + dh;
   d.style.setProperty('--panel-h', ph + 'px');   // tucking slides the handle row up to the header
   d.classList.toggle('stuck', dock.stuck);
   d.classList.toggle('tucked', tucked);
@@ -1038,12 +1191,14 @@ function onShelfScroll() {
   }
   applyDock();
 }
+/** The Shelf's body on show: the grid, the list, or the empty state (a hidden one has no place to measure). */
+const shelfBody = () => [$('#shelfGrid'), $('#shelfListView'), $('#shelfEmpty')].find(el => !el.hidden) || $('#shelfGrid');
 /** After a filter change, bring the first results into view just below the dock. Without this, a
  *  filter applied deep in the grid leaves the page scrolled past a now-shorter list (blank screen),
  *  or the first results hide under the dock. */
 function revealShelfResults() {
   if (state.mode !== 'shelf') return;
-  const g = $('#shelfGrid').getBoundingClientRect().top, d = $('#shelfDock').getBoundingClientRect().bottom;
+  const g = shelfBody().getBoundingClientRect().top, d = $('#shelfDock').getBoundingClientRect().bottom;
   if (g >= d) return;   // already in view (at the top of the page)
   dock.quietUntil = performance.now() + 200;
   window.scrollTo(0, window.scrollY + g - d - 8);
@@ -1362,7 +1517,7 @@ function useAsSeed(id) {
 
 /** Lightroom-style keyboard triage; active only in shelf mode, ignored while typing in a field. */
 function shelfKeydown(e) {
-  if (state.mode !== 'shelf') return;
+  if (state.mode !== 'shelf' || state.shelfView === 'list') return;   // the list's controls are buttons, with their own keys
   const ae = document.activeElement;
   // act only when the grid (or nothing) has focus — never hijack keys from chips, nav, or a text field.
   // The mark menu counts as "in the grid": it takes focus when it opens, and P/U/X still work there. The
@@ -1810,9 +1965,10 @@ function setMode(mode) {
   // Open the Shelf at its top. focus() alone scrolls the page to the grid and hides the search + filters;
   // the grid still takes focus so arrows and P/U/X work at once.
   if (on) {
+    resetRackSession();
     renderShelf(); window.scrollTo(0, 0);
     Object.assign(dock, { open: true, acc: 0, lastY: 0, stuck: false }); applyDock();
-    $('#shelfGrid').focus({ preventScroll: true });
+    if (state.shelfView !== 'list') $('#shelfGrid').focus({ preventScroll: true });
   }
   else if (state.mode === 'schemes') { renamingId = null; renderSchemesPage(); window.scrollTo(0, 0); }
   else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows
@@ -2683,6 +2839,7 @@ function wire() {
   });
   setupSettings(); setupConfirm(); setupMatchNote();   // ⋯ Settings, the Restore/Delete confirm, the matching note
   setupSaveDialog(); setupSchemesPage();   // saved schemes: the Save line and dialog, the Schemes page (item 35)
+  setupShelfList();   // the Shelf's list: the rack walk (item 36)
 
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });

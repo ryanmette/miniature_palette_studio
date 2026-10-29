@@ -1287,6 +1287,65 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
 .cdlg.nobackup .cdlgbody { margin-bottom: 12px; }
 @media (forced-colors: active) { .scstrip { forced-color-adjust: none; } .tag { forced-color-adjust: auto; } }
 
+/* The Shelf's list: the rack walk (PLAN §5 item 36; mockups/shopping-list.html, direction A) ------------- */
+.shelftools .seg { flex: none; }
+.shelftools { flex-wrap: wrap; align-items: center; }   /* Grid | List joined the tools: on a phone they wrap, never push off screen */
+@media (max-width: 520px) {
+  /* a phone's segmented controls are full width (§3.6); this one sits among the tools and sizes to its words */
+  .shelftools .seg { width: auto; }
+  .shelftools .seg button { flex: none; padding: 5px 14px; }
+}
+.rktools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 8px 0 4px; }
+.rkhint { margin: 0 0 8px; }
+.rkgroup { max-width: 760px; content-visibility: auto; contain-intrinsic-block-size: auto 600px; }   /* "All" is 3,225 rows: lay out only what is on screen; the estimate is a height only (a width estimate widened a phone page to 628px) */
+.rkhead { display: flex; justify-content: space-between; gap: 12px; margin: 16px 0 0; padding-bottom: 4px;
+  border-bottom: 1px solid var(--border); font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--text-muted); }
+.rklist { list-style: none; margin: 0; padding: 0; }
+/* A row: the pot, its name big (read at arm's length in a store), brand · line under it, the count's slot, and
+   the tick, the row's one big control. Nothing in it changes height when it is ticked (§3.4). */
+.rkrow { display: grid; grid-template-columns: 40px minmax(0, 1fr) var(--tap); gap: 12px; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border); }
+.rksw { display: block; width: 40px; height: 40px; }
+.rkmain { display: grid; min-width: 0; }
+.rkname { font-size: 16px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.rkline { font-size: var(--fs-small); color: var(--text-muted); display: flex; flex-wrap: wrap; align-items: center; gap: 0 6px; }
+.rkfor { color: var(--buy-text); }
+.rkrow.done .rkname { text-decoration: line-through; text-decoration-thickness: 1.5px; color: var(--text-muted); }
+/* The count's slot: one --tap row, "Add a count" or the stepper, or empty once ticked */
+.rkslot { display: flex; align-items: center; min-height: var(--tap); }
+.rkslot .textact { min-width: 0; padding: 0 2px; justify-content: flex-start; }
+.rkstep { display: inline-flex; align-items: center; gap: 8px; }
+.rkstep .btn.sm { width: var(--tap); min-width: 0; padding: 0; justify-content: center; font-size: 16px; }
+.rkn { min-width: 52px; text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; }
+/* The tick: a --tap square, the field's edge when open; the success fill and its ink when owned (owned is
+   the state it makes, §3.5: state as a fill). The ring is the focus ring, never the state. */
+.rktick { width: var(--tap); height: var(--tap); padding: 0; display: grid; place-items: center; cursor: pointer;
+  border: 2px solid var(--edge); border-radius: var(--r-ctrl); background: var(--surface); color: var(--on-success); }
+.rktick .rkcheck { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: square;
+  stroke-linejoin: miter; visibility: hidden; }
+.rktick[aria-pressed="true"] { background: var(--success); border-color: var(--success); }
+.rktick[aria-pressed="true"] .rkcheck { visibility: visible; }
+.rktick:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+@media (forced-colors: active) {
+  .rksw { forced-color-adjust: none; }
+  .rktick { border-color: ButtonText; }
+  .rktick[aria-pressed="true"] { background: Highlight; border-color: Highlight; color: HighlightText; forced-color-adjust: none; }
+}
+/* Print (direction D): only the list, on paper — the boxes are for a pen, the colours print as they are. */
+@media print {
+  header, .appfoot, .workspace, .schemes, .shelfhead, .shelfsentinel, .shelfdock, .shelfbar, .rktools, .rkhint,
+  .rkslot, #shelfGrid, #shelfEmpty, .toast, dialog { display: none !important; }
+  body, main, .shelf { background: #fff !important; color: #000 !important; padding: 0; margin: 0; }
+  .rkgroup { break-inside: avoid-page; max-width: none; content-visibility: visible; }
+  .rkrow { grid-template-columns: 24px 28px minmax(0, 1fr); padding: 4px 0; break-inside: avoid; }
+  .rkrow .rktick { order: -1; width: 18px; height: 18px; border: 1.5px solid #000; background: none !important; }
+  .rkrow .rktick .rkcheck { width: 14px; height: 14px; color: #000; }
+  .rksw { width: 24px; height: 24px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .rkname { font-size: 13pt; }
+  .rkline { color: #333; }
+}
+
 /* Forced colours (Windows High Contrast) paint every background in the system Canvas colour, so every
    paint went white: the Browse grid, the live palette, the Shelf and the Plan showed no colour. A swatch's
    colour is paint data, not chrome (§2), so swatches keep their own colours, finish overlays and inset edge.
