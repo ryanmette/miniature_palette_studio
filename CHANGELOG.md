@@ -14,6 +14,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   hold, explore, filter), proposes "Starting paint" in place of "your paint" (which read as "owned"), and
   scores three directions. The recommendation is A: one scheme with two holds, a locked colour and a chosen pot.
 ### Fixed
+- **The dropdown arrows are the app's own chevron** (Ryan's report). With a mouse, the Shelf's brand, type and
+  sort lists and the paint list's Sort drew their arrow from two rotated borders, which read as a check mark.
+  They now use the chevron from the icon set, in the muted text colour, and it turns up while the list is open.
 - **The harmony strip's scrollbar no longer covers the chips** (Ryan's report). On a Mac the scrollbar floats
   over the content, and with 4px of room under the chips it covered their lower edge and the pressed chip's
   accent bar. The strip now has 14px of room under the chips.

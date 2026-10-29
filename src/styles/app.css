@@ -385,6 +385,9 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .btn.incl-contrast[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 .nogaps { color: var(--text-muted); align-self: center; }
 
+/* The chevron as a mask image, for the selects' ::picker-icon (a pseudo-element cannot hold <use>). Same path
+   and stroke as the sprite's i-chev, at the 2.25 weight the 12–14px icons use. */
+:root { --chev-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 8l4 4 4-4' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E"); }
 /* The icon set (§3.5): an inline sprite in index.html, drawn with <use>. One stroke for every icon, so
    a glyph never looks heavier than its neighbour; each context only sets the size. */
 .ic { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: square;
@@ -1146,11 +1149,14 @@ header { padding-top: env(safe-area-inset-top, 0px); }
   @media (pointer: fine) {
     select, select::picker(select) { appearance: base-select; }
     select { display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; cursor: pointer; }
-    /* The chevron: two token-coloured borders, 12px from the edge. It points up while the list is open. */
-    select::picker-icon { content: ''; flex: none; margin-inline-start: auto; width: 6px; height: 6px;
-      border-right: 2px solid var(--text-muted); border-bottom: 2px solid var(--text-muted);
-      transform: translateY(-2px) rotate(45deg); transition: transform 120ms cubic-bezier(.2,.7,.2,1); }
-    select:open::picker-icon { transform: translateY(2px) rotate(225deg); }
+    /* The chevron is the icon set's own (src/assets/icons/chev.svg, §3.5 Icons): a mask filled with the token
+       colour, so it matches every other icon. It was two rotated 2px borders, which read as a check mark
+       (Ryan, 2026-10-29). 12px from the edge; it turns to point up while the list is open. */
+    select::picker-icon { content: ''; flex: none; margin-inline-start: auto; width: 16px; height: 16px;
+      background-color: var(--text-muted);
+      -webkit-mask: var(--chev-mask) center / contain no-repeat; mask: var(--chev-mask) center / contain no-repeat;
+      transition: transform 120ms cubic-bezier(.2,.7,.2,1); }
+    select:open::picker-icon { transform: rotate(180deg); }
     /* Open is not focus (§3.5): the open select gets the --surface-2 fill, the ring stays for focus. */
     /* open is not focus (§3.5): the open fill wins over the Shelf's active-filter fill too */
     select:open, .shelffilters select.on:open { background-color: var(--surface-2); }
