@@ -10,6 +10,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   cut about 96 px from each side, and the first letters of each line ("ick one paint", "RIMARY"). The card
   (`src/og-image.png`) is redrawn with all its content inside the centre 960 px, a 120 px margin on each side. It
   now names each paint's brand too. Drawn by `mockups/share-image.html` (§0).
+- **The Recipe's colour-link ring has room around the content** (Ryan's report). When you point at a role
+  card, the ring that links it to the wheel and the live palette sat 1px from the card's edges, with no
+  space on the left or right. The card now has 12px of room on each side (the content does not move), and
+  the ring is drawn inside it, 10px clear of the content.
 
 ### Added
 - **Share as an image.** A shared link shows the same static card for every scheme, so the person who gets it
