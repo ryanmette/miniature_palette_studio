@@ -3,7 +3,7 @@
 
 import { rotateHue, adjustHsl, adjustDirection, rgbToHsl, hexToRgb, hslToRgb, rgbToHex, hexToLab, deltaE2000, isNeutral, clamp01 } from './color.js';
 import { harmonyPartners, neutralPartners, isNeutralHarmony, DEFAULT_POP } from './harmony.js';
-import { nearestPaint } from './data.js';
+import { nearestPaint, matchQuality } from './data.js';
 
 // Tone ladders (#7). Two ways painters think about a role's value steps:
 //  • 'wash'  — Wash · Base · Highlight: the *technique* ladder (recess wash + edge highlight around the paint).
@@ -100,17 +100,32 @@ export function roleIdeals(baseHex, harmony, popHex = DEFAULT_POP, { accentHex =
 /**
  * Build the role-mapped scheme. `opts` is forwarded to nearestPaint (e.g. {ownedIds, brands, boostIds});
  * `opts.ladder` ∈ {'wash'(default),'tone','both'} picks the tone-ladder style (#7).
- * @returns {{ base, harmony, ladder, roles: Array<{role, weight, idealHex, match, ladders}> }}
+ * `opts.holds` (mockups/hold-flow.html, direction A): what the painter holds on a role, by role name.
+ *   { kind: 'lock', hex }  — the role's TARGET colour is `hex`; its pot is the nearest, as for any role.
+ *   { kind: 'pot', id, hex } — the role's POT is that paint. The generated target stays as `idealHex`, so
+ *     the gap shows (§2 honesty): the match's ΔE is the pot's distance from it. The ladders step from the
+ *     pot's own colour. If `id` is not in the dataset, the hold acts as a lock on `hex`.
+ * A held role is flagged `hold` ('lock' | 'pot'), with `generatedHex` (the target the rule made).
+ * @returns {{ base, harmony, ladder, roles: Array<{role, weight, idealHex, match, ladders, hold?, generatedHex?}> }}
  */
 export function buildScheme(idx, baseHex, harmony, opts = {}) {
-  const defs = roleIdeals(baseHex, harmony, opts.pop, { accentHex: opts.accentHex });
+  const holds = opts.holds || {};
+  const defs = roleIdeals(baseHex, harmony, opts.pop, { accentHex: opts.accentHex }).map(d => {
+    const h = holds[d.role];
+    if (!h) return d;
+    const pot = h.kind === 'pot' ? idx.byId.get(h.id) : null;
+    if (pot) return { ...d, hold: 'pot', pot, generatedHex: d.idealHex };
+    return h.hex ? { ...d, idealHex: h.hex.toUpperCase(), hold: 'lock', generatedHex: d.idealHex } : d;
+  });
   const styles = LADDER_STYLES[opts.ladder] || LADDER_STYLES.wash;
   // Distinct role assignment: a small (owned-only) pool can map two close-hued roles to the SAME paint.
   // Assign roles in order, preferring a paint no earlier role used; if none is left, reuse it but flag the
   // role `shared` with a way to differentiate (adjust direction) + the nearest distinct paint to BUY.
-  const usedIds = new Set();
+  // Chosen pots are taken first, so no other role is given a paint the painter has put somewhere else.
+  const usedIds = new Set(defs.filter(d => d.pot).map(d => d.pot.id));
 
   const roles = defs.map(d => {
+    if (d.pot) return chosenPotRole(idx, d, opts, styles);
     // A metal role keeps its type filter for the match and the VALUE steps, so derived shades
     // resolve to real metallics rather than flat colours; the WASH rung deliberately searches real
     // shading media for every role including Metal (§7 wash-media rule — washing a metallic with a
@@ -190,9 +205,54 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
         return { key: s.key, idealHex: ideal, match: nearestPaint(idx, ideal, nmmOpts) };
       });
     }
-    return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, substituted, nmm, ladders };
+    return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, substituted, nmm, ladders,
+      ...(d.hold ? { hold: d.hold, generatedHex: d.generatedHex } : {}) };
   });
   return { base: baseHex, harmony, ladder: opts.ladder || 'wash', roles };
+}
+
+/** A role whose pot the painter chose: the pot is the match (its ΔE is from the generated target, so the
+ *  card shows the gap), and the ladders (and NMM for Metal) step from the pot's own colour. The pot is
+ *  used as it is, under every filter: the painter chose it (Use my paints decorates it, it never drops it). */
+function chosenPotRole(idx, d, opts, styles) {
+  const pot = d.pot, potHex = pot.hex.toUpperCase();
+  const dE = deltaE2000(hexToLab(potHex), hexToLab(d.generatedHex));
+  const owned = opts.knownOwnedIds ? opts.knownOwnedIds.has(pot.id) : undefined;
+  const match = { paint: pot, deltaE: dE, quality: matchQuality(dE), chosen: true, ...(owned !== undefined ? { owned } : {}) };
+  // The ladders are the same steps as any role's (§7), from the pot's colour. Only the base rung is the pot.
+  const ladderScheme = buildScheme(idx, potHex, 'custom', { ...opts, holds: null, seed: null, accentHex: null });
+  const twin = ladderScheme.roles.find(r => r.role === (d.metal ? 'Metal' : 'Primary'));
+  const swapBase = s => (s.key === 'base' || s.key === 'mid' ? { ...s, idealHex: potHex, match } : s);
+  // Primary's ladders step from its idealHex, which is the pot's colour here; Metal's twin steps from the
+  // metal rule's ideal, so a metal pot builds its own ladders below.
+  let ladders = twin.ladders.map(l => ({ ...l, steps: l.steps.map(swapBase) }));
+  let nmm = null;
+  if (d.metal) {
+    const m = metalLadders(idx, potHex, opts, styles);
+    ladders = m.ladders.map(l => ({ ...l, steps: l.steps.map(swapBase) }));
+    nmm = m.nmm;
+  }
+  return { role: d.role, weight: d.weight, idealHex: d.generatedHex, match, shared: false, differentiate: null, buy: null,
+    substituted: null, nmm, ladders, hold: 'pot', generatedHex: d.generatedHex };
+}
+
+/** The Metal ladders and NMM steps from a given metal colour (a chosen metal pot's), as buildScheme makes them. */
+function metalLadders(idx, hex, opts, styles) {
+  const roleOpts = { ...opts, types: new Set(['metal']) };
+  const step = (ideal, media) => {
+    if (media === 'wash') {
+      const real = nearestPaint(idx, ideal, { ...roleOpts, types: WASH_MEDIA, excludeTypes: undefined });
+      if (real && real.deltaE <= WASH_GATE) return { idealHex: ideal, match: real, media: 'wash' };
+      const fallback = nearestPaint(idx, ideal, roleOpts);
+      return { idealHex: ideal, match: fallback, ...(fallback ? { dilute: true } : {}) };
+    }
+    return { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) };
+  };
+  const ladders = styles.map(st => ({ style: st, label: LADDERS[st].label,
+    steps: LADDERS[st].steps.map(s => ({ key: s.key, ...(s.adj ? step(adjustHsl(hex, s.adj), s.key === 'wash' ? 'wash' : null) : { idealHex: hex, match: null }) })) }));
+  const nmmOpts = { ...opts, excludeTypes: new Set([...(opts.excludeTypes || []), 'metal']) };
+  const nmm = NMM_STEPS.map(s => { const ideal = s.adj ? adjustHsl(hex, s.adj) : hex; return { key: s.key, idealHex: ideal, match: nearestPaint(idx, ideal, nmmOpts) }; });
+  return { ladders, nmm };
 }
 
 /**
