@@ -599,7 +599,12 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     neighbours and the jumps over 25: Shelf 22.8 · 1,165; the Browse order 7.8 · 31. Both now use one order, 20° bands of
     Lab hue that snake (7.2 · 4), and a test keeps it smooth. Sort: lightness uses Lab L*.
 51. **A design pass on the swatches** (Ryan, 2026-10-30): does each swatch show its paint and its type (metal, wash,
-    contrast, effect)? — **study:** `mockups/swatch-finish.html`.
+    contrast, effect)? — **studied** ([`mockups/swatch-finish.html`](../mockups/swatch-finish.html)). Found: the finish overlays
+    shift the colour, which §2 forbids (gloss ΔE 10.4; a white highlight 6.5 on near-black washes); wash and contrast
+    look alike; silver metals read as grey at 28px; 22 of 55 effect paints have no `fx`; the metallic tag uses the
+    warning colour (§3.5); 127 near-black paints blend into the dark page. Recommended: **B**, a pure colour field
+    with one finish mark in a corner, plus a stronger edge in dark, a neutral finish tag and a contrast icon of its
+    own. Four questions for Ryan in the study.
 
 **Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
 

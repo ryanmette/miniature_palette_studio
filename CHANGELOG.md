@@ -11,6 +11,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Hold and slide on the Shelf grid to read names** (touch). A finger held still for a quarter second shows a loupe
   with the paint's name. Slide to read the next one. Lifting marks nothing, and a plain tap still marks.
 - **Pick many types** in the Shelf's filters (for example layer + base + wash).
+- **A study of the swatches** (`mockups/swatch-finish.html`): do they show each paint's colour and finish truly?
+  Measured: the finish overlays shift the colour (up to ΔE 10.4), and wash and contrast look alike. Recommended: a
+  pure colour with one finish mark. Nothing in the app changed.
 - **A study of the paint colours** (`docs/COLOUR_CHECK.md`): what looks wrong in the data now, and a method to check
   each paint against the maker's swatch. No data changed.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
