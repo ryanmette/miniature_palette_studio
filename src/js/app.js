@@ -961,7 +961,22 @@ function shelfHint() {
 }
 function renderShelfStats() {
   const c = store.counts(), total = state.idx.paints.length;
-  $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} on the shopping list</span> · ${total} total`;
+  // A search, brand or type that hides paints says so, with the way back (phone test, 2026-10-30: the list
+  // showed 2 paints while this line said 12 on the shopping list, and the filters were not noticed).
+  const narrowed = !!(state.shelfQ.trim() || state.shelfBrand || state.shelfType);
+  const of = state.shelfMark === 'owned' ? c.owned : state.shelfMark === 'want' ? c.want : total;
+  const showing = narrowed ? ` · <b class="s-showing">${ui.esc(t('shelfShowing', { n: shelfPaints().length, of }))}</b>`
+    + ` <button type="button" class="textact" id="shelfClearFilters">${ui.esc(t('clearFilters'))}</button>` : '';
+  $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} on the shopping list</span> · ${total} total${showing}`;
+}
+/** Clear the search, brand and type: the stats line's Clear filters. The status filter stays (it is the view the
+ *  painter chose, as Owned or Shopping list); the empty state's clearShelfFilters clears that too. */
+function clearShelfNarrowing() {
+  state.shelfQ = state.shelfBrand = state.shelfType = '';
+  $('#shelfQ').value = $('#shelfBrand').value = $('#shelfType').value = '';
+  shelfFilterChanged();
+  $('#shelfQ').focus({ preventScroll: true });
+  say(t('filtersCleared'));
 }
 function renderShelfBar() {
   $('#shelfBar').innerHTML = ui.shelfBar(shelf.sel.size);
@@ -1092,8 +1107,10 @@ function renderShelfList(view) {
   host.innerHTML = ui.rackGroups(groups, t);
   $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
   syncSendBought();
-  // This store carries: the brands of the paints to buy here, and any switched off (so they can come back)
-  const brands = [...new Set([...view.filter(p => store.markOf(p.id) === 'want').map(p => p.brand), ...storeOff])].sort((a, b) => a.localeCompare(b));
+  // This store carries: the brands of every paint to buy, and any switched off (so they can come back). Not only
+  // the paints the filters show: a search hid brands, and the row looked capped (phone test, 2026-10-30).
+  const wantBrands = [...store.wantIds()].map(id => state.idx.byId.get(id)?.brand).filter(Boolean);
+  const brands = [...new Set([...wantBrands, ...storeOff])].sort((a, b) => a.localeCompare(b));
   const chip = document.activeElement?.dataset?.rkbrand;
   $('#rkStore').innerHTML = ui.storeCarries(brands, storeOff, t);
   $('#rkStore').hidden = !brands.length;
@@ -3372,6 +3389,7 @@ function wire() {
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
   $('#shelfBrand').addEventListener('change', e => { state.shelfBrand = e.target.value; shelfFilterChanged(); });
+  $('#shelfStats').addEventListener('click', e => { if (e.target.closest('#shelfClearFilters')) clearShelfNarrowing(); });
   let sqTimer = 0;   // debounce: every keystroke rebuilt the full 2,508-cell grid — type-lag on phones
   $('#shelfQ').addEventListener('input', e => {
     clearTimeout(sqTimer);

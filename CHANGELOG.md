@@ -39,6 +39,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **The Help page is in groups by task:** start a scheme, matching, your shelf, schemes, the store, backup,
   shortcuts and contact, with a contents list at the top.
 ### Fixed
+- **On a phone, a swipe on the wheel no longer changes your colour.** The wheel took every touch: a swipe to scroll
+  replaced the picked paint with a custom colour. A swipe on empty disc now scrolls the page, a tap there sets the
+  colour, and a node still drags.
+- **One 16px side gutter on phones** (two 14px gutters had stacked into 28px). The Filters sheet fits the iOS screen,
+  and a toast sits above the home indicator.
+- **The Shelf says when filters hide paints:** "showing 2 of 12", with **Clear filters**.
+- **"This store carries" lists every brand on the shopping list**, not only the brands the filters show.
 - **Restore warns about saved schemes.** Replace deleted every saved scheme that the backup did not have, and the
   confirm did not say so. It now says how many go.
 - **A store swap no longer loses a project for good.** A swap that took the last paint of another unsaved project

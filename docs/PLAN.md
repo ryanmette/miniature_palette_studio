@@ -550,6 +550,50 @@ Lower value: Print in the store panel showed the print list on screen behind the
 **Open:** `support.html`'s `id="shelf"` and `id="schemes"` repeat the app's ids inside the sheet (two elements
 with one id). A fix renames the public page's anchors, so its links change: it waits for a decision.
 
+### The phone test (Ryan and a tester, 2026-10-30; measured at 402 × 874, an iPhone 16 Pro)
+
+**Fixed now** (in ryanmette/miniature_palette_studio#65):
+- **The wheel trapped the page, and a swipe changed the colour.** The canvas was `touch-action: none`, and a press
+  on empty disc moved the base: a swipe to scroll replaced the picked paint with a custom colour. Now a press on a
+  node drags it, a press on empty disc scrolls, and only a tap on empty disc sets the colour (CLAUDE.md §3.6).
+- **Doubled phone gutters.** `main` and each region both had 14px, so content started at 28px: now one 16px gutter.
+  The header bar is 8 × 16px (it was 10 × 14, off the §3.4 scale).
+- **The lightness slider under the iOS address bar.** The wheel fix lets the page scroll from the wheel, and the
+  gutter fix moves the slider up. The Filters sheet uses `85dvh` (iOS `vh` is the large viewport), and a toast sits
+  above the home indicator (`env(safe-area-inset-bottom)`).
+- **"Why only 2 of 12?"** The counts line now says "showing 2 of 12" with **Clear filters** when a search, brand or
+  type hides paints.
+- **"This store carries" looked capped.** It listed only the brands of the paints the filters showed. It now lists
+  every brand on the shopping list.
+
+**Needs Ryan's decision** (each with the recommendation):
+
+42. **The Shelf list's top on a phone** (79% of the screen before the first paint: header, dock, title + Grid|List +
+    Import + Save, counts, Rack order|By project, Print + Take to the store, 4 rows of brand toggles, a hint). Recommend:
+    Grid|List, Print and Take to the store on one tools row; the hint only in Help or when the list is empty; the
+    brand toggles in one 44px row that scrolls sideways, with "10 brands · 2 off". Target: the first paint at about
+    y 430 (it is at 689).
+43. **Scrub the Shelf grid to read names.** Today a tap marks at once, and the name shows only after. Recommend: a
+    finger held still 250ms starts a scrub (a loupe above the finger names each paint it passes; lifting does
+    nothing); still to 500ms opens the mark menu, as now. Question: should a plain tap still mark?
+44. **Shelf grid density.** 6 columns of 54px at 402px, with a 10px gap. Recommend 64px minimum and an 8px gap (5 columns of about 67px).
+45. **Pick many types** (layer + base + wash). Recommend: one toggle per type in the Filters sheet (`aria-pressed`), and
+    on a wide screen a "Type: 3 ▾" button that opens the same toggles.
+46. **"⚓ Move here" adds a column.** In accent mode the scheme is built from the opposite colour (180° away), and
+    most harmonies have no partner there, so the picked colour comes back as an extra column (triadic 4 → 5).
+    Recommend: say it on the dock ("Accent: the scheme starts from its opposite, Hydra Turquoise"), tag the column
+    "Your accent (kept)", and show a one-time line the first time.
+47. **Tap the starting paint for a big view.** Today the hero does nothing on a tap. Recommend: the hero's swatch opens
+    a sheet with the starting paint large (pot, target, ΔE) and the scheme's four pots beside it at 60-30-10. It can
+    reuse the share image (`shareimage.js`), with Share and Save beside it.
+48. **A smaller wheel on a phone?** It is 330px of a 402px screen. Recommend: keep it, now that it scrolls; revisit after 42–47.
+49. **Check every paint's colour.** 3,225 hexes come from community data, and most are `approx`. A full pass needs a
+    source for each brand (manufacturer swatches, or measured photos under one light) and a method: see
+    `docs/DATA_SOURCING.md`. Recommend: start with the paints people pick most (the starters and Citadel Base/Layer),
+    compare each with the maker's own swatch, and log the ΔE of every change. A study first, not a bulk edit.
+
+**Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
+
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:
@@ -606,6 +650,20 @@ scaffold + picker. Still future:*
   fit v1; payments/accounts still need a §1 scope change first). Exploration only; nothing committed.
 
 ---
+
+### Ideas raised 2026-10-30 (Ryan; not studied)
+- **Hooks for AI agents.** A way for an assistant to read and write the shelf: today the backup file and the CSV
+  already are that contract (`store.js exportJSON` / `importJSON`, `collection-io.js`). A next step needs no server: a
+  documented text format ("Citadel Mephiston Red, owned") that an assistant writes and the Shelf's Import reads, with
+  the same confirm as Restore. An agent that acts on the app itself (MCP and similar) needs a server or the native
+  app, so it is a §1 change.
+- **"Import your real shelf"**: type or dictate a list of paints. The Shelf's matcher (`paintMatcher`) already reads
+  names, so a pasted or dictated list can be matched line by line with a review step (each line: the match, its
+  brand, Keep or Change). Dictation is the device keyboard's own; nothing leaves the device. A photo of a paint rack
+  needs text recognition: on the device in the native app (Apple's Vision), not on the web without a server.
+- **Other products (room paint).** The engine is not about miniatures: harmony + nearest real product by ΔE 2000
+  works for any catalogue with good colour data. House-paint makers publish their colours, but under their own terms,
+  and a printed or screen colour is far from the wall. A separate study, not this app.
 
 ## 9. Open questions for Ryan
 
