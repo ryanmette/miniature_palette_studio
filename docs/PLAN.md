@@ -480,30 +480,31 @@ The build order. Each item needs the one before it:
     Delete's answer misses saved schemes). B: Help in a sheet built from `support.html` itself (one source, no
     second copy), Help grouped by task, About as a short identity page.
 
-### Backlog — finding What’s new (raised 2026-10-29 by Ryan; studied, not yet built)
+### Backlog — finding What’s new (raised 2026-10-29 by Ryan; studied; 40 built)
 
 Study: [`mockups/whats-new.html`](../mockups/whats-new.html). About shows What’s new since item 39, but a painter
-finds it only if they open About. Nothing here is built. Each item waits for Ryan’s answers in the study.
+finds it only if they open About. Ryan’s answers (2026-10-30): A2; `seenNews` not in the backup; a dot only when the
+What’s new lines change; B1 (no log) with longer toasts; fix the review’s bugs next.
 
-40. **A dot on ⋯ after an update** (study Part A) — **specified, not built.** Recommended: **A2.** After an update, ⋯
+40. **A dot on ⋯ after an update** (study Part A) — **built (2026-10-30), A2.** After an update, ⋯
     shows an 8px `--accent` dot (no number and no red: Apple’s HIG says not to copy the system badge). The dot goes
     when ⋯ opens. A neutral **New** tag on About stays until About opens. An update is a change of
-    `WHATS_NEW.version`, so a patch with the same lines shows nothing. One new pref, `seenNews`. A first visit
-    and Delete show no dot. ⋯’s accessible name says “what’s new” while the dot shows. About 40 lines and 6
-    tests, one PR. Open questions: does `seenNews` go in the backup file (recommended: no)?
-41. **A notification log next to ⋯** (study Part B) — **studied; recommended: do not build now.** With no server,
+    `WHATS_NEW.version`, so a patch with the same lines shows nothing. `store.js seenNews` has its own key
+    (`ps-seen`), so it is not in the backup file. A first visit and Delete show no dot. ⋯’s accessible name says
+    “what’s new” while the dot shows.
+41. **A notification log next to ⋯** (study Part B) — **chosen: B1, no log (2026-10-30).** Toasts now stay long enough to read. With no server,
     the log can hold only what this device knows, and most of that has a better home already. The real gap is
     that a toast is gone after 1.7 seconds. Recommended: B1 (no log) now, B2 (a “Recent” group in ⋯, this
     visit only) later if needed, and no bell beside ⋯ (B3: empty most days, and a §3.6 change).
 
-### Follow-ups from the QA pass and code review (2026-10-29, v1.13.0 + the Help sheet; not yet scheduled)
+### Follow-ups from the QA pass and code review (2026-10-29, v1.13.0 + the Help sheet; fixed 2026-10-30 unless marked open)
 
 **QA pass (no faults found).** 340 unit tests pass. `validate-data` and `check-docs` pass. In Chromium, at 360, 768 and
 1180px in both themes: no console errors, no page wider than the screen (Studio, Schemes, Shelf), ⋯ → About and ⋯ →
 Help open, and Esc puts focus back on ⋯. At 320 × 256 (a stand-in for 400% zoom) with reduced motion, ⋯ covers the
 header and its rows scroll. Offline after one visit, the app loads and the Help sheet opens.
 
-**Code review: bugs to fix** (most severe first; nothing is fixed in this change):
+**Code review: bugs** (most severe first; each one **fixed** 2026-10-30, with a test where the code is pure):
 
 - **Restore deletes saved schemes with no warning** (`store.js inspectJSON`, `app.js confirmRestore`) — *confirmed
   by running.* `importJSON` replaces `schemes`, but the confirm counts only owned and to-buy marks. A device with
@@ -523,10 +524,13 @@ header and its rows scroll. Offline after one visit, the app loads and the Help 
   or a private window that refuses writes), the error is dropped, and the painter believes the shelf is saved. Fix: a note
   the first time a save fails.
 
-Lower value: `applySwap` replaces the swap's own count instead of adding to it; `cleanName` can cut an emoji
-in half (cut by code points); `decodeList` drops a paint whose project number is 1000 or more.
+Lower value, also fixed: `applySwap` replaces the swap's own count instead of adding to it; `cleanName` can cut an
+emoji in half (it now cuts by code points); `decodeList` drops a paint whose project number is 1000 or more.
+Note on the swap: an **owned** swap still ends an unsaved project when it takes its last paint to buy. That is the
+project model (a project lives while a paint on the list points at it). The announce no longer names it, and an owned
+swap has no Undo (Undo is for a swap that is still to buy).
 
-**Code review: the Help sheet, the store panel, the list and `sw.js`** (most severe first; not fixed here):
+**Code review: the Help sheet, the store panel, the list and `sw.js`** (most severe first; each one **fixed** 2026-10-30):
 
 - **The Help sheet can show an old `support.html`** (`sw.js isShell`) — *confirmed in a browser.* The sheet's
   `fetch('support.html')` is not a navigation and not `.js`/`.css`, so the service worker serves it from the cache.
@@ -541,9 +545,10 @@ in half (cut by code points); `decodeList` drops a paint whose project number is
   toast cannot be read. With no network and no service worker yet, the app is replaced by the browser's error page.
   Fix: show a note with a link to the page, and stay in the app.
 
-Lower value: `support.html`'s `id="shelf"` and `id="schemes"` repeat the app's ids inside the sheet (two
-elements with one id); `#supportSaid` has no reserved slot, so the dialog grows when it fills (§3.4); Print
-in the store panel shows the print list on screen behind the dialog while the print dialog is open.
+Lower value: Print in the store panel showed the print list on screen behind the dialog (**fixed**).
+`#supportSaid` has a reserved line already (`min-height: 1.5em`), so it does not move anything (no change).
+**Open:** `support.html`'s `id="shelf"` and `id="schemes"` repeat the app's ids inside the sheet (two elements
+with one id). A fix renames the public page's anchors, so its links change: it waits for a decision.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 

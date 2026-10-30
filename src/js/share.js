@@ -30,7 +30,8 @@ import { clampPop } from './harmony.js';
 
 const clamp01 = n => Math.min(1, Math.max(0, n));
 /** store.js's own rule for a name (one line, 80 letters at most), so a name in a link is a name it keeps. */
-const cleanName = x => (typeof x === 'string' ? x.trim().replace(/\s+/g, ' ').slice(0, 80) : '');
+// cut by characters (code points), as store.js does, so an emoji is never split in half
+const cleanName = x => (typeof x === 'string' ? [...x.trim().replace(/\s+/g, ' ')].slice(0, 80).join('').trim() : '');
 const wrapHue = h => ((h % 360) + 360) % 360;
 
 /** Serialise one added swatch: its hex without the '#', with a trailing '!' when it is locked.
@@ -242,7 +243,8 @@ export function decodeList(search, { hasPaint = () => true } = {}) {
   });
   const items = [], seen = new Set();
   for (const tok of l.split('.')) {
-    const m = /^([a-z0-9-]+)(?:\*(\d{1,2}))?(?:_(\d{1,3}))?$/.exec(tok);
+    // \d+: an out-of-range project number drops the project, not the whole paint (it is range-checked below)
+    const m = /^([a-z0-9-]+)(?:\*(\d{1,2}))?(?:_(\d+))?$/.exec(tok);
     if (!m || seen.has(m[1]) || !hasPaint(m[1])) continue;
     seen.add(m[1]);
     const qty = Math.max(1, Math.min(QTY_MAX, Number(m[2] || 1)));

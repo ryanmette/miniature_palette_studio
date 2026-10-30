@@ -206,7 +206,7 @@ test('inspectJSON counts a backup and applies nothing', async () => {
   store.setMarks(['w1', 'w2'], 'want');
   const backup = JSON.stringify({ v: 1, owned: ['a', 'x', 'y'], want: ['b'], prefs: { theme: 'light' }, saved: '2026-09-30T10:00:00.000Z' });
   const info = store.inspectJSON(backup);
-  assert.deepEqual(info, { ok: true, owned: 3, want: 1, schemes: 0, saved: '2026-09-30T10:00:00.000Z', lost: 3 });   // c, w1, w2 have no mark there
+  assert.deepEqual(info, { ok: true, owned: 3, want: 1, schemes: 0, saved: '2026-09-30T10:00:00.000Z', lost: 3, schemesLost: 0 });   // c, w1, w2 have no mark there
   assert.deepEqual(store.counts(), { owned: 3, want: 2 }, 'nothing applied');
   assert.equal(store.getPref('theme'), null);
 });
@@ -223,7 +223,7 @@ test('inspectJSON: no date → saved null; a bad date → null; not a backup →
 test('inspectJSON and importJSON agree on a paint listed as both owned and to buy (owned wins)', async () => {
   const { store } = await freshStore();
   const backup = JSON.stringify({ owned: ['a', 'a'], want: ['a', 'b'] });
-  assert.deepEqual(store.inspectJSON(backup), { ok: true, owned: 1, want: 1, schemes: 0, saved: null, lost: 0 });
+  assert.deepEqual(store.inspectJSON(backup), { ok: true, owned: 1, want: 1, schemes: 0, saved: null, lost: 0, schemesLost: 0 });
   store.importJSON(backup);
   assert.equal(store.markOf('a'), 'owned');
   assert.deepEqual(store.counts(), { owned: 1, want: 1 });
@@ -462,6 +462,66 @@ test('v2: uniqueName adds (2), (3)… when another scheme has the name', async (
   store.createScheme({ link: LINK2, name: 'Plague Marine (2)', saved: true });
   assert.equal(store.uniqueName('Plague Marine'), 'Plague Marine (3)');
   assert.equal(store.uniqueName('   '), '');
+});
+
+test('inspectJSON counts the saved schemes here that a Restore would delete (review 2026-10-29)', async () => {
+  const { store } = await freshStore();
+  const keep = store.createScheme({ link: LINK, name: 'Blue knight', saved: true });
+  store.createScheme({ link: LINK2, name: 'Plague Marine', saved: true });
+  const v1 = JSON.stringify({ v: 1, owned: [], want: [], prefs: {} });
+  assert.equal(store.inspectJSON(v1).schemesLost, 2, 'a backup with no schemes takes both');
+  const v2 = JSON.stringify({ v: 2, owned: [], want: [], schemes: { [keep]: { name: 'Blue knight', link: LINK, saved: true } } });
+  assert.equal(store.inspectJSON(v2).schemesLost, 1, 'the one in the backup is not lost');
+});
+
+test('uniqueName: an 80-character name still gets a name of its own (review 2026-10-29)', async () => {
+  const { store } = await freshStore();
+  const long = 'x'.repeat(80);
+  store.createScheme({ link: LINK, name: long, saved: true });
+  const next = store.uniqueName(long);
+  assert.equal([...next].length, 80);
+  assert.ok(next.endsWith(' (2)'));
+  const b = store.createScheme({ link: LINK2, name: next, saved: true });
+  assert.notEqual(store.getScheme(b).name, long, 'the stored name differs from the first');
+});
+
+test('cleanName never splits an emoji (it cuts by characters)', async () => {
+  const { store } = await freshStore();
+  const sid = store.createScheme({ link: LINK, name: 'a'.repeat(79) + '😀😀', saved: true });
+  assert.equal(store.getScheme(sid).name, 'a'.repeat(79) + '😀');
+});
+
+test('putScheme brings a dropped project back under its own id', async () => {
+  const { store } = await freshStore();
+  const sid = store.createScheme({ link: LINK });
+  store.setMark('a', 'want', { for: sid });
+  const rec = store.getScheme(sid);
+  store.setMark('a', 'none');
+  assert.equal(store.getScheme(sid), null, 'the project went with its last paint');
+  assert.equal(store.putScheme(rec), true);
+  store.setMark('a', 'want', { for: sid });
+  assert.equal(store.projectOf('a'), sid);
+  assert.equal(store.putScheme(rec), false, 'an id in use changes nothing');
+  assert.equal(store.putScheme({ id: 'bad', link: LINK }), false);
+});
+
+test('seenNews has its own key: not in the backup file, and Delete removes it', async () => {
+  const { store, ls } = await freshStore();
+  assert.equal(store.seenNews(), null);
+  store.setSeenNews('1.14.0');
+  assert.equal(store.seenNews(), '1.14.0');
+  assert.doesNotMatch(store.exportJSON(), /1\.14\.0/);
+  store.clear();
+  assert.equal(ls.getItem('ps-seen'), null);
+});
+
+test('a save that fails calls onSaveFail', async () => {
+  const { store, ls } = await freshStore();
+  let n = 0;
+  store.onSaveFail(() => n++);
+  ls.setItem = () => { throw new Error('QuotaExceededError'); };
+  store.setMark('a', 'owned');
+  assert.equal(n, 1);
 });
 
 test('v2: normalise drops bad schemes and bad counts from a hand-edited file', async () => {

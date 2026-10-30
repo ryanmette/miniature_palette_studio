@@ -65,7 +65,7 @@
       <button data-mode="shelf" aria-pressed="false" data-i18n="shelf">Shelf</button>
     </div>
     <div class="spacer"></div>
-    <button class="btn icon" id="settingsBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="settingsMenu" aria-label="Settings" data-i18n-aria="settings" title="Settings"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-more"/></svg></button>
+    <button class="btn icon" id="settingsBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="settingsMenu" aria-label="Settings" title="Settings"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-more"/></svg><!-- What's new (mockups/whats-new.html, A2): the dot shows after an update until ⋯ opens; app.js renderNews sets the name --><span class="newsdot" id="newsDot" aria-hidden="true" hidden></span></button>
   </div>
 </header>
 
@@ -163,7 +163,7 @@
         <div class="setctl setbtns" role="group" aria-label="Help &amp; info" data-i18n-aria="helpInfo">
           <!-- Help opens in a sheet built from support.html itself (mockups/help-about.html, B): one source -->
           <button type="button" class="btn" id="helpOpenMenu" aria-haspopup="dialog" data-i18n="help">Help</button>
-          <button type="button" class="btn" id="aboutOpenMenu" aria-haspopup="dialog" data-i18n="aboutData">About</button>
+          <button type="button" class="btn" id="aboutOpenMenu" aria-haspopup="dialog"><span data-i18n="aboutData">About</span><span class="tag newtag" id="aboutNew" aria-hidden="true" data-i18n="newTag" hidden>New</span></button>
         </div>
       </div>
     </div>

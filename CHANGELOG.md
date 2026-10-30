@@ -17,6 +17,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   two facts on the Help page that are out of date, Apple's rules that keep Help and Privacy as public pages, and
   three directions. Ryan chose B: Help opens over the app like About, built from `support.html` itself, so the
   public page and the app never differ. Support details are copied by the painter, never sent in a link.
+- **A dot on ⋯ after an update** (PLAN §5 item 40, `mockups/whats-new.html` A2). When What’s new has new lines,
+  ⋯ shows a small dot. The dot goes when you open ⋯, and About then has a **New** tag until you open it. A screen
+  reader hears “Settings – what’s new in 1.13.0”. A new device and a patch release show no dot. The version
+  seen is kept on this device only, not in the backup file.
 - **A study of finding What’s new** (`mockups/whats-new.html`; PLAN §5 items 40–41). Part A specifies a small dot
   on ⋯ after an update, ready to build. Part B studies a notification log next to ⋯ and recommends no log now. A
   QA pass and a code review of v1.13.0 are recorded in PLAN §5. Nothing in the app changes.
@@ -28,11 +32,27 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   line before you copy it. The app does not send it: it goes to us only if you paste it into a message.
 - **What’s new in About.** About shows the main changes in this version (`WHATS_NEW` in `version.js`).
 ### Changed
+- **Toasts stay long enough to read:** 2 to 7 seconds by length (was 1.7 seconds for all). A new toast takes the
+  place of the one before.
 - **The names "Help" and "About".** "About & data" is now "About". About no longer explains the matching:
   that is in Help, and About links to it.
 - **The Help page is in groups by task:** start a scheme, matching, your shelf, schemes, the store, backup,
   shortcuts and contact, with a contents list at the top.
 ### Fixed
+- **Restore warns about saved schemes.** Replace deleted every saved scheme that the backup did not have, and the
+  confirm did not say so. It now says how many go.
+- **A store swap no longer loses a project for good.** A swap that took the last paint of another unsaved project
+  ended that project, and Undo could not bring it back. Undo now puts it back. A swap already on the list keeps its
+  own pots (2 + 3 is 5, not 3).
+- **Two schemes can no longer share a name** when the name is 80 characters long.
+- **A save that fails now says so** (the device storage is full or blocked).
+- **The Help sheet and the Help page always match.** The offline cache served an old copy to the sheet.
+- **Help stays in the app when it cannot load**, with a message, instead of leaving for an error page.
+- Screen readers heard “Copied” twice after **Copy support details**.
+- Closing **Take to the store** from a Schemes row after the naming step put focus on ⋯, not on the row.
+- The store panel’s **Print** list no longer shows behind the dialog.
+- A name cut to 80 characters can no longer split an emoji. A list link with a project number of 1000 or more
+  no longer drops the paint.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap

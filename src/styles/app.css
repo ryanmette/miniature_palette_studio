@@ -741,6 +741,16 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 
 /* header IA (#4): seed bar atop the studio · finish bar at the bottom · the ⋯ settings dialog */
 #settingsBtn[aria-expanded="true"] { background: var(--surface-2); }   /* open is a fill; the ring means focus only (§3.5) */
+/* What's new (mockups/whats-new.html, A2): a dot inside ⋯'s own box (absolute: nothing moves, §3.4), with a
+   --bg ring so it stands off the button's edge. No number and no red (Apple HIG: never copy the system badge);
+   no animation: it shows with the header. */
+#settingsBtn { position: relative; }
+.newsdot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: var(--r-pill);
+  background: var(--accent); box-shadow: 0 0 0 2px var(--bg); pointer-events: none; }
+.newsdot[hidden] { display: none; }
+.newtag { margin-left: 8px; }
+/* the store panel's Print fills #storePrint for the print only: on screen it stays out of sight behind the dialog */
+@media not print { .storeprint { display: none; } }
 .seedbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 
 /* Sheets and dialogs (§3.5): one header — a 16/600 title and at most one trailing action. Shared by
@@ -1459,6 +1469,7 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
    - a ring drawn on the paint gets a Canvas band under it, so Highlight never meets the paint. */
 @media (forced-colors: active) {
   .sw, .cell, .lctop, .scsw, .cmppal span { forced-color-adjust: none; }
+  .newsdot { forced-color-adjust: none; background: Highlight; box-shadow: none; }
   .qr { forced-color-adjust: none; }   /* the store QR code: a forced dark Canvas under black modules would not scan */
   .celltip, .cbadge, .lccopy { forced-color-adjust: auto; }
   .cell[aria-selected="true"], .cell.cursor, .cell:focus-visible, .pkt.cur .sw, .pko.cur .sw { outline-color: Highlight; }

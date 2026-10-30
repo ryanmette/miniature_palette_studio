@@ -6,6 +6,8 @@
 
 const KEY = 'ps-state';
 const LEGACY_KEYS = ['ps-owned', 'ps-theme'];   // the pre-v1 keys migrateLegacy() reads
+// Set by the app (onSaveFail). Declared before load(), which can save while this module starts.
+let onSaveError = null;
 // v2 (PLAN §5 item 34) adds two maps BESIDE the v1 fields, never in place of them: `wantInfo` (a to-buy
 // paint's count and project) and `schemes` (saved schemes and shopping-list projects). `want` stays a list
 // of ids, so a v1 build that meets v2 data (an old cached app, an iOS app not yet updated) still reads the
@@ -42,7 +44,8 @@ const isObj = o => !!o && typeof o === 'object' && !Array.isArray(o);
 /** An ISO 8601 time, or null for anything that is not a time. */
 const isoOrNull = x => { const t = typeof x === 'string' ? Date.parse(x) : NaN; return Number.isFinite(t) ? new Date(t).toISOString() : null; };
 /** A name as the painter typed it, with the spaces tidied: '  Plague   Marine ' → 'Plague Marine'. */
-const cleanName = x => (typeof x === 'string' ? x.trim().replace(/\s+/g, ' ').slice(0, NAME_MAX) : '');
+// The cut counts characters (code points), not UTF-16 units, so it never splits an emoji in half.
+const cleanName = x => (typeof x === 'string' ? [...x.trim().replace(/\s+/g, ' ')].slice(0, NAME_MAX).join('').trim() : '');
 const isLink = x => typeof x === 'string' && x.startsWith('?') && x.length <= LINK_MAX;
 const cleanQty = x => (Number.isInteger(x) && x >= 2 && x <= QTY_MAX ? x : undefined);
 
@@ -144,7 +147,8 @@ function persist() {
   state.wantInfo = Object.fromEntries([...info].filter(([id]) => want.has(id)));
   state.schemes = Object.fromEntries(schemes);
   const json = JSON.stringify(state);
-  try { localStorage.setItem(KEY, json); } catch { /* private mode — in-memory only */ }
+  try { localStorage.setItem(KEY, json); }
+  catch { onSaveError?.(); }   // storage full, or a browser that refuses to store: the app says so once
   nativePrefs()?.set({ key: KEY, value: json }).catch(() => { /* mirror only — localStorage is the fast path */ });
 }
 
@@ -165,6 +169,19 @@ export async function hydrate() {
     return true;
   } catch { return false; }
 }
+
+/** Run `fn` when a save fails (the shelf then lives in this tab only). The app tells the painter. */
+export function onSaveFail(fn) { onSaveError = fn; }
+
+/* ---- What's new (mockups/whats-new.html, A2) ----
+ * The WHATS_NEW version this device last showed in About. A fact about this device, as the open tab is,
+ * so it has its own key and is not in the backup file: a Restore of an old backup must not show the dot again. */
+const SEEN_KEY = 'ps-seen';
+export const seenNews = () => { try { return localStorage.getItem(SEEN_KEY); } catch { return null; } };
+export function setSeenNews(v) { try { localStorage.setItem(SEEN_KEY, v); } catch { /* private mode */ } }
+let onSeen = null;
+/** Run `fn` when another tab saved a new seenNews (About opened there). */
+export function onSeenNewsChange(fn) { onSeen = fn; }
 
 /* ---- collection (owned / to-buy are mutually exclusive) ---- */
 export const isOwned = id => owned.has(id);
@@ -264,6 +281,15 @@ export function createScheme({ link, name = '', saved = false, now = new Date() 
   persist();
   return sid;
 }
+/** Put back a scheme record under its own id (a store swap's Undo brings back a project that the swap dropped).
+ *  A record that is not valid, or an id in use, changes nothing. @returns {boolean} */
+export function putScheme(sc) {
+  if (!isObj(sc) || !SCHEME_ID.test(sc.id) || schemes.has(sc.id) || !isLink(sc.link)) return false;
+  const { id, ...rec } = sc;
+  schemes.set(id, { ...rec, name: cleanName(rec.name) });
+  persist();
+  return true;
+}
 /** @returns {{id, name, link, saved, created, changed}|null} a copy; changing it changes nothing */
 export const getScheme = sid => copyScheme(sid);
 /** Every kept scheme, newest change first (Ryan, 2026-10-29: one list, no folders). Copies. */
@@ -317,7 +343,13 @@ export function uniqueName(name, exceptSid = null) {
   const fold = x => x.toLowerCase();
   const taken = new Set([...schemes].filter(([sid]) => sid !== exceptSid).map(([, sc]) => fold(sc.name)));
   if (!taken.has(fold(base))) return base;
-  for (let n = 2; ; n++) { const c = `${base} (${n})`; if (!taken.has(fold(c))) return c; }
+  // The suffix must fit inside NAME_MAX: cut after it, and an 80-character name plus " (2)" came back as the
+  // same 80 characters, so two schemes shared one name.
+  for (let n = 2; ; n++) {
+    const suffix = ` (${n})`;
+    const c = [...base].slice(0, NAME_MAX - suffix.length).join('').trim() + suffix;
+    if (!taken.has(fold(c))) return c;
+  }
 }
 
 /* ---- prefs ---- */
@@ -345,8 +377,9 @@ export function exportJSON({ now = new Date() } = {}) {
  * Read a backup WITHOUT applying it — the Restore confirm shows what it would do first.
  * `lost` counts the paints marked on THIS device (owned or to buy) that the backup has no mark for:
  * Replace takes those marks away. `saved` is the backup's ISO date, or null when it has none.
- * `schemes` counts the saved schemes in the backup (a v1 backup has none).
- * @returns {{ok:false} | {ok:true, owned:number, want:number, schemes:number, saved:string|null, lost:number}}
+ * `schemes` counts the saved schemes in the backup (a v1 backup has none); `schemesLost` counts the saved
+ * schemes on THIS device that the backup does not have.
+ * @returns {{ok:false} | {ok:true, owned:number, want:number, schemes:number, saved:string|null, lost:number, schemesLost:number}}
  */
 export function inspectJSON(str) {
   const o = parse(str);
@@ -358,7 +391,10 @@ export function inspectJSON(str) {
   for (const id of want) if (!theirs.has(id)) lost++;
   const t = typeof o.saved === 'string' ? Date.parse(o.saved) : NaN;
   const saved = Object.values(s.schemes).filter(sc => sc.saved).length;
-  return { ok: true, owned: s.owned.length, want: s.want.length, schemes: saved, saved: Number.isFinite(t) ? new Date(t).toISOString() : null, lost };
+  // Replace takes the schemes too, so a saved scheme here that the backup does not have is lost.
+  let schemesLost = 0;
+  for (const [sid, sc] of schemes) if (sc.saved && !s.schemes[sid]) schemesLost++;
+  return { ok: true, owned: s.owned.length, want: s.want.length, schemes: saved, saved: Number.isFinite(t) ? new Date(t).toISOString() : null, lost, schemesLost };
 }
 
 /** Replace the shelf, the schemes and the settings with a backup's. @returns {boolean} false (and no change) when it is not a backup */
@@ -386,7 +422,7 @@ export function clear() {
   owned.clear(); want.clear(); info.clear(); schemes.clear();
   state.owned = []; state.want = []; state.wantInfo = {}; state.schemes = {};
   state.prefs = { ...PREF_DEFAULTS };
-  for (const k of [KEY, ...LEGACY_KEYS]) { try { localStorage.removeItem(k); } catch { /* private mode */ } }
+  for (const k of [KEY, SEEN_KEY, ...LEGACY_KEYS]) { try { localStorage.removeItem(k); } catch { /* private mode */ } }
   nativePrefs()?.remove({ key: KEY }).catch(() => { /* best effort: the next save overwrites the mirror anyway */ });
 }
 
@@ -398,6 +434,7 @@ let onExternal = null;
 /** Run `fn(prefsBefore)` after another tab saved or deleted the state, so the app can repaint. */
 export function onExternalChange(fn) { onExternal = fn; }
 globalThis.addEventListener?.('storage', e => {
+  if (e.key === SEEN_KEY) { onSeen?.(); return; }
   if (e.key !== KEY && e.key !== null) return;   // null: localStorage.clear() in another tab
   let s;
   try { s = e.key === KEY && e.newValue ? normalise(JSON.parse(e.newValue)) : fresh(); } catch { return; }

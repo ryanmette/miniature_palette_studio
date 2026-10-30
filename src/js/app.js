@@ -1166,19 +1166,28 @@ function applySwap(origId, swapId) {
   const sc = origFor ? store.getScheme(origFor) : null;
   const role = sc ? roleForPot(sc.link, origId) : null;
   const scheme = role ? { sid: origFor, role, before: decodeHolds(new URLSearchParams(sc.link.slice(1)).get('hd'))[role] || null } : null;
-  // the swap first, so a project whose last paint was the original is not dropped on the way (store.js)
+  // A project that is not saved lives only while a paint on the list points at it (store.js dropUnused). The
+  // swap can take a project's last paint (an owned swap, or a swap that was for another project), so keep the
+  // records now: Undo puts back any that went (review 2026-10-29).
+  const kept = store.listSchemes();
+  // the hold before the original leaves the list, while its project is sure to be there
+  if (scheme) holdInScheme(origFor, role, { kind: 'pot', id: swapId, hex: sw.hex, was: origId });
+  // the swap next, so a project whose last paint was the original is not dropped on the way (store.js)
   if (swapPrev.mark !== 'owned') {
     store.setMark(swapId, 'want', { for: origFor || undefined });
-    if (origQty > 1) store.setQty(swapId, origQty);
+    // a swap already on the list keeps its own pots too: 2 + 3 is 5, not 3
+    const qty = Math.min(99, origQty + (swapPrev.mark === 'want' ? swapPrev.qty : 0));
+    if (qty > 1) store.setQty(swapId, qty);
   }
   store.setMark(origId, 'none');
-  if (scheme) holdInScheme(origFor, role, { kind: 'pot', id: swapId, hex: sw.hex, was: origId });
-  swapLog.set(swapId, { orig: origId, origQty, origFor, swapPrev, scheme });
+  const dropped = kept.filter(sc => !store.getScheme(sc.id));
+  swapLog.set(swapId, { orig: origId, origQty, origFor, swapPrev, scheme, dropped });
   rk.swapOpen.delete(origId);
   swapRackRow(origId, sw);
   render('marks', { ids: [swapId] });
   ($(`[data-rkunswap="${CSS.escape(swapId)}"]`) || $(`[data-rktick="${CSS.escape(swapId)}"]`))?.focus({ preventScroll: true });
-  say(scheme ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
+  // name the scheme only while it is still kept (an owned swap can end an unsaved project)
+  say(scheme && store.getScheme(origFor) ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
     : t('swappedList', { name: ui.pname(sw), was: ui.pname(orig) }));
 }
 /** Undo a swap made in this visit: the original back on the list (count and project), the swap back to the
@@ -1186,6 +1195,7 @@ function applySwap(origId, swapId) {
 function undoSwap(swapId) {
   const e = swapLog.get(swapId), orig = e && state.idx.byId.get(e.orig);
   if (!e || !orig) return;
+  for (const sc of e.dropped || []) store.putScheme(sc);   // the projects the swap ended, under their own ids
   store.setMark(e.orig, 'want', { for: e.origFor || undefined });
   if (e.origQty > 1) store.setQty(e.orig, e.origQty);
   if (e.swapPrev.mark !== 'owned') {
@@ -2258,15 +2268,20 @@ function toggleContrast() {                       // include Contrast paints in 
   state.includeContrast = !state.includeContrast; store.setPref('contrast', state.includeContrast);
   renderLive(); renderActive(); renderMatchNote();
 }
+/** How long a toast shows: long enough to read. 1.7s for every toast hid a long one (an import's result)
+ *  before it could be read (mockups/whats-new.html, Part B): 1s + 60ms a character, 2s to 7s. */
+const toastMs = msg => Math.max(2000, Math.min(7000, 1000 + 60 * String(msg).length));
 /** `speak: false`: only the toast shows; the caller's render says the words (seedNews). */
 function toast(msg, { speak = true } = {}) {
   // The toast is what you see; say() is what a screen reader hears. A live region inserted with its text
   // already in it is not announced reliably, so the words go into a region that is already there.
+  // One at a time: they sit in one place, so a new one replaces the one before.
+  for (const old of document.querySelectorAll('.toast')) old.remove();
   const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('aria-hidden', 'true');
   // An open modal <dialog> is in the top layer, above any z-index, so while one is open the toast goes
   // inside the top one, where you can see it.
   const modal = [...document.querySelectorAll('dialog[open]')].reverse().find(isModal);
-  (modal || document.body).appendChild(d); setTimeout(() => d.remove(), 1700);
+  (modal || document.body).appendChild(d); setTimeout(() => d.remove(), toastMs(msg));
   if (speak) say(msg);
 }
 function isModal(el) {
@@ -2561,6 +2576,7 @@ function syncSettingsFade() {
 }
 function openSettings(opener = 'button') {
   const m = sMenu(); if (m.open) return;
+  if (!news.menuSeen) { news.menuSeen = true; renderNews(); }   // the dot has led here; About's tag leads on
   settings.opener = opener; settings.ret = 'opener';
   picker.close();
   syncSettingsControls(); resetBackupNow();
@@ -2642,7 +2658,7 @@ function setupSettings() {
   // The language follows the device (no ⋯ row). A change while the app is open applies at once.
   addEventListener('languagechange', () => {
     i18n.followDevice();
-    syncLocaleStrings(); syncUmpHint();
+    syncLocaleStrings(); syncUmpHint(); renderNews();
     renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
     wheelDraw();                        // …and the lightness slider's spoken value
   });
@@ -2707,6 +2723,8 @@ function openStore(opener, which = '') {
   const { all, projects } = storeChoices();
   if (!all.length) { toast(t('listEmpty')); return; }
   storeDlg.opener = opener;
+  // A Schemes row is drawn again when the naming step names its project, so keep a way to find its new button.
+  storeDlg.openerSel = opener?.dataset?.scstore ? `[data-scstore="${CSS.escape(opener.dataset.scstore)}"]` : null;
   storeDlg.which = projects.some(p => p.id === which) ? which : '';
   // the naming step: the projects in this export that have no name and were never asked (asked once, for good)
   const scope = storeDlg.which ? projects.filter(p => p.id === storeDlg.which) : projects;
@@ -2834,8 +2852,9 @@ function setupStore() {
   $('#storePrintBtn').addEventListener('click', printStoreList);
   $('#storeText').addEventListener('click', saveStoreText);
   d.addEventListener('close', () => {
-    const o = storeDlg.opener; storeDlg.opener = null;
-    const back = o && o.isConnected && o.getClientRects().length ? o : $('#settingsBtn');
+    const o = storeDlg.opener, sel = storeDlg.openerSel; storeDlg.opener = storeDlg.openerSel = null;
+    const shown = el => el && el.isConnected && el.getClientRects().length;
+    const back = shown(o) ? o : shown(sel && $(sel)) ? $(sel) : $('#settingsBtn');
     back.focus({ preventScroll: true });
   });
   $('#storeOpenMenu').addEventListener('click', () => { closeSettings(null); openStore($('#settingsBtn')); });
@@ -3012,9 +3031,11 @@ function confirmRestore(text, opener) {
     body: () => {
       const now = store.inspectJSON(text);
       const lost = now.lost ? `<p>${ui.esc(now.lost === 1 ? t('lostOne') : t('lostMany', { n: now.lost }))}</p>` : '';
+      // Replace takes the saved schemes too: say how many go (review 2026-10-29 — it was silent).
+      const sLost = now.schemesLost ? `<p>${ui.esc(now.schemesLost === 1 ? t('schemesLostOne') : t('schemesLostMany', { n: now.schemesLost }))}</p>` : '';
       return `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd>`
         + `<dt>${date ? datedLabel(date) : ui.esc(t('inBackup'))}</dt><dd>${ui.esc(fmtCounts(info))}</dd></dl>`
-        + lost + `<p>${ui.esc(t('restoreWarn'))}</p>`;
+        + lost + sLost + `<p>${ui.esc(t('restoreWarn'))}</p>`;
     },
     okLabel: t('replace'), opener,
     onOk: () => {
@@ -3033,13 +3054,31 @@ function confirmDelete() {
     body: () => `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd></dl>`
       + `<p>${ui.esc(t('deleteWarn'))}</p>`,
     okLabel: t('deleteBtn'), opener: $('#deleteOpen'),
-    onOk: () => { store.clear(); toast(t('deleted')); afterStoreReplaced(); },
+    // Delete is from About, so What's new is on screen: the device starts new with no dot
+    onOk: () => { store.clear(); store.setSeenNews(WHATS_NEW.version); renderNews(); toast(t('deleted')); afterStoreReplaced(); },
   });
+}
+
+/* ---- What's new (mockups/whats-new.html, A2) ----
+ * After an update (a new WHATS_NEW.version, not a new APP_VERSION: a patch with the same lines has nothing
+ * new to read), ⋯ shows a dot until it opens, and About carries a "New" tag until About opens. */
+const news = { menuSeen: false };
+const newsUnseen = () => store.seenNews() !== WHATS_NEW.version;
+function renderNews() {
+  const unseen = newsUnseen(), dot = unseen && !news.menuSeen;
+  $('#newsDot').hidden = !dot;
+  $('#settingsBtn').setAttribute('aria-label', dot ? t('settingsNews', { version: WHATS_NEW.version }) : t('settings'));
+  $('#aboutNew').hidden = !unseen;
+  const a = $('#aboutOpenMenu');
+  if (unseen) a.setAttribute('aria-label', t('aboutNews')); else a.removeAttribute('aria-label');
 }
 
 /* ---- About ---- */
 let aboutOpener = null;
-function openAbout(opener) { aboutOpener = opener; $('#about').showModal(); }
+function openAbout(opener) {
+  aboutOpener = opener; $('#about').showModal();
+  if (newsUnseen()) { store.setSeenNews(WHATS_NEW.version); renderNews(); }
+}
 /** Strings built in JS that follow the language: the version line, What's new and the slot sizes. */
 function syncLocaleStrings() {
   $('#aboutVersion').textContent = t('versionLine', { app: APP_VERSION, data: (state.idx && state.idx.version) || '—' });
@@ -3071,7 +3110,8 @@ function loadHelp() {
 /** Open Help, at a section when `hash` names one ("#matching"). */
 async function openHelp(opener, hash = '') {
   try { await loadHelp(); }
-  catch { toast(t('helpFailed')); location.href = 'support.html' + hash; return; }
+  // Stay in the app: going to the page at once hid the toast, and with no network it left the app for an error page.
+  catch { toast(t('helpFailed')); return; }
   helpOpener = opener;
   helpShowDetails?.();   // the details hold the window's size and the theme: fresh each time Help opens
   const d = $('#helpDlg');
@@ -3094,7 +3134,8 @@ function wireSupportDetails(root) {
   box.querySelector('#supportScheme').addEventListener('change', show);
   box.querySelector('#supportCopy').addEventListener('click', async () => {
     show();
-    try { await navigator.clipboard.writeText(line()); say(t('supportCopied')); box.querySelector('#supportSaid').textContent = t('supportCopied'); }
+    // #supportSaid is a status region already: a say() too made a screen reader read the line twice.
+    try { await navigator.clipboard.writeText(line()); box.querySelector('#supportSaid').textContent = t('supportCopied'); }
     catch { box.querySelector('#supportSaid').textContent = t('supportCopyFailed'); }
   });
   box.hidden = false;
@@ -3440,6 +3481,13 @@ async function init() {
   $('#shareImg').hidden = !CAN_SHARE; $('#saveImg').hidden = CAN_SHARE; $('#copyImg').hidden = !CAN_COPY_IMAGE;
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
   syncLocaleStrings(); syncSettingsControls();
+  // A new device has nothing that changed, so it starts with this version seen: no dot.
+  if (store.firstVisit) store.setSeenNews(WHATS_NEW.version);
+  renderNews();
+  store.onSeenNewsChange(renderNews);   // About opened in another tab
+  // A failed save is said once a visit: the shelf then lives only in this tab.
+  let saveFailSaid = false;
+  store.onSaveFail(() => { if (!saveFailSaid) { saveFailSaid = true; toast(t('saveFailed')); } });
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
   ({ draw: wheelDraw, endLightnessRun } = setupWheel({

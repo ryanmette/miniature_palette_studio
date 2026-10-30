@@ -11,7 +11,7 @@
 // fresh index.html (the v1.3.0 bug). 'reload' always hits the origin and refreshes the HTTP cache.
 // Bump CACHE on any shell/asset change. skipWaiting + clients.claim hand control to the new SW promptly.
 
-const CACHE = 'ps-v78';
+const CACHE = 'ps-v79';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './icon.svg', './icon-app.svg', './apple-touch-icon.png',
   './privacy.html', './support.html', './js/infopage.js',
@@ -36,7 +36,9 @@ self.addEventListener('activate', e => {
   );
 });
 
-const isShell = (req, url) => req.mode === 'navigate' || /\.(?:js|css)$/.test(url.pathname);
+// The info pages count as shell too: the Help sheet fetch()es support.html (not a navigation), and a cache-first
+// copy showed old Help in the sheet while the page itself was new (CLAUDE.md §3.5: the two never differ).
+const isShell = (req, url) => req.mode === 'navigate' || /\.(?:js|css)$|\/(?:support|privacy)\.html$/.test(url.pathname);
 // A navigation to the app itself ('/' or '/index.html', any query). Other pages in scope (privacy.html,
 // support.html) are navigations too, but must never be stored as the app.
 const isAppNav = (req, url) => req.mode === 'navigate' && /\/(?:index\.html)?$/.test(url.pathname);
