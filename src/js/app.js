@@ -957,7 +957,7 @@ const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComput
 
 function shelfHint() {
   if (COARSE) return shelf.selectMode
-    ? 'Select mode: tap paints, then Owned, Shopping list or Clear below. Hold a paint for the menu.'
+    ? 'Select mode: tap paints, or hold and slide across them. Then choose Mark owned, Add to shopping list or Clear.'
     : 'Tap a paint to mark it. Hold and slide to read names. Hold still for more.';
   return 'Click a paint, then P owned · U shopping list · X clear. Right-click for more.';
 }
@@ -981,7 +981,11 @@ function clearShelfNarrowing() {
   say(t('filtersCleared'));
 }
 function renderShelfBar() {
-  $('#shelfBar').innerHTML = ui.shelfBar(shelf.sel.size);
+  const n = shelf.sel.size;
+  $('#shelfBar').innerHTML = ui.shelfBar(n);
+  // On touch and phones the bar is a sheet at the bottom (app.css), in Select mode only on a touch screen: a
+  // long-press selects its paint for the menu, and the sheet must not come up after every menu.
+  document.body.classList.toggle('selsheet', n > 0 && (shelf.selectMode || !COARSE));
 }
 function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
@@ -1579,10 +1583,31 @@ function updateCell(c, mark) {
 /* ---- Scrub the Shelf grid (touch; PLAN §5 item 43) ---- */
 const SCRUB_MS = 250;
 let scrub = null, scrubLift = false, scrubCell = null;
+/** The cell for a scrub point. The touch areas meet edge to edge (Ryan, phone test 2026-10-30): the grid's 8px gaps
+ *  are part of the picture, not of the touch, so a finger in a gap takes the nearest cell and the loupe does not flicker.
+ *  It probes half a gap and a little more in each direction, nearest first. */
+// 0, then 1–5px out on each axis, then the diagonals (a gap crossing), nearest first: half the 8px gap plus 1
+const SCRUB_PROBES = [[0, 0], ...[1, 2, 3, 4, 5].flatMap(d => [[d, 0], [-d, 0], [0, d], [0, -d]]),
+  ...[3, 5].flatMap(d => [[d, d], [-d, d], [d, -d], [-d, -d]])];
+function scrubCellAt(x, y) {
+  for (const [dx, dy] of SCRUB_PROBES) {
+    const c = document.elementFromPoint(x + dx, y + dy)?.closest?.('#shelfGrid .cell');
+    if (c) return c;
+  }
+  return null;
+}
 /** The loupe for the cell under the finger, above the finger (below it when the header leaves no room). */
 function scrubAt(x, y) {
-  const c = document.elementFromPoint(x, y)?.closest?.('#shelfGrid .cell') || null;
+  const c = scrubCellAt(x, y);
   const loupe = $('#scrubLoupe');
+  // A slow slide must not open the menu: once the finger reaches another paint, the press is a scrub, not a hold
+  if (scrub) { if (!scrub.first) scrub.first = c; else if (c && c !== scrub.first) shelfMenuSurface?.cancelHold(); }
+  if (scrub?.sel && c && !scrub.sel.done.has(c.dataset.id)) {   // Select mode: drag to select
+    const id = c.dataset.id, s = new Set(shelf.sel);
+    scrub.sel.done.add(id);
+    if (scrub.sel.add) s.add(id); else s.delete(id);
+    setSelection(s, { anchor: id, cursor: id });
+  }
   if (c !== scrubCell) { scrubCell?.classList.remove('scrubbed'); scrubCell = c; c?.classList.add('scrubbed'); }
   if (!c) { loupe.hidden = true; return; }
   const p = state.idx.byId.get(c.dataset.id); if (!p) return;
@@ -1626,11 +1651,18 @@ function setupShelf() {
     // grid with a loupe above it (the page does not scroll while it does), and lifting marks nothing. A move over
     // MOVE_SLOP before then is a scroll. Still to LONG_PRESS_MS opens the mark menu, as before (openShelfMenu ends the scrub).
     grid.addEventListener('pointerdown', e => {
-      if (e.pointerType !== 'touch' || shelf.selectMode) return;
+      if (e.pointerType !== 'touch') return;
       endScrub();
       const x = e.clientX, y = e.clientY;
       scrub = { id: e.pointerId, x, y, on: false,
-        timer: setTimeout(() => { if (scrub) { scrub.on = true; scrubAt(scrub.x, scrub.y); } }, SCRUB_MS) };
+        timer: setTimeout(() => {
+          if (!scrub) return;
+          scrub.on = true;
+          // Select mode (Ryan, 2026-10-30): the same gesture selects every paint it passes. The first paint
+          // decides the direction: on an unselected one it selects, on a selected one it deselects (as Photos).
+          if (shelf.selectMode) { const c0 = scrubCellAt(scrub.x, scrub.y); scrub.sel = { add: !(c0 && shelf.sel.has(c0.dataset.id)), done: new Set() }; }
+          scrubAt(scrub.x, scrub.y);
+        }, SCRUB_MS) };
     });
     grid.addEventListener('pointermove', e => {
       if (!scrub || e.pointerId !== scrub.id) return;
@@ -3535,6 +3567,7 @@ function wire() {
     shelf.selectMode = !shelf.selectMode;
     $('#shelfSelect').setAttribute('aria-pressed', String(shelf.selectMode));
     if (!shelf.selectMode) setSelection([], { anchor: null });   // leaving select mode clears the selection
+    else renderShelfBar();
     $('#shelfHint').textContent = shelfHint();
   });
   $('#exportColl').addEventListener('click', exportCollectionCsv);

@@ -160,9 +160,10 @@ export function createMarkMenu({ box, head, list }) {
    *   item(t)    the item element for an event target, or null (e.g. t => t.closest('.cell'))
    *   longPress  open on a touch long-press (the Shelf: on a touch screen only, as before)
    *   onOpen(itemEl, how, point)  open the menu for that item; how is 'touch' or 'mouse'
-   * Returns { ignorePress() }: true while the press now in progress must do nothing else, because a
-   * long-press or a right-click used it, or it only closed the menu. The surface's own pointer and click
-   * handlers ask it first.
+   * Returns { ignorePress(), cancelHold() }. ignorePress: true while the press now in progress must do nothing
+   * else, because a long-press or a right-click used it, or it only closed the menu. The surface's own pointer
+   * and click handlers ask it first. cancelHold: the press is used for something else (the Shelf's scrub has
+   * moved to another paint), so the long-press must not open the menu.
    */
   function attach({ container, item, longPress = true, onOpen }) {
     let timer = 0, sx = 0, sy = 0, held = null, opened = false;
@@ -199,7 +200,7 @@ export function createMarkMenu({ box, head, list }) {
       onOpen(it, press.type === 'mouse' ? 'mouse' : 'touch', { x: e.clientX, y: e.clientY });
     });
     surfaces.push(container);
-    return { ignorePress: () => press.eaten };
+    return { ignorePress: () => press.eaten, cancelHold: cancel };
   }
 
   return { open, close, attach, isOpen: () => !!cur, contains: n => !!n && box.contains(n) };

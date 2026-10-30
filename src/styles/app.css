@@ -748,6 +748,24 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfbar { display: flex; align-items: center; gap: 10px; min-height: var(--tap); margin-top: 14px; flex-wrap: wrap; }
 .barcount { font-weight: 600; font-size: 13px; }
 .baracts { display: flex; gap: 8px; flex-wrap: wrap; }
+.barhead { display: flex; align-items: center; gap: 10px; }
+/* Touch and phones (Ryan, 2026-10-30): the selection's actions come up as a sheet at the bottom, as the Filters
+   sheet (--surface, --r-card top corners, --shadow-pop), so they are in reach wherever the grid is scrolled. Not
+   modal: no scrim, and the grid stays live, so the painter can keep selecting. The page keeps room for it. */
+@media (pointer: coarse), (max-width: 520px) {
+  body.selsheet .shelfbar:not(:empty) { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; margin: 0; display: flex; flex-direction: column;
+    align-items: stretch; gap: 8px; background: var(--surface); border-radius: var(--r-card) var(--r-card) 0 0;
+    box-shadow: var(--shadow-pop); padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+  body.selsheet .shelfbar .barhead { justify-content: space-between; }
+  body.selsheet .shelfbar .barcount { font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; }
+  body.selsheet .shelfbar .baracts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  body.selsheet .shelfbar .baracts .btn { height: auto; min-height: var(--tap); white-space: normal; line-height: 1.2; justify-content: center; text-align: center; padding: 4px 8px; }
+  body.selsheet .shelf { padding-bottom: 168px; }   /* room for the sheet: the last row of paints can scroll above it */
+}
+@media (prefers-reduced-motion: no-preference) and ((pointer: coarse) or (max-width: 520px)) {
+  body.selsheet .shelfbar:not(:empty) { animation: sheetup .2s cubic-bezier(.2,.7,.2,1); }
+}
+@keyframes sheetup { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
 .btn.sm { height: var(--tap); padding: 0 12px; font-size: 12.5px; }
 @media (min-width: 521px) and (pointer: fine) { .btn.sm { height: 32px; } }   /* compact only with a mouse (§3.6 touch targets) */
 .btn.sm.ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
