@@ -2270,7 +2270,9 @@ function setMode(mode) {
     resetRackSession();
     renderShelf(); window.scrollTo(0, 0);
     Object.assign(dock, { open: true, acc: 0, lastY: 0, stuck: false }); applyDock();
-    if (state.shelfView !== 'list') $('#shelfGrid').focus({ preventScroll: true });
+    // With a mouse or keyboard the grid takes focus, so arrows and P/U/X work at once. On a touch screen there is no
+    // keyboard to use it, and iOS drew the focus ring round the whole grid and a cursor name tip (Ryan, 2026-10-30).
+    if (state.shelfView !== 'list' && !COARSE) $('#shelfGrid').focus({ preventScroll: true });
   }
   else if (state.mode === 'schemes') { renamingId = null; renderSchemesPage(); window.scrollTo(0, 0); }
   else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows

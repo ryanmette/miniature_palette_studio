@@ -12,6 +12,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   with the paint's name. Slide to read the next one. Lifting marks nothing, and a plain tap still marks.
 - **Select by sliding** (touch): in Select mode, hold a paint and slide to select every paint you pass. The actions
   (Mark owned, Add to shopping list, Clear) come up in a sheet at the bottom, where you can reach them.
+- **Opening the Shelf on a touch screen no longer draws a focus ring round the whole grid** (and a stray name label).
+  The grid takes keyboard focus only with a mouse or a keyboard.
 - **Hold and slide reads names across the gaps:** the gaps between swatches count as the nearest paint, so the
   name does not flicker, and a slow slide no longer opens the menu.
 - **Pick many types** in the Shelf's filters (for example layer + base + wash).
