@@ -7,6 +7,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 took only the web entries. -->
 ### Added
+- **Tap the starting paint to see the scheme large** (the hero's swatch), with Share or Save beside it.
+- **Hold and slide on the Shelf grid to read names** (touch). A finger held still for a quarter second shows a loupe
+  with the paint's name. Slide to read the next one. Lifting marks nothing, and a plain tap still marks.
+- **Pick many types** in the Shelf's filters (for example layer + base + wash).
+- **A study of the paint colours** (`docs/COLOUR_CHECK.md`): what looks wrong in the data now, and a method to check
+  each paint against the maker's swatch. No data changed.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
@@ -32,6 +38,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   line before you copy it. The app does not send it: it goes to us only if you paste it into a message.
 - **What’s new in About.** About shows the main changes in this version (`WHATS_NEW` in `version.js`).
 ### Changed
+- **The Shelf's hue sort is in colour order** (it was unreliable). It now uses the same order as Browse: bands of
+  the hue the eye sees, light to dark and back, greys last. The Shelf's sort jumped 3 times as far between
+  neighbours. **Sort: lightness** uses the lightness the eye sees.
+- **The Shelf grid has bigger swatches** on a phone: 5 columns of about 67px (it was 6 of 54px).
+- **"⚓ Move here" says what it did**, and the starting paint's column in accent mode is tagged "Accent · your paint".
+- **The Shelf list's top is shorter on a phone:** the tools share a row, and "This store carries" is one row that
+  scrolls sideways, with a count of the brands.
 - **Toasts stay long enough to read:** 2 to 7 seconds by length (was 1.7 seconds for all). A new toast takes the
   place of the one before.
 - **The names "Help" and "About".** "About & data" is now "About". About no longer explains the matching:

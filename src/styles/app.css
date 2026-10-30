@@ -658,12 +658,39 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfmore { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 /* an active filter is state → the badge recipe (weak fill + strong text), not a ring (§3.5) */
 .shelffilters select.on { background: var(--accent-weak); color: var(--accent); }
+/* Type, pick many (PLAN §5 item 45): a button styled as the selects beside it, and a popover of toggles under it */
+.typepick { position: relative; }
+.typebtn { height: var(--tap); min-width: 120px; display: inline-flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 0 12px 0 10px; border: 1px solid var(--edge); border-radius: var(--r-ctrl); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 13px; cursor: pointer; }
+.typebtn .ic { width: 16px; height: 16px; color: var(--text-muted); transition: transform .12s; }
+.typebtn[aria-expanded="true"] { background: var(--surface-2); }   /* open is a fill, not the ring (§3.5) */
+.typebtn[aria-expanded="true"] .ic { transform: rotate(180deg); }
+.typebtn.on { background: var(--accent-weak); color: var(--accent); }
+.typebtn:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+.typelist { display: none; }
+.typepick.open .typelist { display: flex; flex-wrap: wrap; gap: 8px; position: absolute; top: calc(100% + 4px); left: 0; z-index: 60;
+  width: 320px; max-width: calc(100vw - 32px); padding: 12px; background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--r-card); box-shadow: var(--shadow-pop); }
+.typechip { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); padding: 0 12px 0 8px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-ctrl); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.typechip .ic { width: 14px; height: 14px; visibility: hidden; color: var(--accent); }
+.typechip[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); }
+.typechip[aria-pressed="true"] .ic { visibility: visible; }
+.typechip:hover { background: var(--surface-2); }
+.typechip[aria-pressed="true"]:hover { background: var(--accent-weak); }
+.typechip:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+@media (prefers-reduced-motion: reduce) { .typebtn .ic { transition: none; } }
+@media (forced-colors: active) { .typechip[aria-pressed="true"] { outline: 2px solid Highlight; outline-offset: -2px; } }
 /* phone-only parts of the dock */
 .shelffbtn, .shelfmore .sheethead, .sheetdone, .shelfhandle, .shelfscrim { display: none; }
 .shelfmlbl { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap; border: 0; }   /* sr-only on desktop; visible in the phone sheet */
 
 .shelfgrid { position: relative; display: grid; gap: 8px; touch-action: pan-y;
+  /* 64px on every width, phones too (PLAN §5 item 44: 54px cells read as a dense wall on a phone; 5 columns of
+     about 67px at 402px). 8px gap, on the §3.4 scale (touch had 10px). */
   grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
 /* A surface with the long-press mark menu (markmenu.js): a hold must not select text or open the iOS
    callout. The Shelf grid, and the seed field's list. */
@@ -704,6 +731,15 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfgrid[data-input="key"] .cell:hover:not(.cursor) .celltip { display: none; }
 /* While the mark menu is open, no tip: the menu's title names the paint, and a tip peeked out under it. */
 .shelfgrid.menuopen .cell .celltip { display: none; }
+/* Scrub (touch, PLAN §5 item 43): a loupe that floats above the finger, and a ring on the cell under it (interaction → ring) */
+.scrubloupe { position: fixed; z-index: 70; pointer-events: none; display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 16px);
+  padding: 8px 12px; background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--r-card); box-shadow: var(--shadow-pop); }
+.scrubloupe[hidden] { display: none; }
+.scrubloupe .sw { width: 32px; height: 32px; }
+.sltx { display: flex; flex-direction: column; min-width: 0; font-size: var(--fs-small); color: var(--text-muted); }
+.sltx b { font-size: var(--fs-body); font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shelfgrid .cell.scrubbed { outline: 2px solid var(--accent); outline-offset: 2px; }
+.shelfgrid.scrubbing .celltip, .shelfgrid:has(.scrubbed) .celltip { display: none; }
 .cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* marquee rubber-band */
 .marquee { position: absolute; border: 1px solid var(--accent); background: var(--accent-weak);
@@ -969,6 +1005,17 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 /* Help (mockups/help-about.html, B): the sheet shows support.html's own <main>, so the page's .doc styles carry over.
    Inside the sheet the headings are the page's, not About's, and a part scrolls to the sheet's top (no header). */
 .helpdlg { width: min(720px, 92vw); }
+/* The scheme, large (PLAN §5 item 47): the share image, square, as wide as the sheet allows */
+.bigdlg { width: min(560px, calc(100vw - 32px)); }
+.bigframe { aspect-ratio: 1; border: 1px solid var(--border); border-radius: var(--r-sw); overflow: hidden; background: var(--surface-2); }
+.bigframe img { display: block; width: 100%; height: auto; }
+.bigacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+/* the hero's swatch is a button now: no chrome of its own, the swatch is the look; 44px hit area on touch */
+.herobig { position: relative; padding: 0; border: 0; background: none; border-radius: var(--r-sw); cursor: zoom-in; flex: none; display: inline-flex; }
+.herobig:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+@media (pointer: coarse), (max-width: 520px) {
+  .herobig::after { content: ""; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); }
+}
 .helpdlg .aboutbody h2 { font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; margin: 24px 0 8px; scroll-margin-top: 8px; }
 .helpdlg .aboutbody h2:first-of-type { margin-top: 8px; }
 .helpdlg .aboutbody h3 { font-family: var(--font); font-size: var(--fs-body); font-weight: 600; margin: 16px 0 4px; scroll-margin-top: 8px; }
@@ -1093,7 +1140,6 @@ a.btn { text-decoration: none; }
   .lctop { --lcpad: 8px; min-height: 72px; padding: 7px var(--lcpad) 0; gap: 6px; }
   .lchexrow { flex-wrap: wrap; gap: 4px; }
   .lcact { gap: 4px 12px; }
-  .shelfgrid { grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); }   /* fit more swatches per row on phones */
   .modenav { order: 2; }
 
   /* Shelf dock on a phone: under the tabs with no rule between them — header, panel and handle read
@@ -1156,6 +1202,9 @@ a.btn { text-decoration: none; }
     z-index: 2; max-height: 85vh; max-height: 85dvh; overflow: auto; background: var(--surface); border-radius: var(--r-card) var(--r-card) 0 0;
     box-shadow: var(--shadow-pop); padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
   .shelfmore.open select { width: 100%; }
+  /* the sheet shows the type toggles inline, with no button */
+  .shelfmore.open .typebtn { display: none; }
+  .shelfmore.open .typelist { display: flex; flex-wrap: wrap; gap: 8px; }
   .shelfmore.open .shelfmlbl { position: static; width: auto; height: auto; margin: 12px 0 4px; clip: auto; overflow: visible;
     white-space: normal; font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); }
   .shelfmore.open .sheethead { display: flex; align-items: center; justify-content: space-between; }
@@ -1175,7 +1224,6 @@ a.btn { text-decoration: none; }
 /* coarse pointers (touch): bigger cells + an always-visible name (no hover) make tap-to-cycle comfortable */
 @media (pointer: coarse) {
   .shelf-select { display: inline-flex; }
-  .shelfgrid { gap: 10px; }
   .cell { aspect-ratio: 1; }
   /* tap names the cell via sticky :hover (clamped on-screen by clampTip) — the wall stays scannable
      because only the touched cell ever hovers */
@@ -1378,6 +1426,20 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
 /* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B) ------------------------------- */
 .rkstore { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 4px 0 8px; }
 .rkchips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rkcount { text-transform: none; letter-spacing: 0; }
+/* Phone (PLAN §5 item 42): the list's top took 79% of the screen. The tools share one row, the brand toggles are
+   one 44px row that scrolls sideways (4px of room for the focus ring, §3.5), and the list's how-to is in Help. */
+@media (max-width: 520px) {
+  .rktools { gap: 8px 12px; margin: 4px 0; }
+  .rktools .seg { width: auto; }
+  .rktools .seg button { flex: none; padding: 5px 12px; }
+  .rkhint { display: none; }
+  .rkstore { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 0; margin: 0 -4px 4px; }
+  .rkstore > .micro { padding: 0 4px; }
+  .rkchips { flex-wrap: nowrap; overflow-x: auto; padding: 4px; scrollbar-width: none; }
+  .rkchips::-webkit-scrollbar { display: none; }
+  .rkchip { flex: none; }
+}
 /* A brand the store carries: a toggle (aria-pressed). On: the accent edge and a check, so it is not colour alone;
    off: the plain edge, the label muted and struck through */
 .rkchip { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); padding: 0 12px 0 8px;
@@ -1477,7 +1539,7 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
   .newsdot { forced-color-adjust: none; background: Highlight; box-shadow: none; }
   .qr { forced-color-adjust: none; }   /* the store QR code: a forced dark Canvas under black modules would not scan */
   .celltip, .cbadge, .lccopy { forced-color-adjust: auto; }
-  .cell[aria-selected="true"], .cell.cursor, .cell:focus-visible, .pkt.cur .sw, .pko.cur .sw { outline-color: Highlight; }
+  .cell[aria-selected="true"], .cell.cursor, .cell:focus-visible, .cell.scrubbed, .pkt.cur .sw, .pko.cur .sw { outline-color: Highlight; }
   .lcol.linkhi, .lcol.eqsel { outline-color: Highlight; }
   .lcol.linkhi .lctop, .lcol.eqsel .lctop { box-shadow: inset 0 0 0 5px Canvas; }
   /* after, and as heavy as, the line above. The ring's place is set here, 4–6px in (inside the column's 3px

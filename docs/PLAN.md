@@ -566,31 +566,40 @@ with one id). A fix renames the public page's anchors, so its links change: it w
 - **"This store carries" looked capped.** It listed only the brands of the paints the filters showed. It now lists
   every brand on the shopping list.
 
+**Ryan's decision (2026-10-30): the recommendations, all of them.** 42–47 are built; 48 keeps the wheel; 49 is a study.
+
 **Needs Ryan's decision** (each with the recommendation):
 
-42. **The Shelf list's top on a phone** (79% of the screen before the first paint: header, dock, title + Grid|List +
+42. **Built.** **The Shelf list's top on a phone** (79% of the screen before the first paint: header, dock, title + Grid|List +
     Import + Save, counts, Rack order|By project, Print + Take to the store, 4 rows of brand toggles, a hint). Recommend:
     Grid|List, Print and Take to the store on one tools row; the hint only in Help or when the list is empty; the
     brand toggles in one 44px row that scrolls sideways, with "10 brands · 2 off". Target: the first paint at about
     y 430 (it is at 689).
-43. **Scrub the Shelf grid to read names.** Today a tap marks at once, and the name shows only after. Recommend: a
+43. **Built (a plain tap still marks).** **Scrub the Shelf grid to read names.** Today a tap marks at once, and the name shows only after. Recommend: a
     finger held still 250ms starts a scrub (a loupe above the finger names each paint it passes; lifting does
     nothing); still to 500ms opens the mark menu, as now. Question: should a plain tap still mark?
-44. **Shelf grid density.** 6 columns of 54px at 402px, with a 10px gap. Recommend 64px minimum and an 8px gap (5 columns of about 67px).
-45. **Pick many types** (layer + base + wash). Recommend: one toggle per type in the Filters sheet (`aria-pressed`), and
+44. **Built.** **Shelf grid density.** 6 columns of 54px at 402px, with a 10px gap. Recommend 64px minimum and an 8px gap (5 columns of about 67px).
+45. **Built.** **Pick many types** (layer + base + wash). Recommend: one toggle per type in the Filters sheet (`aria-pressed`), and
     on a wide screen a "Type: 3 ▾" button that opens the same toggles.
-46. **"⚓ Move here" adds a column.** In accent mode the scheme is built from the opposite colour (180° away), and
+46. **Built.** **"⚓ Move here" adds a column.** In accent mode the scheme is built from the opposite colour (180° away), and
     most harmonies have no partner there, so the picked colour comes back as an extra column (triadic 4 → 5).
     Recommend: say it on the dock ("Accent: the scheme starts from its opposite, Hydra Turquoise"), tag the column
     "Your accent (kept)", and show a one-time line the first time.
-47. **Tap the starting paint for a big view.** Today the hero does nothing on a tap. Recommend: the hero's swatch opens
+47. **Built.** **Tap the starting paint for a big view.** Today the hero does nothing on a tap. Recommend: the hero's swatch opens
     a sheet with the starting paint large (pot, target, ΔE) and the scheme's four pots beside it at 60-30-10. It can
     reuse the share image (`shareimage.js`), with Share and Save beside it.
-48. **A smaller wheel on a phone?** It is 330px of a 402px screen. Recommend: keep it, now that it scrolls; revisit after 42–47.
-49. **Check every paint's colour.** 3,225 hexes come from community data, and most are `approx`. A full pass needs a
+48. **Kept as it is.** **A smaller wheel on a phone?** It is 330px of a 402px screen. Recommend: keep it, now that it scrolls; revisit after 42–47.
+49. **Studied: [`docs/COLOUR_CHECK.md`](COLOUR_CHECK.md).** **Check every paint's colour.** 3,225 hexes come from community data, and most are `approx`. A full pass needs a
     source for each brand (manufacturer swatches, or measured photos under one light) and a method: see
     `docs/DATA_SOURCING.md`. Recommend: start with the paints people pick most (the starters and Citadel Base/Layer),
     compare each with the maker's own swatch, and log the ΔE of every change. A study first, not a bulk edit.
+
+50. **The hue sort was unreliable** (Ryan, 2026-10-30) — **fixed.** The Shelf's Sort: hue used the raw HSL hue, so greys
+    (whose hue is noise) sat among the reds: 119 greys in the first 400 paints. Measured as the mean ΔE 2000 between
+    neighbours and the jumps over 25: Shelf 22.8 · 1,165; the Browse order 7.8 · 31. Both now use one order, 20° bands of
+    Lab hue that snake (7.2 · 4), and a test keeps it smooth. Sort: lightness uses Lab L*.
+51. **A design pass on the swatches** (Ryan, 2026-10-30): does each swatch show its paint and its type (metal, wash,
+    contrast, effect)? — **study:** `mockups/swatch-finish.html`.
 
 **Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
 

@@ -350,8 +350,12 @@
           <div class="sheethead"><h3 id="shelfMoreTitle" tabindex="-1">Filters</h3><button class="btn sm ghost" id="shelfReset">Reset</button></div>
           <label class="shelfmlbl" for="shelfBrand">Brand</label>
           <select id="shelfBrand"><option value="" data-i18n="allBrands">All brands</option></select>
-          <label class="shelfmlbl" for="shelfType">Type</label>
-          <select id="shelfType"><option value="">All types</option></select>
+          <!-- Type: pick many (PLAN §5 item 45). A popover of toggles under a button with a mouse; in the phone sheet the toggles show inline. -->
+          <span class="shelfmlbl" id="shelfTypeLbl">Type</span>
+          <div class="typepick" id="shelfTypePick">
+            <button type="button" class="typebtn" id="shelfTypeBtn" aria-expanded="false" aria-controls="shelfTypes"><span id="shelfTypeTx">All types</span><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></button>
+            <div class="typelist" id="shelfTypes" role="group" aria-labelledby="shelfTypeLbl"></div>
+          </div>
           <label class="shelfmlbl" for="shelfSort">Sort</label>
           <select id="shelfSort">
             <option value="">Default order</option>
@@ -458,6 +462,22 @@
 <!-- Save a scheme (PLAN §5 item 35; mockups/project-naming.html): one field, pre-filled with the automatic name
      and selected, so typing replaces it and Enter keeps it. The hint slot holds both lines (.fixslot), so a
      name that another scheme has changes the words, never the layout (§3.4). -->
+<!-- The scheme, large (PLAN §5 item 47): the hero's swatch opens it. It shows the share image (shareimage.js), made
+  on the device in the theme on screen, with Share or Save beside it. -->
+<dialog id="bigDlg" class="about bigdlg" aria-labelledby="bigTitle">
+  <div class="abouthead sheethead">
+    <h2 id="bigTitle">Your scheme</h2>
+    <button class="iconbtn" id="bigClose" aria-label="Close" data-i18n-aria="close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="aboutbody bigbody">
+    <div class="bigframe"><img id="bigImg" alt="" width="1080" height="1080" /></div>
+    <div class="bigacts">
+      <button type="button" class="btn" id="bigShare">Share image…</button>
+      <button type="button" class="btn" id="bigSave">Save the image</button>
+    </div>
+  </div>
+  <p class="sr-only" role="status" data-say></p>
+</dialog>
 <dialog id="saveDlg" class="cdlg" aria-labelledby="saveDlgTitle">
   <form method="dialog" id="saveForm">
     <h2 id="saveDlgTitle"></h2>
@@ -575,6 +595,8 @@
 
 <!-- The one mark menu (markmenu.js, §3.5): the Shelf's, and the seed field's list. A long-press, a
      right-click, or Shift+F10 / the ContextMenu key opens it; its items are built on each open. -->
+<!-- Scrub the Shelf grid (touch, PLAN §5 item 43): the name of the paint under the finger. A picture for the eye: each cell has its own name for a screen reader. -->
+<div id="scrubLoupe" class="scrubloupe" aria-hidden="true" hidden></div>
 <div id="markMenu" class="menu" hidden>
   <p class="mh" id="markMenuHead"></p>
   <div role="menu" id="markMenuList" aria-labelledby="markMenuHead"></div>

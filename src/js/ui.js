@@ -211,7 +211,9 @@ export function hero(base, animate = true, markOf, seedRole = '', neutral = fals
   const seed = seedRole ? `<span class="seedbadge seed-${esc(seedRole)}">${esc(seedRole)}</span>` : '';
   const ntag = neutral ? '<span class="ntag" title="No usable hue — the scheme is built for neutrals">neutral</span>' : '';
   const own = (!base.custom && base.id && markOf) ? `<span class="herobuy">${ownOrBuy(base.id, markOf(base.id))}</span>` : '';
-  return swatch(base.hex, 'herochip' + (animate ? ' pop' : '') + fxCls(base))
+  // The swatch opens the scheme large (PLAN §5 item 47): the starting paint and the scheme's pots, one tap away.
+  return `<button type="button" class="herobig" data-herobig aria-haspopup="dialog" aria-label="See the scheme large" title="See the scheme large">`
+    + swatch(base.hex, 'herochip' + (animate ? ' pop' : '') + fxCls(base)) + `</button>`
     + `<h2 class="heroname">${esc(base.name)}</h2>`
     + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button>`
     + seed + ntag
@@ -511,7 +513,9 @@ export function livePalette(vm, roleByHex = {}) {
     const cHex = safeColor(c.hex);                         // the swatch's own (ideal) colour — what "use as base"/edit start from
     const role = c.role || roleByHex[cHex.toUpperCase()];   // unify with the Plan: show the role this colour plays
     // An added colour is a sketch colour: no role, so not in the Recipe (mockups/hold-flow.html, "Extra").
-    const tag = role || (isBase ? 'Base' : isFree ? 'Extra' : isMetal ? 'Metal' : isPin ? 'Accent'
+    // the pin: the starting paint as the accent, kept when no rule colour lands on it (PLAN §5 item 46)
+    const tag = isPin ? (role ? `${role} · your paint` : 'Your accent (kept)')
+      : role || (isBase ? 'Base' : isFree ? 'Extra' : isMetal ? 'Metal'
       : c.deg ? `${c.deg > 0 ? '+' : ''}${c.deg}°` : toneTag(c.hex, baseCol));   // deg 0 = a value partner, not a hue offset
     // Finish overlay: the pot band wears its paint's finish; the Metal target wears the metallic sheen
     // (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
@@ -562,7 +566,7 @@ export function livePalette(vm, roleByHex = {}) {
       // A tag, not the paint's name: the name is already in the column's footer (UX 7). The title keeps it.
       ? `<span class="seedchip" title="${esc(c.dock.name)} is the starting paint — it sets the ${esc(tag)} role">${icon('anchor')}Starting paint</span>`
       : c.dock && c.dock.type === 'switch'
-        ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="Rebuild the scheme with the starting paint as the ${esc(tag)}"`} aria-label="Move the starting paint to ${esc(tag)}">${icon('anchor')}Move here</button>`
+        ? `<button type="button" class="dockbtn" data-seeddock="${c.dock.target}"${c.dock.disabled ? ` aria-disabled="true" title="${esc(c.dock.disabled)}"` : ` title="${c.dock.target === 'accent' ? 'Make the starting paint the accent: the scheme then starts from its opposite colour' : `Make the starting paint the ${esc(tag)} again`}"`} aria-label="Move the starting paint to ${esc(tag)}">${icon('anchor')}Move here</button>`
         : '';
     // A lock is STATE, so it is a badge on the tag line (§3.5), never a ring: rings mean hover (the colour
     // link) and the Equivalents selection. It had been an inset shadow that the colour block covered.
@@ -750,7 +754,9 @@ function rackSwaps(r, tr) {
  *  shows the closest pots from the others on each of its rows. A choice for this trip, not saved. */
 export function storeCarries(brands, off, tr) {
   if (!brands.length) return '';
-  return `<span class="micro" id="rkStoreLab">${esc(tr('storeCarries'))}</span>`
+  // the count says how many brands the row holds, so a brand scrolled out of view is not missed (PLAN §5 item 42)
+  const nOff = brands.filter(b => off.has(b)).length;
+  return `<span class="micro" id="rkStoreLab">${esc(tr('storeCarries'))}<span class="rkcount"> · ${esc(tr(nOff ? 'storeBrandsOff' : 'storeBrands', { n: brands.length, off: nOff }))}</span></span>`
     + `<span class="rkchips" role="group" aria-labelledby="rkStoreLab">`
     + brands.map(b => `<button type="button" class="rkchip" data-rkbrand="${esc(b)}" aria-pressed="${!off.has(b)}">${icon('check')}${esc(b)}</button>`).join('')
     + '</span>';
