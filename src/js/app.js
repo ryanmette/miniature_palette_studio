@@ -1602,25 +1602,31 @@ function scrubAt(x, y) {
   const loupe = $('#scrubLoupe');
   // A slow slide must not open the menu: once the finger reaches another paint, the press is a scrub, not a hold
   if (scrub) { if (!scrub.first) scrub.first = c; else if (c && c !== scrub.first) shelfMenuSurface?.cancelHold(); }
-  if (scrub?.sel && c && !scrub.sel.done.has(c.dataset.id)) {   // Select mode: drag to select
-    const id = c.dataset.id, s = new Set(shelf.sel);
-    scrub.sel.done.add(id);
-    if (scrub.sel.add) s.add(id); else s.delete(id);
-    setSelection(s, { anchor: id, cursor: id });
+  if (scrub?.sel && c && c.dataset.id !== scrub.sel.last) {   // Select mode: the range from the first paint to this one
+    const sel = scrub.sel, s = new Set(sel.base);
+    sel.last = c.dataset.id;
+    for (const id of rangeIds(sel.anchor, sel.last)) { if (sel.add) s.add(id); else s.delete(id); }
+    shelf.sel = s; shelf.anchor = sel.anchor;
+    paintSelected(); renderShelfBar();
   }
   if (c !== scrubCell) { scrubCell?.classList.remove('scrubbed'); scrubCell = c; c?.classList.add('scrubbed'); }
   if (!c) { loupe.hidden = true; return; }
   const p = state.idx.byId.get(c.dataset.id); if (!p) return;
-  if (loupe.dataset.id !== p.id) {
-    loupe.dataset.id = p.id;
-    loupe.innerHTML = ui.swatch(p.hex, 'sm' + ui.fxCls(p))
-      + `<span class="sltx"><b>${ui.esc(ui.pname(p))}</b><span>${ui.esc([p.brand, p.line].filter(Boolean).join(' · '))} · ${ui.esc(ui.markLabel(store.markOf(p.id)))}</span></span>`;
-  }
+  fillLoupe(p);
   loupe.hidden = false;
   const w = loupe.offsetWidth, h = loupe.offsetHeight, cw = document.documentElement.clientWidth;
   const top = y - 72 - h > (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h')) || 0) ? y - 72 - h : y + 48;
   loupe.style.left = Math.max(8, Math.min(cw - w - 8, x - w / 2)) + 'px';
   loupe.style.top = top + 'px';
+}
+/** The loupe's words for a paint (kept while the paint is the same). Also called, hidden, at the finger's touch: the
+ *  first fill and the first hit test of the grid were slow, and they made the first loupe late (Ryan, 2026-10-30). */
+function fillLoupe(p) {
+  const loupe = $('#scrubLoupe');
+  if (loupe.dataset.id === p.id) return;
+  loupe.dataset.id = p.id;
+  loupe.innerHTML = ui.swatch(p.hex, 'sm' + ui.fxCls(p))
+    + `<span class="sltx"><b>${ui.esc(ui.pname(p))}</b><span>${ui.esc([p.brand, p.line].filter(Boolean).join(' · '))} · ${ui.esc(ui.markLabel(store.markOf(p.id)))}</span></span>`;
 }
 function endScrub() {
   if (!scrub && !scrubCell) return;
@@ -1654,13 +1660,20 @@ function setupShelf() {
       if (e.pointerType !== 'touch') return;
       endScrub();
       const x = e.clientX, y = e.clientY;
+      // the slow first work (a hit test of the whole grid, the loupe's first words) now, while the finger holds still
+      const warm = scrubCellAt(x, y), wp = warm && state.idx.byId.get(warm.dataset.id);
+      if (wp) fillLoupe(wp);
       scrub = { id: e.pointerId, x, y, on: false,
         timer: setTimeout(() => {
           if (!scrub) return;
           scrub.on = true;
-          // Select mode (Ryan, 2026-10-30): the same gesture selects every paint it passes. The first paint
-          // decides the direction: on an unselected one it selects, on a selected one it deselects (as Photos).
-          if (shelf.selectMode) { const c0 = scrubCellAt(scrub.x, scrub.y); scrub.sel = { add: !(c0 && shelf.sel.has(c0.dataset.id)), done: new Set() }; }
+          // Select mode (Ryan, 2026-10-30): the same gesture selects a RANGE, as Photos: every paint from the one
+          // first held to the one under the finger, in reading order, so a drag down takes whole rows. Dragging back
+          // shrinks it. The first paint decides the direction: select, or deselect when it was selected.
+          if (shelf.selectMode) {
+            const c0 = scrubCellAt(scrub.x, scrub.y);
+            if (c0) scrub.sel = { add: !shelf.sel.has(c0.dataset.id), base: new Set(shelf.sel), anchor: c0.dataset.id, last: null };
+          }
           scrubAt(scrub.x, scrub.y);
         }, SCRUB_MS) };
     });

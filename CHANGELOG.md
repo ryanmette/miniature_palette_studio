@@ -10,12 +10,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Tap the starting paint to see the scheme large** (the hero's swatch), with Share or Save beside it.
 - **Hold and slide on the Shelf grid to read names** (touch). A finger held still for a quarter second shows a loupe
   with the paint's name. Slide to read the next one. Lifting marks nothing, and a plain tap still marks.
-- **Select by sliding** (touch): in Select mode, hold a paint and slide to select every paint you pass. The actions
+- **Select by sliding** (touch): in Select mode, hold a paint and drag. Every paint from that one to your finger is
+  selected, row by row, as in Photos; drag back to select fewer. The actions
   (Mark owned, Add to shopping list, Clear) come up in a sheet at the bottom, where you can reach them.
 - **Opening the Shelf on a touch screen no longer draws a focus ring round the whole grid** (and a stray name label).
   The grid takes keyboard focus only with a mouse or a keyboard.
 - **Hold and slide reads names across the gaps:** the gaps between swatches count as the nearest paint, so the
-  name does not flicker, and a slow slide no longer opens the menu.
+  name does not flicker, a slow slide no longer opens the menu, and the first name is no longer late.
 - **Pick many types** in the Shelf's filters (for example layer + base + wash).
 - **A study of the swatches** (`mockups/swatch-finish.html`): do they show each paint's colour and finish truly?
   Measured: the finish overlays shift the colour (up to ΔE 10.4), and wash and contrast look alike. Recommended: a
