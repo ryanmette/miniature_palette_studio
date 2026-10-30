@@ -592,7 +592,9 @@ with one id). A fix renames the public page's anchors, so its links change: it w
 49. **Studied: [`docs/COLOUR_CHECK.md`](COLOUR_CHECK.md).** Ryan's answers (2026-10-30): our own measurement leads (the
     recommendation: own measurement first, the maker's swatch as the fallback, and a source label on each paint
     rather than a settings toggle); a change needs ΔE > 5 from a maker's photo or > 3.5 from our own measurement
-    (recommended; to confirm); the first batch fixes the clearest errors (pure black/white, shared hexes). **Check every paint's colour.** 3,225 hexes come from community data, and most are `approx`. A full pass needs a
+    (recommended); the first batch fixes the clearest errors (pure black/white, shared hexes). **Confirmed (2026-10-30):
+    our own measurements first.** A wash is measured both ways (liquid and one coat over white), which settles item 51's
+    open wash rule with real values. **Check every paint's colour.** 3,225 hexes come from community data, and most are `approx`. A full pass needs a
     source for each brand (manufacturer swatches, or measured photos under one light) and a method: see
     `docs/DATA_SOURCING.md`. Recommend: start with the paints people pick most (the starters and Citadel Base/Layer),
     compare each with the maker's own swatch, and log the ΔE of every change. A study first, not a bulk edit.
@@ -613,6 +615,12 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     drawdown), which shows what a wash does. **Round 2** (study §4): four ways to sit the icon on paint, measured
     against WCAG 1.4.11 on all 747 non-flat paints; recommended (a), the bare icon in the swatch's own ink, as the
     copy button (lowest 4.28:1), and a contrast glyph of its own.
+    **Chosen (Ryan, 2026-10-30): (a), and the icon stays on the 28px hero chip too.** The wash rule stays open: Ryan
+    sees the pots, not a coat over white. It does not block the swatch build (the field shows the paint's hex,
+    whatever the rule). It is settled with the first measured batch (item 49): measure each wash both ways (a dab of
+    the liquid, and one coat over white primer) on the same card, and compare the real values side by side.
+    **Next:** build (a) in its own PR after #65 merges. It changes CLAUDE.md §2 (the finish overlays go; a finish
+    icon in the paint's ink takes their place) and §3.5 Swatch.
 
 **Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
 
