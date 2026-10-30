@@ -17,6 +17,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   two facts on the Help page that are out of date, Apple's rules that keep Help and Privacy as public pages, and
   three directions. Ryan chose B: Help opens over the app like About, built from `support.html` itself, so the
   public page and the app never differ. Support details are copied by the painter, never sent in a link.
+- **A study of finding What’s new** (`mockups/whats-new.html`; PLAN §5 items 40–41). Part A specifies a small dot
+  on ⋯ after an update, ready to build. Part B studies a notification log next to ⋯ and recommends no log now. A
+  QA pass and a code review of v1.13.0 are recorded in PLAN §5. Nothing in the app changes.
 - **Help opens over the app** (PLAN §5 item 39, direction B). ⋯ → Help, and each link to Help in the app, open a
   sheet like About. The sheet shows the Help page itself (`support.html`), so the public page and the app always
   say the same. Its contents links move inside the sheet. If the page cannot load, the link opens the page.
