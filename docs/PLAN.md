@@ -589,7 +589,10 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     a sheet with the starting paint large (pot, target, ΔE) and the scheme's four pots beside it at 60-30-10. It can
     reuse the share image (`shareimage.js`), with Share and Save beside it.
 48. **Kept as it is.** **A smaller wheel on a phone?** It is 330px of a 402px screen. Recommend: keep it, now that it scrolls; revisit after 42–47.
-49. **Studied: [`docs/COLOUR_CHECK.md`](COLOUR_CHECK.md).** **Check every paint's colour.** 3,225 hexes come from community data, and most are `approx`. A full pass needs a
+49. **Studied: [`docs/COLOUR_CHECK.md`](COLOUR_CHECK.md).** Ryan's answers (2026-10-30): our own measurement leads (the
+    recommendation: own measurement first, the maker's swatch as the fallback, and a source label on each paint
+    rather than a settings toggle); a change needs ΔE > 5 from a maker's photo or > 3.5 from our own measurement
+    (recommended; to confirm); the first batch fixes the clearest errors (pure black/white, shared hexes). **Check every paint's colour.** 3,225 hexes come from community data, and most are `approx`. A full pass needs a
     source for each brand (manufacturer swatches, or measured photos under one light) and a method: see
     `docs/DATA_SOURCING.md`. Recommend: start with the paints people pick most (the starters and Citadel Base/Layer),
     compare each with the maker's own swatch, and log the ΔE of every change. A study first, not a bulk edit.
@@ -604,7 +607,12 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     look alike; silver metals read as grey at 28px; 22 of 55 effect paints have no `fx`; the metallic tag uses the
     warning colour (§3.5); 127 near-black paints blend into the dark page. Recommended: **B**, a pure colour field
     with one finish mark in a corner, plus a stronger edge in dark, a neutral finish tag and a contrast icon of its
-    own. Four questions for Ryan in the study.
+    own. **Ryan's answers (2026-10-30):** B (a pure colour field); A's lighter icon in the bottom-right, consistent
+    with the app's other elements; one rule for every finish (gloss and fluorescent only as the others). The wash
+    convention is open: Ryan leans to the liquid in the pot; the recommendation is one coat over white primer (a
+    drawdown), which shows what a wash does. **Round 2** (study §4): four ways to sit the icon on paint, measured
+    against WCAG 1.4.11 on all 747 non-flat paints; recommended (a), the bare icon in the swatch's own ink, as the
+    copy button (lowest 4.28:1), and a contrast glyph of its own.
 
 **Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
 
