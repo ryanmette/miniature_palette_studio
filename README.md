@@ -10,6 +10,12 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.14.0** — the phone release, from a test on an iPhone. On the Shelf, hold a paint and slide to read names; in
+**Select** mode, drag to select a run of paints, mark them, and **Undo** if needed. Select and Grid | List sit in the
+Shelf's pull-down panel, types can be picked together, and the hue sort is in true colour order. A swipe on the wheel
+scrolls the page and never changes your colour. Tap the starting paint to see the scheme large. A dot on ⋯ marks
+What's new. The bugs from a code review are fixed (Restore now warns about saved schemes).
+
 **v1.13.0** — the shopping-list release. **Schemes** keeps the schemes you save; the Shelf has a **List** to
 read at the rack, with counts, and a tick marks a paint owned as you buy it. **Take to the store…** sends
 the list to your phone in a link or a QR code, and a "bought" link brings what you bought back. When a pot
