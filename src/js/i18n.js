@@ -58,7 +58,7 @@ const LOCALES = {
     schemes: 'Schemes',
     shelf: 'Shelf',
     myShelf: 'My paint shelf',
-    searchShelf: 'Search your shelf…',
+    searchShelf: 'Search…',
     filterAll: 'All',
     filterOwned: 'Owned',
     filterToBuy: 'Shopping list',

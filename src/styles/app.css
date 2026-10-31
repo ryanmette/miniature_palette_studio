@@ -642,6 +642,9 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelffilters input[type="search"] { flex: 1 1 220px; width: auto; min-width: 150px; }
 .shelffilters select { flex: 0 1 auto; width: auto; min-width: 120px; }
 .shelffilters .seg { flex: none; }
+/* Grid | List as icons in the dock (mockups/shelf-dock-tools.html C): square segments, the 20px icon set */
+.viewseg button { padding: 0 8px; }
+.viewseg .ic { width: 18px; height: 18px; display: block; }
 
 /* The Shelf dock (§3.6; mockups/shelf-landing.html, "Chosen"). Desktop: the filter bar pins under the
    sticky header (position: sticky — it keeps its place in the page, so nothing reflows when it pins)
@@ -1197,8 +1200,17 @@ a.btn { text-decoration: none; }
   .shelfhead h2 { font-size: var(--fs-h2); margin: 0; }   /* title + tools share one row, as mocked */
   .shelftop { gap: 8px; }
   .lgonly { display: none; }   /* "Export CSV" → "Export": the title row fits one line (the full name stays in aria-label) */
-  .shelffilters { gap: 8px; }
-  .shelffilters input[type="search"] { flex: 1 1 0; min-width: 0; }
+  /* Phone (mockup C): row 1 search · Select · Filters, row 2 the status filter · Grid | List. Placed by grid, so a
+     hidden Select (the list view, or no touch) leaves the rows as they are. */
+  .shelffilters { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }
+  .shelffilters input[type="search"] { grid-column: 1; grid-row: 1; min-width: 0; width: 100%; }
+  .shelffilters .shelf-select { grid-column: 2; grid-row: 1; }
+  .shelffilters .shelffbtn { grid-column: 3; grid-row: 1; }
+  .shelffilters #shelfMarkSeg { grid-column: 1 / 3; grid-row: 2; width: auto; }
+  /* the segments size to their words, so "Shopping list" keeps one line at 360px */
+  .shelffilters #shelfMarkSeg button { flex: 1 1 auto; padding: 0 6px; white-space: nowrap; }
+  .shelffilters .viewseg { grid-column: 3; grid-row: 2; width: auto; justify-self: end; }
+  .shelffilters .viewseg button { flex: none; width: var(--tap); padding: 0; display: grid; place-items: center; }
   .shelffbtn { display: inline-flex; gap: 6px; }
   .fbadge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--r-tag); background: var(--accent);
     color: var(--on-accent); font-size: 11.5px; font-weight: 600; display: inline-grid; place-items: center; }
@@ -1216,6 +1228,7 @@ a.btn { text-decoration: none; }
     font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; line-height: 18px; padding: 0 8px;
     border-radius: var(--r-tag); color: var(--text-muted); }
   .hchip.on { background: var(--accent-weak); color: var(--accent); }
+  .hchip[hidden] { display: none; }
   /* brand · type · sort: a bottom sheet (the same elements as the desktop bar — one control each) */
   .shelfmore { display: none; }
   .shelfmore.open { display: flex; flex-direction: column; align-items: stretch; gap: 0; position: fixed; left: 0; right: 0; bottom: 0;

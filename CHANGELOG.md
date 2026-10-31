@@ -51,6 +51,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   line before you copy it. The app does not send it: it goes to us only if you paste it into a message.
 - **What’s new in About.** About shows the main changes in this version (`WHATS_NEW` in `version.js`).
 ### Changed
+- **Select and Grid | List moved into the Shelf's pull-down panel**, so they are one pull away anywhere down the
+  grid: Select beside Filters, and Grid | List as two icons beside All · Owned · Shopping list. The handle no longer
+  says "Search": it shows a chip only while a search or a filter hides paints.
 - **The Shelf's hue sort is in colour order** (it was unreliable). It now uses the same order as Browse: bands of
   the hue the eye sees, light to dark and back, greys last. The Shelf's sort jumped 3 times as far between
   neighbours. **Sort: lightness** uses the lightness the eye sees.

@@ -48,6 +48,8 @@
   <symbol id="i-close" viewBox="0 0 20 20"><path d="M5 5l10 10M15 5L5 15"/></symbol>
   <symbol id="i-warning" viewBox="0 0 20 20"><path d="M10 3.25l7.25 13H2.75z"/><path d="M10 8.25v3.5M10 14h.01"/></symbol>
   <symbol id="i-search" viewBox="0 0 20 20"><circle cx="8.75" cy="8.75" r="5.25"/><path d="M12.6 12.6l4.4 4.4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 20 20"><path d="M3.5 3.5h5v5h-5zM11.5 3.5h5v5h-5zM3.5 11.5h5v5h-5zM11.5 11.5h5v5h-5z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 20 20"><path d="M3.5 5h2M8 5h8.5M3.5 10h2M8 10h8.5M3.5 15h2M8 15h8.5"/></symbol>
   <symbol id="i-chev" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4"/></symbol>
   <symbol id="i-chevl" viewBox="0 0 20 20"><path d="M12 5l-5 5 5 5"/></symbol>
   <symbol id="i-chevr" viewBox="0 0 20 20"><path d="M8 5l5 5-5 5"/></symbol>
@@ -317,12 +319,6 @@
       <div class="shelftop">
         <h2 data-i18n="myShelf">My paint shelf</h2>
         <div class="shelftools">
-          <!-- Grid | List (PLAN §5 item 36): the same paints, as the colour grid or as the list you take to a store -->
-          <div class="seg" id="shelfViewSeg" role="group" aria-label="Show the shelf as" data-i18n-aria="shelfViewName">
-            <button data-sv="grid" aria-pressed="true" data-i18n="viewGrid">Grid</button>
-            <button data-sv="list" aria-pressed="false" data-i18n="viewList">List</button>
-          </div>
-          <button class="btn sm shelf-select" id="shelfSelect" aria-pressed="false" title="Select multiple swatches to mark at once">Select</button>
           <button type="button" class="textact" id="importColl" title="Import a paintRack CSV or a Palette Studio JSON backup">Import<span class="lgonly">…</span></button>
           <button type="button" class="textact" id="exportColl" title="Save your shelf as a CSV file" aria-label="Save my shelf (CSV)">Save my shelf<span class="lgonly">&nbsp;(CSV)</span></button>
           <input id="importFile" type="file" accept=".csv,.json,text/csv,application/json" hidden />
@@ -338,12 +334,20 @@
     <div class="shelfdock" id="shelfDock">
       <div class="shelffilters" id="shelfPanel">
         <label class="sr-only" for="shelfQ">Search the shelf</label>
-        <input id="shelfQ" type="search" placeholder="Search your shelf…" data-i18n-ph="searchShelf" aria-label="Search the shelf" autocomplete="off" />
+        <input id="shelfQ" type="search" placeholder="Search…" data-i18n-ph="searchShelf" aria-label="Search the shelf" autocomplete="off" />
+        <!-- In the dock, not the title row (mockups/shelf-dock-tools.html C, Ryan 2026-10-31): Select beside Filters, and
+             Grid | List as icons beside the status filter, so they are one pull away anywhere down the grid -->
+        <button class="btn shelf-select" id="shelfSelect" aria-pressed="false" title="Select multiple swatches to mark at once">Select</button>
         <button class="btn shelffbtn" id="shelfFiltersBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="shelfMore">Filters<span class="fbadge" id="shelfFBadge" hidden></span></button>
         <div class="seg" id="shelfMarkSeg" role="group" aria-label="Filter by status">
           <button data-mark="" aria-pressed="true" data-i18n="filterAll">All</button>
           <button data-mark="owned" aria-pressed="false" data-i18n="filterOwned">Owned</button>
           <button data-mark="want" aria-pressed="false" data-i18n="filterToBuy">Shopping list</button>
+        </div>
+        <!-- Grid | List (PLAN §5 item 36): the same paints, as the colour grid or as the list you take to a store. Icons with names. -->
+        <div class="seg viewseg" id="shelfViewSeg" role="group" aria-label="Show the shelf as" data-i18n-aria="shelfViewName">
+          <button data-sv="grid" aria-pressed="true" aria-label="Grid" data-i18n-aria="viewGrid" title="Grid"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-grid"/></svg></button>
+          <button data-sv="list" aria-pressed="false" aria-label="List" data-i18n-aria="viewList" title="List"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-list"/></svg></button>
         </div>
         <div class="shelfscrim" id="shelfScrim" hidden></div>
         <div class="shelfmore" id="shelfMore" role="group" aria-label="More filters">

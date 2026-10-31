@@ -633,7 +633,7 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     CLAUDE.md §3.7 "Parts of the app" table (name · where it is · its element id or class · a screenshot in a
     mockup), so a design talk and the code use the same words. The rule going forward: **a new part gets its name in
     that table in the same commit that adds it.**
-53. **Grid | List and Select in the Shelf dock; the handle without "⌕ Search"** — mockup
+53. **Grid | List and Select in the Shelf dock; the handle without "⌕ Search"** — **built (C, 2026-10-31)**; mockup
     [`mockups/shelf-dock-tools.html`](../mockups/shelf-dock-tools.html): A a third row, B icons in the status row, C
     Select beside Filters with Grid | List as icons (recommended); the handle shows a chip only when something filters.
 

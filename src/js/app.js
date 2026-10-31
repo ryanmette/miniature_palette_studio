@@ -1382,6 +1382,8 @@ function syncShelfFilterUi() {
   const chip = $('#shelfChip');
   $('#shelfChipTx').textContent = sum.text;
   chip.classList.toggle('on', sum.any);
+  // only when something filters (Ryan, 2026-10-31): at rest it said "Search", a second way to the field one pull away
+  chip.hidden = !sum.any;
   $('#shelfHandle').setAttribute('aria-label', 'Search and filters' + (sum.any ? ` — ${sum.text}` : ''));
   const badge = $('#shelfFBadge');
   badge.hidden = !sum.sheet;
