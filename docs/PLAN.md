@@ -643,6 +643,22 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     [`mockups/shelf-dock-tools.html`](../mockups/shelf-dock-tools.html): A a third row, B icons in the status row, C
     Select beside Filters with Grid | List as icons (recommended); the handle shows a chip only when something filters.
 
+55. **A random scheme on a fresh first load** (Ryan, 2026-10-31). A first visit with no paint in the link opens on
+    one fixed scheme today, under the "Start a scheme" band. Idea: open on a random starting paint and a random
+    harmony instead (Roll a scheme's rules, §7), so the Studio shows something new each time. To decide: only the
+    first visit, or every load with no link; and whether the band's four starter paints stay. Small.
+56. **Check our list against the makers' catalogues, and let people report a missing paint** (Ryan, 2026-10-31).
+    (a) A catalogue check: for each brand, compare our paints with the maker's current range (new, renamed and
+    discontinued paints), as a study with counts; the method can share `docs/COLOUR_CHECK.md`'s sources. (b) A way to
+    report a missing paint with no server (§1): a "Missing a paint?" line in the Shelf's empty search result and in
+    Help that opens the contact page with the search words (shown first, sent only on a press, as Copy support
+    details), or a GitHub issue form. To decide: which channel.
+57. **Citadel's new range: a study** (Ryan, 2026-10-31: "GW released new paints",
+    warhammer.com/en-US/shop/build-and-paint/paint/tone-pro). How the paints are designed (the finish, how they are
+    meant to be used), whether they fit an existing type (§5.1: base, layer, shade, contrast…) or need a new one with
+    its own finish mark (item 51), and how to add them with provenance (§5.2, `SOURCES.md`). Not opened from this
+    session: warhammer.com is outside its network.
+
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:
