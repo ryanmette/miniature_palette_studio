@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shelf dock tools</title>
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  /* tokens: the light set of src/styles/tokens.css (CLAUDE.md §3.1) */
+  :root {
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6; --border:#DCD8D0; --border-strong:#C9C4BA; --edge:#8A857B;
+    --text:#1D1C19; --text-muted:#5E5A52; --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+    --success-text:#0F7334; --buy-text:#1D4ED8;
+    --shadow-pop:0 10px 40px rgba(29,28,25,.18);
+    --r-card:6px; --r-ctrl:4px; --r-sw:3px; --r-pill:999px; --tap:44px;
+    --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; padding:24px 16px 48px; }
+  .page { max-width:1320px; margin:0 auto; }
+  h1 { font-family:var(--display); font-size:32px; font-weight:600; margin:0 0 8px; }
+  h2 { font-family:var(--display); font-size:20px; font-weight:600; margin:0 0 4px; }
+  .sub, .notes { color:var(--text-muted); font-size:12.5px; max-width:80ch; }
+  .notes { margin:8px 0 0; padding-left:18px; }
+  .notes b, .sub b { color:var(--text); }
+  .micro { font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  .row { display:flex; flex-wrap:wrap; gap:32px; margin-top:24px; }
+  .col { width:402px; max-width:100%; }
+
+  /* phone frame: 402 wide, the app's own pieces */
+  .ph { width:402px; max-width:100%; border:1px solid var(--border-strong); border-radius:20px; overflow:hidden; background:var(--bg); position:relative; }
+  .hdr { display:flex; align-items:center; padding:8px 16px; }
+  .wm { font-family:var(--display); font-size:22px; font-weight:600; flex:1; }
+  .ib { width:var(--tap); height:var(--tap); border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); display:grid; place-items:center; font-weight:700; }
+  .pad { padding:0 16px; }
+  .seg { display:flex; }
+  .seg span { position:relative; flex:1; height:var(--tap); display:grid; place-items:center; border:1px solid var(--border-strong); margin-left:-1px; background:var(--surface); font-weight:500; font-size:13.5px; white-space:nowrap; padding:0 12px; }
+  .seg span:first-child { margin-left:0; border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); }
+  .seg span:last-child { border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .seg span.on { background:var(--accent-weak); }
+  .seg span.on::after { content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--accent); }
+  .seg.fit span { flex:none; }
+  .seg.icons span { flex:none; width:var(--tap); padding:0; }
+  .panel { background:var(--bg); padding:4px 16px 8px; display:grid; gap:8px; }
+  .panel.open { box-shadow:var(--shadow-pop); border-radius:0 0 var(--r-card) var(--r-card); position:relative; z-index:2; }
+  .line { display:flex; gap:8px; align-items:center; }
+  .field { flex:1; min-width:0; height:var(--tap); border:1px solid var(--edge); border-radius:var(--r-ctrl); background:var(--surface); display:flex; align-items:center; padding:0 12px; color:#9C978D; font-size:16px; }
+  .btn { height:var(--tap); padding:0 14px; border:1px solid var(--border); border-radius:var(--r-ctrl); background:var(--surface); display:inline-flex; align-items:center; gap:6px; font-weight:500; font-size:13.5px; white-space:nowrap; flex:none; }
+  .btn.on { background:var(--accent-weak); border-color:var(--accent); }
+  .btn.icon { width:var(--tap); padding:0; justify-content:center; }
+  .ic { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.75; stroke-linecap:square; stroke-linejoin:miter; }
+  .handle { height:28px; display:flex; align-items:center; justify-content:center; position:relative; }
+  .pill { width:44px; height:5px; border-radius:var(--r-pill); background:var(--text-muted); opacity:.7; }
+  .chip { position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:12.5px; padding:2px 8px; border-radius:var(--r-ctrl); background:var(--accent-weak); color:var(--accent); font-weight:500; }
+  .chip.old { background:none; color:var(--text-muted); display:flex; gap:4px; align-items:center; font-size:15px; }
+  .title { display:flex; align-items:center; gap:12px; padding:16px 16px 4px; }
+  .title h3 { font-family:var(--display); font-size:24px; font-weight:600; margin:0; flex:1; }
+  .ta { color:var(--accent); font-weight:500; }
+  .stats { padding:4px 16px 8px; font-size:11.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  .stats .o { color:var(--success-text); } .stats .w { color:var(--buy-text); }
+  .grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; padding:8px 16px 16px; }
+  .grid i { aspect-ratio:1; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  .cap { font-size:12px; color:var(--text-muted); margin:0 0 8px; }
+  .cap b { color:var(--text); }
+  .measure { font-family:ui-monospace,Menlo,monospace; font-size:11.5px; color:var(--text-muted); margin-top:6px; }
+  .reco { border-left:3px solid var(--accent); padding:8px 0 8px 16px; max-width:82ch; margin-top:24px; }
+  section { border-top:1px solid var(--border); padding:24px 0; margin-top:24px; }
+</style>
+</head>
+<body>
+<div class="page">
+<p class="micro">Quick mockup · not shipped · 2026-10-31</p>
+<h1>Shelf: Grid | List and Select in the pull-down panel</h1>
+<p class="sub">Ryan asked how the pull-down panel (search, Filters, the status filter) could also hold <b>Grid | List</b> and
+  <b>Select</b>, so they stay in reach when the panel is pulled down deep in the grid. He also found the handle’s
+  “⌕ Search” chip redundant. Every frame is the app’s real phone width (402px) and uses the app’s own sizes.</p>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 20 20"><circle cx="8.75" cy="8.75" r="5.25"/><path d="M12.6 12.6l4.4 4.4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 20 20"><path d="M3.5 3.5h5v5h-5zM11.5 3.5h5v5h-5zM3.5 11.5h5v5h-5zM11.5 11.5h5v5h-5z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 20 20"><path d="M3.5 5h2M8 5h8.5M3.5 10h2M8 10h8.5M3.5 15h2M8 15h8.5"/></symbol>
+  <symbol id="i-select" viewBox="0 0 20 20"><path d="M3.5 3.5h13v13h-13z"/><path d="M6.5 10.25l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 20 20"><path d="M3 5h14M6 10h8M8.5 15h3"/></symbol>
+</svg>
+
+<div class="row">
+  <div class="col">
+    <p class="cap"><b>Today</b> · the panel, then the title row with Grid | List and Select</p>
+    <div class="ph">
+      <div class="hdr"><span class="wm">Palette Studio</span><span class="ib">⋯</span></div>
+      <div class="pad"><div class="seg"><span>Studio</span><span>Schemes</span><span class="on">Shelf</span></div></div>
+      <div class="panel" style="margin-top:8px">
+        <div class="line"><span class="field">Search your shelf…</span><span class="btn">Filters</span></div>
+        <div class="seg"><span class="on">All</span><span>Owned</span><span>Shopping list</span></div>
+      </div>
+      <div class="title"><h3>My paint shelf</h3></div>
+      <div class="pad line" style="flex-wrap:wrap"><div class="seg fit"><span class="on">Grid</span><span>List</span></div><span class="btn">Select</span><span class="ta">Import</span><span class="ta">Save my shelf</span></div>
+      <div class="stats"><span class="o">0 owned</span> · <span class="w">0 on the shopping list</span> · 3225 total</div>
+      <div class="grid" id="g0"></div>
+    </div>
+    <p class="measure">Grid | List and Select scroll away with the title. Deep in the grid, they are 2 to 30 screens up.</p>
+  </div>
+
+  <div class="col">
+    <p class="cap"><b>A · A third row</b> · Grid | List left, Select right, the same size as the rows above</p>
+    <div class="ph">
+      <div class="hdr"><span class="wm">Palette Studio</span><span class="ib">⋯</span></div>
+      <div class="pad"><div class="seg"><span>Studio</span><span>Schemes</span><span class="on">Shelf</span></div></div>
+      <div class="panel" style="margin-top:8px">
+        <div class="line"><span class="field">Search your shelf…</span><span class="btn">Filters</span></div>
+        <div class="seg"><span class="on">All</span><span>Owned</span><span>Shopping list</span></div>
+        <div class="line" style="justify-content:space-between"><div class="seg fit"><span class="on">Grid</span><span>List</span></div><span class="btn"><svg class="ic"><use href="#i-select"/></svg>Select</span></div>
+      </div>
+      <div class="title"><h3>My paint shelf</h3><span class="ta">Import</span><span class="ta">Save my shelf</span></div>
+      <div class="stats"><span class="o">0 owned</span> · <span class="w">0 on the shopping list</span> · 3225 total</div>
+      <div class="grid" id="g1"></div>
+    </div>
+    <ul class="notes"><li><b>Clearest:</b> words, not icons. Each control keeps the look it has today.</li>
+      <li><b>Cost:</b> the panel is one row taller (+52px) every time it comes down.</li>
+      <li>The title row keeps only Import and Save my shelf.</li></ul>
+  </div>
+
+  <div class="col">
+    <p class="cap"><b>B · Into the status row, as icons</b> · status · Grid | List icons · Select icon</p>
+    <div class="ph">
+      <div class="hdr"><span class="wm">Palette Studio</span><span class="ib">⋯</span></div>
+      <div class="pad"><div class="seg"><span>Studio</span><span>Schemes</span><span class="on">Shelf</span></div></div>
+      <div class="panel" style="margin-top:8px">
+        <div class="line"><span class="field">Search your shelf…</span><span class="btn">Filters</span></div>
+        <div class="line"><div class="seg" style="flex:1"><span class="on">All</span><span>Owned</span><span>To buy</span></div>
+          <div class="seg icons"><span class="on"><svg class="ic"><use href="#i-grid"/></svg></span><span><svg class="ic"><use href="#i-list"/></svg></span></div>
+          <span class="btn icon"><svg class="ic"><use href="#i-select"/></svg></span></div>
+      </div>
+      <div class="title"><h3>My paint shelf</h3><span class="ta">Import</span><span class="ta">Save my shelf</span></div>
+      <div class="stats"><span class="o">0 owned</span> · <span class="w">0 on the shopping list</span> · 3225 total</div>
+      <div class="grid" id="g2"></div>
+    </div>
+    <ul class="notes"><li><b>No taller</b> than today.</li>
+      <li><b>Cost:</b> three icons without words (named for screen readers, with a title). “Shopping list” must shorten to “To buy” to fit, a second name for one thing (§3.5 Words).</li>
+      <li>The status segments get 70px each: tight with large text.</li></ul>
+  </div>
+
+  <div class="col">
+    <p class="cap"><b>C · Select beside Filters, Grid | List as icons in the status row</b></p>
+    <div class="ph">
+      <div class="hdr"><span class="wm">Palette Studio</span><span class="ib">⋯</span></div>
+      <div class="pad"><div class="seg"><span>Studio</span><span>Schemes</span><span class="on">Shelf</span></div></div>
+      <div class="panel" style="margin-top:8px">
+        <div class="line"><span class="field">Search…</span><span class="btn">Select</span><span class="btn">Filters</span></div>
+        <div class="line"><div class="seg" style="flex:1"><span class="on">All</span><span>Owned</span><span>Shopping list</span></div>
+          <div class="seg icons"><span class="on"><svg class="ic"><use href="#i-grid"/></svg></span><span><svg class="ic"><use href="#i-list"/></svg></span></div></div>
+      </div>
+      <div class="title"><h3>My paint shelf</h3><span class="ta">Import</span><span class="ta">Save my shelf</span></div>
+      <div class="stats"><span class="o">0 owned</span> · <span class="w">0 on the shopping list</span> · 3225 total</div>
+      <div class="grid" id="g3"></div>
+    </div>
+    <ul class="notes"><li><b>No taller</b> than today. <b>Select keeps its word</b>, as Filters does: the two actions sit together.</li>
+      <li><b>Cost:</b> the search field shrinks to about 150px. Grid | List are icons (a grid and a list are common icons, as in Files and Photos).</li></ul>
+  </div>
+</div>
+
+<section>
+  <h2>The handle: no “⌕ Search” chip</h2>
+  <p class="sub">The chip said “Search” even when nothing was searched, and the search field is one pull away. Proposed: the
+    handle is only the pill. A chip shows <b>only when something hides paints</b>, so a filtered shelf is never a mystery
+    (the reason the chip was there, §3.6).</p>
+  <div class="row">
+    <div class="col"><p class="cap"><b>Today</b> · tucked, nothing filtered</p>
+      <div class="ph"><div class="handle"><span class="pill"></span><span class="chip old"><svg class="ic"><use href="#i-search"/></svg>Search</span></div><div class="grid" id="g4"></div></div></div>
+    <div class="col"><p class="cap"><b>Proposed</b> · tucked, nothing filtered: the pill alone</p>
+      <div class="ph"><div class="handle"><span class="pill"></span></div><div class="grid" id="g5"></div></div></div>
+    <div class="col"><p class="cap"><b>Proposed</b> · tucked, a search and a filter on: the chip says so</p>
+      <div class="ph"><div class="handle"><span class="pill"></span><span class="chip">“green” · 1 filter</span></div><div class="grid" id="g6"></div></div></div>
+  </div>
+</section>
+
+<div class="reco"><b>Recommendation: C.</b> It keeps the panel as short as today, Select keeps its word beside Filters (the
+  two actions on the shelf together), and Grid | List become two plain icons beside the status filter. A is the clearest if
+  one more row is fine. B is the most compact, but three unlabelled icons and a renamed “Shopping list” cost more than they save.
+  For the handle: the pill alone, and the chip only when a search or a filter is on.</div>
+</div>
+<script>
+  // a few real paint hexes from src/data/paints.json, for the grid
+  const hx = ['#53601A','#C9502A','#2F2944','#1E2A2A','#016956','#003638','#45443B','#5E615B','#F6B47F','#E2B547','#DF915C','#13200F','#41281F','#C3221C','#C7D0CB','#8A6EA4','#36897A','#A33A31','#A1452B','#66511F'];
+  for (const id of ['g0','g1','g2','g3','g4','g5','g6']) document.getElementById(id).innerHTML = hx.map(h => `<i style="background:${h}"></i>`).join('');
+</script>
+</body>
+</html>

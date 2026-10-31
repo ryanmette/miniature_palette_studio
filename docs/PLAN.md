@@ -624,6 +624,19 @@ with one id). A fix renames the public page's anchors, so its links change: it w
 
 **Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
 
+### Raised by Ryan on 2026-10-31 (not yet built)
+
+52. **One name for each part of the app** (a glossary of the interface). In talk, "that filter drop down" took a
+    sentence to point at; its name in CLAUDE.md is **the Shelf dock** (with its **handle**). §3.5's Words table names
+    what the painter sees; it does not name the parts (dock, handle, hero, live palette, seed toolbar, the Filters
+    sheet, the selection sheet…). Plan: walk the whole app, give each part one name, and keep them in a new
+    CLAUDE.md §3.7 "Parts of the app" table (name · where it is · its element id or class · a screenshot in a
+    mockup), so a design talk and the code use the same words. The rule going forward: **a new part gets its name in
+    that table in the same commit that adds it.**
+53. **Grid | List and Select in the Shelf dock; the handle without "⌕ Search"** — mockup
+    [`mockups/shelf-dock-tools.html`](../mockups/shelf-dock-tools.html): A a third row, B icons in the status row, C
+    Select beside Filters with Grid | List as icons (recommended); the handle shows a chip only when something filters.
+
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:

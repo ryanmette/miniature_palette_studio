@@ -267,6 +267,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── seed-role-unify.html   ← 3-way exploration: folding the Main|Accent toggle into the palette
 │   ├── equiv-source-picker.html ← 3-way exploration: picking WHICH colour's equivalents the tab shows
 │   ├── shelf-brand-filter.html ← 3-way exploration: folding the Shelf's brand-chip rows down (mobile)
+│   ├── shelf-dock-tools.html  ← quick mockup (Ryan, 2026-10-31): Grid | List and Select in the Shelf dock (the pull-down panel) — A a third row · B icons in the status row · C Select beside Filters + Grid | List icons (recommended); and the handle without its “⌕ Search” chip (a chip only when something filters) (not built)
 │   ├── shelf-landing.html     ← keeping the Shelf's search + filters in view — chosen: phone pull-down handle bar, desktop pinned bar (+ the 3 directions)
 │   ├── buying-assistant.html ← 4-way exploration: the paint-first / buying-assistant workflow (P3) + the in-store scanner
 │   ├── collection-setting.html ← 3-way exploration: moving “Use my collection” to the ⋯ menu + a matching note on the live palette (A, built as “Use my paints”), then the full ⋯ menu and its design critique (built)
