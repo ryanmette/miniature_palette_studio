@@ -757,10 +757,14 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
    sheet (--surface, --r-card top corners, --shadow-pop), so they are in reach wherever the grid is scrolled. Not
    modal: no scrim, and the grid stays live, so the painter can keep selecting. The page keeps room for it. */
 @media (pointer: coarse), (max-width: 520px) {
-  body.selsheet .shelfbar:not(:empty) { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; margin: 0; display: flex; flex-direction: column;
+  /* z 25: above a swatch's name tip (5), which iOS left showing after a tap and drew over the sheet (Ryan, 2026-10-31);
+     under the open Filters sheet (30), the menus (60) and toasts (70) */
+  body.selsheet .shelfbar:not(:empty) { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; margin: 0; display: flex; flex-direction: column;
     align-items: stretch; gap: 8px; background: var(--surface); border-radius: var(--r-card) var(--r-card) 0 0;
     box-shadow: var(--shadow-pop); padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
   body.selsheet .shelfbar .barhead { justify-content: space-between; }
+  /* the result alone (the selection ended): one short row, less padding */
+  body.selsheet .shelfbar.doneonly { padding-top: 4px; padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)); }
   body.selsheet .shelfbar .bardone { flex: 1; justify-content: space-between; font-size: var(--fs-body); color: var(--text); }   /* Undo at the right edge, where Deselect sits */
   body.selsheet .shelfbar .barcount { font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; }
   body.selsheet .shelfbar .baracts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }

@@ -10,6 +10,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Tap the starting paint to see the scheme large** (the hero's swatch), with Share or Save beside it.
 - **Hold and slide on the Shelf grid to read names** (touch). A finger held still for a moment (180ms) shows a loupe
   with the paint's name. Slide to read the next one. Lifting marks nothing, and a plain tap still marks.
+- **The result line after a batch is one short row** ("13 on the shopping list · Undo") and sits above the swatches'
+  name labels, which iOS had drawn over it.
 - **Undo for the Shelf's batch marks.** After Mark owned, Add to shopping list or Clear on a selection, the result
   shows with **Undo**: each paint goes back to how it was (its count and project too) and is selected again. On a phone
   the selection then ends, so the next batch starts at once; with a mouse it stays.

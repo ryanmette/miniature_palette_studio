@@ -985,8 +985,9 @@ function renderShelfBar() {
   // A new selection on touch starts the next batch: the last batch's Undo goes (with a mouse the selection stays,
   // so its Undo stays beside it until the next action).
   if (n && COARSE && shelf.batch) shelf.batch = null;
-  const done = shelf.batch ? batchWords(shelf.batch) : '';
+  const done = shelf.batch ? batchWords(shelf.batch, { short: true }) : '';
   $('#shelfBar').innerHTML = ui.shelfBar(n, done);
+  $('#shelfBar').classList.toggle('doneonly', !n && !!done);
   // On touch and phones the bar is a sheet at the bottom (app.css), in Select mode only on a touch screen: a
   // long-press selects its paint for the menu, and the sheet must not come up after every menu.
   document.body.classList.toggle('selsheet', (n > 0 || !!done) && (shelf.selectMode || !COARSE));
@@ -1588,9 +1589,12 @@ function applyMark(mark) {
   // where iOS drew a focus ring on a moved focus; the live region says the result there.
   if (!COARSE) $('#shelfBar [data-act="undo"]')?.focus({ preventScroll: true });
 }
-/** "12 paints marked owned": the batch's result, for the bar and the live region. */
-function batchWords(b) {
-  const n = b.prev.length, verb = b.mark === 'owned' ? 'marked owned' : b.mark === 'want' ? 'added to the shopping list' : 'cleared';
+/** "12 paints marked owned": the batch's result for the live region; `short` ("12 marked owned", "12 on the shopping
+ *  list") for the bar, where the line had to stay one row on a phone (Ryan, 2026-10-31). */
+function batchWords(b, { short = false } = {}) {
+  const n = b.prev.length;
+  if (short) return `${n} ${b.mark === 'owned' ? 'marked owned' : b.mark === 'want' ? 'on the shopping list' : 'cleared'}`;
+  const verb = b.mark === 'owned' ? 'marked owned' : b.mark === 'want' ? 'added to the shopping list' : 'cleared';
   return `${n} ${n === 1 ? 'paint' : 'paints'} ${verb}`;
 }
 /** Undo the last batch: each paint back to its mark, count and project, and selected again, so a wrong button is one
