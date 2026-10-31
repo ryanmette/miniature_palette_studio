@@ -8,7 +8,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 took only the web entries. -->
 ### Added
 - **Tap the starting paint to see the scheme large** (the hero's swatch), with Share or Save beside it.
-- **Hold and slide on the Shelf grid to read names** (touch). A finger held still for a quarter second shows a loupe
+- **Hold and slide on the Shelf grid to read names** (touch). A finger held still for a moment (180ms) shows a loupe
   with the paint's name. Slide to read the next one. Lifting marks nothing, and a plain tap still marks.
 - **Undo for the Shelf's batch marks.** After Mark owned, Add to shopping list or Clear on a selection, the result
   shows with **Undo**: each paint goes back to how it was (its count and project too) and is selected again. On a phone

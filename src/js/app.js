@@ -1619,7 +1619,8 @@ function updateCell(c, mark) {
 }
 
 /* ---- Scrub the Shelf grid (touch; PLAN §5 item 43) ---- */
-const SCRUB_MS = 250;
+// 180ms (Ryan, 2026-10-31: 250 felt a hair long). A tap lasts about 100ms, so a tap still marks.
+const SCRUB_MS = 180;
 let scrub = null, scrubLift = false, scrubCell = null;
 /** The cell for a scrub point. The touch areas meet edge to edge (Ryan, phone test 2026-10-30): the grid's 8px gaps
  *  are part of the picture, not of the touch, so a finger in a gap takes the nearest cell and the loupe does not flicker.
