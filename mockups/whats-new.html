@@ -223,7 +223,7 @@
 <div class="page">
 
 <header>
-  <p class="micro">Design study · not shipped · 2026-10-29 · not built</p>
+  <p class="micro">Design study · not shipped · 2026-10-29 · A2 chosen and built 2026-10-30</p>
   <h1>What’s new: a dot on ⋯, and a notification log</h1>
   <p class="sub">About shows “What’s new in 1.13.0” now (PLAN §5 item 39). But a painter finds it only if they open About.
     This study does two things. <b>Part A</b> specifies a small dot on ⋯ after an update, ready to build. <b>Part B</b> studies a
@@ -456,7 +456,16 @@
   <div class="reco"><b>Recommendation:</b> build <b>A2</b> (a dot on ⋯, a “New” tag on About) as one small PR. Do <b>not</b> add a bell (B3). Fix
     the two gaps that Part B found, without a log: (1) a toast stays long enough to read, and (2) a failed save shows a note. Come back to B2
     (“Recent” in ⋯) only if painters ask for a toast again.</div>
-  <h3 class="lab">Questions for Ryan</h3>
+  <h3 class="lab">Ryan’s answers (2026-10-30)</h3>
+  <table class="study" style="min-width:0;max-width:82ch">
+    <tbody>
+      <tr><td>A1, A2 or A3</td><td><b>A2</b> (built).</td></tr>
+      <tr><td>seenNews in the backup</td><td><b>No</b>, as recommended: it has its own key, <code>ps-seen</code>.</td></tr>
+      <tr><td>A dot for a patch</td><td><b>Only when the What’s new lines change.</b></td></tr>
+      <tr><td>Toast time</td><td><b>Yes:</b> 1s + 60ms a character, 2s to 7s (built). The log stays B1 (no log).</td></tr>
+    </tbody>
+  </table>
+  <h3 class="lab">Questions for Ryan (answered above)</h3>
   <ol class="q">
     <li><b>A1, A2 or A3?</b><span>A2 is recommended: the dot goes when you open ⋯, the tag on About stays until you read it.</span></li>
     <li><b>Does <code>seenNews</code> go in the backup file?</b><span>Recommended: no. It is a fact about this device.</span></li>

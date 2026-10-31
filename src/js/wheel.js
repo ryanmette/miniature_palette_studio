@@ -208,8 +208,31 @@ export function setupWheel(app) {
     else if (active && active.kind === 'role') setRole(active, ph, ps);
     else setBase(ph, ps);               // base node, or empty space → move the base
   }
-  cv.addEventListener('pointerdown', e => { collapseBanner(); dragging = true; setDragging(true); active = pickNode(e); activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e); });   // interacting with the wheel dismisses the explainer — it must never block a drag
-  cv.addEventListener('pointermove', e => { if (dragging) applyDrag(e); });
+  // Touch (2026-10-30, a phone test): the wheel fills most of a phone's width, and a swipe on it changed the
+  // colour (empty disc moved the base) and never scrolled the page. On touch, a press on a NODE drags it, as
+  // with a mouse; a press on empty disc lets the page scroll (touch-action: pan-y, app.css), and only a TAP
+  // there (no move over 10px) sets the base. Mouse and pen are unchanged.
+  let tap = null;
+  cv.addEventListener('touchstart', e => {
+    // a node under the finger: stop the scroll before it starts, so the drag gets every direction
+    if (e.touches.length === 1 && pickNode(e.touches[0])) e.preventDefault();
+  }, { passive: false });
+  cv.addEventListener('pointerdown', e => {
+    collapseBanner();   // interacting with the wheel dismisses the explainer — it must never block a drag
+    const hit = pickNode(e);
+    if (e.pointerType === 'touch' && !hit) { tap = { id: e.pointerId, x: e.clientX, y: e.clientY }; return; }
+    dragging = true; setDragging(true); active = hit; activeIdx = active ? active.index : 0; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId); applyDrag(e);
+  });
+  cv.addEventListener('pointermove', e => {
+    if (tap && e.pointerId === tap.id && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 10) tap = null;   // a swipe, not a tap
+    if (dragging) applyDrag(e);
+  });
+  cv.addEventListener('pointerup', e => {
+    if (!tap || e.pointerId !== tap.id) return;
+    tap = null; active = null;
+    setDragging(true); applyDrag(e); setDragging(false); render('settle');   // one tap = one undo step, as a click
+  });
+  cv.addEventListener('pointercancel', () => { tap = null; });   // the page took the touch to scroll
   // pointercancel too: a touch drag the OS takes over (gesture/scroll) never fires pointerup, and
   // without this the wheel stays in dragging mode, chasing every later no-button pointermove.
   const endDrag = () => { if (!dragging) return; dragging = false; setDragging(false); active = null; cv.style.cursor = 'grab'; render('settle'); };

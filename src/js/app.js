@@ -9,10 +9,10 @@ import { encodeState, decodeState, shareUrl, schemeQuery, encodeList, decodeList
 import { shareView, layoutShareImage, paintShareImage, shareText, shareFileName, SHARE_SIZE, SHARE_FONTS, SHARE_TOKENS } from './shareimage.js';   // the share image (pure layout + painter)
 import { snapPalette, readSnap } from './undo.js';   // the undo snapshot (palette state ⇄ JSON, exact)
 import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, returns its redraw
-import { createMarkMenu, isMenuKey } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
+import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, storeSwaps, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf } from './data.js';
+import { loadDataset, browseOrder, storeSwaps, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
@@ -35,7 +35,7 @@ const state = {
 
   extraNodes: [],   // editable swatches [{h,s,l?,locked?}] (S5)
   dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
-  mode: 'studio', shelfBrand: '', shelfMark: '', shelfQ: '', shelfType: '', shelfSort: '', brands: [],   // Studio/Shelf mode; shelf brand · status · search · type · sort
+  mode: 'studio', shelfBrand: '', shelfMark: '', shelfQ: '', shelfTypes: new Set(), shelfSort: '', brands: [],   // Studio/Shelf mode; shelf brand · status · search · type · sort
   shelfView: 'grid', shelfGroup: 'rack',   // the Shelf as the grid or the list (item 36); the list in rack order or by project
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
   includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
@@ -278,8 +278,10 @@ function sortPaints(list, key = '') {
   switch (key) {
     case 'name': return list.slice().sort((a, b) => a.name.localeCompare(b.name));
     case 'brand': return list.slice().sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
-    case 'hue': return by(p => rgbToHsl(hexToRgb(p.hex))[0]);
-    case 'light': return by(p => rgbToHsl(hexToRgb(p.hex))[2]);
+    // The colour-wheel order of the seed field's Browse (data.js browseOrder), so the two never disagree: a raw
+    // HSL hue put the greys (a hue of noise) among the reds (phone test, 2026-10-30)
+    case 'hue': { const rank = new Map(browseOrder(state.idx, 'hue').map((p, i) => [p.id, i])); return by(p => rank.get(p.id)); }
+    case 'light': return by(p => p.lab[0]);   // Lab L*: lightness as the eye sees it (dark first, as before)
     default: return list;   // dataset order
   }
 }
@@ -946,7 +948,7 @@ const shelfPaints = () => {
     // status filter: '' (all) | owned | want. A paint ticked in the list this time stays in it (rk.kept), so a
     // tick never makes a row jump out from under the finger (§3.4); it goes the next time the list opens.
     (!state.shelfMark || store.markOf(p.id) === state.shelfMark || (state.shelfView === 'list' && rk.kept.has(p.id))) &&
-    (!state.shelfType || p.type === state.shelfType) &&               // type filter (base/layer/shade/metal/…)
+    (!state.shelfTypes.size || state.shelfTypes.has(p.type)) &&        // type filter, pick many (base/layer/wash/…; item 45)
     (!match || match(p)));
   return sortPaints(list, state.shelfSort);
 };
@@ -955,16 +957,40 @@ const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComput
 
 function shelfHint() {
   if (COARSE) return shelf.selectMode
-    ? 'Select mode: tap paints, then Owned, Shopping list or Clear below. Hold a paint for the menu.'
-    : 'Tap a paint to mark it. Hold for more.';
+    ? 'Select mode: tap paints, or hold and slide across them. Then choose Mark owned, Add to shopping list or Clear.'
+    : 'Tap a paint to mark it. Hold and slide to read names. Hold still for more.';
   return 'Click a paint, then P owned · U shopping list · X clear. Right-click for more.';
 }
 function renderShelfStats() {
   const c = store.counts(), total = state.idx.paints.length;
-  $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} on the shopping list</span> · ${total} total`;
+  // A search, brand or type that hides paints says so, with the way back (phone test, 2026-10-30: the list
+  // showed 2 paints while this line said 12 on the shopping list, and the filters were not noticed).
+  const narrowed = !!(state.shelfQ.trim() || state.shelfBrand || state.shelfTypes.size);
+  const of = state.shelfMark === 'owned' ? c.owned : state.shelfMark === 'want' ? c.want : total;
+  const showing = narrowed ? ` · <b class="s-showing">${ui.esc(t('shelfShowing', { n: shelfPaints().length, of }))}</b>`
+    + ` <button type="button" class="textact" id="shelfClearFilters">${ui.esc(t('clearFilters'))}</button>` : '';
+  $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} on the shopping list</span> · ${total} total${showing}`;
+}
+/** Clear the search, brand and type: the stats line's Clear filters. The status filter stays (it is the view the
+ *  painter chose, as Owned or Shopping list); the empty state's clearShelfFilters clears that too. */
+function clearShelfNarrowing() {
+  state.shelfQ = state.shelfBrand = ''; state.shelfTypes = new Set();
+  $('#shelfQ').value = $('#shelfBrand').value = '';
+  shelfFilterChanged();
+  $('#shelfQ').focus({ preventScroll: true });
+  say(t('filtersCleared'));
 }
 function renderShelfBar() {
-  $('#shelfBar').innerHTML = ui.shelfBar(shelf.sel.size);
+  const n = shelf.sel.size;
+  // A new selection on touch starts the next batch: the last batch's Undo goes (with a mouse the selection stays,
+  // so its Undo stays beside it until the next action).
+  if (n && COARSE && shelf.batch) shelf.batch = null;
+  const done = shelf.batch ? batchWords(shelf.batch, { short: true }) : '';
+  $('#shelfBar').innerHTML = ui.shelfBar(n, done);
+  $('#shelfBar').classList.toggle('doneonly', !n && !!done);
+  // On touch and phones the bar is a sheet at the bottom (app.css), in Select mode only on a touch screen: a
+  // long-press selects its paint for the menu, and the sheet must not come up after every menu.
+  document.body.classList.toggle('selsheet', (n > 0 || !!done) && (shelf.selectMode || !COARSE));
 }
 function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
@@ -1001,7 +1027,7 @@ function renderShelf() {
 }
 /** Nothing to show: say why and offer the way out (UX 4). Only the status filter alone gets its own words. */
 function shelfEmptyKind() {
-  const onlyMark = state.shelfMark && !state.shelfQ && !state.shelfBrand && !state.shelfType;
+  const onlyMark = state.shelfMark && !state.shelfQ && !state.shelfBrand && !state.shelfTypes.size;
   return onlyMark && !store.counts()[state.shelfMark] ? state.shelfMark : 'filter';
 }
 /** A shelf filter (brand/status/type/search) changed → membership changes, so drop the selection
@@ -1092,8 +1118,10 @@ function renderShelfList(view) {
   host.innerHTML = ui.rackGroups(groups, t);
   $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
   syncSendBought();
-  // This store carries: the brands of the paints to buy here, and any switched off (so they can come back)
-  const brands = [...new Set([...view.filter(p => store.markOf(p.id) === 'want').map(p => p.brand), ...storeOff])].sort((a, b) => a.localeCompare(b));
+  // This store carries: the brands of every paint to buy, and any switched off (so they can come back). Not only
+  // the paints the filters show: a search hid brands, and the row looked capped (phone test, 2026-10-30).
+  const wantBrands = [...store.wantIds()].map(id => state.idx.byId.get(id)?.brand).filter(Boolean);
+  const brands = [...new Set([...wantBrands, ...storeOff])].sort((a, b) => a.localeCompare(b));
   const chip = document.activeElement?.dataset?.rkbrand;
   $('#rkStore').innerHTML = ui.storeCarries(brands, storeOff, t);
   $('#rkStore').hidden = !brands.length;
@@ -1166,19 +1194,28 @@ function applySwap(origId, swapId) {
   const sc = origFor ? store.getScheme(origFor) : null;
   const role = sc ? roleForPot(sc.link, origId) : null;
   const scheme = role ? { sid: origFor, role, before: decodeHolds(new URLSearchParams(sc.link.slice(1)).get('hd'))[role] || null } : null;
-  // the swap first, so a project whose last paint was the original is not dropped on the way (store.js)
+  // A project that is not saved lives only while a paint on the list points at it (store.js dropUnused). The
+  // swap can take a project's last paint (an owned swap, or a swap that was for another project), so keep the
+  // records now: Undo puts back any that went (review 2026-10-29).
+  const kept = store.listSchemes();
+  // the hold before the original leaves the list, while its project is sure to be there
+  if (scheme) holdInScheme(origFor, role, { kind: 'pot', id: swapId, hex: sw.hex, was: origId });
+  // the swap next, so a project whose last paint was the original is not dropped on the way (store.js)
   if (swapPrev.mark !== 'owned') {
     store.setMark(swapId, 'want', { for: origFor || undefined });
-    if (origQty > 1) store.setQty(swapId, origQty);
+    // a swap already on the list keeps its own pots too: 2 + 3 is 5, not 3
+    const qty = Math.min(99, origQty + (swapPrev.mark === 'want' ? swapPrev.qty : 0));
+    if (qty > 1) store.setQty(swapId, qty);
   }
   store.setMark(origId, 'none');
-  if (scheme) holdInScheme(origFor, role, { kind: 'pot', id: swapId, hex: sw.hex, was: origId });
-  swapLog.set(swapId, { orig: origId, origQty, origFor, swapPrev, scheme });
+  const dropped = kept.filter(sc => !store.getScheme(sc.id));
+  swapLog.set(swapId, { orig: origId, origQty, origFor, swapPrev, scheme, dropped });
   rk.swapOpen.delete(origId);
   swapRackRow(origId, sw);
   render('marks', { ids: [swapId] });
   ($(`[data-rkunswap="${CSS.escape(swapId)}"]`) || $(`[data-rktick="${CSS.escape(swapId)}"]`))?.focus({ preventScroll: true });
-  say(scheme ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
+  // name the scheme only while it is still kept (an owned swap can end an unsaved project)
+  say(scheme && store.getScheme(origFor) ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
     : t('swappedList', { name: ui.pname(sw), was: ui.pname(orig) }));
 }
 /** Undo a swap made in this visit: the original back on the list (count and project), the swap back to the
@@ -1186,6 +1223,7 @@ function applySwap(origId, swapId) {
 function undoSwap(swapId) {
   const e = swapLog.get(swapId), orig = e && state.idx.byId.get(e.orig);
   if (!e || !orig) return;
+  for (const sc of e.dropped || []) store.putScheme(sc);   // the projects the swap ended, under their own ids
   store.setMark(e.orig, 'want', { for: e.origFor || undefined });
   if (e.origQty > 1) store.setQty(e.orig, e.origQty);
   if (e.swapPrev.mark !== 'owned') {
@@ -1265,8 +1303,8 @@ function setupShelfList() {
 }
 /** The empty state's action: clear the search and every filter, then put focus on the grid. */
 function clearShelfFilters() {
-  state.shelfQ = state.shelfMark = state.shelfBrand = state.shelfType = '';
-  $('#shelfQ').value = $('#shelfBrand').value = $('#shelfType').value = '';
+  state.shelfQ = state.shelfMark = state.shelfBrand = ''; state.shelfTypes = new Set();
+  $('#shelfQ').value = $('#shelfBrand').value = '';
   shelfFilterChanged();
   (state.shelfView === 'list' ? $('#shelfList [data-rktick]') : $('#shelfGrid'))?.focus({ preventScroll: true });
 }
@@ -1341,19 +1379,57 @@ function revealShelfResults() {
 }
 /** Text + active state for the handle chip, the Filters badge, the active selects, and the sheet button. */
 function syncShelfFilterUi() {
-  const sum = ui.shelfFilterSummary({ q: state.shelfQ, mark: state.shelfMark, brand: state.shelfBrand, type: state.shelfType });
+  const sum = ui.shelfFilterSummary({ q: state.shelfQ, mark: state.shelfMark, brand: state.shelfBrand, type: state.shelfTypes.size ? 'on' : '' });
   const chip = $('#shelfChip');
   $('#shelfChipTx').textContent = sum.text;
   chip.classList.toggle('on', sum.any);
+  // only when something filters (Ryan, 2026-10-31): at rest it said "Search", a second way to the field one pull away
+  chip.hidden = !sum.any;
   $('#shelfHandle').setAttribute('aria-label', 'Search and filters' + (sum.any ? ` — ${sum.text}` : ''));
   const badge = $('#shelfFBadge');
   badge.hidden = !sum.sheet;
   badge.textContent = sum.sheet || '';
   $('#shelfFiltersBtn').setAttribute('aria-label', sum.sheet ? `Filters, ${sum.sheet} on` : 'Filters');
   $('#shelfBrand').classList.toggle('on', !!state.shelfBrand);
-  $('#shelfType').classList.toggle('on', !!state.shelfType);
+  syncTypePick();
   const n = shelf.viewIds ? shelf.viewIds.length : 0;
   $('#shelfDone').textContent = `Show ${n.toLocaleString()} paint${n === 1 ? '' : 's'}`;
+}
+/* ---- Type: pick many (PLAN §5 item 45) ----
+   One toggle per type (aria-pressed). With a mouse, the toggles float under a "Type" button (a popover that Esc, a
+   click outside or focus leaving closes); in the phone Filters sheet they show inline and the button hides. */
+const typeWord = ty => ty.charAt(0).toUpperCase() + ty.slice(1);
+function syncTypePick() {
+  const n = state.shelfTypes.size;
+  $('#shelfTypeTx').textContent = !n ? 'All types' : n === 1 ? typeWord([...state.shelfTypes][0]) : `${n} types`;
+  $('#shelfTypeBtn').classList.toggle('on', n > 0);
+  for (const b of $('#shelfTypes').children) b.setAttribute('aria-pressed', String(state.shelfTypes.has(b.dataset.type)));
+}
+function setTypePickOpen(open, { focusBtn = false } = {}) {
+  $('#shelfTypePick').classList.toggle('open', open);
+  $('#shelfTypeBtn').setAttribute('aria-expanded', String(open));
+  if (focusBtn) $('#shelfTypeBtn').focus({ preventScroll: true });
+}
+function setupTypePick() {
+  const pick = $('#shelfTypePick');
+  $('#shelfTypeBtn').addEventListener('click', () => {
+    const open = !pick.classList.contains('open');
+    setTypePickOpen(open);
+    if (open) $('#shelfTypes').querySelector('button')?.focus({ preventScroll: true });
+  });
+  $('#shelfTypes').addEventListener('click', e => {
+    const b = e.target.closest('[data-type]'); if (!b) return;
+    const next = new Set(state.shelfTypes);
+    if (next.has(b.dataset.type)) next.delete(b.dataset.type); else next.add(b.dataset.type);
+    state.shelfTypes = next;
+    shelfFilterChanged();
+    b.focus({ preventScroll: true });   // the list keeps its place; focus stays on the toggle
+  });
+  pick.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && pick.classList.contains('open') && !dock.sheet) { e.stopPropagation(); setTypePickOpen(false, { focusBtn: true }); }
+  });
+  pick.addEventListener('focusout', e => { if (!dock.sheet && !pick.contains(e.relatedTarget)) setTypePickOpen(false); });
+  document.addEventListener('pointerdown', e => { if (pick.classList.contains('open') && !pick.contains(e.target)) setTypePickOpen(false); });
 }
 /* Filters sheet (phone): the desktop bar's brand · type · sort elements, shown as a modal sheet. */
 function openShelfSheet() {
@@ -1413,15 +1489,15 @@ function setupShelfDock() {
   $('#shelfScrim').addEventListener('click', () => closeShelfSheet());
   $('#shelfDone').addEventListener('click', () => closeShelfSheet());
   $('#shelfReset').addEventListener('click', () => {
-    state.shelfBrand = state.shelfType = state.shelfSort = '';
-    $('#shelfBrand').value = $('#shelfType').value = $('#shelfSort').value = '';
+    state.shelfBrand = state.shelfSort = ''; state.shelfTypes = new Set();
+    $('#shelfBrand').value = $('#shelfSort').value = '';
     shelfFilterChanged();
   });
   $('#shelfMore').addEventListener('keydown', e => {
     if (!dock.sheet) return;
     if (e.key === 'Escape') { e.stopPropagation(); closeShelfSheet(); return; }
     if (e.key !== 'Tab') return;   // keep focus inside the modal sheet
-    const f = [...$('#shelfMore').querySelectorAll('button, select')];
+    const f = [...$('#shelfMore').querySelectorAll('button, select')].filter(el => el.getClientRects().length);   // the Type button hides in the sheet
     const first = f[0], last = f[f.length - 1];
     // the title takes the first focus (openShelfSheet), so Shift+Tab from it must wrap too
     const atStart = document.activeElement === first || document.activeElement === $('#shelfMoreTitle');
@@ -1493,15 +1569,52 @@ function applyMark(mark) {
   let ids = [...shelf.sel];
   if (!ids.length) { const f = shelf.cursor || shelf.hover; if (f) ids = [f]; }
   if (!ids.length) return;
+  // What Undo needs (Ryan, 2026-10-30): each paint's mark, count and project before, and the projects kept now (a
+  // project that is not saved ends with its last paint to buy, store.js dropUnused; Undo brings it back).
+  const prev = ids.map(id => ({ id, mark: store.markOf(id), qty: store.qtyOf(id), for: store.projectOf(id) }));
+  const kept = store.listSchemes();
   store.setMarks(ids, mark);   // ONE persist — 500 setMark calls would serialise the whole state 500×
+  shelf.batch = { mark, prev, dropped: kept.filter(sc => !store.getScheme(sc.id)) };
+  // On touch, in Select mode, the selection ends with the action (as Photos): the next batch starts at once, and the
+  // sheet shows the result with Undo. With a mouse the selection stays (as Finder).
+  if (COARSE && shelf.selectMode) setSelection([], { anchor: null }); else renderShelfBar();
   render('marks', { ids });    // the cells, the stats, a status filter; the Studio when it shows next
   // restart the confirm-flash with a SINGLE forced layout — write→read→write per cell was one full
   // grid layout per selected paint (a 500-cell mark froze the main thread for seconds on mobile)
   const cells = ids.map(cellEl).filter(Boolean);
   for (const c of cells) c.classList.remove('flash');
   if (cells.length) { void cells[0].offsetWidth; for (const c of cells) c.classList.add('flash'); }
-  const verb = mark === 'owned' ? 'marked owned' : mark === 'want' ? 'added to the shopping list' : 'cleared';
-  announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} ${verb}.`);
+  announceShelf(`${batchWords(shelf.batch)}.`);
+  // the pressed button is gone (the bar is drawn again): focus goes to Undo with a mouse or keyboard. Not on touch,
+  // where iOS drew a focus ring on a moved focus; the live region says the result there.
+  if (!COARSE) $('#shelfBar [data-act="undo"]')?.focus({ preventScroll: true });
+}
+/** "12 paints marked owned": the batch's result for the live region; `short` ("12 marked owned", "12 on the shopping
+ *  list") for the bar, where the line had to stay one row on a phone (Ryan, 2026-10-31). */
+function batchWords(b, { short = false } = {}) {
+  const n = b.prev.length;
+  if (short) return `${n} ${b.mark === 'owned' ? 'marked owned' : b.mark === 'want' ? 'on the shopping list' : 'cleared'}`;
+  const verb = b.mark === 'owned' ? 'marked owned' : b.mark === 'want' ? 'added to the shopping list' : 'cleared';
+  return `${n} ${n === 1 ? 'paint' : 'paints'} ${verb}`;
+}
+/** Undo the last batch: each paint back to its mark, count and project, and selected again, so a wrong button is one
+ *  tap from the right one. A paint changed since (a tap, the menu) is left as it is: Undo never overwrites a newer change. */
+function undoBatch() {
+  const b = shelf.batch; if (!b) return;
+  shelf.batch = null;
+  for (const sc of b.dropped) store.putScheme(sc);
+  const back = b.prev.filter(p => store.markOf(p.id) === b.mark);
+  const plain = new Map();
+  for (const p of back) {
+    if (p.mark === 'want') { store.setMark(p.id, 'want', { for: p.for || undefined }); if (p.qty > 1) store.setQty(p.id, p.qty); }
+    else { if (!plain.has(p.mark)) plain.set(p.mark, []); plain.get(p.mark).push(p.id); }
+  }
+  for (const [mark, ids] of plain) store.setMarks(ids, mark);
+  const ids = back.map(p => p.id);
+  setSelection(ids, { anchor: ids[0] || null });
+  render('marks', { ids });
+  announceShelf(`Undone: ${ids.length} ${ids.length === 1 ? 'paint is' : 'paints are'} back as before, and selected.`);
+  if (!COARSE) $('#shelfBar [data-act]')?.focus({ preventScroll: true });
 }
 function updateCell(c, mark) {
   c.dataset.mark = mark;
@@ -1509,6 +1622,63 @@ function updateCell(c, mark) {
   const html = ui.markBadge(mark);
   if (html) c.querySelector('.celltip').insertAdjacentHTML('beforebegin', html);
   c.setAttribute('aria-label', c.getAttribute('aria-label').replace(/—.*$/, '— ' + ui.markLabel(mark)));
+}
+
+/* ---- Scrub the Shelf grid (touch; PLAN §5 item 43) ---- */
+// 180ms (Ryan, 2026-10-31: 250 felt a hair long). A tap lasts about 100ms, so a tap still marks.
+const SCRUB_MS = 180;
+let scrub = null, scrubLift = false, scrubCell = null;
+/** The cell for a scrub point. The touch areas meet edge to edge (Ryan, phone test 2026-10-30): the grid's 8px gaps
+ *  are part of the picture, not of the touch, so a finger in a gap takes the nearest cell and the loupe does not flicker.
+ *  It probes half a gap and a little more in each direction, nearest first. */
+// 0, then 1–5px out on each axis, then the diagonals (a gap crossing), nearest first: half the 8px gap plus 1
+const SCRUB_PROBES = [[0, 0], ...[1, 2, 3, 4, 5].flatMap(d => [[d, 0], [-d, 0], [0, d], [0, -d]]),
+  ...[3, 5].flatMap(d => [[d, d], [-d, d], [d, -d], [-d, -d]])];
+function scrubCellAt(x, y) {
+  for (const [dx, dy] of SCRUB_PROBES) {
+    const c = document.elementFromPoint(x + dx, y + dy)?.closest?.('#shelfGrid .cell');
+    if (c) return c;
+  }
+  return null;
+}
+/** The loupe for the cell under the finger, above the finger (below it when the header leaves no room). */
+function scrubAt(x, y) {
+  const c = scrubCellAt(x, y);
+  const loupe = $('#scrubLoupe');
+  // A slow slide must not open the menu: once the finger reaches another paint, the press is a scrub, not a hold
+  if (scrub) { if (!scrub.first) scrub.first = c; else if (c && c !== scrub.first) shelfMenuSurface?.cancelHold(); }
+  if (scrub?.sel && c && c.dataset.id !== scrub.sel.last) {   // Select mode: the range from the first paint to this one
+    const sel = scrub.sel, s = new Set(sel.base);
+    sel.last = c.dataset.id;
+    for (const id of rangeIds(sel.anchor, sel.last)) { if (sel.add) s.add(id); else s.delete(id); }
+    shelf.sel = s; shelf.anchor = sel.anchor;
+    paintSelected(); renderShelfBar();
+  }
+  if (c !== scrubCell) { scrubCell?.classList.remove('scrubbed'); scrubCell = c; c?.classList.add('scrubbed'); }
+  if (!c) { loupe.hidden = true; return; }
+  const p = state.idx.byId.get(c.dataset.id); if (!p) return;
+  fillLoupe(p);
+  loupe.hidden = false;
+  const w = loupe.offsetWidth, h = loupe.offsetHeight, cw = document.documentElement.clientWidth;
+  const top = y - 72 - h > (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-h')) || 0) ? y - 72 - h : y + 48;
+  loupe.style.left = Math.max(8, Math.min(cw - w - 8, x - w / 2)) + 'px';
+  loupe.style.top = top + 'px';
+}
+/** The loupe's words for a paint (kept while the paint is the same). Also called, hidden, at the finger's touch: the
+ *  first fill and the first hit test of the grid were slow, and they made the first loupe late (Ryan, 2026-10-30). */
+function fillLoupe(p) {
+  const loupe = $('#scrubLoupe');
+  if (loupe.dataset.id === p.id) return;
+  loupe.dataset.id = p.id;
+  loupe.innerHTML = ui.swatch(p.hex, 'sm' + ui.fxCls(p))
+    + `<span class="sltx"><b>${ui.esc(ui.pname(p))}</b><span>${ui.esc([p.brand, p.line].filter(Boolean).join(' · '))} · ${ui.esc(ui.markLabel(store.markOf(p.id)))}</span></span>`;
+}
+function endScrub() {
+  if (!scrub && !scrubCell) return;
+  if (scrub) clearTimeout(scrub.timer);
+  scrub = null;
+  scrubCell?.classList.remove('scrubbed'); scrubCell = null;
+  const loupe = $('#scrubLoupe'); loupe.hidden = true; loupe.dataset.id = '';
 }
 
 /* mouse: click-select + marquee drag (mouse only; touch uses tap-to-cycle) */
@@ -1528,8 +1698,42 @@ function setupShelf() {
   shelfMenuSurface = markMenu.attach({ container: grid, item: el => el.closest('.cell'), longPress: COARSE, onOpen: openShelfMenu });
 
   if (COARSE) {                                  // touch: tap-to-cycle, or Select-mode multi-select; long-press → menu
+    // Scrub (PLAN §5 item 43): a finger held still for SCRUB_MS reads names instead of marking. It slides over the
+    // grid with a loupe above it (the page does not scroll while it does), and lifting marks nothing. A move over
+    // MOVE_SLOP before then is a scroll. Still to LONG_PRESS_MS opens the mark menu, as before (openShelfMenu ends the scrub).
+    grid.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'touch') return;
+      endScrub();
+      const x = e.clientX, y = e.clientY;
+      // the slow first work (a hit test of the whole grid, the loupe's first words) now, while the finger holds still
+      const warm = scrubCellAt(x, y), wp = warm && state.idx.byId.get(warm.dataset.id);
+      if (wp) fillLoupe(wp);
+      scrub = { id: e.pointerId, x, y, on: false,
+        timer: setTimeout(() => {
+          if (!scrub) return;
+          scrub.on = true;
+          // Select mode (Ryan, 2026-10-30): the same gesture selects a RANGE, as Photos: every paint from the one
+          // first held to the one under the finger, in reading order, so a drag down takes whole rows. Dragging back
+          // shrinks it. The first paint decides the direction: select, or deselect when it was selected.
+          if (shelf.selectMode) {
+            const c0 = scrubCellAt(scrub.x, scrub.y);
+            if (c0) scrub.sel = { add: !shelf.sel.has(c0.dataset.id), base: new Set(shelf.sel), anchor: c0.dataset.id, last: null };
+          }
+          scrubAt(scrub.x, scrub.y);
+        }, SCRUB_MS) };
+    });
+    grid.addEventListener('pointermove', e => {
+      if (!scrub || e.pointerId !== scrub.id) return;
+      if (!scrub.on) { if (Math.hypot(e.clientX - scrub.x, e.clientY - scrub.y) > MOVE_SLOP) endScrub(); return; }   // a scroll
+      scrub.x = e.clientX; scrub.y = e.clientY; scrubAt(scrub.x, scrub.y);
+    });
+    // the scroll stops only once the scrub is on: before that, the page scrolls as usual (touch-action: pan-y)
+    grid.addEventListener('touchmove', e => { if (scrub?.on) e.preventDefault(); }, { passive: false });
+    grid.addEventListener('pointerup', e => { if (scrub && e.pointerId === scrub.id) { if (scrub.on) scrubLift = true; endScrub(); } });
+    grid.addEventListener('pointercancel', () => endScrub());
     grid.addEventListener('click', e => {
       const c = e.target.closest('.cell'); if (!c) return;
+      if (scrubLift) { scrubLift = false; return; }   // the lift after a scrub: it read names, it marks nothing
       if (shelfMenuSurface.ignorePress()) return;   // a long-press opened the menu, or this tap only closed it
       if (shelf.selectMode) {                    // tap toggles selection (bulk-mark via the action bar)
         const s = new Set(shelf.sel); s.has(c.dataset.id) ? s.delete(c.dataset.id) : s.add(c.dataset.id);
@@ -1617,6 +1821,7 @@ let markMenu = null, shelfMenuSurface = null;   // made in wire(); setupShelf() 
 /** Open the menu for a cell. Right-click, long-press and Shift+F10 select the cell first when it is not in
  *  the selection (Finder). The marks act on the whole selection; Use as seed needs exactly one paint. */
 function openShelfMenu(c, how = 'key', point = null) {
+  if (scrub) { scrubLift = false; endScrub(); }   // held still to the menu: the menu, not the loupe
   const id = c.dataset.id;
   if (!shelf.sel.has(id)) setSelection([id], { anchor: id, cursor: id });
   const ids = [...shelf.sel], n = ids.length, one = n === 1 ? state.idx.byId.get(ids[0]) : null;
@@ -1729,6 +1934,12 @@ function setSeedRole(role) {
   if ((role !== 'main' && role !== 'accent') || state.seedRole === role) return;
   state.seedRole = role;
   preNeutralSeedRole = null;   // an explicit dock choice outranks anything parked at the neutral boundary
+  // Say what the move did (PLAN §5 item 46): in accent mode the scheme starts from the opposite colour, so the
+  // columns change, and in most harmonies the starting paint comes back as an extra column.
+  if (role === 'accent') {
+    const opp = nearestPaint(state.idx, schemeBase(), matchOpts());
+    seedNews(t('seedToAccent', { name: opp ? ui.pname(opp.paint) : schemeBase().toUpperCase() }));
+  } else seedNews(t('seedToMain'));
   render('scheme');
 }
 function renderHero(animate = true) {
@@ -2117,7 +2328,9 @@ function setMode(mode) {
     resetRackSession();
     renderShelf(); window.scrollTo(0, 0);
     Object.assign(dock, { open: true, acc: 0, lastY: 0, stuck: false }); applyDock();
-    if (state.shelfView !== 'list') $('#shelfGrid').focus({ preventScroll: true });
+    // With a mouse or keyboard the grid takes focus, so arrows and P/U/X work at once. On a touch screen there is no
+    // keyboard to use it, and iOS drew the focus ring round the whole grid and a cursor name tip (Ryan, 2026-10-30).
+    if (state.shelfView !== 'list' && !COARSE) $('#shelfGrid').focus({ preventScroll: true });
   }
   else if (state.mode === 'schemes') { renamingId = null; renderSchemesPage(); window.scrollTo(0, 0); }
   else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows
@@ -2258,15 +2471,20 @@ function toggleContrast() {                       // include Contrast paints in 
   state.includeContrast = !state.includeContrast; store.setPref('contrast', state.includeContrast);
   renderLive(); renderActive(); renderMatchNote();
 }
+/** How long a toast shows: long enough to read. 1.7s for every toast hid a long one (an import's result)
+ *  before it could be read (mockups/whats-new.html, Part B): 1s + 60ms a character, 2s to 7s. */
+const toastMs = msg => Math.max(2000, Math.min(7000, 1000 + 60 * String(msg).length));
 /** `speak: false`: only the toast shows; the caller's render says the words (seedNews). */
 function toast(msg, { speak = true } = {}) {
   // The toast is what you see; say() is what a screen reader hears. A live region inserted with its text
   // already in it is not announced reliably, so the words go into a region that is already there.
+  // One at a time: they sit in one place, so a new one replaces the one before.
+  for (const old of document.querySelectorAll('.toast')) old.remove();
   const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; d.setAttribute('aria-hidden', 'true');
   // An open modal <dialog> is in the top layer, above any z-index, so while one is open the toast goes
   // inside the top one, where you can see it.
   const modal = [...document.querySelectorAll('dialog[open]')].reverse().find(isModal);
-  (modal || document.body).appendChild(d); setTimeout(() => d.remove(), 1700);
+  (modal || document.body).appendChild(d); setTimeout(() => d.remove(), toastMs(msg));
   if (speak) say(msg);
 }
 function isModal(el) {
@@ -2363,6 +2581,32 @@ async function doShareImage() {
     }
   }
   saveImage(img);
+}
+/* ---- The scheme, large (PLAN §5 item 47) ---- */
+let bigOpener = null, bigUrl = '';
+async function openBig(opener) {
+  const d = $('#bigDlg'); bigOpener = opener;
+  $('#bigShare').hidden = !CAN_SHARE; $('#bigSave').hidden = CAN_SHARE;
+  d.showModal();
+  let img;
+  try { img = await shareImage(); } catch { toast(t('imageFailed')); d.close(); return; }
+  if (!d.open) return;
+  if (bigUrl) URL.revokeObjectURL(bigUrl);
+  bigUrl = URL.createObjectURL(img.blob);
+  const pic = $('#bigImg');
+  pic.alt = img.text.split('\n')[0];   // the names, without the link: what the picture shows, in words
+  pic.src = bigUrl;
+}
+function setupBig() {
+  const d = $('#bigDlg');
+  $('#bigClose').addEventListener('click', () => d.close());
+  $('#bigShare').addEventListener('click', doShareImage);
+  $('#bigSave').addEventListener('click', doSaveImage);
+  d.addEventListener('close', () => {
+    (bigOpener && bigOpener.isConnected ? bigOpener : $('#hero [data-herobig]'))?.focus({ preventScroll: true });
+    bigOpener = null;
+  });
+  $('#hero').addEventListener('click', e => { const b = e.target.closest('[data-herobig]'); if (b) openBig(b); });
 }
 function saveImage(img) {
   download(img.name, img.blob, 'image/png');
@@ -2561,6 +2805,7 @@ function syncSettingsFade() {
 }
 function openSettings(opener = 'button') {
   const m = sMenu(); if (m.open) return;
+  if (!news.menuSeen) { news.menuSeen = true; renderNews(); }   // the dot has led here; About's tag leads on
   settings.opener = opener; settings.ret = 'opener';
   picker.close();
   syncSettingsControls(); resetBackupNow();
@@ -2642,7 +2887,7 @@ function setupSettings() {
   // The language follows the device (no ⋯ row). A change while the app is open applies at once.
   addEventListener('languagechange', () => {
     i18n.followDevice();
-    syncLocaleStrings(); syncUmpHint();
+    syncLocaleStrings(); syncUmpHint(); renderNews();
     renderHero();                       // re-render JS-built strings that use i18n.t (e.g. the base label)
     wheelDraw();                        // …and the lightness slider's spoken value
   });
@@ -2707,6 +2952,8 @@ function openStore(opener, which = '') {
   const { all, projects } = storeChoices();
   if (!all.length) { toast(t('listEmpty')); return; }
   storeDlg.opener = opener;
+  // A Schemes row is drawn again when the naming step names its project, so keep a way to find its new button.
+  storeDlg.openerSel = opener?.dataset?.scstore ? `[data-scstore="${CSS.escape(opener.dataset.scstore)}"]` : null;
   storeDlg.which = projects.some(p => p.id === which) ? which : '';
   // the naming step: the projects in this export that have no name and were never asked (asked once, for good)
   const scope = storeDlg.which ? projects.filter(p => p.id === storeDlg.which) : projects;
@@ -2834,8 +3081,9 @@ function setupStore() {
   $('#storePrintBtn').addEventListener('click', printStoreList);
   $('#storeText').addEventListener('click', saveStoreText);
   d.addEventListener('close', () => {
-    const o = storeDlg.opener; storeDlg.opener = null;
-    const back = o && o.isConnected && o.getClientRects().length ? o : $('#settingsBtn');
+    const o = storeDlg.opener, sel = storeDlg.openerSel; storeDlg.opener = storeDlg.openerSel = null;
+    const shown = el => el && el.isConnected && el.getClientRects().length;
+    const back = shown(o) ? o : shown(sel && $(sel)) ? $(sel) : $('#settingsBtn');
     back.focus({ preventScroll: true });
   });
   $('#storeOpenMenu').addEventListener('click', () => { closeSettings(null); openStore($('#settingsBtn')); });
@@ -2855,8 +3103,8 @@ function openTripLinks(url) {
 /** Show the list: the Shelf's list of paints to buy, every other filter cleared, in rack order. */
 function showStoreListHere() {
   state.shelfView = 'list'; state.shelfGroup = 'rack'; state.shelfMark = 'want';
-  state.shelfQ = state.shelfBrand = state.shelfType = '';
-  $('#shelfQ').value = $('#shelfBrand').value = $('#shelfType').value = '';
+  state.shelfQ = state.shelfBrand = ''; state.shelfTypes = new Set();
+  $('#shelfQ').value = $('#shelfBrand').value = '';
   if (state.mode !== 'shelf') setMode('shelf'); else { resetRackSession(); renderShelf(); updateUrl(); }
 }
 function openStoreList({ items, projects }) {
@@ -3012,9 +3260,11 @@ function confirmRestore(text, opener) {
     body: () => {
       const now = store.inspectJSON(text);
       const lost = now.lost ? `<p>${ui.esc(now.lost === 1 ? t('lostOne') : t('lostMany', { n: now.lost }))}</p>` : '';
+      // Replace takes the saved schemes too: say how many go (review 2026-10-29 — it was silent).
+      const sLost = now.schemesLost ? `<p>${ui.esc(now.schemesLost === 1 ? t('schemesLostOne') : t('schemesLostMany', { n: now.schemesLost }))}</p>` : '';
       return `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd>`
         + `<dt>${date ? datedLabel(date) : ui.esc(t('inBackup'))}</dt><dd>${ui.esc(fmtCounts(info))}</dd></dl>`
-        + lost + `<p>${ui.esc(t('restoreWarn'))}</p>`;
+        + lost + sLost + `<p>${ui.esc(t('restoreWarn'))}</p>`;
     },
     okLabel: t('replace'), opener,
     onOk: () => {
@@ -3033,13 +3283,31 @@ function confirmDelete() {
     body: () => `<dl class="cdlgcounts"><dt>${ui.esc(t('onDevice'))}</dt><dd>${ui.esc(fmtCounts(store.counts()))}</dd></dl>`
       + `<p>${ui.esc(t('deleteWarn'))}</p>`,
     okLabel: t('deleteBtn'), opener: $('#deleteOpen'),
-    onOk: () => { store.clear(); toast(t('deleted')); afterStoreReplaced(); },
+    // Delete is from About, so What's new is on screen: the device starts new with no dot
+    onOk: () => { store.clear(); store.setSeenNews(WHATS_NEW.version); renderNews(); toast(t('deleted')); afterStoreReplaced(); },
   });
+}
+
+/* ---- What's new (mockups/whats-new.html, A2) ----
+ * After an update (a new WHATS_NEW.version, not a new APP_VERSION: a patch with the same lines has nothing
+ * new to read), ⋯ shows a dot until it opens, and About carries a "New" tag until About opens. */
+const news = { menuSeen: false };
+const newsUnseen = () => store.seenNews() !== WHATS_NEW.version;
+function renderNews() {
+  const unseen = newsUnseen(), dot = unseen && !news.menuSeen;
+  $('#newsDot').hidden = !dot;
+  $('#settingsBtn').setAttribute('aria-label', dot ? t('settingsNews', { version: WHATS_NEW.version }) : t('settings'));
+  $('#aboutNew').hidden = !unseen;
+  const a = $('#aboutOpenMenu');
+  if (unseen) a.setAttribute('aria-label', t('aboutNews')); else a.removeAttribute('aria-label');
 }
 
 /* ---- About ---- */
 let aboutOpener = null;
-function openAbout(opener) { aboutOpener = opener; $('#about').showModal(); }
+function openAbout(opener) {
+  aboutOpener = opener; $('#about').showModal();
+  if (newsUnseen()) { store.setSeenNews(WHATS_NEW.version); renderNews(); }
+}
 /** Strings built in JS that follow the language: the version line, What's new and the slot sizes. */
 function syncLocaleStrings() {
   $('#aboutVersion').textContent = t('versionLine', { app: APP_VERSION, data: (state.idx && state.idx.version) || '—' });
@@ -3071,7 +3339,8 @@ function loadHelp() {
 /** Open Help, at a section when `hash` names one ("#matching"). */
 async function openHelp(opener, hash = '') {
   try { await loadHelp(); }
-  catch { toast(t('helpFailed')); location.href = 'support.html' + hash; return; }
+  // Stay in the app: going to the page at once hid the toast, and with no network it left the app for an error page.
+  catch { toast(t('helpFailed')); return; }
   helpOpener = opener;
   helpShowDetails?.();   // the details hold the window's size and the theme: fresh each time Help opens
   const d = $('#helpDlg');
@@ -3094,7 +3363,8 @@ function wireSupportDetails(root) {
   box.querySelector('#supportScheme').addEventListener('change', show);
   box.querySelector('#supportCopy').addEventListener('click', async () => {
     show();
-    try { await navigator.clipboard.writeText(line()); say(t('supportCopied')); box.querySelector('#supportSaid').textContent = t('supportCopied'); }
+    // #supportSaid is a status region already: a say() too made a screen reader read the line twice.
+    try { await navigator.clipboard.writeText(line()); box.querySelector('#supportSaid').textContent = t('supportCopied'); }
     catch { box.querySelector('#supportSaid').textContent = t('supportCopyFailed'); }
   });
   box.hidden = false;
@@ -3331,6 +3601,7 @@ function wire() {
   // shelf chrome
   $('#modeNav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
   $('#shelfBrand').addEventListener('change', e => { state.shelfBrand = e.target.value; shelfFilterChanged(); });
+  $('#shelfStats').addEventListener('click', e => { if (e.target.closest('#shelfClearFilters')) clearShelfNarrowing(); });
   let sqTimer = 0;   // debounce: every keystroke rebuilt the full 2,508-cell grid — type-lag on phones
   $('#shelfQ').addEventListener('input', e => {
     clearTimeout(sqTimer);
@@ -3341,7 +3612,7 @@ function wire() {
     state.shelfMark = b.dataset.mark;
     shelfFilterChanged();
   });
-  $('#shelfType').addEventListener('change', e => { state.shelfType = e.target.value; shelfFilterChanged(); });
+  setupTypePick();
   $('#firstRunPicks').addEventListener('click', e => { const b = e.target.closest('[data-firstpick]'); if (b) selectPaint(b.dataset.firstpick); });
   $('#firstRunShelf').addEventListener('click', () => { endFirstRun(); setMode('shelf'); });
   $('#shelfEmpty').addEventListener('click', e => { if (e.target.closest('[data-shelfclear]')) clearShelfFilters(); });
@@ -3350,12 +3621,14 @@ function wire() {
   $('#shelfBar').addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
     if (b.dataset.act === 'deselect') setSelection([], { anchor: null });
+    else if (b.dataset.act === 'undo') undoBatch();
     else applyMark(b.dataset.act);
   });
   $('#shelfSelect').addEventListener('click', () => {       // touch: toggle multi-select mode
     shelf.selectMode = !shelf.selectMode;
     $('#shelfSelect').setAttribute('aria-pressed', String(shelf.selectMode));
-    if (!shelf.selectMode) setSelection([], { anchor: null });   // leaving select mode clears the selection
+    if (!shelf.selectMode) { shelf.batch = null; setSelection([], { anchor: null }); }   // leaving select mode clears the selection and its Undo
+    else renderShelfBar();
     $('#shelfHint').textContent = shelfHint();
   });
   $('#exportColl').addEventListener('click', exportCollectionCsv);
@@ -3413,8 +3686,7 @@ async function init() {
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
   $('#shelfBrand').insertAdjacentHTML('beforeend', ui.brandOptions(state.brands));   // brand and type filters: the Shelf's only (§3.6)
   const types = [...new Set(state.idx.paints.map(p => p.type))].sort();
-  const typeOpts = types.map(t => `<option value="${ui.esc(t)}">${ui.esc(t.charAt(0).toUpperCase() + t.slice(1))}</option>`).join('');
-  $('#shelfType').insertAdjacentHTML('beforeend', typeOpts);
+  $('#shelfTypes').innerHTML = types.map(ty => `<button type="button" class="typechip" data-type="${ui.esc(ty)}" aria-pressed="false">${ui.icon('check')}${ui.esc(typeWord(ty))}</button>`).join('');
 
   // One decoder (share.js), validators injected — anything this build no longer has is dropped so an
   // old link still opens on the fallbacks. `t`/`m` are read separately: theme applies before this
@@ -3440,6 +3712,13 @@ async function init() {
   $('#shareImg').hidden = !CAN_SHARE; $('#saveImg').hidden = CAN_SHARE; $('#copyImg').hidden = !CAN_COPY_IMAGE;
   i18n.apply();   // localize static chrome strings ([data-i18n] / placeholders)
   syncLocaleStrings(); syncSettingsControls();
+  // A new device has nothing that changed, so it starts with this version seen: no dot.
+  if (store.firstVisit) store.setSeenNews(WHATS_NEW.version);
+  renderNews();
+  store.onSeenNewsChange(renderNews);   // About opened in another tab
+  // A failed save is said once a visit: the shelf then lives only in this tab.
+  let saveFailSaid = false;
+  store.onSaveFail(() => { if (!saveFailSaid) { saveFailSaid = true; toast(t('saveFailed')); } });
   // Bind the wheel once (always-visible static markup) and keep its redraw. Everything it needs is
   // passed in — it owns no scheme state, so this list IS its whole contract with the app.
   ({ draw: wheelDraw, endLightnessRun } = setupWheel({
@@ -3449,6 +3728,7 @@ async function init() {
   }));
   setupEyedropper();
   setupPotDialog();
+  setupBig();
   picker = setupPicker({
     state, t, say, markMenu,
     getPick: () => ({ id: state.customHex ? null : state.baseId, hex: pickHex() }),

@@ -480,30 +480,31 @@ The build order. Each item needs the one before it:
     Delete's answer misses saved schemes). B: Help in a sheet built from `support.html` itself (one source, no
     second copy), Help grouped by task, About as a short identity page.
 
-### Backlog — finding What’s new (raised 2026-10-29 by Ryan; studied, not yet built)
+### Backlog — finding What’s new (raised 2026-10-29 by Ryan; studied; 40 built)
 
 Study: [`mockups/whats-new.html`](../mockups/whats-new.html). About shows What’s new since item 39, but a painter
-finds it only if they open About. Nothing here is built. Each item waits for Ryan’s answers in the study.
+finds it only if they open About. Ryan’s answers (2026-10-30): A2; `seenNews` not in the backup; a dot only when the
+What’s new lines change; B1 (no log) with longer toasts; fix the review’s bugs next.
 
-40. **A dot on ⋯ after an update** (study Part A) — **specified, not built.** Recommended: **A2.** After an update, ⋯
+40. **A dot on ⋯ after an update** (study Part A) — **built (2026-10-30), A2.** After an update, ⋯
     shows an 8px `--accent` dot (no number and no red: Apple’s HIG says not to copy the system badge). The dot goes
     when ⋯ opens. A neutral **New** tag on About stays until About opens. An update is a change of
-    `WHATS_NEW.version`, so a patch with the same lines shows nothing. One new pref, `seenNews`. A first visit
-    and Delete show no dot. ⋯’s accessible name says “what’s new” while the dot shows. About 40 lines and 6
-    tests, one PR. Open questions: does `seenNews` go in the backup file (recommended: no)?
-41. **A notification log next to ⋯** (study Part B) — **studied; recommended: do not build now.** With no server,
+    `WHATS_NEW.version`, so a patch with the same lines shows nothing. `store.js seenNews` has its own key
+    (`ps-seen`), so it is not in the backup file. A first visit and Delete show no dot. ⋯’s accessible name says
+    “what’s new” while the dot shows.
+41. **A notification log next to ⋯** (study Part B) — **chosen: B1, no log (2026-10-30).** Toasts now stay long enough to read. With no server,
     the log can hold only what this device knows, and most of that has a better home already. The real gap is
     that a toast is gone after 1.7 seconds. Recommended: B1 (no log) now, B2 (a “Recent” group in ⋯, this
     visit only) later if needed, and no bell beside ⋯ (B3: empty most days, and a §3.6 change).
 
-### Follow-ups from the QA pass and code review (2026-10-29, v1.13.0 + the Help sheet; not yet scheduled)
+### Follow-ups from the QA pass and code review (2026-10-29, v1.13.0 + the Help sheet; fixed 2026-10-30 unless marked open)
 
 **QA pass (no faults found).** 340 unit tests pass. `validate-data` and `check-docs` pass. In Chromium, at 360, 768 and
 1180px in both themes: no console errors, no page wider than the screen (Studio, Schemes, Shelf), ⋯ → About and ⋯ →
 Help open, and Esc puts focus back on ⋯. At 320 × 256 (a stand-in for 400% zoom) with reduced motion, ⋯ covers the
 header and its rows scroll. Offline after one visit, the app loads and the Help sheet opens.
 
-**Code review: bugs to fix** (most severe first; nothing is fixed in this change):
+**Code review: bugs** (most severe first; each one **fixed** 2026-10-30, with a test where the code is pure):
 
 - **Restore deletes saved schemes with no warning** (`store.js inspectJSON`, `app.js confirmRestore`) — *confirmed
   by running.* `importJSON` replaces `schemes`, but the confirm counts only owned and to-buy marks. A device with
@@ -523,10 +524,13 @@ header and its rows scroll. Offline after one visit, the app loads and the Help 
   or a private window that refuses writes), the error is dropped, and the painter believes the shelf is saved. Fix: a note
   the first time a save fails.
 
-Lower value: `applySwap` replaces the swap's own count instead of adding to it; `cleanName` can cut an emoji
-in half (cut by code points); `decodeList` drops a paint whose project number is 1000 or more.
+Lower value, also fixed: `applySwap` replaces the swap's own count instead of adding to it; `cleanName` can cut an
+emoji in half (it now cuts by code points); `decodeList` drops a paint whose project number is 1000 or more.
+Note on the swap: an **owned** swap still ends an unsaved project when it takes its last paint to buy. That is the
+project model (a project lives while a paint on the list points at it). The announce no longer names it, and an owned
+swap has no Undo (Undo is for a swap that is still to buy).
 
-**Code review: the Help sheet, the store panel, the list and `sw.js`** (most severe first; not fixed here):
+**Code review: the Help sheet, the store panel, the list and `sw.js`** (most severe first; each one **fixed** 2026-10-30):
 
 - **The Help sheet can show an old `support.html`** (`sw.js isShell`) — *confirmed in a browser.* The sheet's
   `fetch('support.html')` is not a navigation and not `.js`/`.css`, so the service worker serves it from the cache.
@@ -541,9 +545,102 @@ in half (cut by code points); `decodeList` drops a paint whose project number is
   toast cannot be read. With no network and no service worker yet, the app is replaced by the browser's error page.
   Fix: show a note with a link to the page, and stay in the app.
 
-Lower value: `support.html`'s `id="shelf"` and `id="schemes"` repeat the app's ids inside the sheet (two
-elements with one id); `#supportSaid` has no reserved slot, so the dialog grows when it fills (§3.4); Print
-in the store panel shows the print list on screen behind the dialog while the print dialog is open.
+Lower value: Print in the store panel showed the print list on screen behind the dialog (**fixed**).
+`#supportSaid` has a reserved line already (`min-height: 1.5em`), so it does not move anything (no change).
+**Open:** `support.html`'s `id="shelf"` and `id="schemes"` repeat the app's ids inside the sheet (two elements
+with one id). A fix renames the public page's anchors, so its links change: it waits for a decision.
+
+### The phone test (Ryan and a tester, 2026-10-30; measured at 402 × 874, an iPhone 16 Pro)
+
+**Fixed now** (in ryanmette/miniature_palette_studio#65):
+- **The wheel trapped the page, and a swipe changed the colour.** The canvas was `touch-action: none`, and a press
+  on empty disc moved the base: a swipe to scroll replaced the picked paint with a custom colour. Now a press on a
+  node drags it, a press on empty disc scrolls, and only a tap on empty disc sets the colour (CLAUDE.md §3.6).
+- **Doubled phone gutters.** `main` and each region both had 14px, so content started at 28px: now one 16px gutter.
+  The header bar is 8 × 16px (it was 10 × 14, off the §3.4 scale).
+- **The lightness slider under the iOS address bar.** The wheel fix lets the page scroll from the wheel, and the
+  gutter fix moves the slider up. The Filters sheet uses `85dvh` (iOS `vh` is the large viewport), and a toast sits
+  above the home indicator (`env(safe-area-inset-bottom)`).
+- **"Why only 2 of 12?"** The counts line now says "showing 2 of 12" with **Clear filters** when a search, brand or
+  type hides paints.
+- **"This store carries" looked capped.** It listed only the brands of the paints the filters showed. It now lists
+  every brand on the shopping list.
+
+**Ryan's decision (2026-10-30): the recommendations, all of them.** 42–47 are built; 48 keeps the wheel; 49 is a study.
+
+**Needs Ryan's decision** (each with the recommendation):
+
+42. **Built.** **The Shelf list's top on a phone** (79% of the screen before the first paint: header, dock, title + Grid|List +
+    Import + Save, counts, Rack order|By project, Print + Take to the store, 4 rows of brand toggles, a hint). Recommend:
+    Grid|List, Print and Take to the store on one tools row; the hint only in Help or when the list is empty; the
+    brand toggles in one 44px row that scrolls sideways, with "10 brands · 2 off". Target: the first paint at about
+    y 430 (it is at 689).
+43. **Built (a plain tap still marks).** **Scrub the Shelf grid to read names.** Today a tap marks at once, and the name shows only after. Recommend: a
+    finger held still 250ms starts a scrub (a loupe above the finger names each paint it passes; lifting does
+    nothing); still to 500ms opens the mark menu, as now. Question: should a plain tap still mark?
+44. **Built.** **Shelf grid density.** 6 columns of 54px at 402px, with a 10px gap. Recommend 64px minimum and an 8px gap (5 columns of about 67px).
+45. **Built.** **Pick many types** (layer + base + wash). Recommend: one toggle per type in the Filters sheet (`aria-pressed`), and
+    on a wide screen a "Type: 3 ▾" button that opens the same toggles.
+46. **Built.** **"⚓ Move here" adds a column.** In accent mode the scheme is built from the opposite colour (180° away), and
+    most harmonies have no partner there, so the picked colour comes back as an extra column (triadic 4 → 5).
+    Recommend: say it on the dock ("Accent: the scheme starts from its opposite, Hydra Turquoise"), tag the column
+    "Your accent (kept)", and show a one-time line the first time.
+47. **Built.** **Tap the starting paint for a big view.** Today the hero does nothing on a tap. Recommend: the hero's swatch opens
+    a sheet with the starting paint large (pot, target, ΔE) and the scheme's four pots beside it at 60-30-10. It can
+    reuse the share image (`shareimage.js`), with Share and Save beside it.
+48. **Kept as it is.** **A smaller wheel on a phone?** It is 330px of a 402px screen. Recommend: keep it, now that it scrolls; revisit after 42–47.
+49. **Studied: [`docs/COLOUR_CHECK.md`](COLOUR_CHECK.md).** Ryan's answers (2026-10-30): our own measurement leads (the
+    recommendation: own measurement first, the maker's swatch as the fallback, and a source label on each paint
+    rather than a settings toggle); a change needs ΔE > 5 from a maker's photo or > 3.5 from our own measurement
+    (recommended); the first batch fixes the clearest errors (pure black/white, shared hexes). **Confirmed (2026-10-30):
+    our own measurements first.** A wash is measured both ways (liquid and one coat over white), which settles item 51's
+    open wash rule with real values. **Check every paint's colour.** 3,225 hexes come from community data, and most are `approx`. A full pass needs a
+    source for each brand (manufacturer swatches, or measured photos under one light) and a method: see
+    `docs/DATA_SOURCING.md`. Recommend: start with the paints people pick most (the starters and Citadel Base/Layer),
+    compare each with the maker's own swatch, and log the ΔE of every change. A study first, not a bulk edit.
+
+50. **The hue sort was unreliable** (Ryan, 2026-10-30) — **fixed.** The Shelf's Sort: hue used the raw HSL hue, so greys
+    (whose hue is noise) sat among the reds: 119 greys in the first 400 paints. Measured as the mean ΔE 2000 between
+    neighbours and the jumps over 25: Shelf 22.8 · 1,165; the Browse order 7.8 · 31. Both now use one order, 20° bands of
+    Lab hue that snake (7.2 · 4), and a test keeps it smooth. Sort: lightness uses Lab L*.
+51. **A design pass on the swatches** (Ryan, 2026-10-30): does each swatch show its paint and its type (metal, wash,
+    contrast, effect)? — **studied** ([`mockups/swatch-finish.html`](../mockups/swatch-finish.html)). Found: the finish overlays
+    shift the colour, which §2 forbids (gloss ΔE 10.4; a white highlight 6.5 on near-black washes); wash and contrast
+    look alike; silver metals read as grey at 28px; 22 of 55 effect paints have no `fx`; the metallic tag uses the
+    warning colour (§3.5); 127 near-black paints blend into the dark page. Recommended: **B**, a pure colour field
+    with one finish mark in a corner, plus a stronger edge in dark, a neutral finish tag and a contrast icon of its
+    own. **Ryan's answers (2026-10-30):** B (a pure colour field); A's lighter icon in the bottom-right, consistent
+    with the app's other elements; one rule for every finish (gloss and fluorescent only as the others). The wash
+    convention is open: Ryan leans to the liquid in the pot; the recommendation is one coat over white primer (a
+    drawdown), which shows what a wash does. **Round 2** (study §4): four ways to sit the icon on paint, measured
+    against WCAG 1.4.11 on all 747 non-flat paints; recommended (a), the bare icon in the swatch's own ink, as the
+    copy button (lowest 4.28:1), and a contrast glyph of its own.
+    **Chosen (Ryan, 2026-10-30): (a), and the icon stays on the 28px hero chip too.** The wash rule stays open: Ryan
+    sees the pots, not a coat over white. It does not block the swatch build (the field shows the paint's hex,
+    whatever the rule). It is settled with the first measured batch (item 49): measure each wash both ways (a dab of
+    the liquid, and one coat over white primer) on the same card, and compare the real values side by side.
+    **Next:** build (a) in its own PR after #65 merges. It changes CLAUDE.md §2 (the finish overlays go; a finish
+    icon in the paint's ink takes their place) and §3.5 Swatch.
+
+**Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
+
+### Raised by Ryan on 2026-10-31 (not yet built)
+
+52. **One name for each part of the app** (a glossary of the interface). In talk, "that filter drop down" took a
+    sentence to point at; its name in CLAUDE.md is **the Shelf dock** (with its **handle**). §3.5's Words table names
+    what the painter sees; it does not name the parts (dock, handle, hero, live palette, seed toolbar, the Filters
+    sheet, the selection sheet…). Plan: walk the whole app, give each part one name, and keep them in a new
+    CLAUDE.md §3.7 "Parts of the app" table (name · where it is · its element id or class · a screenshot in a
+    mockup), so a design talk and the code use the same words. The rule going forward: **a new part gets its name in
+    that table in the same commit that adds it.**
+54. **Dismiss the result line without leaving Select** (Ryan, 2026-10-31; not for now). After a batch, "13 on the
+    shopping list · Undo" stays until the next selection or leaving Select mode: it does **not** time out, on
+    purpose (WCAG 2.2.1: a control that goes by itself can go before someone reaches it; Gmail's timed Undo is the
+    common counter-example). Proposed: a ✕ at the line's end (a 44px icon button, "Dismiss"), which also ends the
+    Undo for that batch. Small.
+53. **Grid | List and Select in the Shelf dock; the handle without "⌕ Search"** — **built (C, 2026-10-31)**; mockup
+    [`mockups/shelf-dock-tools.html`](../mockups/shelf-dock-tools.html): A a third row, B icons in the status row, C
+    Select beside Filters with Grid | List as icons (recommended); the handle shows a chip only when something filters.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
@@ -601,6 +698,20 @@ scaffold + picker. Still future:*
   fit v1; payments/accounts still need a §1 scope change first). Exploration only; nothing committed.
 
 ---
+
+### Ideas raised 2026-10-30 (Ryan; not studied)
+- **Hooks for AI agents.** A way for an assistant to read and write the shelf: today the backup file and the CSV
+  already are that contract (`store.js exportJSON` / `importJSON`, `collection-io.js`). A next step needs no server: a
+  documented text format ("Citadel Mephiston Red, owned") that an assistant writes and the Shelf's Import reads, with
+  the same confirm as Restore. An agent that acts on the app itself (MCP and similar) needs a server or the native
+  app, so it is a §1 change.
+- **"Import your real shelf"**: type or dictate a list of paints. The Shelf's matcher (`paintMatcher`) already reads
+  names, so a pasted or dictated list can be matched line by line with a review step (each line: the match, its
+  brand, Keep or Change). Dictation is the device keyboard's own; nothing leaves the device. A photo of a paint rack
+  needs text recognition: on the device in the native app (Apple's Vision), not on the web without a server.
+- **Other products (room paint).** The engine is not about miniatures: harmony + nearest real product by ΔE 2000
+  works for any catalogue with good colour data. House-paint makers publish their colours, but under their own terms,
+  and a printed or screen colour is far from the wall. A separate study, not this app.
 
 ## 9. Open questions for Ryan
 

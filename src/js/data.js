@@ -325,8 +325,10 @@ export const BROWSE_SORTS = ['hue', 'closest', 'owned', 'name'];
  *  than the neutral-seed threshold (NEUTRAL_CHROMA, 10): the paints between 6 and 10 are blue-greys and
  *  olive drabs, and they read as tinted in a grid. */
 export const GREY_CHROMA = 6;
-/** The width of one hue band in the colour-wheel order (degrees). */
-const HUE_BAND = 15;
+/** The width of one hue band in the colour-wheel order (degrees of Lab hue). */
+const HUE_BAND = 20;
+/** Where the wheel starts (Lab hue). At 0° it opened on pinks; at 20° it opens on reds, and the pinks close it beside the purples. */
+const HUE_START = 20;
 
 // The colour-wheel order depends on the dataset only, so it is worked out once per dataset.
 const wheelOrders = new WeakMap();
@@ -334,14 +336,18 @@ function wheelOrder(paints) {
   let order = wheelOrders.get(paints);
   if (!order) {
     // A plain hue sort put a dark red next to a pale pink next to a dark red: noise in a grid. So the
-    // wheel is cut into 15° bands, and in each band the paints go from light to dark. HSL hue, as on the
-    // wheel; Lab lightness and chroma, as the matching uses. Greys have no hue to sort by: they come
-    // last, from light to dark.
+    // wheel is cut into 20° bands of Lab hue (the hue the eye sees, as the matching uses), and the bands
+    // snake: light to dark in one, dark to light in the next, so where two bands meet the colours are close.
+    // Greys have no hue to sort by: they come last, from light to dark. Measured on the 3,225 paints
+    // (mean ΔE 2000 between neighbours · jumps over 25): raw HSL hue 22.8 · 1,165; 15° HSL bands, light to
+    // dark 7.8 · 31; this order 7.2 · 4 (phone test, 2026-10-30).
     const keyed = paints.map(p => {
       const grey = Math.hypot(p.lab[1], p.lab[2]) < GREY_CHROMA;
-      return { p, grey, band: grey ? 0 : Math.floor(rgbToHsl(hexToRgb(p.hex))[0] / HUE_BAND), light: p.lab[0] };
+      const h = (Math.atan2(p.lab[2], p.lab[1]) * 180 / Math.PI - HUE_START + 720) % 360;
+      return { p, grey, band: grey ? 0 : Math.floor(h / HUE_BAND), light: p.lab[0] };
     });
-    keyed.sort((a, b) => a.grey - b.grey || a.band - b.band || b.light - a.light);
+    keyed.sort((a, b) => a.grey - b.grey || a.band - b.band
+      || (!a.grey && a.band % 2 ? a.light - b.light : b.light - a.light));
     order = keyed.map(x => x.p);
     wheelOrders.set(paints, order);
   }
@@ -350,7 +356,7 @@ function wheelOrder(paints) {
 
 /**
  * Every paint in a Sort order of the seed field's browse grid. A new array; the dataset is not changed.
- *   'hue'      the colour wheel: 15° hue bands from red, light to dark in each band, then the greys
+ *   'hue'      the colour wheel: 20° bands of Lab hue, light to dark and dark to light by turns, then the greys
  *   'closest'  by ΔE 2000 to `pickHex` (the colour wheel order when there is no pick)
  *   'owned'    the paints in `ownedIds` first, then A to Z by display name
  *   'name'     A to Z by display name ("Dawnstone (Dry)" before "Dawnstone (Layer)")

@@ -443,7 +443,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .output { min-width: 0; padding-left: 24px; border-left: 1px solid var(--border); align-self: stretch; }
 .wheelcol { display: flex; flex-direction: column; align-items: center; }
 .wbox { position: relative; flex: none; }   /* anchors the neutral overlay to the wheel itself, not the column */
-.wcanvas { touch-action: none; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
+/* pan-y: a swipe on empty disc scrolls the page; wheel.js stops the scroll when the finger is on a node */
+.wcanvas { touch-action: pan-y; cursor: grab; display: block; width: min(82vw, 340px); aspect-ratio: 1; height: auto; border-radius: 50%; }
 .wcanvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 /* The lightness slider (§3.5 Slider, §3.6 wheel module; mockups/lightness-slider.html "B, fixed"). It
    sits in a gutter beside the wheel, vertical with Up = lighter, and the ↻ Generate button sits under it.
@@ -615,7 +616,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .cmplab { font-size: 12px; min-width: 180px; }
 .cmppal { display: flex; flex: 1; min-width: 160px; height: 22px; border-radius: var(--r-sw); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
 .cmppal span { flex: 1; }
-.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 16px; border-radius: var(--r-ctrl); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-pop); z-index: 70;   /* above the popovers (60) */
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 16px; border-radius: var(--r-ctrl); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-pop); z-index: 70;   /* above the popovers (60) */
   width: max-content; max-width: calc(100vw - 32px); text-align: center; }   /* left: 50% alone left it half the screen to wrap in */
 
 /* shelf (collection) — top-level mode beside Studio */
@@ -629,6 +630,10 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfstats { color: var(--text-muted); }
 .shelfstats .s-owned { color: var(--success-text); }
 .shelfstats .s-want { color: var(--buy-text); }
+.shelfstats .s-showing { color: var(--text); font-weight: 600; }
+/* Clear filters: a text action in the micro-caps line, in sentence case; --tap tall on touch, compact with a mouse */
+.shelfstats .textact { text-transform: none; letter-spacing: 0; font-size: var(--fs-small); min-height: 0; padding: 0 4px; }
+@media (pointer: coarse), (max-width: 520px) { .shelfstats .textact { min-height: var(--tap); } }
 .shelfhint { margin: 0; font-size: 12.5px; color: var(--text-muted); }
 /* Shelf filter bar: search + status + brand + type + sort on one wrapping row (search grows, controls
    size to content). Brand is a select (a dropdown) — the old wrapped chip rows cost three rows on a phone
@@ -637,6 +642,9 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelffilters input[type="search"] { flex: 1 1 220px; width: auto; min-width: 150px; }
 .shelffilters select { flex: 0 1 auto; width: auto; min-width: 120px; }
 .shelffilters .seg { flex: none; }
+/* Grid | List as icons in the dock (mockups/shelf-dock-tools.html C): square segments, the 20px icon set */
+.viewseg button { padding: 0 8px; }
+.viewseg .ic { width: 18px; height: 18px; display: block; }
 
 /* The Shelf dock (§3.6; mockups/shelf-landing.html, "Chosen"). Desktop: the filter bar pins under the
    sticky header (position: sticky — it keeps its place in the page, so nothing reflows when it pins)
@@ -653,12 +661,39 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfmore { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 /* an active filter is state → the badge recipe (weak fill + strong text), not a ring (§3.5) */
 .shelffilters select.on { background: var(--accent-weak); color: var(--accent); }
+/* Type, pick many (PLAN §5 item 45): a button styled as the selects beside it, and a popover of toggles under it */
+.typepick { position: relative; }
+.typebtn { height: var(--tap); min-width: 120px; display: inline-flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 0 12px 0 10px; border: 1px solid var(--edge); border-radius: var(--r-ctrl); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 13px; cursor: pointer; }
+.typebtn .ic { width: 16px; height: 16px; color: var(--text-muted); transition: transform .12s; }
+.typebtn[aria-expanded="true"] { background: var(--surface-2); }   /* open is a fill, not the ring (§3.5) */
+.typebtn[aria-expanded="true"] .ic { transform: rotate(180deg); }
+.typebtn.on { background: var(--accent-weak); color: var(--accent); }
+.typebtn:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+.typelist { display: none; }
+.typepick.open .typelist { display: flex; flex-wrap: wrap; gap: 8px; position: absolute; top: calc(100% + 4px); left: 0; z-index: 60;
+  width: 320px; max-width: calc(100vw - 32px); padding: 12px; background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--r-card); box-shadow: var(--shadow-pop); }
+.typechip { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); padding: 0 12px 0 8px;
+  border: 1px solid var(--border-strong); border-radius: var(--r-ctrl); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.typechip .ic { width: 14px; height: 14px; visibility: hidden; color: var(--accent); }
+.typechip[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); }
+.typechip[aria-pressed="true"] .ic { visibility: visible; }
+.typechip:hover { background: var(--surface-2); }
+.typechip[aria-pressed="true"]:hover { background: var(--accent-weak); }
+.typechip:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+@media (prefers-reduced-motion: reduce) { .typebtn .ic { transition: none; } }
+@media (forced-colors: active) { .typechip[aria-pressed="true"] { outline: 2px solid Highlight; outline-offset: -2px; } }
 /* phone-only parts of the dock */
 .shelffbtn, .shelfmore .sheethead, .sheetdone, .shelfhandle, .shelfscrim { display: none; }
 .shelfmlbl { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap; border: 0; }   /* sr-only on desktop; visible in the phone sheet */
 
 .shelfgrid { position: relative; display: grid; gap: 8px; touch-action: pan-y;
+  /* 64px on every width, phones too (PLAN §5 item 44: 54px cells read as a dense wall on a phone; 5 columns of
+     about 67px at 402px). 8px gap, on the §3.4 scale (touch had 10px). */
   grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
 /* A surface with the long-press mark menu (markmenu.js): a hold must not select text or open the iOS
    callout. The Shelf grid, and the seed field's list. */
@@ -699,6 +734,15 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfgrid[data-input="key"] .cell:hover:not(.cursor) .celltip { display: none; }
 /* While the mark menu is open, no tip: the menu's title names the paint, and a tip peeked out under it. */
 .shelfgrid.menuopen .cell .celltip { display: none; }
+/* Scrub (touch, PLAN §5 item 43): a loupe that floats above the finger, and a ring on the cell under it (interaction → ring) */
+.scrubloupe { position: fixed; z-index: 70; pointer-events: none; display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 16px);
+  padding: 8px 12px; background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--r-card); box-shadow: var(--shadow-pop); }
+.scrubloupe[hidden] { display: none; }
+.scrubloupe .sw { width: 32px; height: 32px; }
+.sltx { display: flex; flex-direction: column; min-width: 0; font-size: var(--fs-small); color: var(--text-muted); }
+.sltx b { font-size: var(--fs-body); font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shelfgrid .cell.scrubbed { outline: 2px solid var(--accent); outline-offset: 2px; }
+.shelfgrid.scrubbing .celltip, .shelfgrid:has(.scrubbed) .celltip { display: none; }
 .cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* marquee rubber-band */
 .marquee { position: absolute; border: 1px solid var(--accent); background: var(--accent-weak);
@@ -707,6 +751,30 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 .shelfbar { display: flex; align-items: center; gap: 10px; min-height: var(--tap); margin-top: 14px; flex-wrap: wrap; }
 .barcount { font-weight: 600; font-size: 13px; }
 .baracts { display: flex; gap: 8px; flex-wrap: wrap; }
+.barhead { display: flex; align-items: center; gap: 10px; }
+.bardone { display: flex; align-items: center; gap: 4px; font-size: var(--fs-small); color: var(--text-muted); }
+/* Touch and phones (Ryan, 2026-10-30): the selection's actions come up as a sheet at the bottom, as the Filters
+   sheet (--surface, --r-card top corners, --shadow-pop), so they are in reach wherever the grid is scrolled. Not
+   modal: no scrim, and the grid stays live, so the painter can keep selecting. The page keeps room for it. */
+@media (pointer: coarse), (max-width: 520px) {
+  /* z 25: above a swatch's name tip (5), which iOS left showing after a tap and drew over the sheet (Ryan, 2026-10-31);
+     under the open Filters sheet (30), the menus (60) and toasts (70) */
+  body.selsheet .shelfbar:not(:empty) { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; margin: 0; display: flex; flex-direction: column;
+    align-items: stretch; gap: 8px; background: var(--surface); border-radius: var(--r-card) var(--r-card) 0 0;
+    box-shadow: var(--shadow-pop); padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+  body.selsheet .shelfbar .barhead { justify-content: space-between; }
+  /* the result alone (the selection ended): one short row, less padding */
+  body.selsheet .shelfbar.doneonly { padding-top: 4px; padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)); }
+  body.selsheet .shelfbar .bardone { flex: 1; justify-content: space-between; font-size: var(--fs-body); color: var(--text); }   /* Undo at the right edge, where Deselect sits */
+  body.selsheet .shelfbar .barcount { font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; }
+  body.selsheet .shelfbar .baracts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  body.selsheet .shelfbar .baracts .btn { height: auto; min-height: var(--tap); white-space: normal; line-height: 1.2; justify-content: center; text-align: center; padding: 4px 8px; }
+  body.selsheet .shelf { padding-bottom: 168px; }   /* room for the sheet: the last row of paints can scroll above it */
+}
+@media (prefers-reduced-motion: no-preference) and ((pointer: coarse) or (max-width: 520px)) {
+  body.selsheet .shelfbar:not(:empty) { animation: sheetup .2s cubic-bezier(.2,.7,.2,1); }
+}
+@keyframes sheetup { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
 .btn.sm { height: var(--tap); padding: 0 12px; font-size: 12.5px; }
 @media (min-width: 521px) and (pointer: fine) { .btn.sm { height: 32px; } }   /* compact only with a mouse (§3.6 touch targets) */
 .btn.sm.ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
@@ -741,6 +809,16 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 
 /* header IA (#4): seed bar atop the studio · finish bar at the bottom · the ⋯ settings dialog */
 #settingsBtn[aria-expanded="true"] { background: var(--surface-2); }   /* open is a fill; the ring means focus only (§3.5) */
+/* What's new (mockups/whats-new.html, A2): a dot inside ⋯'s own box (absolute: nothing moves, §3.4), with a
+   --bg ring so it stands off the button's edge. No number and no red (Apple HIG: never copy the system badge);
+   no animation: it shows with the header. */
+#settingsBtn { position: relative; }
+.newsdot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: var(--r-pill);
+  background: var(--accent); box-shadow: 0 0 0 2px var(--bg); pointer-events: none; }
+.newsdot[hidden] { display: none; }
+.newtag { margin-left: 8px; }
+/* the store panel's Print fills #storePrint for the print only: on screen it stays out of sight behind the dialog */
+@media not print { .storeprint { display: none; } }
 .seedbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 
 /* Sheets and dialogs (§3.5): one header — a 16/600 title and at most one trailing action. Shared by
@@ -954,6 +1032,17 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 /* Help (mockups/help-about.html, B): the sheet shows support.html's own <main>, so the page's .doc styles carry over.
    Inside the sheet the headings are the page's, not About's, and a part scrolls to the sheet's top (no header). */
 .helpdlg { width: min(720px, 92vw); }
+/* The scheme, large (PLAN §5 item 47): the share image, square, as wide as the sheet allows */
+.bigdlg { width: min(560px, calc(100vw - 32px)); }
+.bigframe { aspect-ratio: 1; border: 1px solid var(--border); border-radius: var(--r-sw); overflow: hidden; background: var(--surface-2); }
+.bigframe img { display: block; width: 100%; height: auto; }
+.bigacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+/* the hero's swatch is a button now: no chrome of its own, the swatch is the look; 44px hit area on touch */
+.herobig { position: relative; padding: 0; border: 0; background: none; border-radius: var(--r-sw); cursor: zoom-in; flex: none; display: inline-flex; }
+.herobig:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+@media (pointer: coarse), (max-width: 520px) {
+  .herobig::after { content: ""; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); }
+}
 .helpdlg .aboutbody h2 { font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; margin: 24px 0 8px; scroll-margin-top: 8px; }
 .helpdlg .aboutbody h2:first-of-type { margin-top: 8px; }
 .helpdlg .aboutbody h3 { font-family: var(--font); font-size: var(--fs-body); font-weight: 600; margin: 16px 0 4px; scroll-margin-top: 8px; }
@@ -1036,7 +1125,7 @@ a.btn { text-decoration: none; }
   .themectl { justify-content: space-between; }
 }
 @media (max-width: 520px) {
-  .bar { padding: 10px 14px; gap: 8px; }
+  .bar { padding: 8px 16px; gap: 8px; }
   .logo .t small { display: none; }
   /* The seed toolbar is one row: the field takes what is left, From photo is a 44px camera button (its
      words stay as its accessible name), and Browse is a grid icon inside the field. */
@@ -1047,8 +1136,8 @@ a.btn { text-decoration: none; }
   .photobtn .phtx { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0);
     white-space: nowrap; border: 0; }
   .cmpbtn { margin-left: auto; }   /* when it wraps, Compare sits at the end of its row */
-  main { padding: 14px; }
-  .pad { padding: 14px; }
+  /* one 16px gutter (§3.4 scale): main's 14px and the regions' own 14px had stacked into 28px */
+  main { padding: 16px; }
   .hero .herochip { width: 26px; height: 26px; }
   .seg { width: 100%; }
   /* long labels ("Wash · base · highlight") may wrap on phones: pills grow instead of overflowing */
@@ -1078,7 +1167,6 @@ a.btn { text-decoration: none; }
   .lctop { --lcpad: 8px; min-height: 72px; padding: 7px var(--lcpad) 0; gap: 6px; }
   .lchexrow { flex-wrap: wrap; gap: 4px; }
   .lcact { gap: 4px 12px; }
-  .shelfgrid { grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); }   /* fit more swatches per row on phones */
   .modenav { order: 2; }
 
   /* Shelf dock on a phone: under the tabs with no rule between them — header, panel and handle read
@@ -1088,8 +1176,8 @@ a.btn { text-decoration: none; }
   body[data-mode="shelf"] header { border-bottom-color: transparent; }
   .shelf { display: flex; flex-direction: column; background: none; border: none; box-shadow: none; padding: 0; }
   .shelfsentinel, .shelfdock { order: -1; }
-  .shelfsentinel { margin-top: -14px; }               /* main's top padding: the dock meets the tabs */
-  .shelfdock { margin: 0 -14px 4px; padding: 4px 14px 0; background: var(--bg); }
+  .shelfsentinel { margin-top: -16px; }               /* main's top padding: the dock meets the tabs */
+  .shelfdock { margin: 0 -16px 4px; padding: 4px 16px 0; background: var(--bg); }
   .shelfdock.stuck { box-shadow: none; }
   .shelfdock.tucked { transform: translateY(calc(-1 * var(--panel-h, 0px))); }
   /* Once the slide ends, the tucked panel's contents hide: the selected status button's shadow otherwise
@@ -1116,8 +1204,17 @@ a.btn { text-decoration: none; }
   .shelfhead h2 { font-size: var(--fs-h2); margin: 0; }   /* title + tools share one row, as mocked */
   .shelftop { gap: 8px; }
   .lgonly { display: none; }   /* "Export CSV" → "Export": the title row fits one line (the full name stays in aria-label) */
-  .shelffilters { gap: 8px; }
-  .shelffilters input[type="search"] { flex: 1 1 0; min-width: 0; }
+  /* Phone (mockup C): row 1 search · Select · Filters, row 2 the status filter · Grid | List. Placed by grid, so a
+     hidden Select (the list view, or no touch) leaves the rows as they are. */
+  .shelffilters { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }
+  .shelffilters input[type="search"] { grid-column: 1; grid-row: 1; min-width: 0; width: 100%; }
+  .shelffilters .shelf-select { grid-column: 2; grid-row: 1; }
+  .shelffilters .shelffbtn { grid-column: 3; grid-row: 1; }
+  .shelffilters #shelfMarkSeg { grid-column: 1 / 3; grid-row: 2; width: auto; }
+  /* the segments size to their words, so "Shopping list" keeps one line at 360px */
+  .shelffilters #shelfMarkSeg button { flex: 1 1 auto; padding: 0 6px; white-space: nowrap; }
+  .shelffilters .viewseg { grid-column: 3; grid-row: 2; width: auto; justify-self: end; }
+  .shelffilters .viewseg button { flex: none; width: var(--tap); padding: 0; display: grid; place-items: center; }
   .shelffbtn { display: inline-flex; gap: 6px; }
   .fbadge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--r-tag); background: var(--accent);
     color: var(--on-accent); font-size: 11.5px; font-weight: 600; display: inline-grid; place-items: center; }
@@ -1135,12 +1232,16 @@ a.btn { text-decoration: none; }
     font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; line-height: 18px; padding: 0 8px;
     border-radius: var(--r-tag); color: var(--text-muted); }
   .hchip.on { background: var(--accent-weak); color: var(--accent); }
+  .hchip[hidden] { display: none; }
   /* brand · type · sort: a bottom sheet (the same elements as the desktop bar — one control each) */
   .shelfmore { display: none; }
   .shelfmore.open { display: flex; flex-direction: column; align-items: stretch; gap: 0; position: fixed; left: 0; right: 0; bottom: 0;
-    z-index: 2; max-height: 85vh; overflow: auto; background: var(--surface); border-radius: var(--r-card) var(--r-card) 0 0;
+    z-index: 2; max-height: 85vh; max-height: 85dvh; overflow: auto; background: var(--surface); border-radius: var(--r-card) var(--r-card) 0 0;
     box-shadow: var(--shadow-pop); padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
   .shelfmore.open select { width: 100%; }
+  /* the sheet shows the type toggles inline, with no button */
+  .shelfmore.open .typebtn { display: none; }
+  .shelfmore.open .typelist { display: flex; flex-wrap: wrap; gap: 8px; }
   .shelfmore.open .shelfmlbl { position: static; width: auto; height: auto; margin: 12px 0 4px; clip: auto; overflow: visible;
     white-space: normal; font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); }
   .shelfmore.open .sheethead { display: flex; align-items: center; justify-content: space-between; }
@@ -1160,7 +1261,6 @@ a.btn { text-decoration: none; }
 /* coarse pointers (touch): bigger cells + an always-visible name (no hover) make tap-to-cycle comfortable */
 @media (pointer: coarse) {
   .shelf-select { display: inline-flex; }
-  .shelfgrid { gap: 10px; }
   .cell { aspect-ratio: 1; }
   /* tap names the cell via sticky :hover (clamped on-screen by clampTip) — the wall stays scannable
      because only the touched cell ever hovers */
@@ -1363,6 +1463,20 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
 /* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B) ------------------------------- */
 .rkstore { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 4px 0 8px; }
 .rkchips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rkcount { text-transform: none; letter-spacing: 0; }
+/* Phone (PLAN §5 item 42): the list's top took 79% of the screen. The tools share one row, the brand toggles are
+   one 44px row that scrolls sideways (4px of room for the focus ring, §3.5), and the list's how-to is in Help. */
+@media (max-width: 520px) {
+  .rktools { gap: 8px 12px; margin: 4px 0; }
+  .rktools .seg { width: auto; }
+  .rktools .seg button { flex: none; padding: 5px 12px; }
+  .rkhint { display: none; }
+  .rkstore { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 0; margin: 0 -4px 4px; }
+  .rkstore > .micro { padding: 0 4px; }
+  .rkchips { flex-wrap: nowrap; overflow-x: auto; padding: 4px; scrollbar-width: none; }
+  .rkchips::-webkit-scrollbar { display: none; }
+  .rkchip { flex: none; }
+}
 /* A brand the store carries: a toggle (aria-pressed). On: the accent edge and a check, so it is not colour alone;
    off: the plain edge, the label muted and struck through */
 .rkchip { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); padding: 0 12px 0 8px;
@@ -1459,9 +1573,10 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
    - a ring drawn on the paint gets a Canvas band under it, so Highlight never meets the paint. */
 @media (forced-colors: active) {
   .sw, .cell, .lctop, .scsw, .cmppal span { forced-color-adjust: none; }
+  .newsdot { forced-color-adjust: none; background: Highlight; box-shadow: none; }
   .qr { forced-color-adjust: none; }   /* the store QR code: a forced dark Canvas under black modules would not scan */
   .celltip, .cbadge, .lccopy { forced-color-adjust: auto; }
-  .cell[aria-selected="true"], .cell.cursor, .cell:focus-visible, .pkt.cur .sw, .pko.cur .sw { outline-color: Highlight; }
+  .cell[aria-selected="true"], .cell.cursor, .cell:focus-visible, .cell.scrubbed, .pkt.cur .sw, .pko.cur .sw { outline-color: Highlight; }
   .lcol.linkhi, .lcol.eqsel { outline-color: Highlight; }
   .lcol.linkhi .lctop, .lcol.eqsel .lctop { box-shadow: inset 0 0 0 5px Canvas; }
   /* after, and as heavy as, the line above. The ring's place is set here, 4–6px in (inside the column's 3px

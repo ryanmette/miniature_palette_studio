@@ -478,20 +478,29 @@ test('browseOrder: every paint, once, in each order; the dataset is not changed'
   assert.deepEqual(BROWSE_SORTS, ['hue', 'closest', 'owned', 'name']);   // the Sort control's order
 });
 
-test('browseOrder "hue": round the wheel in 15° bands, light to dark in a band, the greys last', () => {
+test('browseOrder "hue": 20° bands of Lab hue that snake (light to dark, then dark to light), the greys last', () => {
   const res = browseOrder(real, 'hue');
   const chroma = p => Math.hypot(p.lab[1], p.lab[2]);
   const firstGrey = res.findIndex(p => chroma(p) < GREY_CHROMA);
   assert.ok(firstGrey > 0);
   assert.ok(res.slice(firstGrey).every(p => chroma(p) < GREY_CHROMA));        // no colour after the greys
-  const band = p => Math.floor(rgbToHsl(hexToRgb(p.hex))[0] / 15);
+  const band = p => Math.floor(((Math.atan2(p.lab[2], p.lab[1]) * 180 / Math.PI - 20 + 720) % 360) / 20);   // from 20°: reds first
   const colours = res.slice(0, firstGrey);
   for (let i = 1; i < colours.length; i++) {
     const a = colours[i - 1], b = colours[i];
-    assert.ok(band(a) < band(b) || (band(a) === band(b) && a.lab[0] >= b.lab[0]), `${a.id} → ${b.id}`);
+    const inBand = band(a) % 2 ? a.lab[0] <= b.lab[0] : a.lab[0] >= b.lab[0];   // odd bands run dark to light
+    assert.ok(band(a) < band(b) || (band(a) === band(b) && inBand), `${a.id} → ${b.id}`);
   }
   const greys = res.slice(firstGrey);
   for (let i = 1; i < greys.length; i++) assert.ok(greys[i - 1].lab[0] >= greys[i].lab[0]);
+});
+
+test('browseOrder "hue" is smooth: neighbours are close (the phone test found the Shelf\'s hue sort jumpy)', () => {
+  const res = browseOrder(real, 'hue');
+  let sum = 0, big = 0;
+  for (let i = 1; i < res.length; i++) { const d = deltaE2000Hex(res[i - 1].hex, res[i].hex); sum += d; if (d > 25) big++; }
+  assert.ok(sum / (res.length - 1) < 7.5, `mean ΔE ${(sum / (res.length - 1)).toFixed(2)}`);
+  assert.ok(big <= 10, `${big} jumps over ΔE 25`);
 });
 
 test('browseOrder "closest": by ΔE 2000 to the pick, the pick itself first', () => {

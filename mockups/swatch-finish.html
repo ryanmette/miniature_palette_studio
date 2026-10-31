@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swatch finish study</title>
+<!-- the app's self-hosted webfonts (no external requests), so text widths match the app -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  /* ---------- tokens: the same blocks as src/styles/tokens.css (CLAUDE.md §3.1, Workbench+) ----------
+     The page follows the device theme until you pick one with "Page theme". The specimen boxes set their
+     own data-theme, so each one always shows the theme it is labelled with. */
+  :root {
+    --r-card:6px; --r-ctrl:4px; --r-sw:3px; --r-tag:2px; --r-pill:999px; --tap:44px;
+    --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --fs-h1:26px; --fs-h2:20px; --fs-body:14px; --fs-small:12.5px; --fs-micro:11.5px;
+  }
+  :root, [data-theme="light"] {
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6;
+    --border:#DCD8D0; --border-strong:#C9C4BA; --edge:#8A857B;
+    --text:#1D1C19; --text-muted:#5E5A52; --text-faint:#9C978D;
+    --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+    --buy:#2563EB; --success:#16A34A; --warning:#C2740B; --danger:#DC2647;
+    --success-text:#0F7334; --warning-text:#945908; --danger-text:#C4203D; --buy-text:#1D4ED8;
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+    --sw-edge-a: rgba(0,0,0,.14);   /* direction A's swatch edge (light) */
+  }
+  [data-theme="dark"] {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --success:#86A559; --warning:#E0803A; --danger:#D2563F;
+    --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+    --sw-edge-a: rgba(255,255,255,.16);   /* direction A's swatch edge (dark) */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+      --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+      --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+      --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+      --buy:#5E93C9; --success:#86A559; --warning:#E0803A; --danger:#D2563F;
+      --success-text:var(--success); --warning-text:var(--warning); --danger-text:#D86C58; --buy-text:var(--buy);
+      --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+      --sw-edge-a: rgba(255,255,255,.16);
+    }
+  }
+
+  /* ---------- the page: regions with rules, no cards (§3.5) ---------- */
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:var(--fs-body); line-height:1.5; padding:24px 16px 48px; }
+  .page { max-width:1140px; margin:0 auto; }
+  h1 { font-family:var(--display); font-size:32px; font-weight:600; line-height:1.15; margin:0 0 8px; }
+  h2 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 4px; }
+  h2 .k { color:var(--accent); margin-right:6px; }
+  h3.lab, .micro { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  h3.lab { margin:24px 0 8px; }
+  a { color:var(--accent); }
+  a:focus-visible, button:focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); border-radius:var(--r-ctrl); }
+  code { font-family:var(--mono); font-size:12px; }
+  section { border-top:1px solid var(--border); padding:24px 0; }
+  .sub, .why { color:var(--text-muted); font-size:var(--fs-small); max-width:80ch; margin:0 0 12px; }
+  .sub b, .why b, .notes b, td b { color:var(--text); }
+  ul.notes, ol.notes { margin:0; padding-left:20px; font-size:var(--fs-small); color:var(--text-muted); max-width:82ch; }
+  .notes li + li { margin-top:4px; }
+  .bad { color:var(--danger-text); font-weight:600; }
+  .ok { color:var(--success-text); font-weight:600; }
+  .warn { color:var(--warning-text); font-weight:600; }
+
+  /* the page-theme control (the app's .seg) */
+  .pc { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; margin:16px 0 0; }
+  .seg { display:inline-flex; }
+  .seg button { position:relative; height:30px; padding:0 12px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text);
+    font:inherit; font-size:12.5px; font-weight:500; cursor:pointer; margin-left:-1px; }
+  .seg button:first-child { border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); margin-left:0; }
+  .seg button:last-child { border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .seg button:hover { background:var(--surface-2); }
+  .seg button[aria-pressed="true"] { background:var(--accent-weak); }
+  .seg button[aria-pressed="true"]::after { content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--accent); }
+  .seg button:focus-visible { z-index:1; }
+  @media (pointer: coarse) { .seg button { height:var(--tap); } }
+
+  /* the study tables */
+  .tablewrap { overflow-x:auto; max-width:100%; }
+  table.study { border-collapse:collapse; font-size:var(--fs-small); width:100%; }
+  table.study th, table.study td { text-align:left; vertical-align:top; padding:8px 12px 8px 0; border-bottom:1px solid var(--border); }
+  table.study th { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.study td { color:var(--text-muted); }
+  table.study td:first-child { color:var(--text); font-weight:600; }
+  table.study td.n, table.study th.n { text-align:right; font-family:var(--mono); font-size:12px; white-space:nowrap; }
+  table.wide { min-width:720px; }
+
+  /* specimen boxes: one per theme, side by side when there is room */
+  .themes { display:grid; grid-template-columns:repeat(auto-fit, minmax(330px, 1fr)); gap:16px; margin-top:12px; }
+  .tbox { background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:var(--r-card); padding:12px; min-width:0; }
+  .tbox > .micro { display:block; margin-bottom:8px; }
+  .tbox.surf { background:var(--surface); }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:16px 12px; }
+  .tile { min-width:0; font-size:11.5px; line-height:1.35; }
+  .tile .nm { font-weight:600; color:var(--text); overflow-wrap:anywhere; min-height:31px; }
+  .tile .meta { color:var(--text-muted); font-family:var(--mono); font-size:11px; margin:2px 0 6px; }
+  .tile .row { display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .tile .ft { margin-top:6px; min-height:16px; }
+  .grp { grid-column:1 / -1; margin:8px 0 -8px; }
+
+  /* ---------- the app's swatch rules, copied from src/styles/app.css (lines 148–165) ----------
+     In the app the colour is an inline background-color. Here it is var(--c), set inline on each
+     swatch, so direction C can paint a primer ground under a translucent stroke. It renders the same. */
+  .sw { border-radius: var(--r-sw); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); flex: none; }
+  .sw { display:block; position:relative; overflow:hidden; background-color:var(--c); color:var(--ink); }
+  :root { --metal-sheen: linear-gradient(158deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.26) 100%); }
+  .sw.metal, .cell.metal, .lctop.metal, .lcpot.metal { background-image: var(--metal-sheen); }
+  .sw.fx-wash, .cell.fx-wash, .lctop.fx-wash, .lcpot.fx-wash { background-image: linear-gradient(155deg, rgba(255,255,255,.40), rgba(255,255,255,0) 48%, rgba(0,0,0,.16)); }
+  .sw.fx-contrast, .cell.fx-contrast, .lctop.fx-contrast, .lcpot.fx-contrast { background-image: linear-gradient(150deg, rgba(255,255,255,.30), rgba(255,255,255,0) 42%, rgba(0,0,0,.20) 96%); }
+  .sw.fx-gloss, .cell.fx-gloss, .lctop.fx-gloss, .lcpot.fx-gloss { background-image: radial-gradient(ellipse 58% 42% at 34% 26%, rgba(255,255,255,.82), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 52%, rgba(0,0,0,.34)); }
+  .sw.fx-slime, .cell.fx-slime, .lctop.fx-slime, .lcpot.fx-slime { background-image: radial-gradient(ellipse 34% 26% at 30% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 60%), radial-gradient(ellipse 22% 18% at 66% 62%, rgba(255,255,255,.5), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 55%, rgba(0,0,0,.30)); }
+  .sw.fx-texture, .cell.fx-texture, .lctop.fx-texture, .lcpot.fx-texture { background-image: radial-gradient(rgba(255,255,255,.12) .5px, transparent 1.2px), radial-gradient(rgba(0,0,0,.34) .5px, transparent 1.2px), linear-gradient(160deg, rgba(255,255,255,.05), rgba(0,0,0,.12)); background-size: 4px 4px, 5px 5px, 100% 100%; background-position: 0 0, 2px 2px, 0 0; }
+  .finish { display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; padding: 0 5px;
+    border-radius: var(--r-tag); border: 1px solid var(--border-strong); background: none; color: var(--text-muted); white-space: nowrap; vertical-align: 1px; }
+  .finish svg { width: 10px; height: 10px; }
+  .finish-metal { border-color: currentColor; color: var(--warning-text); }
+  .finish-contrast { border-color: currentColor; color: var(--accent); }
+
+  /* the app's sizes: Shelf cell (minmax(64px,1fr) → 64 on a phone), list row pot 40, hero chip 28,
+     live-palette pot band (full column width, 26px tall) */
+  .s64 { width:64px; height:64px; --bv:4px; --fm:18px; }
+  .s40 { width:40px; height:40px; --bv:3px; --fm:14px; }
+  .s28 { width:28px; height:28px; --bv:2px; --fm:11px; }
+  .band { width:100%; height:26px; display:flex; align-items:center; gap:6px; padding:0 8px; font-size:11px; --bv:2px; --fm:14px;
+    border-radius:0 0 var(--r-sw) var(--r-sw); box-shadow: inset 0 1px 0 rgba(0,0,0,.18); }
+  .band b { font-weight:600; opacity:.92; }
+  .band .hx { margin-left:auto; font-family:var(--mono); font-size:10.5px; }
+  .tgt { display:block; height:44px; border-radius:var(--r-sw) var(--r-sw) 0 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); background:var(--c); margin-top:8px; }
+
+  /* ---------- Direction A: tune today's overlays ---------- */
+  .vA .sw { box-shadow: inset 0 0 0 1px var(--sw-edge-a); }
+  .vA .band { box-shadow: inset 0 1px 0 rgba(0,0,0,.18), inset 0 0 0 1px var(--sw-edge-a); }
+  .vA .sw.metal { background-image:
+      linear-gradient(158deg, rgba(255,255,255,0) 20%, rgba(255,255,255,.34) 26%, rgba(255,255,255,0) 33%),
+      linear-gradient(158deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,0) 30%, rgba(0,0,0,0) 62%, rgba(0,0,0,.22) 100%); }
+  .vA .sw.fx-wash { background-image: radial-gradient(farthest-corner at 50% 45%, rgba(0,0,0,0) 58%, rgba(0,0,0,.20) 100%); }
+  .vA .sw.fx-contrast { background-image: linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 30%, rgba(0,0,0,0) 66%, rgba(0,0,0,.20) 100%); }
+  .vA .sw.fx-gloss { background-image: radial-gradient(ellipse 30% 18% at 32% 24%, rgba(255,255,255,.62), rgba(255,255,255,0) 72%), linear-gradient(180deg, rgba(255,255,255,0) 64%, rgba(0,0,0,.18)); }
+  .vA .sw.fx-slime { background-image: radial-gradient(ellipse 26% 20% at 30% 28%, rgba(255,255,255,.75), rgba(255,255,255,0) 65%), radial-gradient(ellipse 16% 13% at 66% 62%, rgba(255,255,255,.5), rgba(255,255,255,0) 65%), linear-gradient(180deg, rgba(255,255,255,0) 62%, rgba(0,0,0,.20)); }
+  .vA .sw.fx-texture { background-image: radial-gradient(rgba(255,255,255,.14) .5px, transparent 1.2px), radial-gradient(rgba(0,0,0,.30) .5px, transparent 1.2px); background-size: 4px 4px, 5px 5px; background-position: 0 0, 2px 2px; }
+  .vA .fa { position:absolute; left:4px; bottom:4px; width:12px; height:12px; color:var(--ink); opacity:.9; display:grid; }
+  .vA .fa svg { width:12px; height:12px; }
+
+  /* the revised finish tag (A, B and C): neutral, never a state or the accent colour (§3.5 single meaning) */
+  .finish2 { display:inline-flex; align-items:center; gap:3px; font-size:10.5px; font-weight:500; padding:0 5px; line-height:15px;
+    border-radius:var(--r-tag); border:1px solid var(--border-strong); color:var(--text-muted); white-space:nowrap; }
+  .finish2 svg { width:10px; height:10px; color:var(--text); }
+
+  /* ---------- Direction B: a pure colour body + one finish mark in one corner ---------- */
+  .vB .sw { background-image:none; }
+  .vB .fm { position:absolute; right:0; bottom:0; width:var(--fm); height:var(--fm); display:grid; place-items:center;
+    background:var(--ink); color:var(--c); border-top-left-radius:var(--r-tag); }
+  .vB .fm svg { width:72%; height:72%; }
+  .vB .band .fm { position:static; flex:none; border-radius:var(--r-tag); width:14px; height:14px; }
+
+  /* ---------- Direction C: a material swatch — the shape shows how the paint sits ---------- */
+  .vC .sw { background-image:none; }
+  /* metal: a bevelled plate; the centre is the hex */
+  .vC .sw.k-metal { box-shadow: inset var(--bv) var(--bv) 0 rgba(255,255,255,.42), inset calc(var(--bv) * -1) calc(var(--bv) * -1) 0 rgba(0,0,0,.30), inset 0 0 0 1px rgba(0,0,0,.12); }
+  .vC .band.k-metal { box-shadow: inset 0 2px 0 rgba(255,255,255,.42), inset 0 -2px 0 rgba(0,0,0,.30); }
+  /* translucent: a brush stroke on white primer (#F2EFE9 — a primer is paint data too); the stroke thins to the right */
+  .vC .sw.k-trans { background-color:#F2EFE9; background-image: linear-gradient(100deg, var(--c) 0 54%, color-mix(in srgb, var(--c) 45%, transparent) 82%, transparent 98%); }
+  .vC .band.k-trans { background-image: linear-gradient(90deg, var(--c) 0 72%, transparent 100%); }
+  /* contrast: self-shading — the hex on the raised part, the pooled tone in the recess, a hairline between */
+  .vC .sw.k-contrast { background-image: linear-gradient(180deg, rgba(0,0,0,0) calc(72% - 1px), rgba(255,255,255,.35) calc(72% - 1px), rgba(255,255,255,.35) 72%, rgba(0,0,0,.30) 72%); }
+  .vC .band.k-contrast { background-image: linear-gradient(90deg, rgba(0,0,0,0) 76%, rgba(0,0,0,.30) 76%); }
+  /* effects keep today's bespoke overlays */
+  .vC .sw.fx-gloss { background-image: radial-gradient(ellipse 58% 42% at 34% 26%, rgba(255,255,255,.82), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 52%, rgba(0,0,0,.34)); }
+  .vC .sw.fx-slime { background-image: radial-gradient(ellipse 34% 26% at 30% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 60%), radial-gradient(ellipse 22% 18% at 66% 62%, rgba(255,255,255,.5), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,0) 55%, rgba(0,0,0,.30)); }
+  .vC .sw.fx-texture { background-image: radial-gradient(rgba(255,255,255,.12) .5px, transparent 1.2px), radial-gradient(rgba(0,0,0,.34) .5px, transparent 1.2px), linear-gradient(160deg, rgba(255,255,255,.05), rgba(0,0,0,.12)); background-size: 4px 4px, 5px 5px, 100% 100%; background-position: 0 0, 2px 2px, 0 0; }
+
+  /* measurement + score tables */
+  .bar { display:inline-block; height:8px; background:var(--text-muted); border-radius:1px; vertical-align:middle; margin-left:6px; }
+  .score td.n b { color:var(--text); }
+  .q li { margin-top:8px; }
+  .q li span { display:block; color:var(--text-muted); }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+
+  /* ---------- Round 2: a pure colour field + a finish icon in the bottom-right corner ----------
+     The colour field is var(--c) and nothing else: no gradient, no sheen. Only the finish mark sits on it.
+     --shadow and the swatch edge per theme (round 1's edge fix: 16% white in dark). */
+  .r2 [data-theme="light"] { --shadow:0 1px 2px rgba(29,28,25,.06), 0 6px 18px rgba(29,28,25,.05); --sw-edge:rgba(0,0,0,.12);
+    --on-success:#FFFFFF; --on-buy:#FFFFFF; }
+  .r2 [data-theme="dark"] { --shadow:0 1px 2px rgba(0,0,0,.45); --sw-edge:rgba(255,255,255,.16);
+    --on-success:#14190A; --on-buy:#0E1620; }
+  .r2 .p2 { position:relative; display:block; flex:none; background:var(--c); border-radius:var(--r-sw);
+    box-shadow:inset 0 0 0 1px var(--sw-edge); overflow:hidden; color:var(--ink); }
+  .r2 .c64 { width:64px; height:64px; --ic:13px; --in:4px; --chip:17px; --notch:26px; --nic:11px; }
+  .r2 .c40 { width:40px; height:40px; --ic:12px; --in:3px; --chip:15px; --notch:20px; --nic:9px; }
+  .r2 .c28 { width:28px; height:28px; --ic:12px; --in:2px; --chip:14px; --notch:16px; --nic:7px; }
+  /* the icon set's rules (§3.5 Icons): 20px grid, square ends, mitred joins; 2.25px stroke at 12–13px */
+  .r2 svg.fi { display:block; width:var(--ic); height:var(--ic); fill:none; stroke:currentColor; stroke-width:2.25;
+    stroke-linecap:square; stroke-linejoin:miter; overflow:visible; }
+  .r2 svg.fi .f { fill:currentColor; stroke:none; }
+  .r2 svg.fi.big { --ic:20px; stroke-width:1.75; }
+  /* the Shelf's mark badge, as app.css .cbadge (top-right, 17px, --r-tag, a state fill + --shadow) */
+  .r2 .cb { position:absolute; top:4px; right:4px; width:17px; height:17px; border-radius:var(--r-tag); display:grid; place-items:center; box-shadow:var(--shadow); }
+  .r2 .cb.owned { background:var(--success); color:var(--on-success); }
+  .r2 .cb.want { background:var(--buy); color:var(--on-buy); }
+  .r2 .cb svg.fi { --ic:13px; }
+  .r2 .fk { position:absolute; right:var(--in); bottom:var(--in); display:grid; place-items:center; }
+  /* (a) bare icon in the swatch's ink (textOn), like .lccopy's icon and the live palette's lock badge */
+  .r2 .va .fk { color:var(--ink); }
+  /* (b) a surface chip, the mark badge mirrored to the bottom-right */
+  .r2 .vb .fk { width:var(--chip); height:var(--chip); border-radius:var(--r-tag); background:var(--surface); color:var(--text); box-shadow:var(--shadow); }
+  .r2 .vb .fk svg.fi { --ic:calc(var(--chip) - 4px); }
+  /* (c) a corner notch in surface colour, the icon in its corner */
+  .r2 .vc .fk { right:0; bottom:0; width:var(--notch); height:var(--notch); background:var(--surface); color:var(--text);
+    clip-path:polygon(100% 0, 100% 100%, 0 100%); }
+  .r2 .vc .fk svg.fi { position:absolute; right:2px; bottom:2px; --ic:var(--nic); stroke-width:2; }
+  /* (d) the tag, icon only: a 1px outline and no fill (§3.5 Tags), drawn in the swatch's ink */
+  .r2 .vd .fk { width:var(--chip); height:var(--chip); border-radius:var(--r-tag); border:1px solid var(--ink); color:var(--ink); }
+  .r2 .vd .fk svg.fi { --ic:calc(var(--chip) - 4px); }
+  /* the live palette column: target block over the pot band; the mark at the band's right end */
+  .r2 .lcol2 { min-width:0; }
+  .r2 .tgt2 { display:block; height:44px; border-radius:var(--r-sw) var(--r-sw) 0 0; background:var(--t); box-shadow:inset 0 0 0 1px var(--sw-edge); }
+  .r2 .band2 { position:relative; display:flex; align-items:center; gap:6px; height:26px; padding:0 6px 0 8px; font-size:11px;
+    background:var(--c); color:var(--ink); border-radius:0 0 var(--r-sw) var(--r-sw); box-shadow:inset 0 1px 0 rgba(0,0,0,.18), inset 0 0 0 1px var(--sw-edge);
+    overflow:hidden; --ic:12px; --chip:15px; --notch:18px; --nic:8px; }
+  .r2 .band2 b { font-weight:600; }
+  .r2 .band2 .hx { margin-left:auto; font-family:var(--mono); font-size:10.5px; white-space:nowrap; }
+  .r2 .band2 .fk { position:static; flex:none; }
+  .r2 .vc .band2 .fk { position:absolute; }
+  .r2 .vc .band2 .hx { margin-right:14px; }
+  .r2 .lcnm { font-size:10.5px; line-height:1.3; color:var(--text-muted); margin-top:4px; overflow-wrap:anywhere; }
+  /* the specimen layout */
+  .r2 .grid64 { display:grid; grid-template-columns:repeat(auto-fill, minmax(64px, 1fr)); gap:12px 8px; }
+  .r2 .cellw { min-width:0; }
+  .r2 .cellw .p2 { width:100%; max-width:64px; height:auto; aspect-ratio:1; }
+  .r2 .cellw .nm2 { font-size:10px; line-height:1.25; color:var(--text-muted); margin-top:4px; overflow-wrap:anywhere; max-width:64px; }
+  .r2 .strip { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .r2 .cols { display:grid; grid-template-columns:repeat(auto-fill, minmax(104px, 1fr)); gap:12px 8px; }
+  .r2 .sz { margin:12px 0 6px; }
+  .r2 .sz:first-of-type { margin-top:0; }
+  .r2 .vhead { display:flex; flex-wrap:wrap; gap:4px 12px; align-items:baseline; margin:24px 0 4px; }
+  .r2 .vhead h3 { margin:0; font-family:var(--display); font-size:17px; font-weight:600; }
+  .r2 .borrow { font-size:var(--fs-small); color:var(--text-muted); }
+  /* the glyph table */
+  .r2 .glyphs { display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:12px 16px; margin-top:8px; }
+  .r2 .gly { display:flex; gap:12px; align-items:center; font-size:var(--fs-small); color:var(--text-muted); min-width:0; }
+  .r2 .gly b { display:block; color:var(--text); }
+  .r2 .gly .gbox { display:flex; gap:8px; align-items:center; color:var(--text); flex:none; }
+  .r2 .new { font-size:10.5px; font-weight:500; padding:0 5px; border:1px solid var(--border-strong); border-radius:var(--r-tag); color:var(--text-muted); margin-left:4px; }
+  /* the wash comparison */
+  .r2 .wash { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:12px; }
+  .r2 .wrow { display:flex; gap:12px; align-items:flex-start; min-width:0; }
+  .r2 .wcol { flex:1 1 0; min-width:0; font-size:11px; line-height:1.35; color:var(--text-muted); }
+  .r2 .wcol .p2 { width:100%; height:56px; margin-bottom:4px; }
+  .r2 .wcol .p2.ill { outline:1px dashed var(--edge); outline-offset:2px; }
+  .r2 .wcol b { color:var(--text); font-weight:600; }
+  .r2 .illtag { display:inline-block; font-size:10px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted);
+    border:1px dashed var(--edge); border-radius:var(--r-tag); padding:0 4px; }
+  td.lo { color:var(--danger-text) !important; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <p class="micro">Design study · not shipped · 2026-10-30 · Round 2 added the same day: Ryan chose B’s pure colour field and a light finish icon (section 4)</p>
+  <h1>Swatches that show the paint and its finish</h1>
+  <p class="sub">The owner asked for a design pass on the swatches. The aim: each swatch must show the paint and the kind of paint.
+    This study shows what we draw now, measures it, and gives three directions. It changes only how a swatch is drawn.
+    The hex values themselves are the subject of a sibling study, <a href="../docs/COLOUR_CHECK.md"><code>docs/COLOUR_CHECK.md</code></a>.
+    All renders below use real paints and their real hex values from <code>src/data/paints.json</code> (dataset 1.6.0).</p>
+  <div class="pc">
+    <span class="micro" id="pthLab">Page theme</span>
+    <div class="seg" role="group" aria-labelledby="pthLab" id="pth">
+      <button type="button" data-v="device" aria-pressed="true">Device</button>
+      <button type="button" data-v="light" aria-pressed="false">Light</button>
+      <button type="button" data-v="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-now">
+  <h2 id="h-now"><span class="k">0</span>What we have now</h2>
+  <p class="sub">The data has 3,225 paints in 10 types. A swatch gets an overlay from its type, or from its <code>fx</code> field.
+    The function is <code>fxCls</code> in <code>src/js/ui.js</code>. A text row can also show a finish tag (<code>finishTag</code>).
+    The Shelf cell shows the overlay only. It has no tag and no icon.</p>
+  <div class="tablewrap">
+  <table class="study wide">
+    <thead><tr><th>Type</th><th class="n">Paints</th><th>Overlay class today</th><th>What it draws</th><th>Tag and icon</th></tr></thead>
+    <tbody id="typeTable"></tbody>
+  </table>
+  </div>
+  <p class="why">The data has no <code>primer</code> or <code>air</code> type. The 120 “Air” paints (Vallejo Model Air and similar) are <code>layer</code>.
+    They dry flat, so a flat swatch is correct for them.</p>
+
+  <h3 class="lab">Live renders, today’s CSS (copied from <code>app.css</code> lines 148–165)</h3>
+  <p class="why">Each tile shows one paint at the app’s four sizes: the Shelf cell (64px), a list row pot (40px), the hero chip (28px),
+    and the live palette’s pot band (full column width, 26px tall, under its target). The tag is the app’s <code>finishTag</code>.</p>
+  <div class="themes" id="nowBoxes"></div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-audit">
+  <h2 id="h-audit"><span class="k">1</span>Audit</h2>
+  <p class="sub"><b>Method.</b> Playwright (Chromium) drew each 64px swatch on a light page. A script read every pixel inside the 1px edge.
+    It then found two numbers with <code>color.js</code> (CIEDE2000, D65). <b>Shift</b> is the ΔE 2000 from the hex to the swatch’s mean colour
+    (mean in linear light), with any finish icon or mark hidden, so it measures the overlay on the colour only.
+    <b>True area</b> is the part of the whole swatch, icon or mark included, within ΔE 2.0 of the hex (“Excellent”, §3.2).
+    §2 says an overlay must convey the finish and never alter the colour. A shift under 2 keeps the colour “Excellent”.</p>
+
+  <div class="tablewrap">
+  <table class="study wide">
+    <thead><tr><th>Paint</th><th>Type</th><th class="n">Shift now</th><th class="n">True area now</th><th>What you see now</th></tr></thead>
+    <tbody id="auditTable"></tbody>
+  </table>
+  </div>
+
+  <h3 class="lab">Findings</h3>
+  <ol class="notes" id="findings">
+    <li><b>The overlays shift the colour.</b> Only 21–60% of a metal or wash swatch is within ΔE 2.0 of its hex. The mean colour moves too.
+      The worst is the gloss overlay: Blood For The Blood God shifts by <b>ΔE 10.4</b> (“Poor”). The white highlight on near-black washes and inks is next:
+      Dark Tone 6.5, Burnt Umber 6.7 (“Loose”). Retributor Armour shifts 3.1, Agrellan Earth 3.2. Flat paints shift 0.1 (the 1px edge).
+      §2 says the overlay must never alter the colour. On dark paints it does, because a 40% white highlight is a large step in L* near black.</li>
+    <li><b>A wash looks like a satin flat.</b> The wash overlay is a highlight top-left and a shadow bottom-right. That is the same idea as the metal sheen,
+      only weaker. Nothing in it says “translucent”. Next to Dawnstone, Nuln Oil reads as a slightly shiny grey base paint.</li>
+    <li><b>A contrast paint and a wash look almost the same.</b> The two gradients differ by 5° and a few per cent of alpha.
+      Both use the same drop icon in the tag. A painter cannot tell a Contrast pot from a Shade pot in the Shelf.</li>
+    <li><b>Silver metals read as grey flats at 28px.</b> At 64px the sheen works. At 28px the highlight is about 8px wide and soft.
+      Leadbelcher (#969696) in the hero chip looks like a light grey base. Golds keep their read, because the hue helps.</li>
+    <li><b>22 of the 55 effect paints get no overlay.</b> They have no <code>fx</code>, and <code>effect</code> is not in <code>FX_BY_TYPE</code>.
+      Examples: Hexwraith Flame, Nihilakh Oxide, Stormshield, the Scale75 FX fluorescents. In the Shelf they are flat squares.</li>
+    <li><b>Some finishes hide in other types.</b> 5 Vallejo gloss paints (Gloss White, Glossy Black, Fuel Stains Gloss…) and 36 fluorescent paints are <code>layer</code>.
+      4 Citadel “-gloss” shades get the wash overlay, not gloss. This is a data question (an <code>fx</code> value), not a drawing question.</li>
+    <li><b><code>dry</code> needs nothing on the swatch.</b> Dry paint dries matte, as a base does. 29 Citadel Dry paints share a hex with their Layer twin
+      (COLOUR_CHECK §3). The name carries “(Dry)”, which is the right place for it.</li>
+    <li><b>The tag colours break the single-meaning rule (§3.5).</b> The metallic tag uses <code>--warning-text</code>. It looks like a “Fair” match tag.
+      The contrast tag uses <code>--accent</code>, the selection colour. A finish is neither a warning nor a selection.</li>
+    <li><b>The finish icon is not on the swatch.</b> The tag icon is 10px and sits in text rows only. On the Shelf, in the hero chip, and in the live palette band,
+      the overlay is the only finish signal.</li>
+    <li><b>The edge fails on near-black paints in dark theme.</b> The edge is 12% black, drawn on the paint. On a near-black paint it is black on black.
+      On the dark page (#141110), <b>127 paints</b> have a contrast under 1.2:1 with the page, and the edge does not help any of them
+      (Abaddon Black: 1.12:1, edge 1.12:1). The swatch has no visible end. In light theme the edge works: 147 paints are close to the page,
+      and all 147 get an edge of 1.2:1 or more. A light edge in dark theme (16% white) lifts Abaddon Black’s edge to 1.29:1 and fixes all 127.</li>
+    <li><b>Hex values set limits that no drawing can fix.</b> 33 paints are pure #000000 or #FFFFFF (COLOUR_CHECK §3.2).
+      Washes use two conventions: Citadel shades are recorded thinned over white (Nuln Oil #9E9A98, a mid grey), while Army Painter Dark Tone is the liquid
+      (#0C060E, near black). Both are “a black wash”. A swatch shows the hex it gets, so this needs the COLOUR_CHECK wash rule first.</li>
+  </ol>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-dir">
+  <h2 id="h-dir"><span class="k">2</span>Three directions</h2>
+  <p class="sub">Each direction is drawn on the same 14 real paints, in both themes, at all four sizes. The flat paints (top row) are the control:
+    a direction must leave them as they are now.</p>
+
+  <h3 class="lab">A · Tune today’s overlays</h3>
+  <p class="why"><b>Same idea, better numbers.</b> One overlay per finish class, each with its own shape. <b>Metal:</b> a softer sheen plus one thin specular streak,
+    which survives at 28px. <b>Wash:</b> a dark pooling at the edges, the way a wash collects in recesses, with no highlight. <b>Contrast:</b> a vertical
+    light-to-dark fade (raised to recess), so it no longer matches the wash. <b>Effects:</b> smaller gloss and slime highlights. The Shelf cell gets the finish
+    icon in its bottom-left corner. The swatch edge is a light line in dark theme. The tag becomes neutral, and contrast gets its own half-drop icon.
+    <b>Limit:</b> on a near-black wash (Dark Tone) the pooling cannot get darker, so only the Shelf icon shows the finish.</p>
+  <div class="themes vA" data-v="A"></div>
+
+  <h3 class="lab">B · One finish mark, in one corner</h3>
+  <p class="why"><b>The colour field is the hex, every pixel.</b> No gradient lies on the body. The finish goes into one small square in the bottom-right corner.
+    The square is the swatch’s ink colour (<code>textOn</code>), with the finish icon cut in the paint colour. One icon per finish:
+    gem (metal), drop (wash, shade, ink, glaze), half-drop (contrast), glint (gloss), blobs (slime), dots (texture), star (other effects).
+    It works at every size and in forced colours, and it is the same in both themes.</p>
+  <div class="themes vB" data-v="B"></div>
+
+  <h3 class="lab">C · A material swatch: show how the paint sits</h3>
+  <p class="why"><b>The shape tells the finish.</b> <b>Metal:</b> a bevelled plate, the hex in the centre. <b>Wash, shade, ink, glaze:</b> a brush stroke on white primer
+    that thins to the right. <b>Contrast:</b> the hex on the raised part, a darker pooled band in the recess. <b>Effects:</b> today’s bespoke overlays.
+    This is the most physical, but it changes the swatch shape that §3.5 sets (a square of colour), and the stroke means something different for each
+    wash convention (finding 11).</p>
+  <div class="themes vC" data-v="C"></div>
+
+  <h3 class="lab">Measured, per finish class (mean of the paints shown)</h3>
+  <div class="tablewrap">
+  <table class="study wide">
+    <thead><tr><th>Class</th><th class="n">Paints</th><th class="n">Now shift · true</th><th class="n">A shift · true</th><th class="n">B shift · true</th><th class="n">C shift · true</th></tr></thead>
+    <tbody id="classTable"></tbody>
+  </table>
+  </div>
+  <p class="why">Shift is ΔE 2000 (lower is truer). True is the per cent of the swatch within ΔE 2.0 of the hex (higher is truer).
+    B’s true area is about 92%, not 100%: its mark covers the corner. The mark is not paint, so B’s body shift is the honest number for its colour.
+    In C the translucent shift is large by design: the stroke shows the primer. The edge numbers are in finding 10.</p>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-rec">
+  <h2 id="h-rec"><span class="k">3</span>Recommendation</h2>
+  <p class="sub"><b>Do B for the finish, with A’s edge and tag fixes.</b> B is the only direction that keeps every pixel of the colour field true
+    (body shift 0.1 for every class), and it is the only one where a wash, a contrast paint and a metal read as three different things at 28px.
+    It also gives the Shelf cell, the hero chip and the pot band the finish signal they lack today. Take three things from A as well: the 16% white edge in
+    dark theme, a neutral finish tag, and the half-drop icon for contrast. These are small and fix measured faults.</p>
+  <p class="sub"><b>The risk of B is that it looks like a UI badge, not paint.</b> The mark is loud on dark paints (a white square on Dark Tone).
+    If the owner wants the swatch to feel like paint, use A instead: its body shift is under 2 for every paint shown except gloss (2.8),
+    and it costs half a day. Do not build C now. It is the most physical, but it moves the colour most for translucent media (shift 4.9–21),
+    it changes the §3.5 square, and its brush stroke is wrong until the wash hex convention is settled (finding 11).
+    C’s brush stroke can come back later as a single “over primer” view in the Recipe’s wash step.</p>
+
+  <div class="tablewrap">
+  <table class="study score">
+    <thead><tr><th>Criterion</th><th class="n">Now</th><th class="n">A</th><th class="n">B</th><th class="n">C</th></tr></thead>
+    <tbody>
+      <tr><td>Colour stays true (§2)</td><td class="n">2</td><td class="n">4</td><td class="n"><b>5</b></td><td class="n">2</td></tr>
+      <tr><td>Finish reads at 64px (Shelf)</td><td class="n">3</td><td class="n">4</td><td class="n">4</td><td class="n"><b>5</b></td></tr>
+      <tr><td>Finish reads at 28px (hero chip)</td><td class="n">2</td><td class="n">3</td><td class="n"><b>4</b></td><td class="n">3</td></tr>
+      <tr><td>Wash and contrast tell apart</td><td class="n">1</td><td class="n">3</td><td class="n"><b>5</b></td><td class="n">4</td></tr>
+      <tr><td>Looks like paint, not a UI badge</td><td class="n">3</td><td class="n"><b>4</b></td><td class="n">2</td><td class="n"><b>5</b></td></tr>
+      <tr><td>Forced colours and colour blindness</td><td class="n">2</td><td class="n">3</td><td class="n"><b>5</b></td><td class="n">3</td></tr>
+      <tr><td>Does not depend on the wash hex rule</td><td class="n"><b>5</b></td><td class="n"><b>5</b></td><td class="n"><b>5</b></td><td class="n">1</td></tr>
+      <tr><td>Cost (5 = cheapest)</td><td class="n">—</td><td class="n"><b>5</b></td><td class="n">3</td><td class="n">2</td></tr>
+      <tr><td><b>Total (of 40; Now of 35)</b></td><td class="n">18</td><td class="n">31</td><td class="n"><b>33</b></td><td class="n">25</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 class="lab">Cost</h3>
+  <ul class="notes">
+    <li><b>A:</b> about half a day. CSS only in <code>app.css</code> (the six overlay rules, a <code>--sw-edge</code> token pair in <code>tokens.css</code> and §3.1),
+      one new glyph and a neutral tag colour in <code>ui.js</code>, the icon in <code>shelfGrid</code>. Tests: the <code>finishTag</code> snapshot in <code>test/ui</code>. §2 and §3.5 text changes slightly.</li>
+    <li><b>B:</b> about one day. A <code>finishMark(p)</code> helper in <code>ui.js</code>, used by <code>swatch()</code>, <code>shelfGrid</code>, the picker tiles and rows, the pot band
+      and the share image (<code>shareimage.js</code> draws the same mark on its canvas). Remove the six gradient rules. Rewrite §2’s overlay exception and §3.5 Swatch.
+      The forced-colours block needs one line for the mark.</li>
+    <li><b>C:</b> two days or more. New shapes need checks in every surface (the 3px Equivalents ring, the Shelf selection outline, the tone ladder, print),
+      the band’s text contrast over primer, and a §3.5 rule change. It also waits for the COLOUR_CHECK wash rule.</li>
+    <li><b>For all:</b> give the 22 effect paints without <code>fx</code> a value (data, <code>build-dataset.mjs</code> keyword seed). That is a data change with a SOURCES.md note.</li>
+  </ul>
+
+  <h3 class="lab">Questions for the owner</h3>
+  <ol class="notes q">
+    <li><b>Is the body of a swatch allowed to carry any gradient?</b><span>B says no: every pixel of the colour field is the hex. A says a small, measured one (shift ≤ 2) is fine.</span></li>
+    <li><b>B’s mark or A’s icon on the Shelf?</b><span>B’s square is always there and is easy to read. A’s icon is lighter and looks less like a badge, but it is thin on mid-tone paints.</span></li>
+    <li><b>Which wash convention do we keep?</b><span>Thinned over white (Citadel) or the liquid (Army Painter)? Direction C, and any future “over primer” view, needs one rule. COLOUR_CHECK asks a near question.</span></li>
+    <li><b>Should gloss and fluorescent layers carry an <code>fx</code>?</b><span>5 Vallejo gloss paints and 36 fluorescent paints are <code>layer</code> today, and 22 effect paints have no <code>fx</code>.</span></li>
+  </ol>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-r2" class="r2">
+  <h2 id="h-r2"><span class="k">4</span>Round 2 (Ryan’s answers, 2026-10-30)</h2>
+  <p class="sub">Ryan answered the four questions in section 3. This round takes B’s pure colour field and puts a light finish icon in the bottom-right corner.
+    It shows four ways to draw that icon, measures them, and compares the two wash conventions.</p>
+
+  <h3 class="lab">The answers</h3>
+  <div class="tablewrap">
+  <table class="study">
+    <thead><tr><th>Question</th><th>Ryan’s answer</th><th>What this round does with it</th></tr></thead>
+    <tbody>
+      <tr><td>1 · A gradient on the body?</td><td><b>No.</b> Direction B is right. Every pixel of the colour field is the paint’s hex.</td>
+        <td>No gradient, no sheen, no scrim. The only thing on the paint is the finish icon. The swatch edge is round 1’s fix (16% white in dark).</td></tr>
+      <tr><td>2 · B’s mark or A’s icon?</td><td><b>A’s lighter icon, in the bottom-right corner.</b> It must match the other elements in the app.</td>
+        <td>Four variants below. Each one copies one app element: the copy button, the mark badge, the tag.</td></tr>
+      <tr><td>3 · Which wash convention?</td><td><b>Leans to “the liquid in the pot”</b> (Army Painter’s way). Not sure yet.</td>
+        <td>A side-by-side of four real washes, and what each convention means for matching.</td></tr>
+      <tr><td>4 · Gloss and fluorescent marks?</td><td><b>Only if the others get one.</b> Consistency.</td>
+        <td>One rule: every non-flat finish gets exactly one icon, from one table. No bespoke effects. Gloss and fluorescent are rows in that table.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 class="lab">One icon per finish (the rule)</h3>
+  <p class="why">The icon comes from the paint’s finish: its <code>fx</code> first, then its <code>type</code>. Flat paints (<code>base</code>, <code>layer</code>, <code>dry</code>) get none.
+    The glyphs follow the icon set (§3.5): a 20px grid, a 1.75px stroke, square ends, mitred joins, <code>currentColor</code>. At 12–13px the stroke is 2.25px.
+    This replaces today’s filled 16px glyphs, where wash and contrast share the drop. The tag in a text row uses the same glyph.
+    <b>Contrast gets its own glyph:</b> the drop with its lower half filled. It says “the colour pools low”, which is how a Contrast paint shades itself.</p>
+  <div class="glyphs" id="r2Glyphs"></div>
+  <p class="why">Two rows need a data change, not a drawing change: <code>fx: "fluo"</code> for the 36 fluorescent and neon <code>layer</code> paints, and <code>fx: "gloss"</code>
+    for the 5 Vallejo gloss <code>layer</code> paints. Both are keyword seeds in <code>build-dataset.mjs</code>, with a SOURCES.md note.
+    The 22 effect paints with no <code>fx</code> get the plain effect star. Shade, ink and glaze share the wash drop: they are one finish class (§5.2), and the tag word tells them apart.</p>
+
+  <h3 class="lab">Four ways to sit the icon on paint</h3>
+  <p class="why">The same 23 real paints in every variant, at the app’s real sizes: the Shelf cell (64px, some with the owned ✓ or to-buy cart badge top-right),
+    the list row pot (40px), the hero chip (28px), and the live palette column (target block over a 26px pot band; here the target is the pot hex too).
+    The flat paints (first three) are the control: they must show no icon. The hard cases are the near-blacks and near-whites:
+    Abaddon Black, Dark Tone, Burnt Umber, Black Templar, Blood For The Blood God, White Scar, Titanium White, Stormhost Silver, Stormshield.</p>
+  <div id="r2Variants"></div>
+
+  <h3 class="lab">Measured: the icon against what it sits on</h3>
+  <p class="sub">WCAG 1.4.11 asks 3:1 for a graphic that you need to understand the content. The finish is also in the name, the tag and the screen-reader label,
+    so the icon is a second signal. We still hold it to 3:1. The numbers are WCAG contrast ratios from the hexes (the same formula as <code>textOn</code>).
+    “All 747” is every non-flat paint in <code>paints.json</code> 1.6.0: 706 non-flat types, 36 fluorescent and neon layers, 5 gloss layers.</p>
+  <div class="tablewrap">
+  <table class="study wide">
+    <thead><tr><th>Variant</th><th>Borrows from</th><th class="n">Icon vs its ground<br>(23 shown · all 747)</th><th class="n">Its shape vs the paint<br>(light · dark)</th><th>Smallest swatch where it reads</th></tr></thead>
+    <tbody>
+      <tr><td>(a) Bare icon, ink</td><td><code>.lccopy</code> and the lock badge <code>.lclock</code>: an icon in the swatch’s own ink (<code>textOn</code>), on the paint</td>
+        <td class="n" id="r2a"></td><td class="n">— (no shape)</td><td>28px. 12px icon, 2px in. At 24px and under, the icon covers too much of the paint.</td></tr>
+      <tr><td>(b) Surface chip</td><td>The mark badge <code>.cbadge</code>: 17px, <code>--r-tag</code>, <code>--shadow</code>; mirrored to the bottom-right, with a neutral surface fill</td>
+        <td class="n" id="r2b"></td><td class="n" id="r2bs"></td><td>40px. At 28px the 14px chip covers a quarter of the chip and reads as a button.</td></tr>
+      <tr><td>(c) Corner notch</td><td>No app element. The surface colour of the overlays, cut as a triangle</td>
+        <td class="n" id="r2c"></td><td class="n" id="r2cs"></td><td>64px. At 40px the icon is 9px, at 28px 7px: the glyphs merge.</td></tr>
+      <tr><td>(d) Outline tag</td><td>The tag (§3.5): square, a 1px edge, no fill; the row’s finish tag with its word removed. Drawn in the swatch’s ink, as (a)</td>
+        <td class="n" id="r2d"></td><td class="n" id="r2ds"></td><td>40px. At 28px the 14px box crowds the 10px icon.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="why"><b>What the numbers say.</b> (a) and (d) draw in <code>textOn</code>, so the icon is never under 4.28:1 on any paint in the data
+    (Reaper Cold Iron, #827877, is the lowest). (b) and (c) draw the icon on <code>--surface</code>, so the icon itself is always 17.04:1 light and 13.89:1 dark.
+    But the chip or notch is a surface shape on paint, and it fades into light paints in light theme and dark paints in dark theme:
+    238 of 747 paints are under 3:1 against the light chip, 291 against the dark one. The <code>--shadow</code> saves the light chip on white.
+    The dark shadow is black, so it does nothing on a near-black paint: the chip looks like a hole.</p>
+  <div class="tablewrap">
+  <table class="study wide">
+    <thead><tr><th>Paint</th><th class="n">Hex</th><th>Icon</th><th class="n">(a) (d) ink vs paint</th><th class="n">(b) (c) chip vs paint, light</th><th class="n">(b) (c) chip vs paint, dark</th></tr></thead>
+    <tbody id="r2Table"></tbody>
+  </table>
+  </div>
+  <p class="why">Red marks a ratio under 3:1. For (b) and (c) a low ratio does not hide the icon. It hides the chip’s edge, so the icon floats on a surface patch that looks like a hole in the paint.</p>
+
+  <h3 class="lab">Washes: the liquid in the pot, or one coat over white?</h3>
+  <p class="sub">The data mixes two conventions today. These are the four washes as <code>paints.json</code> has them, and an illustration of each in the other convention.</p>
+  <div class="themes" id="r2Wash"></div>
+  <ul class="notes">
+    <li><b>The liquid in the pot</b> is the colour you see when you look into the open pot. Almost every wash is then near black or a very dark brown.
+      Army Painter’s values are like this (Dark Tone L* 2, Strong Tone L* 10).</li>
+    <li><b>One coat over white primer</b> (a drawdown) is the colour the wash leaves on a model. It shows the tint and how dark the wash goes.
+      Citadel’s values are like this (Nuln Oil L* 64, Agrax Earthshade L* 65).</li>
+    <li><b>Matching by the pot colour</b> puts a wash next to dark flats. Black and brown washes land close together, so the swatch says little and the finish icon does the work.</li>
+    <li><b>Matching by the effect</b> compares what each wash does on the model. A black wash and a brown wash stay apart, and the swatch shows a colour you can judge.</li>
+    <li><b>Mixed, as now, matching fails across brands.</b> Nuln Oil and Dark Tone are both black washes, but they are ΔE 49.7 apart. Agrax Earthshade and Strong Tone are ΔE 47.6 apart.
+      Within one convention the same pairs are close: Nuln Oil to Agrax 6.8, Dark Tone to Strong Tone 8.6.</li>
+  </ul>
+  <p class="why">The illustrations are not measured values. Each one keeps the data’s Lab hue and chroma and moves only L* to the other brand’s level (L* 10 for the pot, L* 64 for one coat).
+    A real drawdown of a brown wash is more saturated than this. Real values need a photo of a drawdown or of the liquid under one light (COLOUR_CHECK.md, method).</p>
+
+  <h3 class="lab">Recommendation</h3>
+  <p class="sub"><b>Build (a), the bare icon in the swatch’s ink.</b> It is the lightest, which is what Ryan liked in A. It is the app’s own way to put a thing on paint:
+    the copy button and the lock badge already draw in <code>textOn</code>, so (a) adds no new look. It passes 3:1 on every one of the 747 non-flat paints (lowest 4.28:1),
+    in both themes, because it does not depend on the theme. It sits opposite the mark badge’s corner on the same right edge, so state (a filled badge, top) and kind (an outline icon, bottom) stay two languages (§3.5).
+    (d) is the runner-up: it ties the swatch to the row tag, but the box adds weight at 28px and 40px. Drop (b): it reads as a second state badge and fails as a shape on dark paints. Drop (c): it does not read under 64px.</p>
+  <p class="sub"><b>For the washes,</b> pick one convention before any wash value changes. The pot colour is easy to sample but makes most washes near black.
+    The drawdown is closer to what a painter needs from a match. If Ryan keeps “the liquid in the pot”, the finish icon becomes the main wash signal, and (a) carries it well.</p>
+
+  <h3 class="lab">Questions for Ryan</h3>
+  <ol class="notes q">
+    <li><b>Is (a), the bare ink icon, the one?</b><span>Or (d), the same icon in a 1px tag box, if the bare icon looks like a speck on busy paints.</span></li>
+    <li><b>Keep the icon on the 28px hero chip?</b><span>It covers about a fifth of the chip. The hero line could carry the finish tag beside the name instead, and the chip stays pure colour.</span></li>
+    <li><b>One wash value or two?</b><span>The data could hold the pot colour as <code>hex</code> and a drawdown as a second field, so the swatch shows the pot and the match uses the effect. That doubles the wash sampling work.</span></li>
+  </ol>
+  <h3 class="lab">Ryan’s choice (2026-10-30)</h3>
+  <ul class="notes">
+    <li><b>Variant (a)</b>: the bare icon in the swatch’s own ink, bottom-right.</li>
+    <li><b>The icon stays on the 28px hero chip</b> too.</li>
+    <li><b>The wash rule is open.</b> Ryan sees the pots, not a coat over white. The first measured batch records each wash both ways on one card, so the choice can use real values.</li>
+    <li><b>Next:</b> build (a) in its own PR. It changes CLAUDE.md §2 and §3.5 Swatch.</li>
+  </ul>
+</section>
+
+</div>
+<script>
+(() => {
+  /* theme control */
+  const pth = document.getElementById('pth');
+  pth.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    for (const x of pth.querySelectorAll('button')) x.setAttribute('aria-pressed', String(x === b));
+    if (b.dataset.v === 'device') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = b.dataset.v;
+  });
+
+  /* ---- real paints from src/data/paints.json (dataset 1.6.0), copied inline: the page fetches nothing ---- */
+  const PAINTS = [
+    ['citadel-base-mephiston-red', 'Mephiston Red', 'Citadel Base', 'base', '#960C09'],
+    ['citadel-layer-dawnstone', 'Dawnstone (Layer)', 'Citadel Layer', 'layer', '#697068'],
+    ['citadel-dry-dawnstone', 'Dawnstone (Dry)', 'Citadel Dry', 'dry', '#697068'],
+    ['citadel-base-abaddon-black', 'Abaddon Black', 'Citadel Base', 'base', '#000000'],
+    ['citadel-layer-white-scar', 'White Scar', 'Citadel Layer', 'layer', '#FFFFFF'],
+    ['citadel-base-leadbelcher', 'Leadbelcher', 'Citadel Base', 'metal', '#969696'],
+    ['citadel-layer-stormhost-silver', 'Stormhost Silver', 'Citadel Layer', 'metal', '#DADDDF'],
+    ['citadel-base-retributor-armour', 'Retributor Armour', 'Citadel Base', 'metal', '#EDC169'],
+    ['citadel-base-iron-warriors', 'Iron Warriors', 'Citadel Base', 'metal', '#706E6B'],
+    ['citadel-shade-nuln-oil', 'Nuln Oil', 'Citadel Shade', 'shade', '#9E9A98'],
+    ['army-painter-wash-dark-tone', 'Dark Tone', 'Army Painter Wash', 'wash', '#0C060E'],
+    ['vallejo-game-color-violeta-wash', 'Violeta Wash', 'Vallejo Game Color', 'wash', '#886CA7'],
+    ['ak-interactive-3rd-gen-ink-burnt-umber', 'Burnt Umber', 'AK 3rd Gen Ink', 'ink', '#1D1405'],
+    ['citadel-glaze-guilliman-blue', 'Guilliman Blue', 'Citadel Glaze', 'glaze', '#2F9AD6'],
+    ['citadel-contrast-blood-angels-red', 'Blood Angels Red', 'Citadel Contrast', 'contrast', '#860B0E'],
+    ['citadel-contrast-apothecary-white', 'Apothecary White', 'Citadel Contrast', 'contrast', '#A5BED4'],
+    ['army-painter-speedpaint-camo-cloak', 'Camo Cloak', 'Army Painter Speedpaint', 'contrast', '#5A713B'],
+    ['citadel-contrast-black-templar', 'Black Templar', 'Citadel Contrast', 'contrast', '#171717'],
+    ['citadel-technical-blood-for-the-blood-god', 'Blood For The Blood God', 'Citadel Technical', 'effect', '#600106', 'gloss'],
+    ['citadel-technical-nurgles-rot', 'Nurgles Rot', 'Citadel Technical', 'effect', '#9D8B16', 'slime'],
+    ['citadel-technical-stirland-mud', 'Stirland Mud', 'Citadel Technical', 'effect', '#482B00', 'texture'],
+    ['citadel-technical-agrellan-earth', 'Agrellan Earth', 'Citadel Technical', 'effect', '#B39E80', 'texture'],
+    ['citadel-technical-hexwraith-flame', 'Hexwraith Flame', 'Citadel Technical', 'effect', '#29A236'],
+    ['citadel-technical-stormshield', 'Stormshield', 'Citadel Technical', 'effect', '#F9F9F9'],
+  ].map(([id, n, b, t, h, fx]) => ({ id, n, b, t, h, fx }));
+  /* the 14 used for the directions */
+  const DIR_IDS = ['citadel-base-mephiston-red', 'citadel-dry-dawnstone', 'citadel-base-abaddon-black', 'citadel-base-leadbelcher',
+    'citadel-layer-stormhost-silver', 'citadel-base-retributor-armour', 'citadel-shade-nuln-oil', 'army-painter-wash-dark-tone',
+    'citadel-glaze-guilliman-blue', 'citadel-contrast-blood-angels-red', 'citadel-contrast-apothecary-white',
+    'citadel-technical-blood-for-the-blood-god', 'citadel-technical-stirland-mud', 'citadel-technical-hexwraith-flame'];
+
+  /* ---- the app's logic, restated: fxCls (ui.js) and textOn (color.js §7) ---- */
+  const FX_BY_TYPE = { metal: 'metal', wash: 'fx-wash', ink: 'fx-wash', shade: 'fx-wash', glaze: 'fx-wash', contrast: 'fx-contrast' };
+  const fxCls = p => (p.fx ? 'fx-' + p.fx : FX_BY_TYPE[p.t] || '');
+  const kind = p => p.fx || ({ metal: 'metal', wash: 'trans', ink: 'trans', shade: 'trans', glaze: 'trans', contrast: 'contrast', effect: 'effect' }[p.t] || 'flat');
+  const lin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const lum = h => { const n = parseInt(h.slice(1), 16); return 0.2126 * lin(n >> 16) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255); };
+  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const textOn = h => (ratio(h, '#15150F') >= ratio(h, '#FFFFFF') ? '#15150F' : '#FFFFFF');
+
+  /* ---- glyphs: GEM, DROP, STAR are the app's (ui.js); the others are new for A/B ---- */
+  const svg = d => `<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="${d}"/></svg>`;
+  const G = {
+    metal: svg('M3 6l5-4 5 4-5 8z'),
+    trans: svg('M8 2c2.4 3.2 4 5.2 4 7.2A4 4 0 0 1 4 9.2C4 7.2 5.6 5.2 8 2z'),
+    effect: svg('M8 1l1.6 4.4L14 7l-4.4 1.6L8 13 6.4 8.6 2 7l4.4-1.6z'),
+    contrast: svg('M8 2c2.4 3.2 4 5.2 4 7.2A4 4 0 0 1 4 9.2C4 7.2 5.6 5.2 8 2zm0 2.2C6.4 6.4 5.4 7.9 5.4 9.2h5.2C10.6 7.9 9.6 6.4 8 4.2z'),
+    gloss: svg('M8 1.5l1 5.5 5.5 1-5.5 1-1 5.5-1-5.5-5.5-1 5.5-1z'),
+    slime: svg('M5.5 3.5a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm5.5 5a2.2 2.2 0 1 1 0 4.4 2.2 2.2 0 0 1 0-4.4z'),
+    texture: svg('M3 3h2.5v2.5H3zm5 1h2.5v2.5H8zm-4 5h2.5v2.5H4zm5.5-.5H12V11H9.5zM6.5 6h2v2h-2zm4.5 5h2v2h-2z'),
+  };
+  const WORD = { metal: 'metallic', contrast: 'contrast', wash: 'wash', shade: 'shade', ink: 'ink', glaze: 'glaze', effect: 'effect' };
+  const appTag = t => (G[t === 'metal' ? 'metal' : t === 'effect' ? 'effect' : 'trans'] && WORD[t]
+    ? `<span class="finish finish-${t}">${t === 'metal' ? G.metal : t === 'effect' ? G.effect : G.trans}${WORD[t]}</span>` : '');
+  const newTag = p => { const k = kind(p); if (k === 'flat') return ''; const g = G[k] || G.effect;
+    const w = p.fx ? p.fx : WORD[p.t]; return `<span class="finish2">${g}${w}</span>`; };
+
+  /* ---- one tile: the four sizes ---- */
+  function sw(p, size, v, measure) {
+    const k = kind(p), ink = textOn(p.h);
+    const cls = `sw ${size} ${fxCls(p)} k-${k}`;
+    let inner = '';
+    if (v === 'B' && k !== 'flat') inner = `<i class="fm">${G[k] || G.effect}</i>`;
+    if (v === 'A' && size === 's64' && k !== 'flat') inner = `<i class="fa">${G[k] || G.effect}</i>`;
+    const m = measure ? ` data-m="${v}|${p.id}"` : '';
+    const bandInk = v === 'C' && k === 'trans' ? textOn(p.h) : ink;
+    if (size === 'band') return `<span class="tgt" style="--c:${p.h}"></span><span class="${cls}" style="--c:${p.h};--ink:${bandInk};color:${bandInk}">${inner}<b>Pot</b><span class="hx">${p.h}</span></span>`;
+    return `<span class="${cls}" style="--c:${p.h};--ink:${ink}"${m}>${inner}</span>`;
+  }
+  function tile(p, v, measure) {
+    return `<div class="tile"><div class="nm">${p.n}</div><div class="meta">${p.h} · ${p.t}${p.fx ? ' · ' + p.fx : ''}</div>`
+      + sw(p, 's64', v, measure)
+      + `<div class="row">${sw(p, 's40', v)}${sw(p, 's28', v)}</div>`
+      + sw(p, 'band', v)
+      + `<div class="ft">${v === 'now' ? appTag(p.t) : newTag(p)}</div></div>`;
+  }
+  const GROUPS = [['Flat (base, layer, dry)', 'flat'], ['Metallic', 'metal'], ['Wash, shade, ink, glaze', 'trans'], ['Contrast and speed paints', 'contrast'], ['Effect', 'effect']];
+  const groupOf = p => { const k = kind(p); return ['gloss', 'slime', 'texture'].includes(k) ? 'effect' : k; };
+  function boxes(list, v, grouped) {
+    return ['light', 'dark'].map(th => {
+      let h = '';
+      if (grouped) for (const [lab, g] of GROUPS) { const ps = list.filter(p => groupOf(p) === g); if (!ps.length) continue;
+        h += `<p class="micro grp">${lab}</p>` + ps.map(p => tile(p, v, th === 'light')).join(''); }
+      else h = list.map(p => tile(p, v, th === 'light')).join('');
+      return `<div class="tbox" data-theme="${th}"><span class="micro">${th === 'light' ? 'Light · Workbench' : 'Dark · Grimdark Tabletop'}</span><div class="tiles">${h}</div></div>`;
+    }).join('');
+  }
+  document.getElementById('nowBoxes').innerHTML = boxes(PAINTS, 'now', true);
+  const DIR = DIR_IDS.map(id => PAINTS.find(p => p.id === id));
+  for (const el of document.querySelectorAll('.themes[data-v]')) el.innerHTML = boxes(DIR, el.dataset.v, false);
+
+  /* ---- type table (counts from paints.json 1.6.0) ---- */
+  const TYPES = [
+    ['layer', 2442, '—', 'Nothing. The flat colour.', 'None'],
+    ['base', 48, '—', 'Nothing. The flat colour.', 'None'],
+    ['dry', 29, '—', 'Nothing. The flat colour.', 'None'],
+    ['metal', 244, '<code>.metal</code>', 'Sheen: white 50% top-left to clear at 40%, then black 26% bottom-right.', 'Gem · “metallic” in <code>--warning-text</code>'],
+    ['contrast', 232, '<code>.fx-contrast</code>', 'White 30% to clear at 42%, black 20% at 96% (150°).', 'Drop · “contrast” in <code>--accent</code>'],
+    ['wash', 115, '<code>.fx-wash</code>', 'White 40% to clear at 48%, black 16% (155°).', 'Drop · “wash”'],
+    ['ink', 40, '<code>.fx-wash</code>', 'As wash.', 'Drop · “ink”'],
+    ['shade', 16, '<code>.fx-wash</code>', 'As wash.', 'Drop · “shade”'],
+    ['glaze', 4, '<code>.fx-wash</code>', 'As wash.', 'Drop · “glaze”'],
+    ['effect · fx texture', 24, '<code>.fx-texture</code>', 'Stippled light and dark grain, plus a 12% shade.', 'Star · “effect”'],
+    ['effect · fx gloss', 8, '<code>.fx-gloss</code>', 'A large white 82% highlight, black 34% at the foot.', 'Star · “effect”'],
+    ['effect · fx slime', 1, '<code>.fx-slime</code>', 'Two white blobs (85% and 50%), black 30% at the foot.', 'Star · “effect”'],
+    ['effect · no fx', 22, '—', '<span class="bad">Nothing.</span> A flat square.', 'Star · “effect”'],
+  ];
+  document.getElementById('typeTable').innerHTML = TYPES.map(r => `<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('');
+
+  /* ---- measurements (Playwright + color.js, 2026-10-30; see the method in section 1) ----
+     key: variant|paint id → [shift ΔE2000 of the mean colour, per cent of area within ΔE 2.0] */
+  const M = /*MEASURED*/{"now|citadel-base-mephiston-red":[0.1,98],
+    "now|citadel-layer-dawnstone":[0.1,98],
+    "now|citadel-dry-dawnstone":[0.1,98],
+    "now|citadel-base-abaddon-black":[0.1,100],
+    "now|citadel-layer-white-scar":[0.1,98],
+    "now|citadel-base-leadbelcher":[0.5,22],
+    "now|citadel-layer-stormhost-silver":[2.6,39],
+    "now|citadel-base-retributor-armour":[3.1,23],
+    "now|citadel-base-iron-warriors":[1.8,21],
+    "now|citadel-shade-nuln-oil":[0.7,32],
+    "now|army-painter-wash-dark-tone":[6.5,60],
+    "now|vallejo-game-color-violeta-wash":[2.8,27],
+    "now|ak-interactive-3rd-gen-ink-burnt-umber":[6.7,56],
+    "now|citadel-glaze-guilliman-blue":[1.5,30],
+    "now|citadel-contrast-blood-angels-red":[2.9,40],
+    "now|citadel-contrast-apothecary-white":[1.9,38],
+    "now|army-painter-speedpaint-camo-cloak":[1.4,29],
+    "now|citadel-contrast-black-templar":[3.5,70],
+    "now|citadel-technical-blood-for-the-blood-god":[10.4,38],
+    "now|citadel-technical-nurgles-rot":[2.5,50],
+    "now|citadel-technical-stirland-mud":[2.5,51],
+    "now|citadel-technical-agrellan-earth":[3.2,33],
+    "now|citadel-technical-hexwraith-flame":[0.1,98],
+    "now|citadel-technical-stormshield":[0.1,98],
+    "A|citadel-base-mephiston-red":[0.1,98],
+    "A|citadel-dry-dawnstone":[0.1,98],
+    "A|citadel-base-abaddon-black":[0.1,100],
+    "A|citadel-base-leadbelcher":[0.5,53],
+    "A|citadel-layer-stormhost-silver":[0.8,69],
+    "A|citadel-base-retributor-armour":[1.4,53],
+    "A|citadel-shade-nuln-oil":[1.1,78],
+    "A|army-painter-wash-dark-tone":[0.1,99],
+    "A|citadel-glaze-guilliman-blue":[1.1,77],
+    "A|citadel-contrast-blood-angels-red":[1.6,57],
+    "A|citadel-contrast-apothecary-white":[1.3,66],
+    "A|citadel-technical-blood-for-the-blood-god":[2.8,74],
+    "A|citadel-technical-stirland-mud":[1.5,69],
+    "A|citadel-technical-hexwraith-flame":[0.1,98],
+    "B|citadel-base-mephiston-red":[0.1,98],
+    "B|citadel-dry-dawnstone":[0.1,98],
+    "B|citadel-base-abaddon-black":[0.1,100],
+    "B|citadel-base-leadbelcher":[0.1,92],
+    "B|citadel-layer-stormhost-silver":[0.1,92],
+    "B|citadel-base-retributor-armour":[0.1,92],
+    "B|citadel-shade-nuln-oil":[0.1,92],
+    "B|army-painter-wash-dark-tone":[0.1,93],
+    "B|citadel-glaze-guilliman-blue":[0.1,92],
+    "B|citadel-contrast-blood-angels-red":[0.1,92],
+    "B|citadel-contrast-apothecary-white":[0.1,92],
+    "B|citadel-technical-blood-for-the-blood-god":[0.1,91],
+    "B|citadel-technical-stirland-mud":[0.1,91],
+    "B|citadel-technical-hexwraith-flame":[0.1,91],
+    "C|citadel-base-mephiston-red":[0.1,98],
+    "C|citadel-dry-dawnstone":[0.1,98],
+    "C|citadel-base-abaddon-black":[0.1,100],
+    "C|citadel-base-leadbelcher":[0.3,80],
+    "C|citadel-layer-stormhost-silver":[0.8,82],
+    "C|citadel-base-retributor-armour":[1.4,81],
+    "C|citadel-shade-nuln-oil":[4.9,60],
+    "C|army-painter-wash-dark-tone":[21.2,57],
+    "C|citadel-glaze-guilliman-blue":[5.9,58],
+    "C|citadel-contrast-blood-angels-red":[2.1,70],
+    "C|citadel-contrast-apothecary-white":[3.5,70],
+    "C|citadel-technical-blood-for-the-blood-god":[10.4,38],
+    "C|citadel-technical-stirland-mud":[2.5,50],
+    "C|citadel-technical-hexwraith-flame":[0.1,98]}/*END*/;
+  const fmt = x => (x == null ? '—' : x.toFixed(1));
+  const SEE = {
+    'citadel-base-leadbelcher': 'At 64px a metal. At 28px a light grey flat.',
+    'citadel-layer-stormhost-silver': 'The highlight is lost on a near-white paint. A light grey flat.',
+    'citadel-base-retributor-armour': 'Reads as gold. The hue does most of the work.',
+    'citadel-base-iron-warriors': 'Reads as metal at 64px. Dull at 28px.',
+    'citadel-shade-nuln-oil': 'A satin grey base. Nothing says “wash”.',
+    'army-painter-wash-dark-tone': 'A near-black square with a soft grey shine.',
+    'vallejo-game-color-violeta-wash': 'A satin purple. Same look as the contrast paints.',
+    'ak-interactive-3rd-gen-ink-burnt-umber': 'A near-black square with a shine.',
+    'citadel-glaze-guilliman-blue': 'A satin blue. Same as a wash.',
+    'citadel-contrast-blood-angels-red': 'Same look as a wash.',
+    'citadel-contrast-apothecary-white': 'Same look as a wash.',
+    'army-painter-speedpaint-camo-cloak': 'Same look as a wash.',
+    'citadel-contrast-black-templar': 'Same look as a wash.',
+    'citadel-technical-blood-for-the-blood-god': 'Wet and glossy. The highlight covers a third of the swatch.',
+    'citadel-technical-nurgles-rot': 'Goopy. Reads well.',
+    'citadel-technical-stirland-mud': 'Gritty. Reads well at 64px. Noise at 28px.',
+    'citadel-technical-agrellan-earth': 'Gritty. Reads well at 64px.',
+    'citadel-technical-hexwraith-flame': '<span class="bad">A flat green.</span> No fx, so no overlay.',
+    'citadel-technical-stormshield': '<span class="bad">A flat white.</span> No fx, so no overlay.',
+  };
+  const flat = '<span class="ok">The flat colour. Correct.</span>';
+  document.getElementById('auditTable').innerHTML = PAINTS.map(p => { const m = M['now|' + p.id] || [];
+    return `<tr><td>${p.n}</td><td>${p.t}${p.fx ? ' · ' + p.fx : ''}</td><td class="n">${fmt(m[0])}</td><td class="n">${m[1] == null ? '—' : Math.round(m[1]) + '%'}</td><td>${SEE[p.id] || flat}</td></tr>`; }).join('');
+
+  const CLS = [['Flat', 'flat'], ['Metallic', 'metal'], ['Wash, shade, ink, glaze', 'trans'], ['Contrast', 'contrast'], ['Effect', 'effect']];
+  const meanOf = (v, g, list) => { const r = list.filter(p => groupOf(p) === g).map(p => M[v + '|' + p.id]).filter(Boolean);
+    if (!r.length) return null; return [r.reduce((s, x) => s + x[0], 0) / r.length, r.reduce((s, x) => s + x[1], 0) / r.length]; };
+  const cell = x => (x ? `${x[0].toFixed(1)} · ${Math.round(x[1])}%` : '—');
+  document.getElementById('classTable').innerHTML = CLS.map(([lab, g]) => `<tr><td>${lab}</td><td class="n">${DIR.filter(p => groupOf(p) === g).length}</td>`
+    + ['now', 'A', 'B', 'C'].map(v => `<td class="n">${cell(meanOf(v, g, DIR))}</td>`).join('') + '</tr>').join('');
+})();
+</script>
+<script>
+/* ---------- Round 2 renders (section 4). Self-contained: the page still fetches nothing. ---------- */
+(() => {
+  /* real paints from src/data/paints.json 1.6.0; mark = the Shelf badge shown on that cell (study only) */
+  const P = [
+    ['Mephiston Red', 'Citadel Base', 'base', '#960C09', 'flat', 'owned'],
+    ['Abaddon Black', 'Citadel Base', 'base', '#000000', 'flat', ''],
+    ['White Scar', 'Citadel Layer', 'layer', '#FFFFFF', 'flat', 'want'],
+    ['Retributor Armour', 'Citadel Base', 'metal', '#EDC169', 'metal', 'owned'],
+    ['Balthasar Gold', 'Citadel Base', 'metal', '#A77353', 'metal', ''],
+    ['Leadbelcher', 'Citadel Base', 'metal', '#969696', 'metal', 'want'],
+    ['Stormhost Silver', 'Citadel Layer', 'metal', '#DADDDF', 'metal', ''],
+    ['Nuln Oil', 'Citadel Shade', 'shade', '#9E9A98', 'wash', 'owned'],
+    ['Dark Tone', 'Army Painter Wash', 'wash', '#0C060E', 'wash', ''],
+    ['Violeta Wash', 'Vallejo Game Color', 'wash', '#886CA7', 'wash', ''],
+    ['Burnt Umber', 'AK 3rd Gen Ink', 'ink', '#1D1405', 'wash', 'want'],
+    ['Titanium White', 'AK 3rd Gen Ink', 'ink', '#FFFFFF', 'wash', ''],
+    ['Guilliman Blue', 'Citadel Glaze', 'glaze', '#2F9AD6', 'wash', ''],
+    ['Blood Angels Red', 'Citadel Contrast', 'contrast', '#860B0E', 'contrast', 'owned'],
+    ['Black Templar', 'Citadel Contrast', 'contrast', '#171717', 'contrast', ''],
+    ['Apothecary White', 'Citadel Contrast', 'contrast', '#A5BED4', 'contrast', ''],
+    ['Blood For The Blood God', 'Citadel Technical', 'effect · gloss', '#600106', 'gloss', ''],
+    ['Stirland Mud', 'Citadel Technical', 'effect · texture', '#482B00', 'texture', 'want'],
+    ['Agrellan Earth', 'Citadel Technical', 'effect · texture', '#B39E80', 'texture', ''],
+    ['Nurgles Rot', 'Citadel Technical', 'effect · slime', '#9D8B16', 'slime', ''],
+    ['Fluorescent Yellow', 'Pro Acryl Signature', 'layer → fx fluo', '#F2DD26', 'fluo', ''],
+    ['Fluorescent Magenta', 'AK 3rd Gen', 'layer → fx fluo', '#FF4C69', 'fluo', 'owned'],
+    ['Stormshield', 'Citadel Technical', 'effect (no fx)', '#F9F9F9', 'effect', ''],
+  ].map(([n, line, t, h, k, mark]) => ({ n, line, t, h, k, mark }));
+
+  const lin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const lum = h => { const n = parseInt(h.slice(1), 16); return 0.2126 * lin(n >> 16) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255); };
+  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const textOn = h => (ratio(h, '#15150F') >= ratio(h, '#FFFFFF') ? '#15150F' : '#FFFFFF');
+
+  /* the glyphs, on the icon set's 20px grid (stroke; .f = a filled part, as half.svg) */
+  const D = {
+    metal: '<path d="M3.5 8L10 3l6.5 5L10 17z"/><path d="M3.5 8h13"/>',
+    wash: '<path d="M10 2.75c-3 3.9-5 6.6-5 9.25a5 5 0 0 0 10 0c0-2.65-2-5.35-5-9.25z"/>',
+    contrast: '<path d="M10 2.75c-3 3.9-5 6.6-5 9.25a5 5 0 0 0 10 0c0-2.65-2-5.35-5-9.25z"/><path class="f" d="M5 12a5 5 0 0 0 10 0z"/>',
+    gloss: '<circle cx="10" cy="10" r="6.25"/><path class="f" d="M6.75 6.75h2.5v2.5h-2.5z"/>',
+    texture: '<path d="M5 5h.01M10 5h.01M15 5h.01M7.5 10h.01M12.5 10h.01M5 15h.01M10 15h.01M15 15h.01" stroke-width="2.75"/>',
+    slime: '<path d="M4 4.75h12v5.5a1.5 1.5 0 0 1-3 0V9.5h-1.5v3.75a1.5 1.5 0 0 1-3 0V9.5H7v1a1.5 1.5 0 0 1-3 0z"/>',
+    fluo: '<circle cx="10" cy="10" r="3.25"/><path d="M10 2.75v2M10 15.25v2M2.75 10h2M15.25 10h2"/>',
+    effect: '<path d="M10 3l2.1 4.3 4.7.7-3.4 3.3.8 4.7L10 13.8 5.8 16l.8-4.7L3.2 8l4.7-.7z"/>',
+  };
+  const NAME = { metal: 'Metallic', wash: 'Wash · shade · ink · glaze', contrast: 'Contrast · speed paint', gloss: 'Gloss', texture: 'Texture', slime: 'Slime', fluo: 'Fluorescent', effect: 'Other effect' };
+  const FROM = { metal: 'type metal', wash: 'type wash, shade, ink, glaze', contrast: 'type contrast', gloss: 'fx gloss', texture: 'fx texture', slime: 'fx slime', fluo: 'fx fluo (new)', effect: 'type effect, no fx' };
+  const NEW = { contrast: 1, gloss: 1, texture: 1, slime: 1, fluo: 1 };
+  const fi = (k, big) => `<svg class="fi${big ? ' big' : ''}" viewBox="0 0 20 20" aria-hidden="true">${D[k]}</svg>`;
+  const CHECK = '<svg class="fi" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l3.75 3.75L16 6"/></svg>';
+  const CART = '<svg class="fi" viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 3.5h2.25l2 9.5h8.5l1.5-6.5H5.6"/><path d="M8 16.5h.01M14 16.5h.01" stroke-width="2.4"/></svg>';
+
+  document.getElementById('r2Glyphs').innerHTML = Object.keys(D).map(k =>
+    `<div class="gly"><span class="gbox">${fi(k, true)}<span style="--ic:13px">${fi(k)}</span></span><span><b>${NAME[k]}${NEW[k] ? '<span class="new">new</span>' : ''}</b>${FROM[k]}</span></div>`).join('');
+
+  const mark = (p, cls) => (p.k === 'flat' ? '' : `<i class="fk">${fi(p.k)}</i>`);
+  const badge = p => (p.mark === 'owned' ? `<span class="cb owned">${CHECK}</span>` : p.mark === 'want' ? `<span class="cb want">${CART}</span>` : '');
+  const sw = (p, size, extra = '') => `<span class="p2 ${size}" style="--c:${p.h};--ink:${textOn(p.h)}" title="${p.n}">${extra}${mark(p)}</span>`;
+
+  const V = [
+    ['va', '(a) Bare icon in the swatch’s ink', 'Borrows from the copy button on paint (<code>.lccopy</code>) and the lock badge (<code>.lclock</code>): an icon in <code>textOn</code>, no fill.'],
+    ['vb', '(b) A surface chip', 'Borrows from the Shelf’s mark badge (<code>.cbadge</code>): 17px, <code>--r-tag</code>, <code>--shadow</code>; mirrored to the bottom-right, a neutral <code>--surface</code> fill and the icon in <code>--text</code>.'],
+    ['vc', '(c) A corner notch', 'Borrows the overlay surface (<code>--surface</code>), cut as a triangle in the corner, the icon in <code>--text</code>. No app element has this shape today.'],
+    ['vd', '(d) An outline tag, icon only', 'Borrows from the tag (§3.5): square <code>--r-tag</code>, a 1px edge, no fill; the row’s finish tag without its word. Drawn in the swatch’s ink, as (a).'],
+  ];
+  const box = th => `<div class="tbox" data-theme="${th}"><span class="micro">${th === 'light' ? 'Light · Workbench' : 'Dark · Grimdark Tabletop'}</span>`
+    + `<p class="micro sz">Shelf cell · 64px, the mark badge top-right</p><div class="grid64">`
+    + P.map(p => `<div class="cellw">${sw(p, 'c64', badge(p))}<div class="nm2">${p.n}</div></div>`).join('') + `</div>`
+    + `<p class="micro sz">List row pot · 40px</p><div class="strip">${P.map(p => sw(p, 'c40')).join('')}</div>`
+    + `<p class="micro sz">Hero chip · 28px</p><div class="strip">${P.map(p => sw(p, 'c28')).join('')}</div>`
+    + `<p class="micro sz">Live palette column · target over the pot band</p><div class="cols">`
+    + P.map(p => `<div class="lcol2"><span class="tgt2" style="--t:${p.h}"></span><span class="band2" style="--c:${p.h};--ink:${textOn(p.h)}"><b>Pot</b><span class="hx">${p.h}</span>${mark(p)}</span><div class="lcnm">${p.n}</div></div>`).join('')
+    + `</div></div>`;
+  document.getElementById('r2Variants').innerHTML = V.map(([c, h, why]) =>
+    `<div class="vhead"><h3>${h}</h3></div><p class="borrow">${why}</p><div class="themes ${c}">${box('light')}${box('dark')}</div>`).join('');
+
+  /* measured: WCAG ratios from the hexes */
+  const SURF = { light: '#FFFFFF', dark: '#1C1815' }, TEXT = { light: '#1D1C19', dark: '#ECE3D8' };
+  const nf = P.filter(p => p.k !== 'flat');
+  const f2 = x => x.toFixed(2);
+  const inkMin = Math.min(...nf.map(p => ratio(textOn(p.h), p.h)));
+  const chipLo = th => nf.filter(p => ratio(SURF[th], p.h) < 3).length;
+  const icon = `${f2(ratio(TEXT.light, SURF.light))} · ${f2(ratio(TEXT.dark, SURF.dark))}<br>(light · dark, every paint)`;
+  document.getElementById('r2a').innerHTML = `${f2(inkMin)} · 4.28<br>(lowest)`;
+  document.getElementById('r2d').innerHTML = `${f2(inkMin)} · 4.28<br>(lowest; the edge too)`;
+  document.getElementById('r2b').innerHTML = icon;
+  document.getElementById('r2c').innerHTML = icon;
+  const shape = `${chipLo('light')} · ${chipLo('dark')} of ${nf.length} under 3:1<br>(all 747: 238 · 291)`;
+  document.getElementById('r2bs').innerHTML = shape;
+  document.getElementById('r2cs').innerHTML = shape;
+  const cellR = x => `<td class="n${x < 3 ? ' lo' : ''}">${f2(x)}</td>`;
+  document.getElementById('r2Table').innerHTML = nf.map(p => `<tr><td>${p.n}</td><td class="n">${p.h}</td><td>${NAME[p.k]}</td>`
+    + cellR(ratio(textOn(p.h), p.h)) + cellR(ratio(SURF.light, p.h)) + cellR(ratio(SURF.dark, p.h)) + '</tr>').join('');
+
+  /* wash comparison: data hex + an ILLUSTRATIVE value in the other convention (L* moved, Lab hue and chroma kept) */
+  const toLab = h => { const n = parseInt(h.slice(1), 16), r = lin(n >> 16), g = lin((n >> 8) & 255), b = lin(n & 255);
+    const x = (0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047, y = 0.2126729 * r + 0.7151522 * g + 0.072175 * b, z = (0.0193339 * r + 0.119192 * g + 0.9503041 * b) / 1.08883;
+    const f = t => (t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116); return [116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))]; };
+  const fromLab = ([L, a, bb]) => { const fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - bb / 200;
+    const inv = t => (t ** 3 > 216 / 24389 ? t ** 3 : (116 * t - 16) / (24389 / 27));
+    const x = inv(fx) * 0.95047, y = inv(fy), z = inv(fz) * 1.08883;
+    const lr = 3.2404542 * x - 1.5371385 * y - 0.4985314 * z, lg = -0.969266 * x + 1.8760108 * y + 0.041556 * z, lb = 0.0556434 * x - 0.2040259 * y + 1.0572252 * z;
+    const g = c => { c = Math.min(1, Math.max(0, c)); return Math.round(255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055)); };
+    return '#' + [lr, lg, lb].map(g).map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase(); };
+  const W = [
+    ['Nuln Oil', 'Citadel Shade · black', '#9E9A98', 'drawdown'],
+    ['Agrax Earthshade', 'Citadel Shade · brown', '#A99D8D', 'drawdown'],
+    ['Dark Tone', 'Army Painter Wash · black', '#0C060E', 'pot'],
+    ['Strong Tone', 'Army Painter Wash · brown', '#211913', 'pot'],
+  ];
+  const wcol = (title, h, ill, note) => `<div class="wcol"><span class="p2${ill ? ' ill' : ''}" style="--c:${h};--ink:${textOn(h)}"><i class="fk" style="--ic:13px;--in:4px">${fi('wash')}</i></span>`
+    + `<b>${title}</b><br><code>${h}</code>${ill ? ' <span class="illtag">illustrative</span>' : ''}<br>${note}</div>`;
+  const washBox = th => `<div class="tbox va" data-theme="${th}"><span class="micro">${th === 'light' ? 'Light · Workbench' : 'Dark · Grimdark Tabletop'}</span><div class="wash">`
+    + W.map(([n, line, h, conv]) => { const lab = toLab(h); const other = fromLab([conv === 'pot' ? 64 : 10, lab[1], lab[2]]);
+      const data = wcol(conv === 'pot' ? 'Liquid in the pot' : 'One coat over white', h, false, 'the data now');
+      const alt = wcol(conv === 'pot' ? 'One coat over white' : 'Liquid in the pot', other, true, `L* ${conv === 'pot' ? 64 : 10}, not measured`);
+      return `<div><p class="micro" style="margin:0 0 6px">${n} · ${line}</p><div class="wrow">${conv === 'pot' ? data + alt : alt + data}</div></div>`; }).join('')
+    + `</div></div>`;
+  document.getElementById('r2Wash').innerHTML = washBox('light') + washBox('dark');
+})();
+</script>
+</body>
+</html>

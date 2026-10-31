@@ -7,6 +7,27 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 took only the web entries. -->
 ### Added
+- **Tap the starting paint to see the scheme large** (the hero's swatch), with Share or Save beside it.
+- **Hold and slide on the Shelf grid to read names** (touch). A finger held still for a moment (180ms) shows a loupe
+  with the paint's name. Slide to read the next one. Lifting marks nothing, and a plain tap still marks.
+- **The result line after a batch is one short row** ("13 on the shopping list · Undo") and sits above the swatches'
+  name labels, which iOS had drawn over it.
+- **Undo for the Shelf's batch marks.** After Mark owned, Add to shopping list or Clear on a selection, the result
+  shows with **Undo**: each paint goes back to how it was (its count and project too) and is selected again. On a phone
+  the selection then ends, so the next batch starts at once; with a mouse it stays.
+- **Select by sliding** (touch): in Select mode, hold a paint and drag. Every paint from that one to your finger is
+  selected, row by row, as in Photos; drag back to select fewer. The actions
+  (Mark owned, Add to shopping list, Clear) come up in a sheet at the bottom, where you can reach them.
+- **Opening the Shelf on a touch screen no longer draws a focus ring round the whole grid** (and a stray name label).
+  The grid takes keyboard focus only with a mouse or a keyboard.
+- **Hold and slide reads names across the gaps:** the gaps between swatches count as the nearest paint, so the
+  name does not flicker, a slow slide no longer opens the menu, and the first name is no longer late.
+- **Pick many types** in the Shelf's filters (for example layer + base + wash).
+- **A study of the swatches** (`mockups/swatch-finish.html`): do they show each paint's colour and finish truly?
+  Measured: the finish overlays shift the colour (up to ΔE 10.4), and wash and contrast look alike. Recommended: a
+  pure colour with one finish mark. Nothing in the app changed.
+- **A study of the paint colours** (`docs/COLOUR_CHECK.md`): what looks wrong in the data now, and a method to check
+  each paint against the maker's swatch. No data changed.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
@@ -17,6 +38,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   two facts on the Help page that are out of date, Apple's rules that keep Help and Privacy as public pages, and
   three directions. Ryan chose B: Help opens over the app like About, built from `support.html` itself, so the
   public page and the app never differ. Support details are copied by the painter, never sent in a link.
+- **A dot on ⋯ after an update** (PLAN §5 item 40, `mockups/whats-new.html` A2). When What’s new has new lines,
+  ⋯ shows a small dot. The dot goes when you open ⋯, and About then has a **New** tag until you open it. A screen
+  reader hears “Settings – what’s new in 1.13.0”. A new device and a patch release show no dot. The version
+  seen is kept on this device only, not in the backup file.
 - **A study of finding What’s new** (`mockups/whats-new.html`; PLAN §5 items 40–41). Part A specifies a small dot
   on ⋯ after an update, ready to build. Part B studies a notification log next to ⋯ and recommends no log now. A
   QA pass and a code review of v1.13.0 are recorded in PLAN §5. Nothing in the app changes.
@@ -28,11 +53,44 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   line before you copy it. The app does not send it: it goes to us only if you paste it into a message.
 - **What’s new in About.** About shows the main changes in this version (`WHATS_NEW` in `version.js`).
 ### Changed
+- **Select and Grid | List moved into the Shelf's pull-down panel**, so they are one pull away anywhere down the
+  grid: Select beside Filters, and Grid | List as two icons beside All · Owned · Shopping list. The handle no longer
+  says "Search": it shows a chip only while a search or a filter hides paints.
+- **The Shelf's hue sort is in colour order** (it was unreliable). It now uses the same order as Browse: bands of
+  the hue the eye sees, light to dark and back, greys last. The Shelf's sort jumped 3 times as far between
+  neighbours. **Sort: lightness** uses the lightness the eye sees.
+- **The Shelf grid has bigger swatches** on a phone: 5 columns of about 67px (it was 6 of 54px).
+- **"⚓ Move here" says what it did**, and the starting paint's column in accent mode is tagged "Accent · your paint".
+- **The Shelf list's top is shorter on a phone:** the tools share a row, and "This store carries" is one row that
+  scrolls sideways, with a count of the brands.
+- **Toasts stay long enough to read:** 2 to 7 seconds by length (was 1.7 seconds for all). A new toast takes the
+  place of the one before.
 - **The names "Help" and "About".** "About & data" is now "About". About no longer explains the matching:
   that is in Help, and About links to it.
 - **The Help page is in groups by task:** start a scheme, matching, your shelf, schemes, the store, backup,
   shortcuts and contact, with a contents list at the top.
 ### Fixed
+- **On a phone, a swipe on the wheel no longer changes your colour.** The wheel took every touch: a swipe to scroll
+  replaced the picked paint with a custom colour. A swipe on empty disc now scrolls the page, a tap there sets the
+  colour, and a node still drags.
+- **One 16px side gutter on phones** (two 14px gutters had stacked into 28px). The Filters sheet fits the iOS screen,
+  and a toast sits above the home indicator.
+- **The Shelf says when filters hide paints:** "showing 2 of 12", with **Clear filters**.
+- **"This store carries" lists every brand on the shopping list**, not only the brands the filters show.
+- **Restore warns about saved schemes.** Replace deleted every saved scheme that the backup did not have, and the
+  confirm did not say so. It now says how many go.
+- **A store swap no longer loses a project for good.** A swap that took the last paint of another unsaved project
+  ended that project, and Undo could not bring it back. Undo now puts it back. A swap already on the list keeps its
+  own pots (2 + 3 is 5, not 3).
+- **Two schemes can no longer share a name** when the name is 80 characters long.
+- **A save that fails now says so** (the device storage is full or blocked).
+- **The Help sheet and the Help page always match.** The offline cache served an old copy to the sheet.
+- **Help stays in the app when it cannot load**, with a message, instead of leaving for an error page.
+- Screen readers heard “Copied” twice after **Copy support details**.
+- Closing **Take to the store** from a Schemes row after the naming step put focus on ⋯, not on the row.
+- The store panel’s **Print** list no longer shows behind the dialog.
+- A name cut to 80 characters can no longer split an emoji. A list link with a project number of 1000 or more
+  no longer drops the paint.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap
