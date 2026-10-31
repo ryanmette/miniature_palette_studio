@@ -982,10 +982,14 @@ function clearShelfNarrowing() {
 }
 function renderShelfBar() {
   const n = shelf.sel.size;
-  $('#shelfBar').innerHTML = ui.shelfBar(n);
+  // A new selection on touch starts the next batch: the last batch's Undo goes (with a mouse the selection stays,
+  // so its Undo stays beside it until the next action).
+  if (n && COARSE && shelf.batch) shelf.batch = null;
+  const done = shelf.batch ? batchWords(shelf.batch) : '';
+  $('#shelfBar').innerHTML = ui.shelfBar(n, done);
   // On touch and phones the bar is a sheet at the bottom (app.css), in Select mode only on a touch screen: a
   // long-press selects its paint for the menu, and the sheet must not come up after every menu.
-  document.body.classList.toggle('selsheet', n > 0 && (shelf.selectMode || !COARSE));
+  document.body.classList.toggle('selsheet', (n > 0 || !!done) && (shelf.selectMode || !COARSE));
 }
 function renderShelf() {
   $('#shelfHint').textContent = shelfHint();   // persistent how-to, up under the stats (mockup feedback)
@@ -1562,15 +1566,49 @@ function applyMark(mark) {
   let ids = [...shelf.sel];
   if (!ids.length) { const f = shelf.cursor || shelf.hover; if (f) ids = [f]; }
   if (!ids.length) return;
+  // What Undo needs (Ryan, 2026-10-30): each paint's mark, count and project before, and the projects kept now (a
+  // project that is not saved ends with its last paint to buy, store.js dropUnused; Undo brings it back).
+  const prev = ids.map(id => ({ id, mark: store.markOf(id), qty: store.qtyOf(id), for: store.projectOf(id) }));
+  const kept = store.listSchemes();
   store.setMarks(ids, mark);   // ONE persist — 500 setMark calls would serialise the whole state 500×
+  shelf.batch = { mark, prev, dropped: kept.filter(sc => !store.getScheme(sc.id)) };
+  // On touch, in Select mode, the selection ends with the action (as Photos): the next batch starts at once, and the
+  // sheet shows the result with Undo. With a mouse the selection stays (as Finder).
+  if (COARSE && shelf.selectMode) setSelection([], { anchor: null }); else renderShelfBar();
   render('marks', { ids });    // the cells, the stats, a status filter; the Studio when it shows next
   // restart the confirm-flash with a SINGLE forced layout — write→read→write per cell was one full
   // grid layout per selected paint (a 500-cell mark froze the main thread for seconds on mobile)
   const cells = ids.map(cellEl).filter(Boolean);
   for (const c of cells) c.classList.remove('flash');
   if (cells.length) { void cells[0].offsetWidth; for (const c of cells) c.classList.add('flash'); }
-  const verb = mark === 'owned' ? 'marked owned' : mark === 'want' ? 'added to the shopping list' : 'cleared';
-  announceShelf(`${ids.length} ${ids.length === 1 ? 'paint' : 'paints'} ${verb}.`);
+  announceShelf(`${batchWords(shelf.batch)}.`);
+  // the pressed button is gone (the bar is drawn again): focus goes to Undo with a mouse or keyboard. Not on touch,
+  // where iOS drew a focus ring on a moved focus; the live region says the result there.
+  if (!COARSE) $('#shelfBar [data-act="undo"]')?.focus({ preventScroll: true });
+}
+/** "12 paints marked owned": the batch's result, for the bar and the live region. */
+function batchWords(b) {
+  const n = b.prev.length, verb = b.mark === 'owned' ? 'marked owned' : b.mark === 'want' ? 'added to the shopping list' : 'cleared';
+  return `${n} ${n === 1 ? 'paint' : 'paints'} ${verb}`;
+}
+/** Undo the last batch: each paint back to its mark, count and project, and selected again, so a wrong button is one
+ *  tap from the right one. A paint changed since (a tap, the menu) is left as it is: Undo never overwrites a newer change. */
+function undoBatch() {
+  const b = shelf.batch; if (!b) return;
+  shelf.batch = null;
+  for (const sc of b.dropped) store.putScheme(sc);
+  const back = b.prev.filter(p => store.markOf(p.id) === b.mark);
+  const plain = new Map();
+  for (const p of back) {
+    if (p.mark === 'want') { store.setMark(p.id, 'want', { for: p.for || undefined }); if (p.qty > 1) store.setQty(p.id, p.qty); }
+    else { if (!plain.has(p.mark)) plain.set(p.mark, []); plain.get(p.mark).push(p.id); }
+  }
+  for (const [mark, ids] of plain) store.setMarks(ids, mark);
+  const ids = back.map(p => p.id);
+  setSelection(ids, { anchor: ids[0] || null });
+  render('marks', { ids });
+  announceShelf(`Undone: ${ids.length} ${ids.length === 1 ? 'paint is' : 'paints are'} back as before, and selected.`);
+  if (!COARSE) $('#shelfBar [data-act]')?.focus({ preventScroll: true });
 }
 function updateCell(c, mark) {
   c.dataset.mark = mark;
@@ -3576,12 +3614,13 @@ function wire() {
   $('#shelfBar').addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
     if (b.dataset.act === 'deselect') setSelection([], { anchor: null });
+    else if (b.dataset.act === 'undo') undoBatch();
     else applyMark(b.dataset.act);
   });
   $('#shelfSelect').addEventListener('click', () => {       // touch: toggle multi-select mode
     shelf.selectMode = !shelf.selectMode;
     $('#shelfSelect').setAttribute('aria-pressed', String(shelf.selectMode));
-    if (!shelf.selectMode) setSelection([], { anchor: null });   // leaving select mode clears the selection
+    if (!shelf.selectMode) { shelf.batch = null; setSelection([], { anchor: null }); }   // leaving select mode clears the selection and its Undo
     else renderShelfBar();
     $('#shelfHint').textContent = shelfHint();
   });

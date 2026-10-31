@@ -155,12 +155,15 @@ export const markBadge = mark =>
 
 /** Shelf action bar: fixed-height row (reserved space → no reflow when it fills, §3.4). Empty until a
  *  selection exists, then shows "N selected" + mark actions. The persistent how-to hint lives up top. */
-export function shelfBar(count) {
-  if (!count) return '';
+export function shelfBar(count, done = '') {
+  // the last batch's result with its Undo (Ryan, 2026-10-30): on touch alone, after the selection ended; with a mouse
+  // under the selection, which stays
+  const undo = done ? `<span class="bardone"><span>${esc(done)}</span><button type="button" class="textact" data-act="undo">Undo</button></span>` : '';
+  if (!count) return done ? `<span class="barhead">${undo}</span>` : '';
   // On touch and phones this is a sheet at the bottom, as the Filters sheet (app.css): the count and Deselect are its
   // head (Deselect where Filters has Reset), the three marks its body. With a mouse it is the bar under the grid.
   return `<span class="barhead"><span class="barcount">${count} selected</span>`
-    + `<button class="btn sm ghost bardesel" data-act="deselect">Deselect</button></span>`
+    + `<button class="btn sm ghost bardesel" data-act="deselect">Deselect</button></span>` + undo
     + `<span class="baracts">`
     + `<button class="btn sm" data-act="owned">Mark owned</button>`
     + `<button class="btn sm" data-act="want">Add to shopping list</button>`
