@@ -5,7 +5,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 took only the web entries. -->
+<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 and v1.14.0 took only the web entries. -->
+### Added
+- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
+  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
+  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
+  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
+  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
+  has its own releases later.
+### Fixed
+- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
+  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
+  padding. The web view's white background showed behind the clock and the home bar, with a double gap
+  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
+  clear of the notch and the home bar.
+
+## [1.14.0] - 2026-10-31
 ### Added
 - **Tap the starting paint to see the scheme large** (the hero's swatch), with Share or Save beside it.
 - **Hold and slide on the Shelf grid to read names** (touch). A finger held still for a moment (180ms) shows a loupe
@@ -28,12 +43,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   pure colour with one finish mark. Nothing in the app changed.
 - **A study of the paint colours** (`docs/COLOUR_CHECK.md`): what looks wrong in the data now, and a method to check
   each paint against the maker's swatch. No data changed.
-- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
-  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
-  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
-  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
-  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
-  has its own releases later.
 - **A study of Help and About** (`mockups/help-about.html`; PLAN §5 item 39). What each holds now, where they overlap,
   two facts on the Help page that are out of date, Apple's rules that keep Help and Privacy as public pages, and
   three directions. Ryan chose B: Help opens over the app like About, built from `support.html` itself, so the
@@ -91,11 +100,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - The store panel’s **Print** list no longer shows behind the dialog.
 - A name cut to 80 characters can no longer split an emoji. A list link with a project number of 1000 or more
   no longer drops the paint.
-- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
-  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
-  padding. The web view's white background showed behind the clock and the home bar, with a double gap
-  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
-  clear of the notch and the home bar.
 - **Help and Privacy said things that are not true now.** They named a language setting (the language follows
   the device), and Help's Delete answer did not name the saved schemes.
 
@@ -2123,7 +2127,8 @@ The **collection release**: a paint shelf, collection-aware planning, portabilit
 ### Verified
 - CIEDE2000 implementation validated against 9 Sharma et al. reference pairs (exact to 4 dp).
 
-[Unreleased]: https://github.com/ryanmette/miniature_palette_studio/compare/v1.13.0...main
+[Unreleased]: https://github.com/ryanmette/miniature_palette_studio/compare/v1.14.0...main
+[1.14.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.14.0
 [1.13.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.13.0
 [1.12.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.12.0
 [1.11.0]: https://github.com/ryanmette/miniature_palette_studio/releases/tag/v1.11.0
