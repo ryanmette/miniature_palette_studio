@@ -647,6 +647,13 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     one fixed scheme today, under the "Start a scheme" band. Idea: open on a random starting paint and a random
     harmony instead (Roll a scheme's rules, §7), so the Studio shows something new each time. To decide: only the
     first visit, or every load with no link; and whether the band's four starter paints stay. Small.
+    **Built (2026-11-02).** Decided in the build (Ryan can change either; each is one line in `app.js`):
+    (1) **every load with no paint in the link**, not only a first visit. The old start (the data's first row, AK
+    Alga Green) was arbitrary for a return visit too, and "something new each time" asks for it. A reload keeps
+    the scheme, because the first render writes it to the address bar. (2) **The four starter paints stay**: they
+    are a fast way to a known Citadel base, and the random scheme sits behind them. The pool is locked
+    (`data.js startPaints`): a Base or Layer paint on sale, Lab C\* ≥ 14 (hue mode) and L\* 25–80; 1,474 paints,
+    all ten brands. A link that names a harmony (`h`) keeps it. Tests: `test/data.test.mjs`.
 56. **Check our list against the makers' catalogues, and let people report a missing paint** (Ryan, 2026-10-31).
     (a) A catalogue check: for each brand, compare our paints with the maker's current range (new, renamed and
     discontinued paints), as a study with counts; the method can share `docs/COLOUR_CHECK.md`'s sources. (b) A way to
