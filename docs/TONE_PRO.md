@@ -196,4 +196,6 @@ The paint names in the source come from one secondary source, so check them befo
    not Tone Pro's. The paint `id`s keep their `citadel-` start, because an `id` never changes (§5.1): saved
    shelves, backups and links still work. To check when it is built: the CSV import (`collection-io.js`) and the
    seed field must still find a paint by "Citadel", and the brand filter must show the new name.
-3. Option B: is a ladder that keeps to one Tone Pro family worth a later item? **Open.**
+3. Option B: is a ladder that keeps to one Tone Pro family worth a later item? **"Yes? I'm not sure."**
+   Recorded as **probably yes, decided after the tones are measured** (§5): it helps only if the tones sit near
+   the ladder's steps. Waiting costs nothing, because the paints come in first as ordinary `layer` paints.

@@ -667,8 +667,8 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     the 7 Shades of 2022, about 24 Contrast paints and Ceramite White are missing; 5 names are wrong (lost
     apostrophes, "Cassandora"); Army Painter's Brush-On Primer is stored as a wash. **Ryan's answers (2026-11-03):**
     a colour source "maybe soonish, not sure yet"; **the brand is renamed "Warhammer Colour", with "Citadel" kept
-    as a search word** (item 56's work; the paint ids keep `citadel-`). Still open: is "keep the family" worth an
-    item.
+    as a search word** (item 56's work; the paint ids keep `citadel-`); "keep the family" is **probably yes, decided
+    once the tones are measured**.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
