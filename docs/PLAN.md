@@ -665,8 +665,10 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     as a later item once the tones are measured. **Blocker:** no source has a colour value for any Tone Pro paint
     (options in the study, §7). Found on the way, for item 56: Citadel Colour is now Warhammer Colour (6 Mar 2026);
     the 7 Shades of 2022, about 24 Contrast paints and Ceramite White are missing; 5 names are wrong (lost
-    apostrophes, "Cassandora"); Army Painter's Brush-On Primer is stored as a wash. Open for Ryan: a colour source,
-    the brand name, and whether "keep the family" is worth an item.
+    apostrophes, "Cassandora"); Army Painter's Brush-On Primer is stored as a wash. **Ryan's answers (2026-11-03):**
+    a colour source "maybe soonish, not sure yet"; **the brand is renamed "Warhammer Colour", with "Citadel" kept
+    as a search word** (item 56's work; the paint ids keep `citadel-`). Still open: is "keep the family" worth an
+    item.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 

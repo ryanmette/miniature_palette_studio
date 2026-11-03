@@ -163,8 +163,8 @@ value is nearer one coat over white.
 ## 8. Other findings in the source (for item 56, not this study)
 
 - **The rename.** Citadel Colour is **Warhammer Colour** since 6 March 2026. Our data and the app say
-  "Citadel". A painter who types "warhammer" may not find the paints. To decide: rename the brand, or keep
-  "Citadel" and make "warhammer" a search word for it.
+  "Citadel". A painter who types "warhammer" may not find the paints. **Decided (Ryan, 2026-11-03):** rename the
+  brand to "Warhammer Colour" and keep "Citadel" as a search word (§9).
 - **Paints we do not have**: the 7 Shades added in 2022 (Berserker Bloodshade, Kroak Green, Mortarion Grime,
   Poxwalker, Soulblight Grey, Targor Rageshade, Tyran Blue), about 24 Contrast paints, and Ceramite White
   (Base). Each needs a colour value, as in §7.
@@ -187,8 +187,13 @@ The paint names in the source come from one secondary source, so check them befo
 3. Add the 150 paints as `layer`, line "Tone Pro", with no special rule (§5, Option A). Bump the dataset version.
 4. Measure the spacing of the tones. Then decide on "keep the family" (§5, Option B) as its own item.
 
-**Open questions for Ryan:**
+**Questions for Ryan, and the answers so far (2026-11-03):**
 
 1. Do you have Tone Pro pots, or the Paint Warhammer app, to get the colour values from?
+   **"Maybe soonish. Not sure yet."** The paints wait for a colour source.
 2. The brand name: "Citadel", "Warhammer Colour", or "Citadel" with "warhammer" as a search word?
-3. Option B: is a ladder that keeps to one Tone Pro family worth a later item?
+   **Decided: the current name, "Warhammer Colour", with "Citadel" as a search word.** This is item 56's work,
+   not Tone Pro's. The paint `id`s keep their `citadel-` start, because an `id` never changes (§5.1): saved
+   shelves, backups and links still work. To check when it is built: the CSV import (`collection-io.js`) and the
+   seed field must still find a paint by "Citadel", and the brand filter must show the new name.
+3. Option B: is a ladder that keeps to one Tone Pro family worth a later item? **Open.**
