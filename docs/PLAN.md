@@ -658,6 +658,15 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     meant to be used), whether they fit an existing type (§5.1: base, layer, shade, contrast…) or need a new one with
     its own finish mark (item 51), and how to add them with provenance (§5.2, `SOURCES.md`). Not opened from this
     session: warhammer.com is outside its network.
+    **Studied (2026-11-03)** — [`docs/TONE_PRO.md`](TONE_PRO.md), from Ryan's source list
+    ([`docs/sources/warhammer-colour-list-2026-11-03.md`](sources/warhammer-colour-list-2026-11-03.md)). Tone Pro is
+    30 colours × 5 tones (1 darkest, 5 lightest) and two mediums. Recommended: type `layer`, line "Tone Pro", no new
+    type or finish mark (confirm the finish first); no special rule at first, and "keep the family" in the ladders
+    as a later item once the tones are measured. **Blocker:** no source has a colour value for any Tone Pro paint
+    (options in the study, §7). Found on the way, for item 56: Citadel Colour is now Warhammer Colour (6 Mar 2026);
+    the 7 Shades of 2022, about 24 Contrast paints and Ceramite White are missing; 5 names are wrong (lost
+    apostrophes, "Cassandora"); Army Painter's Brush-On Primer is stored as a wash. Open for Ryan: a colour source,
+    the brand name, and whether "keep the family" is worth an item.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
