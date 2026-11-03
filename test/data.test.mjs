@@ -334,10 +334,10 @@ test('search "metallic": the finish word finds every metal paint', () => {
   for (const p of res) assert.ok(p.type === 'metal' || /metallic/i.test(`${p.name} ${p.line} ${p.brand}`), p.id);
 });
 
-test('search "citadel metallic": every word narrows the list', () => {
+test('search "citadel metallic": every word narrows the list (Citadel is a search word for Warhammer Colour)', () => {
   const res = searchPaints(real, 'citadel metallic');
   assert.ok(res.length > 10);
-  for (const p of res) assert.equal(p.brand, 'Citadel', p.id);
+  for (const p of res) assert.equal(p.brand, 'Warhammer Colour', p.id);
   for (const p of res) assert.equal(p.type, 'metal', p.id);
   assert.ok(ids(res).includes('citadel-base-leadbelcher'));
 });
@@ -513,7 +513,7 @@ test('browseOrder "closest": by ΔE 2000 to the pick, the pick itself first', ()
 });
 
 test('browseOrder "owned" and "name": owned first, then A to Z by display name (twins apart)', () => {
-  const owned = new Set(real.paints.filter(p => p.brand === 'Citadel').slice(0, 3).map(p => p.id));
+  const owned = new Set(real.paints.filter(p => p.brand === 'Warhammer Colour').slice(0, 3).map(p => p.id));
   const res = browseOrder(real, 'owned', { ownedIds: owned });
   assert.deepEqual(new Set(ids(res.slice(0, 3))), owned);
   const byName = browseOrder(real, 'name').map(p => p.dname || p.name);
@@ -541,4 +541,45 @@ test('storeSwaps (item 38): same finish class only, carried brands only, true Δ
   assert.deepEqual(storeSwaps(sx, wash).map(m => m.paint.id).sort(), ['ap-wash', 'val-wash'], 'a wash or shade swaps for a wash');
   assert.deepEqual(storeSwaps(sx, wash, { notCarried: new Set(['Vallejo', 'Army Painter']) }), [], 'none: an empty list, never a flat');
   assert.equal(storeSwaps(sx, red, { n: 1 }).length, 1);
+});
+
+/* ---- Citadel Colour is Warhammer Colour (PLAN §5 item 56; Ryan, 2026-11-03) ---- */
+import { BRAND_WORDS, paintMatcher as matcher56 } from '../src/js/data.js';
+
+test('the rename keeps every id: Warhammer Colour paints are still citadel-…, and no paint says Citadel', () => {
+  const wc = real.paints.filter(p => p.brand === 'Warhammer Colour');
+  assert.equal(wc.length, 259);
+  assert.ok(wc.every(p => p.id.startsWith('citadel-')), 'ids never change (saved shelves and links hold them)');
+  assert.equal(real.paints.filter(p => p.brand === 'Citadel').length, 0);
+  // the starter paints and the light theme's accent pot are still there under their ids
+  for (const id of ['citadel-base-mephiston-red', 'citadel-base-macragge-blue', 'citadel-base-caliban-green',
+    'citadel-base-retributor-armour', 'citadel-layer-sotek-green']) assert.ok(real.byId.has(id), id);
+});
+
+test('the five names are the maker\'s spelling, and each keeps its former name', () => {
+  const fixed = {
+    'citadel-base-bugman-glow': ["Bugman's Glow", 'Bugman Glow'],
+    'citadel-layer-emperor-children': ["Emperor's Children", 'Emperor Children'],
+    'citadel-layer-gehenna-gold': ["Gehenna's Gold", 'Gehenna Gold'],
+    'citadel-technical-nurgles-rot': ["Nurgle's Rot", 'Nurgles Rot'],
+    'citadel-shade-cassandora-yellow': ['Casandora Yellow', 'Cassandora Yellow'],
+  };
+  for (const [id, [name, old]] of Object.entries(fixed)) {
+    const p = real.byId.get(id);
+    assert.equal(p.name, name, id);
+    assert.deepEqual(p.formerly, [old], id);
+  }
+  assert.equal(real.paints.filter(p => p.formerly).length, 5, 'no other paint has a former name');
+  assert.equal(real.byId.get('citadel-technical-nurgles-rot').fx, 'slime', 'the fixed name keeps its finish');
+});
+
+test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {
+  assert.match(BRAND_WORDS['Warhammer Colour'], /Citadel/);
+  const wc = real.paints.filter(matcher56('citadel'));
+  assert.ok(wc.length >= 259 && wc.filter(p => p.brand === 'Warhammer Colour').length === 259);
+  assert.ok(real.paints.filter(matcher56('games workshop')).every(p => p.brand === 'Warhammer Colour'));
+  assert.ok(ids(searchPaints(real, 'warhammer colour mephiston')).includes('citadel-base-mephiston-red'));
+  assert.equal(ids(searchPaints(real, 'cassandora'))[0], 'citadel-shade-cassandora-yellow', 'the old spelling');
+  assert.equal(ids(searchPaints(real, 'casandora'))[0], 'citadel-shade-cassandora-yellow', "GW's spelling");
+  assert.equal(ids(searchPaints(real, "bugman's glow"))[0], 'citadel-base-bugman-glow');
 });

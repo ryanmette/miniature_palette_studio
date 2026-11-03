@@ -13,7 +13,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+### Changed
+- **Citadel is now Warhammer Colour** (paint data 1.7.0; PLAN §5 item 56). Games Workshop renamed the range on
+  6 March 2026, with the same paint in the pot. The app shows the new name. Type "Citadel", "Games Workshop" or
+  "GW" and you still find the paints, in the seed field, the Shelf search and a CSV import. Your saved shelf,
+  backups and links still work: each paint keeps its internal id.
 ### Fixed
+- **Five Warhammer Colour names have the maker's spelling:** Bugman's Glow, Emperor's Children, Gehenna's Gold,
+  Nurgle's Rot (the apostrophes were missing) and Casandora Yellow (it was spelt Cassandora). The old spellings
+  still find the paints, and a shelf saved with them still imports.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap

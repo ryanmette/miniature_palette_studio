@@ -257,6 +257,11 @@ export const FINISH_WORDS = { metal: 'metallic', contrast: 'contrast', wash: 'wa
 export const foldText = s => String(s ?? '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
   .replace(/['’‘`]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 
+/** Other words a painter may type for a brand: its former name and the maker's. Citadel Colour became Warhammer
+ *  Colour on 6 Mar 2026 (PLAN §5 item 56; Ryan, 2026-11-03: "keep the name as current as possible but have
+ *  Citadel as a search option"). A search word only: the app shows the brand's own name. */
+export const BRAND_WORDS = Object.freeze({ 'Warhammer Colour': 'Citadel Games Workshop GW' });
+
 // The folded words of each paint, worked out once per paint object (a search runs on every keystroke).
 // A WeakMap, so the paint objects keep their shape and nothing is stored with the data.
 const folded = new WeakMap();
@@ -265,10 +270,12 @@ function foldOf(p) {
   if (!f) {
     const line = p.line && p.line !== '—' ? p.line : '';
     // Every word a swatch or a row shows: name, display name ("Dawnstone (Layer)"), brand, line, type and
-    // the finish word. Spaces at both ends, so a word can be matched at the start of the text too.
+    // the finish word; and the words a painter may still type: the brand's other names (BRAND_WORDS) and the
+    // paint's former names ("Cassandora Yellow"). Spaces at both ends, so a word can be matched at the start.
     const name = foldText(p.name);
     // words: the name with a space before each word, so " w" finds a word that starts with w (no split per search)
-    f = { hay: ` ${foldText(`${p.name} ${p.dname || ''} ${p.brand} ${line} ${p.type || ''} ${FINISH_WORDS[p.type] || ''}`)} `,
+    const also = `${BRAND_WORDS[p.brand] || ''} ${(p.formerly || []).join(' ')}`;
+    f = { hay: ` ${foldText(`${p.name} ${p.dname || ''} ${p.brand} ${line} ${p.type || ''} ${FINISH_WORDS[p.type] || ''} ${also}`)} `,
       name, dname: foldText(p.dname || p.name), words: ` ${name}` };
     folded.set(p, f);
   }

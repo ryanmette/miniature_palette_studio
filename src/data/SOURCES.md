@@ -1,6 +1,6 @@
-# Data sources & attribution — dataset v1.3.0
+# Data sources & attribution — dataset v1.7.0
 
-Provenance for `src/data/paints.json` (built `2026-06-25`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
+Provenance for `src/data/paints.json` (values captured `2026-06-25` and `2026-10-26`; built `2026-11-03`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
 
 ## Primary source (used)
@@ -23,7 +23,7 @@ not copied. Paint and brand names are trademarks of their respective owners, use
 
 | Brand | Count | Lines included |
 |-------|------:|----------------|
-| Citadel | 259 | Base, Layer, Dry, Shade, Contrast, Technical, Glaze |
+| Warhammer Colour (formerly Citadel) | 259 | Base, Layer, Dry, Shade, Contrast, Technical, Glaze |
 | Vallejo | 548 | Game Color, Model Color, Mecha Color, Xpress, Metal Color, Wash, Special FX |
 | Army Painter | 503 | Warpaints, Warpaints Fanatic, Speedpaint, Wash, Metallics, Skin Tones, Nolzur's, D&D |
 | Two Thin Coats | 178 | Wave 1–3 (Duncan Rhodes) |
@@ -46,8 +46,24 @@ replaces them), and non-colour utility products (mediums, varnishes, sealers, th
 `type` ∈ base · layer · dry · shade · wash · ink · contrast · glaze · effect · metal. The **finish** types
 (wash · shade · ink · contrast · glaze · effect) are excluded from harmony *suggestions* at runtime (they
 read differently on the model), while staying browsable in the picker, Shelf, and Equivalents; Contrast is
-opt-in via a Plan-tab toggle. `metal` is the Metal role. Citadel's **Technical** line is recorded as `effect`
+opt-in via a Plan-tab toggle. `metal` is the Metal role. Warhammer Colour's **Technical** line is recorded as `effect`
 (e.g. Blood for the Blood God, texture paints); its **Shade** line as `shade`.
+
+## Corrections on top of the source (dataset v1.7.0, 2026-11-03)
+
+The paint values are the source's. `scripts/build-dataset.mjs` changes only these names, and records why:
+
+- **The brand.** Citadel Colour is **Warhammer Colour** since 6 March 2026. GW: the paint is the same paint,
+  and only the name on the pot changes ([Warhammer Community, 6 Mar 2026](https://www.warhammer-community.com/en-gb/articles/okgv4njl/citadel-colour-is-becoming-warhammer-colour/)).
+  The app shows "Warhammer Colour". "Citadel", "Games Workshop" and "GW" stay search words (`data.js BRAND_WORDS`)
+  and CSV brand aliases (`collection-io.js`). **The paint ids keep `citadel-`**: an id never changes, because
+  saved shelves, backups and share links hold ids (`CLAUDE.md` §5.2).
+- **Five names**, put back to GW's spelling: Bugman's Glow, Emperor's Children, Gehenna's Gold, Nurgle's Rot (the
+  source had lost the apostrophes) and Casandora Yellow (the source spells it Cassandora). Source for the names:
+  [`docs/sources/warhammer-colour-list-2026-11-03.md`](../../docs/sources/warhammer-colour-list-2026-11-03.md)
+  (GW's range names, through Brush & Wargames). Each paint keeps the source's spelling in `formerly`, so a
+  search or an old CSV with that spelling still finds it. The ids are made from the source's spelling, so
+  they do not change.
 
 ## Build & verification
 
@@ -57,7 +73,7 @@ opt-in via a Plan-tab toggle. `metal` is the Metal role. Citadel's **Technical**
 - **Curated equivalence groups** are auto-seeded at build time: paints within **ΔE 2000 ≤ 1.0** ("indistinguishable")
   **and the same finish class** (metal · translucent media · effect · opaque — a hex match across finish classes is
   not interchangeability on the model) are union-find clustered into `groups[]` (each with a representative `refHex`
-  + a basic-colour `label`), and every member paint carries a `groupId`. v1.6.0: **180 groups, 434 paints**
+  + a basic-colour `label`), and every member paint carries a `groupId`. v1.7.0: **180 groups, 434 paints**
   (max group diameter ΔE 2.16). Surfaced in the
   Equivalents tab; the *closest other-brand* matches are still computed at runtime by ΔE 2000.
 - QA: [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs) — **hard checks PASS** (valid sRGB hex,

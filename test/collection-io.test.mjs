@@ -131,3 +131,29 @@ test('listToText: rack order (brand · line, then name), boxes, counts, finish w
   assert.doesNotMatch(txt, /#/);
   assert.equal(listToText([], { title: 'Blue knight' }), 'Blue knight\n0 paints\n');
 });
+
+/* ---- Citadel Colour is Warhammer Colour (PLAN §5 item 56) ---- */
+test('CSV: Citadel, Games Workshop and Warhammer Colour all find a Warhammer Colour paint; a former name too', () => {
+  const wx = indexDataset({ version: 't', paints: [
+    { id: 'citadel-base-mephiston-red', brand: 'Warhammer Colour', line: 'Base', name: 'Mephiston Red', hex: '#9A1115', type: 'base' },
+    { id: 'citadel-base-bugman-glow', brand: 'Warhammer Colour', line: 'Base', name: "Bugman's Glow", formerly: ['Bugman Glow'], hex: '#804C43', type: 'base' },
+    { id: 'citadel-shade-cassandora-yellow', brand: 'Warhammer Colour', line: 'Shade', name: 'Casandora Yellow', formerly: ['Cassandora Yellow'], hex: '#ECB63B', type: 'shade' },
+  ] });
+  const csv = 'Brand,Name\nCitadel,Mephiston Red\nGames Workshop,Mephiston Red\nWarhammer Colour,Mephiston Red\n'
+    + 'Citadel,Bugman Glow\nCitadel,Cassandora Yellow\nWarhammer Colour,Casandora Yellow\n';
+  const { marks, unmatched } = csvToMarks(wx, csv);
+  assert.equal(unmatched.length, 0);
+  assert.deepEqual(marks.map(m => m.id), ['citadel-base-mephiston-red', 'citadel-base-bugman-glow', 'citadel-shade-cassandora-yellow']);
+  // our own export writes the brand and name of today: it reads back as the same paints
+  const back = csvToMarks(wx, marksToCsv(wx, marks.map(m => m.id), []));
+  assert.deepEqual(back.marks.map(m => m.id), marks.map(m => m.id));
+});
+
+test('CSV: a former name never takes the place of a paint that has that name now', () => {
+  const wx = indexDataset({ version: 't', paints: [
+    { id: 'old', brand: 'B', line: 'L', name: 'New Name', formerly: ['Shared'], hex: '#111111', type: 'base' },
+    { id: 'real', brand: 'B', line: 'L', name: 'Shared', hex: '#222222', type: 'base' },
+  ] });
+  assert.equal(csvToMarks(wx, 'Brand,Name\nB,Shared\n').marks[0].id, 'real');
+  assert.equal(csvToMarks(wx, 'Brand,Name\nOther,Shared\n').marks[0].id, 'real', 'name-only fallback too');
+});

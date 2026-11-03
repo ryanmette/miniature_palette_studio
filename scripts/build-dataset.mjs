@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build-dataset.mjs — assemble src/data/paints.json (dataset v1.6.0).
+ * build-dataset.mjs — assemble src/data/paints.json (dataset v1.7.0).
  *
  * Source: all brands are parsed at build time from the MIT-licensed community dataset
  *   github.com/Arcturus5404/miniature-paints (© 2022 Rick Fleuren, "Miniature Painter Pro").
@@ -24,6 +24,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = process.argv[2] || join(ROOT, '.cache', 'raw');
 const CAPTURED = '2026-06-25';
+const VERSION = '1.7.0';
+const GENERATED = '2026-11-03';   // the build that renamed Citadel to Warhammer Colour (the values are still CAPTURED's)
 const REPO = 'https://github.com/Arcturus5404/miniature-paints';
 const src = file => `${REPO}/blob/main/paints/${file}`;
 
@@ -32,12 +34,26 @@ const norm = s => s.replace(/\s+/g, ' ').trim();   // source has stray double-sp
 /**
  * Per-brand config: file, the column index of the "Set", an optional `captured` date (brands added later
  * than CAPTURED), and a map of source-set → {line, kind}.
+ * `key` (optional): the brand's slug for the paint ids and the sort, when the brand's name has changed. A paint
+ * id never changes (CLAUDE.md §5.2): saved shelves, backups and share links hold ids. So Warhammer Colour keeps
+ * Citadel's key: its ids stay `citadel-…`, and its paints keep their place in the order (ties in a ΔE search go
+ * to the first paint, so a new place could change a match).
+ * `names` (optional): the maker's own name for an upstream name that is wrong. The id is made from the upstream
+ * name, so it does not change, and the paint keeps the upstream name in `formerly` (an old CSV or a search for
+ * the old spelling still finds it).
  * `kind` chooses the type: base/layer/dry are flat colours; wash/shade/ink/contrast/glaze/effect are
  * finishes (kept out of harmony suggestions); metal is the metallic role. Sets not listed are skipped
  * (airbrush duplicates, primers/sprays, craft/weathering, discontinued).
  */
 const BRANDS = [
-  { brand: 'Citadel', file: 'Citadel_Colour.md', setIdx: 2, sets: {
+  // Citadel Colour is Warhammer Colour since 6 Mar 2026 (GW: warhammer-community.com/en-gb/articles/okgv4njl/
+  // citadel-colour-is-becoming-warhammer-colour/). "Citadel" stays a search word (data.js BRAND_WORDS).
+  // The names are GW's (docs/sources/warhammer-colour-list-2026-11-03.md): upstream lost four apostrophes
+  // and spells Casandora with two s's.
+  { brand: 'Warhammer Colour', key: 'citadel', file: 'Citadel_Colour.md', setIdx: 2, names: {
+    'Bugman Glow': "Bugman's Glow", 'Emperor Children': "Emperor's Children", 'Gehenna Gold': "Gehenna's Gold",
+    'Nurgles Rot': "Nurgle's Rot", 'Cassandora Yellow': 'Casandora Yellow',
+  }, sets: {
     'Base': ['Base', 'base'], 'Layer': ['Layer', 'layer'], 'Dry': ['Dry', 'dry'],
     'Shade': ['Shade', 'shade'], 'Contrast': ['Contrast', 'contrast'],
     'Technical': ['Technical', 'effect'], 'Glaze': ['Glaze', 'glaze'],
@@ -133,12 +149,15 @@ function parseRows(text, setIdx) {
 /* ---- assemble ---- */
 const paints = [];
 const seen = new Set();
-function add(brand, line, name, hex, type, sourceUrl, captured = CAPTURED) {
+function add(b, line, name, hex, type, sourceUrl, captured = CAPTURED) {
   if (!name || SKIP_NAME.test(name)) return;
-  const id = `${slug(brand)}-${slug(line)}-${slug(name)}`;
+  const id = `${b.key || slug(b.brand)}-${slug(line)}-${slug(name)}`;   // from the upstream name: ids never change
   if (seen.has(id)) return; seen.add(id);
-  paints.push({ id, brand, line, name, hex: hex.toUpperCase(), type, discontinued: false, approx: true, source: 'community', sourceUrl, captured });
+  const fixed = b.names?.[name];
+  paints.push({ id, brand: b.brand, line, name: fixed || name, hex: hex.toUpperCase(), type, discontinued: false, approx: true,
+    source: 'community', sourceUrl, captured, ...(fixed ? { formerly: [name] } : {}) });
 }
+const sortKey = new Map(BRANDS.map(b => [b.brand, b.key || b.brand]));
 
 const skipped = {};
 for (const b of BRANDS) {
@@ -148,11 +167,13 @@ for (const b of BRANDS) {
     const map = wanted[row.set];
     if (!map) { skipped[`${b.brand} / ${row.set}`] = (skipped[`${b.brand} / ${row.set}`] || 0) + 1; continue; }
     const [line, kind] = map;
-    add(b.brand, line, row.name, row.hex, resolveType(row.name, kind), url, b.captured);
+    add(b, line, row.name, row.hex, resolveType(row.name, kind), url, b.captured);
   }
 }
 
-paints.sort((a, b) => a.brand.localeCompare(b.brand) || a.line.localeCompare(b.line) || a.name.localeCompare(b.name));
+// Sort by the upstream name too, so a fixed name keeps its place (the order breaks ΔE ties, see `key`)
+const upName = p => p.formerly?.[0] || p.name;
+paints.sort((a, b) => sortKey.get(a.brand).localeCompare(sortKey.get(b.brand)) || a.line.localeCompare(b.line) || upName(a).localeCompare(upName(b)));
 
 /* ---- curated special-effect tags (drive bespoke swatch VFX in the UI) ----
    Only effect/technical paints get an `fx`; keyword rules so similar paints across the range are covered.
@@ -249,8 +270,8 @@ try {
 } catch (e) { console.log(`group-overrides: skipped (${e.message})`); }
 
 const dataset = {
-  version: '1.6.0',
-  generated: CAPTURED,
+  version: VERSION,
+  generated: GENERATED,
   license: 'Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.',
   attribution: 'Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.',
   note: 'Hex is sRGB and approximate; Lab is derived at runtime (CLAUDE.md §5/§7). Finishes (wash/shade/ink/contrast/glaze/effect) are excluded from harmony suggestions at runtime. groups[] = curated equivalence clusters (paints within ΔE 1.0 of the same finish class — metal, translucent media, effect, opaque); paints carry groupId.',
