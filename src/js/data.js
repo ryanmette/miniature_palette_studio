@@ -1,7 +1,7 @@
 // data.js — load + index the paint dataset and search it by perceptual distance.
 // Pure search functions (testable); only loadDataset() touches the network.
 
-import { hexToLab, hexToRgb, rgbToHsl, deltaE2000, adjustDirection } from './color.js';
+import { hexToLab, hexToRgb, rgbToHsl, deltaE2000, adjustDirection, NEUTRAL_EXIT } from './color.js';
 
 /** Fixed ΔE2000 → quality mapping (CLAUDE.md §3.2). */
 export function matchQuality(dE) {
@@ -244,6 +244,27 @@ export function closestPaints(indexed, hex, n = 6, { quick = false } = {}) {
   // every frame of a drag. `quick` takes the old pool of 192 for a drag frame; the caller then shows the
   // exact list once the drag stops.
   return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, keep: quick ? 192 : indexed.paints.length });
+}
+
+/* ---- the random first scheme (PLAN §5 item 55) ----
+   A load whose link names no paint starts on a random paint, not on the dataset's first row. The pool is
+   locked so the first scheme is always a good one to read: a flat, opaque paint you can still buy (a wash or a
+   metallic as the starting paint shows its finish, not the scheme), with a clear hue (Lab C* at NEUTRAL_EXIT
+   or more, so the studio starts in hue mode and every rule harmony can be rolled), and a mid lightness (a
+   near-black or near-white start makes a murky or chalky scheme). About 1,470 paints, all ten brands. */
+export const START_TYPES = Object.freeze(['base', 'layer']);
+/** The Lab L* range of a random starting paint, ends included. */
+export const START_L = Object.freeze([25, 80]);
+/** The paints a random first scheme can start from, in dataset order. */
+export function startPaints(indexed) {
+  return indexed.paints.filter(p => START_TYPES.includes(p.type) && !p.discontinued
+    && Math.hypot(p.lab[1], p.lab[2]) >= NEUTRAL_EXIT && p.lab[0] >= START_L[0] && p.lab[0] <= START_L[1]);
+}
+/** One random starting paint, or null when no paint fits. `rand` gives a number in [0, 1), as Math.random
+ *  does; the caller passes it, so this stays deterministic and testable (as harmony.js rollHarmony). */
+export function randomStartPaint(indexed, rand) {
+  const pool = startPaints(indexed);
+  return pool.length ? pool[Math.min(pool.length - 1, Math.floor(rand() * pool.length))] : null;
 }
 
 /* ---- the paint search: ONE matcher for the seed field and the Shelf search ---- */
