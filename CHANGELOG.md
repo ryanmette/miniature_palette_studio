@@ -17,6 +17,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   tones each. Recommended: add the paints as ordinary layer paints in a "Tone Pro" line, with no new type. No
   source has a colour value for them yet, so no paint is added. The source list Ryan gave is kept in
   `docs/sources/`. Nothing in the app changed.
+### Changed
+- **A random scheme when the link names no paint** (PLAN §5 item 55). A bare address (a first visit, a bookmark,
+  the installed app) opened on one fixed paint: the first row of the data, AK Interactive's Alga Green. It now opens
+  on a random starting paint and a random harmony. The paint comes from a locked pool (`data.js startPaints`):
+  a Base or Layer paint that is still on sale, with a clear hue (Lab C\* 14 or more, so the studio starts in hue
+  mode) and a mid lightness (L\* 25 to 80). That is 1,474 paints from all ten brands. The harmony follows Roll a
+  scheme's rules (§7: any of the 9 rule harmonies, never Custom). A link that names a harmony keeps it. The first
+  render writes the scheme to the address bar, so a reload shows the same scheme. The "Start a scheme" band and
+  its four starter paints do not change.
 ### Fixed
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
