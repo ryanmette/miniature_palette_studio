@@ -12,7 +12,7 @@ import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, r
 import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, browseOrder, storeSwaps, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf } from './data.js';
+import { loadDataset, browseOrder, storeSwaps, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf, randomStartPaint } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
@@ -3691,10 +3691,18 @@ async function init() {
   // One decoder (share.js), validators injected — anything this build no longer has is dropped so an
   // old link still opens on the fallbacks. `t`/`m` are read separately: theme applies before this
   // point, and the Shelf deep-link is applied after the first render.
-  Object.assign(state, decodeState(url, {
+  const linked = decodeState(url, {
     validHarmony, hasPaint: id => state.idx.byId.has(id), validTab: t => TABS.includes(t), maxFree: MAX_FREE,
-  }));
-  if (!state.customHex && !state.baseId) state.baseId = state.idx.paints[0].id;   // no usable seed in the link
+  });
+  Object.assign(state, linked);
+  // No usable seed in the link (a bare address, or a paint this build no longer has): a random first scheme
+  // (PLAN §5 item 55). A random starting paint from a locked pool (data.js startPaints) and, unless the link
+  // names a harmony, a random one by Roll a scheme's rules (§7). The first render writes it to the address
+  // bar, so a reload keeps it. Every such load, not only a first visit: the old fixed start was arbitrary too.
+  if (!state.customHex && !state.baseId) {
+    state.baseId = (randomStartPaint(state.idx, Math.random) || state.idx.paints[0]).id;
+    if (!linked.harmony) state.harmony = rollHarmony(null, { neutral: false }, Math.random);
+  }
   if (state.name) { linkName = state.name; delete state.name; }   // n=: offered by Save, never saved by itself
   // The saved scheme the address bar names (s=, this device only): a refresh keeps "Saved" / "Changed"
   if (store.getScheme(url.get('s'))?.saved) openSchemeId = url.get('s');
