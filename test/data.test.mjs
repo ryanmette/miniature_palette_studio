@@ -542,3 +542,41 @@ test('storeSwaps (item 38): same finish class only, carried brands only, true Δ
   assert.deepEqual(storeSwaps(sx, wash, { notCarried: new Set(['Vallejo', 'Army Painter']) }), [], 'none: an empty list, never a flat');
   assert.equal(storeSwaps(sx, red, { n: 1 }).length, 1);
 });
+
+/* ---- the random first scheme (PLAN §5 item 55) ---- */
+import { startPaints, randomStartPaint, START_TYPES, START_L } from '../src/js/data.js';
+import { NEUTRAL_EXIT } from '../src/js/color.js';
+
+test('startPaints: flat, opaque, on sale, with a clear hue and a mid lightness', () => {
+  const sx = indexDataset({ version: 'test', paints: [
+    { id: 'red', brand: 'A', line: 'Base', name: 'Red', hex: '#9A1115', type: 'base' },
+    { id: 'blue', brand: 'B', line: 'Layer', name: 'Blue', hex: '#2D567C', type: 'layer' },
+    { id: 'grey', brand: 'A', line: 'Base', name: 'Grey', hex: '#808080', type: 'base' },          // no hue
+    { id: 'black', brand: 'A', line: 'Base', name: 'Black', hex: '#1A0505', type: 'base' },        // too dark
+    { id: 'pale', brand: 'A', line: 'Layer', name: 'Pale', hex: '#FBE3E3', type: 'layer' },        // too light
+    { id: 'wash', brand: 'A', line: 'Shade', name: 'Wash', hex: '#9A1115', type: 'shade' },        // a finish
+    { id: 'gold', brand: 'A', line: 'Base', name: 'Gold', hex: '#B08A2E', type: 'metal' },         // a metallic
+    { id: 'old', brand: 'A', line: 'Base', name: 'Old', hex: '#9A1115', type: 'base', discontinued: true },
+  ] });
+  assert.deepEqual(startPaints(sx).map(p => p.id), ['red', 'blue']);
+  assert.equal(randomStartPaint(sx, () => 0).id, 'red');
+  assert.equal(randomStartPaint(sx, () => 0.5).id, 'blue');
+  assert.equal(randomStartPaint(sx, () => 0.9999999).id, 'blue', 'the top of [0, 1) is the last paint');
+  assert.equal(randomStartPaint(indexDataset({ version: 'test', paints: [] }), () => 0), null, 'no paint fits: null');
+});
+
+test('startPaints on the real dataset: a big pool from every brand, each one in hue mode', () => {
+  const pool = startPaints(real);
+  assert.ok(pool.length > 1000, `pool ${pool.length}`);
+  assert.equal(new Set(pool.map(p => p.brand)).size, new Set(real.paints.map(p => p.brand)).size, 'every brand can start');
+  for (const p of pool) {
+    assert.ok(START_TYPES.includes(p.type) && !p.discontinued, p.id);
+    assert.ok(Math.hypot(p.lab[1], p.lab[2]) >= NEUTRAL_EXIT, `${p.id} has a hue`);
+    assert.ok(p.lab[0] >= START_L[0] && p.lab[0] <= START_L[1], `${p.id} mid lightness`);
+  }
+  // Many draws give many paints, never one outside the pool
+  const ids = new Set(pool.map(p => p.id)), seen = new Set();
+  // an even sweep of [0, 1): each step picks a different paint, and none is outside the pool
+  for (let i = 0; i < 200; i++) { const p = randomStartPaint(real, () => (i + 0.5) / 200); assert.ok(ids.has(p.id)); seen.add(p.id); }
+  assert.equal(seen.size, 200, `${seen.size} different paints in 200 steps`);
+});
