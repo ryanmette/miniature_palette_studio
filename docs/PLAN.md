@@ -660,6 +660,17 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     report a missing paint with no server (§1): a "Missing a paint?" line in the Shelf's empty search result and in
     Help that opens the contact page with the search words (shown first, sent only on a press, as Copy support
     details), or a GitHub issue form. To decide: which channel.
+    **First part built (2026-11-03): Citadel → Warhammer Colour, and five names.** From Ryan's GW list
+    ([`docs/sources/warhammer-colour-list-2026-11-03.md`](sources/warhammer-colour-list-2026-11-03.md)) and Ryan's
+    answer ("keep the name as current as possible but have Citadel as a search option"): the brand shows as
+    **Warhammer Colour**; "Citadel", "Games Workshop" and "GW" find it in the seed field, the Shelf search and the
+    CSV import. Bugman's Glow, Emperor's Children, Gehenna's Gold, Nurgle's Rot and Casandora Yellow have GW's
+    spelling; each keeps the old one in `formerly`, so an old CSV still imports. **Every paint id is unchanged**
+    (still `citadel-…`), so saved shelves, backups and links still work; the order and the groups are unchanged
+    too (a rebuild checked against today's upstream changed nothing else). Dataset 1.7.0. **Still to do (56a):**
+    the 7 Shades of 2022, about 24 Contrast paints and Ceramite White (each needs a colour value); our Technical
+    line also holds the Texture paints and two Contrast paints; Army Painter's Brush-On Primer is stored as a
+    wash.
 57. **Citadel's new range: a study** (Ryan, 2026-10-31: "GW released new paints",
     warhammer.com/en-US/shop/build-and-paint/paint/tone-pro). How the paints are designed (the finish, how they are
     meant to be used), whether they fit an existing type (§5.1: base, layer, shade, contrast…) or need a new one with

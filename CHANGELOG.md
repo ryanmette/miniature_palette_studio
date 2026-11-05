@@ -18,6 +18,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   source has a colour value for them yet, so no paint is added. The source list Ryan gave is kept in
   `docs/sources/`. Nothing in the app changed.
 ### Changed
+- **Citadel is now Warhammer Colour** (paint data 1.7.0; PLAN §5 item 56). Games Workshop renamed the range on
+  6 March 2026, with the same paint in the pot. The app shows the new name. Type "Citadel", "Games Workshop" or
+  "GW" and you still find the paints, in the seed field, the Shelf search and a CSV import. Your saved shelf,
+  backups and links still work: each paint keeps its internal id.
 - **A random scheme when the link names no paint** (PLAN §5 item 55). A bare address (a first visit, a bookmark,
   the installed app) opened on one fixed paint: the first row of the data, AK Interactive's Alga Green. It now opens
   on a random starting paint and a random harmony. The paint comes from a locked pool (`data.js startPaints`):
@@ -27,6 +31,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   render writes the scheme to the address bar, so a reload shows the same scheme. The "Start a scheme" band and
   its four starter paints do not change.
 ### Fixed
+- **Five Warhammer Colour names have the maker's spelling:** Bugman's Glow, Emperor's Children, Gehenna's Gold,
+  Nurgle's Rot (the apostrophes were missing) and Casandora Yellow (it was spelt Cassandora). The old spellings
+  still find the paints, and a shelf saved with them still imports.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap

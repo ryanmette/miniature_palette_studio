@@ -1,6 +1,6 @@
 {
- "version": "1.6.0",
- "generated": "2026-06-25",
+ "version": "1.7.0",
+ "generated": "2026-11-03",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
  "note": "Hex is sRGB and approximate; Lab is derived at runtime (CLAUDE.md §5/§7). Finishes (wash/shade/ink/contrast/glaze/effect) are excluded from harmony suggestions at runtime. groups[] = curated equivalence clusters (paints within ΔE 1.0 of the same finish class — metal, translucent media, effect, opaque); paints carry groupId.",
@@ -16779,7 +16779,7 @@
   },
   {
    "id": "citadel-base-abaddon-black",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Abaddon Black",
    "hex": "#000000",
@@ -16793,7 +16793,7 @@
   },
   {
    "id": "citadel-base-averland-sunset",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Averland Sunset",
    "hex": "#FBB81C",
@@ -16807,7 +16807,7 @@
   },
   {
    "id": "citadel-base-balthasar-gold",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Balthasar Gold",
    "hex": "#A77353",
@@ -16820,7 +16820,7 @@
   },
   {
    "id": "citadel-base-barak-nar-burgundy",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Barak-Nar Burgundy",
    "hex": "#451636",
@@ -16833,20 +16833,23 @@
   },
   {
    "id": "citadel-base-bugman-glow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
-   "name": "Bugman Glow",
+   "name": "Bugman's Glow",
    "hex": "#804C43",
    "type": "base",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Bugman Glow"
+   ]
   },
   {
    "id": "citadel-base-caledor-sky",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Caledor Sky",
    "hex": "#366699",
@@ -16859,7 +16862,7 @@
   },
   {
    "id": "citadel-base-caliban-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Caliban Green",
    "hex": "#003D15",
@@ -16872,7 +16875,7 @@
   },
   {
    "id": "citadel-base-castellan-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Castellan Green",
    "hex": "#264715",
@@ -16885,7 +16888,7 @@
   },
   {
    "id": "citadel-base-catachan-fleshtone",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Catachan Fleshtone",
    "hex": "#442B25",
@@ -16898,7 +16901,7 @@
   },
   {
    "id": "citadel-base-celestra-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Celestra Grey",
    "hex": "#8BA3A3",
@@ -16911,7 +16914,7 @@
   },
   {
    "id": "citadel-base-corax-white",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Corax White",
    "hex": "#FFFFFF",
@@ -16925,7 +16928,7 @@
   },
   {
    "id": "citadel-base-corvus-black",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Corvus Black",
    "hex": "#171314",
@@ -16938,7 +16941,7 @@
   },
   {
    "id": "citadel-base-daemonette-hide",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Daemonette Hide",
    "hex": "#655F81",
@@ -16951,7 +16954,7 @@
   },
   {
    "id": "citadel-base-death-guard-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Death Guard Green",
    "hex": "#6D774D",
@@ -16964,7 +16967,7 @@
   },
   {
    "id": "citadel-base-death-korps-drab",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Death Korps Drab",
    "hex": "#3D4539",
@@ -16977,7 +16980,7 @@
   },
   {
    "id": "citadel-base-deathworld-forest",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Deathworld Forest",
    "hex": "#556229",
@@ -16990,7 +16993,7 @@
   },
   {
    "id": "citadel-base-dryad-bark",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Dryad Bark",
    "hex": "#2B2A24",
@@ -17003,7 +17006,7 @@
   },
   {
    "id": "citadel-base-gal-vorbak-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Gal Vorbak Red",
    "hex": "#4B213C",
@@ -17016,7 +17019,7 @@
   },
   {
    "id": "citadel-base-grey-knights-steel",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Grey Knights Steel",
    "hex": "#B0BDC6",
@@ -17029,7 +17032,7 @@
   },
   {
    "id": "citadel-base-grey-seer",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Grey Seer",
    "hex": "#A2A5A7",
@@ -17042,7 +17045,7 @@
   },
   {
    "id": "citadel-base-hobgrot-hide",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Hobgrot Hide",
    "hex": "#9C823B",
@@ -17055,7 +17058,7 @@
   },
   {
    "id": "citadel-base-incubi-darkness",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Incubi Darkness",
    "hex": "#082E32",
@@ -17068,7 +17071,7 @@
   },
   {
    "id": "citadel-base-ionrach-skin",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Ionrach Skin",
    "hex": "#97A384",
@@ -17081,7 +17084,7 @@
   },
   {
    "id": "citadel-base-iron-hands-steel",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Iron Hands Steel",
    "hex": "#B2A79F",
@@ -17094,7 +17097,7 @@
   },
   {
    "id": "citadel-base-iron-warriors",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Iron Warriors",
    "hex": "#706E6B",
@@ -17107,7 +17110,7 @@
   },
   {
    "id": "citadel-base-jokaero-orange",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Jokaero Orange",
    "hex": "#ED3814",
@@ -17120,7 +17123,7 @@
   },
   {
    "id": "citadel-base-kantor-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Kantor Blue",
    "hex": "#02134E",
@@ -17133,7 +17136,7 @@
   },
   {
    "id": "citadel-base-khorne-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Khorne Red",
    "hex": "#650001",
@@ -17147,7 +17150,7 @@
   },
   {
    "id": "citadel-base-leadbelcher",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Leadbelcher",
    "hex": "#969696",
@@ -17161,7 +17164,7 @@
   },
   {
    "id": "citadel-base-lupercal-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Lupercal Green",
    "hex": "#002C2B",
@@ -17174,7 +17177,7 @@
   },
   {
    "id": "citadel-base-macragge-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Macragge Blue",
    "hex": "#0F3D7C",
@@ -17187,7 +17190,7 @@
   },
   {
    "id": "citadel-base-mechanicus-standard-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Mechanicus Standard Grey",
    "hex": "#39484A",
@@ -17200,7 +17203,7 @@
   },
   {
    "id": "citadel-base-mephiston-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Mephiston Red",
    "hex": "#960C09",
@@ -17213,7 +17216,7 @@
   },
   {
    "id": "citadel-base-morghast-bone",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Morghast Bone",
    "hex": "#C0A973",
@@ -17227,7 +17230,7 @@
   },
   {
    "id": "citadel-base-mournfang-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Mournfang Brown",
    "hex": "#490F06",
@@ -17240,7 +17243,7 @@
   },
   {
    "id": "citadel-base-naggaroth-night",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Naggaroth Night",
    "hex": "#3B2B50",
@@ -17253,7 +17256,7 @@
   },
   {
    "id": "citadel-base-night-lords-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Night Lords Blue",
    "hex": "#002B5C",
@@ -17266,7 +17269,7 @@
   },
   {
    "id": "citadel-base-nocturne-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Nocturne Green",
    "hex": "#162A29",
@@ -17279,7 +17282,7 @@
   },
   {
    "id": "citadel-base-orruk-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Orruk Flesh",
    "hex": "#97C17E",
@@ -17292,7 +17295,7 @@
   },
   {
    "id": "citadel-base-phoenician-purple",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Phoenician Purple",
    "hex": "#440052",
@@ -17305,7 +17308,7 @@
   },
   {
    "id": "citadel-base-rakarth-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Rakarth Flesh",
    "hex": "#9C998D",
@@ -17318,7 +17321,7 @@
   },
   {
    "id": "citadel-base-ratskin-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Ratskin Flesh",
    "hex": "#A86648",
@@ -17331,7 +17334,7 @@
   },
   {
    "id": "citadel-base-retributor-armour",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Retributor Armour",
    "hex": "#EDC169",
@@ -17344,7 +17347,7 @@
   },
   {
    "id": "citadel-base-rhinox-hide",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Rhinox Hide",
    "hex": "#462F30",
@@ -17357,7 +17360,7 @@
   },
   {
    "id": "citadel-base-runelord-brass",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Runelord Brass",
    "hex": "#8D806F",
@@ -17370,7 +17373,7 @@
   },
   {
    "id": "citadel-base-screamer-pink",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Screamer Pink",
    "hex": "#7A0E44",
@@ -17383,7 +17386,7 @@
   },
   {
    "id": "citadel-base-screaming-bell",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Screaming Bell",
    "hex": "#D18A5E",
@@ -17396,7 +17399,7 @@
   },
   {
    "id": "citadel-base-steel-legion-drab",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Steel Legion Drab",
    "hex": "#584E2D",
@@ -17409,7 +17412,7 @@
   },
   {
    "id": "citadel-base-stegadon-scale-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Stegadon Scale Green",
    "hex": "#06455D",
@@ -17423,7 +17426,7 @@
   },
   {
    "id": "citadel-base-the-fang",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "The Fang",
    "hex": "#405B71",
@@ -17436,7 +17439,7 @@
   },
   {
    "id": "citadel-base-thondia-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Thondia Brown",
    "hex": "#4F322C",
@@ -17450,7 +17453,7 @@
   },
   {
    "id": "citadel-base-thousand-sons-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Thousand Sons Blue",
    "hex": "#00506F",
@@ -17463,7 +17466,7 @@
   },
   {
    "id": "citadel-base-waaagh-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Waaagh! Flesh",
    "hex": "#0B3B36",
@@ -17476,7 +17479,7 @@
   },
   {
    "id": "citadel-base-warplock-bronze",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Warplock Bronze",
    "hex": "#B36E4F",
@@ -17489,7 +17492,7 @@
   },
   {
    "id": "citadel-base-wraithbone",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Wraithbone",
    "hex": "#DBD1B2",
@@ -17502,7 +17505,7 @@
   },
   {
    "id": "citadel-base-xv-88",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "XV-88",
    "hex": "#6C4811",
@@ -17515,7 +17518,7 @@
   },
   {
    "id": "citadel-base-zandri-dust",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Base",
    "name": "Zandri Dust",
    "hex": "#988E56",
@@ -17528,7 +17531,7 @@
   },
   {
    "id": "citadel-contrast-aethermatic-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Aethermatic Blue",
    "hex": "#1C7E92",
@@ -17541,7 +17544,7 @@
   },
   {
    "id": "citadel-contrast-aggaros-dunes",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Aggaros Dunes",
    "hex": "#706542",
@@ -17554,7 +17557,7 @@
   },
   {
    "id": "citadel-contrast-akhelian-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Akhelian Green",
    "hex": "#004F63",
@@ -17567,7 +17570,7 @@
   },
   {
    "id": "citadel-contrast-apothecary-white",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Apothecary White",
    "hex": "#A5BED4",
@@ -17580,7 +17583,7 @@
   },
   {
    "id": "citadel-contrast-basilicanum-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Basilicanum Grey",
    "hex": "#212121",
@@ -17594,7 +17597,7 @@
   },
   {
    "id": "citadel-contrast-black-legion",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Black Legion",
    "hex": "#232324",
@@ -17608,7 +17611,7 @@
   },
   {
    "id": "citadel-contrast-black-templar",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Black Templar",
    "hex": "#171717",
@@ -17621,7 +17624,7 @@
   },
   {
    "id": "citadel-contrast-blood-angels-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Blood Angels Red",
    "hex": "#860B0E",
@@ -17634,7 +17637,7 @@
   },
   {
    "id": "citadel-contrast-creed-camo",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Creed Camo",
    "hex": "#145D2E",
@@ -17647,7 +17650,7 @@
   },
   {
    "id": "citadel-contrast-cygor-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Cygor Brown",
    "hex": "#3E1A17",
@@ -17660,7 +17663,7 @@
   },
   {
    "id": "citadel-contrast-dark-angels-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Dark Angels Green",
    "hex": "#00110F",
@@ -17673,7 +17676,7 @@
   },
   {
    "id": "citadel-contrast-darkoath-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Darkoath Flesh",
    "hex": "#98615B",
@@ -17686,7 +17689,7 @@
   },
   {
    "id": "citadel-contrast-flesh-tearers-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Flesh Tearers Red",
    "hex": "#4B0402",
@@ -17699,7 +17702,7 @@
   },
   {
    "id": "citadel-contrast-fyreslayer-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Fyreslayer Flesh",
    "hex": "#724E3C",
@@ -17712,7 +17715,7 @@
   },
   {
    "id": "citadel-contrast-gore-grunta-fur",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Gore-Grunta Fur",
    "hex": "#613B1F",
@@ -17725,7 +17728,7 @@
   },
   {
    "id": "citadel-contrast-gryph-charger-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Gryph-Charger Grey",
    "hex": "#25698A",
@@ -17738,7 +17741,7 @@
   },
   {
    "id": "citadel-contrast-gryph-hound-orange",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Gryph-Hound Orange",
    "hex": "#94300E",
@@ -17751,7 +17754,7 @@
   },
   {
    "id": "citadel-contrast-guilliman-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Guilliman Flesh",
    "hex": "#9F4639",
@@ -17764,7 +17767,7 @@
   },
   {
    "id": "citadel-contrast-iyanden-yellow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Iyanden Yellow",
    "hex": "#DB7F0C",
@@ -17777,7 +17780,7 @@
   },
   {
    "id": "citadel-contrast-leviadon-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Leviadon Blue",
    "hex": "#000A13",
@@ -17790,7 +17793,7 @@
   },
   {
    "id": "citadel-contrast-magos-purple",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Magos Purple",
    "hex": "#7A3F6E",
@@ -17803,7 +17806,7 @@
   },
   {
    "id": "citadel-contrast-militarum-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Militarum Green",
    "hex": "#6B7711",
@@ -17816,7 +17819,7 @@
   },
   {
    "id": "citadel-contrast-nazdreg-yellow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Nazdreg Yellow",
    "hex": "#6C4C00",
@@ -17829,7 +17832,7 @@
   },
   {
    "id": "citadel-contrast-ork-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Ork Flesh",
    "hex": "#00591E",
@@ -17842,7 +17845,7 @@
   },
   {
    "id": "citadel-contrast-plaguebearer-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Plaguebearer Flesh",
    "hex": "#718025",
@@ -17855,7 +17858,7 @@
   },
   {
    "id": "citadel-contrast-shyish-purple",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Shyish Purple",
    "hex": "#2B0E42",
@@ -17868,7 +17871,7 @@
   },
   {
    "id": "citadel-contrast-skeleton-horde",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Skeleton Horde",
    "hex": "#A4966F",
@@ -17881,7 +17884,7 @@
   },
   {
    "id": "citadel-contrast-snakebite-leather",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Snakebite Leather",
    "hex": "#694C29",
@@ -17894,7 +17897,7 @@
   },
   {
    "id": "citadel-contrast-space-wolves-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Space Wolves Grey",
    "hex": "#1F486B",
@@ -17907,7 +17910,7 @@
   },
   {
    "id": "citadel-contrast-talassar-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Talassar Blue",
    "hex": "#003B70",
@@ -17920,7 +17923,7 @@
   },
   {
    "id": "citadel-contrast-terradon-turquoise",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Terradon Turquoise",
    "hex": "#005862",
@@ -17933,7 +17936,7 @@
   },
   {
    "id": "citadel-contrast-ultramarines-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Ultramarines Blue",
    "hex": "#091948",
@@ -17946,7 +17949,7 @@
   },
   {
    "id": "citadel-contrast-volupus-pink",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Volupus Pink",
    "hex": "#60001C",
@@ -17959,7 +17962,7 @@
   },
   {
    "id": "citadel-contrast-warp-lightning",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Warp Lightning",
    "hex": "#005E26",
@@ -17972,7 +17975,7 @@
   },
   {
    "id": "citadel-contrast-wyldwood",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Contrast",
    "name": "Wyldwood",
    "hex": "#432822",
@@ -17985,7 +17988,7 @@
   },
   {
    "id": "citadel-dry-astorath-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Astorath Red",
    "hex": "#A9311E",
@@ -17998,7 +18001,7 @@
   },
   {
    "id": "citadel-dry-changeling-pink",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Changeling Pink",
    "hex": "#F3ABCA",
@@ -18012,7 +18015,7 @@
   },
   {
    "id": "citadel-dry-chronus-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Chronus Blue",
    "hex": "#4B90CF",
@@ -18025,7 +18028,7 @@
   },
   {
    "id": "citadel-dry-dawnstone",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Dawnstone",
    "hex": "#697068",
@@ -18039,7 +18042,7 @@
   },
   {
    "id": "citadel-dry-eldar-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Eldar Flesh",
    "hex": "#E8C07F",
@@ -18052,7 +18055,7 @@
   },
   {
    "id": "citadel-dry-etherium-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Etherium Blue",
    "hex": "#9EB5CE",
@@ -18066,7 +18069,7 @@
   },
   {
    "id": "citadel-dry-golden-griffon",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Golden Griffon",
    "hex": "#E1BA7F",
@@ -18079,7 +18082,7 @@
   },
   {
    "id": "citadel-dry-golgfag-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Golgfag Brown",
    "hex": "#8F502A",
@@ -18092,7 +18095,7 @@
   },
   {
    "id": "citadel-dry-hellion-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Hellion Green",
    "hex": "#7FC1A5",
@@ -18106,7 +18109,7 @@
   },
   {
    "id": "citadel-dry-hexos-palesun",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Hexos Palesun",
    "hex": "#FFF55A",
@@ -18120,7 +18123,7 @@
   },
   {
    "id": "citadel-dry-hoeth-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Hoeth Blue",
    "hex": "#4C78AF",
@@ -18134,7 +18137,7 @@
   },
   {
    "id": "citadel-dry-imrik-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Imrik Blue",
    "hex": "#208ABF",
@@ -18148,7 +18151,7 @@
   },
   {
    "id": "citadel-dry-kindleflame",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Kindleflame",
    "hex": "#F69C82",
@@ -18162,7 +18165,7 @@
   },
   {
    "id": "citadel-dry-longbeard-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Longbeard Grey",
    "hex": "#DBDCC6",
@@ -18175,7 +18178,7 @@
   },
   {
    "id": "citadel-dry-lucius-lilac",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Lucius Lilac",
    "hex": "#B598C9",
@@ -18189,7 +18192,7 @@
   },
   {
    "id": "citadel-dry-necron-compound",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Necron Compound",
    "hex": "#DADDDF",
@@ -18203,7 +18206,7 @@
   },
   {
    "id": "citadel-dry-niblet-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Niblet Green",
    "hex": "#378C35",
@@ -18216,7 +18219,7 @@
   },
   {
    "id": "citadel-dry-nurgling-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Nurgling Green",
    "hex": "#7E975E",
@@ -18230,7 +18233,7 @@
   },
   {
    "id": "citadel-dry-praxeti-white",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Praxeti White",
    "hex": "#FFFFFF",
@@ -18244,7 +18247,7 @@
   },
   {
    "id": "citadel-dry-ryza-rust",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Ryza Rust",
    "hex": "#F16C23",
@@ -18258,7 +18261,7 @@
   },
   {
    "id": "citadel-dry-sigmarite",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Sigmarite",
    "hex": "#D6AC57",
@@ -18271,7 +18274,7 @@
   },
   {
    "id": "citadel-dry-skink-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Skink Blue",
    "hex": "#54BDCA",
@@ -18285,7 +18288,7 @@
   },
   {
    "id": "citadel-dry-slaanesh-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Slaanesh Grey",
    "hex": "#8B8893",
@@ -18299,7 +18302,7 @@
   },
   {
    "id": "citadel-dry-stormfang",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Stormfang",
    "hex": "#5A7FA3",
@@ -18312,7 +18315,7 @@
   },
   {
    "id": "citadel-dry-sylvaneth-bark",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Sylvaneth Bark",
    "hex": "#4E483B",
@@ -18325,7 +18328,7 @@
   },
   {
    "id": "citadel-dry-terminatus-stone",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Terminatus Stone",
    "hex": "#C8B79D",
@@ -18339,7 +18342,7 @@
   },
   {
    "id": "citadel-dry-thunderhawk-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Thunderhawk Blue",
    "hex": "#396A70",
@@ -18353,7 +18356,7 @@
   },
   {
    "id": "citadel-dry-tyrant-skull",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Tyrant Skull",
    "hex": "#C8C483",
@@ -18367,7 +18370,7 @@
   },
   {
    "id": "citadel-dry-underhive-ash",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Underhive Ash",
    "hex": "#BCBB7E",
@@ -18381,7 +18384,7 @@
   },
   {
    "id": "citadel-dry-verminlord-hide",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Verminlord Hide",
    "hex": "#7E3331",
@@ -18394,7 +18397,7 @@
   },
   {
    "id": "citadel-dry-wrack-white",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Dry",
    "name": "Wrack White",
    "hex": "#D3D0CF",
@@ -18407,7 +18410,7 @@
   },
   {
    "id": "citadel-glaze-bloodletter",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Glaze",
    "name": "Bloodletter",
    "hex": "#F37355",
@@ -18420,7 +18423,7 @@
   },
   {
    "id": "citadel-glaze-guilliman-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Glaze",
    "name": "Guilliman Blue",
    "hex": "#2F9AD6",
@@ -18433,7 +18436,7 @@
   },
   {
    "id": "citadel-glaze-lamenters-yellow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Glaze",
    "name": "Lamenters Yellow",
    "hex": "#FFF56B",
@@ -18447,7 +18450,7 @@
   },
   {
    "id": "citadel-glaze-waywatcher-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Glaze",
    "name": "Waywatcher Green",
    "hex": "#6DC066",
@@ -18460,7 +18463,7 @@
   },
   {
    "id": "citadel-layer-administratum-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Administratum Grey",
    "hex": "#989C94",
@@ -18473,7 +18476,7 @@
   },
   {
    "id": "citadel-layer-ahriman-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Ahriman Blue",
    "hex": "#00708A",
@@ -18487,7 +18490,7 @@
   },
   {
    "id": "citadel-layer-alaitoc-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Alaitoc Blue",
    "hex": "#2F4F85",
@@ -18500,7 +18503,7 @@
   },
   {
    "id": "citadel-layer-altdorf-guard-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Altdorf Guard Blue",
    "hex": "#2D4696",
@@ -18513,7 +18516,7 @@
   },
   {
    "id": "citadel-layer-auric-armour-gold",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Auric Armour Gold",
    "hex": "#FFC451",
@@ -18526,7 +18529,7 @@
   },
   {
    "id": "citadel-layer-baharroth-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Baharroth Blue",
    "hex": "#54BDCA",
@@ -18540,7 +18543,7 @@
   },
   {
    "id": "citadel-layer-balor-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Balor Brown",
    "hex": "#875408",
@@ -18553,7 +18556,7 @@
   },
   {
    "id": "citadel-layer-baneblade-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Baneblade Brown",
    "hex": "#8F7C68",
@@ -18566,7 +18569,7 @@
   },
   {
    "id": "citadel-layer-bestigor-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Bestigor Flesh",
    "hex": "#D08951",
@@ -18580,7 +18583,7 @@
   },
   {
    "id": "citadel-layer-bloodreaver-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Bloodreaver Flesh",
    "hex": "#6A4848",
@@ -18593,7 +18596,7 @@
   },
   {
    "id": "citadel-layer-blue-horror",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Blue Horror",
    "hex": "#9EB5CE",
@@ -18607,7 +18610,7 @@
   },
   {
    "id": "citadel-layer-brass-scorpion",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Brass Scorpion",
    "hex": "#A65D2C",
@@ -18620,7 +18623,7 @@
   },
   {
    "id": "citadel-layer-cadian-fleshtone",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Cadian Fleshtone",
    "hex": "#C47652",
@@ -18633,7 +18636,7 @@
   },
   {
    "id": "citadel-layer-calgar-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Calgar Blue",
    "hex": "#2A497F",
@@ -18646,7 +18649,7 @@
   },
   {
    "id": "citadel-layer-canoptek-alloy",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Canoptek Alloy",
    "hex": "#C3B2AC",
@@ -18659,7 +18662,7 @@
   },
   {
    "id": "citadel-layer-castellax-bronze",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Castellax Bronze",
    "hex": "#C68351",
@@ -18672,7 +18675,7 @@
   },
   {
    "id": "citadel-layer-dark-reaper",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Dark Reaper",
    "hex": "#354D4C",
@@ -18685,7 +18688,7 @@
   },
   {
    "id": "citadel-layer-dawnstone",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Dawnstone",
    "hex": "#697068",
@@ -18699,7 +18702,7 @@
   },
   {
    "id": "citadel-layer-deathclaw-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Deathclaw Brown",
    "hex": "#AF634F",
@@ -18712,7 +18715,7 @@
   },
   {
    "id": "citadel-layer-dechala-lilac",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Dechala Lilac",
    "hex": "#B598C9",
@@ -18726,7 +18729,7 @@
   },
   {
    "id": "citadel-layer-deepkin-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Deepkin Flesh",
    "hex": "#A9B79F",
@@ -18739,7 +18742,7 @@
   },
   {
    "id": "citadel-layer-doombull-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Doombull Brown",
    "hex": "#570003",
@@ -18752,7 +18755,7 @@
   },
   {
    "id": "citadel-layer-dorn-yellow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Dorn Yellow",
    "hex": "#FFF55A",
@@ -18766,7 +18769,7 @@
   },
   {
    "id": "citadel-layer-elysian-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Elysian Green",
    "hex": "#6B8C37",
@@ -18779,20 +18782,23 @@
   },
   {
    "id": "citadel-layer-emperor-children",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
-   "name": "Emperor Children",
+   "name": "Emperor's Children",
    "hex": "#B74073",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Emperor Children"
+   ]
   },
   {
    "id": "citadel-layer-eshin-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Eshin Grey",
    "hex": "#484B4E",
@@ -18805,7 +18811,7 @@
   },
   {
    "id": "citadel-layer-evil-sunz-scarlet",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Evil Sunz Scarlet",
    "hex": "#C01411",
@@ -18818,7 +18824,7 @@
   },
   {
    "id": "citadel-layer-fenrisian-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Fenrisian Grey",
    "hex": "#6D94B3",
@@ -18831,7 +18837,7 @@
   },
   {
    "id": "citadel-layer-fire-dragon-bright",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Fire Dragon Bright",
    "hex": "#F4874E",
@@ -18844,7 +18850,7 @@
   },
   {
    "id": "citadel-layer-flash-gitz-yellow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Flash Gitz Yellow",
    "hex": "#FFF300",
@@ -18857,7 +18863,7 @@
   },
   {
    "id": "citadel-layer-flayed-one-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Flayed One Flesh",
    "hex": "#EEC483",
@@ -18871,7 +18877,7 @@
   },
   {
    "id": "citadel-layer-fulgrim-pink",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Fulgrim Pink",
    "hex": "#F3ABCA",
@@ -18885,7 +18891,7 @@
   },
   {
    "id": "citadel-layer-fulgurite-copper",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Fulgurite Copper",
    "hex": "#CE8D51",
@@ -18898,7 +18904,7 @@
   },
   {
    "id": "citadel-layer-gauss-blaster-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Gauss Blaster Green",
    "hex": "#7FC1A5",
@@ -18912,20 +18918,23 @@
   },
   {
    "id": "citadel-layer-gehenna-gold",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
-   "name": "Gehenna Gold",
+   "name": "Gehenna's Gold",
    "hex": "#C96B18",
    "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Gehenna Gold"
+   ]
   },
   {
    "id": "citadel-layer-genestealer-purple",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Genestealer Purple",
    "hex": "#7658A5",
@@ -18938,7 +18947,7 @@
   },
   {
    "id": "citadel-layer-gorthor-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Gorthor Brown",
    "hex": "#5F463F",
@@ -18951,7 +18960,7 @@
   },
   {
    "id": "citadel-layer-hashut-copper",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Hashut Copper",
    "hex": "#BA885F",
@@ -18964,7 +18973,7 @@
   },
   {
    "id": "citadel-layer-hoeth-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Hoeth Blue",
    "hex": "#4C78AF",
@@ -18978,7 +18987,7 @@
   },
   {
    "id": "citadel-layer-ironbreaker",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Ironbreaker",
    "hex": "#899092",
@@ -18991,7 +19000,7 @@
   },
   {
    "id": "citadel-layer-kabalite-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Kabalite Green",
    "hex": "#008962",
@@ -19004,7 +19013,7 @@
   },
   {
    "id": "citadel-layer-kakophoni-purple",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Kakophoni Purple",
    "hex": "#8869AE",
@@ -19017,7 +19026,7 @@
   },
   {
    "id": "citadel-layer-karak-stone",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Karak Stone",
    "hex": "#B7945C",
@@ -19030,7 +19039,7 @@
   },
   {
    "id": "citadel-layer-kislev-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Kislev Flesh",
    "hex": "#D1A570",
@@ -19043,7 +19052,7 @@
   },
   {
    "id": "citadel-layer-knight-questor-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Knight-Questor Flesh",
    "hex": "#996563",
@@ -19056,7 +19065,7 @@
   },
   {
    "id": "citadel-layer-krieg-khaki",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Krieg Khaki",
    "hex": "#BCBB7E",
@@ -19070,7 +19079,7 @@
   },
   {
    "id": "citadel-layer-liberator-gold",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Liberator Gold",
    "hex": "#E1BA7F",
@@ -19083,7 +19092,7 @@
   },
   {
    "id": "citadel-layer-loren-forest",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Loren Forest",
    "hex": "#486C25",
@@ -19096,7 +19105,7 @@
   },
   {
    "id": "citadel-layer-lothern-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Lothern Blue",
    "hex": "#2C9BCC",
@@ -19109,7 +19118,7 @@
   },
   {
    "id": "citadel-layer-lugganath-orange",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Lugganath Orange",
    "hex": "#F69B82",
@@ -19123,7 +19132,7 @@
   },
   {
    "id": "citadel-layer-moot-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Moot Green",
    "hex": "#3DAF44",
@@ -19137,7 +19146,7 @@
   },
   {
    "id": "citadel-layer-nurgling-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Nurgling Green",
    "hex": "#7E975E",
@@ -19151,7 +19160,7 @@
   },
   {
    "id": "citadel-layer-ogryn-camo",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Ogryn Camo",
    "hex": "#96A648",
@@ -19164,7 +19173,7 @@
   },
   {
    "id": "citadel-layer-pallid-wych-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Pallid Wych Flesh",
    "hex": "#CACCBB",
@@ -19177,7 +19186,7 @@
   },
   {
    "id": "citadel-layer-phalanx-yellow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Phalanx Yellow",
    "hex": "#FFE200",
@@ -19191,7 +19200,7 @@
   },
   {
    "id": "citadel-layer-pink-horror",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Pink Horror",
    "hex": "#8E2757",
@@ -19204,7 +19213,7 @@
   },
   {
    "id": "citadel-layer-runefang-steel",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Runefang Steel",
    "hex": "#C2C8CC",
@@ -19217,7 +19226,7 @@
   },
   {
    "id": "citadel-layer-russ-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Russ Grey",
    "hex": "#507085",
@@ -19230,7 +19239,7 @@
   },
   {
    "id": "citadel-layer-screaming-skull",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Screaming Skull",
    "hex": "#B9C099",
@@ -19243,7 +19252,7 @@
   },
   {
    "id": "citadel-layer-skarsnik-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Skarsnik Green",
    "hex": "#588F6B",
@@ -19256,7 +19265,7 @@
   },
   {
    "id": "citadel-layer-skavenblight-dinge",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Skavenblight Dinge",
    "hex": "#45413B",
@@ -19269,7 +19278,7 @@
   },
   {
    "id": "citadel-layer-skrag-brown",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Skrag Brown",
    "hex": "#8B4806",
@@ -19282,7 +19291,7 @@
   },
   {
    "id": "citadel-layer-skullcrusher-brass",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Skullcrusher Brass",
    "hex": "#F4CB7A",
@@ -19295,7 +19304,7 @@
   },
   {
    "id": "citadel-layer-slaanesh-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Slaanesh Grey",
    "hex": "#8B8893",
@@ -19309,7 +19318,7 @@
   },
   {
    "id": "citadel-layer-sons-of-horus-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Sons of Horus Green",
    "hex": "#00545E",
@@ -19322,7 +19331,7 @@
   },
   {
    "id": "citadel-layer-sotek-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Sotek Green",
    "hex": "#0B6371",
@@ -19335,7 +19344,7 @@
   },
   {
    "id": "citadel-layer-squig-orange",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Squig Orange",
    "hex": "#A74D42",
@@ -19348,7 +19357,7 @@
   },
   {
    "id": "citadel-layer-stormhost-silver",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Stormhost Silver",
    "hex": "#DADDDF",
@@ -19362,7 +19371,7 @@
   },
   {
    "id": "citadel-layer-stormvermin-fur",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Stormvermin Fur",
    "hex": "#6D655F",
@@ -19375,7 +19384,7 @@
   },
   {
    "id": "citadel-layer-straken-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Straken Green",
    "hex": "#597F1C",
@@ -19388,7 +19397,7 @@
   },
   {
    "id": "citadel-layer-sybarite-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Sybarite Green",
    "hex": "#17A166",
@@ -19401,7 +19410,7 @@
   },
   {
    "id": "citadel-layer-sycorax-bronze",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Sycorax Bronze",
    "hex": "#BB9F84",
@@ -19415,7 +19424,7 @@
   },
   {
    "id": "citadel-layer-tallarn-sand",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Tallarn Sand",
    "hex": "#A07409",
@@ -19428,7 +19437,7 @@
   },
   {
    "id": "citadel-layer-tau-light-ochre",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Tau Light Ochre",
    "hex": "#BC6B10",
@@ -19441,7 +19450,7 @@
   },
   {
    "id": "citadel-layer-teclis-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Teclis Blue",
    "hex": "#3877BF",
@@ -19454,7 +19463,7 @@
   },
   {
    "id": "citadel-layer-temple-guard-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Temple Guard Blue",
    "hex": "#239489",
@@ -19467,7 +19476,7 @@
   },
   {
    "id": "citadel-layer-thunderhawk-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Thunderhawk Blue",
    "hex": "#396A70",
@@ -19481,7 +19490,7 @@
   },
   {
    "id": "citadel-layer-troll-slayer-orange",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Troll Slayer Orange",
    "hex": "#F16C23",
@@ -19495,7 +19504,7 @@
   },
   {
    "id": "citadel-layer-tuskgor-fur",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Tuskgor Fur",
    "hex": "#863231",
@@ -19508,7 +19517,7 @@
   },
   {
    "id": "citadel-layer-ulthuan-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Ulthuan Grey",
    "hex": "#C4DDD5",
@@ -19521,7 +19530,7 @@
   },
   {
    "id": "citadel-layer-ungor-flesh",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Ungor Flesh",
    "hex": "#D1A560",
@@ -19534,7 +19543,7 @@
   },
   {
    "id": "citadel-layer-ushabti-bone",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Ushabti Bone",
    "hex": "#ABA173",
@@ -19547,7 +19556,7 @@
   },
   {
    "id": "citadel-layer-vulkan-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Vulkan Green",
    "hex": "#223C2E",
@@ -19560,7 +19569,7 @@
   },
   {
    "id": "citadel-layer-warboss-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Warboss Green",
    "hex": "#317E57",
@@ -19573,7 +19582,7 @@
   },
   {
    "id": "citadel-layer-warpfiend-grey",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Warpfiend Grey",
    "hex": "#66656E",
@@ -19586,7 +19595,7 @@
   },
   {
    "id": "citadel-layer-warpstone-glow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Warpstone Glow",
    "hex": "#0F702A",
@@ -19599,7 +19608,7 @@
   },
   {
    "id": "citadel-layer-wazdakka-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Wazdakka Red",
    "hex": "#880804",
@@ -19613,7 +19622,7 @@
   },
   {
    "id": "citadel-layer-white-scar",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "White Scar",
    "hex": "#FFFFFF",
@@ -19627,7 +19636,7 @@
   },
   {
    "id": "citadel-layer-wild-rider-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Wild Rider Red",
    "hex": "#E82E1B",
@@ -19640,7 +19649,7 @@
   },
   {
    "id": "citadel-layer-word-bearers-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Word Bearers Red",
    "hex": "#620104",
@@ -19653,7 +19662,7 @@
   },
   {
    "id": "citadel-layer-xereus-purple",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Xereus Purple",
    "hex": "#47125A",
@@ -19666,7 +19675,7 @@
   },
   {
    "id": "citadel-layer-yriel-yellow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Yriel Yellow",
    "hex": "#FFD900",
@@ -19679,7 +19688,7 @@
   },
   {
    "id": "citadel-layer-zamesi-desert",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Layer",
    "name": "Zamesi Desert",
    "hex": "#D89D1B",
@@ -19692,7 +19701,7 @@
   },
   {
    "id": "citadel-shade-agrax-earthshade",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Agrax Earthshade",
    "hex": "#A99D8D",
@@ -19705,7 +19714,7 @@
   },
   {
    "id": "citadel-shade-agrax-earthshade-gloss",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Agrax Earthshade Gloss",
    "hex": "#B4AA9E",
@@ -19718,7 +19727,7 @@
   },
   {
    "id": "citadel-shade-athonian-camoshade",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Athonian Camoshade",
    "hex": "#B6B788",
@@ -19731,7 +19740,7 @@
   },
   {
    "id": "citadel-shade-biel-tan-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Biel-Tan Green",
    "hex": "#7DA57A",
@@ -19744,7 +19753,7 @@
   },
   {
    "id": "citadel-shade-carroburg-crimson",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Carroburg Crimson",
    "hex": "#BE80A4",
@@ -19757,20 +19766,23 @@
   },
   {
    "id": "citadel-shade-cassandora-yellow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
-   "name": "Cassandora Yellow",
+   "name": "Casandora Yellow",
    "hex": "#F5CC92",
    "type": "shade",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Cassandora Yellow"
+   ]
   },
   {
    "id": "citadel-shade-coelia-greenshade",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Coelia Greenshade",
    "hex": "#1B8F85",
@@ -19783,7 +19795,7 @@
   },
   {
    "id": "citadel-shade-cryptek-armourshade-gloss",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Cryptek Armourshade Gloss",
    "hex": "#856A67",
@@ -19796,7 +19808,7 @@
   },
   {
    "id": "citadel-shade-drakenhof-nightshade",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Drakenhof Nightshade",
    "hex": "#A1A5AF",
@@ -19809,7 +19821,7 @@
   },
   {
    "id": "citadel-shade-druchii-violet",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Druchii Violet",
    "hex": "#8F6592",
@@ -19822,7 +19834,7 @@
   },
   {
    "id": "citadel-shade-fuegan-orange",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Fuegan Orange",
    "hex": "#BB7648",
@@ -19835,7 +19847,7 @@
   },
   {
    "id": "citadel-shade-nuln-oil",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Nuln Oil",
    "hex": "#9E9A98",
@@ -19848,7 +19860,7 @@
   },
   {
    "id": "citadel-shade-nuln-oil-gloss",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Nuln Oil Gloss",
    "hex": "#B3AFAE",
@@ -19861,7 +19873,7 @@
   },
   {
    "id": "citadel-shade-reikland-fleshshade",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Reikland Fleshshade",
    "hex": "#BE9A80",
@@ -19874,7 +19886,7 @@
   },
   {
    "id": "citadel-shade-reikland-fleshshade-gloss",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Reikland Fleshshade Gloss",
    "hex": "#C2A896",
@@ -19887,7 +19899,7 @@
   },
   {
    "id": "citadel-shade-seraphim-sepia",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Shade",
    "name": "Seraphim Sepia",
    "hex": "#AE8158",
@@ -19900,7 +19912,7 @@
   },
   {
    "id": "citadel-technical-agrellan-badland",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Agrellan Badland",
    "hex": "#B39E80",
@@ -19915,7 +19927,7 @@
   },
   {
    "id": "citadel-technical-agrellan-earth",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Agrellan Earth",
    "hex": "#B39E80",
@@ -19930,7 +19942,7 @@
   },
   {
    "id": "citadel-technical-armageddon-dunes",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Armageddon Dunes",
    "hex": "#E8D36F",
@@ -19944,7 +19956,7 @@
   },
   {
    "id": "citadel-technical-armageddon-dust",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Armageddon Dust",
    "hex": "#D2AD00",
@@ -19958,7 +19970,7 @@
   },
   {
    "id": "citadel-technical-astrogranite",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Astrogranite",
    "hex": "#767675",
@@ -19972,7 +19984,7 @@
   },
   {
    "id": "citadel-technical-astrogranite-debris",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Astrogranite Debris",
    "hex": "#9D9D9D",
@@ -19986,7 +19998,7 @@
   },
   {
    "id": "citadel-technical-blood-for-the-blood-god",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Blood For The Blood God",
    "hex": "#600106",
@@ -20000,7 +20012,7 @@
   },
   {
    "id": "citadel-technical-hexwraith-flame",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Hexwraith Flame",
    "hex": "#29A236",
@@ -20013,7 +20025,7 @@
   },
   {
    "id": "citadel-technical-martian-ironcrust",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Martian Ironcrust",
    "hex": "#CF705D",
@@ -20028,7 +20040,7 @@
   },
   {
    "id": "citadel-technical-martian-ironearth",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Martian Ironearth",
    "hex": "#CF705D",
@@ -20043,7 +20055,7 @@
   },
   {
    "id": "citadel-technical-mordant-earth",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Mordant Earth",
    "hex": "#171314",
@@ -20057,7 +20069,7 @@
   },
   {
    "id": "citadel-technical-nighthaunt-gloom",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Nighthaunt Gloom",
    "hex": "#3A686E",
@@ -20070,7 +20082,7 @@
   },
   {
    "id": "citadel-technical-nihilakh-oxide",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Nihilakh Oxide",
    "hex": "#66B39A",
@@ -20083,9 +20095,9 @@
   },
   {
    "id": "citadel-technical-nurgles-rot",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
-   "name": "Nurgles Rot",
+   "name": "Nurgle's Rot",
    "hex": "#9D8B16",
    "type": "effect",
    "discontinued": false,
@@ -20093,11 +20105,14 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
+   "formerly": [
+    "Nurgles Rot"
+   ],
    "fx": "slime"
   },
   {
    "id": "citadel-technical-soulstone-blue",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Soulstone Blue",
    "hex": "#142758",
@@ -20111,7 +20126,7 @@
   },
   {
    "id": "citadel-technical-spiritstone-red",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Spiritstone Red",
    "hex": "#8A2A1E",
@@ -20125,7 +20140,7 @@
   },
   {
    "id": "citadel-technical-stirland-battlemire",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Stirland Battlemire",
    "hex": "#70490D",
@@ -20139,7 +20154,7 @@
   },
   {
    "id": "citadel-technical-stirland-mud",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Stirland Mud",
    "hex": "#482B00",
@@ -20153,7 +20168,7 @@
   },
   {
    "id": "citadel-technical-stormshield",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Stormshield",
    "hex": "#F9F9F9",
@@ -20166,7 +20181,7 @@
   },
   {
    "id": "citadel-technical-tesseract-glow",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Tesseract Glow",
    "hex": "#65AB46",
@@ -20180,7 +20195,7 @@
   },
   {
    "id": "citadel-technical-typhus-corrosion",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Typhus Corrosion",
    "hex": "#373A22",
@@ -20194,7 +20209,7 @@
   },
   {
    "id": "citadel-technical-valhallan-blizzard",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Valhallan Blizzard",
    "hex": "#E1E1E1",
@@ -20208,7 +20223,7 @@
   },
   {
    "id": "citadel-technical-waystone-green",
-   "brand": "Citadel",
+   "brand": "Warhammer Colour",
    "line": "Technical",
    "name": "Waystone Green",
    "hex": "#23513D",

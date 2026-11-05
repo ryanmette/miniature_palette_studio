@@ -5,9 +5,11 @@
 // backup format is JSON via store.exportJSON/importJSON; this module handles the CSV bridge + matching.
 
 const norm = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
-// Map common brand spellings to our dataset's canonical brand (normalised).
+// Map common brand spellings to our dataset's canonical brand (normalised). Citadel Colour is Warhammer
+// Colour since 2026: a CSV from before (ours included) says Citadel, a newer one may say either.
 const BRAND_ALIAS = {
-  gamesworkshop: 'citadel',
+  citadel: 'warhammercolour', citadelcolour: 'warhammercolour', gamesworkshop: 'warhammercolour',
+  gw: 'warhammercolour', warhammer: 'warhammercolour',
   thearmypainter: 'armypainter',
   formulap3: 'p3', privateerpress: 'p3',
 };
@@ -71,6 +73,13 @@ function nameIndex(idx) {
     // A plain twin name in an EXTERNAL file stays ambiguous (first candidate wins — known limitation).
     if (p.dname && p.dname !== p.name) byBrandName.set(canonBrand(p.brand) + '|' + norm(p.dname), p.id);
     const k = norm(p.name); let arr = byName.get(k); if (!arr) byName.set(k, arr = []); arr.push(p.id);
+  }
+  // A former name ("Bugman Glow", before the apostrophe was put back), so a shelf saved before still imports.
+  // A second pass, and only where no paint has that name now: a real name always wins over a former one.
+  for (const p of idx.paints) for (const old of p.formerly || []) {
+    const bk = canonBrand(p.brand) + '|' + norm(old);
+    if (!byBrandName.has(bk)) byBrandName.set(bk, p.id);
+    if (!byName.has(norm(old))) byName.set(norm(old), [p.id]);
   }
   return { byBrandName, byName };
 }
