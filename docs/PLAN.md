@@ -665,6 +665,48 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     meant to be used), whether they fit an existing type (§5.1: base, layer, shade, contrast…) or need a new one with
     its own finish mark (item 51), and how to add them with provenance (§5.2, `SOURCES.md`). Not opened from this
     session: warhammer.com is outside its network.
+    **Studied (2026-11-03)** — [`docs/TONE_PRO.md`](TONE_PRO.md), from Ryan's source list
+    ([`docs/sources/warhammer-colour-list-2026-11-03.md`](sources/warhammer-colour-list-2026-11-03.md)). Tone Pro is
+    30 colours × 5 tones (1 darkest, 5 lightest) and two mediums. Recommended: type `layer`, line "Tone Pro", no new
+    type or finish mark (confirm the finish first); no special rule at first, and "keep the family" in the ladders
+    as a later item once the tones are measured. **Blocker:** no source has a colour value for any Tone Pro paint
+    (options in the study, §7). Found on the way, for item 56: Citadel Colour is now Warhammer Colour (6 Mar 2026);
+    the 7 Shades of 2022, about 24 Contrast paints and Ceramite White are missing; 5 names are wrong (lost
+    apostrophes, "Cassandora"); Army Painter's Brush-On Primer is stored as a wash. **Ryan's answers (2026-11-03):**
+    a colour source "maybe soonish, not sure yet"; **the brand is renamed "Warhammer Colour", with "Citadel" kept
+    as a search word** (item 56's work; the paint ids keep `citadel-`); "keep the family" is **probably yes, decided
+    once the tones are measured**.
+
+### Raised by Ryan on 2026-11-04 — a bug pass on Apple devices (not yet done)
+
+From the first run of the iOS app in the iPhone 17e Simulator (iOS 26.5, Capacitor 8.6.0; PR #69). Ryan: "the
+shelf isn't rendering correctly so I'm positive it isn't rendering correctly on a bunch of iphones (esp the duo)".
+Do these three in one bug pass, in this order.
+
+58. **The Shelf's list is wider than the screen on iPhone.** In the Shelf's list (Shopping list, Rack order), the
+    page is laid out wider than the screen, and the right side is cut off. The dock's search field runs off the
+    edge and **Filters** is gone. The status filter shows All | Owned only (Shopping list, Grid | List gone). The
+    rows lose their ticks, and the "for Mephiston Red · analogous …" label runs off. **Not reproduced in Chromium**
+    (Playwright, 375/390/402/440px wide, touch, the list with and without paints to buy): there the page is exactly
+    the screen's width. So it is probably WebKit or the iOS shell. Suspects: a label that does not wrap (the "for"
+    project name) setting a minimum width inside a grid or flex track (`min-width: auto`); the safe-area padding in
+    the iOS app (`contentInset: "never"`). Method: Safari's Web Inspector on the Simulator; find each element whose
+    right edge is past the screen; fix the cause, not the symptom. Then check every current iPhone width (SE, the
+    "e", the standard, Plus/Max, and the device Ryan calls "the duo"), the web app in Safari too, and add a test
+    that fails when the page is wider than the screen (CLAUDE.md §3.6: no horizontal page scroll).
+59. **⋯ shows a focus ring on its first control when it opens by touch.** On the first open, the pressed **Use my
+    paints** segment has the focus ring. CLAUDE.md §3.6 sends focus to that segment when ⋯ opens, and WebKit shows
+    the ring after that focus. Direction: when a touch or a pointer opens ⋯, focus goes to the sheet's title (a
+    landing spot with no ring, as the Filters sheet does); when a key opens it, focus goes to the segment, as now.
+    Change the §3.6 line in the same PR.
+60. **Every way of input on Apple devices: touch, a pointer and a keyboard, on one device.** An iPad has touch, a
+    trackpad and a keyboard; a Mac may have a touch screen. Today the app chooses one mode for each device from
+    `(pointer: coarse)`: the ⋯ sheet or popover, 44px targets, the system picker in a select, the share sheet
+    (`CAN_SHARE`), the Shelf's long-press, the scrub. An iPad with a trackpad still reports a coarse pointer, and a
+    touch Mac a fine one, so one input gets the other's behaviour. Direction (a study first): decide each gesture
+    from the event itself (`pointerType`); keep sizes safe for touch while any touch is possible
+    (`any-pointer: coarse`); hover effects only with `any-hover: hover`; test the keyboard paths on an iPad with a
+    keyboard. Changes CLAUDE.md §3.5–3.6 in many places.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 

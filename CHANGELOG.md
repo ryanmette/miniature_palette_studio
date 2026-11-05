@@ -13,6 +13,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+- **A study of Warhammer Tone Pro** (`docs/TONE_PRO.md`; PLAN §5 item 57), GW's new range of 30 colours in 5
+  tones each. Recommended: add the paints as ordinary layer paints in a "Tone Pro" line, with no new type. No
+  source has a colour value for them yet, so no paint is added. The source list Ryan gave is kept in
+  `docs/sources/`. Nothing in the app changed.
 ### Changed
 - **A random scheme when the link names no paint** (PLAN §5 item 55). A bare address (a first visit, a bookmark,
   the installed app) opened on one fixed paint: the first row of the data, AK Interactive's Alga Green. It now opens

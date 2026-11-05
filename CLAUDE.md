@@ -253,6 +253,9 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── USE_CASES.md           ← personas, entry modes, scheme roles, UC catalog
 │   ├── DATA_SOURCING.md       ← data sourcing + verification methodology (§5)
 │   ├── COLOUR_CHECK.md        ← a study (2026-10-30, PLAN §5 item 49): how to check the paint hexes against the makers' swatches — what is wrong now (33 pure black/white values, shared hexes, odd metals and washes), a method, a ΔE > 5 rule, and a first batch (Citadel Base, then Layer); no data changed
+│   ├── TONE_PRO.md            ← a study (2026-11-03, PLAN §5 item 57): Warhammer Tone Pro (30 colours × 5 tones) — fits as `layer`, line "Tone Pro", no new type or finish mark (finish to confirm); the tones as a ready-made ladder; the data shape; colour values are the blocker (none in any source we have); no data changed
+│   ├── sources/               ← research inputs as given, NOT shipped and NOT paint data
+│   │   └── warhammer-colour-list-2026-11-03.md ← Ryan's list of GW's ranges (Warhammer Colour + Tone Pro): GW facts (primary), paint names (secondary), 2019 forum hex values (not for the data; TONE_PRO.md §7)
 │   ├── IOS_APP_PLAN.md        ← iPhone app (v2) exploration — future, not v1
 │   ├── MONETIZATION.md        ← speculative monetization survey (affiliate/funnel fit v1; payments need a §1 change) — exploration only
 │   └── EMBED.md               ← Squarespace embedding guide (added at M9)
