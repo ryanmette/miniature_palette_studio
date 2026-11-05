@@ -32,6 +32,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   padding. The web view's white background showed behind the clock and the home bar, with a double gap
   above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
   clear of the notch and the home bar.
+### Security
+- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
+  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
+  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
+  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
+  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
+  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
+  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
+  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
+  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
+  with no `AbortSignal` and no glob pattern from outside.
 
 ## [1.14.0] - 2026-10-31
 ### Added
