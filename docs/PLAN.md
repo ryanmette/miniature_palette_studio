@@ -778,6 +778,15 @@ Do these three in one bug pass, in this order.
     reduced motion stops any spin (§3.4); the numbers it shows exist in text too (a screen reader cannot read a 3D
     picture). **Tie-ins:** item 61 (the shelf's paints as dots in the same space: where am I missing tones) and the
     lightness slider (CLAUDE.md §3.6 Wheel module), which a 3D view could explain or replace.
+64. **Tone ladders across brands** — **studied** ([`docs/TONE_LADDERS.md`](TONE_LADDERS.md), 2026-11-06). Ryan: "GW isn't
+    the only one. Maybe we have a keep 'within brand' or a 'prefer same brand' toggle?" Reaper (triads), Army Painter
+    Warpaints Fanatic (Flexible Colour Triads) and Two Thin Coats (shadow, midtone, highlight) sell tone systems too;
+    only Tone Pro's families are in our data. **Measured:** a hard same-brand rule doubles a ladder step's median ΔE
+    (1.83 → 3.79; 45% Good); a soft bonus of 2 ΔE gives 54% same-brand steps at a median of 2.16; the app's ladder
+    steps are about two Tone Pro tones wide and miss the family by about ΔE 9. **Recommended:** (A) the maker's
+    ladder, shown as the maker made it under the app's ladder, no setting and no match change (needs `family` +
+    `tone` fields; Tone Pro first); then (B) **Brand: Any · Prefer · Only** in ⋯, built as Use my paints (owned
+    first; never Other brands). Open: A then B, B's default brand, keep Only, which brand's families next.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
