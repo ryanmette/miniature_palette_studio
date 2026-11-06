@@ -687,6 +687,10 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     a colour source "maybe soonish, not sure yet"; **the brand is renamed "Warhammer Colour", with "Citadel" kept
     as a search word** (item 56's work; the paint ids keep `citadel-`); "keep the family" is **probably yes, decided
     once the tones are measured**.
+    **Opacity checked (2026-11-05): opaque**, from GW's own words in web-search excerpts ("the best coverage so far
+    from a Warhammer paint"; white and yellow give "a solid, opaque coat"), so `layer` stands. The finish (matte or
+    satin) is still open and does not change the type. The GW pages are blocked in this environment, so open them to
+    confirm the quotes before adding paints (TONE_PRO.md §4). Colour values are still the blocker.
 
 ### Raised by Ryan on 2026-11-04 — a bug pass on Apple devices (not yet done)
 

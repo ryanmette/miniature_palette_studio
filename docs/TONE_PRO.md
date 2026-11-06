@@ -78,6 +78,16 @@ Chotec Orange, Bloodtoof Red, Carmine Blades.
 Contrast is, the type changes to `contrast` and the finish rules of §7 apply. One look at a pot or at GW's own
 product text answers this.
 
+**Checked 2026-11-05 — opaque, so `layer` stands.** A web search returned excerpts of GW's Warhammer Community
+articles ("Warhammer Tone Pro: superb coverage and vibrant colours"; "Warhammer Tone Pro: one paint, many
+techniques"). In them GW says the paints give "the best coverage so far from a Warhammer paint", and that even
+white and yellow give "a solid, opaque coat from the first application". GW also says the paint self-levels as it
+dries, and that the Shading Medium lowers the pigment density "without changing flow or finish", to make a shade or
+a glaze. **The finish is still open:** GW's excerpts do not name it, and one review (Sprues & Brews, 30 Sep 2026)
+says "satin to matte". A satin finish is still a flat colour for the app (no finish mark), so it does not change
+the type. **Trust:** the pages themselves were not opened (this session cannot reach warhammer-community.com); the
+words come from the search excerpts. Open the two articles to confirm them before the paints are added.
+
 ---
 
 ## 5. How it fits the app
@@ -182,7 +192,8 @@ The paint names in the source come from one secondary source, so check them befo
 
 **Recommended order:**
 
-1. Confirm the finish and the opacity (one pot, or GW's product text). This settles `layer` or `contrast` (§4).
+1. ~~Confirm the opacity~~ — opaque (2026-11-05, above), so `layer`. The finish (matte or satin) is still open; it
+   does not change the type.
 2. Get the colour values by one of §7's options, with the source recorded in `SOURCES.md`.
 3. Add the 150 paints as `layer`, line "Tone Pro", with no special rule (§5, Option A). Bump the dataset version.
 4. Measure the spacing of the tones. Then decide on "keep the family" (§5, Option B) as its own item.
