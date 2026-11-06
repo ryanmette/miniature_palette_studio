@@ -13,10 +13,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
-- **A study of Warhammer Tone Pro** (`docs/TONE_PRO.md`; PLAN §5 item 57), GW's new range of 30 colours in 5
-  tones each. Recommended: add the paints as ordinary layer paints in a "Tone Pro" line, with no new type. No
-  source has a colour value for them yet, so no paint is added. The source list Ryan gave is kept in
-  `docs/sources/`. Nothing in the app changed.
+- **Warhammer Tone Pro: 150 new paints** (paint data 1.8.0; PLAN §5 item 57, study `docs/TONE_PRO.md`). GW's new
+  range has 30 colours, each in 5 tones from 1 (the darkest) to 5 (the lightest). Each tone is its own paint,
+  named "Ultramar Blue 3", in the line "Tone Pro" of Warhammer Colour. Search "tone pro" for the line, "ultramar
+  blue" for one family, or "ultramar blue 3" for one tone. They are ordinary layer paints (GW says they are
+  opaque), so they take part in schemes, matches and Other brands like any flat paint, and 99 of them can be the
+  random first paint. **Where the colours come from:** the upstream data has no Tone Pro, so the colours are read
+  from the three colour charts in GW's own article (Warhammer Community, 4 October 2026). Each tone in a chart is a
+  flat block of one colour, so each value is exactly the colour GW drew; it is still GW's picture of the paint on
+  a screen, so the paints keep the "approx" tag. Two values are kept as GW drew them: Blackstone Void 5 is pure
+  white (GW calls it the range's white), and Carmine Blades 2 is lighter than Carmine Blades 3. The source, the charts and the method are in
+  `scripts/tone-pro.json` and `src/data/SOURCES.md`; About credits GW's charts. The study and Ryan's source list
+  (`docs/sources/`) explain the choices. 3,375 paints in all. Eleven new "same colour" groups (191) renumber the
+  automatic group names after them; nothing saved holds those names.
 ### Changed
 - **Citadel is now Warhammer Colour** (paint data 1.7.0; PLAN §5 item 56). Games Workshop renamed the range on
   6 March 2026, with the same paint in the pot. The app shows the new name. Type "Citadel", "Games Workshop" or
@@ -26,7 +35,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the installed app) opened on one fixed paint: the first row of the data, AK Interactive's Alga Green. It now opens
   on a random starting paint and a random harmony. The paint comes from a locked pool (`data.js startPaints`):
   a Base or Layer paint that is still on sale, with a clear hue (Lab C\* 14 or more, so the studio starts in hue
-  mode) and a mid lightness (L\* 25 to 80). That is 1,474 paints from all ten brands. The harmony follows Roll a
+  mode) and a mid lightness (L\* 25 to 80). That is 1,573 paints from all ten brands (Tone Pro added 99). The harmony follows Roll a
   scheme's rules (§7: any of the 9 rule harmonies, never Custom). A link that names a harmony keeps it. The first
   render writes the scheme to the address bar, so a reload shows the same scheme. The "Start a scheme" band and
   its four starter paints do not change.

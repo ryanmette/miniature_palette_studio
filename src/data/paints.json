@@ -1,6 +1,6 @@
 {
- "version": "1.7.0",
- "generated": "2026-11-03",
+ "version": "1.8.0",
+ "generated": "2026-11-06",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
  "note": "Hex is sRGB and approximate; Lab is derived at runtime (CLAUDE.md §5/§7). Finishes (wash/shade/ink/contrast/glaze/effect) are excluded from harmony suggestions at runtime. groups[] = curated equivalence clusters (paints within ΔE 1.0 of the same finish class — metal, translucent media, effect, opaque); paints carry groupId.",
@@ -47,16 +47,21 @@
   },
   {
    "id": "dark-blue-04",
-   "refHex": "#00739F",
+   "refHex": "#0855A3",
    "label": "dark blue"
   },
   {
    "id": "dark-blue-05",
-   "refHex": "#405B78",
+   "refHex": "#00739F",
    "label": "dark blue"
   },
   {
    "id": "dark-blue-06",
+   "refHex": "#405B78",
+   "label": "dark blue"
+  },
+  {
+   "id": "dark-blue-07",
    "refHex": "#0370B1",
    "label": "dark blue"
   },
@@ -87,16 +92,26 @@
   },
   {
    "id": "dark-grey-05",
-   "refHex": "#363636",
+   "refHex": "#4E5458",
    "label": "dark grey"
   },
   {
    "id": "dark-grey-06",
-   "refHex": "#525345",
+   "refHex": "#2B2D28",
    "label": "dark grey"
   },
   {
    "id": "dark-grey-07",
+   "refHex": "#363636",
+   "label": "dark grey"
+  },
+  {
+   "id": "dark-grey-08",
+   "refHex": "#525345",
+   "label": "dark grey"
+  },
+  {
+   "id": "dark-grey-09",
    "refHex": "#231D1D",
    "label": "dark grey"
   },
@@ -172,36 +187,41 @@
   },
   {
    "id": "dark-red-04",
-   "refHex": "#734238",
+   "refHex": "#960C09",
    "label": "dark red"
   },
   {
    "id": "dark-red-05",
-   "refHex": "#A22207",
+   "refHex": "#734238",
    "label": "dark red"
   },
   {
    "id": "dark-red-06",
-   "refHex": "#812B1A",
+   "refHex": "#A22207",
    "label": "dark red"
   },
   {
    "id": "dark-red-07",
-   "refHex": "#BE0000",
+   "refHex": "#812B1A",
    "label": "dark red"
   },
   {
    "id": "dark-red-08",
-   "refHex": "#6A342A",
+   "refHex": "#BE0000",
    "label": "dark red"
   },
   {
    "id": "dark-red-09",
-   "refHex": "#C32033",
+   "refHex": "#6A342A",
    "label": "dark red"
   },
   {
    "id": "dark-red-10",
+   "refHex": "#C32033",
+   "label": "dark red"
+  },
+  {
+   "id": "dark-red-11",
    "refHex": "#C11E21",
    "label": "dark red"
   },
@@ -252,11 +272,16 @@
   },
   {
    "id": "deep-blue-05",
-   "refHex": "#00528E",
+   "refHex": "#004F88",
    "label": "deep blue"
   },
   {
    "id": "deep-blue-06",
+   "refHex": "#00528E",
+   "label": "deep blue"
+  },
+  {
+   "id": "deep-blue-07",
    "refHex": "#01273C",
    "label": "deep blue"
   },
@@ -297,16 +322,21 @@
   },
   {
    "id": "deep-green-08",
-   "refHex": "#007133",
+   "refHex": "#006929",
    "label": "deep green"
   },
   {
    "id": "deep-green-09",
-   "refHex": "#007943",
+   "refHex": "#007133",
    "label": "deep green"
   },
   {
    "id": "deep-green-10",
+   "refHex": "#007943",
+   "label": "deep green"
+  },
+  {
+   "id": "deep-green-11",
    "refHex": "#474A35",
    "label": "deep green"
   },
@@ -372,6 +402,11 @@
   },
   {
    "id": "deep-teal-01",
+   "refHex": "#006557",
+   "label": "deep teal"
+  },
+  {
+   "id": "deep-teal-02",
    "refHex": "#01708B",
    "label": "deep teal"
   },
@@ -652,7 +687,7 @@
   },
   {
    "id": "orange-08",
-   "refHex": "#F6A300",
+   "refHex": "#F7A103",
    "label": "orange"
   },
   {
@@ -682,26 +717,36 @@
   },
   {
    "id": "orange-14",
-   "refHex": "#E4B895",
+   "refHex": "#887B67",
    "label": "orange"
   },
   {
    "id": "orange-15",
-   "refHex": "#D9AF75",
+   "refHex": "#F69113",
    "label": "orange"
   },
   {
    "id": "orange-16",
-   "refHex": "#C19B6E",
+   "refHex": "#E4B895",
    "label": "orange"
   },
   {
    "id": "orange-17",
-   "refHex": "#EAA432",
+   "refHex": "#D9AF75",
    "label": "orange"
   },
   {
    "id": "orange-18",
+   "refHex": "#C19B6E",
+   "label": "orange"
+  },
+  {
+   "id": "orange-19",
+   "refHex": "#EAA432",
+   "label": "orange"
+  },
+  {
+   "id": "orange-20",
    "refHex": "#D59335",
    "label": "orange"
   },
@@ -753,6 +798,11 @@
   {
    "id": "purple-01",
    "refHex": "#B598C9",
+   "label": "purple"
+  },
+  {
+   "id": "purple-02",
+   "refHex": "#8769B1",
    "label": "purple"
   },
   {
@@ -817,91 +867,96 @@
   },
   {
    "id": "yellow-06",
-   "refHex": "#B6A789",
+   "refHex": "#FFD300",
    "label": "yellow"
   },
   {
    "id": "yellow-07",
-   "refHex": "#FAB711",
+   "refHex": "#B6A789",
    "label": "yellow"
   },
   {
    "id": "yellow-08",
-   "refHex": "#F1A502",
+   "refHex": "#FAB711",
    "label": "yellow"
   },
   {
    "id": "yellow-09",
-   "refHex": "#E4D202",
+   "refHex": "#F1A502",
    "label": "yellow"
   },
   {
    "id": "yellow-10",
-   "refHex": "#C1AB72",
+   "refHex": "#E4D202",
    "label": "yellow"
   },
   {
    "id": "yellow-11",
-   "refHex": "#EBCE7E",
+   "refHex": "#C1AB72",
    "label": "yellow"
   },
   {
    "id": "yellow-12",
-   "refHex": "#C6B074",
+   "refHex": "#EBCE7E",
    "label": "yellow"
   },
   {
    "id": "yellow-13",
-   "refHex": "#BCBB7E",
+   "refHex": "#C6B074",
    "label": "yellow"
   },
   {
    "id": "yellow-14",
-   "refHex": "#F8E002",
+   "refHex": "#BCBB7E",
    "label": "yellow"
   },
   {
    "id": "yellow-15",
-   "refHex": "#F4D008",
+   "refHex": "#F8E002",
    "label": "yellow"
   },
   {
    "id": "yellow-16",
-   "refHex": "#F0D45F",
+   "refHex": "#F4D008",
    "label": "yellow"
   },
   {
    "id": "yellow-17",
-   "refHex": "#FFF464",
+   "refHex": "#F0D45F",
    "label": "yellow"
   },
   {
    "id": "yellow-18",
-   "refHex": "#FFF55A",
+   "refHex": "#FFF464",
    "label": "yellow"
   },
   {
    "id": "yellow-19",
-   "refHex": "#C5C483",
+   "refHex": "#FFF55A",
    "label": "yellow"
   },
   {
    "id": "yellow-20",
-   "refHex": "#FFCB05",
+   "refHex": "#C5C483",
    "label": "yellow"
   },
   {
    "id": "yellow-21",
-   "refHex": "#F8ED1F",
+   "refHex": "#FFCB05",
    "label": "yellow"
   },
   {
    "id": "yellow-22",
-   "refHex": "#F8D347",
+   "refHex": "#F8ED1F",
    "label": "yellow"
   },
   {
    "id": "yellow-23",
+   "refHex": "#F8D347",
+   "label": "yellow"
+  },
+  {
+   "id": "yellow-24",
    "refHex": "#EFE641",
    "label": "yellow"
   }
@@ -970,7 +1025,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
-   "captured": "2026-10-26"
+   "captured": "2026-10-26",
+   "groupId": "deep-teal-01"
   },
   {
    "id": "ak-interactive-3rd-gen-archaic-turquoise",
@@ -2766,7 +2822,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
-   "captured": "2026-10-26"
+   "captured": "2026-10-26",
+   "groupId": "yellow-06"
   },
   {
    "id": "ak-interactive-3rd-gen-reddish-grey",
@@ -3185,7 +3242,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
    "captured": "2026-10-26",
-   "groupId": "yellow-06"
+   "groupId": "yellow-07"
   },
   {
    "id": "ak-interactive-3rd-gen-white-grey",
@@ -3226,7 +3283,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
    "captured": "2026-10-26",
-   "groupId": "yellow-07"
+   "groupId": "yellow-08"
   },
   {
    "id": "ak-interactive-3rd-gen-afv-3b-au-zb-au",
@@ -5334,7 +5391,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
    "captured": "2026-10-26",
-   "groupId": "yellow-08"
+   "groupId": "yellow-09"
   },
   {
    "id": "ak-interactive-3rd-gen-air-rlm-61",
@@ -5860,7 +5917,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
    "captured": "2026-10-26",
-   "groupId": "yellow-09"
+   "groupId": "yellow-10"
   },
   {
    "id": "ak-interactive-3rd-gen-figures-base-flesh",
@@ -8668,7 +8725,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Mig.md",
    "captured": "2026-10-26",
-   "groupId": "yellow-10"
+   "groupId": "yellow-11"
   },
   {
    "id": "ammo-by-mig-acrylic-new-iraqui-army-sand",
@@ -9155,7 +9212,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Mig.md",
    "captured": "2026-10-26",
-   "groupId": "yellow-11"
+   "groupId": "yellow-12"
   },
   {
    "id": "ammo-by-mig-acrylic-ral-8031-f9-sand-brown",
@@ -9195,7 +9252,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Mig.md",
    "captured": "2026-10-26",
-   "groupId": "yellow-12"
+   "groupId": "yellow-13"
   },
   {
    "id": "ammo-by-mig-acrylic-ral7050-f7-german-grey-beige",
@@ -9511,7 +9568,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Mig.md",
    "captured": "2026-10-26",
-   "groupId": "yellow-13"
+   "groupId": "yellow-14"
   },
   {
    "id": "ammo-by-mig-acrylic-rubber-amp-tires",
@@ -10600,7 +10657,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-14"
+   "groupId": "yellow-15"
   },
   {
    "id": "army-painter-nolzurs-beholder-purple",
@@ -12018,7 +12075,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-15"
+   "groupId": "yellow-16"
   },
   {
    "id": "army-painter-speedpaint-malignant-green",
@@ -12539,7 +12596,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-15"
+   "groupId": "yellow-16"
   },
   {
    "id": "army-painter-warpaints-abomination-gore",
@@ -13393,7 +13450,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-16"
+   "groupId": "yellow-17"
   },
   {
    "id": "army-painter-warpaints-mouldy-clothes",
@@ -13472,7 +13529,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-06"
+   "groupId": "yellow-07"
   },
   {
    "id": "army-painter-warpaints-oak-brown",
@@ -15706,7 +15763,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "deep-blue-05"
   },
   {
    "id": "army-painter-warpaints-fanatic-resplendent-red",
@@ -16515,7 +16573,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-17"
+   "groupId": "yellow-18"
   },
   {
    "id": "army-painter-wash-light-tone",
@@ -16803,7 +16861,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-07"
+   "groupId": "yellow-08"
   },
   {
    "id": "citadel-base-balthasar-gold",
@@ -17212,7 +17270,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "dark-red-04"
   },
   {
    "id": "citadel-base-morghast-bone",
@@ -17226,7 +17285,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-10"
+   "groupId": "yellow-11"
   },
   {
    "id": "citadel-base-mournfang-brown",
@@ -18119,7 +18178,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-18"
+   "groupId": "yellow-19"
   },
   {
    "id": "citadel-dry-hoeth-blue",
@@ -18366,7 +18425,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-19"
+   "groupId": "yellow-20"
   },
   {
    "id": "citadel-dry-underhive-ash",
@@ -18380,7 +18439,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-13"
+   "groupId": "yellow-14"
   },
   {
    "id": "citadel-dry-verminlord-hide",
@@ -18446,7 +18505,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-17"
+   "groupId": "yellow-18"
   },
   {
    "id": "citadel-glaze-waywatcher-green",
@@ -18486,7 +18545,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "deep-teal-01"
+   "groupId": "deep-teal-02"
   },
   {
    "id": "citadel-layer-alaitoc-blue",
@@ -18765,7 +18824,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-18"
+   "groupId": "yellow-19"
   },
   {
    "id": "citadel-layer-elysian-green",
@@ -19022,7 +19081,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "purple-02"
   },
   {
    "id": "citadel-layer-karak-stone",
@@ -19075,7 +19135,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-13"
+   "groupId": "yellow-14"
   },
   {
    "id": "citadel-layer-liberator-gold",
@@ -20236,6 +20296,1971 @@
    "fx": "gloss"
   },
   {
+   "id": "citadel-tone-pro-blackstone-void-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blackstone Void 1",
+   "hex": "#000208",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-blackstone-void-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blackstone Void 2",
+   "hex": "#4E5458",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "dark-grey-05"
+  },
+  {
+   "id": "citadel-tone-pro-blackstone-void-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blackstone Void 3",
+   "hex": "#6E7074",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-blackstone-void-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blackstone Void 4",
+   "hex": "#9B9D9F",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-blackstone-void-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blackstone Void 5",
+   "hex": "#FFFFFF",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "near-white-01"
+  },
+  {
+   "id": "citadel-tone-pro-bloodtoof-red-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Bloodtoof Red 1",
+   "hex": "#581E16",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-bloodtoof-red-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Bloodtoof Red 2",
+   "hex": "#94001E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-bloodtoof-red-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Bloodtoof Red 3",
+   "hex": "#AD072B",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-bloodtoof-red-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Bloodtoof Red 4",
+   "hex": "#D60020",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-bloodtoof-red-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Bloodtoof Red 5",
+   "hex": "#EF353C",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-blue-gorkshroom-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blue Gorkshroom 1",
+   "hex": "#002356",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-blue-gorkshroom-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blue Gorkshroom 2",
+   "hex": "#004487",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-blue-gorkshroom-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blue Gorkshroom 3",
+   "hex": "#0057A3",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "dark-blue-04"
+  },
+  {
+   "id": "citadel-tone-pro-blue-gorkshroom-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blue Gorkshroom 4",
+   "hex": "#006CAD",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-blue-gorkshroom-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Blue Gorkshroom 5",
+   "hex": "#007BB2",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carmine-blades-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carmine Blades 1",
+   "hex": "#3C262A",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carmine-blades-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carmine Blades 2",
+   "hex": "#5B3539",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carmine-blades-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carmine Blades 3",
+   "hex": "#750019",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carmine-blades-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carmine Blades 4",
+   "hex": "#910022",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carmine-blades-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carmine Blades 5",
+   "hex": "#C64D50",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carthalos-skin-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carthalos Skin 1",
+   "hex": "#241815",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carthalos-skin-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carthalos Skin 2",
+   "hex": "#2D140C",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carthalos-skin-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carthalos Skin 3",
+   "hex": "#4E2212",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carthalos-skin-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carthalos Skin 4",
+   "hex": "#5F3A37",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-carthalos-skin-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Carthalos Skin 5",
+   "hex": "#795346",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-celestine-skin-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Celestine Skin 1",
+   "hex": "#CD8169",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-celestine-skin-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Celestine Skin 2",
+   "hex": "#D58B70",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-celestine-skin-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Celestine Skin 3",
+   "hex": "#D99578",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-celestine-skin-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Celestine Skin 4",
+   "hex": "#EAA889",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-celestine-skin-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Celestine Skin 5",
+   "hex": "#DDB398",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-chotec-orange-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Chotec Orange 1",
+   "hex": "#93150B",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "dark-red-04"
+  },
+  {
+   "id": "citadel-tone-pro-chotec-orange-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Chotec Orange 2",
+   "hex": "#B82F2D",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-chotec-orange-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Chotec Orange 3",
+   "hex": "#E04A33",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-chotec-orange-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Chotec Orange 4",
+   "hex": "#F56230",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-chotec-orange-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Chotec Orange 5",
+   "hex": "#F78030",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-craventhrone-cloak-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Craventhrone Cloak 1",
+   "hex": "#08232E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-craventhrone-cloak-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Craventhrone Cloak 2",
+   "hex": "#12373E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-craventhrone-cloak-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Craventhrone Cloak 3",
+   "hex": "#164858",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-craventhrone-cloak-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Craventhrone Cloak 4",
+   "hex": "#41717D",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-craventhrone-cloak-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Craventhrone Cloak 5",
+   "hex": "#598A8E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-dataslate-grey-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Dataslate Grey 1",
+   "hex": "#2B2D28",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "dark-grey-06"
+  },
+  {
+   "id": "citadel-tone-pro-dataslate-grey-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Dataslate Grey 2",
+   "hex": "#3E3D35",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-dataslate-grey-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Dataslate Grey 3",
+   "hex": "#555650",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-dataslate-grey-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Dataslate Grey 4",
+   "hex": "#737069",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-dataslate-grey-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Dataslate Grey 5",
+   "hex": "#878983",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-enrapturess-dusk-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Enrapturess Dusk 1",
+   "hex": "#1E1435",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-enrapturess-dusk-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Enrapturess Dusk 2",
+   "hex": "#413549",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-enrapturess-dusk-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Enrapturess Dusk 3",
+   "hex": "#534D5E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-enrapturess-dusk-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Enrapturess Dusk 4",
+   "hex": "#6E6773",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-enrapturess-dusk-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Enrapturess Dusk 5",
+   "hex": "#817A86",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-eye-of-terror-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Eye of Terror 1",
+   "hex": "#920030",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-eye-of-terror-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Eye of Terror 2",
+   "hex": "#BD0047",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-eye-of-terror-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Eye of Terror 3",
+   "hex": "#C20060",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-eye-of-terror-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Eye of Terror 4",
+   "hex": "#D4417B",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-eye-of-terror-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Eye of Terror 5",
+   "hex": "#DB6499",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-gnarlwood-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Gnarlwood 1",
+   "hex": "#342928",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-gnarlwood-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Gnarlwood 2",
+   "hex": "#514235",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-gnarlwood-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Gnarlwood 3",
+   "hex": "#725C44",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-gnarlwood-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Gnarlwood 4",
+   "hex": "#776857",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-gnarlwood-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Gnarlwood 5",
+   "hex": "#887B67",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "orange-14"
+  },
+  {
+   "id": "citadel-tone-pro-green-morkshroom-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Green Morkshroom 1",
+   "hex": "#143230",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-green-morkshroom-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Green Morkshroom 2",
+   "hex": "#004F48",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-green-morkshroom-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Green Morkshroom 3",
+   "hex": "#006458",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "deep-teal-01"
+  },
+  {
+   "id": "citadel-tone-pro-green-morkshroom-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Green Morkshroom 4",
+   "hex": "#007B6D",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-green-morkshroom-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Green Morkshroom 5",
+   "hex": "#37AC83",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hawkshroud-yellow-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hawkshroud Yellow 1",
+   "hex": "#F69113",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "orange-15"
+  },
+  {
+   "id": "citadel-tone-pro-hawkshroud-yellow-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hawkshroud Yellow 2",
+   "hex": "#FBA200",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "orange-08"
+  },
+  {
+   "id": "citadel-tone-pro-hawkshroud-yellow-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hawkshroud Yellow 3",
+   "hex": "#FEBB00",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hawkshroud-yellow-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hawkshroud Yellow 4",
+   "hex": "#FFD300",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "yellow-06"
+  },
+  {
+   "id": "citadel-tone-pro-hawkshroud-yellow-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hawkshroud Yellow 5",
+   "hex": "#FDE07E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hierotek-green-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hierotek Green 1",
+   "hex": "#00321C",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hierotek-green-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hierotek Green 2",
+   "hex": "#00542D",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hierotek-green-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hierotek Green 3",
+   "hex": "#006A2E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "deep-green-08"
+  },
+  {
+   "id": "citadel-tone-pro-hierotek-green-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hierotek Green 4",
+   "hex": "#00894E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hierotek-green-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hierotek Green 5",
+   "hex": "#00B681",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hive-fleet-purple-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hive Fleet Purple 1",
+   "hex": "#1E1A40",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hive-fleet-purple-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hive Fleet Purple 2",
+   "hex": "#3C1E54",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hive-fleet-purple-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hive Fleet Purple 3",
+   "hex": "#655192",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-hive-fleet-purple-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hive Fleet Purple 4",
+   "hex": "#8769B1",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "purple-02"
+  },
+  {
+   "id": "citadel-tone-pro-hive-fleet-purple-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Hive Fleet Purple 5",
+   "hex": "#8F82AE",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kasrkin-green-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kasrkin Green 1",
+   "hex": "#001B1B",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kasrkin-green-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kasrkin Green 2",
+   "hex": "#1F4530",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kasrkin-green-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kasrkin Green 3",
+   "hex": "#40713C",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kasrkin-green-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kasrkin Green 4",
+   "hex": "#678E55",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kasrkin-green-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kasrkin Green 5",
+   "hex": "#86A978",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-khemri-sands-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Khemri Sands 1",
+   "hex": "#6C4B12",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-khemri-sands-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Khemri Sands 2",
+   "hex": "#8D5E06",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-khemri-sands-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Khemri Sands 3",
+   "hex": "#B1791E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-khemri-sands-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Khemri Sands 4",
+   "hex": "#CF8400",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-khemri-sands-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Khemri Sands 5",
+   "hex": "#DC9A00",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kruleboyz-green-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kruleboyz Green 1",
+   "hex": "#4A7D36",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kruleboyz-green-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kruleboyz Green 2",
+   "hex": "#627F3C",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kruleboyz-green-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kruleboyz Green 3",
+   "hex": "#7A823F",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kruleboyz-green-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kruleboyz Green 4",
+   "hex": "#939859",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-kruleboyz-green-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Kruleboyz Green 5",
+   "hex": "#AEB16C",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-lustria-green-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Lustria Green 1",
+   "hex": "#004816",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-lustria-green-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Lustria Green 2",
+   "hex": "#006929",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "deep-green-08"
+  },
+  {
+   "id": "citadel-tone-pro-lustria-green-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Lustria Green 3",
+   "hex": "#007931",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-lustria-green-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Lustria Green 4",
+   "hex": "#34AD40",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "green-06"
+  },
+  {
+   "id": "citadel-tone-pro-lustria-green-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Lustria Green 5",
+   "hex": "#4EB33F",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-magnus-the-red-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Magnus the Red 1",
+   "hex": "#3A202D",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-magnus-the-red-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Magnus the Red 2",
+   "hex": "#4A123E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-magnus-the-red-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Magnus the Red 3",
+   "hex": "#76003F",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-magnus-the-red-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Magnus the Red 4",
+   "hex": "#9A1B59",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-magnus-the-red-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Magnus the Red 5",
+   "hex": "#AA4277",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-megaboss-yellow-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Megaboss Yellow 1",
+   "hex": "#F9AD00",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-megaboss-yellow-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Megaboss Yellow 2",
+   "hex": "#F8CE00",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-megaboss-yellow-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Megaboss Yellow 3",
+   "hex": "#FFE440",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-megaboss-yellow-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Megaboss Yellow 4",
+   "hex": "#F8E85F",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-megaboss-yellow-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Megaboss Yellow 5",
+   "hex": "#FFF175",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-necrolith-bone-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Necrolith Bone 1",
+   "hex": "#877561",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-necrolith-bone-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Necrolith Bone 2",
+   "hex": "#B0916A",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-necrolith-bone-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Necrolith Bone 3",
+   "hex": "#B99F7D",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-necrolith-bone-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Necrolith Bone 4",
+   "hex": "#C1AB86",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-necrolith-bone-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Necrolith Bone 5",
+   "hex": "#BCB79E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-plague-toad-venom-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Plague Toad Venom 1",
+   "hex": "#49892D",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-plague-toad-venom-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Plague Toad Venom 2",
+   "hex": "#549B32",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-plague-toad-venom-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Plague Toad Venom 3",
+   "hex": "#80C234",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-plague-toad-venom-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Plague Toad Venom 4",
+   "hex": "#9CC829",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-plague-toad-venom-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Plague Toad Venom 5",
+   "hex": "#C8D600",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-scinari-blue-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Scinari Blue 1",
+   "hex": "#004789",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-scinari-blue-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Scinari Blue 2",
+   "hex": "#005895",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-scinari-blue-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Scinari Blue 3",
+   "hex": "#006C9A",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-scinari-blue-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Scinari Blue 4",
+   "hex": "#0088BB",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-scinari-blue-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Scinari Blue 5",
+   "hex": "#009AB9",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-seraphon-blue-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Seraphon Blue 1",
+   "hex": "#002F34",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-seraphon-blue-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Seraphon Blue 2",
+   "hex": "#004650",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-seraphon-blue-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Seraphon Blue 3",
+   "hex": "#006874",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-seraphon-blue-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Seraphon Blue 4",
+   "hex": "#008D92",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-seraphon-blue-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Seraphon Blue 5",
+   "hex": "#00B7B9",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-shalaxi-violet-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Shalaxi Violet 1",
+   "hex": "#130040",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-shalaxi-violet-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Shalaxi Violet 2",
+   "hex": "#262E6D",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-shalaxi-violet-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Shalaxi Violet 3",
+   "hex": "#324E99",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-shalaxi-violet-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Shalaxi Violet 4",
+   "hex": "#6472B9",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-shalaxi-violet-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Shalaxi Violet 5",
+   "hex": "#7E8BC8",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-stormwolf-blue-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Stormwolf Blue 1",
+   "hex": "#233F55",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-stormwolf-blue-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Stormwolf Blue 2",
+   "hex": "#405568",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-stormwolf-blue-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Stormwolf Blue 3",
+   "hex": "#54697D",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-stormwolf-blue-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Stormwolf Blue 4",
+   "hex": "#6E95A4",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-stormwolf-blue-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Stormwolf Blue 5",
+   "hex": "#87AFB9",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-taunar-ochre-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ta'unar Ochre 1",
+   "hex": "#BB5528",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-taunar-ochre-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ta'unar Ochre 2",
+   "hex": "#D27144",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-taunar-ochre-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ta'unar Ochre 3",
+   "hex": "#E78344",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-taunar-ochre-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ta'unar Ochre 4",
+   "hex": "#EA9B6B",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-taunar-ochre-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ta'unar Ochre 5",
+   "hex": "#E9B06E",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-ultramar-blue-1",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ultramar Blue 1",
+   "hex": "#001A42",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-ultramar-blue-2",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ultramar Blue 2",
+   "hex": "#0F3062",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-ultramar-blue-3",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ultramar Blue 3",
+   "hex": "#0D4F88",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06",
+   "groupId": "deep-blue-05"
+  },
+  {
+   "id": "citadel-tone-pro-ultramar-blue-4",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ultramar Blue 4",
+   "hex": "#436CA1",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
+   "id": "citadel-tone-pro-ultramar-blue-5",
+   "brand": "Warhammer Colour",
+   "line": "Tone Pro",
+   "name": "Ultramar Blue 5",
+   "hex": "#6D9ECF",
+   "type": "layer",
+   "discontinued": false,
+   "approx": true,
+   "source": "manufacturer",
+   "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+   "captured": "2026-11-06"
+  },
+  {
    "id": "p3-p3-jack-bone",
    "brand": "P3",
    "line": "P3",
@@ -20455,7 +22480,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/P3.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "orange-14"
   },
   {
    "id": "p3-p3-blighted-gold",
@@ -20626,7 +22652,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/P3.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-04"
+   "groupId": "dark-red-05"
   },
   {
    "id": "p3-p3-carnal-pink",
@@ -21006,7 +23032,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/P3.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-12"
+   "groupId": "yellow-13"
   },
   {
    "id": "p3-p3-idrian-flesh",
@@ -21950,7 +23976,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "dark-grey-06"
   },
   {
    "id": "pro-acryl-pro-acryl-black-green",
@@ -21976,7 +24003,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "dark-blue-04"
   },
   {
    "id": "pro-acryl-pro-acryl-blue-black",
@@ -22758,7 +24786,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-05"
+   "groupId": "dark-red-06"
   },
   {
    "id": "pro-acryl-pro-acryl-transparent-purple",
@@ -23495,7 +25523,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-04"
+   "groupId": "dark-red-05"
   },
   {
    "id": "reaper-bones-ancient-oak",
@@ -23613,7 +25641,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-14"
+   "groupId": "yellow-15"
   },
   {
    "id": "reaper-bones-candlelight-yellow",
@@ -23627,7 +25655,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-20"
+   "groupId": "yellow-21"
   },
   {
    "id": "reaper-bones-cats-eye-green",
@@ -23680,7 +25708,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-05"
+   "groupId": "dark-red-06"
   },
   {
    "id": "reaper-bones-crimson-red",
@@ -24061,7 +26089,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-07"
+   "groupId": "yellow-08"
   },
   {
    "id": "reaper-bones-heraldic-red",
@@ -24101,7 +26129,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-06"
+   "groupId": "dark-red-07"
   },
   {
    "id": "reaper-bones-lantern-yellow",
@@ -24181,7 +26209,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "dark-blue-04"
+   "groupId": "dark-blue-05"
   },
   {
    "id": "reaper-bones-mountain-stone",
@@ -24247,7 +26275,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "deep-blue-05"
+   "groupId": "deep-blue-06"
   },
   {
    "id": "reaper-bones-ogre-skin",
@@ -24392,7 +26420,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "orange-14"
+   "groupId": "orange-16"
   },
   {
    "id": "reaper-bones-shining-mithril",
@@ -24565,7 +26593,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "orange-14"
+   "groupId": "orange-16"
   },
   {
    "id": "reaper-bones-tempest-grey",
@@ -24618,7 +26646,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "dark-blue-04"
+   "groupId": "dark-blue-05"
   },
   {
    "id": "reaper-bones-turf-green",
@@ -25208,7 +27236,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "deep-blue-06"
+   "groupId": "deep-blue-07"
   },
   {
    "id": "reaper-master-series-bright-skin",
@@ -25235,7 +27263,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-16"
+   "groupId": "yellow-17"
   },
   {
    "id": "reaper-master-series-bright-skin-shadow",
@@ -26008,7 +28036,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-07"
+   "groupId": "dark-red-08"
   },
   {
    "id": "reaper-master-series-frosty-blue",
@@ -26178,7 +28206,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-19"
+   "groupId": "yellow-20"
   },
   {
    "id": "reaper-master-series-green-liner",
@@ -26218,7 +28246,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "dark-grey-05"
+   "groupId": "dark-grey-07"
   },
   {
    "id": "reaper-master-series-gunmetal-blue",
@@ -26257,7 +28285,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "orange-15"
   },
   {
    "id": "reaper-master-series-heartwood-brown",
@@ -26519,7 +28548,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-21"
+   "groupId": "yellow-22"
   },
   {
    "id": "reaper-master-series-light-blue",
@@ -27283,7 +29312,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-07"
+   "groupId": "dark-red-08"
   },
   {
    "id": "reaper-master-series-rainy-grey",
@@ -27531,7 +29560,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-08"
+   "groupId": "dark-red-09"
   },
   {
    "id": "reaper-master-series-runic-glow",
@@ -27584,7 +29613,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-08"
+   "groupId": "yellow-09"
   },
   {
    "id": "reaper-master-series-sandy-brown",
@@ -28500,7 +30529,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-22"
+   "groupId": "yellow-23"
   },
   {
    "id": "reaper-pathfinder-cavalier-orange",
@@ -28817,7 +30846,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-09"
+   "groupId": "dark-red-10"
   },
   {
    "id": "reaper-pathfinder-milani-rose",
@@ -29360,7 +31389,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-09"
+   "groupId": "dark-red-10"
   },
   {
    "id": "scale75-artist-crimson-ink",
@@ -29894,7 +31923,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-21"
+   "groupId": "yellow-22"
   },
   {
    "id": "scale75-artist-prusian-blue",
@@ -29908,7 +31937,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "deep-blue-06"
+   "groupId": "deep-blue-07"
   },
   {
    "id": "scale75-artist-purple",
@@ -30380,7 +32409,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "deep-green-08"
+   "groupId": "deep-green-09"
   },
   {
    "id": "scale75-fantasy-games-harvester-flesh",
@@ -31997,7 +34026,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-10"
+   "groupId": "dark-red-11"
   },
   {
    "id": "scale75-scalecolor-anthartic-grey",
@@ -32273,7 +34302,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "dark-grey-05"
+   "groupId": "dark-grey-07"
   },
   {
    "id": "scale75-scalecolor-fall-green",
@@ -32998,7 +35027,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "orange-15"
+   "groupId": "orange-17"
   },
   {
    "id": "scale75-warfront-dunkelbraun-brown",
@@ -33117,7 +35146,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "orange-15"
+   "groupId": "orange-17"
   },
   {
    "id": "scale75-warfront-grau",
@@ -33760,7 +35789,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-20"
+   "groupId": "yellow-21"
   },
   {
    "id": "two-thin-coats-wave-1-amethyst-rayne",
@@ -34768,7 +36797,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
-   "groupId": "dark-grey-06"
+   "groupId": "dark-grey-08"
   },
   {
    "id": "two-thin-coats-wave-2-evil-eye-red",
@@ -35004,7 +37033,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
-   "groupId": "orange-16"
+   "groupId": "orange-18"
   },
   {
    "id": "two-thin-coats-wave-2-leviathan-blue",
@@ -35852,7 +37881,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-08"
+   "groupId": "dark-red-09"
   },
   {
    "id": "two-thin-coats-wave-3-relic-blue",
@@ -36258,7 +38287,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "deep-blue-05"
+   "groupId": "deep-blue-06"
   },
   {
    "id": "vallejo-game-color-bone-white",
@@ -36455,7 +38484,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "deep-teal-01"
+   "groupId": "deep-teal-02"
   },
   {
    "id": "vallejo-game-color-dead-flesh",
@@ -36759,7 +38788,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-23"
+   "groupId": "yellow-24"
   },
   {
    "id": "vallejo-game-color-foul-green",
@@ -36786,7 +38815,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-06"
+   "groupId": "dark-red-07"
   },
   {
    "id": "vallejo-game-color-ghost-green",
@@ -36904,7 +38933,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "deep-green-08"
+   "groupId": "deep-green-09"
   },
   {
    "id": "vallejo-game-color-grunge-brown",
@@ -36957,7 +38986,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-blue-05"
+   "groupId": "dark-blue-06"
   },
   {
    "id": "vallejo-game-color-heavy-bluegrey",
@@ -37365,7 +39394,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-11"
+   "groupId": "yellow-12"
   },
   {
    "id": "vallejo-game-color-parasite-brown",
@@ -37484,7 +39513,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-red-10"
+   "groupId": "dark-red-11"
   },
   {
    "id": "vallejo-game-color-scarlet-red",
@@ -38091,7 +40120,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-blue-05"
+   "groupId": "dark-blue-06"
   },
   {
    "id": "vallejo-mecha-color-dark-green",
@@ -38105,7 +40134,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-grey-06"
+   "groupId": "dark-grey-08"
   },
   {
    "id": "vallejo-mecha-color-dark-grey-green",
@@ -38211,7 +40240,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-blue-06"
+   "groupId": "dark-blue-07"
   },
   {
    "id": "vallejo-mecha-color-fuel-stains-gloss",
@@ -38900,7 +40929,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-23"
+   "groupId": "yellow-24"
   },
   {
    "id": "vallejo-mecha-color-yellow-ochre",
@@ -38914,7 +40943,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-17"
+   "groupId": "orange-19"
   },
   {
    "id": "vallejo-metal-color-aluminium",
@@ -39168,7 +41197,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-blue-06"
+   "groupId": "dark-blue-07"
   },
   {
    "id": "vallejo-model-color-azure",
@@ -39274,7 +41303,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-grey-07"
+   "groupId": "dark-grey-09"
   },
   {
    "id": "vallejo-model-color-black-glaze",
@@ -39288,7 +41317,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-grey-05"
+   "groupId": "dark-grey-07"
   },
   {
    "id": "vallejo-model-color-black-green",
@@ -39367,7 +41396,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-blue-06"
+   "groupId": "dark-blue-07"
   },
   {
    "id": "vallejo-model-color-blue-green",
@@ -39788,7 +41817,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-18"
+   "groupId": "orange-20"
   },
   {
    "id": "vallejo-model-color-dark-grey",
@@ -40091,7 +42120,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "groupId": "dark-grey-05"
   },
   {
    "id": "vallejo-model-color-flat-blue",
@@ -40315,7 +42345,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "dark-grey-07"
+   "groupId": "dark-grey-09"
   },
   {
    "id": "vallejo-model-color-gold",
@@ -40695,7 +42725,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-09"
+   "groupId": "yellow-10"
   },
   {
    "id": "vallejo-model-color-light-brown",
@@ -40736,7 +42766,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "deep-green-09"
+   "groupId": "deep-green-10"
   },
   {
    "id": "vallejo-model-color-light-green-blue",
@@ -40843,7 +42873,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-22"
+   "groupId": "yellow-23"
   },
   {
    "id": "vallejo-model-color-lime-green",
@@ -41119,7 +43149,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-17"
+   "groupId": "orange-19"
   },
   {
    "id": "vallejo-model-color-neutral-grey",
@@ -41487,7 +43517,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "deep-green-10"
+   "groupId": "deep-green-11"
   },
   {
    "id": "vallejo-model-color-royal-blue",
@@ -41723,7 +43753,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-18"
+   "groupId": "orange-20"
   },
   {
    "id": "vallejo-model-color-tan-yellow",
@@ -41737,7 +43767,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "orange-16"
+   "groupId": "orange-18"
   },
   {
    "id": "vallejo-model-color-transparent-blue",
@@ -41764,7 +43794,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "deep-green-09"
+   "groupId": "deep-green-10"
   },
   {
    "id": "vallejo-model-color-transparent-orange",
@@ -41857,7 +43887,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "deep-green-10"
+   "groupId": "deep-green-11"
   },
   {
    "id": "vallejo-model-color-us-field-drab",
@@ -42003,7 +44033,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-23"
+   "groupId": "yellow-24"
   },
   {
    "id": "vallejo-model-color-yellow-green",

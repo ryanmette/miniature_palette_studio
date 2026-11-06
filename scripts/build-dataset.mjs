@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build-dataset.mjs — assemble src/data/paints.json (dataset v1.7.0).
+ * build-dataset.mjs — assemble src/data/paints.json (dataset v1.8.0).
  *
  * Source: all brands are parsed at build time from the MIT-licensed community dataset
  *   github.com/Arcturus5404/miniature-paints (© 2022 Rick Fleuren, "Miniature Painter Pro").
@@ -9,8 +9,11 @@
  * e.g.  for f in Citadel_Colour Vallejo Army_Painter Duncan P3 Reaper Scale75 Monument AK Mig; do \
  *         curl -sL https://raw.githubusercontent.com/Arcturus5404/miniature-paints/main/paints/$f.md -o RAW/$f.md; done
  *
- * Per CLAUDE.md §5: hex is sRGB; Lab is derived at runtime (never stored). All entries are
- * community-sourced → approx:true. Provenance recorded in src/data/SOURCES.md.
+ * Second source: Warhammer Tone Pro (150 paints) from scripts/tone-pro.json, read from GW's own colour charts
+ *   (source 'manufacturer'; the file records the article, the charts and the method). Upstream has no Tone Pro.
+ *
+ * Per CLAUDE.md §5: hex is sRGB; Lab is derived at runtime (never stored). Every entry is approx:true (no
+ * maker publishes an official hex). Provenance recorded in src/data/SOURCES.md.
  *
  * Curated-broad scope: the real hobby colour ranges + their washes/contrast/metal/effects.
  * We skip airbrush ranges (duplicate the colour ranges), primers/sprays, and craft/weathering lines.
@@ -24,8 +27,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = process.argv[2] || join(ROOT, '.cache', 'raw');
 const CAPTURED = '2026-06-25';
-const VERSION = '1.7.0';
-const GENERATED = '2026-11-03';   // the build that renamed Citadel to Warhammer Colour (the values are still CAPTURED's)
+const VERSION = '1.8.0';
+const GENERATED = '2026-11-06';   // the build that added Warhammer Tone Pro (the upstream values are still CAPTURED's)
 const REPO = 'https://github.com/Arcturus5404/miniature-paints';
 const src = file => `${REPO}/blob/main/paints/${file}`;
 
@@ -149,13 +152,13 @@ function parseRows(text, setIdx) {
 /* ---- assemble ---- */
 const paints = [];
 const seen = new Set();
-function add(b, line, name, hex, type, sourceUrl, captured = CAPTURED) {
+function add(b, line, name, hex, type, sourceUrl, captured = CAPTURED, source = 'community') {
   if (!name || SKIP_NAME.test(name)) return;
   const id = `${b.key || slug(b.brand)}-${slug(line)}-${slug(name)}`;   // from the upstream name: ids never change
   if (seen.has(id)) return; seen.add(id);
   const fixed = b.names?.[name];
   paints.push({ id, brand: b.brand, line, name: fixed || name, hex: hex.toUpperCase(), type, discontinued: false, approx: true,
-    source: 'community', sourceUrl, captured, ...(fixed ? { formerly: [name] } : {}) });
+    source, sourceUrl, captured, ...(fixed ? { formerly: [name] } : {}) });
 }
 const sortKey = new Map(BRANDS.map(b => [b.brand, b.key || b.brand]));
 
@@ -170,6 +173,13 @@ for (const b of BRANDS) {
     add(b, line, row.name, row.hex, resolveType(row.name, kind), url, b.captured);
   }
 }
+
+// Warhammer Tone Pro (docs/TONE_PRO.md): 30 colours × 5 tones, named "Ultramar Blue 3" (1 the darkest).
+// Type `layer`: GW says the paints are opaque (TONE_PRO.md §4), so they are flat colours, line "Tone Pro".
+const TONE_PRO = JSON.parse(readFileSync(join(ROOT, 'scripts', 'tone-pro.json'), 'utf8'));
+const WC = BRANDS.find(b => b.brand === 'Warhammer Colour');
+for (const c of TONE_PRO.colours) c.tones.forEach((hex, i) =>
+  add(WC, 'Tone Pro', `${c.name} ${i + 1}`, hex, 'layer', TONE_PRO.source.url, TONE_PRO.source.captured, 'manufacturer'));
 
 // Sort by the upstream name too, so a fixed name keeps its place (the order breaks ΔE ties, see `key`)
 const upName = p => p.formerly?.[0] || p.name;

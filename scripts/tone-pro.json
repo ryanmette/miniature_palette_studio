@@ -1,0 +1,48 @@
+{
+ "about": "Warhammer Tone Pro (Games Workshop): 30 colours x 5 tones, 1 the darkest and 5 the lightest. Read by scripts/build-dataset.mjs. Dev input, NOT shipped.",
+ "source": {
+  "publisher": "Games Workshop, Warhammer Community",
+  "article": "Sunday Preview – Warhammer Tone Pro",
+  "published": "2026-10-04",
+  "url": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
+  "charts": [
+   "https://assets.warhammer-community.com/articles/0-2026/september/wc28-09/sundaypreview-oct04-swatch1-grrhwun86c.png",
+   "https://assets.warhammer-community.com/articles/0-2026/september/wc28-09/sundaypreview-oct04-swatch2-ag7m6xegoh.png",
+   "https://assets.warhammer-community.com/articles/0-2026/september/wc28-09/sundaypreview-oct04-swatch3-zo7xgbm2zg.png"
+  ],
+  "captured": "2026-11-06",
+  "method": "Each tone is a flat block of one colour in GW's chart (PNG, no compression loss). The value is the median of the block's right part (the digit is on the left), on white; every pixel in each part had the same value. So each hex is exactly the colour that GW drew. It is GW's picture of the paint on a screen, not a measurement of the paint: approx stays true."
+ },
+ "colours": [
+  { "name": "Carmine Blades", "chart": 1, "tones": ["#3C262A", "#5B3539", "#750019", "#910022", "#C64D50"] },
+  { "name": "Hawkshroud Yellow", "chart": 1, "tones": ["#F69113", "#FBA200", "#FEBB00", "#FFD300", "#FDE07E"] },
+  { "name": "Bloodtoof Red", "chart": 1, "tones": ["#581E16", "#94001E", "#AD072B", "#D60020", "#EF353C"] },
+  { "name": "Megaboss Yellow", "chart": 1, "tones": ["#F9AD00", "#F8CE00", "#FFE440", "#F8E85F", "#FFF175"] },
+  { "name": "Chotec Orange", "chart": 1, "tones": ["#93150B", "#B82F2D", "#E04A33", "#F56230", "#F78030"] },
+  { "name": "Plague Toad Venom", "chart": 1, "tones": ["#49892D", "#549B32", "#80C234", "#9CC829", "#C8D600"] },
+  { "name": "Ta'unar Ochre", "chart": 1, "tones": ["#BB5528", "#D27144", "#E78344", "#EA9B6B", "#E9B06E"] },
+  { "name": "Kruleboyz Green", "chart": 1, "tones": ["#4A7D36", "#627F3C", "#7A823F", "#939859", "#AEB16C"] },
+  { "name": "Khemri Sands", "chart": 1, "tones": ["#6C4B12", "#8D5E06", "#B1791E", "#CF8400", "#DC9A00"] },
+  { "name": "Lustria Green", "chart": 1, "tones": ["#004816", "#006929", "#007931", "#34AD40", "#4EB33F"] },
+  { "name": "Kasrkin Green", "chart": 2, "tones": ["#001B1B", "#1F4530", "#40713C", "#678E55", "#86A978"] },
+  { "name": "Stormwolf Blue", "chart": 2, "tones": ["#233F55", "#405568", "#54697D", "#6E95A4", "#87AFB9"] },
+  { "name": "Hierotek Green", "chart": 2, "tones": ["#00321C", "#00542D", "#006A2E", "#00894E", "#00B681"] },
+  { "name": "Scinari Blue", "chart": 2, "tones": ["#004789", "#005895", "#006C9A", "#0088BB", "#009AB9"] },
+  { "name": "Green Morkshroom", "chart": 2, "tones": ["#143230", "#004F48", "#006458", "#007B6D", "#37AC83"] },
+  { "name": "Blue Gorkshroom", "chart": 2, "tones": ["#002356", "#004487", "#0057A3", "#006CAD", "#007BB2"] },
+  { "name": "Seraphon Blue", "chart": 2, "tones": ["#002F34", "#004650", "#006874", "#008D92", "#00B7B9"] },
+  { "name": "Ultramar Blue", "chart": 2, "tones": ["#001A42", "#0F3062", "#0D4F88", "#436CA1", "#6D9ECF"] },
+  { "name": "Craventhrone Cloak", "chart": 2, "tones": ["#08232E", "#12373E", "#164858", "#41717D", "#598A8E"] },
+  { "name": "Shalaxi Violet", "chart": 2, "tones": ["#130040", "#262E6D", "#324E99", "#6472B9", "#7E8BC8"] },
+  { "name": "Enrapturess Dusk", "chart": 3, "tones": ["#1E1435", "#413549", "#534D5E", "#6E6773", "#817A86"] },
+  { "name": "Celestine Skin", "chart": 3, "tones": ["#CD8169", "#D58B70", "#D99578", "#EAA889", "#DDB398"] },
+  { "name": "Hive Fleet Purple", "chart": 3, "tones": ["#1E1A40", "#3C1E54", "#655192", "#8769B1", "#8F82AE"] },
+  { "name": "Gnarlwood", "chart": 3, "tones": ["#342928", "#514235", "#725C44", "#776857", "#887B67"] },
+  { "name": "Magnus the Red", "chart": 3, "tones": ["#3A202D", "#4A123E", "#76003F", "#9A1B59", "#AA4277"] },
+  { "name": "Necrolith Bone", "chart": 3, "tones": ["#877561", "#B0916A", "#B99F7D", "#C1AB86", "#BCB79E"] },
+  { "name": "Eye of Terror", "chart": 3, "tones": ["#920030", "#BD0047", "#C20060", "#D4417B", "#DB6499"] },
+  { "name": "Dataslate Grey", "chart": 3, "tones": ["#2B2D28", "#3E3D35", "#555650", "#737069", "#878983"] },
+  { "name": "Carthalos Skin", "chart": 3, "tones": ["#241815", "#2D140C", "#4E2212", "#5F3A37", "#795346"] },
+  { "name": "Blackstone Void", "chart": 3, "tones": ["#000208", "#4E5458", "#6E7074", "#9B9D9F", "#FFFFFF"] }
+ ]
+}

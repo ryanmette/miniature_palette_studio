@@ -691,6 +691,13 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     from a Warhammer paint"; white and yellow give "a solid, opaque coat"), so `layer` stands. The finish (matte or
     satin) is still open and does not change the type. The GW pages are blocked in this environment, so open them to
     confirm the quotes before adding paints (TONE_PRO.md §4). Colour values are still the blocker.
+    **Built (2026-11-06) — dataset 1.8.0, 150 paints.** Ryan allowed GW's hosts in the environment. The quotes are
+    confirmed in GW's article, and its footnote names Blackstone Void 5 as the range's white. The colours come from
+    the three flat colour charts in GW's "Sunday Preview – Warhammer Tone Pro" (4 Oct 2026): each tone is one solid
+    block, so each value is exactly GW's colour (`source: "manufacturer"`, still `approx`). Type `layer`, line "Tone
+    Pro", named "Ultramar Blue 3"; ids `citadel-tone-pro-…`. Input `scripts/tone-pro.json`; provenance in
+    `SOURCES.md`. GW's chart draws Carmine Blades 2 lighter than 3 (kept as drawn). **Still open:** the finish, the
+    tone spacing and Option B ("keep the family", TONE_PRO.md §5), and the two mediums (not paints, so not added).
 
 ### Raised by Ryan on 2026-11-04 — a bug pass on Apple devices (not yet done)
 
@@ -722,6 +729,55 @@ Do these three in one bug pass, in this order.
     from the event itself (`pointerType`); keep sizes safe for touch while any touch is possible
     (`any-pointer: coarse`); hover effects only with `any-hover: hover`; test the keyboard paths on an iPad with a
     keyboard. Changes CLAUDE.md §3.5–3.6 in many places.
+
+### Raised by Ryan on 2026-11-06 — a map of my paints, sheen, 3D colour (not yet done)
+
+61. **A map of my paints: where are my colours, and which tones am I missing?** Ryan: "a 'what tones am I missing or
+    low coverage' or maybe a 'place all my paints on the wheel' to visually see where they are. The color wheel is
+    kinda a mini map in video games." Today "gaps" exist only inside one scheme (the Recipe and the shopping list,
+    UC-24); nothing shows the whole shelf. **Two questions, two pictures**, because a wheel shows only two of a
+    colour's three dimensions (hue is the angle, chroma the distance from the centre; lightness is lost, so a navy
+    and a sky blue land on one spot):
+    - *Which colour families do I have?* — **the wheel as a minimap**: one dot for each owned paint (to buy in a
+      second style); an empty sector is a family you do not have.
+    - *Can I shade and highlight this colour?* — **a hue × lightness grid** (hue across in the Browse order's 20°
+      bands, dark to light down): an empty cell is "no dark green to shade with". A Tone Pro family fills one column
+      from 1 to 5 (item 57), so the grid can name the tone that fills a gap.
+    **Where:** the Shelf, as a third view beside Grid and List (**Map**), since it is about the whole shelf (§3.6, the
+    stage rule); and possibly a "show my paints" layer on the Studio's wheel, so a scheme's nodes show beside the
+    paints you own. **Study first** (a mockup with 2–3 directions): 300+ dots without clutter (bin them, or size a
+    cell by its count); the greys and blacks (no hue: their own strip, as Browse puts them last); washes, contrast
+    and metals (filter by finish class, §5.2); a tap on a dot or a cell (the paint, or the paints there); and a path
+    for the keyboard and a screen reader (a table of the same counts, never only a picture; §3.5). No new data:
+    hue, chroma and lightness come from each paint's Lab (§7).
+62. **The sheen of each paint: matte, satin or gloss** (a study). Ryan: "I think we'll have to go by what community
+    says for instance GW paints and especially the Tone Pro are satin." **A new property, not the finish class:** the
+    app's "finish" (§5.2: flat · translucent · metal · effect) says what a paint *does* on the model; the sheen says
+    how much light its dried surface reflects. A flat paint can be matte or satin. Call it **sheen** in the app, so one
+    word keeps one meaning (§3.5 Words). **What we know (2026-11-06):** GW says Tone Pro "self-levels" for "a really
+    smooth finish" but does not name a sheen; two reviews say "satin to matte" (GamingTrend, a short in-store test;
+    Sprues & Brews, the Sample Set only). No source found compares the brands' sheen side by side. **Method, best
+    source first:** (1) the maker's own words or label, by line (Vallejo prints "Matt" on Model Color, for example);
+    (2) a community consensus with a source for each claim, recorded as `community`; (3) our own check, one coat of
+    each line on one card, seen at one angle under one light (item 49's card; a sheen needs no colour tool, only the
+    eye and a photo at a low angle). Record it **by line, not by paint** (a range shares one medium), with the source
+    in `SOURCES.md`. **Then decide its use:** a word on the paint's detail; a filter in the Shelf; a note when a
+    scheme mixes matte and satin pots (a varnish evens them out: say so, do not warn). It must not change a match
+    (ΔE is colour only, §7) and must not tint a swatch (§2). Tie-in: item 51's finish mark (one icon per finish class)
+    stays; the sheen is words, not a new overlay.
+63. **See colours in three dimensions** (a study). Ryan: the 2D wheel is "a weak point of the current studio". **Why:**
+    a colour has three dimensions (hue, chroma, lightness), and the wheel shows two; lightness is a separate slider, so
+    a scheme's dark and light partners land on one spot, and you cannot see how far apart their values are. **Shapes
+    to compare in the mockup:** (a) **a cylinder or double cone** (HSL/HSV: hue around, lightness up, strength out) —
+    easy to read, but not even to the eye; (b) **the Lab colour solid** — the space the app already matches in (ΔE,
+    §7), so a distance on screen is a real colour difference, but its shape is lumpy (yellow peaks light, blue dark);
+    (c) **2.5D, no rotation**: the wheel tilted, with each node lifted on a stem to its lightness, or a stack of wheels
+    at a few lightness levels (like the floors of a game map). **Constraints:** no 3D library (§6: no runtime
+    dependency; a point cloud in canvas 2D with a hand-written projection is enough); drag to rotate, and the arrow
+    keys too (§3.5: every interaction has a keyboard path); a 2D view stays the default and the fallback, and
+    reduced motion stops any spin (§3.4); the numbers it shows exist in text too (a screen reader cannot read a 3D
+    picture). **Tie-ins:** item 61 (the shelf's paints as dots in the same space: where am I missing tones) and the
+    lightness slider (CLAUDE.md §3.6 Wheel module), which a 3D view could explain or replace.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
