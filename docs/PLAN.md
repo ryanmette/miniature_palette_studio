@@ -730,7 +730,7 @@ Do these three in one bug pass, in this order.
     (`any-pointer: coarse`); hover effects only with `any-hover: hover`; test the keyboard paths on an iPad with a
     keyboard. Changes CLAUDE.md §3.5–3.6 in many places.
 
-### Raised by Ryan on 2026-11-06 — see the shelf as a map (not yet done)
+### Raised by Ryan on 2026-11-06 — a map of my paints, sheen, 3D colour (not yet done)
 
 61. **A map of my paints: where are my colours, and which tones am I missing?** Ryan: "a 'what tones am I missing or
     low coverage' or maybe a 'place all my paints on the wheel' to visually see where they are. The color wheel is
@@ -750,6 +750,34 @@ Do these three in one bug pass, in this order.
     and metals (filter by finish class, §5.2); a tap on a dot or a cell (the paint, or the paints there); and a path
     for the keyboard and a screen reader (a table of the same counts, never only a picture; §3.5). No new data:
     hue, chroma and lightness come from each paint's Lab (§7).
+62. **The sheen of each paint: matte, satin or gloss** (a study). Ryan: "I think we'll have to go by what community
+    says for instance GW paints and especially the Tone Pro are satin." **A new property, not the finish class:** the
+    app's "finish" (§5.2: flat · translucent · metal · effect) says what a paint *does* on the model; the sheen says
+    how much light its dried surface reflects. A flat paint can be matte or satin. Call it **sheen** in the app, so one
+    word keeps one meaning (§3.5 Words). **What we know (2026-11-06):** GW says Tone Pro "self-levels" for "a really
+    smooth finish" but does not name a sheen; two reviews say "satin to matte" (GamingTrend, a short in-store test;
+    Sprues & Brews, the Sample Set only). No source found compares the brands' sheen side by side. **Method, best
+    source first:** (1) the maker's own words or label, by line (Vallejo prints "Matt" on Model Color, for example);
+    (2) a community consensus with a source for each claim, recorded as `community`; (3) our own check, one coat of
+    each line on one card, seen at one angle under one light (item 49's card; a sheen needs no colour tool, only the
+    eye and a photo at a low angle). Record it **by line, not by paint** (a range shares one medium), with the source
+    in `SOURCES.md`. **Then decide its use:** a word on the paint's detail; a filter in the Shelf; a note when a
+    scheme mixes matte and satin pots (a varnish evens them out: say so, do not warn). It must not change a match
+    (ΔE is colour only, §7) and must not tint a swatch (§2). Tie-in: item 51's finish mark (one icon per finish class)
+    stays; the sheen is words, not a new overlay.
+63. **See colours in three dimensions** (a study). Ryan: the 2D wheel is "a weak point of the current studio". **Why:**
+    a colour has three dimensions (hue, chroma, lightness), and the wheel shows two; lightness is a separate slider, so
+    a scheme's dark and light partners land on one spot, and you cannot see how far apart their values are. **Shapes
+    to compare in the mockup:** (a) **a cylinder or double cone** (HSL/HSV: hue around, lightness up, strength out) —
+    easy to read, but not even to the eye; (b) **the Lab colour solid** — the space the app already matches in (ΔE,
+    §7), so a distance on screen is a real colour difference, but its shape is lumpy (yellow peaks light, blue dark);
+    (c) **2.5D, no rotation**: the wheel tilted, with each node lifted on a stem to its lightness, or a stack of wheels
+    at a few lightness levels (like the floors of a game map). **Constraints:** no 3D library (§6: no runtime
+    dependency; a point cloud in canvas 2D with a hand-written projection is enough); drag to rotate, and the arrow
+    keys too (§3.5: every interaction has a keyboard path); a 2D view stays the default and the fallback, and
+    reduced motion stops any spin (§3.4); the numbers it shows exist in text too (a screen reader cannot read a 3D
+    picture). **Tie-ins:** item 61 (the shelf's paints as dots in the same space: where am I missing tones) and the
+    lightness slider (CLAUDE.md §3.6 Wheel module), which a 3D view could explain or replace.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
