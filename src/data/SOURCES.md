@@ -1,6 +1,6 @@
-# Data sources & attribution — dataset v1.7.0
+# Data sources & attribution — dataset v1.8.0
 
-Provenance for `src/data/paints.json` (values captured `2026-06-25` and `2026-10-26`; built `2026-11-03`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
+Provenance for `src/data/paints.json` (values captured `2026-06-25`, `2026-10-26` and, for Tone Pro, `2026-11-06`; built `2026-11-06`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
 
 ## Primary source (used)
@@ -14,16 +14,43 @@ Every paint row also carries its own `source`, `sourceUrl`, and `captured` field
 > to deal in the Software without restriction… The above copyright notice and this permission notice
 > shall be included in all copies or substantial portions of the Software. (Full text in the source repo.)
 
-All brands below are parsed from that single MIT-licensed compilation. MIT permits use, modification, and
+All brands below are parsed from that single MIT-licensed compilation, except Warhammer Tone Pro (the next
+section). MIT permits use, modification, and
 redistribution with attribution — satisfied here, in the in-app "About & data" panel, and in the dataset's
 own `attribution` field. **DakkaDakka** is credited for the cross-reference *concept* only; its chart was
 not copied. Paint and brand names are trademarks of their respective owners, used for identification only.
 
-## Coverage — 3225 paints, 10 brands
+## Second source: Games Workshop's Tone Pro charts (used)
+
+| Source | What | Captured |
+|--------|------|----------|
+| **[Sunday Preview – Warhammer Tone Pro](https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/)** (Warhammer Community, Games Workshop, 4 Oct 2026) | 150 paints: Warhammer Tone Pro, 30 colours × 5 tones | 2026-11-06 |
+
+The upstream compilation has no Tone Pro, so these 150 paints come from GW directly. The article has three
+colour charts (PNG). Each tone is a **flat block of one colour**, not a photo of a pot. For each block,
+`scripts/tone-pro.json` records the median colour of the block's right part (the digit is on the left), read on
+white; every pixel in each part had the same value. So each hex is exactly the colour GW drew. The file also
+records the article, the three chart URLs and this method.
+
+- `source: "manufacturer"` (GW published the values), but **`approx: true`**: a marketing chart is GW's picture of
+  the paint on a screen, not a measurement of the paint and not an official colour value (`CLAUDE.md` §5.2).
+- Type **`layer`**, line **"Tone Pro"**: GW says the paints are opaque ("a solid, opaque coat from the first
+  application", checked in the article itself on 2026-11-06), so they are flat colours (`docs/TONE_PRO.md` §4). The finish (satin or matte) is not confirmed.
+- Name: the family and the tone, **"Ultramar Blue 3"** (1 the darkest, 5 the lightest). The ids keep the brand's
+  `citadel-` key: `citadel-tone-pro-ultramar-blue-3`.
+- **Two values to know about, kept as GW drew them:** Blackstone Void 5 is pure white (`#FFFFFF`). It is the
+  range's white: GW's article "Warhammer Tone Pro: superb coverage and vibrant colours" (2026) says "white*", with
+  the note "* Or Blackstone Void 5 as we're all calling it now". And Carmine Blades 2 (`#5B3539`, a grey-brown) is
+  lighter than Carmine Blades 3 (`#750019`, a crimson), so that family does not get lighter at every step. A check
+  with real pots can correct them later (`docs/COLOUR_CHECK.md`).
+- 32 Tone Pro names have a hue outside their name's colour band (a dark tone of an orange reads as red); they
+  are GW's names and are accepted in `scripts/data-exceptions.json`.
+
+## Coverage — 3375 paints, 10 brands
 
 | Brand | Count | Lines included |
 |-------|------:|----------------|
-| Warhammer Colour (formerly Citadel) | 259 | Base, Layer, Dry, Shade, Contrast, Technical, Glaze |
+| Warhammer Colour (formerly Citadel) | 409 | Base, Layer, Dry, Shade, Contrast, Technical, Glaze (259, upstream); Tone Pro (150, GW's charts) |
 | Vallejo | 548 | Game Color, Model Color, Mecha Color, Xpress, Metal Color, Wash, Special FX |
 | Army Painter | 503 | Warpaints, Warpaints Fanatic, Speedpaint, Wash, Metallics, Skin Tones, Nolzur's, D&D |
 | Two Thin Coats | 178 | Wave 1–3 (Duncan Rhodes) |
@@ -69,11 +96,12 @@ The paint values are the source's. `scripts/build-dataset.mjs` changes only thes
 
 - Built by [`scripts/build-dataset.mjs`](../../scripts/build-dataset.mjs): stage the raw brand markdown
   from the source repo into `.cache/raw/`, then `node scripts/build-dataset.mjs`.
-- All rows are `approx: true` (community-sourced). `lab` is derived at runtime, never stored.
+- Built from two inputs: the upstream markdown and `scripts/tone-pro.json` (committed).
+- All rows are `approx: true` (community values, and GW's charts for Tone Pro). `lab` is derived at runtime, never stored.
 - **Curated equivalence groups** are auto-seeded at build time: paints within **ΔE 2000 ≤ 1.0** ("indistinguishable")
   **and the same finish class** (metal · translucent media · effect · opaque — a hex match across finish classes is
   not interchangeability on the model) are union-find clustered into `groups[]` (each with a representative `refHex`
-  + a basic-colour `label`), and every member paint carries a `groupId`. v1.7.0: **180 groups, 434 paints**
+  + a basic-colour `label`), and every member paint carries a `groupId`. v1.8.0: **191 groups, 459 paints**
   (max group diameter ΔE 2.16). Surfaced in the
   Equivalents tab; the *closest other-brand* matches are still computed at runtime by ΔE 2000.
 - QA: [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs) — **hard checks PASS** (valid sRGB hex,

@@ -87,6 +87,9 @@ a glaze. **The finish is still open:** GW's excerpts do not name it, and one rev
 says "satin to matte". A satin finish is still a flat colour for the app (no finish mark), so it does not change
 the type. **Trust:** the pages themselves were not opened (this session cannot reach warhammer-community.com); the
 words come from the search excerpts. Open the two articles to confirm them before the paints are added.
+**Confirmed 2026-11-06** in the article itself ("superb coverage and vibrant colours"), once the environment
+allowed GW's hosts: both quotes are GW's words. The excerpts left out a footnote: "white\*" has the note "\* Or
+Blackstone Void 5 as we're all calling it now". So Blackstone Void 5 is the range's white.
 
 ---
 
@@ -162,6 +165,13 @@ for any Tone Pro paint**. The options, best first:
 4. **A community database** (`source: "community"`), only if it says how it got its values and under what
    licence.
 
+**Used (2026-11-06): a fifth option, better than 3.** GW's "Sunday Preview – Warhammer Tone Pro" (Warhammer
+Community, 4 Oct 2026) has three colour charts (PNG), 10 colours each. Each tone is a **flat block of one colour**,
+not a photo, so there is no light or white balance to correct: every pixel in a block has the same value, and the
+value is exactly the colour GW drew. It is still GW's picture of the paint on a screen, not a measurement of it, so
+the paints are `source: "manufacturer"` with `approx: true`. The values, the chart URLs and the method are in
+`scripts/tone-pro.json`; `src/data/SOURCES.md` records them. Option 1 (the pots) can still correct them later.
+
 **The source file's hex list must not go into the data.** It is from 2019, made in a way it does not describe.
 Of the 171 Citadel paints in both lists, only 12 are within ΔE 1 of our values (median ΔE 2.7). Some are far
 off: Nuln Oil is `#151203` there and `#9E9A98` in our data (ΔE 48), and Thousand Sons Blue is a bright cyan
@@ -194,14 +204,16 @@ The paint names in the source come from one secondary source, so check them befo
 
 1. ~~Confirm the opacity~~ — opaque (2026-11-05, above), so `layer`. The finish (matte or satin) is still open; it
    does not change the type.
-2. Get the colour values by one of §7's options, with the source recorded in `SOURCES.md`.
-3. Add the 150 paints as `layer`, line "Tone Pro", with no special rule (§5, Option A). Bump the dataset version.
-4. Measure the spacing of the tones. Then decide on "keep the family" (§5, Option B) as its own item.
+2. ~~Get the colour values~~ — from GW's own colour charts (2026-11-06, §7), recorded in `SOURCES.md`.
+3. ~~Add the 150 paints~~ — dataset 1.8.0: `layer`, line "Tone Pro", named "Ultramar Blue 3", no special rule
+   (§5, Option A). GW's chart breaks one family's order: Carmine Blades 2 is lighter than 3.
+4. Measure the spacing of the tones (GW's chart values are in the data now; the pots can confirm them). Then
+   decide on "keep the family" (§5, Option B) as its own item.
 
 **Questions for Ryan, and the answers so far (2026-11-03):**
 
 1. Do you have Tone Pro pots, or the Paint Warhammer app, to get the colour values from?
-   **"Maybe soonish. Not sure yet."** The paints wait for a colour source.
+   **"Maybe soonish. Not sure yet."** Not needed in the end: GW's own colour charts gave the values (§7).
 2. The brand name: "Citadel", "Warhammer Colour", or "Citadel" with "warhammer" as a search word?
    **Decided: the current name, "Warhammer Colour", with "Citadel" as a search word.** This is item 56's work,
    not Tone Pro's. The paint `id`s keep their `citadel-` start, because an `id` never changes (§5.1): saved

@@ -253,7 +253,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── USE_CASES.md           ← personas, entry modes, scheme roles, UC catalog
 │   ├── DATA_SOURCING.md       ← data sourcing + verification methodology (§5)
 │   ├── COLOUR_CHECK.md        ← a study (2026-10-30, PLAN §5 item 49): how to check the paint hexes against the makers' swatches — what is wrong now (33 pure black/white values, shared hexes, odd metals and washes), a method, a ΔE > 5 rule, and a first batch (Citadel Base, then Layer); no data changed
-│   ├── TONE_PRO.md            ← a study (2026-11-03, PLAN §5 item 57): Warhammer Tone Pro (30 colours × 5 tones) — fits as `layer`, line "Tone Pro", no new type or finish mark (finish to confirm); the tones as a ready-made ladder; the data shape; colour values are the blocker (none in any source we have); no data changed
+│   ├── TONE_PRO.md            ← a study (2026-11-03, PLAN §5 item 57): Warhammer Tone Pro (30 colours × 5 tones) — fits as `layer`, line "Tone Pro", no new type or finish mark (finish to confirm); the tones as a ready-made ladder; the data shape; built in dataset 1.8.0 (opaque, per GW; the colours read from GW's own charts, `scripts/tone-pro.json`)
 │   ├── sources/               ← research inputs as given, NOT shipped and NOT paint data
 │   │   └── warhammer-colour-list-2026-11-03.md ← Ryan's list of GW's ranges (Warhammer Colour + Tone Pro): GW facts (primary), paint names (secondary), 2019 forum hex values (not for the data; TONE_PRO.md §7)
 │   ├── IOS_APP_PLAN.md        ← iPhone app (v2) exploration — future, not v1
@@ -303,6 +303,7 @@ Vanilla **HTML + CSS + ES modules**. No build step required to run. Optional dev
 │   ├── build-dataset.mjs      ← assemble src/data/paints.json (see §5)
 │   ├── validate-data.mjs      ← dataset QA (see §5 + DATA_SOURCING §5) — runs in CI (test.yml)
 │   ├── data-exceptions.json   ← accepted SOFT-check exceptions (fantasy names); keeps the live count at 0
+│   ├── tone-pro.json          ← Warhammer Tone Pro's 150 colours, read from GW's charts (§5; the source and method are in the file and SOURCES.md) — an input of build-dataset.mjs
 │   └── check-docs.mjs         ← doc-freshness QA (§8/§9) — README/tree/CHANGELOG claims vs reality; runs in CI
 ├── .github/
 │   ├── workflows/             ← deploy.yml (publish src/ to GitHub Pages, M9) · test.yml (node --test + data/docs validators on push/PR) · tag-release.yml (dispatchable release-tag creator, §8)

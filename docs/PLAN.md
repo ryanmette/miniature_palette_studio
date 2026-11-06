@@ -691,6 +691,13 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     from a Warhammer paint"; white and yellow give "a solid, opaque coat"), so `layer` stands. The finish (matte or
     satin) is still open and does not change the type. The GW pages are blocked in this environment, so open them to
     confirm the quotes before adding paints (TONE_PRO.md §4). Colour values are still the blocker.
+    **Built (2026-11-06) — dataset 1.8.0, 150 paints.** Ryan allowed GW's hosts in the environment. The quotes are
+    confirmed in GW's article, and its footnote names Blackstone Void 5 as the range's white. The colours come from
+    the three flat colour charts in GW's "Sunday Preview – Warhammer Tone Pro" (4 Oct 2026): each tone is one solid
+    block, so each value is exactly GW's colour (`source: "manufacturer"`, still `approx`). Type `layer`, line "Tone
+    Pro", named "Ultramar Blue 3"; ids `citadel-tone-pro-…`. Input `scripts/tone-pro.json`; provenance in
+    `SOURCES.md`. GW's chart draws Carmine Blades 2 lighter than 3 (kept as drawn). **Still open:** the finish, the
+    tone spacing and Option B ("keep the family", TONE_PRO.md §5), and the two mediums (not paints, so not added).
 
 ### Raised by Ryan on 2026-11-04 — a bug pass on Apple devices (not yet done)
 
@@ -722,6 +729,27 @@ Do these three in one bug pass, in this order.
     from the event itself (`pointerType`); keep sizes safe for touch while any touch is possible
     (`any-pointer: coarse`); hover effects only with `any-hover: hover`; test the keyboard paths on an iPad with a
     keyboard. Changes CLAUDE.md §3.5–3.6 in many places.
+
+### Raised by Ryan on 2026-11-06 — see the shelf as a map (not yet done)
+
+61. **A map of my paints: where are my colours, and which tones am I missing?** Ryan: "a 'what tones am I missing or
+    low coverage' or maybe a 'place all my paints on the wheel' to visually see where they are. The color wheel is
+    kinda a mini map in video games." Today "gaps" exist only inside one scheme (the Recipe and the shopping list,
+    UC-24); nothing shows the whole shelf. **Two questions, two pictures**, because a wheel shows only two of a
+    colour's three dimensions (hue is the angle, chroma the distance from the centre; lightness is lost, so a navy
+    and a sky blue land on one spot):
+    - *Which colour families do I have?* — **the wheel as a minimap**: one dot for each owned paint (to buy in a
+      second style); an empty sector is a family you do not have.
+    - *Can I shade and highlight this colour?* — **a hue × lightness grid** (hue across in the Browse order's 20°
+      bands, dark to light down): an empty cell is "no dark green to shade with". A Tone Pro family fills one column
+      from 1 to 5 (item 57), so the grid can name the tone that fills a gap.
+    **Where:** the Shelf, as a third view beside Grid and List (**Map**), since it is about the whole shelf (§3.6, the
+    stage rule); and possibly a "show my paints" layer on the Studio's wheel, so a scheme's nodes show beside the
+    paints you own. **Study first** (a mockup with 2–3 directions): 300+ dots without clutter (bin them, or size a
+    cell by its count); the greys and blacks (no hue: their own strip, as Browse puts them last); washes, contrast
+    and metals (filter by finish class, §5.2); a tap on a dot or a cell (the paint, or the paints there); and a path
+    for the keyboard and a screen reader (a table of the same counts, never only a picture; §3.5). No new data:
+    hue, chroma and lightness come from each paint's Lab (§7).
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 

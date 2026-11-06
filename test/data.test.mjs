@@ -586,7 +586,7 @@ import { BRAND_WORDS, paintMatcher as matcher56 } from '../src/js/data.js';
 
 test('the rename keeps every id: Warhammer Colour paints are still citadel-…, and no paint says Citadel', () => {
   const wc = real.paints.filter(p => p.brand === 'Warhammer Colour');
-  assert.equal(wc.length, 259);
+  assert.equal(wc.length, 409, '259 from upstream + 150 Tone Pro (dataset 1.8.0)');
   assert.ok(wc.every(p => p.id.startsWith('citadel-')), 'ids never change (saved shelves and links hold them)');
   assert.equal(real.paints.filter(p => p.brand === 'Citadel').length, 0);
   // the starter paints and the light theme's accent pot are still there under their ids
@@ -614,10 +614,63 @@ test('the five names are the maker\'s spelling, and each keeps its former name',
 test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {
   assert.match(BRAND_WORDS['Warhammer Colour'], /Citadel/);
   const wc = real.paints.filter(matcher56('citadel'));
-  assert.ok(wc.length >= 259 && wc.filter(p => p.brand === 'Warhammer Colour').length === 259);
+  assert.ok(wc.length >= 409 && wc.filter(p => p.brand === 'Warhammer Colour').length === 409);
   assert.ok(real.paints.filter(matcher56('games workshop')).every(p => p.brand === 'Warhammer Colour'));
   assert.ok(ids(searchPaints(real, 'warhammer colour mephiston')).includes('citadel-base-mephiston-red'));
   assert.equal(ids(searchPaints(real, 'cassandora'))[0], 'citadel-shade-cassandora-yellow', 'the old spelling');
   assert.equal(ids(searchPaints(real, 'casandora'))[0], 'citadel-shade-cassandora-yellow', "GW's spelling");
   assert.equal(ids(searchPaints(real, "bugman's glow"))[0], 'citadel-base-bugman-glow');
+});
+
+// ---- Warhammer Tone Pro (dataset 1.8.0; docs/TONE_PRO.md, PLAN §5 item 57) ----
+const TONE_PRO = JSON.parse(readFileSync(new URL('../scripts/tone-pro.json', import.meta.url), 'utf8'));
+const tonePro = real.paints.filter(p => p.line === 'Tone Pro');
+
+test('Tone Pro: 30 colours × 5 tones, each an opaque layer paint from GW\'s own chart', () => {
+  assert.equal(TONE_PRO.colours.length, 30);
+  assert.equal(tonePro.length, 150);
+  for (const p of tonePro) {
+    assert.equal(p.brand, 'Warhammer Colour', p.id);
+    assert.equal(p.type, 'layer', `${p.id}: opaque, so a flat colour (TONE_PRO.md §4)`);
+    assert.equal(p.source, 'manufacturer', p.id);
+    assert.equal(p.approx, true, `${p.id}: a chart is not an official value (CLAUDE.md §5.2)`);
+    assert.equal(p.sourceUrl, TONE_PRO.source.url, p.id);
+    assert.match(p.id, /^citadel-tone-pro-[a-z0-9-]+-[1-5]$/, 'the brand key stays citadel (§5.2)');
+    assert.match(p.name, / [1-5]$/, 'the tone is part of the name: "Ultramar Blue 3"');
+  }
+  // every value in the input file reaches the data, under its family name and tone number
+  for (const c of TONE_PRO.colours) c.tones.forEach((hex, i) => {
+    const p = tonePro.find(q => q.name === `${c.name} ${i + 1}`);
+    assert.ok(p, `${c.name} ${i + 1}`);
+    assert.equal(p.hex, hex, p.name);
+  });
+});
+
+test('Tone Pro: tone 1 is the darkest end and tone 5 the lightest, in every family', () => {
+  const fams = {};
+  for (const p of tonePro) (fams[p.name.replace(/ \d$/, '')] ||= [])[+p.name.slice(-1) - 1] = p;
+  assert.equal(Object.keys(fams).length, 30);
+  for (const [name, ps] of Object.entries(fams)) {
+    const L = ps.map(p => p.lab[0]);
+    assert.ok(L[0] < L[4], `${name}: tone 1 (L* ${L[0].toFixed(0)}) is darker than tone 5 (L* ${L[4].toFixed(0)})`);
+  }
+  // GW's chart draws Carmine Blades 2 lighter than 3 (a grey-brown and a crimson). Kept as drawn, not reordered:
+  // the test fails if a rebuild changes it, so the note in SOURCES.md stays true.
+  assert.ok(fams['Carmine Blades'][1].lab[0] > fams['Carmine Blades'][2].lab[0]);
+});
+
+test('Tone Pro: search finds the line, a family and one tone', () => {
+  const line = real.paints.filter(matcher56('tone pro'));
+  assert.ok(tonePro.every(p => line.includes(p)), '"tone pro" finds all 150');
+  assert.deepEqual(searchPaints(real, 'ultramar blue').slice(0, 5).map(p => p.name),
+    ['Ultramar Blue 1', 'Ultramar Blue 2', 'Ultramar Blue 3', 'Ultramar Blue 4', 'Ultramar Blue 5']);
+  assert.equal(ids(searchPaints(real, 'ultramar blue 3'))[0], 'citadel-tone-pro-ultramar-blue-3');
+  assert.equal(ids(searchPaints(real, 'citadel ultramar blue 3'))[0], 'citadel-tone-pro-ultramar-blue-3', 'the old brand word');
+});
+
+test('Tone Pro: every earlier paint keeps its id (saved shelves and links hold ids)', () => {
+  for (const id of ['citadel-base-macragge-blue', 'citadel-layer-sotek-green', 'citadel-shade-cassandora-yellow'])
+    assert.ok(real.byId.has(id), id);
+  assert.equal(real.paints.length, 3375);
+  assert.equal(new Set(real.paints.map(p => p.id)).size, real.paints.length, 'no id is used twice');
 });
