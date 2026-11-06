@@ -1,4 +1,4 @@
-# Data sources & attribution — dataset v1.8.0
+# Data sources & attribution — dataset v1.9.0
 
 Provenance for `src/data/paints.json` (values captured `2026-06-25`, `2026-10-26` and, for Tone Pro, `2026-11-06`; built `2026-11-06`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
@@ -38,6 +38,9 @@ records the article, the three chart URLs and this method.
   application", checked in the article itself on 2026-11-06), so they are flat colours (`docs/TONE_PRO.md` §4). The finish (satin or matte) is not confirmed.
 - Name: the family and the tone, **"Ultramar Blue 3"** (1 the darkest, 5 the lightest). The ids keep the brand's
   `citadel-` key: `citadel-tone-pro-ultramar-blue-3`.
+- Since v1.9.0 each paint also carries **`family`** (`citadel-tone-pro-ultramar-blue`) and **`tone`** (1–5), made by the
+  build from the chart's colour and its place in the row (GW's numbering). The Recipe shows a pot's family as GW
+  made it (`docs/TONE_LADDERS.md`, direction A).
 - **Two values to know about, kept as GW drew them:** Blackstone Void 5 is pure white (`#FFFFFF`). It is the
   range's white: GW's article "Warhammer Tone Pro: superb coverage and vibrant colours" (2026) says "white*", with
   the note "* Or Blackstone Void 5 as we're all calling it now". And Carmine Blades 2 (`#5B3539`, a grey-brown) is

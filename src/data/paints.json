@@ -1,5 +1,5 @@
 {
- "version": "1.8.0",
+ "version": "1.9.0",
  "generated": "2026-11-06",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
@@ -20306,7 +20306,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blackstone-void",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-blackstone-void-2",
@@ -20320,6 +20322,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blackstone-void",
+   "tone": 2,
    "groupId": "dark-grey-05"
   },
   {
@@ -20333,7 +20337,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blackstone-void",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-blackstone-void-4",
@@ -20346,7 +20352,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blackstone-void",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-blackstone-void-5",
@@ -20360,6 +20368,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blackstone-void",
+   "tone": 5,
    "groupId": "near-white-01"
   },
   {
@@ -20373,7 +20383,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-bloodtoof-red",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-bloodtoof-red-2",
@@ -20386,7 +20398,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-bloodtoof-red",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-bloodtoof-red-3",
@@ -20399,7 +20413,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-bloodtoof-red",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-bloodtoof-red-4",
@@ -20412,7 +20428,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-bloodtoof-red",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-bloodtoof-red-5",
@@ -20425,7 +20443,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-bloodtoof-red",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-blue-gorkshroom-1",
@@ -20438,7 +20458,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blue-gorkshroom",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-blue-gorkshroom-2",
@@ -20451,7 +20473,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blue-gorkshroom",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-blue-gorkshroom-3",
@@ -20465,6 +20489,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blue-gorkshroom",
+   "tone": 3,
    "groupId": "dark-blue-04"
   },
   {
@@ -20478,7 +20504,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blue-gorkshroom",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-blue-gorkshroom-5",
@@ -20491,7 +20519,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-blue-gorkshroom",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-carmine-blades-1",
@@ -20504,7 +20534,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carmine-blades",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-carmine-blades-2",
@@ -20517,7 +20549,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carmine-blades",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-carmine-blades-3",
@@ -20530,7 +20564,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carmine-blades",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-carmine-blades-4",
@@ -20543,7 +20579,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carmine-blades",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-carmine-blades-5",
@@ -20556,7 +20594,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carmine-blades",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-carthalos-skin-1",
@@ -20569,7 +20609,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carthalos-skin",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-carthalos-skin-2",
@@ -20582,7 +20624,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carthalos-skin",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-carthalos-skin-3",
@@ -20595,7 +20639,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carthalos-skin",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-carthalos-skin-4",
@@ -20608,7 +20654,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carthalos-skin",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-carthalos-skin-5",
@@ -20621,7 +20669,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-carthalos-skin",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-celestine-skin-1",
@@ -20634,7 +20684,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-celestine-skin",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-celestine-skin-2",
@@ -20647,7 +20699,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-celestine-skin",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-celestine-skin-3",
@@ -20660,7 +20714,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-celestine-skin",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-celestine-skin-4",
@@ -20673,7 +20729,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-celestine-skin",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-celestine-skin-5",
@@ -20686,7 +20744,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-celestine-skin",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-chotec-orange-1",
@@ -20700,6 +20760,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-chotec-orange",
+   "tone": 1,
    "groupId": "dark-red-04"
   },
   {
@@ -20713,7 +20775,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-chotec-orange",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-chotec-orange-3",
@@ -20726,7 +20790,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-chotec-orange",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-chotec-orange-4",
@@ -20739,7 +20805,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-chotec-orange",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-chotec-orange-5",
@@ -20752,7 +20820,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-chotec-orange",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-craventhrone-cloak-1",
@@ -20765,7 +20835,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-craventhrone-cloak",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-craventhrone-cloak-2",
@@ -20778,7 +20850,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-craventhrone-cloak",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-craventhrone-cloak-3",
@@ -20791,7 +20865,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-craventhrone-cloak",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-craventhrone-cloak-4",
@@ -20804,7 +20880,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-craventhrone-cloak",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-craventhrone-cloak-5",
@@ -20817,7 +20895,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-craventhrone-cloak",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-dataslate-grey-1",
@@ -20831,6 +20911,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-dataslate-grey",
+   "tone": 1,
    "groupId": "dark-grey-06"
   },
   {
@@ -20844,7 +20926,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-dataslate-grey",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-dataslate-grey-3",
@@ -20857,7 +20941,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-dataslate-grey",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-dataslate-grey-4",
@@ -20870,7 +20956,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-dataslate-grey",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-dataslate-grey-5",
@@ -20883,7 +20971,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-dataslate-grey",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-enrapturess-dusk-1",
@@ -20896,7 +20986,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-enrapturess-dusk",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-enrapturess-dusk-2",
@@ -20909,7 +21001,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-enrapturess-dusk",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-enrapturess-dusk-3",
@@ -20922,7 +21016,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-enrapturess-dusk",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-enrapturess-dusk-4",
@@ -20935,7 +21031,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-enrapturess-dusk",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-enrapturess-dusk-5",
@@ -20948,7 +21046,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-enrapturess-dusk",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-eye-of-terror-1",
@@ -20961,7 +21061,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-eye-of-terror",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-eye-of-terror-2",
@@ -20974,7 +21076,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-eye-of-terror",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-eye-of-terror-3",
@@ -20987,7 +21091,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-eye-of-terror",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-eye-of-terror-4",
@@ -21000,7 +21106,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-eye-of-terror",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-eye-of-terror-5",
@@ -21013,7 +21121,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-eye-of-terror",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-gnarlwood-1",
@@ -21026,7 +21136,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-gnarlwood",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-gnarlwood-2",
@@ -21039,7 +21151,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-gnarlwood",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-gnarlwood-3",
@@ -21052,7 +21166,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-gnarlwood",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-gnarlwood-4",
@@ -21065,7 +21181,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-gnarlwood",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-gnarlwood-5",
@@ -21079,6 +21197,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-gnarlwood",
+   "tone": 5,
    "groupId": "orange-14"
   },
   {
@@ -21092,7 +21212,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-green-morkshroom",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-green-morkshroom-2",
@@ -21105,7 +21227,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-green-morkshroom",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-green-morkshroom-3",
@@ -21119,6 +21243,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-green-morkshroom",
+   "tone": 3,
    "groupId": "deep-teal-01"
   },
   {
@@ -21132,7 +21258,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-green-morkshroom",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-green-morkshroom-5",
@@ -21145,7 +21273,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-green-morkshroom",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-hawkshroud-yellow-1",
@@ -21159,6 +21289,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hawkshroud-yellow",
+   "tone": 1,
    "groupId": "orange-15"
   },
   {
@@ -21173,6 +21305,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hawkshroud-yellow",
+   "tone": 2,
    "groupId": "orange-08"
   },
   {
@@ -21186,7 +21320,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hawkshroud-yellow",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-hawkshroud-yellow-4",
@@ -21200,6 +21336,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hawkshroud-yellow",
+   "tone": 4,
    "groupId": "yellow-06"
   },
   {
@@ -21213,7 +21351,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hawkshroud-yellow",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-hierotek-green-1",
@@ -21226,7 +21366,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hierotek-green",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-hierotek-green-2",
@@ -21239,7 +21381,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hierotek-green",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-hierotek-green-3",
@@ -21253,6 +21397,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hierotek-green",
+   "tone": 3,
    "groupId": "deep-green-08"
   },
   {
@@ -21266,7 +21412,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hierotek-green",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-hierotek-green-5",
@@ -21279,7 +21427,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hierotek-green",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-hive-fleet-purple-1",
@@ -21292,7 +21442,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hive-fleet-purple",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-hive-fleet-purple-2",
@@ -21305,7 +21457,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hive-fleet-purple",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-hive-fleet-purple-3",
@@ -21318,7 +21472,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hive-fleet-purple",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-hive-fleet-purple-4",
@@ -21332,6 +21488,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hive-fleet-purple",
+   "tone": 4,
    "groupId": "purple-02"
   },
   {
@@ -21345,7 +21503,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-hive-fleet-purple",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-kasrkin-green-1",
@@ -21358,7 +21518,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kasrkin-green",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-kasrkin-green-2",
@@ -21371,7 +21533,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kasrkin-green",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-kasrkin-green-3",
@@ -21384,7 +21548,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kasrkin-green",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-kasrkin-green-4",
@@ -21397,7 +21563,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kasrkin-green",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-kasrkin-green-5",
@@ -21410,7 +21578,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kasrkin-green",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-khemri-sands-1",
@@ -21423,7 +21593,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-khemri-sands",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-khemri-sands-2",
@@ -21436,7 +21608,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-khemri-sands",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-khemri-sands-3",
@@ -21449,7 +21623,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-khemri-sands",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-khemri-sands-4",
@@ -21462,7 +21638,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-khemri-sands",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-khemri-sands-5",
@@ -21475,7 +21653,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-khemri-sands",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-kruleboyz-green-1",
@@ -21488,7 +21668,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kruleboyz-green",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-kruleboyz-green-2",
@@ -21501,7 +21683,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kruleboyz-green",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-kruleboyz-green-3",
@@ -21514,7 +21698,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kruleboyz-green",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-kruleboyz-green-4",
@@ -21527,7 +21713,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kruleboyz-green",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-kruleboyz-green-5",
@@ -21540,7 +21728,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-kruleboyz-green",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-lustria-green-1",
@@ -21553,7 +21743,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-lustria-green",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-lustria-green-2",
@@ -21567,6 +21759,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-lustria-green",
+   "tone": 2,
    "groupId": "deep-green-08"
   },
   {
@@ -21580,7 +21774,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-lustria-green",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-lustria-green-4",
@@ -21594,6 +21790,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-lustria-green",
+   "tone": 4,
    "groupId": "green-06"
   },
   {
@@ -21607,7 +21805,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-lustria-green",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-magnus-the-red-1",
@@ -21620,7 +21820,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-magnus-the-red",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-magnus-the-red-2",
@@ -21633,7 +21835,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-magnus-the-red",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-magnus-the-red-3",
@@ -21646,7 +21850,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-magnus-the-red",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-magnus-the-red-4",
@@ -21659,7 +21865,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-magnus-the-red",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-magnus-the-red-5",
@@ -21672,7 +21880,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-magnus-the-red",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-megaboss-yellow-1",
@@ -21685,7 +21895,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-megaboss-yellow",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-megaboss-yellow-2",
@@ -21698,7 +21910,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-megaboss-yellow",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-megaboss-yellow-3",
@@ -21711,7 +21925,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-megaboss-yellow",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-megaboss-yellow-4",
@@ -21724,7 +21940,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-megaboss-yellow",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-megaboss-yellow-5",
@@ -21737,7 +21955,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-megaboss-yellow",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-necrolith-bone-1",
@@ -21750,7 +21970,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-necrolith-bone",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-necrolith-bone-2",
@@ -21763,7 +21985,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-necrolith-bone",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-necrolith-bone-3",
@@ -21776,7 +22000,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-necrolith-bone",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-necrolith-bone-4",
@@ -21789,7 +22015,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-necrolith-bone",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-necrolith-bone-5",
@@ -21802,7 +22030,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-necrolith-bone",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-plague-toad-venom-1",
@@ -21815,7 +22045,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-plague-toad-venom",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-plague-toad-venom-2",
@@ -21828,7 +22060,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-plague-toad-venom",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-plague-toad-venom-3",
@@ -21841,7 +22075,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-plague-toad-venom",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-plague-toad-venom-4",
@@ -21854,7 +22090,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-plague-toad-venom",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-plague-toad-venom-5",
@@ -21867,7 +22105,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-plague-toad-venom",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-scinari-blue-1",
@@ -21880,7 +22120,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-scinari-blue",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-scinari-blue-2",
@@ -21893,7 +22135,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-scinari-blue",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-scinari-blue-3",
@@ -21906,7 +22150,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-scinari-blue",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-scinari-blue-4",
@@ -21919,7 +22165,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-scinari-blue",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-scinari-blue-5",
@@ -21932,7 +22180,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-scinari-blue",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-seraphon-blue-1",
@@ -21945,7 +22195,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-seraphon-blue",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-seraphon-blue-2",
@@ -21958,7 +22210,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-seraphon-blue",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-seraphon-blue-3",
@@ -21971,7 +22225,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-seraphon-blue",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-seraphon-blue-4",
@@ -21984,7 +22240,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-seraphon-blue",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-seraphon-blue-5",
@@ -21997,7 +22255,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-seraphon-blue",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-shalaxi-violet-1",
@@ -22010,7 +22270,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-shalaxi-violet",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-shalaxi-violet-2",
@@ -22023,7 +22285,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-shalaxi-violet",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-shalaxi-violet-3",
@@ -22036,7 +22300,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-shalaxi-violet",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-shalaxi-violet-4",
@@ -22049,7 +22315,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-shalaxi-violet",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-shalaxi-violet-5",
@@ -22062,7 +22330,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-shalaxi-violet",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-stormwolf-blue-1",
@@ -22075,7 +22345,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-stormwolf-blue",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-stormwolf-blue-2",
@@ -22088,7 +22360,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-stormwolf-blue",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-stormwolf-blue-3",
@@ -22101,7 +22375,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-stormwolf-blue",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-stormwolf-blue-4",
@@ -22114,7 +22390,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-stormwolf-blue",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-stormwolf-blue-5",
@@ -22127,7 +22405,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-stormwolf-blue",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-taunar-ochre-1",
@@ -22140,7 +22420,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-taunar-ochre",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-taunar-ochre-2",
@@ -22153,7 +22435,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-taunar-ochre",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-taunar-ochre-3",
@@ -22166,7 +22450,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-taunar-ochre",
+   "tone": 3
   },
   {
    "id": "citadel-tone-pro-taunar-ochre-4",
@@ -22179,7 +22465,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-taunar-ochre",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-taunar-ochre-5",
@@ -22192,7 +22480,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-taunar-ochre",
+   "tone": 5
   },
   {
    "id": "citadel-tone-pro-ultramar-blue-1",
@@ -22205,7 +22495,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-ultramar-blue",
+   "tone": 1
   },
   {
    "id": "citadel-tone-pro-ultramar-blue-2",
@@ -22218,7 +22510,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-ultramar-blue",
+   "tone": 2
   },
   {
    "id": "citadel-tone-pro-ultramar-blue-3",
@@ -22232,6 +22526,8 @@
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
    "captured": "2026-11-06",
+   "family": "citadel-tone-pro-ultramar-blue",
+   "tone": 3,
    "groupId": "deep-blue-05"
   },
   {
@@ -22245,7 +22541,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-ultramar-blue",
+   "tone": 4
   },
   {
    "id": "citadel-tone-pro-ultramar-blue-5",
@@ -22258,7 +22556,9 @@
    "approx": true,
    "source": "manufacturer",
    "sourceUrl": "https://www.warhammer-community.com/en-gb/articles/13drg5hr/sunday-preview-warhammer-tone-pro/",
-   "captured": "2026-11-06"
+   "captured": "2026-11-06",
+   "family": "citadel-tone-pro-ultramar-blue",
+   "tone": 5
   },
   {
    "id": "p3-p3-jack-bone",

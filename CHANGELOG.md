@@ -26,6 +26,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `scripts/tone-pro.json` and `src/data/SOURCES.md`; About credits GW's charts. The study and Ryan's source list
   (`docs/sources/`) explain the choices. 3,375 paints in all. Eleven new "same colour" groups (191) renumber the
   automatic group names after them; nothing saved holds those names.
+- **The maker's ladder** (paint data 1.9.0; PLAN §5 item 64, direction A of `docs/TONE_LADDERS.md`). When a
+  Recipe role's pot is one tone of a maker's family, its card adds a row with the whole family as the maker made
+  it, darkest first: "Ultramar Blue · Tone Pro: the maker's 5 tones", with the pot's own tone marked "your pot".
+  It shows no ΔE, because these are the maker's steps, not matches to a target, and it changes no match. "+ Add N"
+  does not add the family's tones; add the ones you want from the Shelf or the seed field. Only Tone Pro has
+  families so far: each of its 150 paints now carries `family` and `tone` in the data. Reaper, Two Thin Coats and
+  Army Painter Fanatic follow, one brand at a time.
 - **A study of tone ladders across brands** (`docs/TONE_LADDERS.md`; PLAN §5 item 64). Four makers sell tone
   systems; only Tone Pro's are in the data. Measured: a "same brand only" rule doubles a ladder step's median ΔE,
   and a soft preference of 2 ΔE keeps it Good. Recommended: show a maker's family as the maker made it, then a

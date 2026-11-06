@@ -377,3 +377,38 @@ test('holds: a store swap (item 38) keeps the paint it replaced as swappedFrom',
   const gone = buildScheme(HOLD_DATA, '#9A1115', 'complementary', { holds: { Accent: { kind: 'pot', id: 't', hex: '#119A96', was: 'nope' } } });
   assert.equal('swappedFrom' in gone.roles.find(r => r.role === 'Accent'), false, 'an unknown original is dropped');
 });
+
+// ---- The maker's ladder (docs/TONE_LADDERS.md, direction A) ----
+const famIdx = indexDataset({ version: 't', paints: [
+  { id: 'f1', brand: 'GW', line: 'Tone Pro', name: 'Blue 1', hex: '#0A1A3A', type: 'layer', family: 'gw-tp-blue', tone: 1 },
+  { id: 'f3', brand: 'GW', line: 'Tone Pro', name: 'Blue 3', hex: '#1F4F88', type: 'layer', family: 'gw-tp-blue', tone: 3 },
+  { id: 'f2', brand: 'GW', line: 'Tone Pro', name: 'Blue 2', hex: '#14305F', type: 'layer', family: 'gw-tp-blue', tone: 2 },
+  { id: 'o1', brand: 'V', line: 'Game', name: 'Red', hex: '#A01418', type: 'layer' },
+  { id: 'o2', brand: 'V', line: 'Game', name: 'Green', hex: '#2E7D32', type: 'layer' },
+  { id: 'o3', brand: 'V', line: 'Metal', name: 'Silver', hex: '#B5B5BD', type: 'metal' },
+] });
+
+test("maker's ladder: a role whose pot is one tone carries its whole family, in tone order, with the pot marked", () => {
+  const s = buildScheme(famIdx, '#1F4F88', 'complementary', {});
+  const p = s.roles.find(r => r.role === 'Primary');
+  assert.equal(p.match.paint.id, 'f3');
+  assert.deepEqual(p.family.tones.map(t => t.id), ['f1', 'f2', 'f3'], 'darkest first, whatever the data order');
+  assert.equal(p.family.current, 'f3');
+  assert.equal(p.family.name, 'Blue', 'the shared name without the tone number');
+  assert.ok(s.roles.filter(r => r.match && !r.match.paint.family).every(r => !r.family), 'no family for a paint in none');
+});
+
+test("maker's ladder: it is not a ladder — the shopping list is the same with or without it", () => {
+  const s = buildScheme(famIdx, '#1F4F88', 'complementary', {});
+  assert.ok(s.roles.some(r => r.family), 'the fixture has a family');
+  const without = { ...s, roles: s.roles.map(({ family, ...r }) => r) };
+  assert.deepEqual(shoppingList(s), shoppingList(without), '+ Add N must not add the five tones');
+});
+
+test("maker's ladder: a chosen pot gets its family too", () => {
+  const s = buildScheme(famIdx, '#A01418', 'complementary', { holds: { Secondary: { kind: 'pot', id: 'f2', hex: '#14305F' } } });
+  const sec = s.roles.find(r => r.role === 'Secondary');
+  assert.equal(sec.hold, 'pot');
+  assert.equal(sec.family.current, 'f2');
+  assert.equal(sec.family.tones.length, 3);
+});

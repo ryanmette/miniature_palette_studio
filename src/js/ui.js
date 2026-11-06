@@ -440,7 +440,26 @@ export function roleSlots(scheme, markOf, holdable = new Set()) {
     // metallic metal) paints the metal ILLUSION with flat paints — offer both, honestly labelled.
     + (r.nmm ? `<div class="ladcap nmmcap" title="Non-metallic metal: paint the metal illusion with flat paints — deep shadow, mid tone, near-white ping">NMM · non-metallic metal (flats)</div>`
       + `<div class="ladder">${r.nmm.map(step).join('')}</div>` : '')
+    + makerLadder(r.family)
     + `</div>`).join('')}</div>`;
+}
+
+/** The maker's ladder (docs/TONE_LADDERS.md, direction A): when a role's pot is one tone of a maker's family, its
+ *  card shows the whole family as the maker made it, darkest first. These are the maker's steps, not matches, so
+ *  no ΔE is shown (§2: it would read as a match to a target). The pot's tone is marked in words, "your pot" (state
+ *  is words or a fill, never a ring, §3.5). `fam`: scheme.js role.family, or null. */
+export function makerLadder(fam) {
+  if (!fam) return '';
+  const n = fam.tones.length;
+  const tone = p => {
+    const cur = p.id === fam.current;
+    const what = `Tone ${p.tone} of ${n}: ${pname(p)}, ${p.brand}${cur ? ', your pot' : ''}`;
+    return `<div class="step${cur ? ' cur' : ''}" tabindex="0" aria-label="${esc(what)}">${swatch(p.hex, fxCls(p).trim())}`
+      + `<div class="cap">${p.tone}</div><div class="pn">${cur ? 'your pot' : ''}</div>`
+      + `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span></div>`;
+  };
+  return `<div class="ladcap famcap">${esc(fam.name)} · ${esc(fam.line)}: the maker's ${n} tones</div>`
+    + `<div class="ladder famlad" role="group" aria-label="${esc(`${fam.name}, the maker's ${n} tones, darkest first`)}">${fam.tones.map(tone).join('')}</div>`;
 }
 
 /** Equivalents source picker (§3.6 mobile fix): one chip per scheme colour, labelled by role.

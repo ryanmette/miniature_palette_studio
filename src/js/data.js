@@ -35,7 +35,26 @@ export function indexDataset(dataset) {
   }
   const byGroup = new Map();
   for (const p of paints) if (p.groupId) { let g = byGroup.get(p.groupId); if (!g) byGroup.set(p.groupId, g = []); g.push(p); }
-  return { ...dataset, paints, byId: new Map(paints.map(p => [p.id, p])), byGroup };
+  // A maker's family (Tone Pro's 1–5; docs/TONE_LADDERS.md §6): its paints in tone order, darkest first.
+  const byFamily = new Map();
+  for (const p of paints) if (p.family) { let f = byFamily.get(p.family); if (!f) byFamily.set(p.family, f = []); f.push(p); }
+  for (const f of byFamily.values()) f.sort((x, y) => x.tone - y.tone);
+  return { ...dataset, paints, byId: new Map(paints.map(p => [p.id, p])), byGroup, byFamily };
+}
+
+/**
+ * The maker's family of a paint, as the maker made it (direction A of docs/TONE_LADDERS.md): its name, its line
+ * and brand, and every tone in order, darkest first. null for a paint in no family, or a family of one. The
+ * name is the tones' shared name without the tone number ("Ultramar Blue"), else the line.
+ * @returns {{id:string, name:string, brand:string, line:string, tones:object[]}|null}
+ */
+export function familyOf(indexed, paint) {
+  if (!paint || !paint.family || !indexed.byFamily) return null;
+  const tones = indexed.byFamily.get(paint.family) || [];
+  if (tones.length < 2) return null;
+  const roots = new Set(tones.map(p => p.name.replace(/\s+\d+$/, '')));
+  const name = roots.size === 1 ? [...roots][0] : paint.line;
+  return { id: paint.family, name, brand: paint.brand, line: paint.line, tones };
 }
 
 /** Other paints in the same curated equivalence group (cross-brand "same colour", ΔE ≤ 1); [] if ungrouped. */

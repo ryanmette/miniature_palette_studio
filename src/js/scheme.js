@@ -3,7 +3,7 @@
 
 import { rotateHue, adjustHsl, adjustDirection, rgbToHsl, hexToRgb, hslToRgb, rgbToHex, hexToLab, deltaE2000, isNeutral, clamp01 } from './color.js';
 import { harmonyPartners, neutralPartners, isNeutralHarmony, DEFAULT_POP } from './harmony.js';
-import { nearestPaint, matchQuality } from './data.js';
+import { nearestPaint, matchQuality, familyOf } from './data.js';
 
 // Tone ladders (#7). Two ways painters think about a role's value steps:
 //  • 'wash'  — Wash · Base · Highlight: the *technique* ladder (recess wash + edge highlight around the paint).
@@ -107,7 +107,8 @@ export function roleIdeals(baseHex, harmony, popHex = DEFAULT_POP, { accentHex =
  *     the gap shows (§2 honesty): the match's ΔE is the pot's distance from it. The ladders step from the
  *     pot's own colour. If `id` is not in the dataset, the hold acts as a lock on `hex`.
  * A held role is flagged `hold` ('lock' | 'pot'), with `generatedHex` (the target the rule made).
- * @returns {{ base, harmony, ladder, roles: Array<{role, weight, idealHex, match, ladders, hold?, generatedHex?}> }}
+ * @returns {{ base, harmony, ladder, roles: Array<{role, weight, idealHex, match, ladders, hold?, generatedHex?, family?}> }}
+ *   `family` (when the pot is one tone of a maker's family): data.js familyOf + `current`, the pot's id.
  */
 export function buildScheme(idx, baseHex, harmony, opts = {}) {
   const holds = opts.holds || {};
@@ -211,7 +212,15 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     return { role: d.role, weight: d.weight, idealHex: d.idealHex, match, shared, differentiate, buy, substituted, nmm, ladders,
       ...(d.hold ? { hold: d.hold, generatedHex: d.generatedHex } : {}) };
   });
-  return { base: baseHex, harmony, ladder: opts.ladder || 'wash', roles };
+  // The maker's ladder (docs/TONE_LADDERS.md, direction A): when a role's pot is one tone of a maker's family
+  // (Tone Pro's 1–5), the role carries the whole family as the maker made it. It is its own field, not a ladder:
+  // nothing is matched to it (the app's steps are about two Tone Pro tones wide, §4.3), and the shopping list's
+  // walk of `ladders` must not add five pots the painter did not choose.
+  const withFamily = r => {
+    const fam = r.match && familyOf(idx, r.match.paint);
+    return fam ? { ...r, family: { ...fam, current: r.match.paint.id } } : r;
+  };
+  return { base: baseHex, harmony, ladder: opts.ladder || 'wash', roles: roles.map(withFamily) };
 }
 
 /** A role whose pot the painter chose: the pot is the match (its ΔE is from the generated target, so the

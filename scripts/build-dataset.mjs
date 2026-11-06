@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build-dataset.mjs — assemble src/data/paints.json (dataset v1.8.0).
+ * build-dataset.mjs — assemble src/data/paints.json (dataset v1.9.0).
  *
  * Source: all brands are parsed at build time from the MIT-licensed community dataset
  *   github.com/Arcturus5404/miniature-paints (© 2022 Rick Fleuren, "Miniature Painter Pro").
@@ -27,8 +27,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = process.argv[2] || join(ROOT, '.cache', 'raw');
 const CAPTURED = '2026-06-25';
-const VERSION = '1.8.0';
-const GENERATED = '2026-11-06';   // the build that added Warhammer Tone Pro (the upstream values are still CAPTURED's)
+const VERSION = '1.9.0';
+const GENERATED = '2026-11-06';   // the build that gave Tone Pro its families (the upstream values are still CAPTURED's)
 const REPO = 'https://github.com/Arcturus5404/miniature-paints';
 const src = file => `${REPO}/blob/main/paints/${file}`;
 
@@ -152,13 +152,13 @@ function parseRows(text, setIdx) {
 /* ---- assemble ---- */
 const paints = [];
 const seen = new Set();
-function add(b, line, name, hex, type, sourceUrl, captured = CAPTURED, source = 'community') {
+function add(b, line, name, hex, type, sourceUrl, captured = CAPTURED, source = 'community', extra = {}) {
   if (!name || SKIP_NAME.test(name)) return;
   const id = `${b.key || slug(b.brand)}-${slug(line)}-${slug(name)}`;   // from the upstream name: ids never change
   if (seen.has(id)) return; seen.add(id);
   const fixed = b.names?.[name];
   paints.push({ id, brand: b.brand, line, name: fixed || name, hex: hex.toUpperCase(), type, discontinued: false, approx: true,
-    source, sourceUrl, captured, ...(fixed ? { formerly: [name] } : {}) });
+    source, sourceUrl, captured, ...(fixed ? { formerly: [name] } : {}), ...extra });
 }
 const sortKey = new Map(BRANDS.map(b => [b.brand, b.key || b.brand]));
 
@@ -176,10 +176,13 @@ for (const b of BRANDS) {
 
 // Warhammer Tone Pro (docs/TONE_PRO.md): 30 colours × 5 tones, named "Ultramar Blue 3" (1 the darkest).
 // Type `layer`: GW says the paints are opaque (TONE_PRO.md §4), so they are flat colours, line "Tone Pro".
+// Each colour is a maker's family (docs/TONE_LADDERS.md §6): `family` is its stable id (brand key + line + root
+// name, as a paint id is made) and `tone` its place, 1 the darkest. The Recipe shows the family as GW made it.
 const TONE_PRO = JSON.parse(readFileSync(join(ROOT, 'scripts', 'tone-pro.json'), 'utf8'));
 const WC = BRANDS.find(b => b.brand === 'Warhammer Colour');
 for (const c of TONE_PRO.colours) c.tones.forEach((hex, i) =>
-  add(WC, 'Tone Pro', `${c.name} ${i + 1}`, hex, 'layer', TONE_PRO.source.url, TONE_PRO.source.captured, 'manufacturer'));
+  add(WC, 'Tone Pro', `${c.name} ${i + 1}`, hex, 'layer', TONE_PRO.source.url, TONE_PRO.source.captured, 'manufacturer',
+    { family: `${WC.key}-${slug('Tone Pro')}-${slug(c.name)}`, tone: i + 1 }));
 
 // Sort by the upstream name too, so a fixed name keeps its place (the order breaks ΔE ties, see `key`)
 const upName = p => p.formerly?.[0] || p.name;
