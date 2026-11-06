@@ -26,6 +26,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `scripts/tone-pro.json` and `src/data/SOURCES.md`; About credits GW's charts. The study and Ryan's source list
   (`docs/sources/`) explain the choices. 3,375 paints in all. Eleven new "same colour" groups (191) renumber the
   automatic group names after them; nothing saved holds those names.
+- **A study of tone ladders across brands** (`docs/TONE_LADDERS.md`; PLAN §5 item 64). Four makers sell tone
+  systems; only Tone Pro's are in the data. Measured: a "same brand only" rule doubles a ladder step's median ΔE,
+  and a soft preference of 2 ΔE keeps it Good. Recommended: show a maker's family as the maker made it, then a
+  Brand setting (Any · Prefer · Only) in ⋯. Nothing in the app changed.
 ### Changed
 - **Citadel is now Warhammer Colour** (paint data 1.7.0; PLAN §5 item 56). Games Workshop renamed the range on
   6 March 2026, with the same paint in the pot. The app shows the new name. Type "Citadel", "Games Workshop" or
