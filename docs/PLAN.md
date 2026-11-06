@@ -786,7 +786,9 @@ Do these three in one bug pass, in this order.
     steps are about two Tone Pro tones wide and miss the family by about ΔE 9. **Recommended:** (A) the maker's
     ladder, shown as the maker made it under the app's ladder, no setting and no match change (needs `family` +
     `tone` fields; Tone Pro first); then (B) **Brand: Any · Prefer · Only** in ⋯, built as Use my paints (owned
-    first; never Other brands). Open: A then B, B's default brand, keep Only, which brand's families next.
+    first; never Other brands). **Ryan's answers (2026-11-06): A, then B; B defaults to the brand you own the most
+    paints of; keep Only; add every maker's families** (Reaper, Two Thin Coats, Army Painter Fanatic; one brand for
+    each PR, Reaper first). **Next:** build A (`family` + `tone` for Tone Pro, the maker's ladder row).
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 

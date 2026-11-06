@@ -1,6 +1,6 @@
 # Tone ladders across brands — a study
 
-Status: **study only, nothing built** (PLAN §5 item 64). Date: 2026-11-06.
+Status: **study only, nothing built** (PLAN §5 item 64). Date: 2026-11-06. **Decided by Ryan the same day (§8).**
 Asked by Ryan: "how to best accommodate tone ladders because GW isn't the only one. Maybe we have a keep 'within
 brand' or a 'prefer same brand' toggle?"
 Companions: `CLAUDE.md` §3.6 (⋯ settings, the matching note) and §7 (match ranking), `docs/TONE_PRO.md` §5
@@ -183,11 +183,18 @@ colour". Search can take a family word later ("ultramar blue" already finds the 
 
 ---
 
-## 8. Open questions for Ryan
+## 8. Questions for Ryan, and the answers (2026-11-06)
 
 1. **Direction A first, then B?** Or B alone (the toggle you asked for) without the maker's ladder?
+   **Answer: A, then B.**
 2. **B's default brand:** (a) the brand you own most paints of (from the Shelf), (b) the starting paint's brand, or
    (c) no default: you choose it the first time.
+   **Answer: (a), the brand you own the most paints of.** With nothing owned, there is no brand to default to: the
+   setting stays Any, and the Brand row says to mark owned paints (as Use my paints does with none owned). A tie
+   takes the brand that comes first in the data's order. The painter's own pick replaces the default for good.
 3. **"Only" in B:** keep it (as Use my paints has it), or Prefer alone? §4.1 shows Only can leave a role with no
    close paint, mostly in small ranges.
+   **Answer: keep Only** (Any · Prefer · Only). The honest gap shows where Only leaves no close paint (§2).
 4. **More families:** which brand next: Reaper (the data is nearest), Army Painter Fanatic or Two Thin Coats?
+   **Answer: all of them.** One brand for each PR, each with its source file and `SOURCES.md` line (§7 step 3);
+   Reaper first, because its codes are already in the upstream data.
