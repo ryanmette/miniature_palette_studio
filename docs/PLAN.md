@@ -706,7 +706,12 @@ From the first run of the iOS app in the iPhone 17e Simulator (iOS 26.5, Capacit
 shelf isn't rendering correctly so I'm positive it isn't rendering correctly on a bunch of iphones (esp the duo)".
 Do these three in one bug pass, in this order.
 
-58. **The Shelf's list is wider than the screen on iPhone.** In the Shelf's list (Shopping list, Rack order), the
+58. **Fixed (2026-11-07, in v1.15.0): the cause was `main { grid-template-columns: 1fr }`.** Reproduced in Chromium too,
+    once the shopping list held all ten brands: `1fr` is `minmax(auto, 1fr)`, so the column grew to the "This store
+    carries" row's min-content width (~1,100px of chips in one line); a 360px page was 936px. Now `minmax(0, 1fr)` (and
+    the Schemes mode's rule, the same bug), `min-width: 0` on `.shelf`, `.rkstore`, `.rkchips`; a test in
+    `test/ui.test.mjs` guards it. Still to do on a real iPhone: the other widths and "the duo" (below).
+    **The Shelf's list is wider than the screen on iPhone.** In the Shelf's list (Shopping list, Rack order), the
     page is laid out wider than the screen, and the right side is cut off. The dock's search field runs off the
     edge and **Filters** is gone. The status filter shows All | Owned only (Shopping list, Grid | List gone). The
     rows lose their ticks, and the "for Mephiston Red · analogous …" label runs off. **Not reproduced in Chromium**

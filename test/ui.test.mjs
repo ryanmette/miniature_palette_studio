@@ -538,3 +538,16 @@ test("makerLadder: every tone in order, the pot marked in words, no ΔE (the mak
   assert.ok(html.indexOf('#001A42') < html.indexOf('#6D9ECF'), 'darkest first');
   assert.equal(makerLadder(null), '');
 });
+
+// ---- The page never grows wider than a phone (PLAN §5 item 58; CLAUDE.md §3.6 "No horizontal page scroll") ----
+test("main's column may shrink below its content: minmax(0, 1fr), never a bare 1fr", async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync(new URL('../src/styles/app.css', import.meta.url), 'utf8');
+  // A bare 1fr is minmax(auto, 1fr): the column grows to its widest content's min-content width. With ten brands on the
+  // shopping list, the Shelf list's sideways-scrolling "This store carries" row (~1,100px) made a 360px page 936px wide.
+  const mainRules = [...css.matchAll(/^main(\[[^\]]*\])?\s*\{[^}]*\}/gm)].map(m => m[0]).filter(r => /grid-template-columns/.test(r));
+  assert.ok(mainRules.length >= 2, 'the main rules are found');
+  for (const r of mainRules) assert.match(r, /grid-template-columns:\s*minmax\(0,\s*1fr\)/, r);
+  assert.match(css, /^\.shelf \{[^}]*min-width: 0/m, '.shelf may shrink');
+  assert.match(css, /\.rkchips \{[^}]*overflow-x: auto[^}]*min-width: 0/, 'the store row scrolls inside the page');
+});

@@ -76,6 +76,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   render writes the scheme to the address bar, so a reload shows the same scheme. The "Start a scheme" band and
   its four starter paints do not change.
 ### Fixed
+- **The Shelf's list no longer makes the page wider than a phone** (PLAN §5 item 58; Ryan's iPhone, 2026-11-07). With
+  many brands on the shopping list, the "This store carries" row (one sideways-scrolling line of brand buttons) is
+  about 1,100px of buttons. The page's one column was `1fr`, which never shrinks under its content's narrowest
+  width, so a 360px phone got a 936px page: the paint names were off the left edge and the page scrolled sideways.
+  The column is `minmax(0, 1fr)` now (and the Shelf and the row may shrink), so the row scrolls inside the screen.
+  The Schemes mode had the same `1fr` and is fixed too. A test fails if a bare `1fr` comes back on `main`.
 - **Five Warhammer Colour names have the maker's spelling:** Bugman's Glow, Emperor's Children, Gehenna's Gold,
   Nurgle's Rot (the apostrophes were missing) and Casandora Yellow (it was spelt Cassandora). The old spellings
   still find the paints, and a shelf saved with them still imports.
