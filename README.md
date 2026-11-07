@@ -10,6 +10,11 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.15.0** — the Tone Pro release. Games Workshop's new **Warhammer Tone Pro** range is in: 150 paints (30 colours ×
+5 tones), their colours read from GW's own charts. When a pot is a Tone Pro paint, its Recipe card shows the maker's
+five tones. Citadel is now **Warhammer Colour** ("Citadel" still finds the paints), five paint names have the maker's
+spelling, a bare address opens on a random scheme, and About keeps an **update log** of earlier releases.
+
 **v1.14.0** — the phone release, from a test on an iPhone. On the Shelf, hold a paint and slide to read names; in
 **Select** mode, drag to select a run of paints, mark them, and **Undo** if needed. Select and Grid | List sit in the
 Shelf's pull-down panel, types can be picked together, and the hue sort is in true colour order. A swipe on the wheel
