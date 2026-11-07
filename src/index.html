@@ -419,6 +419,12 @@
     <!-- What's new (mockups/help-about.html, answer 5): the release's highlights, from version.js WHATS_NEW -->
     <h3 id="whatsNewHead"></h3>
     <ul class="whatsnew" id="whatsNew"></ul>
+    <!-- The update log (version.js EARLIER_NEWS): closed at first, so About stays short; a native <details>, so the
+         keyboard and a screen reader open it with no script -->
+    <details class="newslog" id="newsLog" hidden>
+      <summary><span data-i18n="earlierUpdates">Earlier updates</span><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg></summary>
+      <div id="newsLogBody"></div>
+    </details>
     <p data-i18n-html="aboutMoreHtml">The Help page explains <a href="support.html#matching">how the matching works</a> in plain
       words, and lists the <a href="support.html#shortcuts">keyboard shortcuts</a>.</p>
 

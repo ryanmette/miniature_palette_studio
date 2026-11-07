@@ -7,6 +7,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 and v1.14.0 took only the web entries. -->
 ### Added
+- **An update log in About** (PLAN §5 item 65; Ryan, 2026-11-07). Under "What's new", **Earlier updates** opens the
+  earlier releases' own lines, each under its version and date, newest first (from 1.13.0, the first release with
+  lines for a painter). It is closed at first, so About stays short, and it is a native disclosure, so the keyboard
+  and a screen reader open it with no script. A release now moves the old What's new into the log
+  (`version.js EARLIER_NEWS`); a test fails when a released version is missing from it.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
