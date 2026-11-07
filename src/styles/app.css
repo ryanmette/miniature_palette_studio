@@ -1066,6 +1066,14 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 /* What's new in About */
 .whatsnew { margin: 0 0 8px; padding-left: 20px; font-size: 13px; line-height: 1.6; }
 .whatsnew li + li { margin-top: 4px; }
+/* The update log (About, under What's new): a native disclosure, closed at first; its summary is a --tap tall row */
+.newslog { margin: 0 0 8px; }
+.newslog summary { min-height: var(--tap); display: flex; align-items: center; gap: 4px; cursor: pointer; color: var(--accent); font-weight: 500; list-style: none; }
+.newslog summary::-webkit-details-marker { display: none; }   /* the icon set's chevron replaces the browser's marker (§3.5 Icons) */
+.newslog summary .ic { width: 16px; height: 16px; }
+.newslog[open] summary .ic { transform: rotate(180deg); }
+.newslog summary:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); border-radius: var(--r-ctrl); }
+.newslog h4 { margin: 8px 0 4px; font-size: var(--fs-small); font-weight: 600; color: var(--text-muted); }
 .aboutshelf { margin-top: 24px; padding-top: 4px; border-top: 1px solid var(--border); }
 .aboutshelf .btn { margin-top: 4px; }
 @media (prefers-reduced-motion: no-preference) {

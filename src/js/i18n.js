@@ -133,6 +133,8 @@ const LOCALES = {
     help: 'Help',
     aboutData: 'About',
     whatsNewIn: 'What’s new in {version}',
+    earlierUpdates: 'Earlier updates',
+    newsVersionDate: '{version} · {date}',
     newTag: 'New',
     seedToAccent: 'Accent: the scheme now starts from the opposite colour, near {name}. Your paint stays as the accent.',
     seedToMain: 'Main: the scheme starts from your paint again.',

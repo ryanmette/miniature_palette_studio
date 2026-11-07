@@ -20,7 +20,7 @@ import { loaderRoles, drawLoader, LOADER_TOKENS } from './loader.js';   // the M
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
-import { APP_VERSION, WHATS_NEW } from './version.js';
+import { APP_VERSION, WHATS_NEW, EARLIER_NEWS } from './version.js';
 import { describeDevice, supportLine } from './help.js';   // the support details line (Help's Contact)   // the one app-version constant (check-docs.mjs holds it to package.json)
 
 const t = i18n.t;
@@ -3313,6 +3313,12 @@ function syncLocaleStrings() {
   $('#aboutVersion').textContent = t('versionLine', { app: APP_VERSION, data: (state.idx && state.idx.version) || '—' });
   $('#whatsNewHead').textContent = t('whatsNewIn', { version: WHATS_NEW.version });
   $('#whatsNew').innerHTML = WHATS_NEW.items.map(x => `<li>${ui.esc(x)}</li>`).join('');
+  // The update log: each earlier release's lines under its version and date, in the device's date format
+  let fmt; try { fmt = new Intl.DateTimeFormat(navigator.language, { dateStyle: 'medium', timeZone: 'UTC' }); } catch { fmt = null; }
+  const day = d => (fmt ? fmt.format(new Date(d + 'T00:00:00Z')) : d);
+  $('#newsLogBody').innerHTML = EARLIER_NEWS.map(r => `<h4>${ui.esc(t('newsVersionDate', { version: r.version, date: day(r.date) }))}</h4>`
+    + `<ul class="whatsnew">${r.items.map(x => `<li>${ui.esc(x)}</li>`).join('')}</ul>`).join('');
+  $('#newsLog').hidden = !EARLIER_NEWS.length;
   buildSlotSizers();
   renderMatchNote();
 }

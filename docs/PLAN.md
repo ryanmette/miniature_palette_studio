@@ -793,6 +793,15 @@ Do these three in one bug pass, in this order.
     `ladders`, so the shopping list is unchanged). **Next:** B (the Brand setting), or the next brand's families
     (Reaper).
 
+### Raised by Ryan on 2026-11-07 — an update log (built)
+
+65. **An update log in About** (Ryan: "add an update log? So on new releases users can see what was in 1.13.0 > 1.14.0
+    > 1.14.5"). **Built (2026-11-07):** under What's new, **Earlier updates** (a native `<details>`, closed at first)
+    lists each earlier release's own What's new lines under its version and date, newest first (`version.js
+    EARLIER_NEWS`). It starts at 1.13.0: older releases never had lines for a painter, only the CHANGELOG. The release
+    checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
+    missing. Not a copy of the CHANGELOG: those entries are written for developers.
+
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:
