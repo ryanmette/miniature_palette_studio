@@ -750,6 +750,10 @@ Do these three in one bug pass, in this order.
     and metals (filter by finish class, §5.2); a tap on a dot or a cell (the paint, or the paints there); and a path
     for the keyboard and a screen reader (a table of the same counts, never only a picture; §3.5). No new data:
     hue, chroma and lightness come from each paint's Lab (§7).
+    **Studied (2026-11-07):** [`mockups/shelf-map.html`](../mockups/shelf-map.html) — 5 directions on two sample
+    shelves (A minimap dots · B ring map · C tone grid · D fog of war by lightness floor · E a layer on the Studio's
+    wheel). **Recommended:** C (a grid of real buttons, so it is its own keyboard path) with a small A as its header;
+    a gap cell lists the 3 closest pots (true ΔE). **Next:** Ryan's choice, then a Map view in the Shelf.
 62. **The sheen of each paint: matte, satin or gloss** (a study). Ryan: "I think we'll have to go by what community
     says for instance GW paints and especially the Tone Pro are satin." **A new property, not the finish class:** the
     app's "finish" (§5.2: flat · translucent · metal · effect) says what a paint *does* on the model; the sheen says

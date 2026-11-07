@@ -7,6 +7,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 and v1.14.0 took only the web entries. -->
 ### Added
+- **A study of the shelf as a map** (`mockups/shelf-map.html`; PLAN §5 item 61): which tones does my collection
+  miss? Five directions, drawn from the real paint data on two sample shelves: dots on the colour wheel, a ring
+  map of hue and lightness, a tone grid, a fog-of-war map by lightness, and a layer on the Studio's wheel. A tap
+  on a gap shows the three closest pots that fill it. Recommended: the tone grid, with the dot wheel as its
+  header. Not built; the app does not change.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
