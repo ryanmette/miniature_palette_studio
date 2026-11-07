@@ -1,6 +1,7 @@
 # Tone ladders across brands — a study
 
-Status: **study only, nothing built** (PLAN §5 item 64). Date: 2026-11-06. **Decided by Ryan the same day (§8).**
+Status: **direction A built** for Tone Pro (dataset 1.9.0, 2026-11-06); B and the other brands' families not yet (PLAN §5 item 64).
+Date: 2026-11-06. **Decided by Ryan the same day (§8).**
 Asked by Ryan: "how to best accommodate tone ladders because GW isn't the only one. Maybe we have a keep 'within
 brand' or a 'prefer same brand' toggle?"
 Companions: `CLAUDE.md` §3.6 (⋯ settings, the matching note) and §7 (match ranking), `docs/TONE_PRO.md` §5

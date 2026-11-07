@@ -521,3 +521,20 @@ test('holdControls: a swapped pot names the pot it replaced, with Use the origin
   assert.match(html, /data-hold-original="Accent"/);
   assert.doesNotMatch(holdControls({ role: 'Accent', hold: 'pot' }, true), /swapnote/);
 });
+
+// ---- The maker's ladder (docs/TONE_LADDERS.md, direction A) ----
+import { makerLadder } from '../src/js/ui.js';
+test("makerLadder: every tone in order, the pot marked in words, no ΔE (the maker's steps are not matches)", () => {
+  const t = (n, hex) => ({ id: `b${n}`, brand: 'Warhammer Colour', line: 'Tone Pro', name: `Ultramar Blue ${n}`, hex, type: 'layer', tone: n });
+  const fam = { id: 'citadel-tone-pro-ultramar-blue', name: 'Ultramar Blue', brand: 'Warhammer Colour', line: 'Tone Pro',
+    tones: [t(1, '#001A42'), t(2, '#0F3062'), t(3, '#0D4F88'), t(4, '#436CA1'), t(5, '#6D9ECF')], current: 'b3' };
+  const html = makerLadder(fam);
+  assert.equal((html.match(/class="step/g) || []).length, 5);
+  assert.equal((html.match(/class="step cur"/g) || []).length, 1, 'one pot');
+  assert.match(html, /Tone 3 of 5: Ultramar Blue 3, Warhammer Colour, your pot/);
+  assert.match(html, /Ultramar Blue · Tone Pro: the maker's 5 tones/);
+  assert.match(html, /role="group" aria-label="Ultramar Blue, the maker's 5 tones, darkest first"/);
+  assert.doesNotMatch(html, /ΔE/);
+  assert.ok(html.indexOf('#001A42') < html.indexOf('#6D9ECF'), 'darkest first');
+  assert.equal(makerLadder(null), '');
+});

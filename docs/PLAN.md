@@ -788,7 +788,10 @@ Do these three in one bug pass, in this order.
     `tone` fields; Tone Pro first); then (B) **Brand: Any · Prefer · Only** in ⋯, built as Use my paints (owned
     first; never Other brands). **Ryan's answers (2026-11-06): A, then B; B defaults to the brand you own the most
     paints of; keep Only; add every maker's families** (Reaper, Two Thin Coats, Army Painter Fanatic; one brand for
-    each PR, Reaper first). **Next:** build A (`family` + `tone` for Tone Pro, the maker's ladder row).
+    each PR, Reaper first). **A built (2026-11-06):** dataset 1.9.0 gives the 150 Tone Pro paints `family` + `tone`; the
+    Recipe card shows a pot's family as the maker made it (`ui.makerLadder`; no ΔE, "your pot" marked; not in
+    `ladders`, so the shopping list is unchanged). **Next:** B (the Brand setting), or the next brand's families
+    (Reaper).
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 

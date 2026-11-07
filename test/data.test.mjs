@@ -674,3 +674,19 @@ test('Tone Pro: every earlier paint keeps its id (saved shelves and links hold i
   assert.equal(real.paints.length, 3375);
   assert.equal(new Set(real.paints.map(p => p.id)).size, real.paints.length, 'no id is used twice');
 });
+
+// ---- Tone Pro families (dataset 1.9.0; docs/TONE_LADDERS.md §6) ----
+import { familyOf } from '../src/js/data.js';
+test('Tone Pro families: 30 families of 5, tones 1–5 in order, named without the number', () => {
+  const fams = new Set(tonePro.map(p => p.family));
+  assert.equal(fams.size, 30);
+  for (const p of tonePro) {
+    assert.match(p.family, /^citadel-tone-pro-[a-z0-9-]+$/, p.id);
+    assert.equal(p.tone, +p.name.slice(-1), `${p.id}: the tone is the name's number`);
+  }
+  const f = familyOf(real, real.byId.get('citadel-tone-pro-ultramar-blue-3'));
+  assert.equal(f.name, 'Ultramar Blue');
+  assert.deepEqual(f.tones.map(p => p.tone), [1, 2, 3, 4, 5]);
+  assert.equal(familyOf(real, real.byId.get('citadel-base-macragge-blue')), null, 'a paint in no family');
+  assert.equal(real.paints.filter(p => p.family).length, 150, 'only Tone Pro has families so far');
+});
