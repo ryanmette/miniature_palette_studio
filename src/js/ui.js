@@ -793,3 +793,75 @@ export function rackGroups(groups, tr) {
     + `<h3 class="rkhead"><span>${esc(g.title)}</span><span class="rkcount">${g.rows.length}</span></h3>`
     + `<ul class="rklist">${g.rows.map(r => rackRow(r, tr)).join('')}</ul></section>`).join('');
 }
+
+/* ---- the Shelf's Map (PLAN §5 item 61; mockups/shelf-map.html, C with A) ----
+   The grid of tones: hue bands across and lightness bands down (on a phone, turned: the hues run down, so the page
+   scrolls one way only). An APG grid: one tab stop, the arrow keys move, Enter or a tap opens the tone below.
+   `map` is shelfmap.js mapCells, `targets` its cellTargets; `tr` is i18n.t. A cell's own colours are paint data;
+   an empty cell ("a gap") is dashed and hatched, with the colour it misses as a dot in its centre. */
+const MAP_ROW_KEYS = ['shade', 'dark', 'mid', 'light', 'highlight'];
+const MAP_BAND_KEYS = ['red', 'scarlet', 'orange', 'ochre', 'yellow', 'olive', 'yellowGreen', 'green', 'emerald',
+  'teal', 'cyan', 'sky', 'blue', 'royalBlue', 'violet', 'purple', 'magenta', 'pink', 'grey'];
+export const mapBandName = (b, tr) => tr('mapBand_' + MAP_BAND_KEYS[b]);
+export const mapRowName = (r, tr) => tr('mapRow_' + MAP_ROW_KEYS[r]);
+/** A tone's name: "Dark teal", "Highlight grey". */
+export const mapToneName = (b, r, tr) => tr('mapTone', { row: mapRowName(r, tr), band: mapBandName(b, tr).toLowerCase() });
+const MAP_SW = 4;   // the pots a cell shows (two rows at most in a 36px column); its count says the rest
+
+/** What a cell holds, in words: "3 owned, 1 on the shopping list", or "a gap". */
+export function mapCellCounts(c, tr) {
+  const o = c.owned.length, w = c.want.length;
+  const what = o ? tr(o === 1 ? 'mapOwnedOne' : 'mapOwnedN', { n: o }) : tr('mapGap');
+  return what + (w ? ', ' + tr(w === 1 ? 'mapWantOne' : 'mapWantN', { n: w }) : '');
+}
+export const mapCellLabel = (c, b, r, tr) => `${mapToneName(b, r, tr)}: ${mapCellCounts(c, tr)}`;
+function mapCell(map, targets, b, r, sel, tr) {
+  const c = map.cells[b][r], o = c.owned.length, w = c.want.length, on = sel && sel.b === b && sel.r === r;
+  const pots = c.owned.slice(0, w ? MAP_SW - 1 : MAP_SW).map(p => swatch(p.hex, 'msw' + fxCls(p)))
+    .concat(c.want.slice(0, o ? 1 : MAP_SW).map(p => swatch(p.hex, 'msw want' + fxCls(p))));
+  return `<div role="gridcell" class="mcell${o ? '' : ' gap'}" id="mc-${b}-${r}" data-b="${b}" data-r="${r}" tabindex="-1"`
+    + ` aria-selected="${on}" aria-label="${esc(mapCellLabel(c, b, r, tr))}" style="--tgt:${safeColor(targets[b][r].hex)}">`
+    + pots.join('') + (o + w > pots.length ? `<span class="mn" aria-hidden="true">${o + w}</span>` : '') + '</div>';
+}
+/** The grid. `turned`: the phone's layout (hues down, lightness across, darkest first). */
+export function mapGrid(map, targets, { sel = null, turned = false } = {}, tr) {
+  const bands = MAP_BAND_KEYS.map((_, b) => b), rows = turned ? [0, 1, 2, 3, 4] : [4, 3, 2, 1, 0];
+  let h = `<div class="mapgrid${turned ? ' turned' : ''}" id="mapGrid" role="grid" aria-label="${esc(tr('mapGridName'))}"`
+    + ` aria-describedby="mapKeys" style="--mcols:${turned ? 5 : bands.length}">`;
+  const head = items => `<div role="row" class="mrow"><span class="mcorner" aria-hidden="true"></span>${items}</div>`;
+  if (!turned) {
+    h += head(bands.map(b => `<span role="columnheader" class="mhd"><span>${esc(mapBandName(b, tr))}</span></span>`).join(''));
+    for (const r of rows) h += `<div role="row" class="mrow"><span role="rowheader" class="mrh">${esc(mapRowName(r, tr))}</span>`
+      + bands.map(b => mapCell(map, targets, b, r, sel, tr)).join('') + '</div>';
+  } else {
+    h += head(rows.map(r => `<span role="columnheader" class="mhd"><span>${esc(mapRowName(r, tr))}</span></span>`).join(''));
+    for (const b of bands) h += `<div role="row" class="mrow"><span role="rowheader" class="mrh">${esc(mapBandName(b, tr))}</span>`
+      + rows.map(r => mapCell(map, targets, b, r, sel, tr)).join('') + '</div>';
+  }
+  return h + '</div>';
+}
+/** The line over the map: what it shows and how many tones have no paint you own. */
+export function mapSummaryLine(sum, map, tr) {
+  if (!map.owned && !map.want) return esc(tr('mapNone'));
+  return esc(tr('mapSummary', { empty: sum.emptyCells, cells: sum.cellCount, fam: sum.emptyFamilies, fams: sum.familyCount }));
+}
+/** The tone under the grid, once one is chosen: its pots, and the closest pots to buy when it has fewer than two.
+ *  `fills`: shelfmap.js fillPots, each with `quality` (data.js matchQuality). */
+export function mapDetail(map, b, r, fills, tr) {
+  const c = map.cells[b][r], o = c.owned.length, name = mapToneName(b, r, tr);
+  const row = (p, extra = '') => `<li class="mdrow">${swatch(p.hex, 'mdsw' + fxCls(p))}`
+    + `<span class="mdmain"><span class="mdname">${esc(pname(p))}</span><span class="rkline">${[esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ')}${finishTag(p.type)}</span></span>${extra}</li>`;
+  let h = `<h3 class="mdhead" id="mapDetailHead" tabindex="-1">${esc(name)}</h3>`;
+  h += `<p class="mdstate">${esc(o || c.want.length ? mapCellCounts(c, tr) : tr('mapGapLong', { tone: name.toLowerCase() }))}</p>`;
+  if (o || c.want.length) h += `<ul class="mdlist">${c.owned.map(p => row(p)).join('')}`
+    + c.want.map(p => row(p, `<span class="tag buy">${esc(tr('mapOnList'))}</span>`)).join('') + '</ul>';
+  if (o < 2) {
+    h += `<h4 class="micro mdsub">${esc(tr(o ? 'mapFillMore' : 'mapFill'))}</h4>`;
+    if (!fills.length) h += `<p class="mdstate">${esc(tr('mapNoFill'))}</p>`;
+    else h += `<ul class="mdlist">` + fills.map(m => row(m.paint,
+      `<span class="mdde"><span class="mono">ΔE ${m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span></span>`
+      + `<button type="button" class="btn sm" data-mapadd="${esc(m.paint.id)}" aria-label="${esc(tr('mapAddName', { name: pname(m.paint) }))}">${esc(tr('mapAdd'))}</button>`)).join('') + '</ul>'
+      + `<p class="mdnote">${esc(tr('mapFillNote'))}</p>`;
+  }
+  return h;
+}

@@ -1475,6 +1475,70 @@ main[data-mode="schemes"] { grid-template-columns: minmax(0, 1fr); }
 }
 .rktools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 8px 0 4px; }
 .rkhint { margin: 0 0 8px; }
+/* The Map (PLAN §5 item 61; mockups/shelf-map.html, C with A, Ryan 2026-11-09) ---------------------------------
+   A minimap (which colour families) over a grid of tones (hue × lightness: which tone to buy). A cell's swatches
+   are paint data; a gap is dashed and hatched with the colour it misses in its centre. The tone chosen is an inset
+   ring (interaction), focus the --focus ring outside it, so both show; nothing moves when either changes (§3.4). */
+.shelfmapview { margin-top: 12px; }
+.maphead { display: flex; gap: 16px; align-items: flex-start; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.minimap { flex: none; width: 168px; height: 190px; cursor: pointer; touch-action: manipulation; }
+.mapintro { min-width: 0; }
+.mapsum { margin: 0 0 8px; font-weight: 500; }
+.maplegend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 8px; font-size: var(--fs-small); color: var(--text-muted); }
+.maplegend i { display: inline-block; width: 12px; height: 12px; margin-right: 4px; vertical-align: -2px; }
+.maplegend .lg-own { border-radius: var(--r-pill); background: var(--text-muted); }
+.maplegend .lg-want { border-radius: var(--r-pill); box-shadow: inset 0 0 0 2px var(--buy); }
+.maplegend .lg-gap { border-radius: var(--r-tag); border: 1px dashed var(--edge);
+  background: repeating-linear-gradient(45deg, var(--border-strong) 0 1.5px, transparent 1.5px 4px); }
+.mapbody { display: grid; gap: 16px 24px; margin-top: 12px; }
+@media (min-width: 1100px) {
+  .mapbody { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+  .mapdetail { border-left: 1px solid var(--border); padding-left: 16px; }
+}
+.mapgrid { display: grid; grid-template-columns: auto repeat(var(--mcols), minmax(0, 1fr)); gap: 2px; }
+.mapgrid.turned { grid-template-columns: 88px repeat(var(--mcols), minmax(0, 1fr)); }
+.mrow { display: contents; }
+.mhd { display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; font-size: var(--fs-micro); color: var(--text-muted); line-height: 1.2; }
+/* wide: the hue names stand on end, so a 36px column never cuts "Emerald" in two */
+.mapgrid:not(.turned) .mhd span { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.mrh { align-self: center; padding-right: 8px; text-align: right; white-space: nowrap; font-size: var(--fs-micro); color: var(--text-muted); }
+.mapgrid.turned .mrh { text-align: left; white-space: normal; }
+.mcell { position: relative; min-width: 0; min-height: 48px; padding: 4px; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 2px;
+  border: 1px solid var(--border); border-radius: var(--r-sw); background: var(--surface); cursor: pointer; overflow: hidden; }
+.mcell:hover { background: var(--surface-2); }
+.mcell.gap { border-style: dashed; border-color: var(--edge);
+  background: repeating-linear-gradient(45deg, var(--surface-2) 0 3px, transparent 3px 7px), var(--surface); }
+.mcell.gap::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px;
+  border-radius: var(--r-tag); background: var(--tgt); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+.mcell .msw { width: 10px; height: 10px; border-radius: var(--r-tag); }
+/* a pot on the shopping list: the --buy ring, as on the minimap and the legend (the state's one colour, §3.5) */
+.mcell .msw.want { box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 1.5px var(--buy); margin: 1px; }
+.mcell .mn { position: absolute; right: 3px; bottom: 1px; font-family: var(--mono); font-size: 10.5px; color: var(--text-muted); }
+.mcell[aria-selected="true"] { box-shadow: inset 0 0 0 2px var(--accent); }
+.mcell:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); z-index: 1; }
+.mcell[aria-selected="true"]:focus-visible { box-shadow: var(--focus), inset 0 0 0 2px var(--accent); }
+.mapdetail { min-width: 0; font-size: var(--fs-small); scroll-margin-top: calc(var(--hdr-h, 56px) + 16px); }
+.mdhead { margin: 0 0 4px; font-family: var(--display); font-size: var(--fs-h2); font-weight: 600; }
+.mdhead:focus { outline: 2px solid transparent; }   /* a landing spot after a tap on a phone, not a control (as .hero) */
+.mdstate { margin: 0 0 8px; color: var(--text-muted); }
+.mdlist { list-style: none; margin: 0 0 8px; padding: 0; }
+.mdrow { display: flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 4px 0; border-bottom: 1px solid var(--border); }
+.mdsw { width: 24px; height: 24px; }
+.mdmain { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.mdname { font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+.mdde { white-space: nowrap; }
+.mdsub { margin: 16px 0 4px; }
+.mdnote { margin: 4px 0 0; color: var(--text-muted); }
+@media (max-width: 520px) {
+  .maphead { gap: 12px; }
+  .minimap { width: 132px; height: 154px; }
+  .mapsum { font-size: var(--fs-small); }
+  .mdrow { flex-wrap: wrap; }
+}
+@media (forced-colors: active) {
+  .mcell.gap::after { forced-color-adjust: none; }
+  .mcell[aria-selected="true"] { outline: 2px solid Highlight; outline-offset: -2px; }
+}
 /* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B) ------------------------------- */
 .rkstore { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 4px 0 8px; min-width: 0; }
 .rkchips { display: flex; flex-wrap: wrap; gap: 8px; }
