@@ -91,6 +91,28 @@ export function xyzToLab([x, y, z]) {
 }
 
 export const rgbToLab = rgb => xyzToLab(rgbToXyz(rgb));
+
+/**
+ * CIELAB (D65) → [r,g,b] 0–255, the way back of rgbToLab, clipped to the screen's range. For a colour the
+ * app works out itself (the Shelf map's tone targets: the mean of real paints), never for a paint's own hex,
+ * which is data. `inGamut` says whether the colour fits sRGB before the clip.
+ * @returns {{rgb:number[], inGamut:boolean}}
+ */
+export function labToRgb([L, a, b]) {
+  const fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - b / 200;
+  // the inverse of xyzToLab's f: a cube, and the same straight line below its threshold
+  const inv = t => (t > 6 / 29 ? t * t * t : (t - 4 / 29) * 0.12841854934601665);
+  const X = D65[0] * inv(fx), Y = D65[1] * inv(fy), Z = D65[2] * inv(fz);
+  // the inverse of rgbToXyz's matrix
+  const lin = [
+    X * 3.2406 + Y * -1.5372 + Z * -0.4986,
+    X * -0.9689 + Y * 1.8758 + Z * 0.0415,
+    X * 0.0557 + Y * -0.2040 + Z * 1.0570,
+  ];
+  const inGamut = lin.every(c => c >= -0.002 && c <= 1.002);
+  return { rgb: lin.map(c => clamp255(linearToSrgb(clamp01(c)))), inGamut };
+}
+export const labToHex = lab => rgbToHex(labToRgb(lab).rgb);
 export const hexToLab = hex => rgbToLab(hexToRgb(hex));
 
 /** Lab chroma C* = √(a*² + b*²) — perceptual colourfulness (0 = a pure neutral). */

@@ -373,9 +373,9 @@ export const BROWSE_SORTS = ['hue', 'closest', 'owned', 'name'];
  *  olive drabs, and they read as tinted in a grid. */
 export const GREY_CHROMA = 6;
 /** The width of one hue band in the colour-wheel order (degrees of Lab hue). */
-const HUE_BAND = 20;
+export const HUE_BAND = 20;
 /** Where the wheel starts (Lab hue). At 0° it opened on pinks; at 20° it opens on reds, and the pinks close it beside the purples. */
-const HUE_START = 20;
+export const HUE_START = 20;
 
 // The colour-wheel order depends on the dataset only, so it is worked out once per dataset.
 const wheelOrders = new WeakMap();

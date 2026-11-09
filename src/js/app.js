@@ -16,7 +16,8 @@ import { loadDataset, browseOrder, storeSwaps, equivalents, nearestPaints, neare
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
-import { loaderRoles, drawLoader, LOADER_TOKENS } from './loader.js';   // the Molten Harmonics loader (§3.4)
+import { loaderRoles, drawLoader, LOADER_TOKENS } from './loader.js';
+import { mapCells, mapSummary, cellTargets, fillPots, drawMinimap, bandAtXY, STRIP as MAP_STRIP, GREY as MAP_GREY } from './shelfmap.js';   // the Shelf's Map (item 61)   // the Molten Harmonics loader (§3.4)
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
@@ -731,6 +732,7 @@ function paintStudioMarks(ids = null) {
   else if (aeId && !ae.isConnected) document.getElementById(aeId)?.focus({ preventScroll: true });
 }
 function renderShelfMarks(ids) {
+  if (state.shelfView === 'map') { renderShelfMap(); renderShelfStats(); return; }   // 95 cells: a rebuild is cheap
   // The list: a tick (or one mark from elsewhere) redraws only its row. A full rebuild of 3,225 rows took
   // 660ms per tick; a row is about 1ms. Many paints (an import, another tab) rebuild the list.
   if (state.shelfView === 'list') {
@@ -997,8 +999,18 @@ function renderShelf() {
   for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
   const list = state.shelfView === 'list';
   for (const b of $('#shelfViewSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sv === state.shelfView));
-  // The grid's own tools and how-to go in the list: a tick is the list's one mark, with no selection
-  $('#shelfSelect').hidden = list; $('#shelfHint').hidden = list; $('#shelfBar').hidden = list;
+  // The grid's own tools and how-to go in the list and the map: a tick is the list's one mark, with no selection
+  const notGrid = state.shelfView !== 'grid';
+  $('#shelfSelect').hidden = notGrid; $('#shelfHint').hidden = notGrid; $('#shelfBar').hidden = notGrid;
+  if (notGrid) document.body.classList.remove('selsheet');
+  $('#shelfMapView').hidden = state.shelfView !== 'map';
+  if (state.shelfView === 'map') {
+    $('#shelfGrid').hidden = $('#shelfListView').hidden = $('#shelfEmpty').hidden = true;
+    renderShelfMap();
+    shelf.viewIds = null;
+    renderShelfStats(); syncShelfFilterUi();
+    return;
+  }
   const view = shelfPaints();
   if (list) {
     $('#shelfGrid').hidden = true;
@@ -1249,6 +1261,121 @@ function useOriginal(role) {
   render('scheme');
   say(t('originalBack', { role, name: ui.pname(was) }));
 }
+/* ---- the Shelf's Map (PLAN §5 item 61; mockups/shelf-map.html, C with A, Ryan 2026-11-09) ----
+   The paints the filters pick that are owned or on the shopping list, as tones: a minimap (which colour families)
+   over a grid (hue × lightness: which tone to shade or highlight with). A tone chosen shows its paints, and for a
+   gap the closest pots to buy, each with its true ΔE (§2). Nothing is saved: the tone chosen is for this visit. */
+const shelfMap = { sel: null, cur: { b: 0, r: 2 }, last: null };
+const mapTurned = () => PHONE.matches;   // ≤520px: hues down, lightness across, so the page scrolls one way
+function renderShelfMap() {
+  const map = mapCells(shelfPaints(), store.markOf);
+  shelfMap.last = map;
+  const targets = cellTargets(state.idx), turned = mapTurned();
+  $('#mapSum').innerHTML = ui.mapSummaryLine(mapSummary(map), map, t);
+  $('#mapHint').textContent = t(turned ? 'mapHintTurned' : 'mapHint');
+  const hadFocus = !!document.activeElement?.closest?.('#mapGrid');
+  $('#mapGridWrap').innerHTML = ui.mapGrid(map, targets, { sel: shelfMap.sel, turned }, t);
+  mapCursor(shelfMap.cur, hadFocus);
+  renderMapDetail();
+  drawMapMini(map);
+}
+const mapCellEl = ({ b, r }) => document.getElementById(`mc-${b}-${r}`);
+/** The grid's one tab stop (APG grid: roving tabindex). */
+function mapCursor(pos, focus = false) {
+  shelfMap.cur = pos;
+  for (const c of $('#mapGrid').querySelectorAll('[tabindex="0"]')) c.tabIndex = -1;
+  const el = mapCellEl(pos); if (!el) return;
+  el.tabIndex = 0;
+  if (focus) el.focus({ preventScroll: false });
+}
+function renderMapDetail() {
+  const box = $('#mapDetail'), sel = shelfMap.sel, map = shelfMap.last;
+  if (!sel || !map) { box.innerHTML = `<p class="mdstate">${ui.esc(t('mapPick'))}</p>`; return; }
+  const onShelf = new Set(state.idx.paints.filter(p => store.markOf(p.id) !== 'none').map(p => p.id));
+  const fills = map.cells[sel.b][sel.r].owned.length < 2
+    ? fillPots(state.idx, sel.b, sel.r, { onShelf }).map(m => ({ ...m, quality: matchQuality(m.deltaE) })) : [];
+  box.innerHTML = ui.mapDetail(map, sel.b, sel.r, fills, t)
+    + (mapTurned() ? `<p><button type="button" class="textact" id="mapBack">${ui.esc(t('mapBack'))}</button></p>` : '');
+}
+/** Choose a tone: its paints (or the pots that fill it) show under the grid. `how`: 'key' keeps focus in the
+ *  grid; a tap on a phone takes the page to the tone (it is under 19 rows), with a way back. */
+function chooseTone(pos, how = 'key') {
+  shelfMap.sel = pos;
+  for (const c of $('#mapGrid').querySelectorAll('[aria-selected="true"]')) c.setAttribute('aria-selected', 'false');
+  mapCellEl(pos)?.setAttribute('aria-selected', 'true');
+  mapCursor(pos, how === 'key');
+  renderMapDetail();
+  const c = shelfMap.last.cells[pos.b][pos.r];
+  say(ui.mapCellLabel(c, pos.b, pos.r, t));
+  if (how !== 'key' && mapTurned()) {
+    $('#mapDetail').scrollIntoView({ block: 'start', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+    $('#mapDetailHead')?.focus({ preventScroll: true });
+  }
+}
+function drawMapMini(map) {
+  const cv = $('#mapMini'); if (!cv || $('#shelfMapView').hidden) return;
+  const size = Math.round(cv.clientWidth) || 168, dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(size * dpr); cv.height = Math.round((size + MAP_STRIP) * dpr);
+  const cs = getComputedStyle(document.documentElement), tok = n => cs.getPropertyValue(n).trim();
+  drawMinimap(cv.getContext('2d'), { size, dpr, cells: map, tokens: {
+    bg: tok('--bg'), border: tok('--border'), edge: tok('--edge'), text: tok('--text'), buy: tok('--buy'), faint: tok('--border-strong') } });
+}
+function setupShelfMap() {
+  const wrap = $('#mapGridWrap');
+  wrap.addEventListener('click', e => {
+    const c = e.target.closest('[role="gridcell"]'); if (!c) return;
+    chooseTone({ b: +c.dataset.b, r: +c.dataset.r }, 'pointer');
+  });
+  wrap.addEventListener('keydown', e => {
+    const c = e.target.closest('[role="gridcell"]'); if (!c) return;
+    let { b, r } = { b: +c.dataset.b, r: +c.dataset.r };
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chooseTone({ b, r }, 'key'); return; }
+    // the arrows follow the screen: across is hue (lightness when turned), down is darker (the next hue when turned)
+    const turned = mapTurned(), last = MAP_GREY;
+    const across = turned ? ['r', 4] : ['b', last], down = turned ? ['b', last] : ['r', 4];
+    const pos = { b, r };
+    if (e.key === 'ArrowRight') pos[across[0]]++;
+    else if (e.key === 'ArrowLeft') pos[across[0]]--;
+    else if (e.key === 'ArrowDown') pos[down[0]] += turned ? 1 : -1;
+    else if (e.key === 'ArrowUp') pos[down[0]] += turned ? -1 : 1;
+    else if (e.key === 'Home') pos[across[0]] = 0;
+    else if (e.key === 'End') pos[across[0]] = across[1];
+    else return;
+    e.preventDefault();
+    pos.b = Math.max(0, Math.min(last, pos.b)); pos.r = Math.max(0, Math.min(4, pos.r));
+    mapCursor(pos, true);
+  });
+  // the minimap: a tap on a colour family goes to that colour in the grid (its tone with the most paints, else Mid)
+  $('#mapMini').addEventListener('click', e => {
+    const cv = e.currentTarget, rc = cv.getBoundingClientRect(), size = rc.width;
+    const x = e.clientX - rc.left - size / 2, y = e.clientY - rc.top - size / 2;
+    if (e.clientY - rc.top > size || !shelfMap.last) return;   // the greys' strip
+    const b = bandAtXY(x, y), col = shelfMap.last.cells[b];
+    let r = 2; col.forEach((c, i) => { if (c.owned.length > col[r].owned.length) r = i; });
+    chooseTone({ b, r }, 'pointer');
+    if (!mapTurned()) mapCellEl({ b, r })?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  });
+  $('#mapDetail').addEventListener('click', e => {
+    if (e.target.closest('#mapBack')) {
+      const el = mapCellEl(shelfMap.sel || shelfMap.cur);
+      el?.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+      el?.focus({ preventScroll: true });
+      return;
+    }
+    const b = e.target.closest('[data-mapadd]'); if (!b) return;
+    const id = b.dataset.mapadd, p = state.idx.byId.get(id); if (!p) return;
+    const i = [...$('#mapDetail').querySelectorAll('[data-mapadd]')].indexOf(b);
+    store.setMark(id, 'want');
+    render('marks', { ids: [id] });
+    say(t('mapAdded', { name: ui.pname(p) }));
+    // focus stays in the same place: the next Add, else the tone's heading
+    const adds = $('#mapDetail').querySelectorAll('[data-mapadd]');
+    (adds[Math.min(i, adds.length - 1)] || $('#mapDetailHead'))?.focus({ preventScroll: true });
+  });
+  // a phone turned past 520px (or back) turns the grid; the minimap follows the theme
+  PHONE.addEventListener('change', () => { if (state.mode === 'shelf' && state.shelfView === 'map') renderShelfMap(); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (shelfMap.last) drawMapMini(shelfMap.last); });
+}
 function setupShelfList() {
   $('#shelfViewSeg').addEventListener('click', e => {
     const b = e.target.closest('[data-sv]'); if (!b || b.dataset.sv === state.shelfView) return;
@@ -1306,7 +1433,7 @@ function clearShelfFilters() {
   state.shelfQ = state.shelfMark = state.shelfBrand = ''; state.shelfTypes = new Set();
   $('#shelfQ').value = $('#shelfBrand').value = '';
   shelfFilterChanged();
-  (state.shelfView === 'list' ? $('#shelfList [data-rktick]') : $('#shelfGrid'))?.focus({ preventScroll: true });
+  (state.shelfView === 'list' ? $('#shelfList [data-rktick]') : state.shelfView === 'map' ? $('#mapGrid [tabindex="0"]') : $('#shelfGrid'))?.focus({ preventScroll: true });
 }
 
 /* ---- Shelf dock (§3.6; mockups/shelf-landing.html "Chosen" + its design critique) ----
@@ -1365,7 +1492,7 @@ function onShelfScroll() {
   applyDock();
 }
 /** The Shelf's body on show: the grid, the list, or the empty state (a hidden one has no place to measure). */
-const shelfBody = () => [$('#shelfGrid'), $('#shelfListView'), $('#shelfEmpty')].find(el => !el.hidden) || $('#shelfGrid');
+const shelfBody = () => [$('#shelfGrid'), $('#shelfListView'), $('#shelfMapView'), $('#shelfEmpty')].find(el => !el.hidden) || $('#shelfGrid');
 /** After a filter change, bring the first results into view just below the dock. Without this, a
  *  filter applied deep in the grid leaves the page scrolled past a now-shorter list (blank screen),
  *  or the first results hide under the dock. */
@@ -1857,7 +1984,7 @@ function useAsSeed(id) {
 
 /** Lightroom-style keyboard triage; active only in shelf mode, ignored while typing in a field. */
 function shelfKeydown(e) {
-  if (state.mode !== 'shelf' || state.shelfView === 'list') return;   // the list's controls are buttons, with their own keys
+  if (state.mode !== 'shelf' || state.shelfView !== 'grid') return;   // the list's and the map's controls have their own keys
   const ae = document.activeElement;
   // act only when the grid (or nothing) has focus — never hijack keys from chips, nav, or a text field.
   // The mark menu counts as "in the grid": it takes focus when it opens, and P/U/X still work there. The
@@ -2310,6 +2437,7 @@ function setTheme(t, { save = false } = {}) {
   const sw = document.querySelector('#themeToggle');   // keep the settings-menu theme switch in sync
   if (sw) sw.setAttribute('aria-checked', String(state.theme === 'dark'));
   syncThemeSlot();
+  if (state.mode === 'shelf' && state.shelfView === 'map' && shelfMap.last) drawMapMini(shelfMap.last);   // the minimap's colours are the theme's
 }
 function setMode(mode) {
   state.mode = mode === 'shelf' || mode === 'schemes' ? mode : 'studio';
@@ -2330,7 +2458,7 @@ function setMode(mode) {
     Object.assign(dock, { open: true, acc: 0, lastY: 0, stuck: false }); applyDock();
     // With a mouse or keyboard the grid takes focus, so arrows and P/U/X work at once. On a touch screen there is no
     // keyboard to use it, and iOS drew the focus ring round the whole grid and a cursor name tip (Ryan, 2026-10-30).
-    if (state.shelfView !== 'list' && !COARSE) $('#shelfGrid').focus({ preventScroll: true });
+    if (state.shelfView === 'grid' && !COARSE) $('#shelfGrid').focus({ preventScroll: true });
   }
   else if (state.mode === 'schemes') { renamingId = null; renderSchemesPage(); window.scrollTo(0, 0); }
   else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows
@@ -3601,6 +3729,7 @@ function wire() {
   setupSettings(); setupConfirm(); setupMatchNote();   // ⋯ Settings, the Restore/Delete confirm, the matching note
   setupSaveDialog(); setupSchemesPage();   // saved schemes: the Save line and dialog, the Schemes page (item 35)
   setupShelfList();   // the Shelf's list: the rack walk (item 36)
+  setupShelfMap();    // the Shelf's map: the tones you have and miss (item 61)
   setupStore();   // Take to the store: the panel, the naming step, the "bought" link back (item 37)
   setupHelp();   // Help: a sheet built from support.html (mockups/help-about.html, B)
 

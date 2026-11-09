@@ -736,7 +736,7 @@ Do these three in one bug pass, in this order.
     (`any-pointer: coarse`); hover effects only with `any-hover: hover`; test the keyboard paths on an iPad with a
     keyboard. Changes CLAUDE.md §3.5–3.6 in many places.
 
-### Raised by Ryan on 2026-11-06 — a map of my paints, sheen, 3D colour (not yet done)
+### Raised by Ryan on 2026-11-06 — a map of my paints (built), sheen, 3D colour (not yet done)
 
 61. **A map of my paints: where are my colours, and which tones am I missing?** Ryan: "a 'what tones am I missing or
     low coverage' or maybe a 'place all my paints on the wheel' to visually see where they are. The color wheel is
@@ -756,6 +756,12 @@ Do these three in one bug pass, in this order.
     and metals (filter by finish class, §5.2); a tap on a dot or a cell (the paint, or the paints there); and a path
     for the keyboard and a screen reader (a table of the same counts, never only a picture; §3.5). No new data:
     hue, chroma and lightness come from each paint's Lab (§7).
+    **Studied (2026-11-07):** [`mockups/shelf-map.html`](../mockups/shelf-map.html) — 5 directions on two sample
+    shelves (A minimap dots · B ring map · C tone grid · D fog of war by lightness floor · E a layer on the Studio's
+    wheel). **Recommended:** C (a grid of real buttons, so it is its own keyboard path) with a small A as its header;
+    a gap cell lists the 3 closest pots (true ΔE). **Built (2026-11-09, Ryan: "Go with C plus A"):** the Shelf's **Map** view
+    (`src/js/shelfmap.js`, `ui.mapGrid`, CLAUDE.md §3.6). Not built: D and E (later ideas), and a counts table (C's grid is
+    itself the keyboard and screen-reader path).
 62. **The sheen of each paint: matte, satin or gloss** (a study). Ryan: "I think we'll have to go by what community
     says for instance GW paints and especially the Tone Pro are satin." **A new property, not the finish class:** the
     app's "finish" (§5.2: flat · translucent · metal · effect) says what a paint *does* on the model; the sheen says
