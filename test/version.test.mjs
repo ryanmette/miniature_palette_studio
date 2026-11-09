@@ -30,3 +30,27 @@ test('WHATS_NEW is for this version: a release updates About’s “What’s new
   assert.ok(WHATS_NEW.items.length >= 1 && WHATS_NEW.items.length <= 5, 'a few short lines');
   for (const line of WHATS_NEW.items) assert.ok(line.length <= 120, `short: ${line}`);
 });
+
+// ---- The update log (About's "Earlier updates"; CLAUDE.md §8 checklist) ----
+test('the update log keeps every earlier release since 1.13.0, newest first, each with a date and a few short lines', async () => {
+  const { WHATS_NEW, EARLIER_NEWS } = await import('../src/js/version.js');
+  const num = v => v.split('.').map(Number).reduce((a, n) => a * 1000 + n, 0);
+  assert.match(WHATS_NEW.date, /^\d{4}-\d{2}-\d{2}$/);
+  for (let i = 0; i < EARLIER_NEWS.length; i++) {
+    const r = EARLIER_NEWS[i];
+    assert.match(r.date, /^\d{4}-\d{2}-\d{2}$/, r.version);
+    assert.ok(num(r.version) < num(WHATS_NEW.version), `${r.version} is older than What's new`);
+    if (i) assert.ok(num(r.version) < num(EARLIER_NEWS[i - 1].version), 'newest first');
+    assert.ok(r.items.length >= 1 && r.items.length <= 5, r.version);
+    for (const line of r.items) assert.ok(line.length <= 120, `short: ${line}`);
+  }
+  // A release moves the What's new it replaces into the log: every CHANGELOG release from 1.13.0 up to (not
+  // including) this one must be there, with the date its CHANGELOG heading gives.
+  const { readFileSync } = await import('node:fs');
+  const log = readFileSync(new URL('../CHANGELOG.md', import.meta.url), 'utf8');
+  const released = [...log.matchAll(/^## \[(\d+\.\d+\.\d+)\] - (\d{4}-\d{2}-\d{2})/gm)].map(m => ({ version: m[1], date: m[2] }));
+  const want = released.filter(r => num(r.version) >= num('1.13.0') && num(r.version) < num(WHATS_NEW.version));
+  assert.deepEqual(EARLIER_NEWS.map(r => [r.version, r.date]), want.map(r => [r.version, r.date]));
+  const cur = released.find(r => r.version === WHATS_NEW.version);
+  if (cur) assert.equal(WHATS_NEW.date, cur.date, "What's new carries its release's date");
+});

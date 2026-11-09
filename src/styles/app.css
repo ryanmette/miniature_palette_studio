@@ -137,7 +137,10 @@ header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bo
 /* layout */
 /* Single column: the paint picker is the seed field's list, an overlay from the seed toolbar, so the
    workspace spans the full (bumped) width — more room for the wheel + the 2-up plan. */
-main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+/* minmax(0, 1fr), never a bare 1fr: 1fr is minmax(auto, 1fr), so a column never shrinks under its content's
+   min-content width, and one long row that scrolls sideways (the Shelf list's "This store carries" chips, ~1,100px
+   with ten brands) made the whole page wider than a phone (PLAN §5 item 58) */
+main { max-width: 1440px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
 /* Regions (Workbench, §3.5): no cards. The seed toolbar, the studio, the output and the Shelf sit on the
    page; a 1px --border rule and space separate them (the audit counted a card on every region, and cards in
    cards, among the "made by AI" signs). .card stays as the region hook for the reveal motion (§3.4). */
@@ -625,8 +628,8 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 
 /* shelf (collection) — top-level mode beside Studio */
 .modenav { margin-right: 4px; }
-main[data-mode="shelf"] { grid-template-columns: 1fr; }
-.shelf { grid-column: 1 / -1; }     /* full-width when shown (picker + workspace are hidden in shelf mode) */
+main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
+.shelf { grid-column: 1 / -1; min-width: 0; }     /* full-width when shown (picker + workspace are hidden in shelf mode); min-width: 0, so a row that scrolls sideways stays inside it (item 58) */
 .shelfhead { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
 .shelftop { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .shelftools { display: flex; gap: 8px; }
@@ -1066,6 +1069,14 @@ main[data-mode="shelf"] { grid-template-columns: 1fr; }
 /* What's new in About */
 .whatsnew { margin: 0 0 8px; padding-left: 20px; font-size: 13px; line-height: 1.6; }
 .whatsnew li + li { margin-top: 4px; }
+/* The update log (About, under What's new): a native disclosure, closed at first; its summary is a --tap tall row */
+.newslog { margin: 0 0 8px; }
+.newslog summary { min-height: var(--tap); display: flex; align-items: center; gap: 4px; cursor: pointer; color: var(--accent); font-weight: 500; list-style: none; }
+.newslog summary::-webkit-details-marker { display: none; }   /* the icon set's chevron replaces the browser's marker (§3.5 Icons) */
+.newslog summary .ic { width: 16px; height: 16px; }
+.newslog[open] summary .ic { transform: rotate(180deg); }
+.newslog summary:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); border-radius: var(--r-ctrl); }
+.newslog h4 { margin: 8px 0 4px; font-size: var(--fs-small); font-weight: 600; color: var(--text-muted); }
 .aboutshelf { margin-top: 24px; padding-top: 4px; border-top: 1px solid var(--border); }
 .aboutshelf .btn { margin-top: 4px; }
 @media (prefers-reduced-motion: no-preference) {
@@ -1372,7 +1383,7 @@ header { padding-top: env(safe-area-inset-top, 0px); }
 .sbnone { font-family: var(--font); font-size: var(--fs-small); font-weight: 400; color: var(--text-muted); }
 .sbacts { margin-left: auto; display: flex; gap: 8px; flex: none; }
 /* The Schemes page: a region like the Shelf, full width, one list (Ryan: no folders). */
-main[data-mode="schemes"] { grid-template-columns: 1fr; }
+main[data-mode="schemes"] { grid-template-columns: minmax(0, 1fr); }
 .schemes { grid-column: 1 / -1; }
 .schemeshead { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
 .schemeshead h2 { font-size: var(--fs-h1); margin: 0; }
@@ -1465,7 +1476,7 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
 .rktools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 8px 0 4px; }
 .rkhint { margin: 0 0 8px; }
 /* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B) ------------------------------- */
-.rkstore { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 4px 0 8px; }
+.rkstore { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 4px 0 8px; min-width: 0; }
 .rkchips { display: flex; flex-wrap: wrap; gap: 8px; }
 .rkcount { text-transform: none; letter-spacing: 0; }
 /* Phone (PLAN §5 item 42): the list's top took 79% of the screen. The tools share one row, the brand toggles are
@@ -1477,7 +1488,7 @@ main[data-mode="schemes"] { grid-template-columns: 1fr; }
   .rkhint { display: none; }
   .rkstore { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 0; margin: 0 -4px 4px; }
   .rkstore > .micro { padding: 0 4px; }
-  .rkchips { flex-wrap: nowrap; overflow-x: auto; padding: 4px; scrollbar-width: none; }
+  .rkchips { flex-wrap: nowrap; overflow-x: auto; padding: 4px; scrollbar-width: none; min-width: 0; max-width: 100%; }
   .rkchips::-webkit-scrollbar { display: none; }
   .rkchip { flex: none; }
 }
