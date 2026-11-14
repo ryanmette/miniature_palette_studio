@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shelf map study</title>
+<!-- the app's self-hosted webfonts (no external requests), so text widths match the app -->
+<link rel="stylesheet" href="../src/styles/fonts.css">
+<style>
+  /* ---------- tokens: the same blocks as src/styles/tokens.css (CLAUDE.md §3.1, Workbench+) ---------- */
+  :root {
+    --r-card:6px; --r-ctrl:4px; --r-sw:3px; --r-tag:2px; --r-pill:999px; --tap:38px;
+    --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+    --fs-h2:20px; --fs-body:14px; --fs-small:12.5px; --fs-micro:11.5px;
+  }
+  @media (pointer: coarse), (max-width: 520px) { :root { --tap:44px; } }
+  :root, [data-theme="light"] {
+    --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EDEBE6;
+    --border:#DCD8D0; --border-strong:#C9C4BA; --edge:#8A857B;
+    --text:#1D1C19; --text-muted:#5E5A52; --text-faint:#9C978D;
+    --accent:#0B6371; --accent-weak:#E1EEEF; --on-accent:#FFFFFF;
+    --buy:#2563EB; --buy-text:#1D4ED8; --success:#16A34A; --success-text:#0F7334; --warning-text:#945908; --danger-text:#C4203D;
+    --shadow-pop:0 10px 40px rgba(29,28,25,.18);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  [data-theme="dark"] {
+    --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+    --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+    --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+    --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+    --buy:#5E93C9; --buy-text:var(--buy); --success:#86A559; --success-text:var(--success); --warning-text:#E0803A; --danger-text:#D86C58;
+    --shadow-pop:0 18px 50px rgba(0,0,0,.5);
+    --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#141110; --surface:#1C1815; --surface-2:#251F1A;
+      --border:#3A302A; --border-strong:#4D4138; --edge:#7C6F62;
+      --text:#ECE3D8; --text-muted:#A8998A; --text-faint:#7C6F62;
+      --accent:#C2912F; --accent-weak:#2C2113; --on-accent:#15100A;
+      --buy:#5E93C9; --buy-text:var(--buy); --success:#86A559; --success-text:var(--success); --warning-text:#E0803A; --danger-text:#D86C58;
+      --shadow-pop:0 18px 50px rgba(0,0,0,.5);
+      --focus:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+    }
+  }
+
+  /* ---------- the page: regions with rules, no cards (§3.5) ---------- */
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); font-size:var(--fs-body); line-height:1.5; padding:24px 16px 48px; }
+  .page { max-width:1140px; margin:0 auto; }
+  h1 { font-family:var(--display); font-size:32px; font-weight:600; line-height:1.15; margin:0 0 8px; }
+  h2 { font-family:var(--display); font-size:var(--fs-h2); font-weight:600; margin:0 0 4px; }
+  h2 .k { color:var(--accent); margin-right:6px; }
+  .micro { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  h3.micro { margin:16px 0 8px; }
+  a { color:var(--accent); }
+  button { font:inherit; color:inherit; }
+  :focus-visible { outline:2px solid transparent; outline-offset:2px; box-shadow:var(--focus); border-radius:var(--r-ctrl); }
+  section { border-top:1px solid var(--border); padding:24px 0; }
+  .sub { color:var(--text-muted); font-size:var(--fs-small); max-width:80ch; margin:0 0 12px; }
+  .sub b, .notes b, td b { color:var(--text); }
+  ul.notes { margin:0; padding-left:20px; font-size:var(--fs-small); color:var(--text-muted); max-width:82ch; }
+  .notes li + li { margin-top:4px; }
+  .pro { color:var(--success-text); font-weight:600; }
+  .con { color:var(--danger-text); font-weight:600; }
+
+  /* the controls (the app's .seg and toggles) */
+  .controls { display:flex; flex-wrap:wrap; gap:12px 24px; align-items:center; margin:16px 0 0; position:sticky; top:0; z-index:5;
+    background:var(--bg); padding:8px 0; border-bottom:1px solid var(--border); }
+  @media (max-width:520px) { .controls { position:static; } }
+  .ctl { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .seg { display:inline-flex; }
+  .seg button { position:relative; min-height:30px; padding:0 12px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text);
+    font-size:12.5px; font-weight:500; cursor:pointer; margin-left:-1px; }
+  .seg button:first-child { border-radius:var(--r-ctrl) 0 0 var(--r-ctrl); margin-left:0; }
+  .seg button:last-child { border-radius:0 var(--r-ctrl) var(--r-ctrl) 0; }
+  .seg button:hover { background:var(--surface-2); }
+  .seg button[aria-pressed="true"] { background:var(--accent-weak); }
+  .seg button[aria-pressed="true"]::after { content:""; position:absolute; left:0; right:0; bottom:0; height:3px; background:var(--accent); }
+  .seg button:focus-visible { z-index:1; }
+  @media (pointer: coarse), (max-width:520px) { .seg button { min-height:var(--tap); } }
+
+  /* a direction: the picture + the detail beside it */
+  .dir { display:grid; grid-template-columns:minmax(0, 1fr) 320px; gap:24px; align-items:start; margin-top:12px; }
+  @media (max-width: 860px) { .dir { grid-template-columns:1fr; } }
+  .stage { min-width:0; }
+  canvas.map, svg.map { display:block; width:100%; max-width:520px; height:auto; margin:0 auto; touch-action:manipulation; cursor:pointer; }
+  .legend { display:flex; flex-wrap:wrap; gap:4px 16px; justify-content:center; font-size:var(--fs-small); color:var(--text-muted); margin-top:8px; }
+  .legend i { display:inline-block; width:12px; height:12px; vertical-align:-2px; margin-right:4px; border-radius:50%; }
+  .lg-own { background:var(--text-muted); }
+  .lg-buy { border:2px solid var(--buy); }
+  .lg-gap { border-radius:var(--r-sw) !important; background:repeating-linear-gradient(45deg, var(--border-strong) 0 2px, transparent 2px 5px); border:1px dashed var(--edge); }
+
+  /* the detail panel (one per direction): a region, not a card */
+  .detail { border-left:1px solid var(--border); padding-left:16px; min-height:240px; font-size:var(--fs-small); }
+  @media (max-width: 860px) { .detail { border-left:0; border-top:1px solid var(--border); padding:12px 0 0; min-height:0; } }
+  .detail h4 { font-family:var(--display); font-size:18px; font-weight:600; margin:0 0 2px; }
+  .detail .st { color:var(--text-muted); margin:0 0 8px; }
+  .detail ul { list-style:none; margin:0 0 8px; padding:0; }
+  .detail li { display:flex; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid var(--border); }
+  .detail li .nm { font-weight:600; color:var(--text); }
+  .detail li .bl { color:var(--text-muted); }
+  .detail li .de { margin-left:auto; font-family:var(--mono); font-size:11.5px; color:var(--text-muted); white-space:nowrap; }
+  .tag { display:inline-block; font-size:10.5px; font-weight:500; padding:0 5px; border-radius:var(--r-tag); border:1px solid var(--border-strong); color:var(--text-muted); white-space:nowrap; }
+  .tag.buy { border-color:var(--buy); color:var(--buy-text); }
+  .tag.success { border-color:var(--success); color:var(--success-text); }
+  .tag.warning { border-color:var(--warning-text); color:var(--warning-text); }
+  .tag.danger { border-color:var(--danger-text); color:var(--danger-text); }
+
+  /* the app's swatch: square, inset edge, finish overlays (src/styles/app.css) */
+  .sw { display:inline-block; flex:none; width:24px; height:24px; border-radius:var(--r-sw); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); background-color:var(--c); }
+  .sw.metal { background-image:linear-gradient(158deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.26) 100%); }
+  .sw.fx-wash { background-image:linear-gradient(155deg, rgba(255,255,255,.40), rgba(255,255,255,0) 48%, rgba(0,0,0,.16)); }
+  .sw.sm { width:12px; height:12px; border-radius:2px; }
+  .sw.buy { box-shadow:inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 1.5px var(--buy); }
+
+  /* direction C: the grid (real buttons, so it is its own keyboard path) */
+  .grid { display:grid; gap:2px; margin:0 auto; max-width:100%; }
+  .grid .hd { font-size:10.5px; color:var(--text-muted); text-align:center; align-self:end; line-height:1.2; padding-bottom:4px; overflow-wrap:anywhere; }
+  .grid .rh { font-size:var(--fs-micro); color:var(--text-muted); align-self:center; text-align:right; padding-right:6px; white-space:nowrap; }
+  .grid button.cell { position:relative; min-height:var(--tap); min-width:0; padding:3px; border:1px solid var(--border); border-radius:var(--r-sw); background:var(--surface);
+    cursor:pointer; display:flex; flex-wrap:wrap; align-content:flex-start; gap:2px; overflow:hidden; }
+  .grid button.cell:hover { background:var(--surface-2); }
+  .grid button.cell[aria-pressed="true"] { outline:2px solid var(--accent); outline-offset:1px; z-index:1; }
+  .grid button.cell.gap { border:1px dashed var(--edge); background:
+    linear-gradient(var(--c), var(--c)) center/10px 10px no-repeat,
+    repeating-linear-gradient(45deg, var(--surface-2) 0 3px, transparent 3px 7px), var(--surface); }
+  .grid button.cell .n { position:absolute; right:3px; bottom:1px; font-family:var(--mono); font-size:10px; color:var(--text-muted); }
+  .grid button.cell .sw.sm { width:10px; height:10px; }
+  .grid.t .hd { text-align:right; align-self:center; padding:0 6px 0 0; }
+  /* wide: the hue names stand on end, so a 32px column never cuts "Emerald" in two */
+  .grid:not(.t) .hd[role="columnheader"] { writing-mode:vertical-rl; transform:rotate(180deg); text-align:left; justify-self:center; white-space:nowrap; padding:0 0 4px; }
+
+  /* the counts table (the keyboard and screen-reader path for A, B and D) */
+  .tablewrap { overflow-x:auto; max-width:100%; }
+  table.counts { border-collapse:collapse; font-size:12px; }
+  table.counts th, table.counts td { padding:4px 6px; border-bottom:1px solid var(--border); text-align:right; font-family:var(--mono); }
+  table.counts th { font-family:var(--font); font-size:var(--fs-micro); font-weight:500; color:var(--text-muted); text-align:left; white-space:nowrap; }
+  table.counts td.z { color:var(--danger-text); }
+  table.study { border-collapse:collapse; font-size:var(--fs-small); width:100%; min-width:640px; }
+  table.study th, table.study td { text-align:left; vertical-align:top; padding:8px 12px 8px 0; border-bottom:1px solid var(--border); }
+  table.study th { font-size:var(--fs-micro); font-weight:500; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.study td { color:var(--text-muted); }
+  table.study td:first-child { color:var(--text); font-weight:600; }
+
+  .floors { display:flex; justify-content:center; margin:8px 0 0; }
+  .stats { display:flex; flex-wrap:wrap; gap:4px 16px; font-size:var(--fs-small); color:var(--text-muted); margin:4px 0 0; }
+  .stats b { color:var(--text); font-family:var(--mono); }
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .rec { border-left:3px solid var(--accent); padding:4px 0 4px 12px; margin:12px 0; max-width:82ch; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Shelf map — which tones am I missing?</h1>
+  <p class="sub">A study for <b>PLAN §5 item 61</b> (Ryan, 2026-11-06: "place all my paints on the wheel … the colour wheel is kinda a mini map in video games"). Five ways to draw the whole shelf as a map. Every dot and cell is a real paint from <code>src/data/paints.json</code>, placed by its Lab hue, chroma and lightness (§7). <b>Tap a dot or a cell</b> to see the paints there, or, for a gap, the three closest pots that fill it (true ΔE 2000, §2).</p>
+  <p class="sub">The problem in one line: a wheel shows <b>two</b> of a colour's three dimensions. Hue is the angle and strength (chroma) is the distance from the centre, but <b>lightness is lost</b>. A navy and a sky blue land on one spot. So each direction below makes a different trade with that third dimension.</p>
+
+  <div class="controls" role="group" aria-label="Study controls">
+    <div class="ctl"><span class="micro" id="lShelf">Shelf</span><div class="seg" role="group" aria-labelledby="lShelf" id="cShelf"></div></div>
+    <div class="ctl"><span class="micro" id="lFin">Show</span><div class="seg" role="group" aria-labelledby="lFin" id="cFin"></div></div>
+    <div class="ctl"><span class="micro" id="lBuy">Shopping list</span><div class="seg" role="group" aria-labelledby="lBuy" id="cBuy"></div></div>
+    <div class="ctl"><span class="micro" id="lTh">Page theme</span><div class="seg" role="group" aria-labelledby="lTh" id="cTheme"></div></div>
+  </div>
+  <p class="stats" id="stats" aria-live="polite"></p>
+
+  <!-- A -->
+  <section id="secA" aria-labelledby="hA">
+    <h2 id="hA"><span class="k">A</span>Minimap — one dot per paint</h2>
+    <p class="sub">The plain answer to "where are my paints". The disc is the colour plane (Lab a*, b*): hue around, strength out. Each owned paint is a dot in its own colour; a paint to buy is a ring in <code>--buy</code>. A hue family (a 20° band, the Browse order's) with <b>no paint at all</b> is fogged, like an unexplored part of a game map. The greys have no hue, so they sit in their own strip, dark to light.</p>
+    <div class="dir">
+      <div class="stage">
+        <canvas class="map" id="cvA" width="520" height="520" role="img" aria-describedby="aDesc"></canvas>
+        <canvas class="map" id="cvAg" width="520" height="40" aria-hidden="true" style="margin-top:8px"></canvas>
+        <p class="legend"><span><i class="lg-own"></i>owned</span><span><i class="lg-buy"></i>to buy</span><span><i class="lg-gap"></i>no paint in this family</span></p>
+        <p class="sr" id="aDesc">A colour wheel with one dot for each paint. The table below the directions lists the same counts.</p>
+      </div>
+      <div class="detail" id="dA" aria-live="polite"></div>
+    </div>
+    <h3 class="micro">Judged</h3>
+    <ul class="notes">
+      <li><span class="pro">For:</span> the most "minimap" of the five; you read clusters and holes at a glance; no new words to learn; a small version fits the Shelf's header or the Studio's wheel (direction E).</li>
+      <li><span class="con">Against:</span> no lightness. A family can look full while every paint in it is mid-tone, so it cannot answer "can I shade this green". 220 dots overlap near the centre (the muted browns and drabs). A dot is too small to tap (8px), so a tap takes the nearest paint.</li>
+    </ul>
+  </section>
+
+  <!-- B -->
+  <section id="secB" aria-labelledby="hB">
+    <h2 id="hB"><span class="k">B</span>Ring map — hue around, lightness in rings</h2>
+    <p class="sub">The wheel cut into cells: 18 hue bands around, 5 lightness rings from <b>shade</b> (inside) to <b>highlight</b> (outside). A cell with paints is filled with their mean colour and its count; an empty cell is hatched, with the colour it is missing as a small dot. The centre is the greys, in the same 5 rings. Strength is dropped (it is the least useful of the three for a painter: a weak and a strong red both shade a red).</p>
+    <div class="dir">
+      <div class="stage">
+        <svg class="map" id="svB" viewBox="0 0 520 520" role="group" aria-label="Ring map: hue bands by lightness rings"></svg>
+        <p class="legend"><span><i class="lg-own"></i>a cell with paints (its count)</span><span><i class="lg-gap"></i>a gap</span><span>inside → outside: shade → highlight</span></p>
+      </div>
+      <div class="detail" id="dB" aria-live="polite"></div>
+    </div>
+    <h3 class="micro">Judged</h3>
+    <ul class="notes">
+      <li><span class="pro">For:</span> both questions in one round picture; it still reads as "the wheel"; the bins remove the clutter (90 cells for any shelf size); each cell is a focusable button.</li>
+      <li><span class="con">Against:</span> the inner rings are small (the shade ring is about 12px deep at 360px wide), so the darks — which a painter needs most — get the least room. A round chart is harder to compare than a grid: two cells of the same row are not side by side.</li>
+    </ul>
+  </section>
+
+  <!-- C -->
+  <section id="secC" aria-labelledby="hC">
+    <h2 id="hC"><span class="k">C</span>Tone grid — the wheel unrolled</h2>
+    <p class="sub">The plan's second picture: the same 18 hue bands across, and the 5 lightness bands down, from highlight to shade. Each cell shows up to 8 of its pots as small swatches and its count. An empty cell is dashed and hatched, with the colour it is missing in its centre: "no dark green to shade with". The last column is the greys. On a phone (≤520px) the grid turns, so the hues run down and you scroll the page, never sideways.</p>
+    <div class="dir">
+      <div class="stage"><div id="gridC"></div>
+        <p class="legend"><span><i class="lg-gap"></i>a gap (dashed)</span><span><span class="sw sm buy" style="--c:#888"></span> a pot to buy</span></p>
+      </div>
+      <div class="detail" id="dC" aria-live="polite"></div>
+    </div>
+    <h3 class="micro">Judged</h3>
+    <ul class="notes">
+      <li><span class="pro">For:</span> the most useful answer: every gap is a named cell ("Dark · Teal") with pots to fill it. Every cell is the same size, so the darks get as much room as the lights. It is a grid of real buttons: arrows, Tab and a screen reader work without a second view. It shows the real pots, not dots. A Tone Pro family would fill one column top to bottom (item 57).</li>
+      <li><span class="con">Against:</span> it does not look like a wheel, so the "minimap" feel is gone; the hue bands are cut at fixed lines, so a paint on a line sits in one cell only.</li>
+    </ul>
+  </section>
+
+  <!-- D -->
+  <section id="secD" aria-labelledby="hD">
+    <h2 id="hD"><span class="k">D</span>Fog of war — floors of the colour space</h2>
+    <p class="sub">The most game-like. The disc is every colour at one lightness (a "floor"); pick a floor from shade to highlight, as a game map shows one level at a time. A colour within <b>ΔE 2000 ≤ 8</b> of a paint you own (any lightness) is clear; the rest is fogged. The dots are your paints on this floor. Out-of-gamut colours (no paint can be that colour on a screen) are left blank, so each floor has its own real shape: the light floor has yellows, the dark floor has blues.</p>
+    <div class="dir">
+      <div class="stage">
+        <canvas class="map" id="cvD" width="520" height="520" role="img" aria-label="Fog-of-war map of one lightness floor"></canvas>
+        <div class="floors"><div class="seg" role="group" aria-label="Floor" id="cFloor"></div></div>
+        <p class="legend"><span>clear = within ΔE 8 of a paint you own</span><span>fogged = nothing close</span></p>
+      </div>
+      <div class="detail" id="dD" aria-live="polite"></div>
+    </div>
+    <h3 class="micro">Judged</h3>
+    <ul class="notes">
+      <li><span class="pro">For:</span> it shows coverage as an area, not a count: one paint clears a patch round it, so "I have a red near that" counts. It is the most fun, and it is the Lab solid of item 63 cut in slices, so it leads to the 3D study.</li>
+      <li><span class="con">Against:</span> five pictures to read one shelf; the ΔE 8 radius is a choice we make for the painter; it is the slowest to draw (about 100k ΔE 2000 per floor, done once and cached); it needs the table for a keyboard and a screen reader.</li>
+    </ul>
+  </section>
+
+  <!-- E -->
+  <section id="secE" aria-labelledby="hE">
+    <h2 id="hE"><span class="k">E</span>In the Studio — "show my paints" on the scheme wheel</h2>
+    <p class="sub">The plan's second place: direction A as a faint layer under the Studio's wheel, so a scheme's nodes sit beside the paints you own. Here: Mephiston Red, triadic. A node in a fogged family says "you own nothing near this" before you open the Recipe. <b>A catch:</b> the Studio's wheel is HSL; this map is Lab. The layer must draw in the wheel's own space (HSL hue and saturation), or a dot sits about 10–30° from where the node for the same colour is.</p>
+    <div class="dir">
+      <div class="stage"><canvas class="map" id="cvE" width="520" height="520" role="img" aria-label="Scheme wheel with your paints as a faint layer"></canvas>
+        <p class="legend"><span><i style="border:3px solid var(--text);"></i>a scheme node</span><span><i class="lg-own" style="opacity:.5"></i>your paints, faint</span></p></div>
+      <div class="detail" id="dE" aria-live="polite"></div>
+    </div>
+    <h3 class="micro">Judged</h3>
+    <ul class="notes">
+      <li><span class="pro">For:</span> it puts the shelf where the decision is made; no new view; one toggle.</li>
+      <li><span class="con">Against:</span> a busy wheel gets busier (nodes, badges, the neutral note, and now 200 dots); it answers "do I own this scheme" which the Recipe already answers paint by paint. Best as a later extra to A or C, not the first build.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="hT">
+    <h2 id="hT">The same counts as a table</h2>
+    <p class="sub">The text path that A, B and D need (§3.5: never only a picture). Owned paints per hue band and lightness band, for the shelf and filter above; a 0 is a gap. In the app this is the Map view's "Show as a table".</p>
+    <div class="tablewrap"><table class="counts" id="tbl"></table></div>
+  </section>
+
+  <section aria-labelledby="hJ">
+    <h2 id="hJ">Compared</h2>
+    <div class="tablewrap"><table class="study">
+      <thead><tr><th>Direction</th><th>Which families?</th><th>Can I shade it?</th><th>Clutter at 300 paints</th><th>Phone</th><th>Keyboard / reader</th><th>Feel</th></tr></thead>
+      <tbody>
+        <tr><td>A Minimap</td><td>Yes, at a glance</td><td>No (no lightness)</td><td>Overlap near the centre</td><td>Good, small taps</td><td>Needs the table</td><td>Game minimap</td></tr>
+        <tr><td>B Ring map</td><td>Yes</td><td>Yes</td><td>None (90 bins)</td><td>Inner rings small</td><td>Cells are buttons</td><td>Wheel</td></tr>
+        <tr><td>C Tone grid</td><td>Yes (by column)</td><td>Yes, named</td><td>None (95 cells)</td><td>Turns, scrolls down</td><td>Is a grid of buttons</td><td>Chart</td></tr>
+        <tr><td>D Fog of war</td><td>Per floor</td><td>Yes, one floor at a time</td><td>None (area)</td><td>Good</td><td>Needs the table</td><td>Most game-like</td></tr>
+        <tr><td>E Studio layer</td><td>Near the scheme</td><td>No</td><td>Busy wheel</td><td>Busy</td><td>Needs words</td><td>In context</td></tr>
+      </tbody>
+    </table></div>
+    <div class="rec">
+      <p class="sub" style="margin:0"><b>Recommended: C, with A on top of it.</b> The Shelf's <b>Map</b> view (beside Grid and List) opens on a small A minimap as its header, the overview ("where are my colours"), and the C grid under it, the work ("which tone do I buy"). A tap on a fogged family in A scrolls to that column in C. C is accessible by itself, so no second table is needed. B is the fallback if a round picture is a must. D and E stay as later ideas: D after the 3D study (item 63), E as a "show my paints" toggle on the Studio's wheel.</p>
+    </div>
+    <h3 class="micro">Questions for Ryan</h3>
+    <ul class="notes">
+      <li>Is the minimap feel (A, D) worth more to you than the grid's directness (C)?</li>
+      <li>Five lightness bands (shade · dark · mid · light · highlight) — enough, or too many for a 30-paint shelf?</li>
+      <li>Should washes and contrast paints count toward a cell? (They shade a colour, but they are not opaque; the "Show" control lets you try both.)</li>
+      <li>Should the shopping list fill a gap (as here, "with the list"), or only owned paints?</li>
+    </ul>
+    <p class="sub" style="margin-top:16px">Data: dataset <span id="dv"></span>, generated by <code>mockups/shelf-map/map-data.mjs</code> (the real engine on <code>paints.json</code>). The sample shelves are made up: the starter shelf by hand, the big shelf at random with a seed, weighted toward the hues a grimdark painter buys. Lab hue bands are the Browse order's (20° from 20°, <code>data.js</code>); greys are Lab C* &lt; 6 (<code>GREY_CHROMA</code>).</p>
+  </section>
+</div>
+
+<script src="shelf-map/map-data.js"></script>
+<script>
+'use strict';
+const D = window.MAP_DATA;
+// cat[i] = [name, brand, line, hex, type, finishClass, L, a, b, C, h, fx]
+const P = D.cat.map((r, i) => ({ i, name: r[0], brand: r[1], line: r[2], hex: r[3], type: r[4], fc: r[5], L: r[6], a: r[7], b: r[8], C: r[9], h: r[10], fx: r[11] }));
+document.getElementById('dv').textContent = D.dataset;
+
+// ---------- the bins ----------
+const BAND = 20, START = 20, NB = 18;
+const BAND_NAMES = ['Red', 'Scarlet', 'Orange', 'Ochre', 'Yellow', 'Olive', 'Yellow-green', 'Green', 'Emerald', 'Teal',
+  'Cyan', 'Sky', 'Blue', 'Royal blue', 'Violet', 'Purple', 'Magenta', 'Pink'];
+const ROWS = [ // lightness bands, darkest first
+  { name: 'Shade', lo: -1, hi: 30, mid: 22 }, { name: 'Dark', lo: 30, hi: 45, mid: 38 }, { name: 'Mid', lo: 45, hi: 60, mid: 52 },
+  { name: 'Light', lo: 60, hi: 75, mid: 67 }, { name: 'Highlight', lo: 75, hi: 101, mid: 85 }];
+const grey = p => p.C < D.greyChroma;
+const bandOf = p => grey(p) ? NB : Math.floor(((p.h - START + 720) % 360) / BAND);
+const rowOf = p => ROWS.findIndex(r => p.L >= r.lo && p.L < r.hi);
+const bandLabel = b => b === NB ? 'Grey' : BAND_NAMES[b];
+for (const p of P) { p.band = bandOf(p); p.row = rowOf(p); }
+
+// The colour a cell is about: the mean Lab of every catalogue paint in it (a real, paintable colour).
+const CELL = [];
+for (let b = 0; b <= NB; b++) { CELL[b] = []; for (let r = 0; r < 5; r++) CELL[b][r] = { cat: [], L: 0, a: 0, b: 0 }; }
+for (const p of P) { if (p.fc === 'effect') continue; const c = CELL[p.band][p.row]; c.cat.push(p); c.L += p.L; c.a += p.a; c.b += p.b; }
+for (const col of CELL) for (const c of col) { const n = c.cat.length || 1; c.L /= n; c.a /= n; c.b /= n; c.hex = labToHex([c.L, c.a, c.b]) || '#808080'; }
+
+// ---------- colour math (the app's, copied: color.js) ----------
+function deltaE2000(lab1, lab2) {
+  const [L1, a1, b1] = lab1, [L2, a2, b2] = lab2, rad = Math.PI / 180, deg = 180 / Math.PI;
+  const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2), Cbar7 = Math.pow((C1 + C2) / 2, 7);
+  const G = 0.5 * (1 - Math.sqrt(Cbar7 / (Cbar7 + 6103515625)));
+  const a1p = (1 + G) * a1, a2p = (1 + G) * a2, C1p = Math.hypot(a1p, b1), C2p = Math.hypot(a2p, b2);
+  let h1p = Math.atan2(b1, a1p); if (h1p < 0) h1p += 2 * Math.PI;
+  let h2p = Math.atan2(b2, a2p); if (h2p < 0) h2p += 2 * Math.PI;
+  const dLp = L2 - L1, dCp = C2p - C1p; let dhp = 0;
+  if (C1p * C2p !== 0) { dhp = h2p - h1p; if (dhp > Math.PI) dhp -= 2 * Math.PI; else if (dhp < -Math.PI) dhp += 2 * Math.PI; }
+  const dHp = 2 * Math.sqrt(C1p * C2p) * Math.sin(dhp / 2), Lbp = (L1 + L2) / 2, Cbp = (C1p + C2p) / 2;
+  let hbp; if (C1p * C2p === 0) hbp = h1p + h2p; else if (Math.abs(h1p - h2p) <= Math.PI) hbp = (h1p + h2p) / 2;
+  else hbp = h1p + h2p < 2 * Math.PI ? (h1p + h2p + 2 * Math.PI) / 2 : (h1p + h2p - 2 * Math.PI) / 2;
+  const T = 1 - 0.17 * Math.cos(hbp - 30 * rad) + 0.24 * Math.cos(2 * hbp) + 0.32 * Math.cos(3 * hbp + 6 * rad) - 0.20 * Math.cos(4 * hbp - 63 * rad);
+  const dTheta = 30 * rad * Math.exp(-Math.pow((hbp * deg - 275) / 25, 2)), Cbp7 = Math.pow(Cbp, 7);
+  const Rc = 2 * Math.sqrt(Cbp7 / (Cbp7 + 6103515625)), Sl = 1 + (0.015 * Math.pow(Lbp - 50, 2)) / Math.sqrt(20 + Math.pow(Lbp - 50, 2));
+  const Sc = 1 + 0.045 * Cbp, Sh = 1 + 0.015 * Cbp * T, Rt = -Math.sin(2 * dTheta) * Rc;
+  return Math.sqrt((dLp / Sl) ** 2 + (dCp / Sc) ** 2 + (dHp / Sh) ** 2 + Rt * (dCp / Sc) * (dHp / Sh));
+}
+// Lab (D65) → sRGB 0–255, or null when out of gamut (the inverse of color.js's chain).
+function labToRgb([L, a, b], strict = true) {
+  const fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - b / 200;
+  const inv = t => (t > 6 / 29 ? t * t * t : 3 * (6 / 29) ** 2 * (t - 4 / 29));
+  const X = 0.95047 * inv(fx), Y = inv(fy), Z = 1.08883 * inv(fz);
+  const lin = [3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z, -0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z, 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z];
+  if (strict && lin.some(c => c < -0.002 || c > 1.002)) return null;
+  return lin.map(c => { c = Math.min(1, Math.max(0, c)); return 255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055); });
+}
+function labToHex(lab) { const c = labToRgb(lab, false); return c && '#' + c.map(v => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase(); }
+const lab = p => [p.L, p.a, p.b];
+function quality(dE) { return dE <= 1 ? ['Indistinguishable', 'success'] : dE <= 2 ? ['Excellent', 'success'] : dE <= 3.5 ? ['Good', 'success']
+  : dE <= 5 ? ['Fair', 'warning'] : dE <= 10 ? ['Loose', 'warning'] : ['Poor', 'danger']; }
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// ---------- state ----------
+const S = { shelf: 1, fin: new Set(['flat', 'metal']), buy: true, theme: 'device', floor: 2 };
+function shelfPaints() {
+  const sh = D.shelves[S.shelf], ok = p => S.fin.has(p.fc === 'translucent' ? 'translucent' : p.fc === 'metal' ? 'metal' : p.fc === 'effect' ? 'flat' : 'flat');
+  const owned = sh.owned.map(i => P[i]).filter(ok), buy = S.buy ? sh.buy.map(i => P[i]).filter(ok) : [];
+  return { owned, buy, all: owned.concat(buy) };
+}
+let SP = shelfPaints();
+function counts() {
+  const n = []; for (let b = 0; b <= NB; b++) n[b] = [0, 0, 0, 0, 0];
+  for (const p of SP.owned) n[p.band][p.row]++;
+  return n;
+}
+
+// ---------- controls ----------
+function seg(id, items, isOn, onPick) {
+  const el = document.getElementById(id); el.innerHTML = '';
+  items.forEach(([k, label]) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+    b.setAttribute('aria-pressed', isOn(k)); b.onclick = () => { onPick(k); seg(id, items, isOn, onPick); }; el.appendChild(b); });
+}
+seg('cShelf', D.shelves.map((s, i) => [i, `${s.name} · ${s.owned.length}`]), k => S.shelf === k, k => { S.shelf = k; redraw(); });
+seg('cFin', [['flat', 'Flat'], ['translucent', 'Washes & contrast'], ['metal', 'Metals']], k => S.fin.has(k),
+  k => { S.fin.has(k) ? S.fin.size > 1 && S.fin.delete(k) : S.fin.add(k); redraw(); });
+seg('cBuy', [[true, 'With the list'], [false, 'Owned only']], k => S.buy === k, k => { S.buy = k; redraw(); });
+seg('cTheme', [['device', 'Device'], ['light', 'Light'], ['dark', 'Dark']], k => S.theme === k, k => {
+  S.theme = k; if (k === 'device') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = k; repaint(); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => S.theme === 'device' && repaint());
+seg('cFloor', ROWS.map((r, i) => [i, r.name]), k => S.floor === k, k => { S.floor = k; drawD(); });
+
+// ---------- the detail panel (shared) ----------
+function swHtml(p, cls = '') { return `<span class="sw ${p.fc === 'metal' ? 'metal' : p.fc === 'translucent' ? 'fx-wash' : ''} ${cls}" style="--c:${p.hex}"></span>`; }
+function row(p, extra = '') { return `<li>${swHtml(p)}<span><span class="nm">${esc(p.name)}</span><br><span class="bl">${esc(p.brand)} · ${esc(p.line)}</span></span>${extra}</li>`; }
+function cellDetail(el, b, r) {
+  const c = CELL[b][r], own = SP.owned.filter(p => p.band === b && p.row === r), buy = SP.buy.filter(p => p.band === b && p.row === r);
+  const title = `${ROWS[r].name} · ${bandLabel(b)}`;
+  let h = `<h4>${title}</h4>`;
+  if (own.length || buy.length) {
+    h += `<p class="st">${own.length} owned${buy.length ? ` · ${buy.length} on the shopping list` : ''}</p><ul>`;
+    h += own.slice(0, 12).map(p => row(p)).join('') + buy.map(p => row(p, '<span class="de"><span class="tag buy">to buy</span></span>')).join('');
+    h += '</ul>' + (own.length > 12 ? `<p class="st">and ${own.length - 12} more</p>` : '');
+  } else h += `<p class="st">A gap: you own no ${ROWS[r].name.toLowerCase()} ${bandLabel(b).toLowerCase()}.</p>`;
+  if (own.length < 2) h += suggest(c, title);
+  el.innerHTML = h;
+}
+function suggest(c, title) {
+  const mine = new Set(SP.owned.map(p => p.brand)), target = [c.L, c.a, c.b], have = new Set(SP.all.map(p => p.i));
+  const list = c.cat.filter(p => !have.has(p.i) && p.fc === 'flat').map(p => ({ p, d: deltaE2000(target, lab(p)) }))
+    .sort((x, y) => (x.d - (mine.has(x.p.brand) ? 2 : 0)) - (y.d - (mine.has(y.p.brand) ? 2 : 0))).slice(0, 3);
+  if (!list.length) return '';
+  return `<h3 class="micro">To fill it: the closest pots</h3><p class="st">Target <span class="sw sm" style="--c:${c.hex}"></span> <code>${c.hex}</code>, the middle of the cell. Brands you own first.</p><ul>`
+    + list.map(({ p, d }) => { const [lb, t] = quality(d); return row(p, `<span class="de">ΔE ${d.toFixed(1)} <span class="tag ${t}">${lb}</span></span>`); }).join('') + '</ul>';
+}
+function paintDetail(el, p) {
+  const owned = SP.owned.includes(p);
+  el.innerHTML = `<h4>${esc(p.name)}</h4><p class="st">${esc(p.brand)} · ${esc(p.line)} · ${owned ? 'owned' : '<span class="tag buy">to buy</span>'}</p><ul>${row(p, `<span class="de">${p.hex}</span>`)}</ul>`
+    + `<p class="st">In: ${ROWS[p.row].name} · ${bandLabel(p.band)} (L* ${p.L.toFixed(0)}, C* ${p.C.toFixed(0)}, h ${p.h.toFixed(0)}°)</p>`;
+}
+const hint = (el, s) => { if (!el.dataset.touched) el.innerHTML = `<p class="st">${s}</p>`; };
+
+// ---------- A: the minimap ----------
+const CMAX = 90;
+function geom(cv) { const W = cv.width, R = W / 2 - 34; return { W, cx: W / 2, cy: W / 2, R }; }
+const toXY = (g, a, b) => { const r = Math.min(1, Math.hypot(a, b) / CMAX) * g.R, t = Math.atan2(b, a); return [g.cx + r * Math.cos(t), g.cy - r * Math.sin(t)]; };
+function hatch(ctx, col) {
+  const c = document.createElement('canvas'); c.width = c.height = 8; const x = c.getContext('2d');
+  x.strokeStyle = col; x.lineWidth = 1.5; x.beginPath(); x.moveTo(-2, 10); x.lineTo(10, -2); x.stroke(); return ctx.createPattern(c, 'repeat');
+}
+function wedge(ctx, g, b, r0, r1) {
+  const t0 = (START + b * BAND) * Math.PI / 180, t1 = t0 + BAND * Math.PI / 180;
+  ctx.beginPath(); ctx.arc(g.cx, g.cy, r1, -t0, -t1, true); ctx.arc(g.cx, g.cy, r0, -t1, -t0, false); ctx.closePath();
+}
+function drawPlane(ctx, g, step = 4, alpha = 1) {
+  // the colour plane at a mid lightness, faint, so the reader sees which way is which hue
+  for (let y = 0; y < g.W; y += step) for (let x = 0; x < g.W; x += step) {
+    const dx = x - g.cx, dy = g.cy - y, rr = Math.hypot(dx, dy); if (rr > g.R) continue;
+    const C = rr / g.R * CMAX, t = Math.atan2(dy, dx), c = labToRgb([62, C * Math.cos(t), C * Math.sin(t)], false);
+    ctx.fillStyle = `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`; ctx.fillRect(x, y, step, step);
+  }
+}
+let dotsA = [];
+function drawA(cv = document.getElementById('cvA'), opt = {}) {
+  const ctx = cv.getContext('2d'), g = geom(cv), n = counts(); ctx.clearRect(0, 0, g.W, g.W);
+  ctx.save(); ctx.beginPath(); ctx.arc(g.cx, g.cy, g.R, 0, 7); ctx.clip(); drawPlane(ctx, g, 4, opt.planeAlpha ?? 0.14); ctx.restore();
+  // fog the families with no paint
+  const fog = hatch(ctx, css('--border-strong'));
+  for (let b = 0; b < NB; b++) {
+    const tot = n[b].reduce((s, v) => s + v, 0) + SP.buy.filter(p => p.band === b).length;
+    if (!tot) { wedge(ctx, g, b, g.R * 0.12, g.R); ctx.fillStyle = css('--bg'); ctx.globalAlpha = .7; ctx.fill(); ctx.globalAlpha = 1; ctx.fillStyle = fog; ctx.fill(); }
+  }
+  // spokes and band labels
+  ctx.strokeStyle = css('--border'); ctx.lineWidth = 1;
+  for (let b = 0; b < NB; b++) { const t = (START + b * BAND) * Math.PI / 180; ctx.beginPath(); ctx.moveTo(g.cx, g.cy); ctx.lineTo(g.cx + g.R * Math.cos(t), g.cy - g.R * Math.sin(t)); ctx.stroke(); }
+  ctx.beginPath(); ctx.arc(g.cx, g.cy, g.R, 0, 7); ctx.strokeStyle = css('--border-strong'); ctx.stroke();
+  ctx.font = `500 ${g.W < 400 ? 9 : 11}px "IBM Plex Sans", system-ui`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let b = 0; b < NB; b++) { const t = (START + (b + .5) * BAND) * Math.PI / 180, rr = g.R + 17;
+    const tot = n[b].reduce((s, v) => s + v, 0); ctx.fillStyle = tot ? css('--text-muted') : css('--danger-text');
+    ctx.fillText(BAND_NAMES[b], g.cx + rr * Math.cos(t), g.cy - rr * Math.sin(t)); }
+  // dots
+  dotsA = [];
+  const dot = (p, buy) => { const [x, y] = toXY(g, p.a, p.b); dotsA.push({ x, y, p });
+    ctx.beginPath(); ctx.arc(x, y, opt.r ?? 5, 0, 7);
+    if (buy) { ctx.strokeStyle = css('--buy'); ctx.lineWidth = 2.5; ctx.stroke(); }
+    else { ctx.globalAlpha = opt.dotAlpha ?? 1; ctx.fillStyle = p.hex; ctx.fill(); ctx.strokeStyle = css('--text'); ctx.lineWidth = .75; ctx.stroke(); ctx.globalAlpha = 1; } };
+  SP.owned.filter(p => !grey(p)).forEach(p => dot(p, false)); SP.buy.filter(p => !grey(p)).forEach(p => dot(p, true));
+  if (cv.id === 'cvA') drawAgrey();
+}
+function drawAgrey() {
+  const cv = document.getElementById('cvAg'), ctx = cv.getContext('2d'), W = cv.width; ctx.clearRect(0, 0, W, 40);
+  const x0 = 60, x1 = W - 20; const grad = ctx.createLinearGradient(x0, 0, x1, 0); grad.addColorStop(0, '#111'); grad.addColorStop(1, '#f2f2f2');
+  ctx.fillStyle = grad; ctx.globalAlpha = .18; ctx.fillRect(x0, 12, x1 - x0, 16); ctx.globalAlpha = 1;
+  ctx.font = '500 11px "IBM Plex Sans", system-ui'; ctx.fillStyle = css('--text-muted'); ctx.textBaseline = 'middle'; ctx.fillText('Greys', 8, 20);
+  const pts = SP.owned.filter(grey).map(p => [p, false]).concat(SP.buy.filter(grey).map(p => [p, true]));
+  for (const [p, buy] of pts) { const x = x0 + (p.L / 100) * (x1 - x0); dotsA.push({ x, y: 20, p, grey: true });
+    ctx.beginPath(); ctx.arc(x, 20, 5, 0, 7); if (buy) { ctx.strokeStyle = css('--buy'); ctx.lineWidth = 2.5; ctx.stroke(); }
+    else { ctx.fillStyle = p.hex; ctx.fill(); ctx.strokeStyle = css('--text'); ctx.lineWidth = .75; ctx.stroke(); } }
+}
+function pickNearest(cv, ev, dots, filterGrey) {
+  const r = cv.getBoundingClientRect(), sx = cv.width / r.width, x = (ev.clientX - r.left) * sx, y = (ev.clientY - r.top) * (cv.height / r.height);
+  let best = null, bd = 1e9; for (const d of dots) { if (!!d.grey !== filterGrey) continue; const dd = Math.hypot(d.x - x, d.y - y); if (dd < bd) { bd = dd; best = d; } }
+  return { best, bd: bd / sx, x, y };
+}
+document.getElementById('cvA').addEventListener('click', ev => {
+  const cv = ev.currentTarget, { best, bd, x, y } = pickNearest(cv, ev, dotsA, false), el = document.getElementById('dA'); el.dataset.touched = 1;
+  if (best && bd < 22) return paintDetail(el, best.p);
+  // no paint near: the family under the pointer
+  const g = geom(cv), t = (Math.atan2(g.cy - y, x - g.cx) * 180 / Math.PI + 360) % 360, b = Math.floor(((t - START + 720) % 360) / BAND), n = counts()[b];
+  const tot = n.reduce((s, v) => s + v, 0);
+  el.innerHTML = `<h4>${BAND_NAMES[b]}</h4><p class="st">${tot ? `${tot} owned in this family: ${ROWS.map((r, i) => `${r.name} ${n[i]}`).join(' · ')}` : 'No paint in this family. A fogged part of the map.'}</p>` + (tot < 3 ? suggest(CELL[b][2], '') : '');
+});
+document.getElementById('cvAg').addEventListener('click', ev => {
+  const { best, bd } = pickNearest(ev.currentTarget, ev, dotsA, true), el = document.getElementById('dA'); el.dataset.touched = 1; if (best && bd < 22) paintDetail(el, best.p);
+});
+
+// ---------- B: the ring map (SVG, cells are buttons) ----------
+function drawB() {
+  const sv = document.getElementById('svB'), n = counts(), W = 520, cx = 260, cy = 260, R = 226, R0 = 64; // R0 = the grey core
+  const rr = i => R0 + (R - R0) * i / 5, NS = 'http://www.w3.org/2000/svg';
+  let h = '';
+  const arc = (b, i) => { const t0 = (START + b * BAND) * Math.PI / 180, t1 = t0 + BAND * Math.PI / 180, r0 = rr(i), r1 = rr(i + 1);
+    const P = (r, t) => `${(cx + r * Math.cos(t)).toFixed(1)},${(cy - r * Math.sin(t)).toFixed(1)}`;
+    return `M${P(r1, t0)} A${r1},${r1} 0 0 0 ${P(r1, t1)} L${P(r0, t1)} A${r0},${r0} 0 0 1 ${P(r0, t0)} Z`; };
+  h += `<defs><pattern id="hb" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--surface)"/><line x1="0" y1="0" x2="0" y2="6" stroke="var(--border-strong)" stroke-width="2"/></pattern></defs>`;
+  for (let b = 0; b < NB; b++) for (let i = 0; i < 5; i++) {
+    const own = SP.owned.filter(p => p.band === b && p.row === i), k = own.length, buy = SP.buy.some(p => p.band === b && p.row === i);
+    const fill = k ? meanHex(own) : 'url(#hb)', lbl = `${ROWS[i].name} ${BAND_NAMES[b]}: ${k ? k + ' owned' : 'a gap'}${buy ? ', one on the shopping list' : ''}`;
+    const tm = (START + (b + .5) * BAND) * Math.PI / 180, rm = (rr(i) + rr(i + 1)) / 2, tx = cx + rm * Math.cos(tm), ty = cy - rm * Math.sin(tm);
+    h += `<g class="bc" tabindex="0" role="button" aria-label="${lbl}" data-b="${b}" data-r="${i}"><path d="${arc(b, i)}" fill="${fill}" stroke="var(--bg)" stroke-width="1.5"/>`;
+    if (!k) h += `<circle cx="${tx}" cy="${ty}" r="3.5" fill="${CELL[b][i].hex}" stroke="var(--edge)" stroke-width=".75"/>`;
+    else h += `<text x="${tx}" y="${ty}" font-size="10" font-family="ui-monospace,monospace" text-anchor="middle" dominant-baseline="central" fill="${inkOn(fill)}">${k}</text>`;
+    if (buy) h += `<path d="${arc(b, i)}" fill="none" stroke="var(--buy)" stroke-width="2" stroke-dasharray="3 2"/>`;
+    h += '</g>';
+  }
+  // the grey core: 5 rings
+  for (let i = 0; i < 5; i++) { const own = SP.owned.filter(p => p.band === NB && p.row === i), k = own.length, r0 = R0 * i / 5, r1 = R0 * (i + 1) / 5;
+    const fill = k ? meanHex(own) : 'url(#hb)';
+    h += `<g class="bc" tabindex="0" role="button" aria-label="${ROWS[i].name} grey: ${k ? k + ' owned' : 'a gap'}" data-b="${NB}" data-r="${i}"><path d="M${cx + r1},${cy} A${r1},${r1} 0 1 0 ${cx - r1},${cy} A${r1},${r1} 0 1 0 ${cx + r1},${cy} ${r0 ? `M${cx + r0},${cy} A${r0},${r0} 0 1 1 ${cx - r0},${cy} A${r0},${r0} 0 1 1 ${cx + r0},${cy}` : ''}Z" fill-rule="evenodd" fill="${fill}" stroke="var(--bg)" stroke-width="1.5"/></g>`; }
+  for (let b = 0; b < NB; b++) { const t = (START + (b + .5) * BAND) * Math.PI / 180, tot = n[b].reduce((s, v) => s + v, 0);
+    h += `<text x="${cx + (R + 16) * Math.cos(t)}" y="${cy - (R + 16) * Math.sin(t)}" font-size="11" font-family="IBM Plex Sans,system-ui" text-anchor="middle" dominant-baseline="central" fill="var(${tot ? '--text-muted' : '--danger-text'})">${BAND_NAMES[b]}</text>`; }
+  sv.innerHTML = h;
+  sv.querySelectorAll('.bc').forEach(g => { const go = () => { const el = document.getElementById('dB'); el.dataset.touched = 1;
+    sv.querySelectorAll('.bc path:first-child').forEach(p => p.setAttribute('stroke', 'var(--bg)'));
+    g.querySelector('path').setAttribute('stroke', 'var(--accent)'); g.parentNode.appendChild(g); cellDetail(el, +g.dataset.b, +g.dataset.r); g.focus(); };
+    g.addEventListener('click', go); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }); });
+}
+function meanHex(ps) { let L = 0, a = 0, b = 0; for (const p of ps) { L += p.L; a += p.a; b += p.b; } const n = ps.length; return labToHex([L / n, a / n, b / n]); }
+function inkOn(hex) { if (!hex.startsWith('#')) return 'var(--text)'; const v = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4);
+  const Y = .2126 * v[0] + .7152 * v[1] + .0722 * v[2]; return (Y + .05) / .0557 > 1.05 / (Y + .05) ? '#15150F' : '#FFFFFF'; }
+
+// ---------- C: the tone grid ----------
+const narrow = matchMedia('(max-width: 520px)');
+narrow.addEventListener('change', () => drawC());
+let selC = null;
+function drawC() {
+  const host = document.getElementById('gridC'), t = narrow.matches, cols = NB + 1;
+  const grid = document.createElement('div'); grid.className = 'grid' + (t ? ' t' : ''); grid.setAttribute('role', 'grid'); grid.setAttribute('aria-label', 'Your paints by hue and lightness');
+  const rowsOrder = [4, 3, 2, 1, 0]; // highlight on top
+  if (!t) {
+    grid.style.gridTemplateColumns = `auto repeat(${cols}, minmax(0, 1fr))`;
+    let h = '<div role="row" style="display:contents"><span></span>' + Array.from({ length: cols }, (_, b) => `<span class="hd" role="columnheader">${bandLabel(b)}</span>`).join('') + '</div>';
+    for (const r of rowsOrder) { h += `<div role="row" style="display:contents"><span class="rh" role="rowheader">${ROWS[r].name}</span>`;
+      for (let b = 0; b < cols; b++) h += cellBtn(b, r); h += '</div>'; }
+    grid.innerHTML = h;
+  } else {
+    grid.style.gridTemplateColumns = `76px repeat(5, minmax(0, 1fr))`;
+    let h = '<div role="row" style="display:contents"><span></span>' + [0, 1, 2, 3, 4].map(r => `<span class="hd" role="columnheader" style="text-align:center">${ROWS[r].name}</span>`).join('') + '</div>';
+    for (let b = 0; b < cols; b++) { h += `<div role="row" style="display:contents"><span class="hd" role="rowheader">${bandLabel(b)}</span>`;
+      for (const r of [0, 1, 2, 3, 4]) h += cellBtn(b, r); h += '</div>'; }
+    grid.innerHTML = h;
+  }
+  host.replaceChildren(grid);
+  const cells = [...grid.querySelectorAll('button.cell')];
+  cells.forEach(btn => btn.addEventListener('click', () => { selC = btn.dataset.k; cells.forEach(c => c.setAttribute('aria-pressed', c === btn));
+    const el = document.getElementById('dC'); el.dataset.touched = 1; cellDetail(el, +btn.dataset.b, +btn.dataset.r); }));
+  // APG grid: one tab stop, arrows move
+  const per = t ? 5 : cols; cells.forEach((c, i) => c.tabIndex = i ? -1 : 0);
+  grid.addEventListener('keydown', e => { const i = cells.indexOf(document.activeElement); if (i < 0) return;
+    const m = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: per, ArrowUp: -per, Home: -(i % per), End: per - 1 - (i % per) }[e.key];
+    if (m === undefined) return; e.preventDefault(); const j = Math.max(0, Math.min(cells.length - 1, i + m));
+    cells[i].tabIndex = -1; cells[j].tabIndex = 0; cells[j].focus(); });
+}
+function cellBtn(b, r) {
+  const own = SP.owned.filter(p => p.band === b && p.row === r), buy = SP.buy.filter(p => p.band === b && p.row === r), k = own.length;
+  const lbl = `${ROWS[r].name} ${bandLabel(b)}: ${k ? k + ' owned' : 'a gap'}${buy.length ? `, ${buy.length} to buy` : ''}`, key = b + ':' + r;
+  const sws = own.slice(0, buy.length ? 7 : 8).map(p => swHtml(p, 'sm')).join('') + buy.slice(0, 1).map(p => swHtml(p, 'sm buy')).join('');
+  return `<button type="button" role="gridcell" class="cell${k || buy.length ? '' : ' gap'}" style="--c:${CELL[b][r].hex}" data-b="${b}" data-r="${r}" data-k="${key}" aria-pressed="${selC === key}" aria-label="${lbl}" title="${lbl}">${sws}${k > 1 ? `<span class="n" aria-hidden="true">${k}</span>` : ''}</button>`;
+}
+
+// ---------- D: fog of war ----------
+const fogCache = new Map();
+let dotsD = [];
+function drawD() {
+  const cv = document.getElementById('cvD'), ctx = cv.getContext('2d'), g = geom(cv), Lf = ROWS[S.floor].mid, key = S.shelf + '|' + [...S.fin].sort() + '|' + S.buy + '|' + S.floor;
+  ctx.clearRect(0, 0, g.W, g.W);
+  let img = fogCache.get(key);
+  if (!img) {
+    const N = 104, step = g.W / N, labs = SP.all.map(lab), im = ctx.createImageData(N, N);
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+      const x = (i + .5) * step, y = (j + .5) * step, dx = x - g.cx, dy = g.cy - y, rr = Math.hypot(dx, dy), o = (j * N + i) * 4;
+      if (rr > g.R) continue;
+      const C = rr / g.R * CMAX, t = Math.atan2(dy, dx), L = [Lf, C * Math.cos(t), C * Math.sin(t)], c = labToRgb(L);
+      if (!c) continue;
+      let near = false; for (const q of labs) { if (Math.abs(q[0] - Lf) > 22) continue; if (deltaE2000(L, q) <= 8) { near = true; break; } }
+      const gy = .3 * c[0] + .59 * c[1] + .11 * c[2];
+      im.data[o] = near ? c[0] : gy; im.data[o + 1] = near ? c[1] : gy; im.data[o + 2] = near ? c[2] : gy; im.data[o + 3] = near ? 255 : 70;
+    }
+    const off = document.createElement('canvas'); off.width = off.height = N; off.getContext('2d').putImageData(im, 0, 0); img = off; fogCache.set(key, img);
+  }
+  ctx.imageSmoothingEnabled = true; ctx.drawImage(img, 0, 0, g.W, g.W);
+  ctx.beginPath(); ctx.arc(g.cx, g.cy, g.R, 0, 7); ctx.strokeStyle = css('--border-strong'); ctx.lineWidth = 1; ctx.stroke();
+  ctx.font = '500 11px "IBM Plex Sans", system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = css('--text-muted');
+  for (let b = 0; b < NB; b += 1) { const t = (START + (b + .5) * BAND) * Math.PI / 180; ctx.fillText(BAND_NAMES[b], g.cx + (g.R + 17) * Math.cos(t), g.cy - (g.R + 17) * Math.sin(t)); }
+  dotsD = [];
+  for (const p of SP.all) { if (p.row !== S.floor || grey(p)) continue; const [x, y] = toXY(g, p.a, p.b); dotsD.push({ x, y, p }); const buy = SP.buy.includes(p);
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); if (buy) { ctx.strokeStyle = css('--buy'); ctx.lineWidth = 2.5; ctx.stroke(); }
+    else { ctx.fillStyle = p.hex; ctx.fill(); ctx.strokeStyle = css('--text'); ctx.lineWidth = 1; ctx.stroke(); } }
+  const el = document.getElementById('dD'); if (!el.dataset.touched) {
+    const n = counts(); el.innerHTML = `<h4>Floor: ${ROWS[S.floor].name}</h4><p class="st">L* ${ROWS[S.floor].lo < 0 ? 0 : ROWS[S.floor].lo}–${Math.min(100, ROWS[S.floor].hi)}. ${n.reduce((s, c) => s + c[S.floor], 0)} owned paints on this floor. Tap the fog to see what fills it.</p>`; }
+}
+document.getElementById('cvD').addEventListener('click', ev => {
+  const cv = ev.currentTarget, { best, bd, x, y } = pickNearest(cv, ev, dotsD, false), el = document.getElementById('dD'); el.dataset.touched = 1;
+  if (best && bd < 18) return paintDetail(el, best.p);
+  const g = geom(cv), dx = x - g.cx, dy = g.cy - y, C = Math.min(1, Math.hypot(dx, dy) / g.R) * CMAX, t = Math.atan2(dy, dx), L = [ROWS[S.floor].mid, C * Math.cos(t), C * Math.sin(t)];
+  const hex = labToRgb(L) ? labToHex(L) : null; if (!hex) { el.innerHTML = '<p class="st">No paint can be this colour on a screen (out of gamut).</p>'; return; }
+  let nd = 1e9, np = null; for (const q of SP.all) { const d = deltaE2000(L, lab(q)); if (d < nd) { nd = d; np = q; } }
+  const have = new Set(SP.all.map(p => p.i));
+  const list = P.filter(p => p.fc === 'flat' && !have.has(p.i) && Math.abs(p.L - L[0]) < 12).map(p => ({ p, d: deltaE2000(L, lab(p)) })).sort((a, b) => a.d - b.d).slice(0, 3);
+  el.innerHTML = `<h4><span class="sw sm" style="--c:${hex}"></span> <code>${hex}</code></h4><p class="st">${nd <= 8 ? 'Clear' : 'Fogged'}: your closest paint is ${esc(np.name)}, ΔE ${nd.toFixed(1)} (${quality(nd)[0]}).</p>`
+    + `<h3 class="micro">The closest pots to buy</h3><ul>` + list.map(({ p, d }) => { const [lb, tg] = quality(d); return row(p, `<span class="de">ΔE ${d.toFixed(1)} <span class="tag ${tg}">${lb}</span></span>`); }).join('') + '</ul>';
+});
+
+// ---------- E: the Studio layer (HSL, as the Studio's wheel) ----------
+function hexToHsl(hex) { const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  if (!d) return [0, 0, l]; const s = d / (1 - Math.abs(2 * l - 1)); let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [(h * 60 + 360) % 360, s, l]; }
+function hslHex(h, s, l) { const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l), f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+  return '#' + [0, 8, 4].map(n => Math.round(f(n) * 255).toString(16).padStart(2, '0')).join('').toUpperCase(); }
+function drawE() {
+  const cv = document.getElementById('cvE'), ctx = cv.getContext('2d'), W = cv.width, cx = W / 2, cy = W / 2, R = W / 2 - 34; ctx.clearRect(0, 0, W, W);
+  for (let y = 0; y < W; y += 3) for (let x = 0; x < W; x += 3) { const dx = x - cx, dy = cy - y, r = Math.hypot(dx, dy); if (r > R) continue;
+    ctx.fillStyle = hslHex((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360, r / R, .5); ctx.fillRect(x, y, 3, 3); }
+  ctx.fillStyle = css('--bg'); ctx.globalAlpha = .55; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+  const place = hex => { const [h, s] = hexToHsl(hex), t = h * Math.PI / 180; return [cx + s * R * Math.cos(t), cy - s * R * Math.sin(t)]; };
+  for (const p of SP.owned) { const [x, y] = place(p.hex); ctx.beginPath(); ctx.arc(x, y, 3.5, 0, 7); ctx.fillStyle = p.hex; ctx.globalAlpha = .75; ctx.fill(); ctx.globalAlpha = 1; }
+  const seed = '#9A1115', [h, s, l] = hexToHsl(seed), nodes = [[0, 'P'], [120, 'S'], [240, 'A']].map(([dh, k]) => [hslHex((h + dh) % 360, s, l), k]);
+  ctx.font = '600 12px "IBM Plex Sans", system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const rows = [];
+  for (const [hex, k] of nodes) { const [x, y] = place(hex); ctx.beginPath(); ctx.arc(x, y, 13, 0, 7); ctx.fillStyle = hex; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = css('--text'); ctx.stroke();
+    ctx.fillStyle = inkOn(hex); ctx.fillText(k, x, y);
+    const L0 = hexLab(hex); let nd = 1e9, np = null; for (const q of SP.owned) { const d = deltaE2000(L0, lab(q)); if (d < nd) { nd = d; np = q; } }
+    rows.push(`<li><span class="sw" style="--c:${hex}"></span><span><span class="nm">${{ P: 'Primary', S: 'Secondary', A: 'Accent' }[k]}</span><br><span class="bl">closest owned: ${esc(np.name)}</span></span><span class="de">ΔE ${nd.toFixed(1)} <span class="tag ${quality(nd)[1]}">${quality(nd)[0]}</span></span></li>`); }
+  document.getElementById('dE').innerHTML = `<h4>Mephiston Red · triadic</h4><p class="st">Each node with the closest paint you own (true ΔE).</p><ul>${rows.join('')}</ul>`;
+}
+function hexLab(hex) { const v = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4);
+  const X = (.4124564 * v[0] + .3575761 * v[1] + .1804375 * v[2]) / .95047, Y = .2126729 * v[0] + .7151522 * v[1] + .0721750 * v[2], Z = (.0193339 * v[0] + .1191920 * v[1] + .9503041 * v[2]) / 1.08883;
+  const f = t => t > 0.008856451679035631 ? Math.cbrt(t) : t / 0.12841854934601665 + 4 / 29; return [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))]; }
+
+// ---------- the table + stats ----------
+function drawTable() {
+  const n = counts();
+  let h = '<thead><tr><th scope="col">Hue band</th>' + ROWS.map(r => `<th scope="col">${r.name}</th>`).join('') + '<th scope="col">All</th></tr></thead><tbody>';
+  for (let b = 0; b <= NB; b++) { const tot = n[b].reduce((s, v) => s + v, 0);
+    h += `<tr><th scope="row">${bandLabel(b)}</th>` + n[b].map(v => `<td class="${v ? '' : 'z'}">${v}</td>`).join('') + `<td>${tot}</td></tr>`; }
+  document.getElementById('tbl').innerHTML = h + '</tbody>';
+  const gaps = n.reduce((s, c) => s + c.filter(v => !v).length, 0), fams = n.slice(0, NB).filter(c => !c.some(v => v)).length;
+  document.getElementById('stats').innerHTML = `<span><b>${SP.owned.length}</b> owned</span><span><b>${SP.buy.length}</b> to buy</span><span><b>${gaps}</b> of 95 cells empty</span><span><b>${fams}</b> of 18 hue families with no paint</span>`;
+}
+
+// ---------- draw everything ----------
+function repaint() { drawA(); drawB(); drawC(); drawD(); drawE(); }
+function redraw() { SP = shelfPaints(); ['dA', 'dB', 'dC', 'dD'].forEach(id => delete document.getElementById(id).dataset.touched);
+  hint(document.getElementById('dA'), 'Tap a dot for its paint, or an empty part of the map for that family.');
+  hint(document.getElementById('dB'), 'Tap a cell (or Tab to it and press Enter) for its paints, or for the pots that fill a gap.');
+  hint(document.getElementById('dC'), 'Tap a cell, or Tab into the grid and use the arrow keys.');
+  drawTable(); repaint(); }
+redraw();
+</script>
+</body>
+</html>

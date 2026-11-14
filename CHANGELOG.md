@@ -7,6 +7,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0, v1.14.0 and v1.15.0 took only the web entries. -->
 ### Added
+- **The Shelf's Map: which tones is my collection missing?** (PLAN §5 item 61; chosen from `mockups/shelf-map.html`:
+  C with A). A third view beside Grid and List. A small colour wheel shows each paint you own as a dot and each paint
+  on your shopping list as a ring; a hatched part is a colour family you own nothing in. Under it, a grid of tones:
+  18 colours across and 5 lightness bands down (Shade to Highlight), plus the greys; on a phone the grid turns, so
+  the page scrolls down only. A dashed square is a gap. Choose a tone to see its paints; for a gap, or a tone with
+  one paint, the three closest pots show with their true ΔE and an **Add** button for the shopping list. The search
+  and filters narrow the map. It works with the keyboard (arrow keys, Enter) and a screen reader, and the address
+  bar keeps it (`sv=map`). New: `src/js/shelfmap.js` (pure, tested), `color.js labToRgb` / `labToHex`, the `map` icon.
+- **A study of the shelf as a map** (`mockups/shelf-map.html`; PLAN §5 item 61): which tones does my collection
+  miss? Five directions, drawn from the real paint data on two sample shelves: dots on the colour wheel, a ring
+  map of hue and lightness, a tone grid, a fog-of-war map by lightness, and a layer on the Studio's wheel. A tap
+  on a gap shows the three closest pots that fill it. Recommended: the tone grid, with the dot wheel as its
+  header. Not built; the app does not change.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made

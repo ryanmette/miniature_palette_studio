@@ -308,3 +308,10 @@ test('holds: a store swap carries the paint it replaced (5th part); setHoldInLin
   assert.equal(setHoldInLink('?c=112233&hd=S.l.2F4A6B', 'Accent', holds.Accent), '?c=112233&hd=S.l.2F4A6B_A.p.vallejo-carmine.97211F.citadel-mephiston');
   assert.equal(setHoldInLink('?c=112233&hd=A.p.x.97211F', 'Accent', null), '?c=112233', 'removing the last hold drops hd');
 });
+
+test('sv=map round-trips in the address bar; a shared link drops it', async () => {
+  const { encodeState, decodeState, shareUrl } = await import('../src/js/share.js');
+  assert.equal(encodeState({ shelfView: 'map' }).get('sv'), 'map');
+  assert.equal(decodeState('?sv=map').shelfView, 'map');
+  assert.equal(new URL(shareUrl('https://palette.ryanmette.com/?p=x&m=shelf&sv=map')).searchParams.get('sv'), null);
+});

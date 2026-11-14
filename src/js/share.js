@@ -14,7 +14,7 @@
 //   v   active output tab (omitted for 'plan')  m   'shelf' or 'schemes' = deep-link to that mode
 //                                                     (address bar only, never in a shared link — shareUrl)
 //   s   the id of the saved scheme on screen (store.js): address bar only, never in a shared link
-//   sv  'list' = the Shelf shows the list, not the grid   sg  'project' = the list grouped by scheme
+//   sv  'list' or 'map' = the Shelf shows the list or the map, not the grid   sg  'project' = the list grouped by scheme
 //       (both address bar only, never in a shared link)
 //   n   the scheme's name (a saved scheme's, in a shared link): the Save dialog offers it on another device
 //   l   the store list (PLAN §5 item 37): paint tokens joined by '.', each "id", "id*2" (2 pots) and/or
@@ -54,7 +54,7 @@ export function encodeState(s) {
   if (s.pickHex) p.set('c', s.pickHex.replace('#', ''));
   if (s.harmony) p.set('h', s.harmony);
   if (s.mode === 'shelf' || s.mode === 'schemes') p.set('m', s.mode);
-  if (s.shelfView === 'list') p.set('sv', 'list');
+  if (s.shelfView === 'list' || s.shelfView === 'map') p.set('sv', s.shelfView);
   if (s.shelfGroup === 'project') p.set('sg', 'project');
   if (s.tab && s.tab !== 'plan') p.set('v', s.tab);
   if (s.seedRole === 'accent') p.set('r', 'accent');
@@ -188,7 +188,7 @@ export function decodeState(search, { validHarmony = () => true, hasPaint = () =
   if (u.get('r') === 'accent') out.seedRole = 'accent';
   if (u.get('t') === 'dark') out.theme = 'dark';
   const m = u.get('m'); if (m === 'shelf' || m === 'schemes') out.mode = m;
-  if (u.get('sv') === 'list') out.shelfView = 'list';
+  const sv = u.get('sv'); if (sv === 'list' || sv === 'map') out.shelfView = sv;
   if (u.get('sg') === 'project') out.shelfGroup = 'project';
   const n = cleanName(u.get('n')); if (n) out.name = n;
   const x = u.get('x'); if (x) out.extraNodes = decodeNodes(x, maxFree);
