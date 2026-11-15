@@ -752,6 +752,26 @@ export function rackRow(r, tr) {
     + '</li>';
 }
 
+/**
+ * What the list's rows do after a Use or its Undo (item 38). `left` is the paint that came off the shopping
+ * list (the original at a Use, the swap at an Undo); `came` is the paint that is to buy now.
+ * @param o.cameRow    `came` has a row in the list already
+ * @param o.leftRow    `left` has a row in the list
+ * @param o.leftStays  the list's filters still show `left` (the swap that was to buy before; a list of all paints)
+ * @param o.undo       this is an Undo. At a Use, the swap always takes the original's row: the painter chose it
+ *                     there, and it must show, with its Undo, although a search may not match it
+ * @param o.spot       the place a removed row had is known, and still in the page
+ * @returns {'update'|'remove'|'replace'|'insert'|'rebuild'}
+ *   update:  each paint has its row; redraw them in place · remove: `came` has its row, `left`'s row goes ·
+ *   replace: `came` takes `left`'s row, the same place · insert: `left` keeps its row, `came` goes back to its
+ *   place · rebuild: `came` needs a row and no place is known, so draw the list again
+ */
+export function swapRowPlan({ cameRow, leftRow, leftStays, undo, spot }) {
+  if (cameRow) return leftRow && !leftStays ? 'remove' : 'update';
+  if (leftRow && !(undo && leftStays)) return 'replace';
+  return spot ? 'insert' : 'rebuild';
+}
+
 /** The swaps under a row (item 38): the closest pots from the brands the store carries, in the paint's own
  *  finish class, each with its true ΔE and label (§2). `r.swaps`: { list: [{paint, deltaE, quality, owned}],
  *  notCarried: the row's brand is switched off }. */

@@ -27,6 +27,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Fixed
+- **Undo of a store swap no longer hides a paint you must buy** (PLAN §5 item 67). When the swap you chose was on
+  your shopping list already, **Undo** put the original paint in the swap's row. The swap was still to buy, but
+  the list did not show it until you opened the list again, and its count stayed at the sum of the two. Now the
+  swap keeps its row and gets its own count back, and the original's row goes back where it was. In a list with
+  no status filter, the original's row also stays after **Use**. New: `ui.js swapRowPlan` (tested), `app.js
+  placeSwapRows`.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap

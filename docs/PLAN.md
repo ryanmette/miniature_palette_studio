@@ -814,7 +814,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (not yet built)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (67 built; 66 and 68–72 open)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -836,7 +836,8 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     got their best swap from Vallejo or AMMO, which the painter could not switch off (rows 2 and 3 of the table).
 67. **Undo lost a paint to buy.** A Use of a swap that was on the list already, then Undo: the original took the
     swap's row, so the swap (still to buy in the saved data) was not in the list until it was drawn again, and
-    its count stayed at the sum.
+    its count stayed at the sum. **Built (2026-11-14):** `ui.swapRowPlan` + `app.js placeSwapRows`; the swap keeps
+    its row and gets its own count back, and the original's row goes back where it was.
 68. **Wash colours are recorded in two ways** (open; data; goes with item 49, `docs/COLOUR_CHECK.md`). Some lines
     hold the colour of a thin coat on white (median Lab L\*: Warhammer Colour Shade 65, P3 Wash 63, Vallejo Wash 49),
     others the colour in the pot (Army Painter Wash 24, AMMO Wash 18, Pro Acryl Wash 10). So Army Painter's Shadow
