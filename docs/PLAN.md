@@ -815,7 +815,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66 and 67 built; 68–72 open)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67 and 71 built; 68–70 and 72 open)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -856,7 +856,11 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
 71. **One class for wash, shade, ink, Contrast and glaze** (open; ranking). For 60% of washes and shades the best
     swap is not a wash or a shade (most are Contrast paints); in half of those a wash was under 2 ΔE further. For
     effect paints, 21 of 55 best swaps have another `fx` (Blood For The Blood God, gloss, gets Vallejo Corrosion,
-    texture). Idea: a small rank penalty for another type in the class, and the same `fx` only for effects.
+    texture). **Built (2026-11-15):** `data.js swapKind` + `SWAP_KIND_PENALTY` = 2 (ranking only): a wash's or
+    shade's best swap is a wash or shade for 69% (was 40%) for +0.29 mean ΔE; a Contrast paint's is a Contrast
+    paint for 86% (was 65%) for +0.21; a penalty of 3 gave 10 points more for +0.22 ΔE more. An effect swaps only
+    for the same `fx`: one paint (Nurgle's Rot, the only slime) then has no swap, and 34 of 54 have a best swap
+    over ΔE 10, which the list says ("None is close"). The Equivalents tab is not changed.
 72. **Small** (open): the list stops at 3 (for 53% of paints the 4th swap is within 0.3 ΔE of the 3rd), and a paint
     you own is flagged but not ranked first; 122 paints have a best swap with the same hex (34 are pure black or
     white: item 49); Nolzur's Glistening Blood has the type `wash` (probably an effect).

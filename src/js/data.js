@@ -234,21 +234,38 @@ export function equivalents(indexed, paint, { n = 6 } = {}) {
     .map(({ paint, deltaE }) => ({ paint, deltaE, quality: matchQuality(deltaE) }));
 }
 
+/** A paint's kind inside its finish class, for a store swap: the kinds are different products, and one is not
+ *  a full swap for another. A wash and a shade are one product (two makers' names). An ink, a Contrast or speed
+ *  paint and a glaze flow and cover differently. A Dry compound is a paste. An effect's kind is its `fx` (wet
+ *  gloss, slime, gritty texture, or none of these). */
+export const swapKind = p => p.type === 'wash' || p.type === 'shade' ? 'wash'
+  : p.type === 'base' || p.type === 'layer' ? 'paint'
+  : finishClass(p.type) === 'effect' ? 'fx:' + (p.fx || '') : p.type;
+/** A store swap of another kind in the same finish class ranks as if it were this much ΔE further (ranking
+ *  only; the reported ΔE stays true, §2/§7). Measured on dataset 1.9.0 with every brand carried: the best swap
+ *  of a wash or shade is a wash or shade for 69% (was 40%), for +0.29 mean ΔE; of a Contrast paint, a Contrast
+ *  paint for 86% (was 65%), for +0.21. At 3 the gain is 10 points more for +0.22 ΔE more; 2 is half of
+ *  FINISH_PENALTY, the cost of another finish class in Equivalents. */
+export const SWAP_KIND_PENALTY = 2;
+
 /**
  * Swaps for a pot that is not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B): the
  * nearest paints from the brands the store carries, kept STRICTLY to the paint's own finish class. A wash's
  * swap is a wash, or there is none: a wash's hex is its colour on white, so a flat paint can look close to it
  * and still be no swap at all (a strict tier, not the Equivalents tab's penalty). Reported ΔE is true (§2).
+ * Inside the class (PLAN §5 item 71): an effect paint swaps only for one with the same `fx` (wet blood is no
+ * swap for a rust texture); any other paint of another kind (swapKind) ranks SWAP_KIND_PENALTY further.
  * @param opts.notCarried  brands the store does not carry (a Set): no swap comes from them
  * @returns {Array<{paint, deltaE, quality}>} best first, at most `n`
  */
 export function storeSwaps(indexed, paint, { notCarried = new Set(), n = 3 } = {}) {
-  const lab = paint.lab || hexToLab(paint.hex), cls = finishClass(paint.type);
-  return indexed.paints.filter(p => p.id !== paint.id && !notCarried.has(p.brand) && finishClass(p.type) === cls)
-    .map(p => ({ paint: p, deltaE: deltaE2000(lab, p.lab) }))
-    .sort((a, b) => a.deltaE - b.deltaE)
+  const lab = paint.lab || hexToLab(paint.hex), cls = finishClass(paint.type), kind = swapKind(paint);
+  return indexed.paints.filter(p => p.id !== paint.id && !notCarried.has(p.brand)
+      && finishClass(p.type) === cls && (cls !== 'effect' || swapKind(p) === kind))
+    .map(p => { const deltaE = deltaE2000(lab, p.lab); return { paint: p, deltaE, score: deltaE + (swapKind(p) === kind ? 0 : SWAP_KIND_PENALTY) }; })
+    .sort((a, b) => a.score - b.score)
     .slice(0, n)
-    .map(m => ({ ...m, quality: matchQuality(m.deltaE) }));
+    .map(({ paint, deltaE }) => ({ paint, deltaE, quality: matchQuality(deltaE) }));
 }
 
 /** The paints closest to a typed colour, best first. They rank as the Equivalents tab ranks a flat colour:

@@ -27,6 +27,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Changed
+- **Store swaps: a wash now comes before a Contrast paint** (PLAN §5 item 71; a ranking change, CLAUDE.md §7).
+  In **Not on the rack?**, a wash, an ink, a Contrast paint and a glaze were one group, so for 60% of washes and
+  shades the first swap was another product (most times a Contrast paint). Now a pot of another kind ranks 2 ΔE
+  further (`data.js SWAP_KIND_PENALTY`; the ΔE shown stays the true one): the first swap of a wash or shade is a
+  wash or shade for 69% (was 40%), for 0.29 more mean ΔE. The same rule keeps a Dry compound after a base or layer
+  paint. An effect paint now swaps only for the same effect (wet blood never gets a rust texture); when there is
+  none, the list says so.
 - **"This store carries" has a switch for every brand** (PLAN §5 item 66; from an audit of the store swaps,
   2026-11-14). It had a switch only for the brands on your shopping list. A brand with no paint on your list could
   not be switched off, so the list offered swaps from brands the store did not have: with five brands off, 46% of

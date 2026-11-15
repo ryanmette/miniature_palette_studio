@@ -543,6 +543,32 @@ test('storeSwaps (item 38): same finish class only, carried brands only, true Δ
   assert.equal(storeSwaps(sx, red, { n: 1 }).length, 1);
 });
 
+test('storeSwaps (item 71): another kind in the class ranks 2 ΔE further, with its true ΔE; an effect keeps its fx', async () => {
+  const { storeSwaps, swapKind, SWAP_KIND_PENALTY } = await import('../src/js/data.js');
+  assert.equal(SWAP_KIND_PENALTY, 2);
+  assert.equal(swapKind({ type: 'wash' }), swapKind({ type: 'shade' }), 'a wash and a shade are one product');
+  assert.equal(swapKind({ type: 'base' }), swapKind({ type: 'layer' }));
+  for (const [a, b] of [['wash', 'contrast'], ['wash', 'ink'], ['contrast', 'glaze'], ['layer', 'dry']]) assert.notEqual(swapKind({ type: a }), swapKind({ type: b }), a + ' / ' + b);
+  assert.notEqual(swapKind({ type: 'effect', fx: 'gloss' }), swapKind({ type: 'effect', fx: 'texture' }));
+  assert.equal(swapKind({ type: 'effect' }), swapKind({ type: 'technical' }), 'no fx: one kind');
+  const sx = indexDataset({ version: 't', paints: [
+    { id: 'wash', brand: 'A', line: 'W', name: 'Brown Wash', hex: '#5A3A22', type: 'wash' },
+    { id: 'con-near', brand: 'B', line: 'C', name: 'Brown Contrast', hex: '#5C3B22', type: 'contrast' },
+    { id: 'shade-near', brand: 'C', line: 'S', name: 'Brown Shade', hex: '#603D24', type: 'shade' },
+    { id: 'shade-far', brand: 'D', line: 'S', name: 'Red Shade', hex: '#8A2A22', type: 'shade' },
+    { id: 'blood', brand: 'A', line: 'T', name: 'Blood', hex: '#7A0A0A', type: 'effect', fx: 'gloss' },
+    { id: 'rust', brand: 'B', line: 'T', name: 'Rust', hex: '#7B0C0B', type: 'effect', fx: 'texture' },
+    { id: 'blood2', brand: 'C', line: 'T', name: 'Thick Blood', hex: '#6A1010', type: 'effect', fx: 'gloss' },
+    { id: 'slime', brand: 'A', line: 'T', name: 'Rot', hex: '#8A9A2A', type: 'effect', fx: 'slime' },
+  ] });
+  const m = storeSwaps(sx, sx.byId.get('wash'));
+  assert.deepEqual(m.map(x => x.paint.id), ['shade-near', 'con-near', 'shade-far'], 'the shade first, although the Contrast paint is nearer');
+  assert.ok(m[1].deltaE < m[0].deltaE && m[0].deltaE - m[1].deltaE < SWAP_KIND_PENALTY, 'the ΔE shown is the true one, not the rank score');
+  assert.ok(m[2].deltaE > m[1].deltaE + SWAP_KIND_PENALTY, 'a penalty, not a tier: a far shade stays after a near Contrast paint');
+  assert.deepEqual(storeSwaps(sx, sx.byId.get('blood')).map(x => x.paint.id), ['blood2'], 'wet blood never gets the rust texture, even the nearest');
+  assert.deepEqual(storeSwaps(sx, sx.byId.get('slime')), [], 'the one slime paint: no swap, said as none');
+});
+
 /* ---- the random first scheme (PLAN §5 item 55) ---- */
 import { startPaints, randomStartPaint, START_TYPES, START_L } from '../src/js/data.js';
 import { NEUTRAL_EXIT } from '../src/js/color.js';
