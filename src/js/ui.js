@@ -794,8 +794,9 @@ function rackSwaps(r, tr) {
   return h + '</div>';
 }
 
-/** "This store carries" (item 38): one toggle per brand on the list, all on at first. A brand switched off
- *  shows the closest pots from the others on each of its rows. A choice for this trip, not saved. */
+/** "This store carries" (item 38): one toggle per brand in the paint data, all on at first. A brand switched
+ *  off shows the closest pots from the others on each of its rows, and no swap comes from it. A choice for
+ *  this trip, not saved. */
 export function storeCarries(brands, off, tr) {
   if (!brands.length) return '';
   // the count says how many brands the row holds, so a brand scrolled out of view is not missed (PLAN §5 item 42)

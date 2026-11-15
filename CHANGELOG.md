@@ -26,6 +26,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+### Changed
+- **"This store carries" has a switch for every brand** (PLAN §5 item 66; from an audit of the store swaps,
+  2026-11-14). It had a switch only for the brands on your shopping list. A brand with no paint on your list could
+  not be switched off, so the list offered swaps from brands the store did not have: with five brands off, 46% of
+  those brands' paints got their best swap from a brand that had no switch. The row now has all ten brands, A to
+  Z, in an order that does not change. Switch off each brand the store does not have.
 ### Fixed
 - **Undo of a store swap no longer hides a paint you must buy** (PLAN §5 item 67). When the swap you chose was on
   your shopping list already, **Undo** put the original paint in the swap's row. The swap was still to buy, but

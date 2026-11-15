@@ -430,7 +430,8 @@ answered by Ryan: [`mockups/shopping-list.html`](../mockups/shopping-list.html) 
 
 - **One list,** in rack order (brand → line). **A tick marks the paint owned at once**; a second tap undoes it.
 - **A count is set after the fact,** on the list. One pot is the default.
-- **Brand-agnostic:** the "this store carries" choice comes from the brands on the list.
+- **Brand-agnostic:** the "this store carries" choice comes from the brands on the list. *(Changed 2026-11-14,
+  item 66: from every brand in the paint data. Still no brand is written in the code.)*
 - **A swap goes back to the scheme,** with the original paint flagged.
 - **A project is one scheme.** Its name is asked **once, at the first export**, with a Skip. **A name saves the
   scheme for good**, and it goes in the share link.
@@ -814,7 +815,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (67 built; 66 and 68–72 open)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66 and 67 built; 68–72 open)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -834,6 +835,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
 66. **A toggle for every brand** (was: only the brands on the shopping list). A brand with no paint on the list had
     no toggle, so it always counted as carried. With the screenshot's five brands off, 46% of those brands' paints
     got their best swap from Vallejo or AMMO, which the painter could not switch off (rows 2 and 3 of the table).
+    **Built (2026-11-14):** "This store carries" has one toggle per brand in the paint data, A to Z, a fixed order.
 67. **Undo lost a paint to buy.** A Use of a swap that was on the list already, then Undo: the original took the
     swap's row, so the swap (still to buy in the saved data) was not in the list until it was drawn again, and
     its count stayed at the sum. **Built (2026-11-14):** `ui.swapRowPlan` + `app.js placeSwapRows`; the swap keeps

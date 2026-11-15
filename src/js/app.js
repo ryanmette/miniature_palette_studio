@@ -1131,13 +1131,13 @@ function renderShelfList(view) {
   host.innerHTML = ui.rackGroups(groups, t);
   $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
   syncSendBought();
-  // This store carries: the brands of every paint to buy, and any switched off (so they can come back). Not only
-  // the paints the filters show: a search hid brands, and the row looked capped (phone test, 2026-10-30).
-  const wantBrands = [...store.wantIds()].map(id => state.idx.byId.get(id)?.brand).filter(Boolean);
-  const brands = [...new Set([...wantBrands, ...storeOff])].sort((a, b) => a.localeCompare(b));
+  // This store carries: every brand in the paint data, while there is a paint to buy. It was only the brands on
+  // the shopping list, so a brand with no paint on the list had no toggle and always counted as carried: with
+  // five brands off, 46% of their paints got a best swap from a brand the painter could not switch off (audit,
+  // 2026-11-14). The order is fixed (A to Z), so a toggle never moves when the list changes (§3.4).
   const chip = document.activeElement?.dataset?.rkbrand;
-  $('#rkStore').innerHTML = ui.storeCarries(brands, storeOff, t);
-  $('#rkStore').hidden = !brands.length;
+  $('#rkStore').innerHTML = ui.storeCarries(state.brands, storeOff, t);
+  $('#rkStore').hidden = !store.wantIds().size;
   if (chip) $(`[data-rkbrand="${CSS.escape(chip)}"]`)?.focus({ preventScroll: true });
   for (const b of $('#shelfGroupSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sg === state.shelfGroup));
   if (keep) host.querySelector(keep)?.focus({ preventScroll: true });
