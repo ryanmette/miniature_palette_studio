@@ -814,6 +814,50 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (not yet built)
+
+Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
+equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
+audit ran `data.js storeSwaps` on all 3,375 paints (dataset 1.9.0) for five stores, and did the screenshot's steps
+again in a browser. **What was right:** no swap comes from a brand that is off; the ΔE shown is the true one; the
+finish class is strict (a metallic gets only metallics); the count and the project move with the swap.
+
+How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the store has:
+
+| Store | Flat | Wash, ink, Contrast | Metallic |
+|---|---|---|---|
+| All 10 brands | 92% | 47% | 54% |
+| Warhammer Colour + Army Painter + Two Thin Coats + Vallejo + AMMO | 80% | 39% | 41% |
+| Warhammer Colour + Army Painter + Two Thin Coats | 62% | 29% | 34% |
+| Warhammer Colour only | 36% | 10% | 12% |
+
+66. **A toggle for every brand** (was: only the brands on the shopping list). A brand with no paint on the list had
+    no toggle, so it always counted as carried. With the screenshot's five brands off, 46% of those brands' paints
+    got their best swap from Vallejo or AMMO, which the painter could not switch off (rows 2 and 3 of the table).
+67. **Undo lost a paint to buy.** A Use of a swap that was on the list already, then Undo: the original took the
+    swap's row, so the swap (still to buy in the saved data) was not in the list until it was drawn again, and
+    its count stayed at the sum.
+68. **Wash colours are recorded in two ways** (open; data; goes with item 49, `docs/COLOUR_CHECK.md`). Some lines
+    hold the colour of a thin coat on white (median Lab L\*: Warhammer Colour Shade 65, P3 Wash 63, Vallejo Wash 49),
+    others the colour in the pot (Army Painter Wash 24, AMMO Wash 18, Pro Acryl Wash 10). So Army Painter's Shadow
+    Wash to Nuln Oil is ΔE 50.5 and is never offered, and a blue Contrast (Leviadon Blue, ΔE 4.3 "Fair") is. Nuln
+    Oil's own swaps hold no black wash of another brand. "Indistinguishable" between two near-black values says
+    little (28 translucent paints have L\* < 12). Needs: one written rule for a wash's hex; until then, perhaps no
+    Indistinguishable / Excellent word on a translucent swap (§2).
+69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
+    later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
+    the only way out.
+70. **A swap or its Undo stays under the old heading** (open; needs Ryan's choice). The row is drawn in the same
+    place (§3.4), so a Two Thin Coats pot can sit under "AK Interactive", a brand that is off, until the list is
+    drawn again; the group counts are then wrong too. The heading says which rack to walk to.
+71. **One class for wash, shade, ink, Contrast and glaze** (open; ranking). For 60% of washes and shades the best
+    swap is not a wash or a shade (most are Contrast paints); in half of those a wash was under 2 ΔE further. For
+    effect paints, 21 of 55 best swaps have another `fx` (Blood For The Blood God, gloss, gets Vallejo Corrosion,
+    texture). Idea: a small rank penalty for another type in the class, and the same `fx` only for effects.
+72. **Small** (open): the list stops at 3 (for 53% of paints the 4th swap is within 0.3 ΔE of the 3rd), and a paint
+    you own is flagged but not ranked first; 122 paints have a best swap with the same hex (34 are pure black or
+    white: item 49); Nolzur's Glistening Blood has the type `wash` (probably an effect).
+
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:
