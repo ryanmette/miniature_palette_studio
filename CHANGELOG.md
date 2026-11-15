@@ -34,6 +34,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   wash or shade for 69% (was 40%), for 0.29 more mean ΔE. The same rule keeps a Dry compound after a base or layer
   paint. An effect paint now swaps only for the same effect (wet blood never gets a rust texture); when there is
   none, the list says so.
+- **A swap can be swapped again** (PLAN §5 item 69). A row that was a swap had no **Not on the rack?**, also when
+  you switched its brand off later: the list then told you to buy a pot the store did not have. Now the row has
+  the toggle. It shows the next closest pots to the paint you first wanted (never to the swap, so the colour does
+  not move away step by step), and **Undo** goes back to that first paint. A pot you swapped away is not offered
+  for another paint. One pot can be the swap for two paints: each **Undo** takes one back.
 - **"This store carries" has a switch for every brand** (PLAN §5 item 66; from an audit of the store swaps,
   2026-11-14). It had a switch only for the brands on your shopping list. A brand with no paint on your list could
   not be switched off, so the list offered swaps from brands the store did not have: with five brands off, 46% of

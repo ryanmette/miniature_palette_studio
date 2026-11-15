@@ -815,7 +815,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67 and 71 built; 68–70 and 72 open)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69 and 71 built; 68, 70 and 72 open)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -849,7 +849,10 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     Indistinguishable / Excellent word on a translucent swap (§2).
 69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
     later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
-    the only way out.
+    the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint
+    it replaced (`storeSwaps`' `except`), and Use goes back to that paint and then to the new swap, so the list and
+    the scheme never hold a swap of a swap. The swap log is a list per pot (one pot for two paints), and a pot
+    swapped away is no swap for another paint in the same visit.
 70. **A swap or its Undo stays under the old heading** (open; needs Ryan's choice). The row is drawn in the same
     place (§3.4), so a Two Thin Coats pot can sit under "AK Interactive", a brand that is off, until the list is
     drawn again; the group counts are then wrong too. The heading says which rack to walk to.

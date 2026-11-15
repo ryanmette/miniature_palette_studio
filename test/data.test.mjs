@@ -541,6 +541,7 @@ test('storeSwaps (item 38): same finish class only, carried brands only, true Δ
   assert.deepEqual(storeSwaps(sx, wash).map(m => m.paint.id).sort(), ['ap-wash', 'val-wash'], 'a wash or shade swaps for a wash');
   assert.deepEqual(storeSwaps(sx, wash, { notCarried: new Set(['Vallejo', 'Army Painter']) }), [], 'none: an empty list, never a flat');
   assert.equal(storeSwaps(sx, red, { n: 1 }).length, 1);
+  assert.deepEqual(storeSwaps(sx, red, { except: new Set(['ap-red']) }).map(m => m.paint.id), ['val-red'], 'except: the pot that is not on the rack');
 });
 
 test('storeSwaps (item 71): another kind in the class ranks 2 ΔE further, with its true ΔE; an effect keeps its fx', async () => {

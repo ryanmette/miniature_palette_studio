@@ -256,11 +256,13 @@ export const SWAP_KIND_PENALTY = 2;
  * Inside the class (PLAN §5 item 71): an effect paint swaps only for one with the same `fx` (wet blood is no
  * swap for a rust texture); any other paint of another kind (swapKind) ranks SWAP_KIND_PENALTY further.
  * @param opts.notCarried  brands the store does not carry (a Set): no swap comes from them
+ * @param opts.except      paint ids that are no swap here (a Set): the pot that is not on the rack, when the
+ *                         swaps are for the paint it replaced
  * @returns {Array<{paint, deltaE, quality}>} best first, at most `n`
  */
-export function storeSwaps(indexed, paint, { notCarried = new Set(), n = 3 } = {}) {
+export function storeSwaps(indexed, paint, { notCarried = new Set(), except = null, n = 3 } = {}) {
   const lab = paint.lab || hexToLab(paint.hex), cls = finishClass(paint.type), kind = swapKind(paint);
-  return indexed.paints.filter(p => p.id !== paint.id && !notCarried.has(p.brand)
+  return indexed.paints.filter(p => p.id !== paint.id && !notCarried.has(p.brand) && !(except && except.has(p.id))
       && finishClass(p.type) === cls && (cls !== 'effect' || swapKind(p) === kind))
     .map(p => { const deltaE = deltaE2000(lab, p.lab); return { paint: p, deltaE, score: deltaE + (swapKind(p) === kind ? 0 : SWAP_KIND_PENALTY) }; })
     .sort((a, b) => a.score - b.score)

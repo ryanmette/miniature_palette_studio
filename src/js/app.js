@@ -1057,9 +1057,14 @@ const rk = { kept: new Set(), prev: new Map(), countOpen: new Set(), swapOpen: n
 function resetRackSession() { rk.kept.clear(); rk.prev.clear(); rk.countOpen.clear(); rk.swapOpen.clear(); }
 /* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B). For this visit only (in memory,
    like Recent picks): the brands this store does not carry, and the swaps made (swap id → what it replaced,
-   so a row can say "in place of" and Undo puts everything back). */
+   so a row can say "in place of" and Undo puts everything back). One pot can be the swap for two paints, so
+   each swap id holds a list, the newest last: the row says the newest, and each Undo takes one off. */
 const storeOff = new Set();
 const swapLog = new Map();
+const swapOf = id => { const l = swapLog.get(id); return l ? l[l.length - 1] : null; };
+// The pots the painter said are not on the rack (each swapped away with Use): no swap for another paint
+// either. An Undo takes the pot off again: the painter wants it after all.
+const offRack = new Set();
 const rackLine = p => (p.line && p.line !== '—' && p.line !== p.brand ? p.line : '');
 /** A scheme's name for the list: its name, or its automatic name when it has none. `cache`: a Map per render. */
 function schemeNameOf(sid, cache = new Map()) {
@@ -1069,16 +1074,20 @@ function schemeNameOf(sid, cache = new Map()) {
 }
 /** One row's data, as the list draws it (renderShelfList and updateRackRow share it). */
 function rackRowData(p) {
-  const mark = store.markOf(p.id), prev = rk.prev.get(p.id), sw = swapLog.get(p.id);
+  const mark = store.markOf(p.id), prev = rk.prev.get(p.id), sw = swapOf(p.id);
   // a to-buy row can open its swaps; a row whose brand the store does not carry opens them by itself
-  const canSwap = mark === 'want' && !sw, notCarried = canSwap && storeOff.has(p.brand);
+  const canSwap = mark === 'want', notCarried = canSwap && storeOff.has(p.brand);
   const open = canSwap && (rk.swapOpen.has(p.id) ? rk.swapOpen.get(p.id) : notCarried);
+  // A row that is a swap can be missing from the rack too (PLAN §5 item 69). Its swaps are the next closest to
+  // the paint it replaced, never to the swap: a swap of a swap moves away from the colour the scheme wants.
+  const first = sw && state.idx.byId.get(sw.orig) || null;
   return {
     // struck through: bought from the shopping list in this list's visit (a checklist's tick-off), not every owned paint
     struck: mark === 'owned' && rk.kept.has(p.id) && prev?.mark === 'want',
     canSwap,
-    swaps: open ? { notCarried, list: storeSwaps(state.idx, p, { notCarried: storeOff }).map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
-    insteadOf: sw ? state.idx.byId.get(sw.orig) : null,
+    swaps: open ? { notCarried, of: first, list: storeSwaps(state.idx, first || p, { notCarried: storeOff, except: new Set([...offRack, p.id]) })
+      .map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
+    insteadOf: first,
     paint: p, owned: mark === 'owned',
     // a paint on the list, or one ticked off it just now (its slot stays, empty, so the row keeps its height)
     countable: mark === 'want' || (rk.kept.has(p.id) && prev?.mark === 'want'),
@@ -1218,6 +1227,10 @@ function holdInScheme(sid, role, hold) {
  *  the original comes off. When the original is a role's pot in the scheme it is for, the swap becomes that
  *  role's pot, with the original on record (`was`), so the Recipe says so and can go back. */
 function applySwap(origId, swapId) {
+  // The row is a swap itself (item 69): back to the paint it replaced, then that paint's new swap. So the list
+  // and the scheme hold one swap for a paint, never a swap of a swap, and Undo goes back to the first paint.
+  const again = swapOf(origId);
+  if (again && swapId !== again.orig && state.idx.byId.has(swapId)) { undoSwap(origId); offRack.add(origId); applySwap(again.orig, swapId); return; }
   const orig = state.idx.byId.get(origId), sw = state.idx.byId.get(swapId);
   if (!orig || !sw || store.markOf(origId) !== 'want') return;
   const origQty = store.qtyOf(origId), origFor = store.projectOf(origId);
@@ -1241,7 +1254,9 @@ function applySwap(origId, swapId) {
   store.setMark(origId, 'none');
   const dropped = kept.filter(sc => !store.getScheme(sc.id));
   const log = { orig: origId, origQty, origFor, swapPrev, scheme, dropped, spot: null };
-  swapLog.set(swapId, log);   // before the rows are drawn: the swap's row reads it ("in place of")
+  offRack.add(origId);
+  // before the rows are drawn: the swap's row reads it ("in place of")
+  if (swapLog.has(swapId)) swapLog.get(swapId).push(log); else swapLog.set(swapId, [log]);
   rk.swapOpen.delete(origId);
   log.spot = placeSwapRows(origId, sw);
   render('marks', { ids: [swapId] });
@@ -1253,7 +1268,7 @@ function applySwap(origId, swapId) {
 /** Undo a swap made in this visit: the original back on the list (count and project), the swap back to the
  *  mark it had, and the scheme's role back to what it held. */
 function undoSwap(swapId) {
-  const e = swapLog.get(swapId), orig = e && state.idx.byId.get(e.orig);
+  const e = swapOf(swapId), orig = e && state.idx.byId.get(e.orig);
   if (!e || !orig) return;
   for (const sc of e.dropped || []) store.putScheme(sc);   // the projects the swap ended, under their own ids
   store.setMark(e.orig, 'want', { for: e.origFor || undefined });
@@ -1264,7 +1279,9 @@ function undoSwap(swapId) {
     else store.setMark(swapId, 'none');
   }
   if (e.scheme) holdInScheme(e.scheme.sid, e.scheme.role, e.scheme.before);
-  swapLog.delete(swapId);
+  const log = swapLog.get(swapId);
+  log.pop(); if (!log.length) swapLog.delete(swapId);
+  offRack.delete(e.orig);
   placeSwapRows(swapId, orig, { undo: true, spot: e.spot });
   render('marks', { ids: [e.orig] });
   $(`[data-rknot="${CSS.escape(e.orig)}"]`)?.focus({ preventScroll: true });

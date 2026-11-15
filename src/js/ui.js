@@ -719,8 +719,8 @@ const CHECK = '<svg viewBox="0 0 20 20" class="rkcheck" aria-hidden="true" focus
 export function rackRow(r, tr) {
   const p = r.paint, name = pname(p);
   const line = [esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ');
-  // Not on the rack? (item 38): a to-buy row that is not a swap already can open its swaps; the word hides on
-  // a phone (the icon stays, the name says it all), so the stepper and the toggle share one --tap row
+  // Not on the rack? (item 38): a to-buy row can open its swaps, also a row that is a swap (item 69); the word
+  // hides on a phone (the icon stays, the name says it all), so the stepper and the toggle share one --tap row
   const swapBtn = r.canSwap
     ? `<button type="button" class="textact rknot" data-rknot="${esc(p.id)}" aria-expanded="${!!r.swaps}" aria-controls="rks-${esc(p.id)}"`
       + ` aria-label="${esc(tr('notOnRackFor', { name }))}" title="${esc(tr('notOnRack'))}">${icon('swap')}<span class="rknotw">${esc(tr('notOnRack'))}</span></button>`
@@ -774,12 +774,14 @@ export function swapRowPlan({ cameRow, leftRow, leftStays, undo, spot }) {
 
 /** The swaps under a row (item 38): the closest pots from the brands the store carries, in the paint's own
  *  finish class, each with its true ΔE and label (§2). `r.swaps`: { list: [{paint, deltaE, quality, owned}],
- *  notCarried: the row's brand is switched off }. */
+ *  notCarried: the row's brand is switched off, of: on a row that is a swap, the paint it replaced (the list,
+ *  its ΔE values and the words are then for that paint, item 69) }. */
 function rackSwaps(r, tr) {
-  const p = r.paint, s = r.swaps, name = pname(p);
+  const p = r.paint, s = r.swaps, name = pname(s.of || p);
   const best = s.list[0];
   let h = `<div class="rkswaps" id="rks-${esc(p.id)}" role="group" aria-label="${esc(tr('swapsFor', { name }))}">`;
-  if (s.notCarried) h += `<p class="rksnote">${esc(tr('notCarried', { brand: p.brand }))}</p>`;
+  if (s.notCarried) h += `<p class="rksnote">${esc(s.of ? tr('notCarriedOf', { brand: p.brand, name }) : tr('notCarried', { brand: p.brand }))}</p>`;
+  else if (s.of) h += `<p class="rksnote">${esc(tr('swapsOf', { name }))}</p>`;
   if (!best) h += `<p class="rksnote">${esc(tr('noSwap'))}</p>`;
   else if (best.deltaE > 10) h += `<p class="rksnote">${esc(tr('noCloseSwap'))}</p>`;
   for (const m of s.list) {

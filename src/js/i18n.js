@@ -334,6 +334,8 @@ const LOCALES = {
     notOnRackFor: 'Not on the rack? Swaps for {name}',
     swapsFor: 'Swaps for {name}',
     notCarried: 'This store does not carry {brand}. The closest here:',
+    notCarriedOf: 'This store does not carry {brand}. The next closest to {name}:',
+    swapsOf: 'The next closest to {name}:',
     noSwap: 'No pot of this finish from these brands. Keep it on the list for another store.',
     noCloseSwap: 'None is close. Keep it on the list for another store, or take the closest:',
     useSwap: 'Use',

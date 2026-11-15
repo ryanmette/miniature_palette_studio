@@ -478,6 +478,7 @@ import { rackRow as rackRow38, storeCarries } from '../src/js/ui.js';
 const t38 = (k, v = {}) => k + (Object.keys(v).length ? '(' + Object.entries(v).map(([a, b]) => `${a}=${b}`).join(',') + ')' : '');
 const red = { id: 'cit-red', brand: 'Citadel', line: 'Base', name: 'Mephiston Red', hex: '#960C09', type: 'base' };
 const carm = { id: 'val-carm', brand: 'Vallejo', line: 'Model Color', name: 'Carmine Red', hex: '#97211F', type: 'base' };
+const red2 = { id: 'ap-red', brand: 'Army Painter', line: 'Warpaints', name: 'Pure Red', hex: '#9C1A1D', type: 'layer' };
 
 test('rackRow: a to-buy row has Not on the rack? in its count row; open, it lists swaps with true ΔE, label and Use', () => {
   const closed = rackRow38({ paint: red, countable: true, owned: false, qty: 1, canSwap: true }, t38);
@@ -503,7 +504,17 @@ test('rackRow: a swap made in this visit says what it replaced; Undo only while 
   const sw = rackRow38({ paint: carm, countable: true, owned: false, qty: 1, insteadOf: red }, t38);
   assert.match(sw, /inPlaceOf\(name=Mephiston Red\)/);
   assert.match(sw, /data-rkunswap="val-carm"/);
-  assert.doesNotMatch(sw, /data-rknot/, 'a swap row does not swap again');
+  assert.doesNotMatch(sw, /data-rknot/, 'no toggle unless the row can swap');
+  // a row that is a swap can be missing from the rack too (item 69): its swaps are for the paint it replaced
+  const again = rackRow38({ paint: carm, countable: true, owned: false, qty: 1, insteadOf: red, canSwap: true,
+    swaps: { of: red, list: [{ paint: red2, deltaE: 2.1, quality: { label: 'Good', tier: 'success' } }] } }, t38);
+  assert.match(again, /data-rkunswap="val-carm"/, 'Undo stays');
+  assert.match(again, /data-rknot="val-carm" aria-expanded="true"/);
+  assert.match(again, /role="group" aria-label="swapsFor\(name=Mephiston Red\)"/);
+  assert.match(again, /swapsOf\(name=Mephiston Red\)/);
+  assert.match(again, /data-rkuse="ap-red" data-for="val-carm" aria-label="useInPlace\(name=Pure Red,was=Mephiston Red\)"/);
+  const againOff = rackRow38({ paint: carm, countable: true, qty: 1, insteadOf: red, canSwap: true, swaps: { of: red, notCarried: true, list: [] } }, t38);
+  assert.match(againOff, /notCarriedOf\(brand=Vallejo,name=Mephiston Red\)/);
   assert.doesNotMatch(rackRow38({ paint: carm, countable: true, owned: true, qty: 0, insteadOf: red }, t38), /data-rkunswap/);
 });
 
