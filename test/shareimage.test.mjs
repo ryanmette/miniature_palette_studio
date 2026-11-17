@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { layoutShareImage, paintShareImage, shareView, shareText, shareFileName, fitText, finishKind,
-  FINISH_FX, SHARE_TOKENS, SHARE_SIZE } from '../src/js/shareimage.js';
+  SHARE_TOKENS, SHARE_SIZE } from '../src/js/shareimage.js';
 import { indexDataset, FINISH_TYPES } from '../src/js/data.js';
 import { buildScheme } from '../src/js/scheme.js';
 import { contrastRatio } from '../src/js/color.js';
@@ -126,34 +126,23 @@ test('a long seed name is cut, and the harmony always shows', () => {
   assert.ok(names.some(o => o.text.endsWith('…')), 'the long name is cut after two lines');
 });
 
-test('finish: a metallic pot gets the sheen, the icon and its word; a curated fx wins over the type', () => {
+test('finish: a metallic pot has ONE icon on its swatch, in the swatch\'s ink, and the icon with its word; no overlay', () => {
   const v = CASES[3], L = layoutShareImage(v, LIGHT, measure);
-  assert.equal(L.ops.find(o => o.t === 'swatch').kind, 'metal');
-  assert.ok(L.ops.some(o => o.t === 'glyph'));
+  const sw = L.ops.filter(o => o.t === 'swatch');
+  assert.ok(sw.every(o => !('kind' in o)), 'the colour field is the hex and nothing else (§2)');
+  const glyphs = L.ops.filter(o => o.t === 'glyph');
+  assert.ok(glyphs.length >= 2 && glyphs.every(o => o.kind === 'metal'));
+  // the mark on the swatch: inside it, bottom-right, in black or white (textOn)
+  const on = glyphs.find(o => /^#(15150F|FFFFFF)$/i.test(o.fill));
+  const box = sw.find(o => on.x > o.x && on.x + on.size < o.x + o.w && on.y > o.y + o.bandH && on.y + on.size < o.y + o.h);
+  assert.ok(box, 'the mark is on the pot, under the target band');
   assert.ok(texts(L).some(o => o.text === 'metallic'));
-  assert.equal(finishKind({ type: 'effect', fx: 'gloss' }), 'fx-gloss');
-  assert.equal(finishKind({ type: 'shade' }), 'fx-wash');
+  assert.equal(finishKind({ type: 'effect', fx: 'gloss' }), 'gloss');
+  assert.equal(finishKind({ type: 'effect' }), 'effect');
+  assert.equal(finishKind({ type: 'shade' }), 'wash');
   assert.equal(finishKind({ type: 'base' }), null);
 });
 
-test('the finish overlays are the same stops as app.css', () => {
-  const css = read('../src/styles/app.css');
-  for (const [kind, fx] of Object.entries(FINISH_FX)) {
-    const sel = kind === 'metal' ? ':root' : `.sw.${kind}`;
-    const line = css.split('\n').find(l => l.startsWith(sel) && l.includes('linear-gradient'));
-    const g = /linear-gradient\((\d+)deg,\s*(.+?)\)\s*;?\s*\}?\s*$/.exec(line.replace(/\);?\s*\}\s*$/, ')'));
-    assert.ok(g, `no gradient for ${kind}`);
-    assert.equal(Number(g[1]), fx.deg, kind);
-    const stops = g[2].match(/rgba\([^)]+\)(\s+[\d.]+%)?/g);
-    assert.equal(stops.length, fx.stops.length, kind);
-    stops.forEach((s, i) => {
-      const [, color, pct] = /(rgba\([^)]+\))(?:\s+([\d.]+)%)?/.exec(s);
-      const at = pct != null ? Number(pct) / 100 : i === 0 ? 0 : 1;
-      assert.equal(color.replace(/\s/g, ''), fx.stops[i][1], `${kind} stop ${i}`);
-      assert.equal(at, fx.stops[i][0], `${kind} stop ${i} position`);
-    });
-  }
-});
 
 test('a role with no pot says so and shows no ΔE', () => {
   const v = { ...CASES[0], roles: CASES[0].roles.map((r, i) => (i === 1 ? { ...r, pot: null } : r)) };

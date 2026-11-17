@@ -5,7 +5,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.16.0 took only the web entries. -->
+<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.17.0 took only the web entries. -->
+### Changed
+- **Swatches show the paint's true colour, with one finish icon** (PLAN §5 item 51; chosen from
+  `mockups/swatch-finish.html`, direction B with round 2's variant a; CLAUDE.md §2, §3.1 and §3.5). A metallic,
+  a wash, a Contrast paint and an effect paint had a gradient on their swatch to show the finish. The gradient
+  changed the colour that you saw: by up to ΔE 10.4 on a gloss effect, which is a different colour. Now every
+  pixel of a swatch is the paint's own colour, and a paint that is not flat has one small icon in the
+  bottom-right corner: a gem for a metallic, a drop for a wash, shade, ink or glaze, a half-filled drop for a
+  Contrast paint, and icons for gloss, slime, texture and other effects. The icon is black or white, whichever
+  is clearer on that paint (4.28:1 or more on every paint in the data). The same icon is in the finish tag
+  beside the paint's name and on the share image.
+  - **A Contrast paint has an icon of its own.** It had the same drop as a wash.
+  - **Every effect paint has an icon.** 22 of 55 had none, because the icon came only from the `fx` field.
+  - **The finish tag is neutral.** The metallic tag had the warning colour, which means "Fair match" in this app.
+  - **In the dark theme, a swatch has a light edge** (`--sw-edge`), so a near-black paint does not merge with
+    the page. 127 paints did.
+  - The icon does not show on a swatch smaller than 26 px (the Map's small pots, the Schemes strip). The
+    paint's tag or name gives the finish there.
 ### Added
 - **A UX review before the first showing (`docs/UX_REVIEW.md`; a study, no app code changed).** The app as a new
   painter meets it: an experienced painter with many pots, a link, alone, mostly on an iPhone. Two deep journeys
@@ -21,6 +38,26 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+### Fixed
+- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
+  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
+  padding. The web view's white background showed behind the clock and the home bar, with a double gap
+  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
+  clear of the notch and the home bar.
+### Security
+- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
+  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
+  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
+  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
+  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
+  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
+  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
+  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
+  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
+  with no `AbortSignal` and no glob pattern from outside.
+
+## [1.17.0] - 2026-11-17
+### Added
 - **The Recipe's wash step finds a real wash more often** (PLAN §5 item 74; a matching change, CLAUDE.md §7).
   The step looked for a wash, shade or ink within ΔE 10, and showed a base paint with "watered down" when it
   found none. Some makers show a wash as a thin coat on white, so their washes have no dark value, and the step
@@ -106,22 +143,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   swap keeps its row and gets its own count back, and the original's row goes back where it was. In a list with
   no status filter, the original's row also stays after **Use**. New: `ui.js swapRowPlan` (tested), `app.js
   placeSwapRows`.
-- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
-  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
-  padding. The web view's white background showed behind the clock and the home bar, with a double gap
-  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
-  clear of the notch and the home bar.
-### Security
-- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
-  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
-  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
-  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
-  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
-  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
-  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
-  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
-  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
-  with no `AbortSignal` and no glob pattern from outside.
 
 ## [1.16.0] - 2026-11-17
 ### Added

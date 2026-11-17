@@ -8,9 +8,11 @@ severity from three independent raters, and a direction. Ryan decides what to bu
 App version: 1.15.0 (the local `src/`, paint data 1.9.0). Evidence and scripts:
 [`mockups/ux-review/`](../mockups/ux-review/).
 
-**After the review: version 1.16.0.** On the same day, `main` got version 1.16.0 and more: the Shelf's **Map**
-view (PLAN item 61), a "No longer made" tag, a wash step that finds a real wash more often, and fixes to the
-store swaps. The walkthrough and the screenshots are of 1.15.0. A check on the merged code:
+**After the review: versions 1.16.0 and 1.17.0.** On the same day, `main` got two releases and more: the Shelf's
+**Map** view (1.16.0, PLAN item 61); a "No longer made" tag, a wash step that finds a real wash more often, and
+fixes to the store swaps (1.17.0); and swatches with no finish gradient and one finish icon (item 51, not yet
+released). The walkthrough and the screenshots are of 1.15.0, so the swatches in them have the old look. A check
+on the merged code (the matching code of 1.17.0):
 
 - `measure.cjs` gives **the same numbers** as §3.1, in all three modes.
 - The main findings still occur: the door to "mark my shelf" opens the grid with no names (F05, F06); a marked
