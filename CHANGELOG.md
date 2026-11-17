@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.16.0 took only the web entries. -->
+<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.17.0 took only the web entries. -->
 ### Added
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
@@ -13,6 +13,26 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+### Fixed
+- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
+  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
+  padding. The web view's white background showed behind the clock and the home bar, with a double gap
+  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
+  clear of the notch and the home bar.
+### Security
+- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
+  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
+  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
+  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
+  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
+  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
+  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
+  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
+  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
+  with no `AbortSignal` and no glob pattern from outside.
+
+## [1.17.0] - 2026-11-17
+### Added
 - **The Recipe's wash step finds a real wash more often** (PLAN §5 item 74; a matching change, CLAUDE.md §7).
   The step looked for a wash, shade or ink within ΔE 10, and showed a base paint with "watered down" when it
   found none. Some makers show a wash as a thin coat on white, so their washes have no dark value, and the step
@@ -98,22 +118,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   swap keeps its row and gets its own count back, and the original's row goes back where it was. In a list with
   no status filter, the original's row also stays after **Use**. New: `ui.js swapRowPlan` (tested), `app.js
   placeSwapRows`.
-- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
-  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
-  padding. The web view's white background showed behind the clock and the home bar, with a double gap
-  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
-  clear of the notch and the home bar.
-### Security
-- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
-  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
-  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
-  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
-  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
-  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
-  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
-  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
-  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
-  with no `AbortSignal` and no glob pattern from outside.
 
 ## [1.16.0] - 2026-11-17
 ### Added

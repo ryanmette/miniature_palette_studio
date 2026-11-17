@@ -1,18 +1,19 @@
 // version.js — the app's version, in one place. About shows it next to the paint data's own
 // version (from paints.json). scripts/check-docs.mjs fails the build when it differs from
 // package.json, so a release that bumps one and forgets the other cannot ship (CLAUDE.md §8).
-export const APP_VERSION = '1.16.0';
+export const APP_VERSION = '1.17.0';
 
 /** What's new (mockups/help-about.html, answer 5): About shows these lines under "What's new in {version}". Write
  *  them when a release is cut (CLAUDE.md §8 checklist), a few short lines for a painter, from the CHANGELOG. */
 export const WHATS_NEW = {
-  version: '1.16.0',
+  version: '1.17.0',
   date: '2026-11-17',
   items: [
-    'See which colours and tones your shelf is missing: Shelf → Map.',
-    'A small wheel shows your paints as dots. A hatched part is a colour you own nothing in.',
-    'The grid shows each colour from shade to highlight. A dashed square is a gap.',
-    'Tap a gap to see the three closest pots, and Add one to your shopping list.',
+    'Not on the rack? has a switch for every brand, and a pot you own comes first.',
+    'Washes are compared by their colour, not by how dark they look. You see a gap in degrees.',
+    'A swap goes under the heading of its own brand, and you can swap a swap again.',
+    'The Recipe finds a real wash more often, before it says “watered down”.',
+    'A paint that is no longer made says so, and its closest pots show at once.',
   ],
 };
 
@@ -20,6 +21,16 @@ export const WHATS_NEW = {
  *  moves the WHATS_NEW it replaces to the front of this list (CLAUDE.md §8; a test fails when one is missing). It
  *  starts at 1.13.0, the first release with lines for a painter: older releases are in CHANGELOG.md only. */
 export const EARLIER_NEWS = [
+  {
+    version: '1.16.0',
+    date: '2026-11-17',
+    items: [
+      'See which colours and tones your shelf is missing: Shelf → Map.',
+      'A small wheel shows your paints as dots. A hatched part is a colour you own nothing in.',
+      'The grid shows each colour from shade to highlight. A dashed square is a gap.',
+      'Tap a gap to see the three closest pots, and Add one to your shopping list.',
+    ],
+  },
   {
     version: '1.15.0',
     date: '2026-11-07',
