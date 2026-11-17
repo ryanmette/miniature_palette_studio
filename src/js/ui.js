@@ -719,8 +719,8 @@ const CHECK = '<svg viewBox="0 0 20 20" class="rkcheck" aria-hidden="true" focus
 export function rackRow(r, tr) {
   const p = r.paint, name = pname(p);
   const line = [esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ');
-  // Not on the rack? (item 38): a to-buy row that is not a swap already can open its swaps; the word hides on
-  // a phone (the icon stays, the name says it all), so the stepper and the toggle share one --tap row
+  // Not on the rack? (item 38): a to-buy row can open its swaps, also a row that is a swap (item 69); the word
+  // hides on a phone (the icon stays, the name says it all), so the stepper and the toggle share one --tap row
   const swapBtn = r.canSwap
     ? `<button type="button" class="textact rknot" data-rknot="${esc(p.id)}" aria-expanded="${!!r.swaps}" aria-controls="rks-${esc(p.id)}"`
       + ` aria-label="${esc(tr('notOnRackFor', { name }))}" title="${esc(tr('notOnRack'))}">${icon('swap')}<span class="rknotw">${esc(tr('notOnRack'))}</span></button>`
@@ -752,30 +752,64 @@ export function rackRow(r, tr) {
     + '</li>';
 }
 
+/**
+ * What the list's rows do after a Use or its Undo (items 38, 67 and 70). `left` is the paint that came off the
+ * shopping list (the original at a Use, the swap at an Undo); `came` is the paint that is to buy now.
+ * A paint that is to buy always has a row, and that row is under its own rack heading: the heading says which
+ * rack to walk to (item 70; Ryan, 2026-11-17). So when the list's filters show `came`, the list is drawn again.
+ * The row stays where the other row was only when a filter hides `came` (a search for the original's name):
+ * the painter chose it there, and it must show, with its Undo.
+ * @param o.cameRow    `came` has a row in the list already
+ * @param o.leftRow    `left` has a row in the list
+ * @param o.leftStays  the list's filters still show `left` (the swap that was to buy before; a list of all paints)
+ * @param o.cameShows  the list's filters show `came`
+ * @param o.undo       this is an Undo
+ * @returns {'update'|'rebuild'|'remove'|'replace'}
+ *   update:  redraw the rows that are there, each in its place · rebuild: draw the list again, so `came` is under
+ *   its own heading and the counts are right · remove: `came` has its row, `left`'s row goes · replace: `came`
+ *   takes `left`'s row, the same place
+ */
+export function swapRowPlan({ cameRow, leftRow, leftStays, cameShows, undo }) {
+  if (cameRow && (!leftRow || leftStays)) return 'update';
+  if (cameShows) return 'rebuild';
+  if (cameRow) return 'remove';
+  // an Undo whose swap is still to buy: the swap keeps its row, and the filters hide the original
+  if (leftRow && undo && leftStays) return 'update';
+  return leftRow ? 'replace' : 'rebuild';
+}
+
 /** The swaps under a row (item 38): the closest pots from the brands the store carries, in the paint's own
  *  finish class, each with its true ΔE and label (§2). `r.swaps`: { list: [{paint, deltaE, quality, owned}],
- *  notCarried: the row's brand is switched off }. */
+ *  notCarried: the row's brand is switched off, of: on a row that is a swap, the paint it replaced (the list,
+ *  its ΔE values and the words are then for that paint, item 69), rough: a wash-class paint, whose colours
+ *  are the least sure in the data (item 68): one line says so, before the list }. A swap with `gap` (the
+ *  paint to buy is a wash or shade) shows the gap in degrees and its words in place of ΔE. */
 function rackSwaps(r, tr) {
-  const p = r.paint, s = r.swaps, name = pname(p);
+  const p = r.paint, s = r.swaps, name = pname(s.of || p);
   const best = s.list[0];
   let h = `<div class="rkswaps" id="rks-${esc(p.id)}" role="group" aria-label="${esc(tr('swapsFor', { name }))}">`;
-  if (s.notCarried) h += `<p class="rksnote">${esc(tr('notCarried', { brand: p.brand }))}</p>`;
+  // a wash or shade is compared by the gap (item 68): the line says what the number is
+  if (best && best.gap != null) h += `<p class="rksnote">${esc(tr('washGap'))}</p>`;
+  else if (s.rough && best) h += `<p class="rksnote">${esc(tr('washRough'))}</p>`;
+  if (s.notCarried) h += `<p class="rksnote">${esc(s.of ? tr('notCarriedOf', { brand: p.brand, name }) : tr('notCarried', { brand: p.brand }))}</p>`;
+  else if (s.of) h += `<p class="rksnote">${esc(tr('swapsOf', { name }))}</p>`;
   if (!best) h += `<p class="rksnote">${esc(tr('noSwap'))}</p>`;
-  else if (best.deltaE > 10) h += `<p class="rksnote">${esc(tr('noCloseSwap'))}</p>`;
+  else if (best.quality.tier === 'danger') h += `<p class="rksnote">${esc(tr('noCloseSwap'))}</p>`;   // ΔE over 10, or a gap over 8°
   for (const m of s.list) {
     const q = m.paint, qn = pname(q);
     h += `<div class="rkswap">${swatch(q.hex, 'rkssw' + fxCls(q))}`
       + `<span class="rksmain"><span class="rksname">${esc(qn)}</span>`
       + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q.type)}`
-      + ` <span class="mono">ΔE ${m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
+      + ` <span class="mono">${m.gap != null ? esc(tr('gapDeg', { n: m.gap.toFixed(0) })) : 'ΔE ' + m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
       + `${m.owned ? ` <span class="ownmini">${icon('check')}${esc(tr('ownedWord'))}</span>` : ''}</span></span>`
       + `<button type="button" class="btn sm" data-rkuse="${esc(q.id)}" data-for="${esc(p.id)}" aria-label="${esc(tr('useInPlace', { name: qn, was: name }))}">${esc(tr('useSwap'))}</button></div>`;
   }
   return h + '</div>';
 }
 
-/** "This store carries" (item 38): one toggle per brand on the list, all on at first. A brand switched off
- *  shows the closest pots from the others on each of its rows. A choice for this trip, not saved. */
+/** "This store carries" (item 38): one toggle per brand in the paint data, all on at first. A brand switched
+ *  off shows the closest pots from the others on each of its rows, and no swap comes from it. A choice for
+ *  this trip, not saved. */
 export function storeCarries(brands, off, tr) {
   if (!brands.length) return '';
   // the count says how many brands the row holds, so a brand scrolled out of view is not missed (PLAN §5 item 42)

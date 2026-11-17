@@ -12,7 +12,7 @@ import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, r
 import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, browseOrder, storeSwaps, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf, randomStartPaint } from './data.js';
+import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf, randomStartPaint } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
@@ -941,18 +941,19 @@ const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle
 const CAN_SHARE = COARSE && typeof navigator.share === 'function';   // the share sheet on touch only
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
 const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false, viewIds: null };   // ids; selection is transient (not persisted); viewIds = the drawn order (set by renderShelf)
+/** Does the Shelf show `p` now (brand, status, type and search)? `match`: the search's matcher, made once for a list. */
+const inShelfView = (p, match = paintMatcher(state.shelfQ)) =>
+  (!state.shelfBrand || p.brand === state.shelfBrand) &&
+  // status filter: '' (all) | owned | want. A paint ticked in the list this time stays in it (rk.kept), so a
+  // tick never makes a row jump out from under the finger (§3.4); it goes the next time the list opens.
+  (!state.shelfMark || store.markOf(p.id) === state.shelfMark || (state.shelfView === 'list' && rk.kept.has(p.id))) &&
+  (!state.shelfTypes.size || state.shelfTypes.has(p.type)) &&        // type filter, pick many (base/layer/wash/…; item 45)
+  (!match || match(p));
 const shelfPaints = () => {
   // The seed field's matcher (data.js paintMatcher): every word must match the name, the display name
   // ("dawnstone (layer)"), the brand, the line, the type or the finish word. The Shelf keeps its own order.
   const match = paintMatcher(state.shelfQ);
-  const list = state.idx.paints.filter(p =>
-    (!state.shelfBrand || p.brand === state.shelfBrand) &&
-    // status filter: '' (all) | owned | want. A paint ticked in the list this time stays in it (rk.kept), so a
-    // tick never makes a row jump out from under the finger (§3.4); it goes the next time the list opens.
-    (!state.shelfMark || store.markOf(p.id) === state.shelfMark || (state.shelfView === 'list' && rk.kept.has(p.id))) &&
-    (!state.shelfTypes.size || state.shelfTypes.has(p.type)) &&        // type filter, pick many (base/layer/wash/…; item 45)
-    (!match || match(p)));
-  return sortPaints(list, state.shelfSort);
+  return sortPaints(state.idx.paints.filter(p => inShelfView(p, match)), state.shelfSort);
 };
 const cellEl = id => document.getElementById('sc-' + id);
 const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length); };
@@ -1056,9 +1057,14 @@ const rk = { kept: new Set(), prev: new Map(), countOpen: new Set(), swapOpen: n
 function resetRackSession() { rk.kept.clear(); rk.prev.clear(); rk.countOpen.clear(); rk.swapOpen.clear(); }
 /* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B). For this visit only (in memory,
    like Recent picks): the brands this store does not carry, and the swaps made (swap id → what it replaced,
-   so a row can say "in place of" and Undo puts everything back). */
+   so a row can say "in place of" and Undo puts everything back). One pot can be the swap for two paints, so
+   each swap id holds a list, the newest last: the row says the newest, and each Undo takes one off. */
 const storeOff = new Set();
 const swapLog = new Map();
+const swapOf = id => { const l = swapLog.get(id); return l ? l[l.length - 1] : null; };
+// The pots the painter said are not on the rack (each swapped away with Use): no swap for another paint
+// either. An Undo takes the pot off again: the painter wants it after all.
+const offRack = new Set();
 const rackLine = p => (p.line && p.line !== '—' && p.line !== p.brand ? p.line : '');
 /** A scheme's name for the list: its name, or its automatic name when it has none. `cache`: a Map per render. */
 function schemeNameOf(sid, cache = new Map()) {
@@ -1068,16 +1074,21 @@ function schemeNameOf(sid, cache = new Map()) {
 }
 /** One row's data, as the list draws it (renderShelfList and updateRackRow share it). */
 function rackRowData(p) {
-  const mark = store.markOf(p.id), prev = rk.prev.get(p.id), sw = swapLog.get(p.id);
+  const mark = store.markOf(p.id), prev = rk.prev.get(p.id), sw = swapOf(p.id);
   // a to-buy row can open its swaps; a row whose brand the store does not carry opens them by itself
-  const canSwap = mark === 'want' && !sw, notCarried = canSwap && storeOff.has(p.brand);
+  const canSwap = mark === 'want', notCarried = canSwap && storeOff.has(p.brand);
   const open = canSwap && (rk.swapOpen.has(p.id) ? rk.swapOpen.get(p.id) : notCarried);
+  // A row that is a swap can be missing from the rack too (PLAN §5 item 69). Its swaps are the next closest to
+  // the paint it replaced, never to the swap: a swap of a swap moves away from the colour the scheme wants.
+  const first = sw && state.idx.byId.get(sw.orig) || null;
   return {
     // struck through: bought from the shopping list in this list's visit (a checklist's tick-off), not every owned paint
     struck: mark === 'owned' && rk.kept.has(p.id) && prev?.mark === 'want',
     canSwap,
-    swaps: open ? { notCarried, list: storeSwaps(state.idx, p, { notCarried: storeOff }).map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
-    insteadOf: sw ? state.idx.byId.get(sw.orig) : null,
+    // rough: a wash-class paint's colour is the least sure in the data (item 68), and the list says so
+    swaps: open ? { notCarried, of: first, rough: finishClass((first || p).type) === 'translucent', list: storeSwaps(state.idx, first || p, { notCarried: storeOff, except: new Set([...offRack, p.id]), ownedIds: store.ownedIds() })
+      .map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
+    insteadOf: first,
     paint: p, owned: mark === 'owned',
     // a paint on the list, or one ticked off it just now (its slot stays, empty, so the row keeps its height)
     countable: mark === 'want' || (rk.kept.has(p.id) && prev?.mark === 'want'),
@@ -1130,13 +1141,13 @@ function renderShelfList(view) {
   host.innerHTML = ui.rackGroups(groups, t);
   $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
   syncSendBought();
-  // This store carries: the brands of every paint to buy, and any switched off (so they can come back). Not only
-  // the paints the filters show: a search hid brands, and the row looked capped (phone test, 2026-10-30).
-  const wantBrands = [...store.wantIds()].map(id => state.idx.byId.get(id)?.brand).filter(Boolean);
-  const brands = [...new Set([...wantBrands, ...storeOff])].sort((a, b) => a.localeCompare(b));
+  // This store carries: every brand in the paint data, while there is a paint to buy. It was only the brands on
+  // the shopping list, so a brand with no paint on the list had no toggle and always counted as carried: with
+  // five brands off, 46% of their paints got a best swap from a brand the painter could not switch off (audit,
+  // 2026-11-14). The order is fixed (A to Z), so a toggle never moves when the list changes (§3.4).
   const chip = document.activeElement?.dataset?.rkbrand;
-  $('#rkStore').innerHTML = ui.storeCarries(brands, storeOff, t);
-  $('#rkStore').hidden = !brands.length;
+  $('#rkStore').innerHTML = ui.storeCarries(state.brands, storeOff, t);
+  $('#rkStore').hidden = !store.wantIds().size;
   if (chip) $(`[data-rkbrand="${CSS.escape(chip)}"]`)?.focus({ preventScroll: true });
   for (const b of $('#shelfGroupSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sg === state.shelfGroup));
   if (keep) host.querySelector(keep)?.focus({ preventScroll: true });
@@ -1165,14 +1176,45 @@ function rackTick(id) {
   render('marks', { ids: [id] });
   syncSendBought();
 }
-/** Draw `paint`'s row where the row `oldId` is now (a swap, or its Undo): the same place in the list, so
- *  nothing under the finger moves (§3.4). A row of that paint already in the list takes the place instead. */
-function swapRackRow(oldId, paint) {
-  const li = $(`[data-rk="${CSS.escape(oldId)}"]`); if (!li) return;
-  if ($(`[data-rk="${CSS.escape(paint.id)}"]`)) { li.remove(); return; }
-  const r = rackRowData(paint);
-  if (state.shelfGroup !== 'project') r.forName = schemeNameOf(r.sid);
-  li.outerHTML = ui.rackRow(r, t);
+/** The list's rows after a Use or its Undo (ui.swapRowPlan decides). `leftId` came off the shopping list (the
+ *  original at a Use, the swap at an Undo) and `came` is to buy now. When the filters show `came`, the list is
+ *  drawn again: its row goes under its own rack heading, where the painter looks for it at that rack, and the
+ *  group counts are right (PLAN §5 item 70). The list here is the shopping list, so it is short (a list of all
+ *  paints holds a row for each paint already, and nothing moves). When a filter hides `came`, its row takes the
+ *  other row's place, so it shows all the same.
+ *  @returns {string} the plan that ran */
+function placeSwapRows(leftId, came, { undo = false } = {}) {
+  const rowOf = id => $(`[data-rk="${CSS.escape(id)}"]`);
+  rk.kept.delete(leftId);   // a tick's "stay in the list" does not hold a paint that was swapped away
+  const leftLi = rowOf(leftId), leftStays = !!leftLi && inShelfView(state.idx.byId.get(leftId));
+  const plan = ui.swapRowPlan({ cameRow: !!rowOf(came.id), leftRow: !!leftLi, leftStays, cameShows: inShelfView(came), undo });
+  if (plan === 'rebuild') renderShelf();
+  else if (plan === 'remove') leftLi.remove();
+  else if (plan === 'replace') {
+    const r = rackRowData(came);
+    if (state.shelfGroup !== 'project') r.forName = schemeNameOf(r.sid);
+    leftLi.outerHTML = ui.rackRow(r, t);
+  }
+  if (leftStays && plan === 'update') updateRackRow(leftId);
+  return plan;
+}
+/** The heading a paint's row is under now ("Army Painter · Wash", or a project's name); '' with no row. */
+const rackHeadOf = id => $(`[data-rk="${CSS.escape(id)}"]`)?.closest('.rkgroup')?.getAttribute('aria-label') || '';
+/** A row that went to another place in the list (item 70): bring it into view, clear of the header and the dock,
+ *  and ring it for a moment (app.css .rkrow.moved), so the eye finds it. The focus is on it already. */
+function showMovedRow(id) {
+  const li = $(`[data-rk="${CSS.escape(id)}"]`); if (!li) return;
+  li.classList.add('moved');
+  // The groups are content-visibility: auto, so a group not yet on screen counts as 600px tall (app.css). In a
+  // list just drawn, the row's place was then some thousands of px too far down: the page went there, showed
+  // nothing for a moment, and came back. Lay out the groups down to the row's own first, so its place is true.
+  for (const g of $('#shelfList').children) { g.style.contentVisibility = 'visible'; if (g.contains(li)) break; }
+  const r = li.getBoundingClientRect(), top = Math.max(headerH(), $('#shelfDock').getBoundingClientRect().bottom) + 8;
+  const dy = r.top < top ? r.top - top : r.bottom > innerHeight - 8 ? Math.min(r.bottom - innerHeight + 8, r.top - top) : 0;
+  if (!dy) return;
+  dock.quietUntil = performance.now() + 200;   // our own scroll: it must not tuck or reveal the dock over the row
+  window.scrollBy(0, dy);
+  dock.lastY = window.scrollY;
 }
 /** The role of `link`'s scheme whose pot is `id`, when that role can hold a pot (not Primary, not the
  *  starting paint's role): there a swap becomes the role's pot. Else null: only the list changes. */
@@ -1195,10 +1237,14 @@ function holdInScheme(sid, role, hold) {
     render('scheme');
   }
 }
-/** Use a swap (item 38): the swap goes on the list in the original's place, with its count and project, and
+/** Use a swap (item 38): the swap goes on the list for the original, with its count and project, and
  *  the original comes off. When the original is a role's pot in the scheme it is for, the swap becomes that
  *  role's pot, with the original on record (`was`), so the Recipe says so and can go back. */
 function applySwap(origId, swapId) {
+  // The row is a swap itself (item 69): back to the paint it replaced, then that paint's new swap. So the list
+  // and the scheme hold one swap for a paint, never a swap of a swap, and Undo goes back to the first paint.
+  const again = swapOf(origId);
+  if (again && swapId !== again.orig && state.idx.byId.has(swapId)) { undoSwap(origId, { quiet: true }); offRack.add(origId); applySwap(again.orig, swapId); return; }
   const orig = state.idx.byId.get(origId), sw = state.idx.byId.get(swapId);
   if (!orig || !sw || store.markOf(origId) !== 'want') return;
   const origQty = store.qtyOf(origId), origFor = store.projectOf(origId);
@@ -1221,33 +1267,49 @@ function applySwap(origId, swapId) {
   }
   store.setMark(origId, 'none');
   const dropped = kept.filter(sc => !store.getScheme(sc.id));
-  swapLog.set(swapId, { orig: origId, origQty, origFor, swapPrev, scheme, dropped });
+  const log = { orig: origId, origQty, origFor, swapPrev, scheme, dropped };
+  offRack.add(origId);
+  // before the rows are drawn: the swap's row reads it ("in place of")
+  if (swapLog.has(swapId)) swapLog.get(swapId).push(log); else swapLog.set(swapId, [log]);
   rk.swapOpen.delete(origId);
-  swapRackRow(origId, sw);
+  const headWas = rackHeadOf(origId);
+  const plan = placeSwapRows(origId, sw);
   render('marks', { ids: [swapId] });
   ($(`[data-rkunswap="${CSS.escape(swapId)}"]`) || $(`[data-rktick="${CSS.escape(swapId)}"]`))?.focus({ preventScroll: true });
+  if (plan === 'rebuild') showMovedRow(swapId);
   // name the scheme only while it is still kept (an owned swap can end an unsaved project)
-  say(scheme && store.getScheme(origFor) ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
-    : t('swappedList', { name: ui.pname(sw), was: ui.pname(orig) }));
+  say((scheme && store.getScheme(origFor) ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
+    : t('swappedList', { name: ui.pname(sw), was: ui.pname(orig) })) + movedWords(swapId, headWas));
+}
+/** " It is under X now.": the heading a row went to, when that is another heading than `headWas` (item 70). */
+function movedWords(id, headWas) {
+  const head = rackHeadOf(id);
+  return head && head !== headWas ? ' ' + t('movedUnder', { group: head }) : '';
 }
 /** Undo a swap made in this visit: the original back on the list (count and project), the swap back to the
  *  mark it had, and the scheme's role back to what it held. */
-function undoSwap(swapId) {
-  const e = swapLog.get(swapId), orig = e && state.idx.byId.get(e.orig);
+function undoSwap(swapId, { quiet = false } = {}) {
+  const e = swapOf(swapId), orig = e && state.idx.byId.get(e.orig);
   if (!e || !orig) return;
   for (const sc of e.dropped || []) store.putScheme(sc);   // the projects the swap ended, under their own ids
   store.setMark(e.orig, 'want', { for: e.origFor || undefined });
   if (e.origQty > 1) store.setQty(e.orig, e.origQty);
   if (e.swapPrev.mark !== 'owned') {
-    if (e.swapPrev.mark === 'want') { store.setMark(swapId, 'want', { for: e.swapPrev.for || undefined }); if (e.swapPrev.qty > 1) store.setQty(swapId, e.swapPrev.qty); }
+    // its own count again, also when that is one pot: the Use added the original's pots to it (2 + 3 is 5)
+    if (e.swapPrev.mark === 'want') { store.setMark(swapId, 'want', { for: e.swapPrev.for || undefined }); store.setQty(swapId, e.swapPrev.qty); }
     else store.setMark(swapId, 'none');
   }
   if (e.scheme) holdInScheme(e.scheme.sid, e.scheme.role, e.scheme.before);
-  swapLog.delete(swapId);
-  swapRackRow(swapId, orig);
+  const log = swapLog.get(swapId);
+  log.pop(); if (!log.length) swapLog.delete(swapId);
+  offRack.delete(e.orig);
+  const headWas = rackHeadOf(swapId);
+  const plan = placeSwapRows(swapId, orig, { undo: true });
   render('marks', { ids: [e.orig] });
+  if (quiet) return;   // a swap of a swap: the new swap's Use says and shows the result
   $(`[data-rknot="${CSS.escape(e.orig)}"]`)?.focus({ preventScroll: true });
-  say(t('swapUndone', { was: ui.pname(orig) }));
+  if (plan === 'rebuild') showMovedRow(e.orig);
+  say(t('swapUndone', { was: ui.pname(orig) }) + movedWords(e.orig, headWas));
 }
 /** The Recipe's "Use the original" on a swapped role: back to the pot the swap replaced. If the scheme picks
  *  that pot by itself, the hold goes; else the original is held as the role's pot. One undo step. */

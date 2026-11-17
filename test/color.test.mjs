@@ -296,3 +296,29 @@ test('↻ lightness: no chroma at any lightness keeps the lightness; hexOf decid
   assert.deepEqual(r, { l: 0.5, moved: false });
   assert.deepEqual(seen, [0.5]);
 });
+
+test('absorbance and absorbGap (PLAN item 68): the colour of a clear coat, whatever its thickness', async () => {
+  const { absorbance, absorbStrength, absorbGap, ABSORB_FLOOR, hexToRgb, rgbToHex, srgbToLinear, linearToSrgb } = await import('../src/js/color.js');
+  const near = (a, b, tol) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
+  // −ln of each linear channel
+  const a = absorbance('#808080'), lin = srgbToLinear(128);
+  for (const v of a) near(v, -Math.log(lin), 1e-12);
+  // the floor: black and white have a value, and a pure black is neutral
+  assert.ok(absorbance('#000000').every(v => Number.isFinite(v) && Math.abs(v + Math.log(ABSORB_FLOOR)) < 1e-12));
+  assert.ok(absorbance('#FFFFFF').every(v => v > 0 && v < 0.01));
+  assert.ok(absorbStrength(absorbance('#000000')) > 9 && absorbStrength(absorbance('#FFFFFF')) < 0.01);
+  // a thicker coat of the same wash: each linear channel to the power k. The gap stays 0 (to rounding of the hex)
+  const thin = '#A99D8D';
+  for (const k of [2, 3, 4]) {
+    const thick = rgbToHex(hexToRgb(thin).map(c => Math.round(linearToSrgb(srgbToLinear(c) ** k))));
+    near(absorbGap(absorbance(thin), absorbance(thick)), 0, 1.5);
+    assert.ok(absorbStrength(absorbance(thick)) > absorbStrength(absorbance(thin)) * (k - 0.3), 'the strength grows with the coat');
+  }
+  // every grey is the same neutral coat; a red coat (it absorbs green and blue) is far from a blue one
+  near(absorbGap(absorbance('#101010'), absorbance('#C0C0C0')), 0, 1e-6);
+  assert.ok(absorbGap(absorbance('#B02020'), absorbance('#2020B0')) > 40);
+  near(absorbGap(absorbance('#B02020'), absorbance('#B02020')), 0, 1e-6);
+  // symmetric
+  near(absorbGap(absorbance('#8F6592'), absorbance('#211913')), absorbGap(absorbance('#211913'), absorbance('#8F6592')), 1e-12);
+});
+

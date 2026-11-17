@@ -431,7 +431,8 @@ answered by Ryan: [`mockups/shopping-list.html`](../mockups/shopping-list.html) 
 
 - **One list,** in rack order (brand → line). **A tick marks the paint owned at once**; a second tap undoes it.
 - **A count is set after the fact,** on the list. One pot is the default.
-- **Brand-agnostic:** the "this store carries" choice comes from the brands on the list.
+- **Brand-agnostic:** the "this store carries" choice comes from the brands on the list. *(Changed 2026-11-14,
+  item 66: from every brand in the paint data. Still no brand is written in the code.)*
 - **A swap goes back to the scheme,** with the original paint flagged.
 - **A project is one scheme.** Its name is asked **once, at the first export**, with a Skip. **A name saves the
   scheme for good**, and it goes in the share link.
@@ -814,6 +815,119 @@ Do these three in one bug pass, in this order.
     EARLIER_NEWS`). It starts at 1.13.0: older releases never had lines for a painter, only the CHANGELOG. The release
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
+
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, a first step of 68 and the owned-first part of 72 built)
+
+Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
+equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
+audit ran `data.js storeSwaps` on all 3,375 paints (dataset 1.9.0) for five stores, and did the screenshot's steps
+again in a browser. **What was right:** no swap comes from a brand that is off; the ΔE shown is the true one; the
+finish class is strict (a metallic gets only metallics); the count and the project move with the swap.
+
+How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the store has:
+
+| Store | Flat | Wash, ink, Contrast | Metallic |
+|---|---|---|---|
+| All 10 brands | 92% | 47% | 54% |
+| Warhammer Colour + Army Painter + Two Thin Coats + Vallejo + AMMO | 80% | 39% | 41% |
+| Warhammer Colour + Army Painter + Two Thin Coats | 62% | 29% | 34% |
+| Warhammer Colour only | 36% | 10% | 12% |
+
+66. **A toggle for every brand** (was: only the brands on the shopping list). A brand with no paint on the list had
+    no toggle, so it always counted as carried. With the screenshot's five brands off, 46% of those brands' paints
+    got their best swap from Vallejo or AMMO, which the painter could not switch off (rows 2 and 3 of the table).
+    **Built (2026-11-14):** "This store carries" has one toggle per brand in the paint data, A to Z, a fixed order.
+67. **Undo lost a paint to buy.** A Use of a swap that was on the list already, then Undo: the original took the
+    swap's row, so the swap (still to buy in the saved data) was not in the list until it was drawn again, and
+    its count stayed at the sum. **Built (2026-11-14):** `ui.swapRowPlan` + `app.js placeSwapRows`; the swap keeps
+    its row and gets its own count back, and the original's row goes back where it was.
+68. **Wash colours are recorded in two ways** (open; data; goes with item 49, `docs/COLOUR_CHECK.md`). Some lines
+    hold the colour of a thin coat on white (median Lab L\*: Warhammer Colour Shade 65, P3 Wash 63, Vallejo Wash 49),
+    others the colour in the pot (Army Painter Wash 24, AMMO Wash 18, Pro Acryl Wash 10). So Army Painter's Shadow
+    Wash to Nuln Oil is ΔE 50.5 and is never offered, and a blue Contrast (Leviadon Blue, ΔE 4.3 "Fair") is. Nuln
+    Oil's own swaps hold no black wash of another brand. "Indistinguishable" between two near-black values says
+    little (28 translucent paints have L\* < 12). Needs: one written rule for a wash's hex; until then, perhaps no
+    Indistinguishable / Excellent word on a translucent swap (§2).
+    **A first step, built (2026-11-17):** a translucent swap never says more than "Good" (`data.js swapQuality`;
+    the ΔE stays true), and its list starts with one line that says these colours are rough. **Open:** the data
+    itself (one rule, one line of washes at a time, from the makers' own swatches), and the same words on the
+    Equivalents tab, which still says "Indistinguishable" for two near-black washes.
+    **A source check (2026-11-17; no data changed).** Ryan asked to fix the wash data. What this session could reach:
+    - **Refused (HTTP 403 or 405, to a plain client and to the fetch tool; not worked around):** `warhammer.com`
+      (the shop pages of the Shades) and `acrylicosvallejo.com`. That is 50 of the 68 washes that hold a light value
+      (Warhammer Colour Shade 16, Vallejo 34). `migjimenez.com` also refused.
+    - **Open:** `warhammer-community.com` (GW's news site), `thearmypainter.com` (a public product feed),
+      `duncanrhodes.com` (Two Thin Coats' own charts for waves 1 to 3), `monumenthobbies.com`, `reapermini.com`.
+    - **The makers do not show a wash in one way.** Army Painter shows the liquid (a bottle and a splash, dark). GW's
+      articles show the pot. Two Thin Coats' charts show a disc that goes from dark at the rim to light at the centre.
+      So "the maker's own swatch" cannot give one rule for all brands: the two conventions in the data are the
+      makers' own two ways. One rule needs our own measurement (item 49: each wash both ways, on one card).
+    - **Why the rule matters to the Recipe too:** the wash step's target is a darkened base (§7), so a Shade with a
+      light value (Nuln Oil `#9E9A98`) can almost never be the wash step's pot.
+    - **Errors found on the way:** `two-thin-coats-wave-1-rc-flesh-wash` is "Orc Flesh Wash" on Two Thin Coats' own
+      chart (the name lost its first letter); GW's seven Shades of 2022 are not in the data (Mortarion Grime,
+      Berserker Bloodshade, Targor Rageshade, Tyran Blue, Poxwalker, Kroak Green, Soulblight Grey), and its four
+      Gloss Shades are not marked `discontinued`, although GW's article "A New Era of Paints" (Warhammer Community,
+      2022-06-13) says they leave the range.
+    - **Ways on (Ryan to choose):** (a) Ryan measures, and the build gets an overrides file for the values
+      (`COLOUR_CHECK.md` §5.3); (b) Ryan saves the makers' pages or charts as files, and the values are sampled
+      from them; (c) no data change: rank a wash against a wash by what it absorbs (the direction of its absorbance
+      in linear RGB, which does not change with the coat's thickness), with words of its own in place of ΔE.
+    **Way (c), built (2026-11-17; Ryan: "go with C").** In the store swaps a wash or shade ranks by **the gap**: the
+    angle between the two absorbances (`color.js absorbance`, `absorbGap`; `data.js storeSwaps`, `gapQuality`),
+    plus 0.02 × ΔE as the tie-break and the kind penalty (2°). The check was the colour word in each wash's name
+    (106 of 131 have one; the browns, fleshes, sepias and rusts as one family). Best swap in the same family:
+
+    | The brands carried | By ΔE | By the gap |
+    |---|---|---|
+    | Every brand | 65% | 64% |
+    | Warhammer Colour + Army Painter + Two Thin Coats | 49% | 64% |
+    | Warhammer Colour + Army Painter | 44% | 71% |
+    | Army Painter only | 42% | 73% |
+    | Warhammer Colour only | 32% | 74% |
+
+    - So with every brand there is no gain (each maker's way meets its own kind), and the gain is where a store
+      has few brands. Other forms did not do better: the gap alone (61% with every brand), a larger ΔE share
+      (0.1: 4 to 5 points less in a small store), and a "same coat" ΔE that scales each line to one median
+      strength (equal within the noise, and it needs line statistics).
+    - Limits: the gap does not show a wash's strength, so all blacks and greys are near 0° (Light Grey is "Close" to
+      a black wash); 2 of 131 washes hardly absorb (Vallejo White, Smoke Grey Wash) and keep ΔE; a pair under 4°
+      is one family for only 2 in 3.
+    - **Open:** the Equivalents tab (still ΔE). **The Recipe's wash step** (still ΔE, gate 10): it finds a real
+      wash for 93% of 1,573 base colours, but Warhammer Colour's 16 Shades win 3.4% of those (9% of the pool)
+      and Nuln Oil and Agrax Earthshade never win, while Army Painter's Wash line wins 32% (20% of the pool). A
+      change there alters every Recipe, so it needs its own decision. **Data seen on the way:** Army Painter's
+      "Brush-On Primer" has the type `wash` (it is a primer), so it shows as a swap for a black wash.
+69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
+    later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
+    the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint
+    it replaced (`storeSwaps`' `except`), and Use goes back to that paint and then to the new swap, so the list and
+    the scheme never hold a swap of a swap. The swap log is a list per pot (one pot for two paints), and a pot
+    swapped away is no swap for another paint in the same visit.
+70. **A swap or its Undo stays under the old heading.** The row is drawn in the same
+    place (§3.4), so a Two Thin Coats pot can sit under "AK Interactive", a brand that is off, until the list is
+    drawn again; the group counts are then wrong too. The heading says which rack to walk to.
+    **Built (2026-11-17; Ryan chose the correct rack over "nothing moves"):** when the list's filters show the
+    paint, the list is drawn again, so the row is under its own heading and the counts are right. The focus is on
+    the row, the page scrolls only as far as it must, a ring on the row fades, and the live region says the new
+    heading. The groups are `content-visibility: auto`, so the row's place is measured after the groups above it
+    are laid out (the 600px estimate put the page some thousands of px too far for a moment). Only when a filter
+    hides the swap does it take the original's place.
+71. **One class for wash, shade, ink, Contrast and glaze** (open; ranking). For 60% of washes and shades the best
+    swap is not a wash or a shade (most are Contrast paints); in half of those a wash was under 2 ΔE further. For
+    effect paints, 21 of 55 best swaps have another `fx` (Blood For The Blood God, gloss, gets Vallejo Corrosion,
+    texture). **Built (2026-11-15):** `data.js swapKind` + `SWAP_KIND_PENALTY` = 2 (ranking only): a wash's or
+    shade's best swap is a wash or shade for 69% (was 40%) for +0.29 mean ΔE; a Contrast paint's is a Contrast
+    paint for 86% (was 65%) for +0.21; a penalty of 3 gave 10 points more for +0.22 ΔE more. An effect swaps only
+    for the same `fx`: one paint (Nurgle's Rot, the only slime) then has no swap, and 34 of 54 have a best swap
+    over ΔE 10, which the list says ("None is close"). The Equivalents tab is not changed.
+72. **Small:** the list stops at 3 (for 53% of paints the 4th swap is within 0.3 ΔE of the 3rd), and a paint
+    you own is flagged but not ranked first; 122 paints have a best swap with the same hex (34 are pure black or
+    white: item 49); Nolzur's Glistening Blood has the type `wash` (probably an effect). **Built (2026-11-17,
+    Ryan: "go with your recommendations"):** an owned pot within ΔE 3.5 (Good) is the first swap, and an owned pot
+    counts also when its brand is off (`storeSwaps`' `ownedIds`, `SWAP_OWNED_MAX`). **Open:** the list still stops
+    at 3; the shared hex values wait for item 49; the type of Glistening Blood needs a check against Army
+    Painter's own page before the data changes (§5).
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
