@@ -751,6 +751,8 @@ main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
   padding: 4px 8px; border-radius: var(--r-ctrl); pointer-events: none; display: none;
   z-index: 5; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .celltip.below { bottom: auto; top: calc(100% + 7px); }   /* 7px: clear of the 4px focus ring and the cursor outline */
+/* A quality word with no grade ("A metallic you own", PLAN §5 item 79): plain words, no dot, no state colour */
+.qplain { color: var(--text-muted); }
 /* The grid of a search (UX review F06; PLAN §5 item 78): each cell's name and brand under its swatch, in the
    seed list's tile words (.pkn, .pkb). The caption is out of the cell's box (absolute), so the cell stays the
    square swatch and its outline, its badge and its hit test do not change; the rows get the room (48px, on

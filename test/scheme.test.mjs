@@ -439,3 +439,78 @@ test("maker's ladder: a chosen pot gets its family too", () => {
   assert.equal(sec.family.current, 'f2');
   assert.equal(sec.family.tones.length, 3);
 });
+
+/* ---- The Metal role with a shelf (PLAN §5 item 79; docs/UX_REVIEW.md §11) ---- */
+import { metalMatch, METAL_OWNED_REACH, OWN_METAL_QUALITY } from '../src/js/scheme.js';
+import { nearestPaint } from '../src/js/data.js';
+// The real hex values: a pot close to each target, and the common pots that are 9 to 14 ΔE from them
+const metals = indexDataset({
+  version: 'test',
+  paints: [
+    { id: 'near-silver', brand: 'Vallejo', line: 'Metal Color', name: 'White Aluminium', hex: '#BAB9BE', type: 'metal' },
+    { id: 'near-gold', brand: 'Reaper', line: 'Pathfinder', name: 'Keleshite Gold', hex: '#BD9E44', type: 'metal' },
+    { id: 'lead', brand: 'Citadel', line: 'Base', name: 'Leadbelcher', hex: '#969696', type: 'metal' },
+    { id: 'retributor', brand: 'Citadel', line: 'Base', name: 'Retributor Armour', hex: '#EDC169', type: 'metal' },
+    { id: 'brass', brand: 'Citadel', line: 'Base', name: 'Runelord Brass', hex: '#8D806F', type: 'metal' },
+    { id: 'grey', brand: 'Citadel', line: 'Layer', name: 'Administratum Grey', hex: '#989C94', type: 'layer' },
+    // a flat paint for each colour role of a triadic scheme from #2D567C, so no colour role takes a metallic
+    { id: 'blue', brand: 'Citadel', line: 'Base', name: 'Macragge Blue', hex: '#2D567C', type: 'base' },
+    { id: 'plum', brand: 'Citadel', line: 'Layer', name: 'Plum', hex: '#7C2D56', type: 'layer' },
+    { id: 'moss', brand: 'Citadel', line: 'Layer', name: 'Moss', hex: '#567C2D', type: 'layer' },
+  ],
+});
+const SILVER = '#B5B5BD', GOLD = '#C8A13A';
+const prefer = ids => ({ knownOwnedIds: new Set(ids), boostIds: new Set(ids), boostAmount: 6 });
+
+test('metalMatch: with no shelf, the nearest metallic and its own word', () => {
+  const m = metalMatch(metals, SILVER);
+  assert.equal(m.paint.id, 'near-silver');
+  assert.equal(m.quality.tier, 'success');
+});
+
+test('metalMatch: Prefer takes an owned metallic inside the reach, and says "A metallic you own"', () => {
+  const m = metalMatch(metals, SILVER, prefer(['lead']));
+  assert.equal(m.paint.id, 'lead');
+  assert.ok(m.deltaE > 10 && m.deltaE < 11, `the ΔE stays the true one (${m.deltaE.toFixed(1)}; §2)`);
+  assert.deepEqual(m.quality, OWN_METAL_QUALITY);
+  assert.equal(m.adjust, null, 'no advice to shift the hue of a metallic');
+  // the common owned boost of 6 does not reach that far: for any other role the near pot still wins
+  assert.equal(nearestPaint(metals, SILVER, { ...prefer(['lead']), types: new Set(['metal']) }).paint.id, 'near-silver');
+  assert.equal(metalMatch(metals, GOLD, prefer(['retributor'])).paint.id, 'retributor');
+});
+
+test('metalMatch: an owned metallic outside the reach is not used (a brass is no gold)', () => {
+  const m = metalMatch(metals, GOLD, prefer(['brass']));
+  assert.equal(m.paint.id, 'near-gold');
+  assert.ok(METAL_OWNED_REACH === 15);
+});
+
+test('metalMatch: Off changes nothing, and an owned pot that is close keeps its word', () => {
+  const off = metalMatch(metals, SILVER, { knownOwnedIds: new Set(['lead']) });
+  assert.equal(off.paint.id, 'near-silver', 'the shelf ranks nothing while Use my paints is Off');
+  const close = metalMatch(metals, SILVER, prefer(['near-silver']));
+  assert.equal(close.paint.id, 'near-silver');
+  assert.equal(close.quality.label, 'Excellent', 'a word of the success tier stays');
+});
+
+test('metalMatch: Only with a pot far outside the reach keeps "Poor" (the wrong kind is not hidden)', () => {
+  const only = ids => ({ knownOwnedIds: new Set(ids), ownedIds: new Set(ids) });
+  const far = metalMatch(metals, GOLD, only(['lead']));
+  assert.equal(far.paint.id, 'lead');
+  assert.equal(far.quality.label, 'Poor');
+  const near = metalMatch(metals, SILVER, only(['lead']));
+  assert.deepEqual(near.quality, OWN_METAL_QUALITY, 'inside the reach, Only has the same words as Prefer');
+});
+
+test('buildScheme: the Metal role uses the rule; a locked Metal colour keeps the plain rule', () => {
+  const blue = '#2D567C';   // a cool base: the Metal target is the silver
+  assert.equal(metalIdeal(blue), SILVER);
+  const s = buildScheme(metals, blue, 'triadic', prefer(['lead']));
+  const metal = s.roles.find(r => r.role === 'Metal');
+  assert.equal(metal.match.paint.id, 'lead');
+  assert.deepEqual(metal.match.quality, OWN_METAL_QUALITY);
+  // a colour role is not a metallic and keeps its own words
+  assert.notEqual(s.roles.find(r => r.role === 'Secondary').match.quality.tier, 'neutral');
+  const held = buildScheme(metals, blue, 'triadic', { ...prefer(['lead']), holds: { Metal: { kind: 'lock', hex: SILVER } } });
+  assert.equal(held.roles.find(r => r.role === 'Metal').match.paint.id, 'near-silver', 'the painter chose that target: the boost is 6');
+});

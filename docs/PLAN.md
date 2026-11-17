@@ -1057,7 +1057,9 @@ item 85, come after the first painters answer.
     role, with no pot of the wrong kind and none over ΔE 14.2. A rule by kind (white or yellow metal, from the hex)
     gives the same 80% but puts a bright silver on a gunmetal part; "any owned metallic" gives a silver for a gold.
     Recommended: the boost is 15 for the Metal role, and an owned Metal pot shows its true ΔE with a neutral line
-    in place of "Poor". **Waits for Ryan's choice** (the rule, and the words).
+    in place of "Poor". **Built (2026-11-17), as Ryan chose ("15 and A"):** `scheme.js metalMatch` (the Recipe and
+    the live palette call it), `METAL_OWNED_REACH` = 15, the words "A metallic you own" (CLAUDE.md §3.2 and §7).
+    For the test painter with Prefer, the Metal pot is an owned metallic in 203 of 203 schemes (it was 0).
 80. **The shopping list's main button** (F04; 3 · 3 · 3). "+ Add N" is a median 14 pots from 7 brands, and counts the
     metallic ladder and the NMM ladder together. Recommend: the main button adds the role pots that the painter does
     not own; the ladders are a second choice; never NMM with the metallics. Then the Brand setting of item 64

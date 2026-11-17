@@ -13,7 +13,7 @@ import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the O
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, mostOwnedBrand, BRAND_BOOST, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf, randomStartPaint } from './data.js';
-import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
+import { buildScheme, shoppingList, schemeGaps, roleIdeals, metalMatch } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
 import { loaderRoles, drawLoader, LOADER_TOKENS } from './loader.js';
@@ -440,7 +440,8 @@ function renderLive() {
     vm.push(pc);
   }
   const metal = ideals.find(d => d.metal);
-  vm.push(heldColumn({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: nearestPaint(state.idx, metal.idealHex, { ...opts, types: new Set(['metal']) }) }, 'Metal'));
+  // the Recipe's own rule for the Metal pot (scheme.js metalMatch), so the column and the card agree
+  vm.push(heldColumn({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: metalMatch(state.idx, metal.idealHex, opts) }, 'Metal'));
   el.innerHTML = ui.livePalette(vm, roleByHex);
   applyLinkHighlight();   // re-assert any active hover-link after the columns are rebuilt
   applyEquivSelect();     // re-assert the Equivalents-source ring after the columns are rebuilt

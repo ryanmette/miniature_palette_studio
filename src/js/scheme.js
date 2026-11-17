@@ -76,6 +76,30 @@ export function metalIdeal(baseHex) {
   return '#6E7177';
 }
 
+/* ---- The Metal role with a shelf (PLAN §5 item 79; docs/UX_REVIEW.md §11; Ryan 2026-11-17: "15 and A") ----
+   The Metal target is one of three fixed colours (metalIdeal), and the data has 244 metallics, so some pot is
+   always within about 3 ΔE of it. With the common owned boost of 6, a metallic the painter owns never won:
+   Leadbelcher is 10.3 from the silver, Retributor Armour 9.4 from the gold. Measured on five shelves, an owned
+   metallic was the Metal pot for 7% of schemes. So, for this role only:
+   - the rule: with Use my paints: Prefer, an owned metallic ranks METAL_OWNED_REACH ΔE closer (80%, no pot of
+     the wrong kind, none over ΔE 14.2; a reach of 20 let a brass in for a gold);
+   - the words: an owned pot inside that reach whose word would be Fair, Loose or Poor says "A metallic you own"
+     instead, with no advice to mix or to shift the hue. Its ΔE is the true one (§2). The distance is to a colour
+     the app chose for "a silver", not to one the harmony made, so "Poor" read as "your silver is a poor silver".
+   A role the painter holds (a locked colour, a chosen pot) keeps the plain rule: its target is their choice. */
+export const METAL_OWNED_REACH = 15;
+export const OWN_METAL_QUALITY = Object.freeze({ label: 'A metallic you own', tier: 'neutral' });
+const ownMetalWords = m => (m && m.owned && m.quality.tier !== 'success' && m.deltaE <= METAL_OWNED_REACH
+  ? { ...m, quality: OWN_METAL_QUALITY, adjust: null } : m);
+/** The Metal role's pot for its target: the nearest metallic, by the rule above. The Recipe (buildScheme) and
+ *  the live palette's Metal column (app.js) both call it, so the two always show the same pot and words.
+ *  `extra` adds match options (the Recipe's `excludeIds`, so no two roles share a pot). */
+export function metalMatch(idx, idealHex, opts = {}, extra = {}) {
+  const o = { ...opts, types: new Set(['metal']), ...extra };
+  if (o.boostIds) o.boostAmount = METAL_OWNED_REACH;
+  return ownMetalWords(nearestPaint(idx, idealHex, o));
+}
+
 /**
  * The four role *ideal colours* for a base+harmony — Primary/Secondary/Accent/Metal — WITHOUT any paint
  * matching. Pure + cheap (a few ΔE calls, no dataset scan), so callers that only need the colours (e.g.
@@ -161,10 +185,12 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     const step = (ideal, media) => media === 'wash' ? washStep(idx, ideal, roleOpts)
       : { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) };
 
-    let match = nearestPaint(idx, d.idealHex, { ...roleOpts, excludeIds: usedIds });
+    // The Metal role's own pot has its own owned rule and words (metalMatch); a locked Metal colour does not
+    const find = extra => (d.metal && !d.hold ? metalMatch(idx, d.idealHex, roleOpts, extra) : nearestPaint(idx, d.idealHex, { ...roleOpts, ...extra }));
+    let match = find({ excludeIds: usedIds });
     let shared = false, differentiate = null, buy = null;
     if (!match) {                                   // pool out of distinct options → reuse + flag honestly
-      match = nearestPaint(idx, d.idealHex, roleOpts);
+      match = find({});
       if (match) {
         shared = true;
         // adjustDirection(ideal, paint): the direction to move the PAINT toward this role's ideal.

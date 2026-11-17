@@ -7,6 +7,20 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.17.0 took only the web entries. -->
 ### Changed
+- **The Metal part of a scheme uses a metallic that you own** (PLAN §5 item 79; `docs/UX_REVIEW.md` F02 and
+  §11; a matching change: CLAUDE.md §3.2 and §7). Step 2 of the UX review's build order, with the rule and
+  the words that Ryan chose ("15 and A", 2026-11-17).
+  - **The rule.** With **Use my paints: Prefer**, a paint that you own counts as 6 ΔE closer. For the Metal
+    part that was never enough: the app's gold, silver and gunmetal targets are 9 to 12 ΔE from the common pots
+    (Retributor Armour, Leadbelcher, Ironbreaker), and some other metallic is always closer. An owned metallic
+    now counts as 15 ΔE closer, for the Metal part only. Measured on five shelves: your own metallic is the
+    Metal pot for 80% of schemes (it was 7%), never one of the wrong kind, and never one more than ΔE 14.2 away.
+    For the review's test painter it is every scheme (it was none).
+  - **The words.** Such a pot said "Loose" or "Poor", with advice to mix or to shift the hue. It now says
+    **A metallic you own**, in plain words. The ΔE shows as before and is the true value. A pot that is more
+    than ΔE 15 away keeps its word, and so does a Metal part that you lock or choose yourself.
+  - The Recipe, the live palette and the image show the same pot and the same words (`scheme.js metalMatch`).
+    Off, Only's choice of pot, the colour parts and Other brands do not change.
 - **Marking the paints you own is quicker** (PLAN §5 item 78; `docs/UX_REVIEW.md` F05, F06 and F07; CLAUDE.md
   §3.5 and §3.6). The first step of the UX review's build order, with direction A (Ryan, 2026-11-17).
   - **The Shelf's list is an index.** With no search and no status filter, the list was every paint: 3,375 rows,
@@ -17,7 +31,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **A search in the grid shows names.** Each result has its name and brand under its swatch, so Dawnstone
     (Layer) and Dawnstone (Dry) no longer look the same. With no search, the grid is as before.
   - Help has a new answer: "What is the quickest way to mark the paints I own?"
-  - No match changes. `sw.js`: `CACHE` is `ps-v103`.
+  - No match changes.
 - **Paint data 1.11.0: fluorescent and gloss paints say so** (PLAN §5 item 51; `src/data/SOURCES.md`). 36
   fluorescent or neon paints and 5 Vallejo gloss paints are ordinary layer paints in the data, so they had no
   finish icon and looked like flat colours. Each one now has an icon (a small sun for fluorescent, the gloss

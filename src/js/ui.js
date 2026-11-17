@@ -291,6 +291,10 @@ export const popChips = (pops, active) =>
 // A quality tier's colour: the base token for the dot (a graphic, 3:1), the *-text token for its label (4.5:1).
 const tier = t => `var(--${t})`;
 const tierText = t => `var(--${t}-text)`;
+/** A match's quality word with its dot. The neutral tier (scheme.js OWN_METAL_QUALITY, "A metallic you own":
+ *  PLAN §5 item 79) is state as words: no dot and no state colour, because it is not a grade of the match. */
+const qualityWord = q => (q.tier === 'neutral' ? `<span class="qplain">${esc(q.label)}</span>`
+  : `<span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`);
 
 /** A per-paint "to-buy" toggle (#5). Hidden for paints already owned. `mark` ∈ 'owned'|'want'|'none'. */
 const buyBtn = (id, mark) => mark === 'owned' ? '' :
@@ -311,12 +315,11 @@ export function matchChip(m, markOf) {
     + `<div style="min-width:0"><div class="ttl">${m.chosen ? 'Chosen pot' : 'Nearest pot'}</div>`
     + `<div class="nm">${esc(p.name)}</div>`
     + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}</div>`
-    + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
-    + `<span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
-    + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
+    + `<div class="de">${qualityWord(q)}<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
     // Poor (over ΔE 10, §3.2): say what that means and what to do, not only the tag (UX 4)
-    // (not for a chosen pot: the painter picked it on purpose; the hold note says how far it is)
-    + (m.deltaE > 10 && !m.chosen ? `<div class="poornote"><strong>No pot within ΔE 10.</strong> A mix or a glaze gets closer, or see Other brands.</div>` : '')
+    // (not for a chosen pot: the painter picked it on purpose; the hold note says how far it is;
+    // not for an owned metallic in the Metal role: a mix or a glaze is no advice for a metallic, item 79)
+    + (m.deltaE > 10 && !m.chosen && q.tier !== 'neutral' ? `<div class="poornote"><strong>No pot within ΔE 10.</strong> A mix or a glaze gets closer, or see Other brands.</div>` : '')
     + ownTag + buyBtn(p.id, mark) + `</div>`;
 }
 
@@ -583,8 +586,7 @@ export function livePalette(vm, roleByHex = {}) {
       : `<span class="lcpot none"><span class="lcpotlbl">No close pot</span></span>`;
     const foot = m
       ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
-        + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
-        + `<span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span>`
+        + `<span class="de" style="margin:2px 0 0">${qualityWord(m.quality)}`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint)}${goneTag(m.paint)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
     const fi = isFree ? +c.id.slice(1) : -1;                                     // index among the added swatches

@@ -163,6 +163,16 @@ with three words of its own, on the same three tiers (`data.js gapQuality`; §7)
 
 Both go when the wash colours follow one rule (`docs/COLOUR_CHECK.md`).
 
+**A second limit on the words (PLAN §5 item 79; `scheme.js OWN_METAL_QUALITY`):** in the **Metal role**, a
+metallic that the painter **owns**, within ΔE 15 of the role's target (the reach of the rule in §7), never
+says Fair, Loose or Poor. It says **A metallic you own**: plain words in `--text-muted`, with no dot and no
+state colour (`ui.js qualityWord`, `.qplain`; a neutral tag in the share image), and with no "No pot within ΔE
+10" note and no advice to shift the hue. Its ΔE shows as before, and it is the true one (§2). Why: the
+distance is to a colour that the app chose for "a silver", not to one that the harmony made, so "Leadbelcher ·
+Poor" read as "your silver is a poor silver". A word of the success tier (Good or better) stays. An owned
+metallic further than ΔE 15 keeps its word (in **Only**, a silver on a gold part still says Poor), and so
+does a held role's pot.
+
 ### 3.3 Typography (shared by both themes)
 - **Display / headings / wordmark:** `"Barlow Condensed", "Arial Narrow", system-ui, sans-serif` (600/700). Condensed and tool-like — a label on a rack, not a SaaS headline (the audit counted Inter + Space Grotesk among the "made by AI" signs).
 - **Body / UI / labels:** `"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif` (400/500/600). Engineered, clear at small sizes and in dense data.
@@ -464,6 +474,16 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   role's all-metal pool demotes all candidates equally so it's unaffected), and a **picked-paint
   tie-break** (−0.001 — the paint the user explicitly picked wins exact ΔE ties, e.g. Layer vs Dry
   twins that share a hex). Constants live in `app.js`/`data.js`; change them only with a CHANGELOG note.
+  **The Metal role's own owned boost is 15** (PLAN §5 item 79; `docs/UX_REVIEW.md` §11; Ryan 2026-11-17;
+  `scheme.js metalMatch`, `METAL_OWNED_REACH`). The Metal target is one of three fixed colours (gold, silver,
+  gunmetal: `metalIdeal`), and the data has 244 metallics, so some pot is always within about 3 ΔE of it. With
+  the boost of 6, a metallic that the painter owned never won: Leadbelcher is 10.3 from the silver, Retributor
+  Armour 9.4 from the gold. With **Use my paints: Prefer**, an owned metallic now ranks 15 ΔE closer for this
+  role alone. Measured on five shelves: an owned metallic is the Metal pot for 7% → 80% of schemes, with no pot
+  of the wrong kind and none over ΔE 14.2 (a boost of 20 let a brass in for a gold; a rule by kind, read from
+  the hex, put a bright silver on a gunmetal part). The reported ΔE stays true. A Metal role that the painter
+  holds (a locked colour, a chosen pot) keeps the boost of 6: its target is their choice. The Recipe and the
+  live palette's Metal column both call `metalMatch`, so they show the same pot.
   **The Brand setting (`docs/TONE_LADDERS.md` B):** with **Prefer**, a paint of the chosen brand ranks **2 ΔE**
   closer (`BRAND_BOOST`, data.js; measured there: the brand wins 54% of ladder steps against 14%, and the median
   true ΔE stays Good, 2.16 against 1.83). It is a second term beside the owned-boost: both add for an owned paint of

@@ -473,6 +473,19 @@ test('rackGroups: one section per group, its title and count, rows in the given 
   assert.match(html, /<span>Other paints<\/span><span class="rkcount">2<\/span>/);
 });
 
+/* ---- "A metallic you own" (PLAN §5 item 79): a quality word with no grade ---- */
+test('matchChip: the neutral word has no dot, no state colour and no "No pot within ΔE 10" note; the ΔE stays', () => {
+  const own = { paint: gold, deltaE: 10.3, quality: { label: 'A metallic you own', tier: 'neutral' }, owned: true, adjust: null };
+  const html = matchChip(own, () => 'owned');
+  assert.match(html, /<div class="de"><span class="qplain">A metallic you own<\/span><span class="badge">ΔE 10\.3<\/span><\/div>/);
+  assert.doesNotMatch(html, /class="dot"|poornote|var\(--neutral/);
+  assert.match(html, /class="owntag"/, 'the owned tag is still there');
+  // a graded word keeps its dot and its colour
+  const poor = matchChip({ paint: gold, deltaE: 10.3, quality: { label: 'Poor', tier: 'danger' } }, () => 'none');
+  assert.match(poor, /class="dot" style="background:var\(--danger\)"><\/span><span style="color:var\(--danger-text\)">Poor</);
+  assert.match(poor, /poornote/);
+});
+
 /* ---- The list as an index, and the named grid (PLAN §5 item 78; UX review F05 to F07) ---- */
 test('rackGroups: a folded group is a heading button with its counts; closed, it holds no rows', () => {
   const html = rackGroups([
