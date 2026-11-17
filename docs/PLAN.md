@@ -851,6 +851,27 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     the ΔE stays true), and its list starts with one line that says these colours are rough. **Open:** the data
     itself (one rule, one line of washes at a time, from the makers' own swatches), and the same words on the
     Equivalents tab, which still says "Indistinguishable" for two near-black washes.
+    **A source check (2026-11-17; no data changed).** Ryan asked to fix the wash data. What this session could reach:
+    - **Refused (HTTP 403 or 405, to a plain client and to the fetch tool; not worked around):** `warhammer.com`
+      (the shop pages of the Shades) and `acrylicosvallejo.com`. That is 50 of the 68 washes that hold a light value
+      (Warhammer Colour Shade 16, Vallejo 34). `migjimenez.com` also refused.
+    - **Open:** `warhammer-community.com` (GW's news site), `thearmypainter.com` (a public product feed),
+      `duncanrhodes.com` (Two Thin Coats' own charts for waves 1 to 3), `monumenthobbies.com`, `reapermini.com`.
+    - **The makers do not show a wash in one way.** Army Painter shows the liquid (a bottle and a splash, dark). GW's
+      articles show the pot. Two Thin Coats' charts show a disc that goes from dark at the rim to light at the centre.
+      So "the maker's own swatch" cannot give one rule for all brands: the two conventions in the data are the
+      makers' own two ways. One rule needs our own measurement (item 49: each wash both ways, on one card).
+    - **Why the rule matters to the Recipe too:** the wash step's target is a darkened base (§7), so a Shade with a
+      light value (Nuln Oil `#9E9A98`) can almost never be the wash step's pot.
+    - **Errors found on the way:** `two-thin-coats-wave-1-rc-flesh-wash` is "Orc Flesh Wash" on Two Thin Coats' own
+      chart (the name lost its first letter); GW's seven Shades of 2022 are not in the data (Mortarion Grime,
+      Berserker Bloodshade, Targor Rageshade, Tyran Blue, Poxwalker, Kroak Green, Soulblight Grey), and its four
+      Gloss Shades are not marked `discontinued`, although GW's article "A New Era of Paints" (Warhammer Community,
+      2022-06-13) says they leave the range.
+    - **Ways on (Ryan to choose):** (a) Ryan measures, and the build gets an overrides file for the values
+      (`COLOUR_CHECK.md` §5.3); (b) Ryan saves the makers' pages or charts as files, and the values are sampled
+      from them; (c) no data change: rank a wash against a wash by what it absorbs (the direction of its absorbance
+      in linear RGB, which does not change with the coat's thickness), with words of its own in place of ΔE.
 69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
     later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
     the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint
