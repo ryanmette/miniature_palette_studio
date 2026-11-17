@@ -571,6 +571,20 @@ test('holdControls: a swapped pot names the pot it replaced, with Use the origin
 });
 
 // ---- The maker's ladder (docs/TONE_LADDERS.md, direction A) ----
+test('a paint that is no longer made says so beside its finish tag, and its swaps open with the reason', async () => {
+  const { goneTag } = await import('../src/js/ui.js');
+  const old = { ...red, id: 'cit-old', name: 'Old Red', discontinued: true };
+  assert.equal(goneTag(red), ''); assert.equal(goneTag(null), '');
+  assert.match(goneTag(old), /class="tag gone">No longer made</);
+  assert.match(rackRow38({ paint: old, countable: true, qty: 1, canSwap: true }, t38), /tag gone/);
+  assert.doesNotMatch(rackRow38({ paint: red, countable: true, qty: 1, canSwap: true }, t38), /tag gone/);
+  const open = rackRow38({ paint: old, countable: true, qty: 1, canSwap: true,
+    swaps: { gone: true, notCarried: true, list: [{ paint: carm, deltaE: 1.2, quality: { label: 'Excellent', tier: 'success' } }] } }, t38);
+  assert.match(open, /goneNote\(name=Old Red\)/);
+  assert.doesNotMatch(open, /notCarried\(/, 'one reason: no store has it, whatever it carries');
+  assert.match(hero(old, false), /tag gone/);
+});
+
 import { makerLadder } from '../src/js/ui.js';
 test("makerLadder: every tone in order, the pot marked in words, no ΔE (the maker's steps are not matches)", () => {
   const t = (n, hex) => ({ id: `b${n}`, brand: 'Warhammer Colour', line: 'Tone Pro', name: `Ultramar Blue ${n}`, hex, type: 'layer', tone: n });

@@ -767,6 +767,19 @@ test('storeSwaps: a paint that is no longer made is no swap, unless it is on you
   assert.ok(shadow.length && shadow.every(m => m.paint.type !== 'effect' && m.paint.name !== 'Brush-On Primer'));
 });
 
+test('matching: a paint that is no longer made is no suggestion, unless you own it or picked it', async () => {
+  const { closestPaints } = await import('../src/js/data.js');
+  const gloss = real.byId.get('citadel-shade-nuln-oil-gloss'), media = { types: new Set(['wash', 'shade', 'ink']) };
+  const plain = nearestPaint(real, gloss.hex, media);
+  assert.ok(plain && !plain.paint.discontinued && plain.deltaE > 0, 'a suggestion is a pot you can buy');
+  for (const key of ['knownOwnedIds', 'boostIds', 'ownedIds', 'preferIds']) {
+    assert.equal(nearestPaint(real, gloss.hex, { ...media, [key]: new Set([gloss.id]) }).paint.id, gloss.id, key);
+  }
+  assert.ok(!nearestPaints(real, gloss.hex, 40, media).some(m => m.paint.discontinued));
+  // the seed field's list of the closest paints is a list of every paint
+  assert.ok(closestPaints(real, gloss.hex, 8).some(m => m.paint.id === gloss.id));
+});
+
 test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {
   assert.match(BRAND_WORDS['Warhammer Colour'], /Citadel/);
   const wc = real.paints.filter(matcher56('citadel'));

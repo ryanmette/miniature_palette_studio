@@ -86,7 +86,11 @@ export const finishClass = t => t === 'metal' ? 'metal' : t === 'effect' || t ==
  *  same-finish-first tier (as metals use) was rejected: for washes it pulled in 293 matches over ΔE 10. */
 export const FINISH_PENALTY = 4;
 
-function passesFilter(p, { excludeId, excludeIds, brands, excludeBrands, ownedIds, types, excludeTypes } = {}) {
+function passesFilter(p, { excludeId, excludeIds, brands, excludeBrands, ownedIds, boostIds, knownOwnedIds, preferIds, types, excludeTypes, withGone } = {}) {
+  // A paint the maker no longer makes is not a pot to go and buy (dataset 1.10.0; PLAN §5 item 73). It stays a
+  // match for a painter who owns it (any of the three owned sets), for the paint the painter picked
+  // (preferIds), and for a list of every paint (withGone).
+  if (p.discontinued && !withGone && ![ownedIds, boostIds, knownOwnedIds, preferIds].some(set => set && set.has(p.id))) return false;
   if (excludeId && p.id === excludeId) return false;
   if (excludeIds && excludeIds.has(p.id)) return false;
   if (brands && !brands.has(p.brand)) return false;
@@ -353,7 +357,7 @@ export function closestPaints(indexed, hex, n = 6, { quick = false } = {}) {
   // costs about 2 ms (about 12 ms on a slow phone): right for a keystroke or a tab render, too much for
   // every frame of a drag. `quick` takes the old pool of 192 for a drag frame; the caller then shows the
   // exact list once the drag stops.
-  return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, keep: quick ? 192 : indexed.paints.length });
+  return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, keep: quick ? 192 : indexed.paints.length, withGone: true });
 }
 
 /* ---- the random first scheme (PLAN §5 item 55) ----

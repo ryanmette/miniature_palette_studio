@@ -13,6 +13,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+- **A paint that is no longer made says so** (PLAN §5 item 73; CLAUDE.md §3.5, §3.6 and §7). The data marks four
+  paints as no longer made (the Gloss Shades). Each one now has a **No longer made** tag beside its finish tag: on
+  the starting paint's line, in the seed field's list, in the Recipe, in the pot dialog and in the Shelf's list
+  and Map. In the Shelf's list, such a paint on the shopping list opens its swaps by itself, with "Nuln Oil Gloss
+  is no longer made. The closest here:", because no store has it. The Recipe and the tone ladders do not suggest
+  such a paint, unless you own it or it is your starting paint. The seed field, the Shelf and Other brands still
+  show every paint.
 ### Changed
 - **Paint data 1.10.0: three corrections from the makers' own pages** (PLAN §5 item 73; `src/data/SOURCES.md`). No
   colour value changed, and no paint id changed.
