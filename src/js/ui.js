@@ -142,17 +142,24 @@ export const pickGroup = (id, title, inner) =>
 /** Finder-style collection grid. Each cell is a square swatch (colour = paint data) with a corner
  *  state badge (owned ✓ / to-buy cart) and, on hover/focus, an overlaid name tooltip. Selection is an
  *  outline (interaction, §3.5) — never a border-width change, so neighbours never reflow (§3.4 no-jiggle).
- *  `markOf(id)` → 'owned'|'want'|'none'; `selected` is a Set of selected ids. */
-export function shelfGrid(paints, markOf, selected = new Set()) {
+ *  `markOf(id)` → 'owned'|'want'|'none'; `selected` is a Set of selected ids.
+ *  `named`: each cell also shows its name and brand under the swatch (the seed list's tile words, .pkn and
+ *  .pkb). The grid of a search is named: a result with no name was a square the painter marked on trust, and
+ *  twins (Dawnstone Layer and Dry) looked the same (UX review F06, PLAN §5 item 78). The caption is outside
+ *  the cell's box (app.css .cellname), so the cell stays the swatch. The option's name is its aria-label. */
+export function shelfGrid(paints, markOf, selected = new Set(), { named = false } = {}) {
   if (!paints.length) return '';   // the grid stays empty; shelfEmpty() says why, outside the listbox
   return paints.map(p => {
     const mark = markOf(p.id), sel = selected.has(p.id);
     const badge = markBadge(mark);
     const state = markLabel(mark);
+    const caption = named
+      ? `<span class="cellname" aria-hidden="true"><span class="pkn">${esc(pname(p))}</span><span class="pkb"><span>${esc(p.brand)}</span></span></span>`
+      : '';
     return `<div class="cell${fxCls(p)}" role="option" data-id="${esc(p.id)}" data-mark="${mark}"`
       + ` aria-selected="${sel}" aria-label="${esc(pname(p))}, ${esc(p.brand)} — ${state}"`
       + ` style="--cell:${safeColor(p.hex)}${inkVar(p)}">`
-      + `${badge}<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>`
+      + `${badge}<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>${caption}`
       + `</div>`;
   }).join('');
 }
@@ -850,9 +857,26 @@ export function storeCarries(brands, off, tr) {
 /** The list body: one group per brand · line (rack order) or per scheme (by project), each a heading with
  *  its count and a list. `groups`: [{ key, title, rows }]. */
 export function rackGroups(groups, tr) {
-  return groups.map(g => `<section class="rkgroup" aria-label="${esc(g.title)}">`
+  return groups.map((g, i) => (g.fold ? rackFold(g, i, tr)
+    : `<section class="rkgroup" aria-label="${esc(g.title)}">`
     + `<h3 class="rkhead"><span>${esc(g.title)}</span><span class="rkcount">${g.rows.length}</span></h3>`
-    + `<ul class="rklist">${g.rows.map(r => rackRow(r, tr)).join('')}</ul></section>`).join('');
+    + `<ul class="rklist">${g.rows.map(r => rackRow(r, tr)).join('')}</ul></section>`)).join('');
+}
+/** How many paints of a group the painter owns, in words: "18 owned", or '' for none. */
+export const rackOwnedSaid = (n, tr) => (n > 0 ? tr('rkOwnedN', { n }) : '');
+/** A group of the list's index (PLAN §5 item 78; UX review F05 and F07, direction A): the whole list of paints as
+ *  one line per brand · line, closed at first, so 3,375 rows are about 50 lines. The heading is a button
+ *  (aria-expanded; the APG disclosure pattern) with the group's count and how many of its paints are owned.
+ *  A closed group holds no rows: `g.rows` is empty, and `g.count` and `g.owned` are counted from the paints. */
+function rackFold(g, i, tr) {
+  const id = `rkg-${i}`, paints = g.count === 1 ? tr('onePaint') : tr('nPaints', { n: g.count });
+  const owned = rackOwnedSaid(g.owned, tr);
+  return `<section class="rkgroup rkfold${g.open ? ' open' : ''}" aria-label="${esc(g.title)}">`
+    + `<h3 class="rkhead"><button type="button" class="rktoggle" data-rkgroup="${esc(g.key)}" aria-expanded="${!!g.open}" aria-controls="${id}"`
+    + ` aria-label="${esc(tr(owned ? 'rkGroupOwned' : 'rkGroupName', { title: g.title, paints, owned }))}">`
+    + `${icon(g.open ? 'chev' : 'chevr')}<span class="rkname">${esc(g.title)}</span>`
+    + `<span class="rkown">${esc(owned)}</span><span class="rkcount">${g.count}</span></button></h3>`
+    + `<ul class="rklist" id="${id}"${g.open ? '' : ' hidden'}>${g.rows.map(r => rackRow(r, tr)).join('')}</ul></section>`;
 }
 
 /* ---- the Shelf's Map (PLAN §5 item 61; mockups/shelf-map.html, C with A) ----

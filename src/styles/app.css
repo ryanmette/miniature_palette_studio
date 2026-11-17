@@ -751,6 +751,16 @@ main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
   padding: 4px 8px; border-radius: var(--r-ctrl); pointer-events: none; display: none;
   z-index: 5; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .celltip.below { bottom: auto; top: calc(100% + 7px); }   /* 7px: clear of the 4px focus ring and the cursor outline */
+/* The grid of a search (UX review F06; PLAN §5 item 78): each cell's name and brand under its swatch, in the
+   seed list's tile words (.pkn, .pkb). The caption is out of the cell's box (absolute), so the cell stays the
+   square swatch and its outline, its badge and its hit test do not change; the rows get the room (48px, on
+   the §3.4 scale: two lines of name and one of brand). A tap on a caption is a tap on its cell. The tooltip
+   would say the same words, so it does not show. */
+.shelfgrid.named { row-gap: 48px; padding-bottom: 48px; }
+.cellname { position: absolute; top: calc(100% + 4px); left: -2px; right: -2px; text-align: center; color: var(--text); }
+.cellname .pkn { -webkit-line-clamp: 2; margin-top: 0; line-height: 1.2; }
+.cellname .pkb { line-height: 1.2; }
+.shelfgrid.named .celltip { display: none; }
 .cell:hover .celltip, .cell:focus-visible .celltip, .cell.cursor .celltip,
 .step:hover .celltip, .step:focus-visible .celltip { display: block; animation: tipfade .12s ease; }
 @keyframes tipfade { from { opacity: 0; } }
@@ -1574,6 +1584,7 @@ main[data-mode="schemes"] { grid-template-columns: minmax(0, 1fr); }
   .rktools .seg { width: auto; }
   .rktools .seg button { flex: none; padding: 5px 12px; }
   .rkhint { display: none; }
+  .rkhint.index { display: block; margin: 4px 0 8px; }   /* the index's one line: a new painter lands here from "mark my shelf first" (item 78) */
   .rkstore { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 0; margin: 0 -4px 4px; }
   .rkstore > .micro { padding: 0 4px; }
   .rkchips { flex-wrap: nowrap; overflow-x: auto; padding: 4px; scrollbar-width: none; min-width: 0; max-width: 100%; }
@@ -1619,6 +1630,23 @@ main[data-mode="schemes"] { grid-template-columns: minmax(0, 1fr); }
   border-bottom: 1px solid var(--border); font-size: var(--fs-micro); font-weight: 500; letter-spacing: .05em;
   text-transform: uppercase; color: var(--text-muted); }
 .rklist { list-style: none; margin: 0; padding: 0; }
+/* The list as an index (PLAN §5 item 78; UX review F05 and F07, direction A): each brand · line is one row, a
+   button that opens its paints. Sentence case at the body size: here the headings are what the painter reads,
+   not labels over the rows. A closed group is one row, so it is laid out (the 600px estimate of content-
+   visibility made a page of 50 closed rows 30,000px tall). The focus ring is inside the row: the rows touch,
+   and an outer ring would cover the next row's rule (§3.5). */
+.rkfold { content-visibility: visible; }
+.rkfold.open { content-visibility: auto; }
+.rkfold .rkhead { display: block; margin: 0; padding: 0; font-size: var(--fs-h2); letter-spacing: .005em; text-transform: none; }
+.rkfold.open .rkhead { border-bottom-color: var(--border-strong); }
+.rktoggle { display: flex; align-items: center; gap: 8px; width: 100%; min-height: var(--tap); margin: 0; padding: 0 4px 0 0;
+  border: 0; border-radius: var(--r-ctrl); background: none; color: var(--text); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.rktoggle:hover { background: var(--surface-2); }
+.rktoggle:focus-visible { outline: 2px solid transparent; outline-offset: -2px; box-shadow: var(--focus-inset); }
+.rktoggle .ic { flex: none; color: var(--text-muted); }
+.rkname { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rkown { flex: none; font-family: var(--font); font-size: var(--fs-small); font-weight: 500; color: var(--success-text); }
+.rkfold .rkcount { flex: none; min-width: 4ch; text-align: right; font-family: var(--font); font-size: var(--fs-small); font-weight: 400; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 /* A row: the pot, its name big (read at arm's length in a store), brand · line under it, the count's slot, and
    the tick, the row's one big control. Nothing in it changes height when it is ticked (§3.4). */
 .rkrow { display: grid; grid-template-columns: 40px minmax(0, 1fr) var(--tap); gap: 12px; align-items: center;
@@ -1663,6 +1691,7 @@ main[data-mode="schemes"] { grid-template-columns: minmax(0, 1fr); }
   .rkslot, #shelfGrid, #shelfEmpty, .toast, dialog { display: none !important; }
   body, main, .shelf { background: #fff !important; color: #000 !important; padding: 0; margin: 0; }
   .rkgroup { break-inside: avoid-page; max-width: none; content-visibility: visible; }
+  .rkfold:not(.open), .rktoggle .ic { display: none; }   /* the index prints the lines that are open */
   .rkrow { grid-template-columns: 24px 28px minmax(0, 1fr); padding: 4px 0; break-inside: avoid; }
   .rkrow .rktick { order: -1; width: 18px; height: 18px; border: 1.5px solid #000; background: none !important; }
   .rkrow .rktick .rkcheck { width: 14px; height: 14px; color: #000; }

@@ -7,6 +7,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.17.0 took only the web entries. -->
 ### Changed
+- **Marking the paints you own is quicker** (PLAN §5 item 78; `docs/UX_REVIEW.md` F05, F06 and F07; CLAUDE.md
+  §3.5 and §3.6). The first step of the UX review's build order, with direction A (Ryan, 2026-11-17).
+  - **The Shelf's list is an index.** With no search and no status filter, the list was every paint: 3,375 rows,
+    about 54,000px on a phone. It is now one line for each range of each brand (54 lines, about 2,900px), closed
+    at first. Open a line to see its paints and tick the ones you own. A line shows its count and how many of
+    its paints you own ("18 owned"). A search or a status filter shows the paints at once, as before.
+  - **"I own paints — mark my shelf first" opens that list.** It opened the grid: 3,375 squares with no names.
+  - **A search in the grid shows names.** Each result has its name and brand under its swatch, so Dawnstone
+    (Layer) and Dawnstone (Dry) no longer look the same. With no search, the grid is as before.
+  - Help has a new answer: "What is the quickest way to mark the paints I own?"
+  - No match changes. `sw.js`: `CACHE` is `ps-v103`.
 - **Paint data 1.11.0: fluorescent and gloss paints say so** (PLAN §5 item 51; `src/data/SOURCES.md`). 36
   fluorescent or neon paints and 5 Vallejo gloss paints are ordinary layer paints in the data, so they had no
   finish icon and looked like flat colours. Each one now has an icon (a small sun for fluorescent, the gloss

@@ -1016,7 +1016,7 @@ ratings stand. **The build order** follows the journey, not the ratings alone, b
 early step never sees a later fix:
 
 0. Ryan's iPhone check (item 77's first part; no code). Its result decides what item 77 builds.
-1. Item 78: "mark my shelf" opens the list, and a grid result has its name.
+1. Item 78: "mark my shelf" opens the list, and a grid result has its name. **Built (2026-11-17).**
 2. Items 76 and 79 together: offer Use my paints when the Shelf gets paints, and the Metal role with a shelf. (Two
    raters said that item 76 alone moves the complaint to item 79.)
 3. Item 80, its first part: the main Add button puts only the role pots on the list.
@@ -1039,6 +1039,13 @@ item 85, come after the first painters answer.
     (Back up · Add to Home Screen); correct Help ("Where is my shelf saved?": back up in Safari, add to the Home
     Screen, Restore there, because a Home Screen app has its own storage); call `navigator.storage.persist()`.
 78. **"Mark my shelf" opens the list, and a grid result has its name** (F05, F06, F07; 3 · 3 · 3 for the first two).
+    **Built (2026-11-17), direction A** (Ryan: "go with A"; the other two were B, one question about the painter's
+    main brand, and C, the list as it was). With no search and no status filter the list is an index: 54 lines
+    (brand · line), closed at first, each with its count and "N owned"; the first-run link opens it; the grid of a
+    search shows each paint's name and brand. Measured on a phone: the list of every paint is 2,948px tall (it was
+    about 54,000px), and a line of 220 paints opens in 12ms. Not built here: lines that close by brand (two
+    levels), and a brand order that puts the painter's own brands first. The first painters can say if they miss
+    them.
     The door opens on 3,375 squares with no names; the list (names and a tick) is behind an icon. Recommend one
     study: the door opens the list at the painter's brand, with lines that close; a search result in the grid shows
     its name. Measured: 96 taps + 211 key presses to mark 48 pots through the grid's search.

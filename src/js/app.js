@@ -741,7 +741,7 @@ function renderShelfMarks(ids) {
   // The list: a tick (or one mark from elsewhere) redraws only its row. A full rebuild of 3,225 rows took
   // 660ms per tick; a row is about 1ms. Many paints (an import, another tab) rebuild the list.
   if (state.shelfView === 'list') {
-    if (ids && ids.length <= 20 && ids.every(id => $(`[data-rk="${CSS.escape(id)}"]`))) { ids.forEach(updateRackRow); renderShelfStats(); }
+    if (ids && ids.length <= 20 && ids.every(id => $(`[data-rk="${CSS.escape(id)}"]`))) { ids.forEach(updateRackRow); ids.forEach(syncRackOwned); renderShelfStats(); }
     else renderShelf();
     return;
   }
@@ -1029,7 +1029,9 @@ function renderShelf() {
     return;
   }
   $('#shelfListView').hidden = true;
-  $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel);
+  const named = !!state.shelfQ.trim();   // a search result shows its name (UX review F06; item 78)
+  $('#shelfGrid').classList.toggle('named', named);
+  $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel, { named });
   $('#shelfEmpty').hidden = view.length > 0;
   $('#shelfGrid').hidden = !view.length;
   if (!view.length) $('#shelfEmpty').innerHTML = ui.shelfEmpty(shelfEmptyKind(), state.shelfQ);
@@ -1060,6 +1062,14 @@ function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null })
    open (rk.kept), and the count's slot keeps its height, so nothing under the finger moves (§3.4). */
 const rk = { kept: new Set(), prev: new Map(), countOpen: new Set(), swapOpen: new Map() };
 function resetRackSession() { rk.kept.clear(); rk.prev.clear(); rk.countOpen.clear(); rk.swapOpen.clear(); }
+/* The list as an index (PLAN §5 item 78; UX review F05 and F07, direction A; Ryan 2026-11-17). With no search
+   and no status filter, the list is every paint the brand and type filters pick: 3,375 rows, 54,000px on a
+   phone. It is then an index: one line per brand · line, closed at first, and the painter opens the lines
+   they own. A search or a status filter has made the list short already, so its groups are open, as before.
+   The groups opened in this visit stay open (in memory; not cleared when a filter changes). */
+const rackOpen = new Set();
+const rackKeyOf = p => [p.brand, rackLine(p)].filter(Boolean).join(' · ');
+const rackIndexOn = () => state.shelfView === 'list' && !state.shelfQ.trim() && !state.shelfMark;
 /* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B). For this visit only (in memory,
    like Recent picks): the brands this store does not carry, and the swaps made (swap id → what it replaced,
    so a row can say "in place of" and Undo puts everything back). One pot can be the swap for two paints, so
@@ -1119,34 +1129,46 @@ function updateRackRow(id) {
 function renderShelfList(view) {
   const names = new Map();
   const nameOf = sid => schemeNameOf(sid, names);
-  const rows = view.map(rackRowData);
   // Rack order inside every group: brand, line, then name (Ryan: the order a store racks its paints)
-  rows.sort((a, b) => a.paint.brand.localeCompare(b.paint.brand) || rackLine(a.paint).localeCompare(rackLine(b.paint))
-    || ui.pname(a.paint).localeCompare(ui.pname(b.paint)));
+  const sorted = view.slice().sort((a, b) => a.brand.localeCompare(b.brand) || rackLine(a).localeCompare(rackLine(b))
+    || ui.pname(a).localeCompare(ui.pname(b)));
   const groups = [];
   // By project means something only when a paint here is for a scheme (a paint to buy, or one just ticked
   // off); else the switch hides and the list stays in rack order
-  const hasProject = rows.some(r => r.sid);
+  const sidOf = p => (store.markOf(p.id) === 'want' ? store.projectOf(p.id) : rk.prev.get(p.id)?.for) || null;
+  const hasProject = sorted.some(sidOf);
   $('#shelfGroupSeg').hidden = !hasProject;
-  if (hasProject && state.shelfGroup === 'project') {
+  const byProject = hasProject && state.shelfGroup === 'project';
+  // The index: only the groups that are open get their rows (a row's data and its markup cost about 0.2ms,
+  // and a list of every paint took 660ms to build)
+  const index = !byProject && rackIndexOn();
+  if (byProject) {
+    const rows = sorted.map(rackRowData);
     const by = new Map();
     for (const r of rows) { const k = r.sid && nameOf(r.sid) ? r.sid : ''; if (!by.has(k)) by.set(k, []); by.get(k).push(r); }
     for (const sc of store.listSchemes()) if (by.has(sc.id)) groups.push({ key: sc.id, title: nameOf(sc.id), rows: by.get(sc.id) });
     if (by.has('')) groups.push({ key: '', title: t('otherPaints'), rows: by.get('') });
   } else {
-    for (const r of rows) {
-      r.forName = nameOf(r.sid);
-      const key = [r.paint.brand, rackLine(r.paint)].filter(Boolean).join(' · ');
-      const g = groups[groups.length - 1];
-      if (g && g.key === key) g.rows.push(r); else groups.push({ key, title: key, rows: [r] });
+    const packs = [];
+    for (const p of sorted) {
+      const key = rackKeyOf(p), g = packs[packs.length - 1];
+      if (g && g.key === key) g.paints.push(p); else packs.push({ key, paints: [p] });
+    }
+    for (const g of packs) {
+      const open = !index || rackOpen.has(g.key);
+      const rows = open ? g.paints.map(p => { const r = rackRowData(p); r.forName = nameOf(r.sid); return r; }) : [];
+      groups.push({ key: g.key, title: g.key, rows, fold: index, open, count: g.paints.length,
+        owned: index ? g.paints.filter(p => store.isOwned(p.id)).length : 0 });
     }
   }
   // The list is rebuilt: focus goes back to the same control of the same paint
   const ae = document.activeElement, host = $('#shelfList');
   const keep = host.contains(ae) ? (ae.dataset.rktick ? `[data-rktick="${CSS.escape(ae.dataset.rktick)}"]`
-    : ae.dataset.rkqty ? `[data-rkqty="${ae.dataset.rkqty}"][data-id="${CSS.escape(ae.dataset.id)}"]` : null) : null;
+    : ae.dataset.rkqty ? `[data-rkqty="${ae.dataset.rkqty}"][data-id="${CSS.escape(ae.dataset.id)}"]`
+    : ae.dataset.rkgroup != null ? `[data-rkgroup="${CSS.escape(ae.dataset.rkgroup)}"]` : null) : null;
   host.innerHTML = ui.rackGroups(groups, t);
-  $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
+  $('#rkHint').textContent = t(index ? 'rkHintIndex' : state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
+  $('#rkHint').classList.toggle('index', index);   // the index's one line of how-to shows on a phone too (app.css)
   syncSendBought();
   // This store carries: every brand in the paint data, while there is a paint to buy. It was only the brands on
   // the shopping list, so a brand with no paint on the list had no toggle and always counted as carried: with
@@ -1158,6 +1180,15 @@ function renderShelfList(view) {
   if (chip) $(`[data-rkbrand="${CSS.escape(chip)}"]`)?.focus({ preventScroll: true });
   for (const b of $('#shelfGroupSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sg === state.shelfGroup));
   if (keep) host.querySelector(keep)?.focus({ preventScroll: true });
+}
+/** The index's heading over a paint's row: its "N owned" and its name, after a tick changed one row. Every
+ *  row of an open group is in the page, so the count is the group's pressed ticks. Text only: nothing moves. */
+function syncRackOwned(id) {
+  const g = $(`[data-rk="${CSS.escape(id)}"]`)?.closest('.rkfold'), b = g?.querySelector('.rktoggle'); if (!b) return;
+  const n = g.querySelectorAll('[data-rktick][aria-pressed="true"]').length, all = g.querySelectorAll('[data-rktick]').length;
+  const owned = ui.rackOwnedSaid(n, t);
+  b.querySelector('.rkown').textContent = owned;
+  b.setAttribute('aria-label', t(owned ? 'rkGroupOwned' : 'rkGroupName', { title: b.dataset.rkgroup, paints: paintsSaid(all), owned }));
 }
 /** A tick: owned at once; a second tap puts back the mark it had (to buy, with its count and project). */
 function rackTick(id) {
@@ -1195,6 +1226,7 @@ function placeSwapRows(leftId, came, { undo = false } = {}) {
   rk.kept.delete(leftId);   // a tick's "stay in the list" does not hold a paint that was swapped away
   const leftLi = rowOf(leftId), leftStays = !!leftLi && inShelfView(state.idx.byId.get(leftId));
   const plan = ui.swapRowPlan({ cameRow: !!rowOf(came.id), leftRow: !!leftLi, leftStays, cameShows: inShelfView(came), undo });
+  rackOpen.add(rackKeyOf(came));   // in the index, the row that came must show: its line opens
   if (plan === 'rebuild') renderShelf();
   else if (plan === 'remove') leftLi.remove();
   else if (plan === 'replace') {
@@ -1469,6 +1501,14 @@ function setupShelfList() {
   $('#shelfList').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.rktick) { rackTick(b.dataset.rktick); return; }
+    if (b.dataset.rkgroup != null) {
+      // Open or close one line of the index. The list is drawn again (only open lines have rows, so it is
+      // quick); the focus goes back to this heading, and the rows open under it (one direction, §3.4).
+      const key = b.dataset.rkgroup;
+      if (rackOpen.has(key)) rackOpen.delete(key); else rackOpen.add(key);
+      renderShelf();
+      return;
+    }
     if (b.dataset.rknot) {
       const id = b.dataset.rknot, r = rackRowData(state.idx.byId.get(id));
       rk.swapOpen.set(id, !r.swaps);
@@ -1502,7 +1542,7 @@ function clearShelfFilters() {
   state.shelfQ = state.shelfMark = state.shelfBrand = ''; state.shelfTypes = new Set();
   $('#shelfQ').value = $('#shelfBrand').value = '';
   shelfFilterChanged();
-  (state.shelfView === 'list' ? $('#shelfList [data-rktick]') : state.shelfView === 'map' ? $('#mapGrid [tabindex="0"]') : $('#shelfGrid'))?.focus({ preventScroll: true });
+  (state.shelfView === 'list' ? $('#shelfList [data-rkgroup], #shelfList [data-rktick]') : state.shelfView === 'map' ? $('#mapGrid [tabindex="0"]') : $('#shelfGrid'))?.focus({ preventScroll: true });
 }
 
 /* ---- Shelf dock (§3.6; mockups/shelf-landing.html "Chosen" + its design critique) ----
@@ -3865,7 +3905,14 @@ function wire() {
   });
   setupTypePick();
   $('#firstRunPicks').addEventListener('click', e => { const b = e.target.closest('[data-firstpick]'); if (b) selectPaint(b.dataset.firstpick); });
-  $('#firstRunShelf').addEventListener('click', () => { endFirstRun(); setMode('shelf'); });
+  // "Mark my shelf first" opens the list, as an index (item 78): the grid was 3,375 squares with no names
+  $('#firstRunShelf').addEventListener('click', () => {
+    endFirstRun();
+    Object.assign(state, { shelfView: 'list', shelfGroup: 'rack', shelfMark: '', shelfQ: '' });
+    $('#shelfQ').value = '';
+    setMode('shelf');
+    if (!COARSE) $('#shelfList [data-rkgroup]')?.focus({ preventScroll: true });   // the link that had focus is gone
+  });
   $('#shelfEmpty').addEventListener('click', e => { if (e.target.closest('[data-shelfclear]')) clearShelfFilters(); });
   // Sorting doesn't change which paints are shown, so keep the selection — just re-render in the new order.
   $('#shelfSort').addEventListener('change', e => { state.shelfSort = e.target.value; renderShelf(); revealShelfResults(); });

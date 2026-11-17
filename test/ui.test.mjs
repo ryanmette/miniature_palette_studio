@@ -473,6 +473,48 @@ test('rackGroups: one section per group, its title and count, rows in the given 
   assert.match(html, /<span>Other paints<\/span><span class="rkcount">2<\/span>/);
 });
 
+/* ---- The list as an index, and the named grid (PLAN §5 item 78; UX review F05 to F07) ---- */
+test('rackGroups: a folded group is a heading button with its counts; closed, it holds no rows', () => {
+  const html = rackGroups([
+    { key: 'Citadel · Base', title: 'Citadel · Base', fold: true, open: false, count: 57, owned: 0, rows: [] },
+    { key: 'Citadel · Layer', title: 'Citadel · Layer', fold: true, open: true, count: 1, owned: 1,
+      rows: [{ paint: dawn, owned: true, countable: false, qty: 0 }] },
+  ], tr);
+  assert.equal((html.match(/<section class="rkgroup rkfold/g) || []).length, 2);
+  // closed: aria-expanded="false", a hidden list that the button controls, and no row
+  assert.match(html, /<section class="rkgroup rkfold" aria-label="Citadel · Base">/);
+  assert.match(html, /data-rkgroup="Citadel · Base" aria-expanded="false" aria-controls="rkg-0"/);
+  assert.match(html, /<ul class="rklist" id="rkg-0" hidden><\/ul>/);
+  // its name starts with the words on screen (WCAG 2.5.3) and says the count
+  assert.match(html, /aria-label="rkGroupName\(title=Citadel · Base,paints=nPaints\(n=57\),owned=\)"/);
+  assert.match(html, /<span class="rkname">Citadel · Base<\/span><span class="rkown"><\/span><span class="rkcount">57<\/span>/);
+  // open: its rows, the owned count in words, and one paint is "1 paint"
+  assert.match(html, /<section class="rkgroup rkfold open" aria-label="Citadel · Layer">/);
+  assert.match(html, /data-rkgroup="Citadel · Layer" aria-expanded="true" aria-controls="rkg-1"/);
+  assert.match(html, /aria-label="rkGroupOwned\(title=Citadel · Layer,paints=onePaint,owned=rkOwnedN\(n=1\)\)"/);
+  assert.match(html, /<span class="rkown">rkOwnedN\(n=1\)<\/span>/);
+  assert.match(html, /<ul class="rklist" id="rkg-1"><li class="rkrow"/);
+  // the closed heading points right, the open one down: one icon each, from the icon set
+  assert.match(html, /aria-expanded="false"[^>]*><svg class="ic"[^>]*><use href="#i-chevr"/);
+  assert.match(html, /aria-expanded="true"[^>]*><svg class="ic"[^>]*><use href="#i-chev"\/>/);
+});
+
+test('rackGroups: a group with no fold is the plain heading, as the shopping list and the print use it', () => {
+  const html = rackGroups([{ key: 'Citadel · Base', title: 'Citadel · Base', rows: [{ paint: gold, owned: false, countable: true, qty: 1 }] }], tr);
+  assert.doesNotMatch(html, /rkfold|rktoggle|aria-expanded/);
+});
+
+test('shelfGrid: the grid of a search shows each name and brand under its cell; the plain grid does not', () => {
+  const plain = shelfGrid([dawn, gold], () => 'none');
+  assert.doesNotMatch(plain, /cellname/);
+  const named = shelfGrid([dawn, gold], () => 'none', new Set(), { named: true });
+  assert.equal((named.match(/class="cellname"/g) || []).length, 2);
+  // the twin's full name, so Dawnstone (Layer) and Dawnstone (Dry) differ; then the brand
+  assert.match(named, /<span class="cellname" aria-hidden="true"><span class="pkn">Dawnstone \(Layer\)<\/span><span class="pkb"><span>Citadel<\/span><\/span><\/span>/);
+  // the option's name is still its aria-label, and the caption is inside the cell (a tap on it marks the cell)
+  assert.match(named, /role="option" data-id="c-layer-dawnstone"[^>]*aria-label="Dawnstone \(Layer\), Citadel — [^"]+"[^>]*>.*?<span class="cellname"/);
+});
+
 /* ---- Not on the rack (PLAN §5 item 38) ---- */
 import { rackRow as rackRow38, storeCarries } from '../src/js/ui.js';
 const t38 = (k, v = {}) => k + (Object.keys(v).length ? '(' + Object.entries(v).map(([a, b]) => `${a}=${b}`).join(',') + ')' : '');
