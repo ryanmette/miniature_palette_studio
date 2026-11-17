@@ -7,6 +7,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0, v1.14.0 and v1.15.0 took only the web entries. -->
 ### Added
+- **A UX review before the first showing (`docs/UX_REVIEW.md`; a study, no app code changed).** The app as a new
+  painter meets it: an experienced painter with many pots, a link, alone, mostly on an iPhone. Two deep journeys
+  (arrive → mark my paints → a scheme with them → a shopping list; and "what is close to this paint?"), ten seams
+  between the app's parts, and measurements from the real app. 24 findings, each with its evidence, a direction and
+  a severity from three independent raters on Nielsen's 0 to 4 scale. Two are a 4: the scheme ignores the Shelf
+  until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
+  iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
+  screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 66 to 75 are the proposed work.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
