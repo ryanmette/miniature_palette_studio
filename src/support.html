@@ -94,6 +94,18 @@
   </ul>
   <p>The colour values for real paints are approximate. So a match is never exact, and the ΔE tells you
     how close it is.</p>
+  <h3 id="wash-step">The wash in a Recipe</h3>
+  <p>In the <strong>Wash · base · highlight</strong> ladder, the wash step looks for a real wash, shade or ink.
+    It has three tries:</p>
+  <ul>
+    <li>First, the wash that is nearest by ΔE (ΔE 10 or less).</li>
+    <li>If there is none, the wash that is nearest by its colour. The step then shows a <strong>gap</strong> in
+      degrees (8° or less). The gap compares the colour of the wash, not how dark it looks. It does not tell you
+      how strong the wash is, so compare the pots. See
+      <a href="#store">What if the store does not have a paint?</a> for the gap.</li>
+    <li>If there is still none, the step shows a base paint with <strong>watered down</strong>: thin that paint
+      and use it as the wash.</li>
+  </ul>
   <h3 id="use-my-paints">Use my paints</h3>
   <p>Set it in <strong>⋯ → Use my paints</strong>. It changes the matches in the live palette, the Recipe,
     the shopping list and the Accessibility tab. The Other brands tab always lists every paint.</p>
@@ -125,6 +137,16 @@
   <p>To show only some kinds of paint, open <strong>Filters</strong> and turn on one or more types, such as Layer and Wash.
     When a search or a filter hides paints, the line under the title says how many show, with <strong>Clear filters</strong>.</p>
 
+  <h3 id="map">Which colours and tones am I missing?</h3>
+  <p>Open the <strong>Shelf</strong> and press <strong>Map</strong> (the wheel icon beside Grid and List). The small
+    wheel shows each paint you own as a dot in its colour, and each paint on your shopping list as a blue ring. A
+    hatched part of the wheel is a colour family with no paint you own. Tap it to go to that colour in the grid.</p>
+  <p>The grid below shows tones: colour across and lightness down, from Highlight to Shade (on a phone, colour runs
+    down). A dashed square is a gap, for example no dark green to shade a green with. Tap a square to see its
+    paints. For a gap, or a tone with one paint, you also see the three closest pots, each with how close it is
+    (ΔE). <strong>Add</strong> puts a pot on your shopping list. A paint on the shopping list does not fill a gap
+    until you own it. The search and the filters change what the map shows.</p>
+
   <h3>Where is my shelf saved?</h3>
   <p>Only in this browser, on this device. Palette Studio has no accounts and no server, so there is no
     other copy. Clearing the site's data or using a private window removes it. Safari can also clear it
@@ -154,11 +176,30 @@
   <h3>What if the store does not have a paint?</h3>
   <p>In the Shelf's list, press <strong>Not on the rack?</strong> on the paint (on a phone, the arrows button beside
     its count). You see the three closest pots, each with how close it is (ΔE) and a word for that (Good, Fair…).
-    A wash only gets washes, and a metallic only metallics. Press <strong>Use</strong>: the new pot goes on your list in
-    its place, and if the paint was a pot in a scheme, the scheme uses the new pot too. The Recipe then says
-    “Swapped in the store for …”, with <strong>Use the original</strong> to go back.</p>
-  <p>If the store does not carry a brand at all, switch it off under <strong>This store carries</strong>. Every paint
-    of that brand then shows its closest pots from the other brands.</p>
+    A wash only gets paints that flow as a wash does (washes and shades first, then Contrast paints and inks), a
+    metallic only gets metallics, and an effect paint only gets the same effect. A pot you own already comes first
+    when it is a Good match or better, because you then have nothing to buy.</p>
+  <p>Washes and shades are compared in another way. Some makers show a wash as a thin coat on white, and others
+    show the liquid in the pot, so the same wash can be light in one brand and almost black in another. The app
+    thus compares the colour of the wash and not how dark it looks. You see a <strong>gap</strong> in degrees in
+    place of ΔE: 4° or less is a <strong>Close colour</strong>, 8° or less is a <strong>Near colour</strong>,
+    and more is an <strong>Other colour</strong>. The gap does not tell you how strong the wash is, so compare
+    the pots in the store.</p>
+  <p>For inks and Contrast paints the colours in the app are rough too, so their swaps never say more than
+    Good.</p>
+  <p>Press <strong>Use</strong>: the new pot goes on your list for the first paint, under the heading of its own
+    brand, so you find it when you are at that rack. If the paint was a pot in a scheme, the scheme uses the new pot
+    too. The Recipe then says “Swapped in the store for …”, with <strong>Use the original</strong> to go back.</p>
+  <p>If the new pot is not on the rack either, press <strong>Not on the rack?</strong> on it. You then see the next
+    closest pots to the paint you first wanted, not to the swap.</p>
+  <p>If the store does not carry a brand at all, switch it off under <strong>This store carries</strong>. The row
+    has every brand in the app. Every paint of a brand that is off then shows its closest pots from the other
+    brands, and no swap comes from a brand that is off (a pot you own still counts: it is on your shelf). So
+    switch off each brand the store does not have, also a brand that is not on your list.</p>
+  <p>Some paints have a <strong>No longer made</strong> tag: the maker stopped making them. You can still own
+    one, so it stays in the app. On your shopping list, such a paint shows its closest pots at once, because no
+    store has it. The Recipe does not suggest a paint that is no longer made, unless you own it or it is your
+    starting paint.</p>
 
   <h3>How do I get my list from my computer to my phone?</h3>
   <p>On the computer, open <strong>⋯ → Take to the store…</strong> (or <strong>Take to the store…</strong> in the
@@ -201,6 +242,8 @@
     <dd>Wheel: add a colour, or remove the last colour you added.</dd>
     <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt>
     <dd>Shelf: move between paints. Hold <kbd>Shift</kbd> to select more.</dd>
+    <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></dt>
+    <dd>Shelf map: move between tones. <kbd>Enter</kbd> shows the paints in a tone, or the pots that fill it.</dd>
     <dt><kbd>↓</kbd></dt>
     <dd>Paint field (“Paint or #hex”): open the list. In the colour grid, the arrow keys move in all four
       directions. <kbd>Home</kbd> and <kbd>End</kbd> go to the start and the end of a row; with

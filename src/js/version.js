@@ -1,19 +1,18 @@
 // version.js — the app's version, in one place. About shows it next to the paint data's own
 // version (from paints.json). scripts/check-docs.mjs fails the build when it differs from
 // package.json, so a release that bumps one and forgets the other cannot ship (CLAUDE.md §8).
-export const APP_VERSION = '1.15.0';
+export const APP_VERSION = '1.16.0';
 
 /** What's new (mockups/help-about.html, answer 5): About shows these lines under "What's new in {version}". Write
  *  them when a release is cut (CLAUDE.md §8 checklist), a few short lines for a painter, from the CHANGELOG. */
 export const WHATS_NEW = {
-  version: '1.15.0',
-  date: '2026-11-07',
+  version: '1.16.0',
+  date: '2026-11-17',
   items: [
-    '150 new Warhammer Tone Pro paints: search “tone pro”, or a colour such as “ultramar blue”.',
-    'When your pot is a Tone Pro paint, the Recipe shows all five tones, with your pot marked.',
-    'Citadel is now Warhammer Colour. “Citadel” still finds the paints.',
-    'With no paint in the link, the app opens on a random scheme.',
-    'See what changed in earlier versions, here in About.',
+    'See which colours and tones your shelf is missing: Shelf → Map.',
+    'A small wheel shows your paints as dots. A hatched part is a colour you own nothing in.',
+    'The grid shows each colour from shade to highlight. A dashed square is a gap.',
+    'Tap a gap to see the three closest pots, and Add one to your shopping list.',
   ],
 };
 
@@ -21,6 +20,17 @@ export const WHATS_NEW = {
  *  moves the WHATS_NEW it replaces to the front of this list (CLAUDE.md §8; a test fails when one is missing). It
  *  starts at 1.13.0, the first release with lines for a painter: older releases are in CHANGELOG.md only. */
 export const EARLIER_NEWS = [
+  {
+    version: '1.15.0',
+    date: '2026-11-07',
+    items: [
+      '150 new Warhammer Tone Pro paints: search “tone pro”, or a colour such as “ultramar blue”.',
+      'When your pot is a Tone Pro paint, the Recipe shows all five tones, with your pot marked.',
+      'Citadel is now Warhammer Colour. “Citadel” still finds the paints.',
+      'With no paint in the link, the app opens on a random scheme.',
+      'See what changed in earlier versions, here in About.',
+    ],
+  },
   {
     version: '1.14.0',
     date: '2026-10-31',

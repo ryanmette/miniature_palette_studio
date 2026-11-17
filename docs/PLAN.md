@@ -109,8 +109,9 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.13.0** — the shopping-list release (§5 items 34–38, from `mockups/shopping-list.html`, `project-naming.html` and `scheme-library.html`): `store.js` v2 (counts, projects, kept schemes); Save and the **Schemes** mode; the Shelf's **List** (rack order, by project, ticks, counts, print); **Take to the store** (QR code via the hand-rolled `qr.js`, the list link and the "bought" link back, the naming step, the text file); **Not on the rack** swaps written back as pot holds; the Molten Harmonics loader (`loader.js`); Save the recipe. The iPhone app project landed beside it on the native stream (still under `[Unreleased]`).
 - **v1.14.0** — the phone release (a test on an iPhone, 2026-10-30): the What's new dot (item 40) and longer toasts; the review's fixes (Restore warns about saved schemes, swap Undo keeps projects, unique names, a failed save says so, Help always matches its page); the wheel scrolls the page on touch; one 16px phone gutter; the Shelf's hold-and-slide names, drag-to-select ranges, the selection sheet with Undo, pick-many types, Select and Grid | List in the dock, a hue sort in true colour order; the big scheme view; "Move here" explained. Studies: `docs/COLOUR_CHECK.md`, `mockups/swatch-finish.html` (B, variant a chosen), `mockups/whats-new.html`, `mockups/shelf-dock-tools.html`.
 - **v1.15.0** — the Tone Pro release (2026-11-07): Warhammer Tone Pro, 150 paints from GW's own charts (item 57; dataset 1.8.0) and the maker's ladder on the Recipe (item 64 A; dataset 1.9.0, `family` + `tone`); Citadel renamed Warhammer Colour with "Citadel" kept as a search word, and five names fixed (item 56; dataset 1.7.0); a random first scheme (item 55); About's update log (item 65). Studies: `docs/TONE_PRO.md`, `docs/TONE_LADDERS.md`. Recorded for later: the Apple bug pass (58–60), a map of my paints (61), sheen (62), colour in 3D (63), the Brand setting (64 B).
-### Current status (2026-11-07)
-**v1.15.0 released** — the Tone Pro release (items 55–57, 64 A and 65; studies for items 57 and 64, new items 58–63 recorded). Before it, v1.14.0: the phone release (items 40–50 and the 2026-10-30 phone test; the swatch and colour-check studies, items 49 and 51, wait for their builds). Before it, v1.13.0: the shopping-list turn, items 34–38. Before it, v1.12.0: role holds (UC-3) and share as an image. The visual identity is done: v1.10.0 is the look (Workbench+) and v1.11.0 the
+- **v1.16.0** — the Map release (2026-11-17): the Shelf's **Map** view (item 61; `mockups/shelf-map.html`, C with A, Ryan 2026-11-09): a minimap of the owned paints by Lab hue and strength, over a grid of tones (18 Lab hue bands + the greys × 5 lightness bands); a gap offers the 3 closest opaque pots by true ΔE, with Add. New `shelfmap.js`. Still open from 2026-11-06: sheen (62), colour in 3D (63), the Brand setting (64 B).
+### Current status (2026-11-17)
+**v1.16.0 released** — the Map release (item 61: the Shelf's Map view, from the study `mockups/shelf-map.html`). Before it, v1.15.0: the Tone Pro release (items 55–57, 64 A and 65; studies for items 57 and 64, new items 58–63 recorded). Before it, v1.14.0: the phone release (items 40–50 and the 2026-10-30 phone test; the swatch and colour-check studies, items 49 and 51, wait for their builds). Before it, v1.13.0: the shopping-list turn, items 34–38. Before it, v1.12.0: role holds (UC-3) and share as an image. The visual identity is done: v1.10.0 is the look (Workbench+) and v1.11.0 the
 UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funnel)** — see
 [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
 **Native app, Stage 1 (v2.0): started 2026-10-29** — the `ios/` project is committed and runs in the
@@ -430,7 +431,8 @@ answered by Ryan: [`mockups/shopping-list.html`](../mockups/shopping-list.html) 
 
 - **One list,** in rack order (brand → line). **A tick marks the paint owned at once**; a second tap undoes it.
 - **A count is set after the fact,** on the list. One pot is the default.
-- **Brand-agnostic:** the "this store carries" choice comes from the brands on the list.
+- **Brand-agnostic:** the "this store carries" choice comes from the brands on the list. *(Changed 2026-11-14,
+  item 66: from every brand in the paint data. Still no brand is written in the code.)*
 - **A swap goes back to the scheme,** with the original paint flagged.
 - **A project is one scheme.** Its name is asked **once, at the first export**, with a Skip. **A name saves the
   scheme for good**, and it goes in the share link.
@@ -736,7 +738,7 @@ Do these three in one bug pass, in this order.
     (`any-pointer: coarse`); hover effects only with `any-hover: hover`; test the keyboard paths on an iPad with a
     keyboard. Changes CLAUDE.md §3.5–3.6 in many places.
 
-### Raised by Ryan on 2026-11-06 — a map of my paints, sheen, 3D colour (not yet done)
+### Raised by Ryan on 2026-11-06 — a map of my paints (built), sheen, 3D colour (not yet done)
 
 61. **A map of my paints: where are my colours, and which tones am I missing?** Ryan: "a 'what tones am I missing or
     low coverage' or maybe a 'place all my paints on the wheel' to visually see where they are. The color wheel is
@@ -756,6 +758,12 @@ Do these three in one bug pass, in this order.
     and metals (filter by finish class, §5.2); a tap on a dot or a cell (the paint, or the paints there); and a path
     for the keyboard and a screen reader (a table of the same counts, never only a picture; §3.5). No new data:
     hue, chroma and lightness come from each paint's Lab (§7).
+    **Studied (2026-11-07):** [`mockups/shelf-map.html`](../mockups/shelf-map.html) — 5 directions on two sample
+    shelves (A minimap dots · B ring map · C tone grid · D fog of war by lightness floor · E a layer on the Studio's
+    wheel). **Recommended:** C (a grid of real buttons, so it is its own keyboard path) with a small A as its header;
+    a gap cell lists the 3 closest pots (true ΔE). **Built (2026-11-09, Ryan: "Go with C plus A"):** the Shelf's **Map** view
+    (`src/js/shelfmap.js`, `ui.mapGrid`, CLAUDE.md §3.6). Not built: D and E (later ideas), and a counts table (C's grid is
+    itself the keyboard and screen-reader path).
 62. **The sheen of each paint: matte, satin or gloss** (a study). Ryan: "I think we'll have to go by what community
     says for instance GW paints and especially the Tone Pro are satin." **A new property, not the finish class:** the
     app's "finish" (§5.2: flat · translucent · metal · effect) says what a paint *does* on the model; the sheen says
@@ -808,6 +816,187 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, 73, way C of 68 and the owned-first part of 72 built; 74 open)
+
+Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
+equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
+audit ran `data.js storeSwaps` on all 3,375 paints (dataset 1.9.0) for five stores, and did the screenshot's steps
+again in a browser. **What was right:** no swap comes from a brand that is off; the ΔE shown is the true one; the
+finish class is strict (a metallic gets only metallics); the count and the project move with the swap.
+
+How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the store has:
+
+| Store | Flat | Wash, ink, Contrast | Metallic |
+|---|---|---|---|
+| All 10 brands | 92% | 47% | 54% |
+| Warhammer Colour + Army Painter + Two Thin Coats + Vallejo + AMMO | 80% | 39% | 41% |
+| Warhammer Colour + Army Painter + Two Thin Coats | 62% | 29% | 34% |
+| Warhammer Colour only | 36% | 10% | 12% |
+
+66. **A toggle for every brand** (was: only the brands on the shopping list). A brand with no paint on the list had
+    no toggle, so it always counted as carried. With the screenshot's five brands off, 46% of those brands' paints
+    got their best swap from Vallejo or AMMO, which the painter could not switch off (rows 2 and 3 of the table).
+    **Built (2026-11-14):** "This store carries" has one toggle per brand in the paint data, A to Z, a fixed order.
+67. **Undo lost a paint to buy.** A Use of a swap that was on the list already, then Undo: the original took the
+    swap's row, so the swap (still to buy in the saved data) was not in the list until it was drawn again, and
+    its count stayed at the sum. **Built (2026-11-14):** `ui.swapRowPlan` + `app.js placeSwapRows`; the swap keeps
+    its row and gets its own count back, and the original's row goes back where it was.
+68. **Wash colours are recorded in two ways** (open; data; goes with item 49, `docs/COLOUR_CHECK.md`). Some lines
+    hold the colour of a thin coat on white (median Lab L\*: Warhammer Colour Shade 65, P3 Wash 63, Vallejo Wash 49),
+    others the colour in the pot (Army Painter Wash 24, AMMO Wash 18, Pro Acryl Wash 10). So Army Painter's Shadow
+    Wash to Nuln Oil is ΔE 50.5 and is never offered, and a blue Contrast (Leviadon Blue, ΔE 4.3 "Fair") is. Nuln
+    Oil's own swaps hold no black wash of another brand. "Indistinguishable" between two near-black values says
+    little (28 translucent paints have L\* < 12). Needs: one written rule for a wash's hex; until then, perhaps no
+    Indistinguishable / Excellent word on a translucent swap (§2).
+    **A first step, built (2026-11-17):** a translucent swap never says more than "Good" (`data.js swapQuality`;
+    the ΔE stays true), and its list starts with one line that says these colours are rough. **Open:** the data
+    itself (one rule, one line of washes at a time, from the makers' own swatches), and the same words on the
+    Equivalents tab, which still says "Indistinguishable" for two near-black washes.
+    **A source check (2026-11-17; no data changed).** Ryan asked to fix the wash data. What this session could reach:
+    - **Refused (HTTP 403 or 405, to a plain client and to the fetch tool; not worked around):** `warhammer.com`
+      (the shop pages of the Shades) and `acrylicosvallejo.com`. That is 50 of the 68 washes that hold a light value
+      (Warhammer Colour Shade 16, Vallejo 34). `migjimenez.com` also refused.
+    - **Open:** `warhammer-community.com` (GW's news site), `thearmypainter.com` (a public product feed),
+      `duncanrhodes.com` (Two Thin Coats' own charts for waves 1 to 3), `monumenthobbies.com`, `reapermini.com`.
+    - **The makers do not show a wash in one way.** Army Painter shows the liquid (a bottle and a splash, dark). GW's
+      articles show the pot. Two Thin Coats' charts show a disc that goes from dark at the rim to light at the centre.
+      So "the maker's own swatch" cannot give one rule for all brands: the two conventions in the data are the
+      makers' own two ways. One rule needs our own measurement (item 49: each wash both ways, on one card).
+    - **Why the rule matters to the Recipe too:** the wash step's target is a darkened base (§7), so a Shade with a
+      light value (Nuln Oil `#9E9A98`) can almost never be the wash step's pot.
+    - **Errors found on the way (item 73):** `two-thin-coats-wave-1-rc-flesh-wash` is "Orc Flesh Wash" on Two Thin Coats' own
+      chart (the name lost its first letter); GW's seven Shades of 2022 are not in the data (Mortarion Grime,
+      Berserker Bloodshade, Targor Rageshade, Tyran Blue, Poxwalker, Kroak Green, Soulblight Grey), and its four
+      Gloss Shades are not marked `discontinued`, although GW's article "A New Era of Paints" (Warhammer Community,
+      2022-06-13) says they leave the range.
+    - **Ways on (Ryan to choose):** (a) Ryan measures, and the build gets an overrides file for the values
+      (`COLOUR_CHECK.md` §5.3); (b) Ryan saves the makers' pages or charts as files, and the values are sampled
+      from them; (c) no data change: rank a wash against a wash by what it absorbs (the direction of its absorbance
+      in linear RGB, which does not change with the coat's thickness), with words of its own in place of ΔE.
+    **Way (c), built (2026-11-17; Ryan: "go with C").** In the store swaps a wash or shade ranks by **the gap**: the
+    angle between the two absorbances (`color.js absorbance`, `absorbGap`; `data.js storeSwaps`, `gapQuality`),
+    plus 0.02 × ΔE as the tie-break and the kind penalty (2° at first; 4° since dataset 1.10.0, `WASH_KIND_GAP`: at
+    2° a black Contrast paint came before Nuln Oil for a black wash, and at 4° the best swap is a wash or shade for
+    96%, not 82%, with the colour family as good: 80% against 77%). The check was the colour word in each wash's name
+    (106 of 131 have one; the browns, fleshes, sepias and rusts as one family). Best swap in the same family:
+
+    | The brands carried | By ΔE | By the gap |
+    |---|---|---|
+    | Every brand | 65% | 64% |
+    | Warhammer Colour + Army Painter + Two Thin Coats | 49% | 64% |
+    | Warhammer Colour + Army Painter | 44% | 71% |
+    | Army Painter only | 42% | 73% |
+    | Warhammer Colour only | 32% | 74% |
+
+    - So with every brand there is no gain (each maker's way meets its own kind), and the gain is where a store
+      has few brands. Other forms did not do better: the gap alone (61% with every brand), a larger ΔE share
+      (0.1: 4 to 5 points less in a small store), and a "same coat" ΔE that scales each line to one median
+      strength (equal within the noise, and it needs line statistics).
+    - Limits: the gap does not show a wash's strength, so all blacks and greys are near 0° (Light Grey is "Close" to
+      a black wash); 2 of 131 washes hardly absorb (Vallejo White, Smoke Grey Wash) and keep ΔE; a pair under 4°
+      is one family for only 2 in 3.
+    - **Open:** the Equivalents tab (still ΔE). **The Recipe's wash step** (still ΔE, gate 10): it finds a real
+      wash for 93% of 1,573 base colours, but Warhammer Colour's 16 Shades win 3.4% of those (9% of the pool)
+      and Nuln Oil and Agrax Earthshade never win, while Army Painter's Wash line wins 32% (20% of the pool). A
+      change there alters every Recipe, so it needs its own decision (item 74). **Data seen on the way:** Army
+      Painter's "Brush-On Primer" had the type `wash` (it is a primer), so it showed as a swap for a black wash
+      (corrected in item 73).
+69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
+    later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
+    the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint
+    it replaced (`storeSwaps`' `except`), and Use goes back to that paint and then to the new swap, so the list and
+    the scheme never hold a swap of a swap. The swap log is a list per pot (one pot for two paints), and a pot
+    swapped away is no swap for another paint in the same visit.
+70. **A swap or its Undo stays under the old heading.** The row is drawn in the same
+    place (§3.4), so a Two Thin Coats pot can sit under "AK Interactive", a brand that is off, until the list is
+    drawn again; the group counts are then wrong too. The heading says which rack to walk to.
+    **Built (2026-11-17; Ryan chose the correct rack over "nothing moves"):** when the list's filters show the
+    paint, the list is drawn again, so the row is under its own heading and the counts are right. The focus is on
+    the row, the page scrolls only as far as it must, a ring on the row fades, and the live region says the new
+    heading. The groups are `content-visibility: auto`, so the row's place is measured after the groups above it
+    are laid out (the 600px estimate put the page some thousands of px too far for a moment). Only when a filter
+    hides the swap does it take the original's place.
+71. **One class for wash, shade, ink, Contrast and glaze** (open; ranking). For 60% of washes and shades the best
+    swap is not a wash or a shade (most are Contrast paints); in half of those a wash was under 2 ΔE further. For
+    effect paints, 21 of 55 best swaps have another `fx` (Blood For The Blood God, gloss, gets Vallejo Corrosion,
+    texture). **Built (2026-11-15):** `data.js swapKind` + `SWAP_KIND_PENALTY` = 2 (ranking only): a wash's or
+    shade's best swap is a wash or shade for 69% (was 40%) for +0.29 mean ΔE; a Contrast paint's is a Contrast
+    paint for 86% (was 65%) for +0.21; a penalty of 3 gave 10 points more for +0.22 ΔE more. An effect swaps only
+    for the same `fx`: one paint (Nurgle's Rot, the only slime) then has no swap, and 34 of 54 have a best swap
+    over ΔE 10, which the list says ("None is close"). The Equivalents tab is not changed.
+72. **Small:** the list stops at 3 (for 53% of paints the 4th swap is within 0.3 ΔE of the 3rd), and a paint
+    you own is flagged but not ranked first; 122 paints have a best swap with the same hex (34 are pure black or
+    white: item 49); Nolzur's Glistening Blood has the type `wash` (probably an effect). **Built (2026-11-17,
+    Ryan: "go with your recommendations"):** an owned pot within ΔE 3.5 (Good) is the first swap, and an owned pot
+    counts also when its brand is off (`storeSwaps`' `ownedIds`, `SWAP_OWNED_MAX`). **Open:** the list still stops
+    at 3; the shared hex values wait for item 49; the type of Glistening Blood needs a check against Army
+    Painter's own page before the data changes (§5).
+
+73. **Data errors found during the audit** (item 68's source check and item 72). **Built (2026-11-17), dataset
+    1.10.0, from the makers' own pages (`src/data/SOURCES.md`); no hex and no id changed:**
+    - **14 Army Painter paints are effects, not washes.** Upstream's set "Warpaints Fanatic Wash" holds 32 paints;
+      Army Painter's own shop lists 18 as Fanatic Washes and 14 as Fanatic Effects (its public product list). The
+      first one seen was Brush-On Primer, the third swap for a black wash. The build has a `types` map for this.
+    - **"RC Flesh Wash" is "Orc Flesh Wash"** (Two Thin Coats' chart); the old spelling stays in `formerly`.
+    - **The four Gloss Shades are `discontinued`** (GW, "A New Era of Paints", 13 Jun 2022; Ryan's range list in
+      `docs/sources/` says the same). They are the data's first discontinued paints. The store swaps now skip a
+      discontinued paint, unless it is owned. **Built after it (2026-11-17, Ryan: "go with your recommendations"):**
+      a **No longer made** tag beside the finish tag (`ui.goneTag`); in the Shelf's list such a paint to buy opens
+      its swaps by itself; `nearestPaint(s)` skips it unless it is owned or picked (`passesFilter`).
+    - A rebuild from upstream as it is today gave the same file as 1.9.0, so upstream has not changed.
+    - **Open: GW's seven Shades of 2022** (Mortarion Grime, Berserker Bloodshade, Targor Rageshade, Tyran Blue,
+      Poxwalker, Kroak Green, Soulblight Grey), and Nolzur's Glistening Blood (type `wash`). Both are checked and
+      recorded in item 75.
+74. **The Recipe's wash step by the gap?** (**built 2026-11-17** as a second try, below; Ryan: "go with your
+    recommendations".) Measured 2026-11-17 on 1,882 base and layer
+    paints with a colour word in the name (dataset 1.9.0): the share that gets a real wash, shade or ink, and the
+    share of those whose wash is in the base paint's colour family (the browns as one; grey with black).
+
+    | Washes available | Found, ΔE ≤ 10 (now) | Found, gap ≤ 8° | Same family, ΔE | Same family, gap |
+    |---|---|---|---|---|
+    | Every brand | 95% | 99% | 61% | 60% |
+    | Warhammer Colour + Army Painter | 75% | 93% | 59% | 57% |
+    | Army Painter only | 69% | 88% | 60% | 59% |
+    | Vallejo only | 56% | 90% | 51% | 57% |
+    | Warhammer Colour only | 8% | 78% | 53% | 48% |
+
+    So with every brand the gap changes almost nothing, and with one brand it finds a real wash much more often at
+    about the same accuracy. The gain is for a painter with **Use my paints** on. With every brand, Warhammer
+    Colour's Shades win 3.3% of the steps by ΔE and 4.1% by the gap (they are 9% of the pool). A change alters
+    every Recipe and shopping list, and the gap does not show strength, which is what this step is about.
+
+    **Built: ΔE first, the gap second, "watered down" third** (`scheme.js washStep`, `data.js washByGap`). ΔE
+    stays first, so no Recipe loses the wash it had. Measured on dataset 1.10.0 (the gap only where ΔE finds none):
+
+    | Washes available | By ΔE (as before) | Added by the gap | Total | Same family: ΔE picks | Same family: added picks |
+    |---|---|---|---|---|---|
+    | Every brand | 93% | +6% | 99% | 60% | 66% |
+    | Warhammer Colour + Army Painter | 66% | +22% | 89% | 57% | 51% |
+    | Army Painter only | 59% | +21% | 80% | 58% | 53% |
+    | Vallejo only | 56% | +36% | 92% | 51% | 60% |
+    | Warhammer Colour only | 8% | +71% | 79% | 53% | 48% |
+
+    A limit of 4° adds about half as many washes and is not more accurate (46–68%), so the limit is 8° (Near
+    colour). The step shows the gap; the ΔE in the match is the true one. **Open:** the accuracy of both ways is
+    about 1 in 2 by this measure, and only measured wash colours can raise it (item 68).
+75. **The Warhammer Colour range against GW's list** (open; data; found 2026-11-17). By name, against Ryan's list
+    in `docs/sources/warhammer-colour-list-2026-11-03.md` (a secondary source for names), the data has no row for
+    **34** paints: Base 1 (Ceramite White) · Shade 7 (Berserker Bloodshade, Kroak Green, Mortarion Grime,
+    Poxwalker, Soulblight Grey, Targor Rageshade, Tyran Blue) · Contrast 26 (Aeldari Emerald, Asurmen Blue, Baal
+    Red, Bad Moon Yellow, Briar Queen Chill, Celestium Blue, Doomfire Magenta, Dreadful Visage, Frostheart,
+    Garaghak's Sewer, Gutrippa Flesh, Hexwraith Flame, Imperial Fist, Ironjawz Yellow, Karandras Green, Kroxigor
+    Scales, Leviathan Purple, Luxion Purple, Magmadroth Flame, Mantis Warriors Green, Nighthaunt Gloom, Pylar
+    Glacier, Ratling Grime, Sigvald Burgundy, Stormfiend, Striking Scorpion Green; the data has Hexwraith Flame
+    and Nighthaunt Gloom as Technical paints, so their line needs a check) · Texture 2 (Blackfire Earth, Lustrian
+    Undergrowth). Five Technical products are left out on purpose (mediums, a primer, a filler). **No row was
+    added:** upstream has no values for them, `warhammer.com` refuses automated access, and `paint.warhammer.com`
+    has no range list. They need values from an accepted source (§5.2): GW's own swatches read by hand, or
+    Ryan's measurements, as Tone Pro (`scripts/tone-pro.json`).
+    - **Also open: Glistening Blood.** The data has it twice (`Army Painter · Warpaints`, type `layer`, and
+      `Army Painter · Nolzur's`, type `wash`). Army Painter sold it as "Warpaints Effects: Glistening Blood", so
+      both are probably effects (`fx: gloss`). The product page is gone (404) and it is not in the maker's
+      public product list, so there is no primary source to read. No change until one is found.
+
 ### Raised by the UX review on 2026-11-17 — before the first showing (not yet built)
 
 [`docs/UX_REVIEW.md`](UX_REVIEW.md): a review of the whole app as a new painter meets it (experienced painters, a
@@ -819,51 +1008,51 @@ to build before the link goes out; the review's stop rule is "the 4s and the 3s 
 ratings stand. **The build order** follows the journey, not the ratings alone, because a painter who stops at an
 early step never sees a later fix:
 
-0. Ryan's iPhone check (item 67's first part; no code). Its result decides what item 67 builds.
-1. Item 68: "mark my shelf" opens the list, and a grid result has its name.
-2. Items 66 and 69 together: offer Use my paints when the Shelf gets paints, and the Metal role with a shelf. (Two
-   raters said that item 66 alone moves the complaint to item 69.)
-3. Item 70, its first part: the main Add button puts only the role pots on the list.
-4. Item 67: keep the Shelf on an iPhone, after step 0.
-5. With any of the steps: the three wording errors (F19) and a softer word than "Interchangeable" (item 72, in part).
+0. Ryan's iPhone check (item 77's first part; no code). Its result decides what item 77 builds.
+1. Item 78: "mark my shelf" opens the list, and a grid result has its name.
+2. Items 76 and 79 together: offer Use my paints when the Shelf gets paints, and the Metal role with a shelf. (Two
+   raters said that item 76 alone moves the complaint to item 79.)
+3. Item 80, its first part: the main Add button puts only the role pots on the list.
+4. Item 77: keep the Shelf on an iPhone, after step 0.
+5. With any of the steps: the three wording errors (F19) and a softer word than "Interchangeable" (item 82, in part).
 
-The link goes out when steps 1 to 4 are done. Items 71 (the lookup), 72 (the hex data), 73 and 74, and the rest of
-item 75, come after the first painters answer.
+The link goes out when steps 1 to 4 are done. Items 81 (the lookup), 82 (the hex data), 83 and 84, and the rest of
+item 85, come after the first painters answer.
 
-66. **The scheme ignores the Shelf until the painter finds a setting in ⋯** (F01; rated 4 · 4 · 4). After 45 marks,
+76. **The scheme ignores the Shelf until the painter finds a setting in ⋯** (F01; rated 4 · 4 · 4). After 45 marks,
     Use my paints is still Off and the Recipe says "+ Add 14". Recommend: when the Shelf gets its first owned paints,
     offer the setting in that place (Prefer · Only · Not now), and keep a next step in the Studio after "mark my shelf
     first" (the band ends there today). The control stays in ⋯ (CLAUDE.md §3.6).
-67. **Keep the Shelf on an iPhone** (F08; 4 · 4 · 4, from WebKit's text, not yet from a phone). **First: Ryan's hand
+77. **Keep the Shelf on an iPhone** (F08; 4 · 4 · 4, from WebKit's text, not yet from a phone). **First: Ryan's hand
     check** (UX_REVIEW §7, items 1, 2 and 8). Then: one message in the flow when the Shelf first holds real work
     (Back up · Add to Home Screen); correct Help ("Where is my shelf saved?": back up in Safari, add to the Home
     Screen, Restore there, because a Home Screen app has its own storage); call `navigator.storage.persist()`.
-68. **"Mark my shelf" opens the list, and a grid result has its name** (F05, F06, F07; 3 · 3 · 3 for the first two).
+78. **"Mark my shelf" opens the list, and a grid result has its name** (F05, F06, F07; 3 · 3 · 3 for the first two).
     The door opens on 3,375 squares with no names; the list (names and a tick) is behind an icon. Recommend one
     study: the door opens the list at the painter's brand, with lines that close; a search result in the grid shows
     its name. Measured: 96 taps + 211 key presses to mark 48 pots through the grid's search.
-69. **The Metal role with a shelf** (F02; 3 · 3 · 3). With Prefer, the Metal role is an owned metallic in 0 of 203
+79. **The Metal role with a shelf** (F02; 3 · 3 · 3). With Prefer, the Metal role is an owned metallic in 0 of 203
     schemes for a painter who owns 6. A study: prefer an owned metallic of the role's kind, and say why. It changes
     a §7 ranking rule (a CHANGELOG note).
-70. **The shopping list's main button** (F04; 3 · 3 · 3). "+ Add N" is a median 14 pots from 7 brands, and counts the
+80. **The shopping list's main button** (F04; 3 · 3 · 3). "+ Add N" is a median 14 pots from 7 brands, and counts the
     metallic ladder and the NMM ladder together. Recommend: the main button adds the role pots that the painter does
     not own; the ladders are a second choice; never NMM with the metallics. Then the Brand setting of item 64
     (`docs/TONE_LADDERS.md`).
-71. **Other brands for one brand, and a front door for the lookup** (F11: 3 · 3 · 3; F10: 2 · 2 · 2). "The Vallejo
+81. **Other brands for one brand, and a front door for the lookup** (F11: 3 · 3 · 3; F10: 2 · 2 · 2). "The Vallejo
     version of Mephiston Red" has an answer only when a Vallejo paint is in the 8 closest. Recommend: a brand select
     on the tab, with the best match for each brand as the default view; and one direction of
     `mockups/buying-assistant.html` for the front door.
-72. **Trust in the matches** (F12; 3 · 3 · 3). A painter tests the app with a paint they know. Do the first batch of
+82. **Trust in the matches** (F12; 3 · 3 · 3). A painter tests the app with a paint they know. Do the first batch of
     item 49 (`docs/COLOUR_CHECK.md`: Citadel Base, then Layer) before the showing; use a softer word than
     "Interchangeable — same colour" for a group made from hex values; Ryan to read the 15 pairs of
     `mockups/ux-review/trust.mjs` as a painter.
-73. **"From my pots, which go well together?"** (F03; 3 · 3 · 2). In Only mode, 63% of the roles are "Poor": the
+83. **"From my pots, which go well together?"** (F03; 3 · 3 · 2). In Only mode, 63% of the roles are "Poor": the
     labels are honest, and the painter reads "your pots are poor". A product question, near item 61 (a map of my
     paints). Not a small fix.
-74. **The phone's first screen** (F09, F13; 2 · 2 · 2 each). After a pick, the pots start 134 px below the screen.
+84. **The phone's first screen** (F09, F13; 2 · 2 · 2 each). After a pick, the pots start 134 px below the screen.
     The first pick keeps the random harmony of the first load (a value harmony about 2 times in 9). Recommend: the
     pots on the first screen after a pick (a reason to look again at item 48), and a fixed harmony for the first pick.
-75. **Small fixes, one batch** (rated 2 or less): a way to the list after Add, and the Shopping list filter opens in
+85. **Small fixes, one batch** (rated 2 or less): a way to the list after Add, and the Shopping list filter opens in
     the list view (F14); Take to the store on a phone says "your list is on this phone" first (F15); a name the
     painter did not change is Skip (F16); a new starting paint on a saved scheme (F17; Save has no confirm); a
     message for a link to an unknown paint (F18); "1 paints", "typed hex" for a wheel tap, the doubled hex (F19);

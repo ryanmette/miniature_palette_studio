@@ -1,6 +1,6 @@
 {
- "version": "1.9.0",
- "generated": "2026-11-06",
+ "version": "1.10.0",
+ "generated": "2026-11-17",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
  "note": "Hex is sRGB and approximate; Lab is derived at runtime (CLAUDE.md §5/§7). Finishes (wash/shade/ink/contrast/glaze/effect) are excluded from harmony suggestions at runtime. groups[] = curated equivalence clusters (paints within ΔE 1.0 of the same finish class — metal, translucent media, effect, opaque); paints carry groupId.",
@@ -927,36 +927,31 @@
   },
   {
    "id": "yellow-18",
-   "refHex": "#FFF464",
-   "label": "yellow"
-  },
-  {
-   "id": "yellow-19",
    "refHex": "#FFF55A",
    "label": "yellow"
   },
   {
-   "id": "yellow-20",
+   "id": "yellow-19",
    "refHex": "#C5C483",
    "label": "yellow"
   },
   {
-   "id": "yellow-21",
+   "id": "yellow-20",
    "refHex": "#FFCB05",
    "label": "yellow"
   },
   {
-   "id": "yellow-22",
+   "id": "yellow-21",
    "refHex": "#F8ED1F",
    "label": "yellow"
   },
   {
-   "id": "yellow-23",
+   "id": "yellow-22",
    "refHex": "#F8D347",
    "label": "yellow"
   },
   {
-   "id": "yellow-24",
+   "id": "yellow-23",
    "refHex": "#EFE641",
    "label": "yellow"
   }
@@ -16410,7 +16405,7 @@
    "line": "Wash",
    "name": "Brush-On Primer",
    "hex": "#727475",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16449,12 +16444,13 @@
    "line": "Wash",
    "name": "Dark Rust",
    "hex": "#290F12",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "army-painter-wash-dark-skin-shade",
@@ -16488,7 +16484,7 @@
    "line": "Wash",
    "name": "Data System Glow",
    "hex": "#87C866",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16501,12 +16497,13 @@
    "line": "Wash",
    "name": "Disgusting Slime",
    "hex": "#A5C345",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "slime"
   },
   {
    "id": "army-painter-wash-dry-blood",
@@ -16514,12 +16511,13 @@
    "line": "Wash",
    "name": "Dry Blood",
    "hex": "#24000E",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "army-painter-wash-flesh-wash",
@@ -16541,12 +16539,13 @@
    "line": "Wash",
    "name": "Fresh Rust",
    "hex": "#C25428",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "texture"
   },
   {
    "id": "army-painter-wash-green-tone",
@@ -16567,13 +16566,12 @@
    "line": "Wash",
    "name": "Lens Flare Glow",
    "hex": "#FFF464",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25",
-   "groupId": "yellow-18"
+   "captured": "2026-06-25"
   },
   {
    "id": "army-painter-wash-light-tone",
@@ -16646,7 +16644,7 @@
    "line": "Wash",
    "name": "Oil Stains",
    "hex": "#1D252B",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16659,7 +16657,7 @@
    "line": "Wash",
    "name": "Oozing Vomit",
    "hex": "#7B5C1D",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16685,7 +16683,7 @@
    "line": "Wash",
    "name": "Plasma Coil Glow",
    "hex": "#5ECDF4",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16698,7 +16696,7 @@
    "line": "Wash",
    "name": "Power Node Glow",
    "hex": "#F286B5",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16724,7 +16722,7 @@
    "line": "Wash",
    "name": "Radiation Glow",
    "hex": "#FBB375",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -16815,12 +16813,13 @@
    "line": "Wash",
    "name": "True Blood",
    "hex": "#8D0422",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "army-painter-wash-verdigris",
@@ -16828,7 +16827,7 @@
    "line": "Wash",
    "name": "Verdigris",
    "hex": "#61B89B",
-   "type": "wash",
+   "type": "effect",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -18178,7 +18177,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-19"
+   "groupId": "yellow-18"
   },
   {
    "id": "citadel-dry-hoeth-blue",
@@ -18425,7 +18424,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-20"
+   "groupId": "yellow-19"
   },
   {
    "id": "citadel-dry-underhive-ash",
@@ -18504,8 +18503,7 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
-   "captured": "2026-06-25",
-   "groupId": "yellow-18"
+   "captured": "2026-06-25"
   },
   {
    "id": "citadel-glaze-waywatcher-green",
@@ -18824,7 +18822,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-19"
+   "groupId": "yellow-18"
   },
   {
    "id": "citadel-layer-elysian-green",
@@ -19779,7 +19777,7 @@
    "name": "Agrax Earthshade Gloss",
    "hex": "#B4AA9E",
    "type": "shade",
-   "discontinued": false,
+   "discontinued": true,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
@@ -19860,7 +19858,7 @@
    "name": "Cryptek Armourshade Gloss",
    "hex": "#856A67",
    "type": "shade",
-   "discontinued": false,
+   "discontinued": true,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
@@ -19925,7 +19923,7 @@
    "name": "Nuln Oil Gloss",
    "hex": "#B3AFAE",
    "type": "shade",
-   "discontinued": false,
+   "discontinued": true,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
@@ -19951,7 +19949,7 @@
    "name": "Reikland Fleshshade Gloss",
    "hex": "#C2A896",
    "type": "shade",
-   "discontinued": false,
+   "discontinued": true,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Citadel_Colour.md",
@@ -25955,7 +25953,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-21"
+   "groupId": "yellow-20"
   },
   {
    "id": "reaper-bones-cats-eye-green",
@@ -28506,7 +28504,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-20"
+   "groupId": "yellow-19"
   },
   {
    "id": "reaper-master-series-green-liner",
@@ -28848,7 +28846,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-22"
+   "groupId": "yellow-21"
   },
   {
    "id": "reaper-master-series-light-blue",
@@ -30829,7 +30827,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-23"
+   "groupId": "yellow-22"
   },
   {
    "id": "reaper-pathfinder-cavalier-orange",
@@ -32223,7 +32221,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-22"
+   "groupId": "yellow-21"
   },
   {
    "id": "scale75-artist-prusian-blue",
@@ -36089,7 +36087,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-21"
+   "groupId": "yellow-20"
   },
   {
    "id": "two-thin-coats-wave-1-amethyst-rayne",
@@ -36591,14 +36589,17 @@
    "id": "two-thin-coats-wave-1-rc-flesh-wash",
    "brand": "Two Thin Coats",
    "line": "Wave 1",
-   "name": "RC Flesh Wash",
+   "name": "Orc Flesh Wash",
    "hex": "#52854C",
    "type": "wash",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "RC Flesh Wash"
+   ]
   },
   {
    "id": "two-thin-coats-wave-1-royal-cloak",
@@ -39088,7 +39089,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-24"
+   "groupId": "yellow-23"
   },
   {
    "id": "vallejo-game-color-foul-green",
@@ -41229,7 +41230,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-24"
+   "groupId": "yellow-23"
   },
   {
    "id": "vallejo-mecha-color-yellow-ochre",
@@ -43173,7 +43174,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-23"
+   "groupId": "yellow-22"
   },
   {
    "id": "vallejo-model-color-lime-green",
@@ -44333,7 +44334,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
-   "groupId": "yellow-24"
+   "groupId": "yellow-23"
   },
   {
    "id": "vallejo-model-color-yellow-green",

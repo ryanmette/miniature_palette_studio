@@ -10,6 +10,11 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.16.0** — the Map release. The Shelf has a third view, **Map**: a small colour wheel shows the paints you own
+as dots, with a hatched part for each colour family you own nothing in, and a grid of tones (18 colours from shade to
+highlight, plus the greys) shows every gap. Tap a gap for the three closest pots, with their ΔE, and add one to your
+shopping list.
+
 **v1.15.0** — the Tone Pro release. Games Workshop's new **Warhammer Tone Pro** range is in: 150 paints (30 colours ×
 5 tones), their colours read from GW's own charts. When a pot is a Tone Pro paint, its Recipe card shows the maker's
 five tones. Citadel is now **Warhammer Colour** ("Citadel" still finds the paints), five paint names have the maker's

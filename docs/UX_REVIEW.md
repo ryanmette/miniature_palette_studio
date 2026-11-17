@@ -3,7 +3,7 @@
 A review of the whole app as a new painter meets it. Ryan asked for it before he sends the link to
 people for the first time. It is a study: **no app code changed**. Each finding has its evidence, a
 severity from three independent raters, and a direction. Ryan decides what to build
-([`PLAN.md`](PLAN.md) §5, items 66 to 75).
+([`PLAN.md`](PLAN.md) §5, items 76 to 85).
 
 App version: 1.15.0 (the local `src/`, paint data 1.9.0). Evidence and scripts:
 [`mockups/ux-review/`](../mockups/ux-review/).

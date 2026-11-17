@@ -478,6 +478,7 @@ import { rackRow as rackRow38, storeCarries } from '../src/js/ui.js';
 const t38 = (k, v = {}) => k + (Object.keys(v).length ? '(' + Object.entries(v).map(([a, b]) => `${a}=${b}`).join(',') + ')' : '');
 const red = { id: 'cit-red', brand: 'Citadel', line: 'Base', name: 'Mephiston Red', hex: '#960C09', type: 'base' };
 const carm = { id: 'val-carm', brand: 'Vallejo', line: 'Model Color', name: 'Carmine Red', hex: '#97211F', type: 'base' };
+const red2 = { id: 'ap-red', brand: 'Army Painter', line: 'Warpaints', name: 'Pure Red', hex: '#9C1A1D', type: 'layer' };
 
 test('rackRow: a to-buy row has Not on the rack? in its count row; open, it lists swaps with true ΔE, label and Use', () => {
   const closed = rackRow38({ paint: red, countable: true, owned: false, qty: 1, canSwap: true }, t38);
@@ -503,8 +504,55 @@ test('rackRow: a swap made in this visit says what it replaced; Undo only while 
   const sw = rackRow38({ paint: carm, countable: true, owned: false, qty: 1, insteadOf: red }, t38);
   assert.match(sw, /inPlaceOf\(name=Mephiston Red\)/);
   assert.match(sw, /data-rkunswap="val-carm"/);
-  assert.doesNotMatch(sw, /data-rknot/, 'a swap row does not swap again');
+  assert.doesNotMatch(sw, /data-rknot/, 'no toggle unless the row can swap');
+  // a row that is a swap can be missing from the rack too (item 69): its swaps are for the paint it replaced
+  const again = rackRow38({ paint: carm, countable: true, owned: false, qty: 1, insteadOf: red, canSwap: true,
+    swaps: { of: red, list: [{ paint: red2, deltaE: 2.1, quality: { label: 'Good', tier: 'success' } }] } }, t38);
+  assert.match(again, /data-rkunswap="val-carm"/, 'Undo stays');
+  assert.match(again, /data-rknot="val-carm" aria-expanded="true"/);
+  assert.match(again, /role="group" aria-label="swapsFor\(name=Mephiston Red\)"/);
+  assert.match(again, /swapsOf\(name=Mephiston Red\)/);
+  assert.match(again, /data-rkuse="ap-red" data-for="val-carm" aria-label="useInPlace\(name=Pure Red,was=Mephiston Red\)"/);
+  const againOff = rackRow38({ paint: carm, countable: true, qty: 1, insteadOf: red, canSwap: true, swaps: { of: red, notCarried: true, list: [] } }, t38);
+  assert.match(againOff, /notCarriedOf\(brand=Vallejo,name=Mephiston Red\)/);
+  // a wash-class paint (item 68): one line says its colours are rough, before the list; none with no swap
+  const wash = { id: 'ap-wash', brand: 'Army Painter', line: 'Wash', name: 'Dark Tone', hex: '#0C060E', type: 'wash' };
+  const rough = rackRow38({ paint: wash, countable: true, qty: 1, canSwap: true, swaps: { rough: true, list: [{ paint: wash, deltaE: 0.8, quality: { label: 'Good', tier: 'success' } }] } }, t38);
+  assert.match(rough, /<p class="rksnote">washRough<\/p>.*class="rkswap"/s);
+  assert.doesNotMatch(rackRow38({ paint: wash, countable: true, qty: 1, canSwap: true, swaps: { rough: true, list: [] } }, t38), /washRough/);
+  assert.doesNotMatch(again, /washRough/);
+  // a wash or shade to buy (way C): the gap in degrees and its words in place of ΔE, and a line that says what it is
+  const gapped = rackRow38({ paint: wash, countable: true, qty: 1, canSwap: true, swaps: { rough: true,
+    list: [{ paint: wash, deltaE: 50.5, gap: 1.4, quality: { label: 'Close colour', tier: 'success' } }] } }, t38);
+  assert.match(gapped, /<p class="rksnote">washGap<\/p>/); assert.doesNotMatch(gapped, /washRough/);
+  assert.match(gapped, /<span class="mono">gapDeg\(n=1\)<\/span> <span class="tag success">Close colour<\/span>/);
+  assert.doesNotMatch(gapped, /ΔE/, 'no ΔE beside a gap: the two would not agree');
+  const farGap = rackRow38({ paint: wash, countable: true, qty: 1, canSwap: true, swaps: { list: [{ paint: wash, deltaE: 3, gap: 21, quality: { label: 'Other colour', tier: 'danger' } }] } }, t38);
+  assert.match(farGap, /noCloseSwap/, 'a best gap over 8° says none is close');
   assert.doesNotMatch(rackRow38({ paint: carm, countable: true, owned: true, qty: 0, insteadOf: red }, t38), /data-rkunswap/);
+});
+
+test('swapRowPlan: a paint to buy always has a row, under its own rack heading when the filters show it', async () => {
+  const { swapRowPlan } = await import('../src/js/ui.js');
+  const plan = (cameRow, leftRow, leftStays, cameShows, undo = false) => swapRowPlan({ cameRow, leftRow, leftStays, cameShows, undo });
+  // the shopping list (the status filter shows only paints to buy)
+  assert.equal(plan(false, true, false, true), 'rebuild', 'Use, a new swap: it goes under its own heading (item 70)');
+  assert.equal(plan(true, true, false, true), 'rebuild', 'Use, the swap was on the list: the original goes, the counts are right');
+  assert.equal(plan(false, true, false, true, true), 'rebuild', 'Undo: the original goes back under its own heading');
+  // Undo, the swap was to buy before the Use, so it stays. It was replaced by the original, and a paint to buy
+  // was missing from the list (item 67)
+  assert.equal(plan(false, true, true, true, true), 'rebuild', 'Undo, the swap stays: the two rows');
+  // a list of all paints: each paint has its row already, nothing moves
+  assert.equal(plan(true, true, true, true), 'update');
+  assert.equal(plan(true, true, true, true, true), 'update');
+  assert.equal(plan(true, false, false, true), 'update');
+  // a filter hides the paint that came (a search for the original's name)
+  assert.equal(plan(false, true, false, false), 'replace', 'Use: the swap must show, so it takes the row');
+  assert.equal(plan(false, true, true, false), 'replace', 'Use, the search still matches the original: the same');
+  assert.equal(plan(true, true, false, false), 'remove');
+  assert.equal(plan(false, true, false, false, true), 'replace', 'Undo, the swap goes: the original takes its row back');
+  assert.equal(plan(false, true, true, false, true), 'update', 'Undo, the swap is still to buy: it keeps its row, never replaced');
+  assert.equal(plan(false, false, false, false), 'rebuild', 'no row to work with');
 });
 
 test('storeCarries: one toggle per brand, pressed while the store carries it; nothing with no brands', () => {
@@ -523,6 +571,35 @@ test('holdControls: a swapped pot names the pot it replaced, with Use the origin
 });
 
 // ---- The maker's ladder (docs/TONE_LADDERS.md, direction A) ----
+test('a paint that is no longer made says so beside its finish tag, and its swaps open with the reason', async () => {
+  const { goneTag } = await import('../src/js/ui.js');
+  const old = { ...red, id: 'cit-old', name: 'Old Red', discontinued: true };
+  assert.equal(goneTag(red), ''); assert.equal(goneTag(null), '');
+  assert.match(goneTag(old), /class="tag gone">No longer made</);
+  assert.match(rackRow38({ paint: old, countable: true, qty: 1, canSwap: true }, t38), /tag gone/);
+  assert.doesNotMatch(rackRow38({ paint: red, countable: true, qty: 1, canSwap: true }, t38), /tag gone/);
+  const open = rackRow38({ paint: old, countable: true, qty: 1, canSwap: true,
+    swaps: { gone: true, notCarried: true, list: [{ paint: carm, deltaE: 1.2, quality: { label: 'Excellent', tier: 'success' } }] } }, t38);
+  assert.match(open, /goneNote\(name=Old Red\)/);
+  assert.doesNotMatch(open, /notCarried\(/, 'one reason: no store has it, whatever it carries');
+  assert.match(hero(old, false), /tag gone/);
+});
+
+test('roleSlots: a wash chosen by its colour shows the gap, with the reason in its name and its title', () => {
+  const pot = { id: 'sh', name: 'Drakenhof Nightshade', brand: 'Warhammer Colour', line: 'Shade', hex: '#7D8FA6', type: 'shade' };
+  const base = { id: 'b', name: 'Macragge Blue', brand: 'Warhammer Colour', line: 'Base', hex: '#0D407F', type: 'base' };
+  const m = p => ({ paint: p, deltaE: 1, quality: { label: 'Excellent', tier: 'success' } });
+  const role = wash => ({ role: 'Primary', weight: 60, idealHex: '#0D407F', match: m(base), ladders: [{ style: 'wash', label: 'Wash · base · highlight',
+    steps: [wash, { key: 'base', idealHex: '#0D407F', match: m(base) }] }] });
+  const byGap = roleSlots({ roles: [role({ key: 'wash', idealHex: '#062A5C', match: { ...m(pot), deltaE: 51.5, gap: 6.7 }, media: 'wash', gap: 6.7 })] }, () => 'none', new Set(), tr);
+  assert.match(byGap, /class="stepgap" title="stepByGap">gapDeg\(n=7\)</);
+  assert.match(byGap, /aria-label="wash: Drakenhof Nightshade, Warhammer Colour, gapDeg\(n=7\)\. stepByGap"/);
+  const byDE = roleSlots({ roles: [role({ key: 'wash', idealHex: '#062A5C', match: m(pot), media: 'wash' })] }, () => 'none', new Set(), tr);
+  assert.doesNotMatch(byDE, /stepgap|gapDeg/);
+  // with no translator, plain English
+  assert.match(roleSlots({ roles: [role({ key: 'wash', idealHex: '#062A5C', match: m(pot), media: 'wash', gap: 3.2 })] }, () => 'none'), />gap 3°</);
+});
+
 import { makerLadder } from '../src/js/ui.js';
 test("makerLadder: every tone in order, the pot marked in words, no ΔE (the maker's steps are not matches)", () => {
   const t = (n, hex) => ({ id: `b${n}`, brand: 'Warhammer Colour', line: 'Tone Pro', name: `Ultramar Blue ${n}`, hex, type: 'layer', tone: n });

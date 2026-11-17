@@ -33,6 +33,9 @@ const GLYPHS = { metal: GEM, contrast: DROP, wash: DROP, shade: DROP, ink: DROP,
 const FINISHES = Object.fromEntries(Object.entries(GLYPHS).map(([type, g]) => [type, [FINISH_WORDS[type], g]]));
 /** Small finish pill (icon + label) flagging non-flat paints (metallic/contrast/wash/…); '' for flat paints. */
 export const finishTag = type => { const f = FINISHES[type]; return f ? `<span class="finish finish-${type}">${f[1]}${f[0]}</span>` : ''; };
+/** A paint the maker no longer makes says so beside its finish tag (dataset 1.10.0): a neutral tag, state as
+ *  words (§3.5). A store cannot have it, so the Shelf's list opens its swaps. */
+export const goneTag = p => (p && p.discontinued ? ' <span class="tag gone">No longer made</span>' : '');
 /** The finish icon alone (aria-hidden SVG), for a surface that names the finish in its own words. */
 export const finishGlyph = type => (FINISHES[type] ? FINISHES[type][1] : '');
 
@@ -90,7 +93,7 @@ export function pickRow(p, { id, k, mark = 'none', current = false, match = null
   return `<div class="pko${current ? ' cur' : ''}" role="option" id="${esc(id)}" data-k="${Number(k)}" aria-selected="false"`
     + ` aria-label="${esc(pickSaid(p, { mark, current, match }, t))}">`
     + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}">${markBadge(mark)}</span>`
-    + `<span class="pktx"><b>${esc(p.name)}</b><span class="pksub">${sub} ${finishTag(p.type)}</span></span>${de}</div>`;
+    + `<span class="pktx"><b>${esc(p.name)}</b><span class="pksub">${sub} ${finishTag(p.type)}${goneTag(p)}</span></span>${de}</div>`;
 }
 
 /** The row that seeds a typed hex: "Seed: #9A1115" while the field's live hex is the seed, else "Use
@@ -212,7 +215,7 @@ const ownOrBuy = (id, mark) => mark === 'owned'
 export function hero(base, animate = true, markOf, seedRole = '', neutral = false) {
   const meta = base.custom ? 'typed hex'
     : `${esc(base.brand || '')}${base.line && base.line !== '—' ? ' · ' + esc(base.line) : ''}${base.type ? ' · ' + esc(base.type) : ''}`
-      + (base.approx ? ' · <span class="approx">approx</span>' : '');
+      + (base.approx ? ' · <span class="approx">approx</span>' : '') + goneTag(base);
   const seed = seedRole ? `<span class="seedbadge seed-${esc(seedRole)}">${esc(seedRole)}</span>` : '';
   const ntag = neutral ? '<span class="ntag" title="No usable hue — the scheme is built for neutrals">neutral</span>' : '';
   const own = (!base.custom && base.id && markOf) ? `<span class="herobuy">${ownOrBuy(base.id, markOf(base.id))}</span>` : '';
@@ -286,7 +289,7 @@ export function matchChip(m, markOf) {
   return swatch(p.hex, 'act' + fxCls(p))
     + `<div style="min-width:0"><div class="ttl">${m.chosen ? 'Chosen pot' : 'Nearest pot'}</div>`
     + `<div class="nm">${esc(p.name)}</div>`
-    + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
+    + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}</div>`
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
     + `<span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
     + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
@@ -379,7 +382,7 @@ export function potRows(items, markOf = () => 'none', currentId = null) {
     return `<li><button type="button" class="potrow" data-potid="${esc(p.id)}"${cur ? ' aria-current="true"' : ''}>`
       + `${swatch(p.hex, fxCls(p).trim())}`
       + `<span class="potname">${esc(pname(p))}${cur ? ' <span class="potcur">· chosen</span>' : ''}`
-      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${mark === 'owned' ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span></span>`
+      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}${mark === 'owned' ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span></span>`
       + `<span class="de"><span class="dot" style="background:${tier(m.quality.tier)}"></span><span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span><span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>`
       + `</button></li>`;
   }).join('');
@@ -401,7 +404,7 @@ export function holdNote(held) {
     + `<button type="button" class="textact" data-hold-releaseall>${rel}</button></span></p>${warn}</div>`;
 }
 
-export function roleSlots(scheme, markOf, holdable = new Set()) {
+export function roleSlots(scheme, markOf, holdable = new Set(), tr = null) {
   // Ladder rows show the SHORT paint name — long display names ("Brainmatter Beige (Warpaints
   // Fanatic)") used to blow the three-column row past the card edge on phones. The full identity
   // (disambiguated name · brand) lives in the same clamped tooltip the Shelf uses (hover / focus /
@@ -410,11 +413,14 @@ export function roleSlots(scheme, markOf, holdable = new Set()) {
     const p = s.match && s.match.paint;
     // The chip shows the POT, the paint named under it, with its finish overlay (§2): a painter reads the
     // ladder as "these three pots". With no pot (none close enough), it shows the target colour.
-    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
+    // A wash chosen by its colour (scheme.js washStep, the gap): the step says so, in words for a screen reader.
+    const gap = s.gap != null && p ? (tr ? tr('gapDeg', { n: Math.round(s.gap) }) : `gap ${Math.round(s.gap)}°`) : '';
+    const gapWhy = gap ? (tr ? tr('stepByGap') : 'No wash is close by ΔE. This one is the closest by its colour, not by how dark it looks. Compare the pots.') : '';
+    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}${gap ? `, ${esc(gap)}. ${esc(gapWhy)}` : ''}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
       + `<div class="pn">${p ? esc(p.name) : '—'}</div>`
       + (p ? `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>` : '')
       // wash-step honesty: a real wash/shade/ink shows its finish pill; no close medium → "watered down"
-      + (s.media === 'wash' && p ? `<div class="steptag media">${finishTag(p.type)}</div>` : '')
+      + (s.media === 'wash' && p ? `<div class="steptag media">${finishTag(p.type)}${goneTag(p)}${gap ? ` <span class="stepgap" title="${esc(gapWhy)}">${esc(gap)}</span>` : ''}</div>` : '')
       + (s.dilute ? `<div class="steptag dilute" title="No bottled wash lands close enough — thin (water down) this base paint into the recesses instead">watered down</div>` : '')
       + `</div>`;
   };
@@ -483,7 +489,7 @@ export function equivGroup(label, members, markOf) {
     + `<div class="eq">${members.map(p => {
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}</div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
     }).join('')}</div></div>`;
 }
@@ -496,7 +502,7 @@ export function equivalentsPanel(name, equivs, markOf) {
       const p = e.paint, q = e.quality;
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}</div>`
         + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
         + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
@@ -553,7 +559,7 @@ export function livePalette(vm, roleByHex = {}) {
       ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
         + `<span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span>`
-        + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
+        + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}${goneTag(m.paint)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
     const fi = isFree ? +c.id.slice(1) : -1;                                     // index among the added swatches
     const sw = isBase ? 'base' : isFree ? 'x:' + c.id.slice(1) : 'p:' + c.deg;   // addressable swatch key
@@ -719,8 +725,8 @@ const CHECK = '<svg viewBox="0 0 20 20" class="rkcheck" aria-hidden="true" focus
 export function rackRow(r, tr) {
   const p = r.paint, name = pname(p);
   const line = [esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ');
-  // Not on the rack? (item 38): a to-buy row that is not a swap already can open its swaps; the word hides on
-  // a phone (the icon stays, the name says it all), so the stepper and the toggle share one --tap row
+  // Not on the rack? (item 38): a to-buy row can open its swaps, also a row that is a swap (item 69); the word
+  // hides on a phone (the icon stays, the name says it all), so the stepper and the toggle share one --tap row
   const swapBtn = r.canSwap
     ? `<button type="button" class="textact rknot" data-rknot="${esc(p.id)}" aria-expanded="${!!r.swaps}" aria-controls="rks-${esc(p.id)}"`
       + ` aria-label="${esc(tr('notOnRackFor', { name }))}" title="${esc(tr('notOnRack'))}">${icon('swap')}<span class="rknotw">${esc(tr('notOnRack'))}</span></button>`
@@ -742,7 +748,7 @@ export function rackRow(r, tr) {
     // the plain name: the line is in the row (and the rack group) already; the tick's name keeps the full
     // display name, so twins (Dawnstone (Layer) / (Dry)) stay apart for a screen reader
     + `<span class="rkmain"><span class="rkname">${esc(p.name)}</span>`
-    + `<span class="rkline">${line}${finishTag(p.type)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
+    + `<span class="rkline">${line}${finishTag(p.type)}${goneTag(p)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
     // a swap made in this visit says what it replaced; Undo only while it is still to buy (once ticked, it was bought)
     + (r.insteadOf ? `<span class="rkinst">${esc(tr('inPlaceOf', { name: pname(r.insteadOf) }))}`
       + (r.owned ? '' : ` <button type="button" class="textact" data-rkunswap="${esc(p.id)}" aria-label="${esc(tr('undoSwapFor', { name: pname(r.insteadOf) }))}">${esc(tr('undo'))}</button>`) + '</span>' : '')
@@ -752,30 +758,66 @@ export function rackRow(r, tr) {
     + '</li>';
 }
 
+/**
+ * What the list's rows do after a Use or its Undo (items 38, 67 and 70). `left` is the paint that came off the
+ * shopping list (the original at a Use, the swap at an Undo); `came` is the paint that is to buy now.
+ * A paint that is to buy always has a row, and that row is under its own rack heading: the heading says which
+ * rack to walk to (item 70; Ryan, 2026-11-17). So when the list's filters show `came`, the list is drawn again.
+ * The row stays where the other row was only when a filter hides `came` (a search for the original's name):
+ * the painter chose it there, and it must show, with its Undo.
+ * @param o.cameRow    `came` has a row in the list already
+ * @param o.leftRow    `left` has a row in the list
+ * @param o.leftStays  the list's filters still show `left` (the swap that was to buy before; a list of all paints)
+ * @param o.cameShows  the list's filters show `came`
+ * @param o.undo       this is an Undo
+ * @returns {'update'|'rebuild'|'remove'|'replace'}
+ *   update:  redraw the rows that are there, each in its place · rebuild: draw the list again, so `came` is under
+ *   its own heading and the counts are right · remove: `came` has its row, `left`'s row goes · replace: `came`
+ *   takes `left`'s row, the same place
+ */
+export function swapRowPlan({ cameRow, leftRow, leftStays, cameShows, undo }) {
+  if (cameRow && (!leftRow || leftStays)) return 'update';
+  if (cameShows) return 'rebuild';
+  if (cameRow) return 'remove';
+  // an Undo whose swap is still to buy: the swap keeps its row, and the filters hide the original
+  if (leftRow && undo && leftStays) return 'update';
+  return leftRow ? 'replace' : 'rebuild';
+}
+
 /** The swaps under a row (item 38): the closest pots from the brands the store carries, in the paint's own
  *  finish class, each with its true ΔE and label (§2). `r.swaps`: { list: [{paint, deltaE, quality, owned}],
- *  notCarried: the row's brand is switched off }. */
+ *  notCarried: the row's brand is switched off, of: on a row that is a swap, the paint it replaced (the list,
+ *  its ΔE values and the words are then for that paint, item 69), rough: a wash-class paint, whose colours
+ *  are the least sure in the data (item 68): one line says so, before the list }. A swap with `gap` (the
+ *  paint to buy is a wash or shade) shows the gap in degrees and its words in place of ΔE. `gone`: the paint
+ *  to buy is no longer made, so its swaps opened by themselves. */
 function rackSwaps(r, tr) {
-  const p = r.paint, s = r.swaps, name = pname(p);
+  const p = r.paint, s = r.swaps, name = pname(s.of || p);
   const best = s.list[0];
   let h = `<div class="rkswaps" id="rks-${esc(p.id)}" role="group" aria-label="${esc(tr('swapsFor', { name }))}">`;
-  if (s.notCarried) h += `<p class="rksnote">${esc(tr('notCarried', { brand: p.brand }))}</p>`;
+  // a wash or shade is compared by the gap (item 68): the line says what the number is
+  if (best && best.gap != null) h += `<p class="rksnote">${esc(tr('washGap'))}</p>`;
+  else if (s.rough && best) h += `<p class="rksnote">${esc(tr('washRough'))}</p>`;
+  if (s.gone) h += `<p class="rksnote">${esc(tr('goneNote', { name }))}</p>`;
+  else if (s.notCarried) h += `<p class="rksnote">${esc(s.of ? tr('notCarriedOf', { brand: p.brand, name }) : tr('notCarried', { brand: p.brand }))}</p>`;
+  else if (s.of) h += `<p class="rksnote">${esc(tr('swapsOf', { name }))}</p>`;
   if (!best) h += `<p class="rksnote">${esc(tr('noSwap'))}</p>`;
-  else if (best.deltaE > 10) h += `<p class="rksnote">${esc(tr('noCloseSwap'))}</p>`;
+  else if (best.quality.tier === 'danger') h += `<p class="rksnote">${esc(tr('noCloseSwap'))}</p>`;   // ΔE over 10, or a gap over 8°
   for (const m of s.list) {
     const q = m.paint, qn = pname(q);
     h += `<div class="rkswap">${swatch(q.hex, 'rkssw' + fxCls(q))}`
       + `<span class="rksmain"><span class="rksname">${esc(qn)}</span>`
-      + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q.type)}`
-      + ` <span class="mono">ΔE ${m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
+      + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q.type)}${goneTag(q)}`
+      + ` <span class="mono">${m.gap != null ? esc(tr('gapDeg', { n: m.gap.toFixed(0) })) : 'ΔE ' + m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
       + `${m.owned ? ` <span class="ownmini">${icon('check')}${esc(tr('ownedWord'))}</span>` : ''}</span></span>`
       + `<button type="button" class="btn sm" data-rkuse="${esc(q.id)}" data-for="${esc(p.id)}" aria-label="${esc(tr('useInPlace', { name: qn, was: name }))}">${esc(tr('useSwap'))}</button></div>`;
   }
   return h + '</div>';
 }
 
-/** "This store carries" (item 38): one toggle per brand on the list, all on at first. A brand switched off
- *  shows the closest pots from the others on each of its rows. A choice for this trip, not saved. */
+/** "This store carries" (item 38): one toggle per brand in the paint data, all on at first. A brand switched
+ *  off shows the closest pots from the others on each of its rows, and no swap comes from it. A choice for
+ *  this trip, not saved. */
 export function storeCarries(brands, off, tr) {
   if (!brands.length) return '';
   // the count says how many brands the row holds, so a brand scrolled out of view is not missed (PLAN §5 item 42)
@@ -792,4 +834,76 @@ export function rackGroups(groups, tr) {
   return groups.map(g => `<section class="rkgroup" aria-label="${esc(g.title)}">`
     + `<h3 class="rkhead"><span>${esc(g.title)}</span><span class="rkcount">${g.rows.length}</span></h3>`
     + `<ul class="rklist">${g.rows.map(r => rackRow(r, tr)).join('')}</ul></section>`).join('');
+}
+
+/* ---- the Shelf's Map (PLAN §5 item 61; mockups/shelf-map.html, C with A) ----
+   The grid of tones: hue bands across and lightness bands down (on a phone, turned: the hues run down, so the page
+   scrolls one way only). An APG grid: one tab stop, the arrow keys move, Enter or a tap opens the tone below.
+   `map` is shelfmap.js mapCells, `targets` its cellTargets; `tr` is i18n.t. A cell's own colours are paint data;
+   an empty cell ("a gap") is dashed and hatched, with the colour it misses as a dot in its centre. */
+const MAP_ROW_KEYS = ['shade', 'dark', 'mid', 'light', 'highlight'];
+const MAP_BAND_KEYS = ['red', 'scarlet', 'orange', 'ochre', 'yellow', 'olive', 'yellowGreen', 'green', 'emerald',
+  'teal', 'cyan', 'sky', 'blue', 'royalBlue', 'violet', 'purple', 'magenta', 'pink', 'grey'];
+export const mapBandName = (b, tr) => tr('mapBand_' + MAP_BAND_KEYS[b]);
+export const mapRowName = (r, tr) => tr('mapRow_' + MAP_ROW_KEYS[r]);
+/** A tone's name: "Dark teal", "Highlight grey". */
+export const mapToneName = (b, r, tr) => tr('mapTone', { row: mapRowName(r, tr), band: mapBandName(b, tr).toLowerCase() });
+const MAP_SW = 4;   // the pots a cell shows (two rows at most in a 36px column); its count says the rest
+
+/** What a cell holds, in words: "3 owned, 1 on the shopping list", or "a gap". */
+export function mapCellCounts(c, tr) {
+  const o = c.owned.length, w = c.want.length;
+  const what = o ? tr(o === 1 ? 'mapOwnedOne' : 'mapOwnedN', { n: o }) : tr('mapGap');
+  return what + (w ? ', ' + tr(w === 1 ? 'mapWantOne' : 'mapWantN', { n: w }) : '');
+}
+export const mapCellLabel = (c, b, r, tr) => `${mapToneName(b, r, tr)}: ${mapCellCounts(c, tr)}`;
+function mapCell(map, targets, b, r, sel, tr) {
+  const c = map.cells[b][r], o = c.owned.length, w = c.want.length, on = sel && sel.b === b && sel.r === r;
+  const pots = c.owned.slice(0, w ? MAP_SW - 1 : MAP_SW).map(p => swatch(p.hex, 'msw' + fxCls(p)))
+    .concat(c.want.slice(0, o ? 1 : MAP_SW).map(p => swatch(p.hex, 'msw want' + fxCls(p))));
+  return `<div role="gridcell" class="mcell${o ? '' : ' gap'}" id="mc-${b}-${r}" data-b="${b}" data-r="${r}" tabindex="-1"`
+    + ` aria-selected="${on}" aria-label="${esc(mapCellLabel(c, b, r, tr))}" style="--tgt:${safeColor(targets[b][r].hex)}">`
+    + pots.join('') + (o + w > pots.length ? `<span class="mn" aria-hidden="true">${o + w}</span>` : '') + '</div>';
+}
+/** The grid. `turned`: the phone's layout (hues down, lightness across, darkest first). */
+export function mapGrid(map, targets, { sel = null, turned = false } = {}, tr) {
+  const bands = MAP_BAND_KEYS.map((_, b) => b), rows = turned ? [0, 1, 2, 3, 4] : [4, 3, 2, 1, 0];
+  let h = `<div class="mapgrid${turned ? ' turned' : ''}" id="mapGrid" role="grid" aria-label="${esc(tr('mapGridName'))}"`
+    + ` aria-describedby="mapKeys" style="--mcols:${turned ? 5 : bands.length}">`;
+  const head = items => `<div role="row" class="mrow"><span class="mcorner" aria-hidden="true"></span>${items}</div>`;
+  if (!turned) {
+    h += head(bands.map(b => `<span role="columnheader" class="mhd"><span>${esc(mapBandName(b, tr))}</span></span>`).join(''));
+    for (const r of rows) h += `<div role="row" class="mrow"><span role="rowheader" class="mrh">${esc(mapRowName(r, tr))}</span>`
+      + bands.map(b => mapCell(map, targets, b, r, sel, tr)).join('') + '</div>';
+  } else {
+    h += head(rows.map(r => `<span role="columnheader" class="mhd"><span>${esc(mapRowName(r, tr))}</span></span>`).join(''));
+    for (const b of bands) h += `<div role="row" class="mrow"><span role="rowheader" class="mrh">${esc(mapBandName(b, tr))}</span>`
+      + rows.map(r => mapCell(map, targets, b, r, sel, tr)).join('') + '</div>';
+  }
+  return h + '</div>';
+}
+/** The line over the map: what it shows and how many tones have no paint you own. */
+export function mapSummaryLine(sum, map, tr) {
+  if (!map.owned && !map.want) return esc(tr('mapNone'));
+  return esc(tr('mapSummary', { empty: sum.emptyCells, cells: sum.cellCount, fam: sum.emptyFamilies, fams: sum.familyCount }));
+}
+/** The tone under the grid, once one is chosen: its pots, and the closest pots to buy when it has fewer than two.
+ *  `fills`: shelfmap.js fillPots, each with `quality` (data.js matchQuality). */
+export function mapDetail(map, b, r, fills, tr) {
+  const c = map.cells[b][r], o = c.owned.length, name = mapToneName(b, r, tr);
+  const row = (p, extra = '') => `<li class="mdrow">${swatch(p.hex, 'mdsw' + fxCls(p))}`
+    + `<span class="mdmain"><span class="mdname">${esc(pname(p))}</span><span class="rkline">${[esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ')}${finishTag(p.type)}${goneTag(p)}</span></span>${extra}</li>`;
+  let h = `<h3 class="mdhead" id="mapDetailHead" tabindex="-1">${esc(name)}</h3>`;
+  h += `<p class="mdstate">${esc(o || c.want.length ? mapCellCounts(c, tr) : tr('mapGapLong', { tone: name.toLowerCase() }))}</p>`;
+  if (o || c.want.length) h += `<ul class="mdlist">${c.owned.map(p => row(p)).join('')}`
+    + c.want.map(p => row(p, `<span class="tag buy">${esc(tr('mapOnList'))}</span>`)).join('') + '</ul>';
+  if (o < 2) {
+    h += `<h4 class="micro mdsub">${esc(tr(o ? 'mapFillMore' : 'mapFill'))}</h4>`;
+    if (!fills.length) h += `<p class="mdstate">${esc(tr('mapNoFill'))}</p>`;
+    else h += `<ul class="mdlist">` + fills.map(m => row(m.paint,
+      `<span class="mdde"><span class="mono">ΔE ${m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span></span>`
+      + `<button type="button" class="btn sm" data-mapadd="${esc(m.paint.id)}" aria-label="${esc(tr('mapAddName', { name: pname(m.paint) }))}">${esc(tr('mapAdd'))}</button>`)).join('') + '</ul>'
+      + `<p class="mdnote">${esc(tr('mapFillNote'))}</p>`;
+  }
+  return h;
 }

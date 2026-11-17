@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0, v1.14.0 and v1.15.0 took only the web entries. -->
+<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.16.0 took only the web entries. -->
 ### Added
 - **A UX review before the first showing (`docs/UX_REVIEW.md`; a study, no app code changed).** The app as a new
   painter meets it: an experienced painter with many pots, a link, alone, mostly on an iPhone. Two deep journeys
@@ -14,14 +14,98 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   a severity from three independent raters on Nielsen's 0 to 4 scale. Two are a 4: the scheme ignores the Shelf
   until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
   iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
-  screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 66 to 75 are the proposed work.
+  screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 76 to 85 are the proposed work.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+- **The Recipe's wash step finds a real wash more often** (PLAN §5 item 74; a matching change, CLAUDE.md §7).
+  The step looked for a wash, shade or ink within ΔE 10, and showed a base paint with "watered down" when it
+  found none. Some makers show a wash as a thin coat on white, so their washes have no dark value, and the step
+  found almost none of them: with only Warhammer Colour paints, 8% of colours got a wash. The step now has a
+  second try before "watered down": the wash that is nearest by its colour (the gap, 8° or less), as the store
+  swaps of a wash. Such a step shows "gap 4°" beside its finish tag, and **Save the recipe** writes the gap on
+  its line. Measured: a real wash for 93% → 99% of colours with every brand, 66% → 89% with Warhammer Colour and
+  Army Painter, 8% → 79% with Warhammer Colour only. The added washes are in the paint's colour family as often
+  as the others. A Recipe that had a wash keeps the same wash; about 6% of wash steps change from "watered down"
+  to a wash. The gap does not show how strong a wash is.
+- **A paint that is no longer made says so** (PLAN §5 item 73; CLAUDE.md §3.5, §3.6 and §7). The data marks four
+  paints as no longer made (the Gloss Shades). Each one now has a **No longer made** tag beside its finish tag: on
+  the starting paint's line, in the seed field's list, in the Recipe, in the pot dialog and in the Shelf's list
+  and Map. In the Shelf's list, such a paint on the shopping list opens its swaps by itself, with "Nuln Oil Gloss
+  is no longer made. The closest here:", because no store has it. The Recipe and the tone ladders do not suggest
+  such a paint, unless you own it or it is your starting paint. The seed field, the Shelf and Other brands still
+  show every paint.
+### Changed
+- **Paint data 1.10.0: three corrections from the makers' own pages** (PLAN §5 item 73; `src/data/SOURCES.md`). No
+  colour value changed, and no paint id changed.
+  - **14 Army Painter paints are effects, not washes.** The community source lists them with the Fanatic washes.
+    Army Painter's own shop lists them as "Warpaints Fanatic Effects": Brush-On Primer, the rust and blood
+    effects, the slime and the glow paints. As washes they showed as swaps for washes and as the wash in a Recipe.
+  - **"RC Flesh Wash" is "Orc Flesh Wash"** (Two Thin Coats' own chart). A search for the old spelling still
+    finds it.
+  - **The four Gloss Shades are marked as no longer made** (Games Workshop, 2022): Nuln Oil Gloss, Agrax Earthshade
+    Gloss, Reikland Fleshshade Gloss and Cryptek Armourshade Gloss. They stay in the app, because you can own them.
+- **Store swaps: a wash is compared by its colour, not by how dark it looks** (PLAN §5 item 68, way C; a ranking
+  change, CLAUDE.md §7 and §3.2). The makers show a wash in different ways: a thin coat on white (the Warhammer
+  Colour Shades) or the liquid in the pot (Army Painter). So Shadow Wash and Nuln Oil, two black washes, were ΔE
+  50 apart, and neither was a swap for the other. A wash is a clear coat, and a thicker coat absorbs the same
+  colours in the same proportion. In **Not on the rack?**, a wash or shade now ranks its swaps by that proportion
+  (`color.js absorbance`, `absorbGap`) and shows a **gap** in degrees with words of its own: **Close colour**
+  (4° or less), **Near colour** (8° or less) and **Other colour**. Measured against the colour word in the
+  washes' names, the first swap is in the same colour family in 71% of cases in a store with Warhammer Colour and
+  Army Painter (44% by ΔE), and in 74% with Warhammer Colour only (32%). With every brand it is equal (64% and
+  65%). The gap does not show how strong a wash is, and no paint value changed. Inks, Contrast paints and glazes
+  keep ΔE, and so does the Equivalents tab. An ink, a Contrast paint or a glaze ranks 4°
+  further as the swap for a wash (`WASH_KIND_GAP`): the first swap is then a wash or shade for 96% (82% at 2°),
+  and it is in the same colour family as often (80% against 77%).
+- **A store swap goes under the heading of its own rack** (PLAN §5 item 70; CLAUDE.md §3.6). After **Use**, the
+  new pot stayed in the old row's place, so a Two Thin Coats pot could be below "AK Interactive", a brand the
+  store did not have, and the counts beside the headings were wrong. Now the row moves at once to the heading of
+  its own brand and line. The page scrolls only as far as it must to show the row, the row has a ring for a
+  moment, the focus is on its **Undo**, and a screen reader hears "It is under Two Thin Coats · Wave 1 now."
+  **Undo** does the same for the first paint. This is a choice (Ryan, 2026-11-17): the correct rack is more
+  important here than the "nothing moves" rule.
+- **Store swaps: a wash never says "Indistinguishable"** (PLAN §5 item 68; CLAUDE.md §3.2). The colour of a wash,
+  an ink or a Contrast paint is the least sure value in the paint data: some lines hold the colour of a thin coat
+  on white, others the colour in the pot. So in **Not on the rack?**, a swap for one of these paints now says
+  "Good" at most (`data.js swapQuality`), and a line before the list says "The colours of washes, inks and Contrast
+  paints are rough in this app. Compare the pots before you buy." The ΔE number stays the true one. This is a
+  first step: the wash colours themselves are not corrected yet.
+- **Store swaps: a pot you own comes first** (PLAN §5 item 72; a ranking change, CLAUDE.md §7). In **Not on the
+  rack?**, a pot you own was marked "owned" but kept its place, so one in fourth place did not show. Now an
+  owned pot that is a Good match or better (ΔE 3.5 or less, `data.js SWAP_OWNED_MAX`) is the first swap: you then
+  have nothing to buy. An owned pot also counts when its brand is switched off, because it is on your shelf and
+  not on the store's rack. A looser owned pot keeps its own place, and the ΔE shown stays the true one.
+- **Store swaps: a wash now comes before a Contrast paint** (PLAN §5 item 71; a ranking change, CLAUDE.md §7).
+  In **Not on the rack?**, a wash, an ink, a Contrast paint and a glaze were one group, so for 60% of washes and
+  shades the first swap was another product (most times a Contrast paint). Now a pot of another kind ranks 2 ΔE
+  further (`data.js SWAP_KIND_PENALTY`; the ΔE shown stays the true one): the first swap of a wash or shade is a
+  wash or shade for 69% (was 40%), for 0.29 more mean ΔE. The same rule keeps a Dry compound after a base or layer
+  paint. An effect paint now swaps only for the same effect (wet blood never gets a rust texture); when there is
+  none, the list says so.
+- **A swap can be swapped again** (PLAN §5 item 69). A row that was a swap had no **Not on the rack?**, also when
+  you switched its brand off later: the list then told you to buy a pot the store did not have. Now the row has
+  the toggle. It shows the next closest pots to the paint you first wanted (never to the swap, so the colour does
+  not move away step by step), and **Undo** goes back to that first paint. A pot you swapped away is not offered
+  for another paint. One pot can be the swap for two paints: each **Undo** takes one back.
+- **"This store carries" has a switch for every brand** (PLAN §5 item 66; from an audit of the store swaps,
+  2026-11-14). It had a switch only for the brands on your shopping list. A brand with no paint on your list could
+  not be switched off, so the list offered swaps from brands the store did not have: with five brands off, 46% of
+  those brands' paints got their best swap from a brand that had no switch. The row now has all ten brands, A to
+  Z, in an order that does not change. Switch off each brand the store does not have.
 ### Fixed
+- **A paint that is no longer made is not offered as a store swap** (PLAN §5 item 73). The four Gloss Shades are
+  now marked as discontinued, so **Not on the rack?** skips them: a store cannot have them. A pot you own is still
+  offered, because it is on your shelf.
+- **Undo of a store swap no longer hides a paint you must buy** (PLAN §5 item 67). When the swap you chose was on
+  your shopping list already, **Undo** put the original paint in the swap's row. The swap was still to buy, but
+  the list did not show it until you opened the list again, and its count stayed at the sum of the two. Now the
+  swap keeps its row and gets its own count back, and the original's row goes back where it was. In a list with
+  no status filter, the original's row also stays after **Use**. New: `ui.js swapRowPlan` (tested), `app.js
+  placeSwapRows`.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap
@@ -38,6 +122,22 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
   versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
   with no `AbortSignal` and no glob pattern from outside.
+
+## [1.16.0] - 2026-11-17
+### Added
+- **The Shelf's Map: which tones is my collection missing?** (PLAN §5 item 61; chosen from `mockups/shelf-map.html`:
+  C with A). A third view beside Grid and List. A small colour wheel shows each paint you own as a dot and each paint
+  on your shopping list as a ring; a hatched part is a colour family you own nothing in. Under it, a grid of tones:
+  18 colours across and 5 lightness bands down (Shade to Highlight), plus the greys; on a phone the grid turns, so
+  the page scrolls down only. A dashed square is a gap. Choose a tone to see its paints; for a gap, or a tone with
+  one paint, the three closest pots show with their true ΔE and an **Add** button for the shopping list. The search
+  and filters narrow the map. It works with the keyboard (arrow keys, Enter) and a screen reader, and the address
+  bar keeps it (`sv=map`). New: `src/js/shelfmap.js` (pure, tested), `color.js labToRgb` / `labToHex`, the `map` icon.
+- **A study of the shelf as a map** (`mockups/shelf-map.html`; PLAN §5 item 61): which tones does my collection
+  miss? Five directions, drawn from the real paint data on two sample shelves: dots on the colour wheel, a ring
+  map of hue and lightness, a tone grid, a fog-of-war map by lightness, and a layer on the Studio's wheel. A tap
+  on a gap shows the three closest pots that fill it. Recommended: the tone grid, with the dot wheel as its
+  header. Built as the Map, above.
 
 ## [1.15.0] - 2026-11-07
 ### Added

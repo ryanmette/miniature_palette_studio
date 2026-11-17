@@ -12,11 +12,12 @@ import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, r
 import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, browseOrder, storeSwaps, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf, randomStartPaint } from './data.js';
+import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf, randomStartPaint } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
-import { loaderRoles, drawLoader, LOADER_TOKENS } from './loader.js';   // the Molten Harmonics loader (§3.4)
+import { loaderRoles, drawLoader, LOADER_TOKENS } from './loader.js';
+import { mapCells, mapSummary, cellTargets, fillPots, drawMinimap, bandAtXY, STRIP as MAP_STRIP, GREY as MAP_GREY } from './shelfmap.js';   // the Shelf's Map (item 61)   // the Molten Harmonics loader (§3.4)
 import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
@@ -100,7 +101,7 @@ function baseInfo() {
   const p = state.idx.byId.get(state.baseId);
   // dname already carries the line for ambiguous names — suppress the meta's line so the hero doesn't read it twice
   const lined = p.dname && p.dname !== p.name;
-  return { id: p.id, hex: p.hex, name: ui.pname(p), brand: p.brand, line: lined ? '—' : p.line, type: p.type, approx: p.approx };
+  return { id: p.id, hex: p.hex, name: ui.pname(p), brand: p.brand, line: lined ? '—' : p.line, type: p.type, approx: p.approx, discontinued: p.discontinued };
 }
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
 /** The roles a painter can hold. Primary never: the harmony is built from it (from the starting paint, or
@@ -298,7 +299,7 @@ function renderPlan() {
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
     + '<div class="micro" style="margin:14px 0 0">Each role: target colour → nearest pot (ΔE 2000), plus the selected tone ladder</div>'
-    + ui.roleSlots(state.scheme, store.markOf, new Set(holdableRoles()));
+    + ui.roleSlots(state.scheme, store.markOf, new Set(holdableRoles()), i18n.t);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
 // Set by setupWheel() too. render() calls it when something other than the lightness slider changes
@@ -731,6 +732,7 @@ function paintStudioMarks(ids = null) {
   else if (aeId && !ae.isConnected) document.getElementById(aeId)?.focus({ preventScroll: true });
 }
 function renderShelfMarks(ids) {
+  if (state.shelfView === 'map') { renderShelfMap(); renderShelfStats(); return; }   // 95 cells: a rebuild is cheap
   // The list: a tick (or one mark from elsewhere) redraws only its row. A full rebuild of 3,225 rows took
   // 660ms per tick; a row is about 1ms. Many paints (an import, another tab) rebuild the list.
   if (state.shelfView === 'list') {
@@ -939,18 +941,19 @@ const COARSE = matchMedia('(pointer:coarse)').matches;   // touch = tap-to-cycle
 const CAN_SHARE = COARSE && typeof navigator.share === 'function';   // the share sheet on touch only
 const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');   // ⌘ vs Ctrl for select-toggle
 const shelf = { sel: new Set(), anchor: null, cursor: null, hover: null, selectMode: false, viewIds: null };   // ids; selection is transient (not persisted); viewIds = the drawn order (set by renderShelf)
+/** Does the Shelf show `p` now (brand, status, type and search)? `match`: the search's matcher, made once for a list. */
+const inShelfView = (p, match = paintMatcher(state.shelfQ)) =>
+  (!state.shelfBrand || p.brand === state.shelfBrand) &&
+  // status filter: '' (all) | owned | want. A paint ticked in the list this time stays in it (rk.kept), so a
+  // tick never makes a row jump out from under the finger (§3.4); it goes the next time the list opens.
+  (!state.shelfMark || store.markOf(p.id) === state.shelfMark || (state.shelfView === 'list' && rk.kept.has(p.id))) &&
+  (!state.shelfTypes.size || state.shelfTypes.has(p.type)) &&        // type filter, pick many (base/layer/wash/…; item 45)
+  (!match || match(p));
 const shelfPaints = () => {
   // The seed field's matcher (data.js paintMatcher): every word must match the name, the display name
   // ("dawnstone (layer)"), the brand, the line, the type or the finish word. The Shelf keeps its own order.
   const match = paintMatcher(state.shelfQ);
-  const list = state.idx.paints.filter(p =>
-    (!state.shelfBrand || p.brand === state.shelfBrand) &&
-    // status filter: '' (all) | owned | want. A paint ticked in the list this time stays in it (rk.kept), so a
-    // tick never makes a row jump out from under the finger (§3.4); it goes the next time the list opens.
-    (!state.shelfMark || store.markOf(p.id) === state.shelfMark || (state.shelfView === 'list' && rk.kept.has(p.id))) &&
-    (!state.shelfTypes.size || state.shelfTypes.has(p.type)) &&        // type filter, pick many (base/layer/wash/…; item 45)
-    (!match || match(p)));
-  return sortPaints(list, state.shelfSort);
+  return sortPaints(state.idx.paints.filter(p => inShelfView(p, match)), state.shelfSort);
 };
 const cellEl = id => document.getElementById('sc-' + id);
 const gridCols = () => { const g = $('#shelfGrid'); return Math.max(1, getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length); };
@@ -997,8 +1000,18 @@ function renderShelf() {
   for (const b of $('#shelfMarkSeg').children) b.setAttribute('aria-pressed', String(b.dataset.mark === state.shelfMark));
   const list = state.shelfView === 'list';
   for (const b of $('#shelfViewSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sv === state.shelfView));
-  // The grid's own tools and how-to go in the list: a tick is the list's one mark, with no selection
-  $('#shelfSelect').hidden = list; $('#shelfHint').hidden = list; $('#shelfBar').hidden = list;
+  // The grid's own tools and how-to go in the list and the map: a tick is the list's one mark, with no selection
+  const notGrid = state.shelfView !== 'grid';
+  $('#shelfSelect').hidden = notGrid; $('#shelfHint').hidden = notGrid; $('#shelfBar').hidden = notGrid;
+  if (notGrid) document.body.classList.remove('selsheet');
+  $('#shelfMapView').hidden = state.shelfView !== 'map';
+  if (state.shelfView === 'map') {
+    $('#shelfGrid').hidden = $('#shelfListView').hidden = $('#shelfEmpty').hidden = true;
+    renderShelfMap();
+    shelf.viewIds = null;
+    renderShelfStats(); syncShelfFilterUi();
+    return;
+  }
   const view = shelfPaints();
   if (list) {
     $('#shelfGrid').hidden = true;
@@ -1044,9 +1057,14 @@ const rk = { kept: new Set(), prev: new Map(), countOpen: new Set(), swapOpen: n
 function resetRackSession() { rk.kept.clear(); rk.prev.clear(); rk.countOpen.clear(); rk.swapOpen.clear(); }
 /* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B). For this visit only (in memory,
    like Recent picks): the brands this store does not carry, and the swaps made (swap id → what it replaced,
-   so a row can say "in place of" and Undo puts everything back). */
+   so a row can say "in place of" and Undo puts everything back). One pot can be the swap for two paints, so
+   each swap id holds a list, the newest last: the row says the newest, and each Undo takes one off. */
 const storeOff = new Set();
 const swapLog = new Map();
+const swapOf = id => { const l = swapLog.get(id); return l ? l[l.length - 1] : null; };
+// The pots the painter said are not on the rack (each swapped away with Use): no swap for another paint
+// either. An Undo takes the pot off again: the painter wants it after all.
+const offRack = new Set();
 const rackLine = p => (p.line && p.line !== '—' && p.line !== p.brand ? p.line : '');
 /** A scheme's name for the list: its name, or its automatic name when it has none. `cache`: a Map per render. */
 function schemeNameOf(sid, cache = new Map()) {
@@ -1056,16 +1074,23 @@ function schemeNameOf(sid, cache = new Map()) {
 }
 /** One row's data, as the list draws it (renderShelfList and updateRackRow share it). */
 function rackRowData(p) {
-  const mark = store.markOf(p.id), prev = rk.prev.get(p.id), sw = swapLog.get(p.id);
+  const mark = store.markOf(p.id), prev = rk.prev.get(p.id), sw = swapOf(p.id);
   // a to-buy row can open its swaps; a row whose brand the store does not carry opens them by itself
-  const canSwap = mark === 'want' && !sw, notCarried = canSwap && storeOff.has(p.brand);
-  const open = canSwap && (rk.swapOpen.has(p.id) ? rk.swapOpen.get(p.id) : notCarried);
+  const canSwap = mark === 'want', notCarried = canSwap && storeOff.has(p.brand);
+  // a paint that is no longer made opens them too: no store has it (dataset 1.10.0)
+  const gone = canSwap && !sw && !!p.discontinued;
+  const open = canSwap && (rk.swapOpen.has(p.id) ? rk.swapOpen.get(p.id) : notCarried || gone);
+  // A row that is a swap can be missing from the rack too (PLAN §5 item 69). Its swaps are the next closest to
+  // the paint it replaced, never to the swap: a swap of a swap moves away from the colour the scheme wants.
+  const first = sw && state.idx.byId.get(sw.orig) || null;
   return {
     // struck through: bought from the shopping list in this list's visit (a checklist's tick-off), not every owned paint
     struck: mark === 'owned' && rk.kept.has(p.id) && prev?.mark === 'want',
     canSwap,
-    swaps: open ? { notCarried, list: storeSwaps(state.idx, p, { notCarried: storeOff }).map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
-    insteadOf: sw ? state.idx.byId.get(sw.orig) : null,
+    // rough: a wash-class paint's colour is the least sure in the data (item 68), and the list says so
+    swaps: open ? { notCarried, gone, of: first, rough: finishClass((first || p).type) === 'translucent', list: storeSwaps(state.idx, first || p, { notCarried: storeOff, except: new Set([...offRack, p.id]), ownedIds: store.ownedIds() })
+      .map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
+    insteadOf: first,
     paint: p, owned: mark === 'owned',
     // a paint on the list, or one ticked off it just now (its slot stays, empty, so the row keeps its height)
     countable: mark === 'want' || (rk.kept.has(p.id) && prev?.mark === 'want'),
@@ -1118,13 +1143,13 @@ function renderShelfList(view) {
   host.innerHTML = ui.rackGroups(groups, t);
   $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
   syncSendBought();
-  // This store carries: the brands of every paint to buy, and any switched off (so they can come back). Not only
-  // the paints the filters show: a search hid brands, and the row looked capped (phone test, 2026-10-30).
-  const wantBrands = [...store.wantIds()].map(id => state.idx.byId.get(id)?.brand).filter(Boolean);
-  const brands = [...new Set([...wantBrands, ...storeOff])].sort((a, b) => a.localeCompare(b));
+  // This store carries: every brand in the paint data, while there is a paint to buy. It was only the brands on
+  // the shopping list, so a brand with no paint on the list had no toggle and always counted as carried: with
+  // five brands off, 46% of their paints got a best swap from a brand the painter could not switch off (audit,
+  // 2026-11-14). The order is fixed (A to Z), so a toggle never moves when the list changes (§3.4).
   const chip = document.activeElement?.dataset?.rkbrand;
-  $('#rkStore').innerHTML = ui.storeCarries(brands, storeOff, t);
-  $('#rkStore').hidden = !brands.length;
+  $('#rkStore').innerHTML = ui.storeCarries(state.brands, storeOff, t);
+  $('#rkStore').hidden = !store.wantIds().size;
   if (chip) $(`[data-rkbrand="${CSS.escape(chip)}"]`)?.focus({ preventScroll: true });
   for (const b of $('#shelfGroupSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sg === state.shelfGroup));
   if (keep) host.querySelector(keep)?.focus({ preventScroll: true });
@@ -1153,14 +1178,45 @@ function rackTick(id) {
   render('marks', { ids: [id] });
   syncSendBought();
 }
-/** Draw `paint`'s row where the row `oldId` is now (a swap, or its Undo): the same place in the list, so
- *  nothing under the finger moves (§3.4). A row of that paint already in the list takes the place instead. */
-function swapRackRow(oldId, paint) {
-  const li = $(`[data-rk="${CSS.escape(oldId)}"]`); if (!li) return;
-  if ($(`[data-rk="${CSS.escape(paint.id)}"]`)) { li.remove(); return; }
-  const r = rackRowData(paint);
-  if (state.shelfGroup !== 'project') r.forName = schemeNameOf(r.sid);
-  li.outerHTML = ui.rackRow(r, t);
+/** The list's rows after a Use or its Undo (ui.swapRowPlan decides). `leftId` came off the shopping list (the
+ *  original at a Use, the swap at an Undo) and `came` is to buy now. When the filters show `came`, the list is
+ *  drawn again: its row goes under its own rack heading, where the painter looks for it at that rack, and the
+ *  group counts are right (PLAN §5 item 70). The list here is the shopping list, so it is short (a list of all
+ *  paints holds a row for each paint already, and nothing moves). When a filter hides `came`, its row takes the
+ *  other row's place, so it shows all the same.
+ *  @returns {string} the plan that ran */
+function placeSwapRows(leftId, came, { undo = false } = {}) {
+  const rowOf = id => $(`[data-rk="${CSS.escape(id)}"]`);
+  rk.kept.delete(leftId);   // a tick's "stay in the list" does not hold a paint that was swapped away
+  const leftLi = rowOf(leftId), leftStays = !!leftLi && inShelfView(state.idx.byId.get(leftId));
+  const plan = ui.swapRowPlan({ cameRow: !!rowOf(came.id), leftRow: !!leftLi, leftStays, cameShows: inShelfView(came), undo });
+  if (plan === 'rebuild') renderShelf();
+  else if (plan === 'remove') leftLi.remove();
+  else if (plan === 'replace') {
+    const r = rackRowData(came);
+    if (state.shelfGroup !== 'project') r.forName = schemeNameOf(r.sid);
+    leftLi.outerHTML = ui.rackRow(r, t);
+  }
+  if (leftStays && plan === 'update') updateRackRow(leftId);
+  return plan;
+}
+/** The heading a paint's row is under now ("Army Painter · Wash", or a project's name); '' with no row. */
+const rackHeadOf = id => $(`[data-rk="${CSS.escape(id)}"]`)?.closest('.rkgroup')?.getAttribute('aria-label') || '';
+/** A row that went to another place in the list (item 70): bring it into view, clear of the header and the dock,
+ *  and ring it for a moment (app.css .rkrow.moved), so the eye finds it. The focus is on it already. */
+function showMovedRow(id) {
+  const li = $(`[data-rk="${CSS.escape(id)}"]`); if (!li) return;
+  li.classList.add('moved');
+  // The groups are content-visibility: auto, so a group not yet on screen counts as 600px tall (app.css). In a
+  // list just drawn, the row's place was then some thousands of px too far down: the page went there, showed
+  // nothing for a moment, and came back. Lay out the groups down to the row's own first, so its place is true.
+  for (const g of $('#shelfList').children) { g.style.contentVisibility = 'visible'; if (g.contains(li)) break; }
+  const r = li.getBoundingClientRect(), top = Math.max(headerH(), $('#shelfDock').getBoundingClientRect().bottom) + 8;
+  const dy = r.top < top ? r.top - top : r.bottom > innerHeight - 8 ? Math.min(r.bottom - innerHeight + 8, r.top - top) : 0;
+  if (!dy) return;
+  dock.quietUntil = performance.now() + 200;   // our own scroll: it must not tuck or reveal the dock over the row
+  window.scrollBy(0, dy);
+  dock.lastY = window.scrollY;
 }
 /** The role of `link`'s scheme whose pot is `id`, when that role can hold a pot (not Primary, not the
  *  starting paint's role): there a swap becomes the role's pot. Else null: only the list changes. */
@@ -1183,10 +1239,14 @@ function holdInScheme(sid, role, hold) {
     render('scheme');
   }
 }
-/** Use a swap (item 38): the swap goes on the list in the original's place, with its count and project, and
+/** Use a swap (item 38): the swap goes on the list for the original, with its count and project, and
  *  the original comes off. When the original is a role's pot in the scheme it is for, the swap becomes that
  *  role's pot, with the original on record (`was`), so the Recipe says so and can go back. */
 function applySwap(origId, swapId) {
+  // The row is a swap itself (item 69): back to the paint it replaced, then that paint's new swap. So the list
+  // and the scheme hold one swap for a paint, never a swap of a swap, and Undo goes back to the first paint.
+  const again = swapOf(origId);
+  if (again && swapId !== again.orig && state.idx.byId.has(swapId)) { undoSwap(origId, { quiet: true }); offRack.add(origId); applySwap(again.orig, swapId); return; }
   const orig = state.idx.byId.get(origId), sw = state.idx.byId.get(swapId);
   if (!orig || !sw || store.markOf(origId) !== 'want') return;
   const origQty = store.qtyOf(origId), origFor = store.projectOf(origId);
@@ -1209,33 +1269,49 @@ function applySwap(origId, swapId) {
   }
   store.setMark(origId, 'none');
   const dropped = kept.filter(sc => !store.getScheme(sc.id));
-  swapLog.set(swapId, { orig: origId, origQty, origFor, swapPrev, scheme, dropped });
+  const log = { orig: origId, origQty, origFor, swapPrev, scheme, dropped };
+  offRack.add(origId);
+  // before the rows are drawn: the swap's row reads it ("in place of")
+  if (swapLog.has(swapId)) swapLog.get(swapId).push(log); else swapLog.set(swapId, [log]);
   rk.swapOpen.delete(origId);
-  swapRackRow(origId, sw);
+  const headWas = rackHeadOf(origId);
+  const plan = placeSwapRows(origId, sw);
   render('marks', { ids: [swapId] });
   ($(`[data-rkunswap="${CSS.escape(swapId)}"]`) || $(`[data-rktick="${CSS.escape(swapId)}"]`))?.focus({ preventScroll: true });
+  if (plan === 'rebuild') showMovedRow(swapId);
   // name the scheme only while it is still kept (an owned swap can end an unsaved project)
-  say(scheme && store.getScheme(origFor) ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
-    : t('swappedList', { name: ui.pname(sw), was: ui.pname(orig) }));
+  say((scheme && store.getScheme(origFor) ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
+    : t('swappedList', { name: ui.pname(sw), was: ui.pname(orig) })) + movedWords(swapId, headWas));
+}
+/** " It is under X now.": the heading a row went to, when that is another heading than `headWas` (item 70). */
+function movedWords(id, headWas) {
+  const head = rackHeadOf(id);
+  return head && head !== headWas ? ' ' + t('movedUnder', { group: head }) : '';
 }
 /** Undo a swap made in this visit: the original back on the list (count and project), the swap back to the
  *  mark it had, and the scheme's role back to what it held. */
-function undoSwap(swapId) {
-  const e = swapLog.get(swapId), orig = e && state.idx.byId.get(e.orig);
+function undoSwap(swapId, { quiet = false } = {}) {
+  const e = swapOf(swapId), orig = e && state.idx.byId.get(e.orig);
   if (!e || !orig) return;
   for (const sc of e.dropped || []) store.putScheme(sc);   // the projects the swap ended, under their own ids
   store.setMark(e.orig, 'want', { for: e.origFor || undefined });
   if (e.origQty > 1) store.setQty(e.orig, e.origQty);
   if (e.swapPrev.mark !== 'owned') {
-    if (e.swapPrev.mark === 'want') { store.setMark(swapId, 'want', { for: e.swapPrev.for || undefined }); if (e.swapPrev.qty > 1) store.setQty(swapId, e.swapPrev.qty); }
+    // its own count again, also when that is one pot: the Use added the original's pots to it (2 + 3 is 5)
+    if (e.swapPrev.mark === 'want') { store.setMark(swapId, 'want', { for: e.swapPrev.for || undefined }); store.setQty(swapId, e.swapPrev.qty); }
     else store.setMark(swapId, 'none');
   }
   if (e.scheme) holdInScheme(e.scheme.sid, e.scheme.role, e.scheme.before);
-  swapLog.delete(swapId);
-  swapRackRow(swapId, orig);
+  const log = swapLog.get(swapId);
+  log.pop(); if (!log.length) swapLog.delete(swapId);
+  offRack.delete(e.orig);
+  const headWas = rackHeadOf(swapId);
+  const plan = placeSwapRows(swapId, orig, { undo: true });
   render('marks', { ids: [e.orig] });
+  if (quiet) return;   // a swap of a swap: the new swap's Use says and shows the result
   $(`[data-rknot="${CSS.escape(e.orig)}"]`)?.focus({ preventScroll: true });
-  say(t('swapUndone', { was: ui.pname(orig) }));
+  if (plan === 'rebuild') showMovedRow(e.orig);
+  say(t('swapUndone', { was: ui.pname(orig) }) + movedWords(e.orig, headWas));
 }
 /** The Recipe's "Use the original" on a swapped role: back to the pot the swap replaced. If the scheme picks
  *  that pot by itself, the hold goes; else the original is held as the role's pot. One undo step. */
@@ -1248,6 +1324,121 @@ function useOriginal(role) {
   if (auto !== was.id) state.holds = { ...without, [role]: { kind: 'pot', id: was.id, hex: was.hex } };
   render('scheme');
   say(t('originalBack', { role, name: ui.pname(was) }));
+}
+/* ---- the Shelf's Map (PLAN §5 item 61; mockups/shelf-map.html, C with A, Ryan 2026-11-09) ----
+   The paints the filters pick that are owned or on the shopping list, as tones: a minimap (which colour families)
+   over a grid (hue × lightness: which tone to shade or highlight with). A tone chosen shows its paints, and for a
+   gap the closest pots to buy, each with its true ΔE (§2). Nothing is saved: the tone chosen is for this visit. */
+const shelfMap = { sel: null, cur: { b: 0, r: 2 }, last: null };
+const mapTurned = () => PHONE.matches;   // ≤520px: hues down, lightness across, so the page scrolls one way
+function renderShelfMap() {
+  const map = mapCells(shelfPaints(), store.markOf);
+  shelfMap.last = map;
+  const targets = cellTargets(state.idx), turned = mapTurned();
+  $('#mapSum').innerHTML = ui.mapSummaryLine(mapSummary(map), map, t);
+  $('#mapHint').textContent = t(turned ? 'mapHintTurned' : 'mapHint');
+  const hadFocus = !!document.activeElement?.closest?.('#mapGrid');
+  $('#mapGridWrap').innerHTML = ui.mapGrid(map, targets, { sel: shelfMap.sel, turned }, t);
+  mapCursor(shelfMap.cur, hadFocus);
+  renderMapDetail();
+  drawMapMini(map);
+}
+const mapCellEl = ({ b, r }) => document.getElementById(`mc-${b}-${r}`);
+/** The grid's one tab stop (APG grid: roving tabindex). */
+function mapCursor(pos, focus = false) {
+  shelfMap.cur = pos;
+  for (const c of $('#mapGrid').querySelectorAll('[tabindex="0"]')) c.tabIndex = -1;
+  const el = mapCellEl(pos); if (!el) return;
+  el.tabIndex = 0;
+  if (focus) el.focus({ preventScroll: false });
+}
+function renderMapDetail() {
+  const box = $('#mapDetail'), sel = shelfMap.sel, map = shelfMap.last;
+  if (!sel || !map) { box.innerHTML = `<p class="mdstate">${ui.esc(t('mapPick'))}</p>`; return; }
+  const onShelf = new Set(state.idx.paints.filter(p => store.markOf(p.id) !== 'none').map(p => p.id));
+  const fills = map.cells[sel.b][sel.r].owned.length < 2
+    ? fillPots(state.idx, sel.b, sel.r, { onShelf }).map(m => ({ ...m, quality: matchQuality(m.deltaE) })) : [];
+  box.innerHTML = ui.mapDetail(map, sel.b, sel.r, fills, t)
+    + (mapTurned() ? `<p><button type="button" class="textact" id="mapBack">${ui.esc(t('mapBack'))}</button></p>` : '');
+}
+/** Choose a tone: its paints (or the pots that fill it) show under the grid. `how`: 'key' keeps focus in the
+ *  grid; a tap on a phone takes the page to the tone (it is under 19 rows), with a way back. */
+function chooseTone(pos, how = 'key') {
+  shelfMap.sel = pos;
+  for (const c of $('#mapGrid').querySelectorAll('[aria-selected="true"]')) c.setAttribute('aria-selected', 'false');
+  mapCellEl(pos)?.setAttribute('aria-selected', 'true');
+  mapCursor(pos, how === 'key');
+  renderMapDetail();
+  const c = shelfMap.last.cells[pos.b][pos.r];
+  say(ui.mapCellLabel(c, pos.b, pos.r, t));
+  if (how !== 'key' && mapTurned()) {
+    $('#mapDetail').scrollIntoView({ block: 'start', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+    $('#mapDetailHead')?.focus({ preventScroll: true });
+  }
+}
+function drawMapMini(map) {
+  const cv = $('#mapMini'); if (!cv || $('#shelfMapView').hidden) return;
+  const size = Math.round(cv.clientWidth) || 168, dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(size * dpr); cv.height = Math.round((size + MAP_STRIP) * dpr);
+  const cs = getComputedStyle(document.documentElement), tok = n => cs.getPropertyValue(n).trim();
+  drawMinimap(cv.getContext('2d'), { size, dpr, cells: map, tokens: {
+    bg: tok('--bg'), border: tok('--border'), edge: tok('--edge'), text: tok('--text'), buy: tok('--buy'), faint: tok('--border-strong') } });
+}
+function setupShelfMap() {
+  const wrap = $('#mapGridWrap');
+  wrap.addEventListener('click', e => {
+    const c = e.target.closest('[role="gridcell"]'); if (!c) return;
+    chooseTone({ b: +c.dataset.b, r: +c.dataset.r }, 'pointer');
+  });
+  wrap.addEventListener('keydown', e => {
+    const c = e.target.closest('[role="gridcell"]'); if (!c) return;
+    let { b, r } = { b: +c.dataset.b, r: +c.dataset.r };
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chooseTone({ b, r }, 'key'); return; }
+    // the arrows follow the screen: across is hue (lightness when turned), down is darker (the next hue when turned)
+    const turned = mapTurned(), last = MAP_GREY;
+    const across = turned ? ['r', 4] : ['b', last], down = turned ? ['b', last] : ['r', 4];
+    const pos = { b, r };
+    if (e.key === 'ArrowRight') pos[across[0]]++;
+    else if (e.key === 'ArrowLeft') pos[across[0]]--;
+    else if (e.key === 'ArrowDown') pos[down[0]] += turned ? 1 : -1;
+    else if (e.key === 'ArrowUp') pos[down[0]] += turned ? -1 : 1;
+    else if (e.key === 'Home') pos[across[0]] = 0;
+    else if (e.key === 'End') pos[across[0]] = across[1];
+    else return;
+    e.preventDefault();
+    pos.b = Math.max(0, Math.min(last, pos.b)); pos.r = Math.max(0, Math.min(4, pos.r));
+    mapCursor(pos, true);
+  });
+  // the minimap: a tap on a colour family goes to that colour in the grid (its tone with the most paints, else Mid)
+  $('#mapMini').addEventListener('click', e => {
+    const cv = e.currentTarget, rc = cv.getBoundingClientRect(), size = rc.width;
+    const x = e.clientX - rc.left - size / 2, y = e.clientY - rc.top - size / 2;
+    if (e.clientY - rc.top > size || !shelfMap.last) return;   // the greys' strip
+    const b = bandAtXY(x, y), col = shelfMap.last.cells[b];
+    let r = 2; col.forEach((c, i) => { if (c.owned.length > col[r].owned.length) r = i; });
+    chooseTone({ b, r }, 'pointer');
+    if (!mapTurned()) mapCellEl({ b, r })?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  });
+  $('#mapDetail').addEventListener('click', e => {
+    if (e.target.closest('#mapBack')) {
+      const el = mapCellEl(shelfMap.sel || shelfMap.cur);
+      el?.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+      el?.focus({ preventScroll: true });
+      return;
+    }
+    const b = e.target.closest('[data-mapadd]'); if (!b) return;
+    const id = b.dataset.mapadd, p = state.idx.byId.get(id); if (!p) return;
+    const i = [...$('#mapDetail').querySelectorAll('[data-mapadd]')].indexOf(b);
+    store.setMark(id, 'want');
+    render('marks', { ids: [id] });
+    say(t('mapAdded', { name: ui.pname(p) }));
+    // focus stays in the same place: the next Add, else the tone's heading
+    const adds = $('#mapDetail').querySelectorAll('[data-mapadd]');
+    (adds[Math.min(i, adds.length - 1)] || $('#mapDetailHead'))?.focus({ preventScroll: true });
+  });
+  // a phone turned past 520px (or back) turns the grid; the minimap follows the theme
+  PHONE.addEventListener('change', () => { if (state.mode === 'shelf' && state.shelfView === 'map') renderShelfMap(); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (shelfMap.last) drawMapMini(shelfMap.last); });
 }
 function setupShelfList() {
   $('#shelfViewSeg').addEventListener('click', e => {
@@ -1306,7 +1497,7 @@ function clearShelfFilters() {
   state.shelfQ = state.shelfMark = state.shelfBrand = ''; state.shelfTypes = new Set();
   $('#shelfQ').value = $('#shelfBrand').value = '';
   shelfFilterChanged();
-  (state.shelfView === 'list' ? $('#shelfList [data-rktick]') : $('#shelfGrid'))?.focus({ preventScroll: true });
+  (state.shelfView === 'list' ? $('#shelfList [data-rktick]') : state.shelfView === 'map' ? $('#mapGrid [tabindex="0"]') : $('#shelfGrid'))?.focus({ preventScroll: true });
 }
 
 /* ---- Shelf dock (§3.6; mockups/shelf-landing.html "Chosen" + its design critique) ----
@@ -1365,7 +1556,7 @@ function onShelfScroll() {
   applyDock();
 }
 /** The Shelf's body on show: the grid, the list, or the empty state (a hidden one has no place to measure). */
-const shelfBody = () => [$('#shelfGrid'), $('#shelfListView'), $('#shelfEmpty')].find(el => !el.hidden) || $('#shelfGrid');
+const shelfBody = () => [$('#shelfGrid'), $('#shelfListView'), $('#shelfMapView'), $('#shelfEmpty')].find(el => !el.hidden) || $('#shelfGrid');
 /** After a filter change, bring the first results into view just below the dock. Without this, a
  *  filter applied deep in the grid leaves the page scrolled past a now-shorter list (blank screen),
  *  or the first results hide under the dock. */
@@ -1857,7 +2048,7 @@ function useAsSeed(id) {
 
 /** Lightroom-style keyboard triage; active only in shelf mode, ignored while typing in a field. */
 function shelfKeydown(e) {
-  if (state.mode !== 'shelf' || state.shelfView === 'list') return;   // the list's controls are buttons, with their own keys
+  if (state.mode !== 'shelf' || state.shelfView !== 'grid') return;   // the list's and the map's controls have their own keys
   const ae = document.activeElement;
   // act only when the grid (or nothing) has focus — never hijack keys from chips, nav, or a text field.
   // The mark menu counts as "in the grid": it takes focus when it opens, and P/U/X still work there. The
@@ -2310,6 +2501,7 @@ function setTheme(t, { save = false } = {}) {
   const sw = document.querySelector('#themeToggle');   // keep the settings-menu theme switch in sync
   if (sw) sw.setAttribute('aria-checked', String(state.theme === 'dark'));
   syncThemeSlot();
+  if (state.mode === 'shelf' && state.shelfView === 'map' && shelfMap.last) drawMapMini(shelfMap.last);   // the minimap's colours are the theme's
 }
 function setMode(mode) {
   state.mode = mode === 'shelf' || mode === 'schemes' ? mode : 'studio';
@@ -2330,7 +2522,7 @@ function setMode(mode) {
     Object.assign(dock, { open: true, acc: 0, lastY: 0, stuck: false }); applyDock();
     // With a mouse or keyboard the grid takes focus, so arrows and P/U/X work at once. On a touch screen there is no
     // keyboard to use it, and iOS drew the focus ring round the whole grid and a cursor name tip (Ryan, 2026-10-30).
-    if (state.shelfView !== 'list' && !COARSE) $('#shelfGrid').focus({ preventScroll: true });
+    if (state.shelfView === 'grid' && !COARSE) $('#shelfGrid').focus({ preventScroll: true });
   }
   else if (state.mode === 'schemes') { renamingId = null; renderSchemesPage(); window.scrollTo(0, 0); }
   else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows
@@ -2500,7 +2692,7 @@ function copyText(val) {
 function doExport() {
   const s = currentScheme();
   let t = `Palette Studio for Miniatures — recipe\nBase ${s.base} · ${s.harmony} scheme · ${s.ladder} ladder\n\n`;
-  for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}${r.owned ? '  ✓ owned' : ''}\n`;
+  for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}${r.gap != null ? `  (a wash chosen by its colour: gap ${r.gap}°)` : ''}${r.owned ? '  ✓ owned' : ''}\n`;
   t += '\nHex values are approximate; ΔE = perceptual distance to the target colour.\n';
   download('palette-recipe.txt', t);
   toast(i18n.t('recipeSaved'));   // download is the artefact — no silent clipboard write (native-share direction)
@@ -3601,6 +3793,7 @@ function wire() {
   setupSettings(); setupConfirm(); setupMatchNote();   // ⋯ Settings, the Restore/Delete confirm, the matching note
   setupSaveDialog(); setupSchemesPage();   // saved schemes: the Save line and dialog, the Schemes page (item 35)
   setupShelfList();   // the Shelf's list: the rack walk (item 36)
+  setupShelfMap();    // the Shelf's map: the tones you have and miss (item 61)
   setupStore();   // Take to the store: the panel, the naming step, the "bought" link back (item 37)
   setupHelp();   // Help: a sheet built from support.html (mockups/help-about.html, B)
 
