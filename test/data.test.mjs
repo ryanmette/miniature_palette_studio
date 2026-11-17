@@ -570,6 +570,29 @@ test('storeSwaps (item 71): another kind in the class ranks 2 ΔE further, with 
   assert.deepEqual(storeSwaps(sx, sx.byId.get('slime')), [], 'the one slime paint: no swap, said as none');
 });
 
+test('storeSwaps (item 72): a pot you own goes first when it is Good or better, and only then', async () => {
+  const { storeSwaps, SWAP_OWNED_MAX } = await import('../src/js/data.js');
+  assert.equal(SWAP_OWNED_MAX, 3.5, 'the Good limit');
+  assert.equal(matchQuality(SWAP_OWNED_MAX).label, 'Good');
+  const sx = indexDataset({ version: 't', paints: [
+    { id: 'want', brand: 'A', line: 'L', name: 'Green', hex: '#5A8A2A', type: 'layer' },
+    { id: 'near', brand: 'B', line: 'L', name: 'Near Green', hex: '#5B8B2B', type: 'layer' },
+    { id: 'good', brand: 'C', line: 'L', name: 'Good Green', hex: '#618C33', type: 'layer' },
+    { id: 'loose', brand: 'D', line: 'L', name: 'Loose Green', hex: '#6F9A4A', type: 'layer' },
+    { id: 'far', brand: 'E', line: 'L', name: 'Far Green', hex: '#3A6A1A', type: 'layer' },
+  ] });
+  const want = sx.byId.get('want'), ids = o => storeSwaps(sx, want, o).map(m => m.paint.id);
+  const plain = storeSwaps(sx, want);
+  assert.deepEqual(plain.map(m => m.paint.id), ['near', 'good', 'loose']);
+  assert.ok(plain[1].deltaE <= SWAP_OWNED_MAX && plain[2].deltaE > SWAP_OWNED_MAX && plain[2].deltaE < 10, 'the fixture: one Good, one looser');
+  assert.deepEqual(ids({ ownedIds: new Set(['good']) }), ['good', 'near', 'loose'], 'owned and Good: first, although another is nearer');
+  assert.deepEqual(ids({ ownedIds: new Set(['loose']) }), ['near', 'good', 'loose'], 'owned but looser: its own place');
+  assert.equal(storeSwaps(sx, want, { ownedIds: new Set(['good']) })[0].deltaE, plain[1].deltaE, 'the ΔE shown is the true one');
+  assert.deepEqual(ids({ notCarried: new Set(['C']) }), ['near', 'loose', 'far'], 'a brand that is off gives no swap');
+  assert.deepEqual(ids({ ownedIds: new Set(['good']), notCarried: new Set(['C']) }), ['good', 'near', 'loose'], 'but a pot on your shelf needs no rack');
+  assert.deepEqual(ids({ ownedIds: new Set(['good']), except: new Set(['good']) }), ['near', 'loose', 'far'], 'except still holds');
+});
+
 /* ---- the random first scheme (PLAN §5 item 55) ---- */
 import { startPaints, randomStartPaint, START_TYPES, START_L } from '../src/js/data.js';
 import { NEUTRAL_EXIT } from '../src/js/color.js';

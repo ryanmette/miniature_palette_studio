@@ -27,6 +27,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Changed
+- **Store swaps: a pot you own comes first** (PLAN §5 item 72; a ranking change, CLAUDE.md §7). In **Not on the
+  rack?**, a pot you own was marked "owned" but kept its place, so one in fourth place did not show. Now an
+  owned pot that is a Good match or better (ΔE 3.5 or less, `data.js SWAP_OWNED_MAX`) is the first swap: you then
+  have nothing to buy. An owned pot also counts when its brand is switched off, because it is on your shelf and
+  not on the store's rack. A looser owned pot keeps its own place, and the ΔE shown stays the true one.
 - **Store swaps: a wash now comes before a Contrast paint** (PLAN §5 item 71; a ranking change, CLAUDE.md §7).
   In **Not on the rack?**, a wash, an ink, a Contrast paint and a glaze were one group, so for 60% of washes and
   shades the first swap was another product (most times a Contrast paint). Now a pot of another kind ranks 2 ΔE

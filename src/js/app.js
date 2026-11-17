@@ -1085,7 +1085,7 @@ function rackRowData(p) {
     // struck through: bought from the shopping list in this list's visit (a checklist's tick-off), not every owned paint
     struck: mark === 'owned' && rk.kept.has(p.id) && prev?.mark === 'want',
     canSwap,
-    swaps: open ? { notCarried, of: first, list: storeSwaps(state.idx, first || p, { notCarried: storeOff, except: new Set([...offRack, p.id]) })
+    swaps: open ? { notCarried, of: first, list: storeSwaps(state.idx, first || p, { notCarried: storeOff, except: new Set([...offRack, p.id]), ownedIds: store.ownedIds() })
       .map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
     insteadOf: first,
     paint: p, owned: mark === 'owned',

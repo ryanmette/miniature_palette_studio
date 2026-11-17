@@ -247,6 +247,10 @@ export const swapKind = p => p.type === 'wash' || p.type === 'shade' ? 'wash'
  *  paint for 86% (was 65%), for +0.21. At 3 the gain is 10 points more for +0.22 ΔE more; 2 is half of
  *  FINISH_PENALTY, the cost of another finish class in Equivalents. */
 export const SWAP_KIND_PENALTY = 2;
+/** A swap the painter owns goes first when its ΔE is this or less (the "Good" limit, CLAUDE.md §3.2): with a
+ *  good pot on the shelf, there is nothing to buy. A looser owned pot stays in its own place: first place
+ *  would say it is the best swap, and it is not (§2). */
+export const SWAP_OWNED_MAX = 3.5;
 
 /**
  * Swaps for a pot that is not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B): the
@@ -258,14 +262,18 @@ export const SWAP_KIND_PENALTY = 2;
  * @param opts.notCarried  brands the store does not carry (a Set): no swap comes from them
  * @param opts.except      paint ids that are no swap here (a Set): the pot that is not on the rack, when the
  *                         swaps are for the paint it replaced
+ * @param opts.ownedIds    the paints the painter owns (a Set): one within SWAP_OWNED_MAX goes first (item 72).
+ *                         The store's brands do not limit them: a pot on the shelf needs no rack
  * @returns {Array<{paint, deltaE, quality}>} best first, at most `n`
  */
-export function storeSwaps(indexed, paint, { notCarried = new Set(), except = null, n = 3 } = {}) {
+export function storeSwaps(indexed, paint, { notCarried = new Set(), except = null, ownedIds = null, n = 3 } = {}) {
   const lab = paint.lab || hexToLab(paint.hex), cls = finishClass(paint.type), kind = swapKind(paint);
-  return indexed.paints.filter(p => p.id !== paint.id && !notCarried.has(p.brand) && !(except && except.has(p.id))
+  const mineId = id => !!ownedIds && ownedIds.has(id);
+  const first = m => mineId(m.paint.id) && m.deltaE <= SWAP_OWNED_MAX ? 0 : 1;
+  return indexed.paints.filter(p => p.id !== paint.id && (!notCarried.has(p.brand) || mineId(p.id)) && !(except && except.has(p.id))
       && finishClass(p.type) === cls && (cls !== 'effect' || swapKind(p) === kind))
     .map(p => { const deltaE = deltaE2000(lab, p.lab); return { paint: p, deltaE, score: deltaE + (swapKind(p) === kind ? 0 : SWAP_KIND_PENALTY) }; })
-    .sort((a, b) => a.score - b.score)
+    .sort((a, b) => first(a) - first(b) || a.score - b.score)
     .slice(0, n)
     .map(({ paint, deltaE }) => ({ paint, deltaE, quality: matchQuality(deltaE) }));
 }
