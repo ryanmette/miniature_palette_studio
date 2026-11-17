@@ -815,6 +815,21 @@ link, alone, mostly on an iPhone). Two deep journeys, ten seams, measurements, a
 raters on Nielsen's 0 to 4 scale. No app code changed. The items are in the order of the ratings. Ryan decides which
 to build before the link goes out; the review's stop rule is "the 4s and the 3s that you agree with".
 
+**Ryan's answers (2026-11-17):** there is no date for the link; the scheme journey comes first (not the lookup); the
+ratings stand. **The build order** follows the journey, not the ratings alone, because a painter who stops at an
+early step never sees a later fix:
+
+0. Ryan's iPhone check (item 67's first part; no code). Its result decides what item 67 builds.
+1. Item 68: "mark my shelf" opens the list, and a grid result has its name.
+2. Items 66 and 69 together: offer Use my paints when the Shelf gets paints, and the Metal role with a shelf. (Two
+   raters said that item 66 alone moves the complaint to item 69.)
+3. Item 70, its first part: the main Add button puts only the role pots on the list.
+4. Item 67: keep the Shelf on an iPhone, after step 0.
+5. With any of the steps: the three wording errors (F19) and a softer word than "Interchangeable" (item 72, in part).
+
+The link goes out when steps 1 to 4 are done. Items 71 (the lookup), 72 (the hex data), 73 and 74, and the rest of
+item 75, come after the first painters answer.
+
 66. **The scheme ignores the Shelf until the painter finds a setting in ⋯** (F01; rated 4 · 4 · 4). After 45 marks,
     Use my paints is still Off and the Recipe says "+ Add 14". Recommend: when the Shelf gets its first owned paints,
     offer the setting in that place (Prefer · Only · Not now), and keep a next step in the Studio after "mark my shelf
