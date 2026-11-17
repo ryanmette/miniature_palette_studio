@@ -1018,7 +1018,7 @@ early step never sees a later fix:
 0. Ryan's iPhone check (item 77's first part; no code). Its result decides what item 77 builds.
 1. Item 78: "mark my shelf" opens the list, and a grid result has its name. **Built (2026-11-17).**
 2. Items 76 and 79 together: offer Use my paints when the Shelf gets paints, and the Metal role with a shelf. (Two
-   raters said that item 76 alone moves the complaint to item 79.)
+   raters said that item 76 alone moves the complaint to item 79.) **Built (2026-11-17).**
 3. Item 80, its first part: the main Add button puts only the role pots on the list.
 4. Item 77: keep the Shelf on an iPhone, after step 0.
 5. With any of the steps: the three wording errors (F19) and a softer word than "Interchangeable" (item 82, in part).
@@ -1034,6 +1034,12 @@ item 85, come after the first painters answer.
     Use my paints is still Off and the Recipe says "+ Add 14". Recommend: when the Shelf gets its first owned paints,
     offer the setting in that place (Prefer · Only · Not now), and keep a next step in the Studio after "mark my shelf
     first" (the band ends there today). The control stays in ⋯ (CLAUDE.md §3.6).
+    **Built (2026-11-17).** The offer is in the Studio, not on the Shelf: a band under the seed toolbar, when the
+    Studio opens with owned paints, the setting Off and no answer yet (Prefer my paints · Only my paints · Not now;
+    `app.js umpOfferDue`, the pref `umpAsked`). Why there: on the Shelf it would come in at the moment of a mark and
+    move the list under the finger (§3.4); the Studio's opening is the seam where the finding occurs, and it is
+    also the next step after "mark my shelf first". Checked in a browser from a new device: the door, three ticks,
+    back to the Studio, the offer, Prefer, a reload (no offer).
 77. **Keep the Shelf on an iPhone** (F08; 4 · 4 · 4, from WebKit's text, not yet from a phone). **First: Ryan's hand
     check** (UX_REVIEW §7, items 1, 2 and 8). Then: one message in the flow when the Shelf first holds real work
     (Back up · Add to Home Screen); correct Help ("Where is my shelf saved?": back up in Safari, add to the Home

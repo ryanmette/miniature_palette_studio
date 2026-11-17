@@ -248,6 +248,19 @@
       </ol>
       <button type="button" class="textact" id="firstRunShelf">I own paints — mark my shelf first</button>
     </section>
+    <!-- The offer of Use my paints (PLAN §5 item 76; UX review F01): the painter marked paints, and the setting
+         that uses them is Off, in ⋯. It shows when the Studio opens with owned paints on the Shelf, the setting
+         Off, and no answer yet (app.js syncUmpOffer). An answer ends it for good (store.js pref umpAsked). -->
+    <section class="firstrun umpoffer" id="umpOffer" aria-labelledby="umpOfferTitle" hidden>
+      <h2 id="umpOfferTitle">Use your paints in your schemes?</h2>
+      <p id="umpOfferBody"></p>
+      <div class="umpchoices">
+        <button type="button" class="btn primary" id="umpOfferPrefer">Prefer my paints</button>
+        <button type="button" class="btn" id="umpOfferOnly">Only my paints</button>
+        <button type="button" class="textact" id="umpOfferNo">Not now</button>
+      </div>
+      <p class="sethint">Prefer: a paint that you own wins when it is close. Only: only your paints can match, also when the match is poor. You can change this in ⋯ Settings, under Use my paints.</p>
+    </section>
     <div class="wsplit">
       <div class="card pad studio">
         <!-- The Save line (PLAN §5 item 35): is the scheme on screen kept? Not saved + Save · its name + Saved ·

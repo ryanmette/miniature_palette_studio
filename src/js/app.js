@@ -2572,6 +2572,7 @@ function setMode(mode) {
   }
   else if (state.mode === 'schemes') { renamingId = null; renderSchemesPage(); window.scrollTo(0, 0); }
   else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows
+  syncUmpOffer({ open: state.mode === 'studio' });   // back in the Studio with paints on the Shelf: ask once (item 76)
   updateUrl();
 }
 /** Seed from a paint: the seed field's list, or the Shelf's Use as seed. It goes into Recent. The render's
@@ -2702,8 +2703,34 @@ function setLadder(v) {                          // #7 — tone-ladder style (pe
 function setCollection(v) {
   if (!['off', 'prefer', 'only'].includes(v)) return;
   state.collection = v; store.setPref('collection', v);
+  // The painter chose, here or in the Studio's offer: the offer has its answer (item 76)
+  if (!store.getPref('umpAsked')) store.setPref('umpAsked', true);
+  syncUmpOffer();
   syncCollectionSeg(); syncUmpHint();
   renderLive(); renderActive(); renderMatchNote();
+}
+/* ---- The offer of Use my paints (PLAN §5 item 76; UX review F01, rated 4 by all three raters) ----
+   A painter marks 45 paints and goes back to the Studio. The setting that uses them is Off, in ⋯, and nothing
+   pointed to it: the Recipe still said "+ Add 14". So the Studio asks once, under the paint field (the
+   first-run band's place and look): Prefer, Only, or Not now. It shows when the Studio opens (a mode switch,
+   or a load), never at the moment of a mark: a band that came in then would push the wheel down under the
+   painter's finger (§3.4). An answer, or a change of the setting in ⋯, ends it for good (the pref umpAsked). */
+const umpOfferDue = () => state.mode === 'studio' && !firstRun && state.collection === 'off'
+  && !store.getPref('umpAsked') && store.counts().owned > 0;
+/** Show the offer when it is due (`open`: the Studio has just opened); in every case, hide it when it is not. */
+function syncUmpOffer({ open = false } = {}) {
+  const el = $('#umpOffer'), due = umpOfferDue();
+  if (!due) { el.hidden = true; return; }
+  if (!open && el.hidden) return;   // due, but the Studio is in use: wait for its next opening
+  $('#umpOfferBody').textContent = t('umpOfferBody', { n: paintsSaid(store.counts().owned) });
+  el.hidden = false;
+}
+function answerUmpOffer(v) {
+  if (v) setCollection(v);   // it sets umpAsked and hides the band
+  else { store.setPref('umpAsked', true); syncUmpOffer(); }
+  // the band is gone, and the control that had the focus with it: the hero line is the Studio's landing spot
+  $('#hero').focus({ preventScroll: true });
+  toast(t(v === 'prefer' ? 'umpOfferPrefer' : v === 'only' ? 'umpOfferOnly' : 'umpOfferLater'));
 }
 /** ⋯ → Brand (docs/TONE_LADDERS.md B; Ryan 2026-11-06): any · prefer (a 2 ΔE bonus) · only (a filter), for one
  *  brand; saved for the device. The brand the select SHOWS is the painter's own pick, or else the brand they
@@ -3906,6 +3933,9 @@ function wire() {
   });
   setupTypePick();
   $('#firstRunPicks').addEventListener('click', e => { const b = e.target.closest('[data-firstpick]'); if (b) selectPaint(b.dataset.firstpick); });
+  $('#umpOfferPrefer').addEventListener('click', () => answerUmpOffer('prefer'));
+  $('#umpOfferOnly').addEventListener('click', () => answerUmpOffer('only'));
+  $('#umpOfferNo').addEventListener('click', () => answerUmpOffer(null));
   // "Mark my shelf first" opens the list, as an index (item 78): the grid was 3,375 squares with no names
   $('#firstRunShelf').addEventListener('click', () => {
     endFirstRun();
@@ -4051,6 +4081,7 @@ async function init() {
   // A first visit with no paint in the link: show "Start a scheme" (after the first render, so that
   // render does not end it). A native shell that restored a shelf is not a first visit.
   if (store.firstVisit && !restored && !url.get('p') && !url.get('c') && !url.has('l') && !url.has('b')) startFirstRun();
+  syncUmpOffer({ open: true });   // a visit that starts in the Studio, with paints marked on an earlier one
   if (url.get('m') === 'shelf' || url.get('m') === 'schemes') setMode(url.get('m'));   // deep-link / refresh stays in that mode
   // A store list or a "bought" link (item 37). The first render has already written the address bar without
   // them, so a reload does not ask again.

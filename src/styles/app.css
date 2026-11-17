@@ -883,6 +883,10 @@ main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
 .frpick .sw { width: 24px; height: 24px; }
 .frsteps { margin: 0; padding-left: 24px; color: var(--text-muted); display: grid; gap: 4px; }
 .firstrun .textact { justify-self: start; }
+/* The offer of Use my paints (PLAN §5 item 76): the first-run band's look. One row of choices that wraps; the
+   main button is first, and "Not now" is words only. */
+.umpchoices { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.umpoffer .sethint { margin: 0; }
 /* Holds (mockups/hold-flow.html, direction A): the card's controls, the note under the live palette, and the
    pot chooser. A lock is a toggle (pressed = an --accent-weak fill + accent border, as .lcbtn.on); a chosen pot
    is a filled tag (state). */

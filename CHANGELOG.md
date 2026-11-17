@@ -54,6 +54,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - The icon does not show on a swatch smaller than 26 px (the Map's small pots, the Schemes strip). The
     paint's tag or name gives the finish there.
 ### Added
+- **The Studio offers to use your paints** (PLAN §5 item 76; `docs/UX_REVIEW.md` F01, the review's first
+  finding of the highest severity; CLAUDE.md §3.6). Step 2 of the review's build order, second part. A painter
+  marked their paints, went back to the Studio, and the scheme still ignored them: **Use my paints** is Off
+  until you change it, and it is in ⋯. Now, when the Studio opens with paints marked as owned and the setting
+  Off, a band under the paint field asks one time: **Prefer my paints**, **Only my paints** or **Not now**.
+  An answer sets the setting, and the note under the live palette shows it. The band does not come back after
+  an answer, or after you change the setting in ⋯. It never comes in while you work in the Studio, so nothing
+  moves under your finger. The answer is saved on the device and is in a backup (a new saved setting,
+  `umpAsked`). `sw.js`: `CACHE` is `ps-v105`.
 - **A UX review before the first showing (`docs/UX_REVIEW.md`; a study, no app code changed).** The app as a new
   painter meets it: an experienced painter with many pots, a link, alone, mostly on an iPhone. Two deep journeys
   (arrive → mark my paints → a scheme with them → a shopping list; and "what is close to this paint?"), ten seams
