@@ -649,3 +649,27 @@ for "a silver", not to a colour that the harmony made. A painter reads "your sil
    the place of the quality word** ("A metallic you own"), with no advice to mix or to shift the hue. §3.2
    has two such limits on the words now (a translucent paint never says more than Good; a wash shows its
    gap). The other choice is to keep "Poor": it is true to the table, and it discourages.
+
+### 11.6 Built, and measured again
+
+Ryan chose the rule and the words ("15 and A", 2026-11-17). Both are built (PLAN items 76 and 79; CLAUDE.md
+§3.2 and §7), with the offer of Use my paints in the Studio. The same 203 schemes in the real app
+(`measure.cjs`), before and after:
+
+| Use my paints: Prefer | Before | After |
+|---|---:|---:|
+| The Metal role is an owned metallic | 0 of 203 | **203 of 203** |
+| Roles filled by a pot the painter owns (609 roles) | 129 (21%) | **332 (55%)** |
+| Schemes with the same role pots as Off | 95 of 203 | **0** |
+| "+ Add N": the median N | 11 | 10 |
+| Colour roles rated Loose · Poor | 124 · 17 | 124 · 17 (no change: the rule is for the Metal role only) |
+
+| Use my paints: Only | Before | After |
+|---|---:|---:|
+| Roles that say "Poor" | 383 | 264 |
+| Roles that say "Loose" | 213 | 129 |
+| Schemes with a role that says "Poor" | 195 | 175 |
+
+In Only, the pots are the same as before. The 203 Metal roles now say "A metallic you own" in place of Loose
+(84) or Poor (119). Off is the same in every number. The colour roles of Only still say Poor for most
+schemes: that is F03, the product question, and it is open.
