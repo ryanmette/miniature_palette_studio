@@ -10,6 +10,12 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.17.0** — the store-swap release, from an audit of **Not on the rack?**. "This store carries" has a switch for
+every brand, a pot you own comes first, a swap goes under the heading of its own brand, and a swap can be swapped
+again. Washes and shades are compared by their colour and show a **gap** in degrees, because the makers show a wash
+in different ways. The Recipe's wash step finds a real wash more often. Paint data 1.10.0: 14 Army Painter effects are
+no longer listed as washes, and the four Gloss Shades have a **No longer made** tag.
+
 **v1.16.0** — the Map release. The Shelf has a third view, **Map**: a small colour wheel shows the paints you own
 as dots, with a hatched part for each colour family you own nothing in, and a grid of tones (18 colours from shade to
 highlight, plus the greys) shows every gap. Tap a gap for the three closest pots, with their ΔE, and add one to your

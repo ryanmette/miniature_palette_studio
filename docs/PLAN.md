@@ -110,8 +110,9 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.14.0** — the phone release (a test on an iPhone, 2026-10-30): the What's new dot (item 40) and longer toasts; the review's fixes (Restore warns about saved schemes, swap Undo keeps projects, unique names, a failed save says so, Help always matches its page); the wheel scrolls the page on touch; one 16px phone gutter; the Shelf's hold-and-slide names, drag-to-select ranges, the selection sheet with Undo, pick-many types, Select and Grid | List in the dock, a hue sort in true colour order; the big scheme view; "Move here" explained. Studies: `docs/COLOUR_CHECK.md`, `mockups/swatch-finish.html` (B, variant a chosen), `mockups/whats-new.html`, `mockups/shelf-dock-tools.html`.
 - **v1.15.0** — the Tone Pro release (2026-11-07): Warhammer Tone Pro, 150 paints from GW's own charts (item 57; dataset 1.8.0) and the maker's ladder on the Recipe (item 64 A; dataset 1.9.0, `family` + `tone`); Citadel renamed Warhammer Colour with "Citadel" kept as a search word, and five names fixed (item 56; dataset 1.7.0); a random first scheme (item 55); About's update log (item 65). Studies: `docs/TONE_PRO.md`, `docs/TONE_LADDERS.md`. Recorded for later: the Apple bug pass (58–60), a map of my paints (61), sheen (62), colour in 3D (63), the Brand setting (64 B).
 - **v1.16.0** — the Map release (2026-11-17): the Shelf's **Map** view (item 61; `mockups/shelf-map.html`, C with A, Ryan 2026-11-09): a minimap of the owned paints by Lab hue and strength, over a grid of tones (18 Lab hue bands + the greys × 5 lightness bands); a gap offers the 3 closest opaque pots by true ΔE, with Add. New `shelfmap.js`. Still open from 2026-11-06: sheen (62), colour in 3D (63), the Brand setting (64 B).
+- **v1.17.0** — the store-swap release (2026-11-17), from the audit of **Not on the rack?** (items 66–75): a toggle for every brand (66), Undo keeps a paint to buy (67), a swap can swap again (69), a swap goes under its own rack heading (70), swaps rank by kind (71) and a good owned pot comes first (72); a wash against a wash is compared by **the gap** (68, way C: absorbance direction, `color.js absorbGap`), also as the second try of the Recipe's wash step (74); dataset 1.10.0 (73: 14 Army Painter effects, Orc Flesh Wash, the four Gloss Shades discontinued) and the **No longer made** tag. Open after it: measured wash colours (68), the 34 missing Warhammer Colour paints (75).
 ### Current status (2026-11-17)
-**v1.16.0 released** — the Map release (item 61: the Shelf's Map view, from the study `mockups/shelf-map.html`). Before it, v1.15.0: the Tone Pro release (items 55–57, 64 A and 65; studies for items 57 and 64, new items 58–63 recorded). Before it, v1.14.0: the phone release (items 40–50 and the 2026-10-30 phone test; the swatch and colour-check studies, items 49 and 51, wait for their builds). Before it, v1.13.0: the shopping-list turn, items 34–38. Before it, v1.12.0: role holds (UC-3) and share as an image. The visual identity is done: v1.10.0 is the look (Workbench+) and v1.11.0 the
+**v1.17.0 released** — the store-swap release (items 66–75: the audit of Not on the rack?, the gap for washes, dataset 1.10.0, the No longer made tag). Before it, v1.16.0: the Map release (item 61: the Shelf's Map view, from the study `mockups/shelf-map.html`). Before it, v1.15.0: the Tone Pro release (items 55–57, 64 A and 65; studies for items 57 and 64, new items 58–63 recorded). Before it, v1.14.0: the phone release (items 40–50 and the 2026-10-30 phone test; the swatch and colour-check studies, items 49 and 51, wait for their builds). Before it, v1.13.0: the shopping-list turn, items 34–38. Before it, v1.12.0: role holds (UC-3) and share as an image. The visual identity is done: v1.10.0 is the look (Workbench+) and v1.11.0 the
 UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funnel)** — see
 [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
 **Native app, Stage 1 (v2.0): started 2026-10-29** — the `ios/` project is committed and runs in the
@@ -816,7 +817,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, 73, way C of 68 and the owned-first part of 72 built; 74 open)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (released in v1.17.0; open: the wash data of 68, the list length of 72, the missing paints of 75)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -901,7 +902,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       change there alters every Recipe, so it needs its own decision (item 74). **Data seen on the way:** Army
       Painter's "Brush-On Primer" had the type `wash` (it is a primer), so it showed as a swap for a black wash
       (corrected in item 73).
-69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
+69. **A row that is a swap cannot swap again** (built; `canSwap` was false for it). When its brand is switched off
     later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
     the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint
     it replaced (`storeSwaps`' `except`), and Use goes back to that paint and then to the new swap, so the list and
@@ -916,7 +917,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     heading. The groups are `content-visibility: auto`, so the row's place is measured after the groups above it
     are laid out (the 600px estimate put the page some thousands of px too far for a moment). Only when a filter
     hides the swap does it take the original's place.
-71. **One class for wash, shade, ink, Contrast and glaze** (open; ranking). For 60% of washes and shades the best
+71. **One class for wash, shade, ink, Contrast and glaze** (built; ranking). For 60% of washes and shades the best
     swap is not a wash or a shade (most are Contrast paints); in half of those a wash was under 2 ΔE further. For
     effect paints, 21 of 55 best swaps have another `fx` (Blood For The Blood God, gloss, gets Vallejo Corrosion,
     texture). **Built (2026-11-15):** `data.js swapKind` + `SWAP_KIND_PENALTY` = 2 (ranking only): a wash's or
@@ -997,7 +998,23 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       both are probably effects (`fx: gloss`). The product page is gone (404) and it is not in the maker's
       public product list, so there is no primary source to read. No change until one is found.
 
-### Next session (planned 2026-08-11 for 2026-08-12)
+### Next (as of 2026-11-17, after v1.17.0)
+
+Ryan's order (2026-11-17: "go with your recommendation"):
+
+1. **The swatch pass (item 51).** Chosen: B, a pure colour field with one finish icon in the corner. Today the
+   finish overlays shift the colour by up to ΔE 10.4, which CLAUDE.md §2 forbids: the largest known gap between
+   the app and its own rules.
+2. **Small and decided:** item 59 (⋯ shows a focus ring when a touch opens it).
+3. **Studied and chosen, larger:** item 64 B (a Brand setting in ⋯: Any · Prefer · Only), or the next maker's tone
+   families (Reaper first); item 7 (the paint detail sheet).
+4. **Waits for Ryan:** measured wash colours and the 34 missing Warhammer Colour paints (items 49, 68, 75); a test
+   on a real iPad (item 60); the device build of the native app (Stage 1); the retailer applications
+   (`MONETIZATION.md` A).
+5. **Studies not started:** item 62 (sheen), item 63 (colour in three dimensions).
+
+### An earlier plan, kept as a record (planned 2026-08-11 for 2026-08-12; item 7 is still not built)
+
 
 Ordered, with the reasoning rather than just the list:
 
