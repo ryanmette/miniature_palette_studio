@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build-dataset.mjs — assemble src/data/paints.json (dataset v1.9.0).
+ * build-dataset.mjs — assemble src/data/paints.json (dataset v1.10.0).
  *
  * Source: all brands are parsed at build time from the MIT-licensed community dataset
  *   github.com/Arcturus5404/miniature-paints (© 2022 Rick Fleuren, "Miniature Painter Pro").
@@ -27,8 +27,11 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = process.argv[2] || join(ROOT, '.cache', 'raw');
 const CAPTURED = '2026-06-25';
-const VERSION = '1.9.0';
-const GENERATED = '2026-11-06';   // the build that gave Tone Pro its families (the upstream values are still CAPTURED's)
+const VERSION = '1.10.0';
+// The build that took three corrections from the makers' own pages (PLAN §5 item 73): 14 Army Painter effects
+// that upstream lists as washes, one Two Thin Coats name, and four Gloss Shades that GW no longer makes. No hex
+// changed: the upstream values are still CAPTURED's.
+const GENERATED = '2026-11-17';
 const REPO = 'https://github.com/Arcturus5404/miniature-paints';
 const src = file => `${REPO}/blob/main/paints/${file}`;
 
@@ -44,6 +47,10 @@ const norm = s => s.replace(/\s+/g, ' ').trim();   // source has stray double-sp
  * `names` (optional): the maker's own name for an upstream name that is wrong. The id is made from the upstream
  * name, so it does not change, and the paint keeps the upstream name in `formerly` (an old CSV or a search for
  * the old spelling still finds it).
+ * `types` (optional): upstream set → { upstream name → type }, for a paint that upstream lists in the wrong set.
+ * The maker's own grouping decides the type; the line and the id stay as upstream gives them.
+ * `gone` (optional): upstream names the maker no longer makes: `discontinued: true`. The paint stays in the data,
+ * because a painter can still own it.
  * `kind` chooses the type: base/layer/dry are flat colours; wash/shade/ink/contrast/glaze/effect are
  * finishes (kept out of harmony suggestions); metal is the metallic role. Sets not listed are skipped
  * (airbrush duplicates, primers/sprays, craft/weathering, discontinued).
@@ -56,7 +63,12 @@ const BRANDS = [
   { brand: 'Warhammer Colour', key: 'citadel', file: 'Citadel_Colour.md', setIdx: 2, names: {
     'Bugman Glow': "Bugman's Glow", 'Emperor Children': "Emperor's Children", 'Gehenna Gold': "Gehenna's Gold",
     'Nurgles Rot': "Nurgle's Rot", 'Cassandora Yellow': 'Casandora Yellow',
-  }, sets: {
+  },
+  // "The four gloss shades – Nuln Oil Gloss, Agrax Earthshade Gloss, Reikland Fleshshade Gloss, and Cryptek
+  // Armourshade Gloss – are leaving the range." (GW, "A New Era of Paints", Warhammer Community, 13 Jun 2022:
+  // warhammer-community.com/en-gb/articles/llZeorVj/). docs/sources/warhammer-colour-list-2026-11-03.md says the same.
+  gone: ['Nuln Oil Gloss', 'Agrax Earthshade Gloss', 'Reikland Fleshshade Gloss', 'Cryptek Armourshade Gloss'],
+  sets: {
     'Base': ['Base', 'base'], 'Layer': ['Layer', 'layer'], 'Dry': ['Dry', 'dry'],
     'Shade': ['Shade', 'shade'], 'Contrast': ['Contrast', 'contrast'],
     'Technical': ['Technical', 'effect'], 'Glaze': ['Glaze', 'glaze'],
@@ -68,7 +80,14 @@ const BRANDS = [
     'Game Color Wash': ['Wash', 'wash'], 'Wash FX': ['Wash', 'wash'],
     'Game Color Special FX': ['Special FX', 'effect'],
   } },
-  { brand: 'Army Painter', file: 'Army_Painter.md', setIdx: 3, sets: {
+  // Upstream's set "Warpaints Fanatic Wash" holds 32 paints. Army Painter's own shop lists 18 of them as
+  // "Warpaints Fanatic Wash: …" and these 14 as "Warpaints Fanatic Effects: …" (thearmypainter.com/products.json,
+  // read 2026-11-17): a primer, rust and blood effects, slime and fluorescent glow paints. As washes they were
+  // offered as swaps for washes, and as the Recipe's wash step.
+  { brand: 'Army Painter', file: 'Army_Painter.md', setIdx: 3, types: { 'Warpaints Fanatic Wash': Object.fromEntries([
+    'Brush-On Primer', 'Dark Rust', 'Data System Glow', 'Disgusting Slime', 'Dry Blood', 'Fresh Rust', 'Lens Flare Glow',
+    'Oil Stains', 'Oozing Vomit', 'Plasma Coil Glow', 'Power Node Glow', 'Radiation Glow', 'True Blood', 'Verdigris',
+  ].map(n => [n, 'effect'])) }, sets: {
     'Warpaints': ['Warpaints', 'layer'], 'Warpaints Fanatic': ['Warpaints Fanatic', 'layer'],
     'Speedpaint Set 2.0': ['Speedpaint', 'contrast'], 'Speedpaint Set': ['Speedpaint', 'contrast'],
     'Warpaints Fanatic Wash': ['Wash', 'wash'], 'Quickshade Washes Set': ['Wash', 'wash'],
@@ -79,7 +98,9 @@ const BRANDS = [
     "D&D Nolzur's Marvelous Pigments Wash": ["Nolzur's", 'wash'],
     'D&D Underdark Set': ['D&D', 'layer'], 'D&D Undead Set': ['D&D', 'layer'],
   } },
-  { brand: 'Two Thin Coats', file: 'Duncan.md', setIdx: 2, sets: {
+  // Two Thin Coats' own Wave 1 chart says "Orc Flesh Wash" (duncanrhodes.com/ttc-paints/, "Two Thin Coats paint
+  // reference chart", 2022, read 2026-11-17): upstream's name lost its first letter.
+  { brand: 'Two Thin Coats', file: 'Duncan.md', setIdx: 2, names: { 'RC Flesh Wash': 'Orc Flesh Wash' }, sets: {
     'Wave 1': ['Wave 1', 'layer'], 'Wave 2': ['Wave 2', 'layer'], 'Wave 3': ['Wave 3', 'layer'],
   } },
   { brand: 'P3', file: 'P3.md', setIdx: 2, sets: {
@@ -157,7 +178,7 @@ function add(b, line, name, hex, type, sourceUrl, captured = CAPTURED, source = 
   const id = `${b.key || slug(b.brand)}-${slug(line)}-${slug(name)}`;   // from the upstream name: ids never change
   if (seen.has(id)) return; seen.add(id);
   const fixed = b.names?.[name];
-  paints.push({ id, brand: b.brand, line, name: fixed || name, hex: hex.toUpperCase(), type, discontinued: false, approx: true,
+  paints.push({ id, brand: b.brand, line, name: fixed || name, hex: hex.toUpperCase(), type, discontinued: !!b.gone?.includes(name), approx: true,
     source, sourceUrl, captured, ...(fixed ? { formerly: [name] } : {}), ...extra });
 }
 const sortKey = new Map(BRANDS.map(b => [b.brand, b.key || b.brand]));
@@ -170,7 +191,7 @@ for (const b of BRANDS) {
     const map = wanted[row.set];
     if (!map) { skipped[`${b.brand} / ${row.set}`] = (skipped[`${b.brand} / ${row.set}`] || 0) + 1; continue; }
     const [line, kind] = map;
-    add(b, line, row.name, row.hex, resolveType(row.name, kind), url, b.captured);
+    add(b, line, row.name, row.hex, b.types?.[row.set]?.[row.name] || resolveType(row.name, kind), url, b.captured);
   }
 }
 

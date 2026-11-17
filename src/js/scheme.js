@@ -3,7 +3,7 @@
 
 import { rotateHue, adjustHsl, adjustDirection, rgbToHsl, hexToRgb, hslToRgb, rgbToHex, hexToLab, deltaE2000, isNeutral, clamp01 } from './color.js';
 import { harmonyPartners, neutralPartners, isNeutralHarmony, DEFAULT_POP } from './harmony.js';
-import { nearestPaint, matchQuality, familyOf } from './data.js';
+import { nearestPaint, matchQuality, familyOf, washByGap, WASH_GAP_NEAR } from './data.js';
 
 // Tone ladders (#7). Two ways painters think about a role's value steps:
 //  • 'wash'  — Wash · Base · Highlight: the *technique* ladder (recess wash + edge highlight around the paint).
@@ -38,6 +38,24 @@ const TEMP_STEPS = [
 // base match and say so honestly: the step is flagged `dilute` ("watered down" in the UI).
 const WASH_MEDIA = new Set(['wash', 'shade', 'ink']);
 const WASH_GATE = 10;   // beyond "Loose" there's no honest bottled wash — thin your base instead
+
+/** One wash step (§7, Wash-step media). Three tries, in order:
+ *  1. the real medium nearest by ΔE, within WASH_GATE;
+ *  2. the real medium nearest by its colour, a gap of WASH_GAP_NEAR or less (PLAN §5 item 74): the step
+ *     carries `gap`, and the card shows the gap, because this pot was not chosen by how dark it looks;
+ *  3. the darkened-base match, flagged `dilute` ("watered down"). Only when there IS a paint to thin: a null
+ *     match shows as "no close paint", not as a "watered down" tag on a paint that does not exist.
+ *  `roleOpts` is the role's match options; the media search lifts the finish exclusion and the Metal role's
+ *  type filter (a bottled shade over a metallic is standard practice). */
+function washStep(idx, ideal, roleOpts) {
+  const media = { ...roleOpts, types: WASH_MEDIA, excludeTypes: undefined };
+  const real = nearestPaint(idx, ideal, media);
+  if (real && real.deltaE <= WASH_GATE) return { idealHex: ideal, match: real, media: 'wash' };
+  const byGap = washByGap(idx, ideal, media);
+  if (byGap && byGap.gap <= WASH_GAP_NEAR) return { idealHex: ideal, match: byGap, media: 'wash', gap: byGap.gap };
+  const fallback = nearestPaint(idx, ideal, roleOpts);
+  return { idealHex: ideal, match: fallback, ...(fallback ? { dilute: true } : {}) };
+}
 
 // NMM — Non-Metallic Metal (§7, locked): paint the metal ILLUSION with flat paints via a hard
 // value structure (deep shadow → mid → near-white ping). Steps derive from the Metal role's ideal;
@@ -140,17 +158,8 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     const seedTarget = !!(opts.seed && opts.seed.hex && d.idealHex.toUpperCase() === opts.seed.hex.toUpperCase());
     let roleOpts = d.metal ? { ...opts, types: new Set(['metal']) } : opts;
     if (seedTarget) roleOpts = { ...roleOpts, preferIds: new Set([opts.seed.id]) };
-    const step = (ideal, media) => {
-      if (media === 'wash') {   // prefer a real wash/shade/ink; fall back to "watered down" base honestly
-        const real = nearestPaint(idx, ideal, { ...roleOpts, types: WASH_MEDIA, excludeTypes: undefined });
-        if (real && real.deltaE <= WASH_GATE) return { idealHex: ideal, match: real, media: 'wash' };
-        // dilute only when there IS a base paint to thin — a null match must render as a plain
-        // "no close paint", not a "watered down" tag pointing at a paint that doesn't exist.
-        const fallback = nearestPaint(idx, ideal, roleOpts);
-        return { idealHex: ideal, match: fallback, ...(fallback ? { dilute: true } : {}) };
-      }
-      return { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) };
-    };
+    const step = (ideal, media) => media === 'wash' ? washStep(idx, ideal, roleOpts)
+      : { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) };
 
     let match = nearestPaint(idx, d.idealHex, { ...roleOpts, excludeIds: usedIds });
     let shared = false, differentiate = null, buy = null;
@@ -251,15 +260,8 @@ function chosenPotRole(idx, d, opts, styles) {
 /** The Metal ladders and NMM steps from a given metal colour (a chosen metal pot's), as buildScheme makes them. */
 function metalLadders(idx, hex, opts, styles) {
   const roleOpts = { ...opts, types: new Set(['metal']) };
-  const step = (ideal, media) => {
-    if (media === 'wash') {
-      const real = nearestPaint(idx, ideal, { ...roleOpts, types: WASH_MEDIA, excludeTypes: undefined });
-      if (real && real.deltaE <= WASH_GATE) return { idealHex: ideal, match: real, media: 'wash' };
-      const fallback = nearestPaint(idx, ideal, roleOpts);
-      return { idealHex: ideal, match: fallback, ...(fallback ? { dilute: true } : {}) };
-    }
-    return { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) };
-  };
+  const step = (ideal, media) => media === 'wash' ? washStep(idx, ideal, roleOpts)
+    : { idealHex: ideal, match: nearestPaint(idx, ideal, roleOpts) };
   const ladders = styles.map(st => ({ style: st, label: LADDERS[st].label,
     steps: LADDERS[st].steps.map(s => ({ key: s.key, ...(s.adj ? step(adjustHsl(hex, s.adj), s.key === 'wash' ? 'wash' : null) : { idealHex: hex, match: null }) })) }));
   const nmmOpts = { ...opts, excludeTypes: new Set([...(opts.excludeTypes || []), 'metal']) };
@@ -295,16 +297,17 @@ export function schemeGaps(scheme, ownedSet = new Set()) {
 export function shoppingList(scheme) {
   const rows = [], seen = new Set();
   for (const r of scheme.roles) {
-    const push = (roleLabel, m) => {
+    // `gap`: a wash chosen by its colour (washStep's second try). The row says the gap, not only a large ΔE.
+    const push = (roleLabel, m, gap) => {
       if (!m || seen.has(m.paint.id)) return;
       seen.add(m.paint.id);
       rows.push({
         role: roleLabel, name: m.paint.name, brand: m.paint.brand, line: m.paint.line,
-        hex: m.paint.hex, deltaE: Math.round(m.deltaE * 10) / 10, owned: !!m.owned,
+        hex: m.paint.hex, deltaE: Math.round(m.deltaE * 10) / 10, owned: !!m.owned, ...(gap != null ? { gap: Math.round(gap) } : {}),
       });
     };
     for (const lad of r.ladders) for (const s of lad.steps) {
-      push(s.key === 'base' || s.key === 'mid' ? r.role : `${r.role} ${s.key}`, s.match);
+      push(s.key === 'base' || s.key === 'mid' ? r.role : `${r.role} ${s.key}`, s.match, s.gap);
     }
     // NMM is an ALTERNATIVE to the metallic, so its rungs are labelled as such rather than folded
     // into the role — the painter can see which rows belong to which technique.

@@ -13,7 +13,33 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+- **The Recipe's wash step finds a real wash more often** (PLAN §5 item 74; a matching change, CLAUDE.md §7).
+  The step looked for a wash, shade or ink within ΔE 10, and showed a base paint with "watered down" when it
+  found none. Some makers show a wash as a thin coat on white, so their washes have no dark value, and the step
+  found almost none of them: with only Warhammer Colour paints, 8% of colours got a wash. The step now has a
+  second try before "watered down": the wash that is nearest by its colour (the gap, 8° or less), as the store
+  swaps of a wash. Such a step shows "gap 4°" beside its finish tag, and **Save the recipe** writes the gap on
+  its line. Measured: a real wash for 93% → 99% of colours with every brand, 66% → 89% with Warhammer Colour and
+  Army Painter, 8% → 79% with Warhammer Colour only. The added washes are in the paint's colour family as often
+  as the others. A Recipe that had a wash keeps the same wash; about 6% of wash steps change from "watered down"
+  to a wash. The gap does not show how strong a wash is.
+- **A paint that is no longer made says so** (PLAN §5 item 73; CLAUDE.md §3.5, §3.6 and §7). The data marks four
+  paints as no longer made (the Gloss Shades). Each one now has a **No longer made** tag beside its finish tag: on
+  the starting paint's line, in the seed field's list, in the Recipe, in the pot dialog and in the Shelf's list
+  and Map. In the Shelf's list, such a paint on the shopping list opens its swaps by itself, with "Nuln Oil Gloss
+  is no longer made. The closest here:", because no store has it. The Recipe and the tone ladders do not suggest
+  such a paint, unless you own it or it is your starting paint. The seed field, the Shelf and Other brands still
+  show every paint.
 ### Changed
+- **Paint data 1.10.0: three corrections from the makers' own pages** (PLAN §5 item 73; `src/data/SOURCES.md`). No
+  colour value changed, and no paint id changed.
+  - **14 Army Painter paints are effects, not washes.** The community source lists them with the Fanatic washes.
+    Army Painter's own shop lists them as "Warpaints Fanatic Effects": Brush-On Primer, the rust and blood
+    effects, the slime and the glow paints. As washes they showed as swaps for washes and as the wash in a Recipe.
+  - **"RC Flesh Wash" is "Orc Flesh Wash"** (Two Thin Coats' own chart). A search for the old spelling still
+    finds it.
+  - **The four Gloss Shades are marked as no longer made** (Games Workshop, 2022): Nuln Oil Gloss, Agrax Earthshade
+    Gloss, Reikland Fleshshade Gloss and Cryptek Armourshade Gloss. They stay in the app, because you can own them.
 - **Store swaps: a wash is compared by its colour, not by how dark it looks** (PLAN §5 item 68, way C; a ranking
   change, CLAUDE.md §7 and §3.2). The makers show a wash in different ways: a thin coat on white (the Warhammer
   Colour Shades) or the liquid in the pot (Army Painter). So Shadow Wash and Nuln Oil, two black washes, were ΔE
@@ -24,7 +50,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   washes' names, the first swap is in the same colour family in 71% of cases in a store with Warhammer Colour and
   Army Painter (44% by ΔE), and in 74% with Warhammer Colour only (32%). With every brand it is equal (64% and
   65%). The gap does not show how strong a wash is, and no paint value changed. Inks, Contrast paints and glazes
-  keep ΔE, and so do the Equivalents tab and the Recipe's wash step.
+  keep ΔE, and so does the Equivalents tab. An ink, a Contrast paint or a glaze ranks 4°
+  further as the swap for a wash (`WASH_KIND_GAP`): the first swap is then a wash or shade for 96% (82% at 2°),
+  and it is in the same colour family as often (80% against 77%).
 - **A store swap goes under the heading of its own rack** (PLAN §5 item 70; CLAUDE.md §3.6). After **Use**, the
   new pot stayed in the old row's place, so a Two Thin Coats pot could be below "AK Interactive", a brand the
   store did not have, and the counts beside the headings were wrong. Now the row moves at once to the heading of
@@ -61,6 +89,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   those brands' paints got their best swap from a brand that had no switch. The row now has all ten brands, A to
   Z, in an order that does not change. Switch off each brand the store does not have.
 ### Fixed
+- **A paint that is no longer made is not offered as a store swap** (PLAN §5 item 73). The four Gloss Shades are
+  now marked as discontinued, so **Not on the rack?** skips them: a store cannot have them. A pot you own is still
+  offered, because it is on your shelf.
 - **Undo of a store swap no longer hides a paint you must buy** (PLAN §5 item 67). When the swap you chose was on
   your shopping list already, **Undo** put the original paint in the swap's row. The swap was still to buy, but
   the list did not show it until you opened the list again, and its count stayed at the sum of the two. Now the

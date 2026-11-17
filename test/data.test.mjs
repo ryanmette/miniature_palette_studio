@@ -588,7 +588,7 @@ test('swapQuality (item 68): an ink, Contrast or glaze swap never says more than
 });
 
 test('storeSwaps (item 68, way C): a wash ranks its swaps by the gap, whatever the coat each maker recorded', async () => {
-  const { storeSwaps, gapQuality, WASH_GAP_CLOSE, WASH_GAP_NEAR, WASH_GAP_TIE, WEAK_ABSORB, SWAP_KIND_PENALTY } = await import('../src/js/data.js');
+  const { storeSwaps, gapQuality, WASH_GAP_CLOSE, WASH_GAP_NEAR, WASH_GAP_TIE, WEAK_ABSORB, WASH_KIND_GAP } = await import('../src/js/data.js');
   assert.deepEqual([WASH_GAP_CLOSE, WASH_GAP_NEAR, WEAK_ABSORB], [4, 8, 0.5]);
   assert.deepEqual([0, 4, 4.1, 8, 8.1, 40].map(g => gapQuality(g).label), ['Close colour', 'Close colour', 'Near colour', 'Near colour', 'Other colour', 'Other colour']);
   assert.deepEqual([2, 6, 20].map(g => gapQuality(g).tier), ['success', 'warning', 'danger']);
@@ -629,8 +629,16 @@ test('storeSwaps (item 68, way C): a wash ranks its swaps by the gap, whatever t
   // a wash you own goes first when it is a Close colour, and only then
   assert.equal(of('shadow', { ownedIds: new Set(['nuln']) })[0].paint.id, 'nuln', 'owned and a Close colour: before the nearer Dark Tone');
   assert.equal(of('shadow', { ownedIds: new Set(['blue']) })[0].paint.id, 'dark', 'owned but an Other colour: its own place');
-  // the kind penalty is in the score's unit, here degrees
-  assert.equal(SWAP_KIND_PENALTY, 2);
+  // a swap of another kind is 4° further: a black Contrast paint at the same gap comes after the black shade
+  assert.equal(WASH_KIND_GAP, 4);
+  const sx2 = indexDataset({ version: 't', paints: [
+    { id: 'shadow', brand: 'Army Painter', line: "Nolzur's", name: 'Shadow Wash', hex: '#000103', type: 'wash' },
+    { id: 'nuln', brand: 'Warhammer Colour', line: 'Shade', name: 'Nuln Oil', hex: '#9E9A98', type: 'shade' },
+    { id: 'templar', brand: 'Warhammer Colour', line: 'Contrast', name: 'Black Templar', hex: '#171717', type: 'contrast' },
+  ] });
+  const two = storeSwaps(sx2, sx2.byId.get('shadow'));
+  assert.deepEqual(two.map(m => m.paint.id), ['nuln', 'templar']);
+  assert.ok(two[1].gap < two[0].gap && two[1].deltaE < two[0].deltaE, 'the Contrast paint is nearer by the gap and by ΔE; the kind decides');
 });
 
 test('storeSwaps (item 72): a pot you own goes first when it is Good or better, and only then', async () => {
@@ -707,21 +715,94 @@ test('the rename keeps every id: Warhammer Colour paints are still citadel-…, 
     'citadel-base-retributor-armour', 'citadel-layer-sotek-green']) assert.ok(real.byId.has(id), id);
 });
 
-test('the five names are the maker\'s spelling, and each keeps its former name', () => {
+test('the six names are the maker\'s spelling, and each keeps its former name', () => {
   const fixed = {
     'citadel-base-bugman-glow': ["Bugman's Glow", 'Bugman Glow'],
     'citadel-layer-emperor-children': ["Emperor's Children", 'Emperor Children'],
     'citadel-layer-gehenna-gold': ["Gehenna's Gold", 'Gehenna Gold'],
     'citadel-technical-nurgles-rot': ["Nurgle's Rot", 'Nurgles Rot'],
     'citadel-shade-cassandora-yellow': ['Casandora Yellow', 'Cassandora Yellow'],
+    'two-thin-coats-wave-1-rc-flesh-wash': ['Orc Flesh Wash', 'RC Flesh Wash'],   // dataset 1.10.0: Two Thin Coats' own chart
   };
   for (const [id, [name, old]] of Object.entries(fixed)) {
     const p = real.byId.get(id);
     assert.equal(p.name, name, id);
     assert.deepEqual(p.formerly, [old], id);
   }
-  assert.equal(real.paints.filter(p => p.formerly).length, 5, 'no other paint has a former name');
+  assert.equal(real.paints.filter(p => p.formerly).length, 6, 'no other paint has a former name');
   assert.equal(real.byId.get('citadel-technical-nurgles-rot').fx, 'slime', 'the fixed name keeps its finish');
+  assert.equal(ids(searchPaints(real, 'rc flesh wash'))[0], 'two-thin-coats-wave-1-rc-flesh-wash', 'the old spelling still finds it');
+  assert.equal(ids(searchPaints(real, 'orc flesh wash'))[0], 'two-thin-coats-wave-1-rc-flesh-wash');
+});
+
+// ---- dataset 1.10.0 (PLAN §5 item 73): three corrections from the makers' own pages, no hex changed ----
+test('Army Painter: the 14 Fanatic Effects are effects, not washes; the 18 Fanatic Washes stay washes', () => {
+  const effects = ['Brush-On Primer', 'Dark Rust', 'Data System Glow', 'Disgusting Slime', 'Dry Blood', 'Fresh Rust', 'Lens Flare Glow',
+    'Oil Stains', 'Oozing Vomit', 'Plasma Coil Glow', 'Power Node Glow', 'Radiation Glow', 'True Blood', 'Verdigris'];
+  const line = real.paints.filter(p => p.brand === 'Army Painter' && p.line === 'Wash');
+  assert.equal(line.length, 34, 'the line and the ids stay as they were');
+  assert.deepEqual(line.filter(p => p.type === 'effect').map(p => p.name).sort(), effects);
+  assert.ok(line.filter(p => p.type !== 'effect').every(p => p.type === 'wash'));
+  for (const n of ['Dark Tone', 'Strong Tone', 'Soft Tone', 'Blue Tone', 'Military Shade']) assert.equal(line.find(p => p.name === n).type, 'wash', n);
+  assert.ok(real.byId.has('army-painter-wash-brush-on-primer'), 'the id does not change');
+  const fx = n => line.find(p => p.name === n).fx;
+  assert.deepEqual([fx('True Blood'), fx('Dry Blood'), fx('Disgusting Slime'), fx('Fresh Rust'), fx('Verdigris')], ['gloss', 'gloss', 'slime', 'texture', undefined]);
+});
+
+test('Warhammer Colour: the four Gloss Shades are discontinued, and no other paint is', () => {
+  const gone = real.paints.filter(p => p.discontinued);
+  assert.deepEqual(gone.map(p => p.id).sort(), ['citadel-shade-agrax-earthshade-gloss', 'citadel-shade-cryptek-armourshade-gloss',
+    'citadel-shade-nuln-oil-gloss', 'citadel-shade-reikland-fleshshade-gloss']);
+  assert.ok(gone.every(p => p.type === 'shade' && p.brand === 'Warhammer Colour'));
+});
+
+test('storeSwaps: a paint that is no longer made is no swap, unless it is on your shelf', async () => {
+  const { storeSwaps } = await import('../src/js/data.js');
+  const nuln = real.byId.get('citadel-shade-nuln-oil'), gloss = 'citadel-shade-nuln-oil-gloss';
+  const only = { notCarried: new Set(real.paints.map(p => p.brand).filter(b => b !== 'Warhammer Colour')), n: 20 };
+  assert.ok(!storeSwaps(real, nuln, only).some(m => m.paint.discontinued), 'a store cannot have it');
+  assert.ok(storeSwaps(real, nuln, { ...only, ownedIds: new Set([gloss]) }).some(m => m.paint.id === gloss), 'a pot you own is still a swap');
+  // the primer and the effect paints are out of a black wash's swaps
+  const shadow = storeSwaps(real, real.byId.get('army-painter-nolzurs-shadow-wash'), { n: 40 });
+  assert.ok(shadow.length && shadow.every(m => m.paint.type !== 'effect' && m.paint.name !== 'Brush-On Primer'));
+});
+
+test('matching: a paint that is no longer made is no suggestion, unless you own it or picked it', async () => {
+  const { closestPaints } = await import('../src/js/data.js');
+  const gloss = real.byId.get('citadel-shade-nuln-oil-gloss'), media = { types: new Set(['wash', 'shade', 'ink']) };
+  const plain = nearestPaint(real, gloss.hex, media);
+  assert.ok(plain && !plain.paint.discontinued && plain.deltaE > 0, 'a suggestion is a pot you can buy');
+  for (const key of ['knownOwnedIds', 'boostIds', 'ownedIds', 'preferIds']) {
+    assert.equal(nearestPaint(real, gloss.hex, { ...media, [key]: new Set([gloss.id]) }).paint.id, gloss.id, key);
+  }
+  assert.ok(!nearestPaints(real, gloss.hex, 40, media).some(m => m.paint.discontinued));
+  // the seed field's list of the closest paints is a list of every paint
+  assert.ok(closestPaints(real, gloss.hex, 8).some(m => m.paint.id === gloss.id));
+});
+
+test('washByGap: the wash nearest by its colour, from the same pool as nearestPaint', async () => {
+  const { washByGap, gapQuality, WASH_GAP_CLOSE } = await import('../src/js/data.js');
+  const { deltaE2000, hexToLab } = await import('../src/js/color.js');
+  const media = { types: new Set(['wash', 'shade', 'ink']) }, blue = '#1B3A5C';
+  const m = washByGap(real, blue, media);
+  assert.ok(media.types.has(m.paint.type) && !m.paint.discontinued);
+  assert.deepEqual(m.gapQuality, gapQuality(m.gap));
+  assert.ok(Math.abs(m.deltaE - deltaE2000(hexToLab(blue), m.paint.lab)) < 1e-9, 'the true ΔE');
+  // a near white has no clear direction
+  assert.equal(washByGap(real, '#FFFFFF', media), null);
+  assert.equal(washByGap(real, '#F4F0EA', media), null);
+  // the pool: one brand; only the owned paints
+  const wc = washByGap(real, blue, { ...media, brands: new Set(['Warhammer Colour']) });
+  assert.equal(wc.paint.brand, 'Warhammer Colour'); assert.ok(wc.gap >= m.gap - 0.5);
+  const mine = new Set(['citadel-shade-biel-tan-green']);
+  assert.equal(washByGap(real, blue, { ...media, ownedIds: mine }).paint.id, 'citadel-shade-biel-tan-green');
+  assert.equal(washByGap(real, blue, { ...media, ownedIds: new Set(['citadel-base-mephiston-red']) }), null, 'no wash in the pool');
+  // Prefer: an owned wash goes first only when its gap is Close
+  const far = washByGap(real, blue, { ...media, boostIds: mine, boostAmount: 6 });
+  assert.equal(far.paint.id, m.paint.id, 'a green wash is no Close colour for a blue');
+  const near = real.paints.filter(p => media.types.has(p.type)).map(p => ({ p, g: washByGap(real, blue, { ...media, ownedIds: new Set([p.id]) }) }))
+    .filter(x => x.g && x.g.gap <= WASH_GAP_CLOSE && x.p.id !== m.paint.id)[0];
+  if (near) { const got = washByGap(real, blue, { ...media, boostIds: new Set([near.p.id]), boostAmount: 6 }); assert.equal(got.paint.id, near.p.id); assert.equal(got.owned, true); }
 });
 
 test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {

@@ -571,6 +571,35 @@ test('holdControls: a swapped pot names the pot it replaced, with Use the origin
 });
 
 // ---- The maker's ladder (docs/TONE_LADDERS.md, direction A) ----
+test('a paint that is no longer made says so beside its finish tag, and its swaps open with the reason', async () => {
+  const { goneTag } = await import('../src/js/ui.js');
+  const old = { ...red, id: 'cit-old', name: 'Old Red', discontinued: true };
+  assert.equal(goneTag(red), ''); assert.equal(goneTag(null), '');
+  assert.match(goneTag(old), /class="tag gone">No longer made</);
+  assert.match(rackRow38({ paint: old, countable: true, qty: 1, canSwap: true }, t38), /tag gone/);
+  assert.doesNotMatch(rackRow38({ paint: red, countable: true, qty: 1, canSwap: true }, t38), /tag gone/);
+  const open = rackRow38({ paint: old, countable: true, qty: 1, canSwap: true,
+    swaps: { gone: true, notCarried: true, list: [{ paint: carm, deltaE: 1.2, quality: { label: 'Excellent', tier: 'success' } }] } }, t38);
+  assert.match(open, /goneNote\(name=Old Red\)/);
+  assert.doesNotMatch(open, /notCarried\(/, 'one reason: no store has it, whatever it carries');
+  assert.match(hero(old, false), /tag gone/);
+});
+
+test('roleSlots: a wash chosen by its colour shows the gap, with the reason in its name and its title', () => {
+  const pot = { id: 'sh', name: 'Drakenhof Nightshade', brand: 'Warhammer Colour', line: 'Shade', hex: '#7D8FA6', type: 'shade' };
+  const base = { id: 'b', name: 'Macragge Blue', brand: 'Warhammer Colour', line: 'Base', hex: '#0D407F', type: 'base' };
+  const m = p => ({ paint: p, deltaE: 1, quality: { label: 'Excellent', tier: 'success' } });
+  const role = wash => ({ role: 'Primary', weight: 60, idealHex: '#0D407F', match: m(base), ladders: [{ style: 'wash', label: 'Wash · base · highlight',
+    steps: [wash, { key: 'base', idealHex: '#0D407F', match: m(base) }] }] });
+  const byGap = roleSlots({ roles: [role({ key: 'wash', idealHex: '#062A5C', match: { ...m(pot), deltaE: 51.5, gap: 6.7 }, media: 'wash', gap: 6.7 })] }, () => 'none', new Set(), tr);
+  assert.match(byGap, /class="stepgap" title="stepByGap">gapDeg\(n=7\)</);
+  assert.match(byGap, /aria-label="wash: Drakenhof Nightshade, Warhammer Colour, gapDeg\(n=7\)\. stepByGap"/);
+  const byDE = roleSlots({ roles: [role({ key: 'wash', idealHex: '#062A5C', match: m(pot), media: 'wash' })] }, () => 'none', new Set(), tr);
+  assert.doesNotMatch(byDE, /stepgap|gapDeg/);
+  // with no translator, plain English
+  assert.match(roleSlots({ roles: [role({ key: 'wash', idealHex: '#062A5C', match: m(pot), media: 'wash', gap: 3.2 })] }, () => 'none'), />gap 3°</);
+});
+
 import { makerLadder } from '../src/js/ui.js';
 test("makerLadder: every tone in order, the pot marked in words, no ΔE (the maker's steps are not matches)", () => {
   const t = (n, hex) => ({ id: `b${n}`, brand: 'Warhammer Colour', line: 'Tone Pro', name: `Ultramar Blue ${n}`, hex, type: 'layer', tone: n });

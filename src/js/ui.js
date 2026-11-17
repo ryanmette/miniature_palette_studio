@@ -33,6 +33,9 @@ const GLYPHS = { metal: GEM, contrast: DROP, wash: DROP, shade: DROP, ink: DROP,
 const FINISHES = Object.fromEntries(Object.entries(GLYPHS).map(([type, g]) => [type, [FINISH_WORDS[type], g]]));
 /** Small finish pill (icon + label) flagging non-flat paints (metallic/contrast/wash/…); '' for flat paints. */
 export const finishTag = type => { const f = FINISHES[type]; return f ? `<span class="finish finish-${type}">${f[1]}${f[0]}</span>` : ''; };
+/** A paint the maker no longer makes says so beside its finish tag (dataset 1.10.0): a neutral tag, state as
+ *  words (§3.5). A store cannot have it, so the Shelf's list opens its swaps. */
+export const goneTag = p => (p && p.discontinued ? ' <span class="tag gone">No longer made</span>' : '');
 /** The finish icon alone (aria-hidden SVG), for a surface that names the finish in its own words. */
 export const finishGlyph = type => (FINISHES[type] ? FINISHES[type][1] : '');
 
@@ -90,7 +93,7 @@ export function pickRow(p, { id, k, mark = 'none', current = false, match = null
   return `<div class="pko${current ? ' cur' : ''}" role="option" id="${esc(id)}" data-k="${Number(k)}" aria-selected="false"`
     + ` aria-label="${esc(pickSaid(p, { mark, current, match }, t))}">`
     + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}">${markBadge(mark)}</span>`
-    + `<span class="pktx"><b>${esc(p.name)}</b><span class="pksub">${sub} ${finishTag(p.type)}</span></span>${de}</div>`;
+    + `<span class="pktx"><b>${esc(p.name)}</b><span class="pksub">${sub} ${finishTag(p.type)}${goneTag(p)}</span></span>${de}</div>`;
 }
 
 /** The row that seeds a typed hex: "Seed: #9A1115" while the field's live hex is the seed, else "Use
@@ -212,7 +215,7 @@ const ownOrBuy = (id, mark) => mark === 'owned'
 export function hero(base, animate = true, markOf, seedRole = '', neutral = false) {
   const meta = base.custom ? 'typed hex'
     : `${esc(base.brand || '')}${base.line && base.line !== '—' ? ' · ' + esc(base.line) : ''}${base.type ? ' · ' + esc(base.type) : ''}`
-      + (base.approx ? ' · <span class="approx">approx</span>' : '');
+      + (base.approx ? ' · <span class="approx">approx</span>' : '') + goneTag(base);
   const seed = seedRole ? `<span class="seedbadge seed-${esc(seedRole)}">${esc(seedRole)}</span>` : '';
   const ntag = neutral ? '<span class="ntag" title="No usable hue — the scheme is built for neutrals">neutral</span>' : '';
   const own = (!base.custom && base.id && markOf) ? `<span class="herobuy">${ownOrBuy(base.id, markOf(base.id))}</span>` : '';
@@ -286,7 +289,7 @@ export function matchChip(m, markOf) {
   return swatch(p.hex, 'act' + fxCls(p))
     + `<div style="min-width:0"><div class="ttl">${m.chosen ? 'Chosen pot' : 'Nearest pot'}</div>`
     + `<div class="nm">${esc(p.name)}</div>`
-    + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
+    + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}</div>`
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
     + `<span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
     + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
@@ -379,7 +382,7 @@ export function potRows(items, markOf = () => 'none', currentId = null) {
     return `<li><button type="button" class="potrow" data-potid="${esc(p.id)}"${cur ? ' aria-current="true"' : ''}>`
       + `${swatch(p.hex, fxCls(p).trim())}`
       + `<span class="potname">${esc(pname(p))}${cur ? ' <span class="potcur">· chosen</span>' : ''}`
-      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${mark === 'owned' ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span></span>`
+      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}${mark === 'owned' ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span></span>`
       + `<span class="de"><span class="dot" style="background:${tier(m.quality.tier)}"></span><span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span><span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>`
       + `</button></li>`;
   }).join('');
@@ -401,7 +404,7 @@ export function holdNote(held) {
     + `<button type="button" class="textact" data-hold-releaseall>${rel}</button></span></p>${warn}</div>`;
 }
 
-export function roleSlots(scheme, markOf, holdable = new Set()) {
+export function roleSlots(scheme, markOf, holdable = new Set(), tr = null) {
   // Ladder rows show the SHORT paint name — long display names ("Brainmatter Beige (Warpaints
   // Fanatic)") used to blow the three-column row past the card edge on phones. The full identity
   // (disambiguated name · brand) lives in the same clamped tooltip the Shelf uses (hover / focus /
@@ -410,11 +413,14 @@ export function roleSlots(scheme, markOf, holdable = new Set()) {
     const p = s.match && s.match.paint;
     // The chip shows the POT, the paint named under it, with its finish overlay (§2): a painter reads the
     // ladder as "these three pots". With no pot (none close enough), it shows the target colour.
-    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
+    // A wash chosen by its colour (scheme.js washStep, the gap): the step says so, in words for a screen reader.
+    const gap = s.gap != null && p ? (tr ? tr('gapDeg', { n: Math.round(s.gap) }) : `gap ${Math.round(s.gap)}°`) : '';
+    const gapWhy = gap ? (tr ? tr('stepByGap') : 'No wash is close by ΔE. This one is the closest by its colour, not by how dark it looks. Compare the pots.') : '';
+    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}${gap ? `, ${esc(gap)}. ${esc(gapWhy)}` : ''}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
       + `<div class="pn">${p ? esc(p.name) : '—'}</div>`
       + (p ? `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>` : '')
       // wash-step honesty: a real wash/shade/ink shows its finish pill; no close medium → "watered down"
-      + (s.media === 'wash' && p ? `<div class="steptag media">${finishTag(p.type)}</div>` : '')
+      + (s.media === 'wash' && p ? `<div class="steptag media">${finishTag(p.type)}${goneTag(p)}${gap ? ` <span class="stepgap" title="${esc(gapWhy)}">${esc(gap)}</span>` : ''}</div>` : '')
       + (s.dilute ? `<div class="steptag dilute" title="No bottled wash lands close enough — thin (water down) this base paint into the recesses instead">watered down</div>` : '')
       + `</div>`;
   };
@@ -483,7 +489,7 @@ export function equivGroup(label, members, markOf) {
     + `<div class="eq">${members.map(p => {
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}</div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
     }).join('')}</div></div>`;
 }
@@ -496,7 +502,7 @@ export function equivalentsPanel(name, equivs, markOf) {
       const p = e.paint, q = e.quality;
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}</div>`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}</div>`
         + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
         + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
@@ -553,7 +559,7 @@ export function livePalette(vm, roleByHex = {}) {
       ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
         + `<span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span>`
-        + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}`
+        + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}${goneTag(m.paint)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
     const fi = isFree ? +c.id.slice(1) : -1;                                     // index among the added swatches
     const sw = isBase ? 'base' : isFree ? 'x:' + c.id.slice(1) : 'p:' + c.deg;   // addressable swatch key
@@ -742,7 +748,7 @@ export function rackRow(r, tr) {
     // the plain name: the line is in the row (and the rack group) already; the tick's name keeps the full
     // display name, so twins (Dawnstone (Layer) / (Dry)) stay apart for a screen reader
     + `<span class="rkmain"><span class="rkname">${esc(p.name)}</span>`
-    + `<span class="rkline">${line}${finishTag(p.type)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
+    + `<span class="rkline">${line}${finishTag(p.type)}${goneTag(p)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
     // a swap made in this visit says what it replaced; Undo only while it is still to buy (once ticked, it was bought)
     + (r.insteadOf ? `<span class="rkinst">${esc(tr('inPlaceOf', { name: pname(r.insteadOf) }))}`
       + (r.owned ? '' : ` <button type="button" class="textact" data-rkunswap="${esc(p.id)}" aria-label="${esc(tr('undoSwapFor', { name: pname(r.insteadOf) }))}">${esc(tr('undo'))}</button>`) + '</span>' : '')
@@ -783,7 +789,8 @@ export function swapRowPlan({ cameRow, leftRow, leftStays, cameShows, undo }) {
  *  notCarried: the row's brand is switched off, of: on a row that is a swap, the paint it replaced (the list,
  *  its ΔE values and the words are then for that paint, item 69), rough: a wash-class paint, whose colours
  *  are the least sure in the data (item 68): one line says so, before the list }. A swap with `gap` (the
- *  paint to buy is a wash or shade) shows the gap in degrees and its words in place of ΔE. */
+ *  paint to buy is a wash or shade) shows the gap in degrees and its words in place of ΔE. `gone`: the paint
+ *  to buy is no longer made, so its swaps opened by themselves. */
 function rackSwaps(r, tr) {
   const p = r.paint, s = r.swaps, name = pname(s.of || p);
   const best = s.list[0];
@@ -791,7 +798,8 @@ function rackSwaps(r, tr) {
   // a wash or shade is compared by the gap (item 68): the line says what the number is
   if (best && best.gap != null) h += `<p class="rksnote">${esc(tr('washGap'))}</p>`;
   else if (s.rough && best) h += `<p class="rksnote">${esc(tr('washRough'))}</p>`;
-  if (s.notCarried) h += `<p class="rksnote">${esc(s.of ? tr('notCarriedOf', { brand: p.brand, name }) : tr('notCarried', { brand: p.brand }))}</p>`;
+  if (s.gone) h += `<p class="rksnote">${esc(tr('goneNote', { name }))}</p>`;
+  else if (s.notCarried) h += `<p class="rksnote">${esc(s.of ? tr('notCarriedOf', { brand: p.brand, name }) : tr('notCarried', { brand: p.brand }))}</p>`;
   else if (s.of) h += `<p class="rksnote">${esc(tr('swapsOf', { name }))}</p>`;
   if (!best) h += `<p class="rksnote">${esc(tr('noSwap'))}</p>`;
   else if (best.quality.tier === 'danger') h += `<p class="rksnote">${esc(tr('noCloseSwap'))}</p>`;   // ΔE over 10, or a gap over 8°
@@ -799,7 +807,7 @@ function rackSwaps(r, tr) {
     const q = m.paint, qn = pname(q);
     h += `<div class="rkswap">${swatch(q.hex, 'rkssw' + fxCls(q))}`
       + `<span class="rksmain"><span class="rksname">${esc(qn)}</span>`
-      + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q.type)}`
+      + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q.type)}${goneTag(q)}`
       + ` <span class="mono">${m.gap != null ? esc(tr('gapDeg', { n: m.gap.toFixed(0) })) : 'ΔE ' + m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
       + `${m.owned ? ` <span class="ownmini">${icon('check')}${esc(tr('ownedWord'))}</span>` : ''}</span></span>`
       + `<button type="button" class="btn sm" data-rkuse="${esc(q.id)}" data-for="${esc(p.id)}" aria-label="${esc(tr('useInPlace', { name: qn, was: name }))}">${esc(tr('useSwap'))}</button></div>`;
@@ -884,7 +892,7 @@ export function mapSummaryLine(sum, map, tr) {
 export function mapDetail(map, b, r, fills, tr) {
   const c = map.cells[b][r], o = c.owned.length, name = mapToneName(b, r, tr);
   const row = (p, extra = '') => `<li class="mdrow">${swatch(p.hex, 'mdsw' + fxCls(p))}`
-    + `<span class="mdmain"><span class="mdname">${esc(pname(p))}</span><span class="rkline">${[esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ')}${finishTag(p.type)}</span></span>${extra}</li>`;
+    + `<span class="mdmain"><span class="mdname">${esc(pname(p))}</span><span class="rkline">${[esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ')}${finishTag(p.type)}${goneTag(p)}</span></span>${extra}</li>`;
   let h = `<h3 class="mdhead" id="mapDetailHead" tabindex="-1">${esc(name)}</h3>`;
   h += `<p class="mdstate">${esc(o || c.want.length ? mapCellCounts(c, tr) : tr('mapGapLong', { tone: name.toLowerCase() }))}</p>`;
   if (o || c.want.length) h += `<ul class="mdlist">${c.owned.map(p => row(p)).join('')}`

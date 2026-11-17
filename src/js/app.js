@@ -101,7 +101,7 @@ function baseInfo() {
   const p = state.idx.byId.get(state.baseId);
   // dname already carries the line for ambiguous names — suppress the meta's line so the hero doesn't read it twice
   const lined = p.dname && p.dname !== p.name;
-  return { id: p.id, hex: p.hex, name: ui.pname(p), brand: p.brand, line: lined ? '—' : p.line, type: p.type, approx: p.approx };
+  return { id: p.id, hex: p.hex, name: ui.pname(p), brand: p.brand, line: lined ? '—' : p.line, type: p.type, approx: p.approx, discontinued: p.discontinued };
 }
 function basePaint() { return state.customHex ? null : state.idx.byId.get(state.baseId); }
 /** The roles a painter can hold. Primary never: the harmony is built from it (from the starting paint, or
@@ -299,7 +299,7 @@ function renderPlan() {
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
     + '<div class="micro" style="margin:14px 0 0">Each role: target colour → nearest pot (ΔE 2000), plus the selected tone ladder</div>'
-    + ui.roleSlots(state.scheme, store.markOf, new Set(holdableRoles()));
+    + ui.roleSlots(state.scheme, store.markOf, new Set(holdableRoles()), i18n.t);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
 // Set by setupWheel() too. render() calls it when something other than the lightness slider changes
@@ -1077,7 +1077,9 @@ function rackRowData(p) {
   const mark = store.markOf(p.id), prev = rk.prev.get(p.id), sw = swapOf(p.id);
   // a to-buy row can open its swaps; a row whose brand the store does not carry opens them by itself
   const canSwap = mark === 'want', notCarried = canSwap && storeOff.has(p.brand);
-  const open = canSwap && (rk.swapOpen.has(p.id) ? rk.swapOpen.get(p.id) : notCarried);
+  // a paint that is no longer made opens them too: no store has it (dataset 1.10.0)
+  const gone = canSwap && !sw && !!p.discontinued;
+  const open = canSwap && (rk.swapOpen.has(p.id) ? rk.swapOpen.get(p.id) : notCarried || gone);
   // A row that is a swap can be missing from the rack too (PLAN §5 item 69). Its swaps are the next closest to
   // the paint it replaced, never to the swap: a swap of a swap moves away from the colour the scheme wants.
   const first = sw && state.idx.byId.get(sw.orig) || null;
@@ -1086,7 +1088,7 @@ function rackRowData(p) {
     struck: mark === 'owned' && rk.kept.has(p.id) && prev?.mark === 'want',
     canSwap,
     // rough: a wash-class paint's colour is the least sure in the data (item 68), and the list says so
-    swaps: open ? { notCarried, of: first, rough: finishClass((first || p).type) === 'translucent', list: storeSwaps(state.idx, first || p, { notCarried: storeOff, except: new Set([...offRack, p.id]), ownedIds: store.ownedIds() })
+    swaps: open ? { notCarried, gone, of: first, rough: finishClass((first || p).type) === 'translucent', list: storeSwaps(state.idx, first || p, { notCarried: storeOff, except: new Set([...offRack, p.id]), ownedIds: store.ownedIds() })
       .map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
     insteadOf: first,
     paint: p, owned: mark === 'owned',
@@ -2690,7 +2692,7 @@ function copyText(val) {
 function doExport() {
   const s = currentScheme();
   let t = `Palette Studio for Miniatures — recipe\nBase ${s.base} · ${s.harmony} scheme · ${s.ladder} ladder\n\n`;
-  for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}${r.owned ? '  ✓ owned' : ''}\n`;
+  for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}${r.gap != null ? `  (a wash chosen by its colour: gap ${r.gap}°)` : ''}${r.owned ? '  ✓ owned' : ''}\n`;
   t += '\nHex values are approximate; ΔE = perceptual distance to the target colour.\n';
   download('palette-recipe.txt', t);
   toast(i18n.t('recipeSaved'));   // download is the artefact — no silent clipboard write (native-share direction)

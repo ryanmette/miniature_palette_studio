@@ -816,7 +816,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, a first step of 68 and the owned-first part of 72 built)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, 73, way C of 68 and the owned-first part of 72 built; 74 open)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -864,7 +864,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       makers' own two ways. One rule needs our own measurement (item 49: each wash both ways, on one card).
     - **Why the rule matters to the Recipe too:** the wash step's target is a darkened base (§7), so a Shade with a
       light value (Nuln Oil `#9E9A98`) can almost never be the wash step's pot.
-    - **Errors found on the way:** `two-thin-coats-wave-1-rc-flesh-wash` is "Orc Flesh Wash" on Two Thin Coats' own
+    - **Errors found on the way (item 73):** `two-thin-coats-wave-1-rc-flesh-wash` is "Orc Flesh Wash" on Two Thin Coats' own
       chart (the name lost its first letter); GW's seven Shades of 2022 are not in the data (Mortarion Grime,
       Berserker Bloodshade, Targor Rageshade, Tyran Blue, Poxwalker, Kroak Green, Soulblight Grey), and its four
       Gloss Shades are not marked `discontinued`, although GW's article "A New Era of Paints" (Warhammer Community,
@@ -875,7 +875,9 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       in linear RGB, which does not change with the coat's thickness), with words of its own in place of ΔE.
     **Way (c), built (2026-11-17; Ryan: "go with C").** In the store swaps a wash or shade ranks by **the gap**: the
     angle between the two absorbances (`color.js absorbance`, `absorbGap`; `data.js storeSwaps`, `gapQuality`),
-    plus 0.02 × ΔE as the tie-break and the kind penalty (2°). The check was the colour word in each wash's name
+    plus 0.02 × ΔE as the tie-break and the kind penalty (2° at first; 4° since dataset 1.10.0, `WASH_KIND_GAP`: at
+    2° a black Contrast paint came before Nuln Oil for a black wash, and at 4° the best swap is a wash or shade for
+    96%, not 82%, with the colour family as good: 80% against 77%). The check was the colour word in each wash's name
     (106 of 131 have one; the browns, fleshes, sepias and rusts as one family). Best swap in the same family:
 
     | The brands carried | By ΔE | By the gap |
@@ -896,8 +898,9 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     - **Open:** the Equivalents tab (still ΔE). **The Recipe's wash step** (still ΔE, gate 10): it finds a real
       wash for 93% of 1,573 base colours, but Warhammer Colour's 16 Shades win 3.4% of those (9% of the pool)
       and Nuln Oil and Agrax Earthshade never win, while Army Painter's Wash line wins 32% (20% of the pool). A
-      change there alters every Recipe, so it needs its own decision. **Data seen on the way:** Army Painter's
-      "Brush-On Primer" has the type `wash` (it is a primer), so it shows as a swap for a black wash.
+      change there alters every Recipe, so it needs its own decision (item 74). **Data seen on the way:** Army
+      Painter's "Brush-On Primer" had the type `wash` (it is a primer), so it showed as a swap for a black wash
+      (corrected in item 73).
 69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
     later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
     the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint
@@ -928,6 +931,71 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     counts also when its brand is off (`storeSwaps`' `ownedIds`, `SWAP_OWNED_MAX`). **Open:** the list still stops
     at 3; the shared hex values wait for item 49; the type of Glistening Blood needs a check against Army
     Painter's own page before the data changes (§5).
+
+73. **Data errors found during the audit** (item 68's source check and item 72). **Built (2026-11-17), dataset
+    1.10.0, from the makers' own pages (`src/data/SOURCES.md`); no hex and no id changed:**
+    - **14 Army Painter paints are effects, not washes.** Upstream's set "Warpaints Fanatic Wash" holds 32 paints;
+      Army Painter's own shop lists 18 as Fanatic Washes and 14 as Fanatic Effects (its public product list). The
+      first one seen was Brush-On Primer, the third swap for a black wash. The build has a `types` map for this.
+    - **"RC Flesh Wash" is "Orc Flesh Wash"** (Two Thin Coats' chart); the old spelling stays in `formerly`.
+    - **The four Gloss Shades are `discontinued`** (GW, "A New Era of Paints", 13 Jun 2022; Ryan's range list in
+      `docs/sources/` says the same). They are the data's first discontinued paints. The store swaps now skip a
+      discontinued paint, unless it is owned. **Built after it (2026-11-17, Ryan: "go with your recommendations"):**
+      a **No longer made** tag beside the finish tag (`ui.goneTag`); in the Shelf's list such a paint to buy opens
+      its swaps by itself; `nearestPaint(s)` skips it unless it is owned or picked (`passesFilter`).
+    - A rebuild from upstream as it is today gave the same file as 1.9.0, so upstream has not changed.
+    - **Open: GW's seven Shades of 2022** (Mortarion Grime, Berserker Bloodshade, Targor Rageshade, Tyran Blue,
+      Poxwalker, Kroak Green, Soulblight Grey), and Nolzur's Glistening Blood (type `wash`). Both are checked and
+      recorded in item 75.
+74. **The Recipe's wash step by the gap?** (**built 2026-11-17** as a second try, below; Ryan: "go with your
+    recommendations".) Measured 2026-11-17 on 1,882 base and layer
+    paints with a colour word in the name (dataset 1.9.0): the share that gets a real wash, shade or ink, and the
+    share of those whose wash is in the base paint's colour family (the browns as one; grey with black).
+
+    | Washes available | Found, ΔE ≤ 10 (now) | Found, gap ≤ 8° | Same family, ΔE | Same family, gap |
+    |---|---|---|---|---|
+    | Every brand | 95% | 99% | 61% | 60% |
+    | Warhammer Colour + Army Painter | 75% | 93% | 59% | 57% |
+    | Army Painter only | 69% | 88% | 60% | 59% |
+    | Vallejo only | 56% | 90% | 51% | 57% |
+    | Warhammer Colour only | 8% | 78% | 53% | 48% |
+
+    So with every brand the gap changes almost nothing, and with one brand it finds a real wash much more often at
+    about the same accuracy. The gain is for a painter with **Use my paints** on. With every brand, Warhammer
+    Colour's Shades win 3.3% of the steps by ΔE and 4.1% by the gap (they are 9% of the pool). A change alters
+    every Recipe and shopping list, and the gap does not show strength, which is what this step is about.
+
+    **Built: ΔE first, the gap second, "watered down" third** (`scheme.js washStep`, `data.js washByGap`). ΔE
+    stays first, so no Recipe loses the wash it had. Measured on dataset 1.10.0 (the gap only where ΔE finds none):
+
+    | Washes available | By ΔE (as before) | Added by the gap | Total | Same family: ΔE picks | Same family: added picks |
+    |---|---|---|---|---|---|
+    | Every brand | 93% | +6% | 99% | 60% | 66% |
+    | Warhammer Colour + Army Painter | 66% | +22% | 89% | 57% | 51% |
+    | Army Painter only | 59% | +21% | 80% | 58% | 53% |
+    | Vallejo only | 56% | +36% | 92% | 51% | 60% |
+    | Warhammer Colour only | 8% | +71% | 79% | 53% | 48% |
+
+    A limit of 4° adds about half as many washes and is not more accurate (46–68%), so the limit is 8° (Near
+    colour). The step shows the gap; the ΔE in the match is the true one. **Open:** the accuracy of both ways is
+    about 1 in 2 by this measure, and only measured wash colours can raise it (item 68).
+75. **The Warhammer Colour range against GW's list** (open; data; found 2026-11-17). By name, against Ryan's list
+    in `docs/sources/warhammer-colour-list-2026-11-03.md` (a secondary source for names), the data has no row for
+    **34** paints: Base 1 (Ceramite White) · Shade 7 (Berserker Bloodshade, Kroak Green, Mortarion Grime,
+    Poxwalker, Soulblight Grey, Targor Rageshade, Tyran Blue) · Contrast 26 (Aeldari Emerald, Asurmen Blue, Baal
+    Red, Bad Moon Yellow, Briar Queen Chill, Celestium Blue, Doomfire Magenta, Dreadful Visage, Frostheart,
+    Garaghak's Sewer, Gutrippa Flesh, Hexwraith Flame, Imperial Fist, Ironjawz Yellow, Karandras Green, Kroxigor
+    Scales, Leviathan Purple, Luxion Purple, Magmadroth Flame, Mantis Warriors Green, Nighthaunt Gloom, Pylar
+    Glacier, Ratling Grime, Sigvald Burgundy, Stormfiend, Striking Scorpion Green; the data has Hexwraith Flame
+    and Nighthaunt Gloom as Technical paints, so their line needs a check) · Texture 2 (Blackfire Earth, Lustrian
+    Undergrowth). Five Technical products are left out on purpose (mediums, a primer, a filler). **No row was
+    added:** upstream has no values for them, `warhammer.com` refuses automated access, and `paint.warhammer.com`
+    has no range list. They need values from an accepted source (§5.2): GW's own swatches read by hand, or
+    Ryan's measurements, as Tone Pro (`scripts/tone-pro.json`).
+    - **Also open: Glistening Blood.** The data has it twice (`Army Painter · Warpaints`, type `layer`, and
+      `Army Painter · Nolzur's`, type `wash`). Army Painter sold it as "Warpaints Effects: Glistening Blood", so
+      both are probably effects (`fx: gloss`). The product page is gone (404) and it is not in the maker's
+      public product list, so there is no primary source to read. No change until one is found.
 
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
