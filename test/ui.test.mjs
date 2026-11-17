@@ -633,6 +633,10 @@ test('the finish mark (item 51): one icon per finish kind, from one table; the c
   assert.match(finishTag({ type: 'effect', fx: 'gloss' }), /class="finish finish-effect"><svg[^>]*><path d="M3\.75 10a6\.25/);
   assert.match(finishTag('metal'), /<svg.*metallic<\/span>$/);
   assert.equal(finishTag({ type: 'layer' }), ''); assert.equal(finishTag('base'), '');
+  // a flat paint with a finish in its name (dataset 1.11.0): its icon and its word
+  assert.equal(fxCls({ type: 'layer', fx: 'fluo' }), ' fm fm-fluo');
+  assert.match(finishTag({ type: 'layer', fx: 'fluo' }), /class="finish finish-layer"><svg.*fluorescent<\/span>$/);
+  assert.match(finishTag({ type: 'layer', fx: 'gloss' }), /gloss<\/span>$/);
   assert.notEqual(finishGlyph('contrast'), finishGlyph('wash'), 'contrast has an icon of its own');
   assert.equal(finishKind({ type: 'glaze' }), 'wash');
 });
@@ -647,6 +651,18 @@ test('the finish mark reads on every non-flat paint: its ink is 3:1 or more agai
   let low = Infinity;
   for (const p of paints) low = Math.min(low, contrastRatio(p.hex, textOn(p.hex)));
   assert.ok(low >= 4, `lowest ${low.toFixed(2)}:1`);
+});
+
+test('matchNote: the Brand line shows only with a mode and a brand, and opens the settings', () => {
+  const on = matchNote({ brandMode: 'prefer', brand: 'Vallejo', expanded: true }, tr);
+  assert.match(on, /data-note="brand" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="true"/);
+  assert.match(on, /noteBrand\(mode=brandPrefer,brand=Vallejo\)/); assert.match(on, /noteBrandPrefer/);
+  assert.match(matchNote({ brandMode: 'only', brand: 'P3' }, tr), /noteBrandOnly/);
+  assert.equal(matchNote({ brandMode: 'prefer', brand: '' }, tr), '', 'no brand: it changes nothing, so no line');
+  assert.equal(matchNote({ brandMode: 'any', brand: 'Vallejo' }, tr), '');
+  // with Use my paints, both lines show, Use my paints first
+  const both = matchNote({ collection: 'prefer', owned: 3, brandMode: 'only', brand: 'P3' }, tr);
+  assert.ok(both.indexOf('data-note="ump"') < both.indexOf('data-note="brand"'));
 });
 
 import { makerLadder } from '../src/js/ui.js';

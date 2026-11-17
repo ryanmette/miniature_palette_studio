@@ -7,7 +7,7 @@
 // given. Neither touches the DOM or a global, so node --test runs both (a fake measure, a fake context).
 // The app (app.js) makes the canvas, loads the fonts, reads the theme's tokens and encodes the PNG.
 import { textOn } from './color.js';
-import { finishKind, FINISH_ICONS } from './data.js';
+import { finishKind, finishWord, FINISH_ICONS } from './data.js';
 export { finishKind };
 
 /** Square: Messages, Instagram and WhatsApp show it whole, and Discord shows it at about 300 × 300. */
@@ -87,7 +87,7 @@ const isSeed = (view, pot) => !!(pot && view.seed.id && pot.id === view.seed.id)
  * The layout of the recipe card. `view`:
  *   { seed: { id, name }, harmony: 'Split-complementary',
  *     roles: [{ role, weight, ideal, pot: { id, name, brand, line, hex, type, fx, dE, label, tier } | null }],
- *     words: { from: 'From {name}', yourPaint, noPot, footer, finish: { metal: 'metallic', … } } }
+ *     words: { from: 'From {name}', yourPaint, noPot, footer } }   (a finish word is data.js finishWord's)
  * `tokens`: SHARE_TOKENS read from the page. `measure(font, text)` → width in px.
  * @returns {{ W, H, ops: Array<object> }} — every text op carries `px` and its `ground`, so a test can check
  *   sizes and contrast without drawing.
@@ -121,7 +121,7 @@ export function layoutShareImage(view, tokens, measure) {
     nm.lines.forEach((ln, k) => text(x, y + k * lh, ln, font(600, px.name), px.name, T.text, { kind: 'name' }));
     if (!pot) return;
     y += lh * (nm.lines.length - 1) + Math.round(px.meta * 1.6);
-    meta(ops, measure, x, y, pot, colW, T, px.meta, view.words.finish);
+    meta(ops, measure, x, y, pot, colW, T, px.meta);
     y += Math.round(px.de * 1.8);
     delta(ops, measure, x, y, pot, isSeed(view, pot), view.words.yourPaint, T, px.de, colW);
   });
@@ -134,9 +134,9 @@ export function layoutShareImage(view, tokens, measure) {
   return { W, H, ops };
 }
 
-function meta(ops, measure, x, y, pot, maxW, T, px, words) {
+function meta(ops, measure, x, y, pot, maxW, T, px) {
   // brand · line, then the finish icon and its word for a non-flat paint (§2: never mistaken for flat paint)
-  const f = font(400, px), word = words && words[pot.type];
+  const f = font(400, px), word = finishWord(pot);
   const tailW = word ? measure(f, ' ' + word) + px * 1.3 : 0;
   const s = fitText(measure, f, pot.brand + lineOf(pot), maxW - tailW, 1).lines[0];
   ops.push({ t: 'text', x, y, text: s, font: f, px, fill: T.muted, ground: T.bg });

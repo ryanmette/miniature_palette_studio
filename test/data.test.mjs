@@ -805,6 +805,52 @@ test('washByGap: the wash nearest by its colour, from the same pool as nearestPa
   if (near) { const got = washByGap(real, blue, { ...media, boostIds: new Set([near.p.id]), boostAmount: 6 }); assert.equal(got.paint.id, near.p.id); assert.equal(got.owned, true); }
 });
 
+test('dataset 1.11.0: a flat paint whose name says fluorescent or gloss has an fx, and stays a flat paint', async () => {
+  const { finishKind, finishWord, searchPaints, finishClass } = await import('../src/js/data.js');
+  const flat = real.paints.filter(p => p.fx && p.type !== 'effect');
+  assert.ok(flat.every(p => p.type === 'layer' || p.type === 'base'));
+  assert.equal(flat.filter(p => p.fx === 'fluo').length, 36);
+  assert.equal(flat.filter(p => p.fx === 'gloss').length, 5);
+  assert.ok(flat.every(p => finishClass(p.type) === 'flat'), 'the class for matching does not change');
+  const neon = real.paints.find(p => p.name === 'Neon Yellow' && p.brand === 'Scale75');
+  assert.equal(finishKind(neon), 'fluo'); assert.equal(finishWord(neon), 'fluorescent');
+  const black = real.paints.find(p => p.name === 'Glossy Black');
+  assert.equal(finishKind(black), 'gloss'); assert.equal(finishWord(black), 'gloss');
+  assert.equal(finishWord(real.byId.get('citadel-base-mephiston-red')), '');
+  assert.equal(finishWord({ type: 'effect', fx: 'gloss' }), 'effect', 'an effect paint keeps its type word');
+  // the word finds the paint: "fluorescent" also finds a paint that the maker calls Neon
+  assert.ok(searchPaints(real, 'fluorescent scale75').some(p => p.id === neon.id));
+  // a fluorescent layer is still a suggestion (its type did not change)
+  assert.equal(nearestPaint(real, neon.hex, { excludeTypes: new Set(FINISH_TYPES) }).paint.id, neon.id);
+});
+
+test('the Brand setting: Prefer ranks the brand 2 ΔE closer with the true ΔE; the picked paint keeps its slot; Only is a filter', async () => {
+  const { BRAND_BOOST, mostOwnedBrand } = await import('../src/js/data.js');
+  assert.equal(BRAND_BOOST, 2);
+  const fx = indexDataset({ version: 't', paints: [
+    { id: 'a-near', brand: 'A', line: 'L', name: 'Near', hex: '#9A1115', type: 'base' },
+    { id: 'b-close', brand: 'B', line: 'L', name: 'Close', hex: '#9E1418', type: 'base' },
+    { id: 'b-far', brand: 'B', line: 'L', name: 'Far', hex: '#C05020', type: 'base' },
+  ] });
+  const target = '#9A1115', dClose = nearestPaints(fx, target, 3).find(m => m.paint.id === 'b-close').deltaE;
+  assert.ok(dClose > 0 && dClose < BRAND_BOOST, `the fixture: B's close paint is ${dClose.toFixed(2)} ΔE away`);
+  assert.equal(nearestPaint(fx, target).paint.id, 'a-near');
+  const pref = nearestPaint(fx, target, { brandBoost: 'B', brandAmount: BRAND_BOOST });
+  assert.equal(pref.paint.id, 'b-close'); assert.equal(pref.deltaE, dClose, 'the reported ΔE is the true one (§2)');
+  // the paint the painter picked keeps its slot
+  assert.equal(nearestPaint(fx, target, { brandBoost: 'B', brandAmount: BRAND_BOOST, preferIds: new Set(['a-near']) }).paint.id, 'a-near');
+  // a clear call is not changed: B's far paint does not win
+  assert.equal(nearestPaints(fx, target, 3, { brandBoost: 'B', brandAmount: BRAND_BOOST })[2].paint.id, 'b-far');
+  // an owned paint of another brand (6) wins over the brand's paint to buy (2)
+  assert.equal(nearestPaint(fx, target, { brandBoost: 'B', brandAmount: BRAND_BOOST, boostIds: new Set(['a-near']), boostAmount: 6 }).paint.id, 'a-near');
+  // Only
+  assert.ok(nearestPaints(fx, target, 3, { brands: new Set(['B']) }).every(m => m.paint.brand === 'B'));
+  // the default brand: the one you own most; a tie takes the first in the data's order; none with no owned paint
+  assert.equal(mostOwnedBrand(fx, new Set(['b-close', 'b-far', 'a-near'])), 'B');
+  assert.equal(mostOwnedBrand(fx, new Set(['b-close', 'a-near'])), 'A');
+  assert.equal(mostOwnedBrand(fx, new Set()), null); assert.equal(mostOwnedBrand(fx, null), null);
+});
+
 test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {
   assert.match(BRAND_WORDS['Warhammer Colour'], /Citadel/);
   const wc = real.paints.filter(matcher56('citadel'));

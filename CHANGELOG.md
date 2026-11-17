@@ -7,6 +7,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.17.0 took only the web entries. -->
 ### Changed
+- **Paint data 1.11.0: fluorescent and gloss paints say so** (PLAN §5 item 51; `src/data/SOURCES.md`). 36
+  fluorescent or neon paints and 5 Vallejo gloss paints are ordinary layer paints in the data, so they had no
+  finish icon and looked like flat colours. Each one now has an icon (a small sun for fluorescent, the gloss
+  icon for gloss) and a tag with the word. A search for "fluorescent" also finds the paints that a maker calls
+  "Neon". No colour value, type or paint id changed, so no match changed.
 - **Swatches show the paint's true colour, with one finish icon** (PLAN §5 item 51; chosen from
   `mockups/swatch-finish.html`, direction B with round 2's variant a; CLAUDE.md §2, §3.1 and §3.5). A metallic,
   a wash, a Contrast paint and an effect paint had a gradient on their swatch to show the finish. The gradient
@@ -32,6 +37,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
   iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
   screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 76 to 85 are the proposed work.
+- **A Brand setting: keep a scheme in one brand** (PLAN §5 item 64 B; `docs/TONE_LADDERS.md`; CLAUDE.md §3.6
+  and §7). **⋯ → Brand** has **Any · Prefer · Only** and a list of the brands. With **Prefer**, a paint of your
+  brand counts as 2 ΔE closer than it is, so it wins a close call and not a clear one. With **Only**, only paints
+  of that brand can match, also when the match is poor. The ΔE that you see is always the true value. The list
+  starts on the brand that you own the most paints of. A line under the live palette says when the setting is
+  on. The setting changes the live palette, the Recipe and the shopping list, and never the Other brands tab.
+  It is saved on the device and is in a backup. Your starting paint keeps its place, whatever its brand, unless
+  the setting is Only.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
@@ -39,6 +52,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Fixed
+- **⋯ no longer shows a focus ring after a touch** (PLAN §5 item 59; CLAUDE.md §3.6). When you opened ⋯ with
+  a finger or a mouse, the **Use my paints** control had a focus ring on an iPhone, as if you had used a
+  keyboard. Now the focus starts on the sheet's title after a touch or a click, with no ring. After a key press
+  it starts on the control, with its ring, as before.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap

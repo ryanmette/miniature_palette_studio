@@ -79,7 +79,7 @@
      carries its own name, so the visible row labels are aria-hidden (no name is read twice). -->
 <dialog id="settingsMenu" class="settings" aria-labelledby="settingsTitle">
   <div class="sheethead sethead">
-    <h2 id="settingsTitle" data-i18n="settings">Settings</h2>
+    <h2 id="settingsTitle" tabindex="-1" data-i18n="settings">Settings</h2>
     <button type="button" class="textact setdone" id="settingsDone" data-i18n="done">Done</button>
   </div>
   <div class="setbody" id="settingsBody">
@@ -105,6 +105,19 @@
               <p class="sethint umpshared" id="umpShared" data-i18n="umpShared">Other brands still lists every paint.</p>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="setrow">
+        <span class="setlbl" aria-hidden="true" data-i18n="brandSet">Brand</span>
+        <div class="setctl">
+          <div class="seg setseg" id="brandSeg" role="group" aria-label="Brand" data-i18n-aria="brandSet" aria-describedby="brandHint">
+            <button type="button" data-brandmode="any" aria-pressed="true" data-i18n="brandAny" data-i18n-aria="brandAnyName" aria-label="Any brand">Any</button>
+            <button type="button" data-brandmode="prefer" aria-pressed="false" data-i18n="brandPrefer" data-i18n-aria="brandPreferName" aria-label="Prefer one brand">Prefer</button>
+            <button type="button" data-brandmode="only" aria-pressed="false" data-i18n="brandOnly" data-i18n-aria="brandOnlyName" aria-label="Only one brand">Only</button>
+          </div>
+          <select id="brandSel" class="brandsel" aria-label="Which brand" data-i18n-aria="brandWhich" aria-describedby="brandHint"></select>
+          <!-- a reserved slot, as the Use my paints hint: every state in one cell, so nothing below moves (§3.4) -->
+          <div class="fixslot brandslot" id="brandSlot"><p class="sethint" id="brandHint" aria-live="polite"></p></div>
         </div>
       </div>
       <div class="setrow">
