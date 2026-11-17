@@ -291,6 +291,10 @@ const buyBtn = (id, mark) => mark === 'owned' ? '' :
   + ` title="${mark === 'want' ? 'On the shopping list — click to remove' : 'Add to the shopping list'}">`
   + `${mark === 'want' ? `${icon('check')}On the list` : `${icon('plus')}Add`}</button>`;
 
+/** A paint's name as the way to its details (the paint detail sheet, item 7): a button that looks like the
+ *  name, with an underline on hover and the focus ring. Its name is the paint's name, as before. */
+export const detailsLink = (p, text) => `<button type="button" class="pslink" data-psid="${esc(p.id)}" title="Paint details">${esc(text)}</button>`;
+
 /** Render a nearest-paint match (or a graceful empty state). `markOf(id)` adds owned/adjust + a buy toggle. */
 export function matchChip(m, markOf) {
   if (!m) return '<div class="poornote"><strong>No pot is close.</strong> Mix it from the nearest paints, or see Other brands.</div>';
@@ -302,7 +306,7 @@ export function matchChip(m, markOf) {
     : '';
   return swatch(p.hex, 'act' + fxCls(p))
     + `<div style="min-width:0"><div class="ttl">${m.chosen ? 'Chosen pot' : 'Nearest pot'}</div>`
-    + `<div class="nm">${esc(p.name)}</div>`
+    + `<div class="nm">${detailsLink(p, p.name)}</div>`
     + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}</div>`
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
     + `<span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
@@ -408,6 +412,38 @@ export function potRows(items, markOf = () => 'none', currentId = null) {
   }).join('');
 }
 
+/** The paint detail sheet's body (PLAN §5 item 7; mockups/buying-assistant.html, direction B): everything about
+ *  ONE paint, from any surface. `d`: { paint, mark, same: [match], other: [match], shelf: [match + adjust],
+ *  owned (how many paints the painter owns), canStart, back: paint|null, markOf }. A match is
+ *  { paint, deltaE, quality } with the TRUE ΔE (§2). Each row opens that paint in the same sheet. */
+export function paintSheet(d, tr = k => k) {
+  const p = d.paint, markOf = d.markOf || (() => 'none');
+  const sub = q => [esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ');
+  const row = m => {
+    const q = m.paint;
+    return `<li class="psrow"><button type="button" class="psopen" data-psid="${esc(q.id)}">${swatch(q.hex, 'pssw' + fxCls(q))}`
+      + `<span class="psmain"><span class="psname">${esc(pname(q))}</span><span class="rkline">${sub(q)}${finishTag(q)}${goneTag(q)}</span>`
+      + (m.adjust ? `<span class="psnote">${esc(tr('psAdjust', { how: m.adjust }))}</span>` : '') + `</span></button>`
+      + `<span class="de"><span class="dot" style="background:${tier(m.quality.tier)}"></span><span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span>`
+      + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>`
+      + `<span class="psact">${ownOrBuy(q.id, markOf(q.id))}</span></li>`;
+  };
+  const list = (key, items, hint = '') => `<h3 class="pshead">${esc(tr(key))}</h3>${hint ? `<p class="sethint">${esc(hint)}</p>` : ''}`
+    + `<ul class="pslist">${items.map(row).join('')}</ul>`;
+  const seg = [['none', 'psNone'], ['owned', 'psOwned'], ['want', 'psWant']].map(([v, k]) =>
+    `<button type="button" data-psmark="${v}" aria-pressed="${d.mark === v}">${esc(tr(k))}</button>`).join('');
+  return (d.back ? `<button type="button" class="textact psback" data-psback>${icon('chev')}${esc(tr('psBack', { name: pname(d.back) }))}</button>` : '')
+    + `<div class="pstop">${swatch(p.hex, 'pshero' + fxCls(p))}<div class="psid"><div class="rkline">${sub(p)}${finishTag(p)}${goneTag(p)}</div>`
+    + `<div class="pshex"><span class="mono">${esc(p.hex)}</span>${p.approx ? ` · <span class="approx">${esc(tr('psApprox'))}</span>` : ''}</div></div></div>`
+    + `<div class="seg psmark" role="group" aria-label="${esc(tr('psMark'))}">${seg}</div>`
+    + (d.same.length ? list('psSame', d.same, tr('psSameHint')) : '')
+    + (d.other.length ? list('psOther', d.other) : '')
+    + `<h3 class="pshead">${esc(tr('psShelf'))}</h3>`
+    + (d.shelf.length ? `<ul class="pslist">${d.shelf.map(row).join('')}</ul>`
+      : `<p class="sethint">${esc(tr(d.owned ? 'psShelfOnly' : 'psShelfNone'))}</p>`)
+    + (d.canStart ? `<div class="psfoot"><button type="button" class="btn primary" data-psstart>${esc(tr('useAsSeed'))}</button></div>` : '');
+}
+
 /** The hold note under the live palette: what is held, Release all, and a line for each held role that is
  *  Poor (over ΔE 10) against the scheme — which hold, and by how much (Solver's Feasibility Report, Onshape's
  *  red constraint). `held`: [{role, kind, name, deltaE, poor}] in role order. '' when nothing is held. */
@@ -436,7 +472,7 @@ export function roleSlots(scheme, markOf, holdable = new Set(), tr = null) {
     // A wash chosen by its colour (scheme.js washStep, the gap): the step says so, in words for a screen reader.
     const gap = s.gap != null && p ? (tr ? tr('gapDeg', { n: Math.round(s.gap) }) : `gap ${Math.round(s.gap)}°`) : '';
     const gapWhy = gap ? (tr ? tr('stepByGap') : 'No wash is close by ΔE. This one is the closest by its colour, not by how dark it looks. Compare the pots.') : '';
-    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}${gap ? `, ${esc(gap)}. ${esc(gapWhy)}` : ''}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
+    return `<div class="step"${p ? ` tabindex="0" role="button" data-psid="${esc(p.id)}" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}${gap ? `, ${esc(gap)}. ${esc(gapWhy)}` : ''}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
       + `<div class="pn">${p ? esc(p.name) : '—'}</div>`
       + (p ? `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>` : '')
       // wash-step honesty: a real wash/shade/ink shows its finish pill; no close medium → "watered down"
@@ -480,7 +516,7 @@ export function makerLadder(fam) {
   const tone = p => {
     const cur = p.id === fam.current;
     const what = `Tone ${p.tone} of ${n}: ${pname(p)}, ${p.brand}${cur ? ', your pot' : ''}`;
-    return `<div class="step${cur ? ' cur' : ''}" tabindex="0" aria-label="${esc(what)}">${swatch(p.hex, fxCls(p).trim())}`
+    return `<div class="step${cur ? ' cur' : ''}" tabindex="0" role="button" data-psid="${esc(p.id)}" aria-label="${esc(what)}">${swatch(p.hex, fxCls(p).trim())}`
       + `<div class="cap">${p.tone}</div><div class="pn">${cur ? 'your pot' : ''}</div>`
       + `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span></div>`;
   };
@@ -509,7 +545,7 @@ export function equivGroup(label, members, markOf) {
     + `<div class="eq">${members.map(p => {
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}</div>`
+        + `<div class="nm">${detailsLink(p, p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}</div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
     }).join('')}</div></div>`;
 }
@@ -522,7 +558,7 @@ export function equivalentsPanel(name, equivs, markOf) {
       const p = e.paint, q = e.quality;
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}</div>`
+        + `<div class="nm">${detailsLink(p, p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}</div>`
         + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
         + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;

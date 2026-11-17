@@ -889,6 +889,45 @@ main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
 .holdnote .textact { display: inline; min-height: 0; min-width: 0; padding: 0; font-size: 13px; position: relative; }
 .holdnote .textact::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%); }
 .potdlg { width: min(520px, 92vw); }
+/* The paint detail sheet (PLAN §5 item 7): one paint, from any surface. The §3.5 dialog anatomy; rows as the pot
+   dialog's, with the ΔE and the buy toggle beside the button that opens the row's paint. */
+.paintdlg { width: min(560px, 92vw); }
+#paintTitle:focus { outline: 2px solid transparent; }   /* a landing spot when the sheet opens, not a control (as .hero) */
+.pstop { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.pshero { width: 64px; height: 64px; --fm-size: 13px; --fm-in: 4px; }
+.psid { min-width: 0; display: grid; gap: 4px; }
+.pshex { font-size: var(--fs-small); color: var(--text-muted); }
+.pshex .approx { color: var(--warning-text); }
+.psmark { display: flex; width: 100%; }
+.psmark button { flex: 1 1 0; min-width: 0; min-height: var(--tap); padding: 0 8px; }
+.paintbody .pshead { margin: 16px 0 4px; }
+.paintbody .sethint { margin: 0 0 4px; font-size: var(--fs-small); color: var(--text-muted); }
+.pslist { list-style: none; margin: 0; padding: 0; }
+.psrow { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; column-gap: 12px; border-top: 1px solid var(--border); }
+.psrow:first-child { border-top: none; }
+.psopen { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: 12px; min-height: var(--tap); padding: 6px 4px;
+  border: none; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; border-radius: var(--r-ctrl); }
+.psopen:hover { background: var(--surface-2); }
+.psopen:focus-visible { outline: 2px solid transparent; outline-offset: -2px; box-shadow: var(--focus-inset); }
+.pssw { width: 32px; height: 32px; }
+.psmain { display: grid; min-width: 0; }
+.psname { font-weight: 600; overflow-wrap: anywhere; }
+.psnote { font-size: var(--fs-small); color: var(--text-muted); }
+.psrow .de { margin: 0; white-space: nowrap; }
+.psact { min-width: 72px; display: flex; justify-content: flex-end; }   /* reserved: owned or the buy toggle, so the ΔE column does not move (§3.4) */
+.psback { display: inline-flex; align-items: center; gap: 4px; margin: -8px 0 4px -4px; }
+.psback .ic { transform: rotate(90deg); }
+.psfoot { margin-top: 16px; }
+@media (max-width: 520px) {
+  .psrow { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0; }
+  .psrow .de { grid-column: 1; grid-row: 2; padding: 0 4px 8px 48px; }
+  .psact { grid-column: 2; grid-row: 1 / span 2; }
+}
+/* A paint's name as the way to its details (the Recipe, Other brands): it looks like the name. */
+.pslink { padding: 0; border: none; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; border-radius: var(--r-tag); }
+.pslink:hover { text-decoration: underline; }
+.pslink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ladder .step[data-psid] { cursor: pointer; }
 .potbody { display: grid; gap: 8px; }
 .potbody input[type="search"] { width: 100%; }
 .potlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; max-height: min(52vh, 420px); overflow-y: auto; }

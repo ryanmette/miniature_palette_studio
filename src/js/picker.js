@@ -54,12 +54,13 @@ const SAY_MS = 500;
  *   histMark()       where the undo history is now
  *   takeModeNote()   the scheme's mode-change note that a live hex caused (consumed; '' when none)
  *   markPaint(id, mark)     mark a paint and repaint (render('marks'))
+ *   paintDetails(id, back)  open the paint detail sheet (item 7); focus goes to `back` when it closes
  *   coarse(), phone()       a touch screen; a phone-width screen (≤520px)
  * Returns { close, refresh(ids), isOpen }.
  */
 export function setupPicker(app) {
   const { state, t, say, markMenu, getPick, recent, markOf, ownedIds,
-    seedPaint, seedHex, restoreSeed, markPaint, histMark, takeModeNote, coarse, phone } = app;
+    seedPaint, seedHex, restoreSeed, markPaint, histMark, takeModeNote, coarse, phone, paintDetails } = app;
   const $ = id => document.getElementById(id);
   const input = $('seedQ'), browse = $('seedBrowse'), field = $('seedField'), pop = $('pkPop'), body = $('pkBody'),
     grid = $('pkGrid'), list = $('pkList'), hint = $('pkHint'), empty = $('pkEmpty'), foot = $('pkFoot'),
@@ -378,14 +379,16 @@ export function setupPicker(app) {
     const p = o.p, m = markOf(p.id);
     markMenu.open({
       header: ui.menuTitle(p),
-      items: [['owned', 'markOwned'], ['want', 'markWant'], ['none', 'clearMark']]
+      // the three marks (radio items), then Paint details (item 7): the one way to the sheet from this list
+      items: [...[['owned', 'markOwned'], ['want', 'markWant'], ['none', 'clearMark']]
         .map(([value, key]) => ({ value, label: t(key), role: 'menuitemradio', checked: m === value })),
+        ...(paintDetails ? [{ sep: true }, { value: 'details', label: t('paintDetails') }] : [])],
       anchor: el, point: how === 'mouse' ? point : null,
       // Focus goes back to the field after a key or a mouse. After a touch long-press it goes to the list
       // itself: focus in the field raises the iOS keyboard over the list, and no focus at all left a
       // screen reader at the top of the page.
       back: how === 'touch' ? body : input,
-      onChoose: v => markPaint(p.id, v),
+      onChoose: v => { if (v === 'details') { close(); paintDetails(p.id, input); } else markPaint(p.id, v); },
     });
   }
 

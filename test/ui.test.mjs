@@ -665,6 +665,39 @@ test('matchNote: the Brand line shows only with a mode and a brand, and opens th
   assert.ok(both.indexOf('data-note="ump"') < both.indexOf('data-note="brand"'));
 });
 
+test('the paint detail sheet (item 7): the paint, its mark, the three lists with the true ΔE, and the ways on', async () => {
+  const { paintSheet, detailsLink } = await import('../src/js/ui.js');
+  const m = (p, deltaE, label, tier, extra = {}) => ({ paint: p, deltaE, quality: { label, tier }, ...extra });
+  const d = { paint: red, mark: 'owned', owned: 2, canStart: true, back: null, markOf: id => (id === 'val-carm' ? 'owned' : 'none'),
+    same: [m(red2, 0.6, 'Indistinguishable', 'success')], other: [m(carm, 2.1, 'Good', 'success')],
+    shelf: [m(carm, 4.8, 'Fair', 'warning', { adjust: 'darken slightly' })] };
+  const html = paintSheet(d, tr);
+  // the mark: three segments, the paint's own one pressed
+  assert.match(html, /role="group" aria-label="psMark"/);
+  assert.match(html, /data-psmark="owned" aria-pressed="true"/); assert.match(html, /data-psmark="want" aria-pressed="false"/);
+  // each list, with its heading; a row opens that paint, shows the true ΔE and its label, and its mark
+  for (const k of ['psSame', 'psOther', 'psShelf']) assert.match(html, new RegExp(`<h3 class="pshead">${k}</h3>`));
+  assert.match(html, /data-psid="ap-red"[\s\S]*?Indistinguishable[\s\S]*?ΔE 0\.6/);
+  assert.match(html, /psAdjust\(how=darken slightly\)/, 'the shelf row says how to move the paint');
+  assert.match(html, /data-buy="ap-red"/, 'a paint that is not owned has the buy toggle');
+  assert.match(html, /owntag/, 'an owned row says so');
+  assert.match(html, /data-psstart/); assert.doesNotMatch(html, /data-psback/);
+  assert.match(html, /class="mono">#960C09</);
+  // no group: no "same colour" heading. Nothing owned, or only this paint: a sentence, not an empty list.
+  const lone = paintSheet({ ...d, same: [], shelf: [], owned: 0, canStart: false, back: carm }, tr);
+  assert.doesNotMatch(lone, /psSame/); assert.match(lone, /psShelfNone/); assert.doesNotMatch(lone, /data-psstart/);
+  assert.match(lone, /data-psback[^>]*>.*psBack\(name=Carmine Red\)/);
+  assert.match(paintSheet({ ...d, shelf: [], owned: 1 }, tr), /psShelfOnly/);
+  // a non-flat paint and a paint that is no longer made say so
+  assert.match(paintSheet({ ...d, paint: { ...red, type: 'shade', discontinued: true } }, tr), /fm fm-wash[\s\S]*finish finish-shade[\s\S]*tag gone/);
+  // the ways in: a paint's name is a button to its details, and a ladder step is too
+  assert.equal(detailsLink(red, 'Mephiston Red'), '<button type="button" class="pslink" data-psid="cit-red" title="Paint details">Mephiston Red</button>');
+  const slots = roleSlots({ roles: [{ role: 'Primary', weight: 60, idealHex: '#960C09', match: m(red, 0, 'Indistinguishable', 'success'),
+    ladders: [{ style: 'wash', label: 'L', steps: [{ key: 'base', idealHex: '#960C09', match: m(red, 0, 'Indistinguishable', 'success') }] }] }] }, () => 'none');
+  assert.match(slots, /class="nm"><button type="button" class="pslink" data-psid="cit-red"/);
+  assert.match(slots, /class="step" tabindex="0" role="button" data-psid="cit-red" aria-label="base: Mephiston Red, Citadel"/);
+});
+
 import { makerLadder } from '../src/js/ui.js';
 test("makerLadder: every tone in order, the pot marked in words, no ΔE (the maker's steps are not matches)", () => {
   const t = (n, hex) => ({ id: `b${n}`, brand: 'Warhammer Colour', line: 'Tone Pro', name: `Ultramar Blue ${n}`, hex, type: 'layer', tone: n });
