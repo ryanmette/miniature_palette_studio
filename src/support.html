@@ -94,6 +94,18 @@
   </ul>
   <p>The colour values for real paints are approximate. So a match is never exact, and the ΔE tells you
     how close it is.</p>
+  <h3 id="wash-step">The wash in a Recipe</h3>
+  <p>In the <strong>Wash · base · highlight</strong> ladder, the wash step looks for a real wash, shade or ink.
+    It has three tries:</p>
+  <ul>
+    <li>First, the wash that is nearest by ΔE (ΔE 10 or less).</li>
+    <li>If there is none, the wash that is nearest by its colour. The step then shows a <strong>gap</strong> in
+      degrees (8° or less). The gap compares the colour of the wash, not how dark it looks. It does not tell you
+      how strong the wash is, so compare the pots. See
+      <a href="#store">What if the store does not have a paint?</a> for the gap.</li>
+    <li>If there is still none, the step shows a base paint with <strong>watered down</strong>: thin that paint
+      and use it as the wash.</li>
+  </ul>
   <h3 id="use-my-paints">Use my paints</h3>
   <p>Set it in <strong>⋯ → Use my paints</strong>. It changes the matches in the live palette, the Recipe,
     the shopping list and the Accessibility tab. The Other brands tab always lists every paint.</p>

@@ -13,6 +13,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+- **The Recipe's wash step finds a real wash more often** (PLAN §5 item 74; a matching change, CLAUDE.md §7).
+  The step looked for a wash, shade or ink within ΔE 10, and showed a base paint with "watered down" when it
+  found none. Some makers show a wash as a thin coat on white, so their washes have no dark value, and the step
+  found almost none of them: with only Warhammer Colour paints, 8% of colours got a wash. The step now has a
+  second try before "watered down": the wash that is nearest by its colour (the gap, 8° or less), as the store
+  swaps of a wash. Such a step shows "gap 4°" beside its finish tag, and **Save the recipe** writes the gap on
+  its line. Measured: a real wash for 93% → 99% of colours with every brand, 66% → 89% with Warhammer Colour and
+  Army Painter, 8% → 79% with Warhammer Colour only. The added washes are in the paint's colour family as often
+  as the others. A Recipe that had a wash keeps the same wash; about 6% of wash steps change from "watered down"
+  to a wash. The gap does not show how strong a wash is.
 - **A paint that is no longer made says so** (PLAN §5 item 73; CLAUDE.md §3.5, §3.6 and §7). The data marks four
   paints as no longer made (the Gloss Shades). Each one now has a **No longer made** tag beside its finish tag: on
   the starting paint's line, in the seed field's list, in the Recipe, in the pot dialog and in the Shelf's list
@@ -40,7 +50,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   washes' names, the first swap is in the same colour family in 71% of cases in a store with Warhammer Colour and
   Army Painter (44% by ΔE), and in 74% with Warhammer Colour only (32%). With every brand it is equal (64% and
   65%). The gap does not show how strong a wash is, and no paint value changed. Inks, Contrast paints and glazes
-  keep ΔE, and so do the Equivalents tab and the Recipe's wash step. An ink, a Contrast paint or a glaze ranks 4°
+  keep ΔE, and so does the Equivalents tab. An ink, a Contrast paint or a glaze ranks 4°
   further as the swap for a wash (`WASH_KIND_GAP`): the first swap is then a wash or shade for 96% (82% at 2°),
   and it is in the same colour family as often (80% against 77%).
 - **A store swap goes under the heading of its own rack** (PLAN §5 item 70; CLAUDE.md §3.6). After **Use**, the

@@ -496,7 +496,8 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   washes' names (106 of 131 have one; browns, fleshes, sepias and rusts as one family), the best swap is in the
   same family: every brand 65% by ΔE and 64% by the gap; Warhammer Colour + Army Painter 44% → 71%; Warhammer
   Colour only 32% → 74%. A pair under 4° is one family for 2 in 3, over 8° for less than 1 in 3. **The gap is
-  for the store swaps only:** the Equivalents tab and the Recipe's wash step still use ΔE.
+  for washes only, in two places:** the store swaps, and the second try of the Recipe's wash step (Wash-step
+  media, below). The Equivalents tab uses ΔE.
 - **Harmonies** are computed from the base in HSL. Most rotate **hue** (keeping S/L); the two *value*
   harmonies instead vary **lightness/saturation** at the base hue. Each partner is a locked `{dh,ds,dl}`
   step from the base (`harmony.js` `HARMONY_STEPS`):
@@ -566,10 +567,19 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   cool `hsl(222,.12, L−.14)` · the ideal · warm `hsl(32,.14, L+.16)`); the selected value ladder(s)
   still follow. Saturated roles are unchanged.
 - **A paint that is no longer made is not a suggestion** (`data.js passesFilter`; dataset 1.10.0 has the first four, the Gloss Shades). `nearestPaint(s)` skips a `discontinued` paint: the Recipe, the tone ladders and the shopping list offer only pots a painter can buy. It stays a match when the painter **owns** it (the owned set, in every Use my paints setting) or **picked** it (the starting paint). Lists of every paint keep it, with its tag: the seed field, the Shelf, Other brands. The store swaps have the same rule (§3.6).
-- **Wash-step media (v1.8):** the Wash·base·highlight ladder's *wash* step prefers REAL shading media
-  (`wash`/`shade`/`ink` types, the finish exclusion lifted for that step only). If none lands within
-  ΔE ≤ 10, it falls back to the darkened-base match flagged **"watered down"** (thin the base) — never
-  a silent substitution (§2).
+- **Wash-step media (v1.8; the second try: PLAN §5 item 74, Ryan 2026-11-17):** the Wash·base·highlight ladder's
+  *wash* step prefers REAL shading media (`wash`/`shade`/`ink` types, the finish exclusion lifted for that step
+  only). Three tries, in order (`scheme.js washStep`): **(1)** the medium nearest by ΔE, within ΔE ≤ 10;
+  **(2)** the medium nearest by **the gap** (`data.js washByGap`: the same pool, the gap + `0.02 × ΔE`; an owned
+  wash first when its gap is 4° or less), within **8°** — the step then shows "gap 4°" as plain mono text beside
+  its finish tag, with the reason in its title and its accessible name, and Save the recipe writes the gap on
+  its row; the ΔE in the match stays the true one (§2); **(3)** the darkened-base match flagged **"watered
+  down"** (thin the base) — never a silent substitution (§2). A target that hardly absorbs (a near white) has no
+  gap. Measured on dataset 1.10.0 (1,882 base and layer paints with a colour word in the name): a real wash is
+  found for 93% → 99% with every brand, 66% → 89% with Warhammer Colour + Army Painter, 8% → 79% with Warhammer
+  Colour only; the washes the second try adds are in the paint's colour family as often as the ΔE ones (48–66%
+  against 51–60%). ΔE stays first, so a Recipe that had a wash keeps it; 6% of all wash steps change from
+  "watered down" to a wash.
 - **NMM (non-metallic metal) ladder (v1.8):** the Metal role also offers a flat-paint recipe for the
   metal illusion — locked steps off the metal ideal: shadow `{dl:−.26, ds:+.04}` · mid (the ideal) ·
   highlight `{dl:+.30, ds:−.18}`, matched with metallics AND finishes excluded.

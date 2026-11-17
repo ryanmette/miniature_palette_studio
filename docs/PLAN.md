@@ -948,7 +948,8 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       Poxwalker, Kroak Green, Soulblight Grey). The same release had new Contrast paints, so this is a check of
       the whole Warhammer Colour range against GW's list, not one correction. Also open: Nolzur's Glistening Blood
       (type `wash`), which needs its own maker's page.
-74. **The Recipe's wash step by the gap?** (open; Ryan's decision.) Measured 2026-11-17 on 1,882 base and layer
+74. **The Recipe's wash step by the gap?** (**built 2026-11-17** as a second try, below; Ryan: "go with your
+    recommendations".) Measured 2026-11-17 on 1,882 base and layer
     paints with a colour word in the name (dataset 1.9.0): the share that gets a real wash, shade or ink, and the
     share of those whose wash is in the base paint's colour family (the browns as one; grey with black).
 
@@ -965,6 +966,20 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     Colour's Shades win 3.3% of the steps by ΔE and 4.1% by the gap (they are 9% of the pool). A change alters
     every Recipe and shopping list, and the gap does not show strength, which is what this step is about.
 
+    **Built: ΔE first, the gap second, "watered down" third** (`scheme.js washStep`, `data.js washByGap`). ΔE
+    stays first, so no Recipe loses the wash it had. Measured on dataset 1.10.0 (the gap only where ΔE finds none):
+
+    | Washes available | By ΔE (as before) | Added by the gap | Total | Same family: ΔE picks | Same family: added picks |
+    |---|---|---|---|---|---|
+    | Every brand | 93% | +6% | 99% | 60% | 66% |
+    | Warhammer Colour + Army Painter | 66% | +22% | 89% | 57% | 51% |
+    | Army Painter only | 59% | +21% | 80% | 58% | 53% |
+    | Vallejo only | 56% | +36% | 92% | 51% | 60% |
+    | Warhammer Colour only | 8% | +71% | 79% | 53% | 48% |
+
+    A limit of 4° adds about half as many washes and is not more accurate (46–68%), so the limit is 8° (Near
+    colour). The step shows the gap; the ΔE in the match is the true one. **Open:** the accuracy of both ways is
+    about 1 in 2 by this measure, and only measured wash colours can raise it (item 68).
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:

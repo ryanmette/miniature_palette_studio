@@ -404,7 +404,7 @@ export function holdNote(held) {
     + `<button type="button" class="textact" data-hold-releaseall>${rel}</button></span></p>${warn}</div>`;
 }
 
-export function roleSlots(scheme, markOf, holdable = new Set()) {
+export function roleSlots(scheme, markOf, holdable = new Set(), tr = null) {
   // Ladder rows show the SHORT paint name — long display names ("Brainmatter Beige (Warpaints
   // Fanatic)") used to blow the three-column row past the card edge on phones. The full identity
   // (disambiguated name · brand) lives in the same clamped tooltip the Shelf uses (hover / focus /
@@ -413,11 +413,14 @@ export function roleSlots(scheme, markOf, holdable = new Set()) {
     const p = s.match && s.match.paint;
     // The chip shows the POT, the paint named under it, with its finish overlay (§2): a painter reads the
     // ladder as "these three pots". With no pot (none close enough), it shows the target colour.
-    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
+    // A wash chosen by its colour (scheme.js washStep, the gap): the step says so, in words for a screen reader.
+    const gap = s.gap != null && p ? (tr ? tr('gapDeg', { n: Math.round(s.gap) }) : `gap ${Math.round(s.gap)}°`) : '';
+    const gapWhy = gap ? (tr ? tr('stepByGap') : 'No wash is close by ΔE. This one is the closest by its colour, not by how dark it looks. Compare the pots.') : '';
+    return `<div class="step"${p ? ` tabindex="0" aria-label="${esc(s.key)}: ${esc(pname(p))}, ${esc(p.brand)}${gap ? `, ${esc(gap)}. ${esc(gapWhy)}` : ''}"` : ''}>${p ? swatch(p.hex, fxCls(p).trim()) : swatch(s.idealHex, '')}<div class="cap">${esc(s.key)}</div>`
       + `<div class="pn">${p ? esc(p.name) : '—'}</div>`
       + (p ? `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>` : '')
       // wash-step honesty: a real wash/shade/ink shows its finish pill; no close medium → "watered down"
-      + (s.media === 'wash' && p ? `<div class="steptag media">${finishTag(p.type)}${goneTag(p)}</div>` : '')
+      + (s.media === 'wash' && p ? `<div class="steptag media">${finishTag(p.type)}${goneTag(p)}${gap ? ` <span class="stepgap" title="${esc(gapWhy)}">${esc(gap)}</span>` : ''}</div>` : '')
       + (s.dilute ? `<div class="steptag dilute" title="No bottled wash lands close enough — thin (water down) this base paint into the recesses instead">watered down</div>` : '')
       + `</div>`;
   };

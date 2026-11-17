@@ -299,7 +299,7 @@ function renderPlan() {
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
     + '<div class="micro" style="margin:14px 0 0">Each role: target colour → nearest pot (ΔE 2000), plus the selected tone ladder</div>'
-    + ui.roleSlots(state.scheme, store.markOf, new Set(holdableRoles()));
+    + ui.roleSlots(state.scheme, store.markOf, new Set(holdableRoles()), i18n.t);
 }
 let wheelDraw = () => {};   // set by setupWheel(); lets discrete base/harmony changes redraw the promoted wheel
 // Set by setupWheel() too. render() calls it when something other than the lightness slider changes
@@ -2692,7 +2692,7 @@ function copyText(val) {
 function doExport() {
   const s = currentScheme();
   let t = `Palette Studio for Miniatures — recipe\nBase ${s.base} · ${s.harmony} scheme · ${s.ladder} ladder\n\n`;
-  for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}${r.owned ? '  ✓ owned' : ''}\n`;
+  for (const r of shoppingList(s)) t += `${r.role.padEnd(20)} ${r.name} (${r.brand}${r.line && r.line !== '—' ? ' ' + r.line : ''}) ${r.hex}  ΔE ${r.deltaE}${r.gap != null ? `  (a wash chosen by its colour: gap ${r.gap}°)` : ''}${r.owned ? '  ✓ owned' : ''}\n`;
   t += '\nHex values are approximate; ΔE = perceptual distance to the target colour.\n';
   download('palette-recipe.txt', t);
   toast(i18n.t('recipeSaved'));   // download is the artefact — no silent clipboard write (native-share direction)

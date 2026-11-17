@@ -236,6 +236,33 @@ test('wash step prefers real wash/shade/ink media; falls back flagged "dilute" w
   assert.notEqual(w2.match.paint.type, 'shade');  // fallback is the darkened-base match, not the far medium
 });
 
+test('wash step: with no medium close by ΔE, a real wash close by its COLOUR (the gap) comes before "watered down"', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { FINISH_TYPES, WASH_GAP_NEAR } = await import('../src/js/data.js');
+  const real = indexDataset(JSON.parse(readFileSync(new URL('../src/data/paints.json', import.meta.url))));
+  const washOf = (s, role) => s.roles.find(r => r.role === role).ladders.find(l => l.style === 'wash').steps.find(st => st.key === 'wash');
+  // One maker's shades are thin coats on white: no dark hex, so ΔE found nothing for a dark blue.
+  const opts = { excludeTypes: new Set(FINISH_TYPES), brands: new Set(['Warhammer Colour']) };
+  const s = buildScheme(real, real.byId.get('citadel-base-macragge-blue').hex, 'triadic', opts);
+  const w = washOf(s, 'Primary');
+  assert.equal(w.match.paint.id, 'citadel-shade-drakenhof-nightshade');
+  assert.equal(w.media, 'wash'); assert.ok(!w.dilute);
+  assert.ok(w.gap > 0 && w.gap <= WASH_GAP_NEAR);
+  assert.ok(w.match.deltaE > 10, 'the ΔE in the match stays the true one (§2)');
+  assert.equal(w.match.gap, w.gap);
+  // the export row says the gap
+  const row = shoppingList(s).find(r => r.role === 'Primary wash');
+  assert.equal(row.name, 'Drakenhof Nightshade'); assert.equal(row.gap, Math.round(w.gap));
+  // a step found by ΔE has no gap
+  const every = buildScheme(real, real.byId.get('citadel-base-mephiston-red').hex, 'triadic', { excludeTypes: new Set(FINISH_TYPES) });
+  const e = washOf(every, 'Primary');
+  assert.ok(e.match.deltaE <= 10 && e.gap == null && e.media === 'wash');
+  assert.ok(shoppingList(every).find(r => r.role === 'Primary wash').gap === undefined);
+  // no wash near by colour either: still "watered down" (a red, in a maker with no red shade that close)
+  const red = washOf(buildScheme(real, real.byId.get('citadel-base-mephiston-red').hex, 'triadic', opts), 'Primary');
+  assert.ok(red.dilute && red.gap == null);
+});
+
 test('shared-paint differentiate points the PAINT toward the role ideal (arg order)', async () => {
   const { adjustDirection } = await import('../src/js/color.js');
   // One flat paint + one metal, colour roles metal-excluded → every colour role shares the red.

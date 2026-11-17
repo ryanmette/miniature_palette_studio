@@ -346,6 +346,34 @@ export function storeSwaps(indexed, paint, { notCarried = new Set(), except = nu
     .map(({ paint, deltaE, gap }) => byGap ? { paint, deltaE, gap, quality: gapQuality(gap) } : { paint, deltaE, quality: swapQuality(deltaE, cls) });
 }
 
+/**
+ * The Recipe's wash step, second try (PLAN §5 item 74; §7): the wash, shade or ink whose COLOUR is nearest to a
+ * target, by the gap (the angle between the absorbances, as the store swaps of a wash). scheme.js calls it only
+ * when no medium is within ΔE, which is the case for most colours when the pool is one brand: a maker that
+ * shows a wash as a thin coat on white has no dark hex to match a dark target. The gap is no measure of
+ * strength, so the caller shows it as a gap, and the ΔE in the result is the true one (§2).
+ * `opts` is nearestPaint's (the caller sets `types`): the same pool, so Use my paints and the "no longer made"
+ * rule hold. An owned wash (boostIds) goes first when its gap is WASH_GAP_CLOSE or less, as in the swaps.
+ * @returns {{paint, deltaE, quality, gap, gapQuality, owned?}|null}  null: the target hardly absorbs (a near
+ *   white has no clear direction), or the pool has no wash that does.
+ */
+export function washByGap(indexed, hex, opts = {}) {
+  const a = absorbance(hex);
+  if (absorbStrength(a) < WEAK_ABSORB) return null;
+  const lab = hexToLab(hex);
+  let best = null, bestKey = Infinity;
+  for (const p of indexed.paints) {
+    if (!passesFilter(p, opts)) continue;
+    const w = absorbOf(p);
+    if (w.strength < WEAK_ABSORB) continue;
+    const gap = absorbGap(a, w.a), deltaE = deltaE2000(lab, p.lab);
+    const mine = !!(opts.boostIds && opts.boostIds.has(p.id)) && gap <= WASH_GAP_CLOSE;
+    const key = (mine ? 0 : 1000) + gap + WASH_GAP_TIE * deltaE;
+    if (key < bestKey) { bestKey = key; best = { paint: p, deltaE, gap }; }
+  }
+  return best && decorate({ ...best, quality: matchQuality(best.deltaE), gapQuality: gapQuality(best.gap) }, hex, opts);
+}
+
 /** The paints closest to a typed colour, best first. They rank as the Equivalents tab ranks a flat colour:
  *  a paint of another finish class (a wash, a contrast, an effect, a metallic) ranks FINISH_PENALTY ΔE
  *  further, so it shows only when it is clearly closer. Each match reports its TRUE ΔE (§2, §7). The seed

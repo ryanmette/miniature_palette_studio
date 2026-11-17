@@ -780,6 +780,31 @@ test('matching: a paint that is no longer made is no suggestion, unless you own 
   assert.ok(closestPaints(real, gloss.hex, 8).some(m => m.paint.id === gloss.id));
 });
 
+test('washByGap: the wash nearest by its colour, from the same pool as nearestPaint', async () => {
+  const { washByGap, gapQuality, WASH_GAP_CLOSE } = await import('../src/js/data.js');
+  const { deltaE2000, hexToLab } = await import('../src/js/color.js');
+  const media = { types: new Set(['wash', 'shade', 'ink']) }, blue = '#1B3A5C';
+  const m = washByGap(real, blue, media);
+  assert.ok(media.types.has(m.paint.type) && !m.paint.discontinued);
+  assert.deepEqual(m.gapQuality, gapQuality(m.gap));
+  assert.ok(Math.abs(m.deltaE - deltaE2000(hexToLab(blue), m.paint.lab)) < 1e-9, 'the true ΔE');
+  // a near white has no clear direction
+  assert.equal(washByGap(real, '#FFFFFF', media), null);
+  assert.equal(washByGap(real, '#F4F0EA', media), null);
+  // the pool: one brand; only the owned paints
+  const wc = washByGap(real, blue, { ...media, brands: new Set(['Warhammer Colour']) });
+  assert.equal(wc.paint.brand, 'Warhammer Colour'); assert.ok(wc.gap >= m.gap - 0.5);
+  const mine = new Set(['citadel-shade-biel-tan-green']);
+  assert.equal(washByGap(real, blue, { ...media, ownedIds: mine }).paint.id, 'citadel-shade-biel-tan-green');
+  assert.equal(washByGap(real, blue, { ...media, ownedIds: new Set(['citadel-base-mephiston-red']) }), null, 'no wash in the pool');
+  // Prefer: an owned wash goes first only when its gap is Close
+  const far = washByGap(real, blue, { ...media, boostIds: mine, boostAmount: 6 });
+  assert.equal(far.paint.id, m.paint.id, 'a green wash is no Close colour for a blue');
+  const near = real.paints.filter(p => media.types.has(p.type)).map(p => ({ p, g: washByGap(real, blue, { ...media, ownedIds: new Set([p.id]) }) }))
+    .filter(x => x.g && x.g.gap <= WASH_GAP_CLOSE && x.p.id !== m.paint.id)[0];
+  if (near) { const got = washByGap(real, blue, { ...media, boostIds: new Set([near.p.id]), boostAmount: 6 }); assert.equal(got.paint.id, near.p.id); assert.equal(got.owned, true); }
+});
+
 test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {
   assert.match(BRAND_WORDS['Warhammer Colour'], /Citadel/);
   const wc = real.paints.filter(matcher56('citadel'));
