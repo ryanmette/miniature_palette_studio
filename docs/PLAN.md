@@ -872,6 +872,31 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       (`COLOUR_CHECK.md` §5.3); (b) Ryan saves the makers' pages or charts as files, and the values are sampled
       from them; (c) no data change: rank a wash against a wash by what it absorbs (the direction of its absorbance
       in linear RGB, which does not change with the coat's thickness), with words of its own in place of ΔE.
+    **Way (c), built (2026-11-17; Ryan: "go with C").** In the store swaps a wash or shade ranks by **the gap**: the
+    angle between the two absorbances (`color.js absorbance`, `absorbGap`; `data.js storeSwaps`, `gapQuality`),
+    plus 0.02 × ΔE as the tie-break and the kind penalty (2°). The check was the colour word in each wash's name
+    (106 of 131 have one; the browns, fleshes, sepias and rusts as one family). Best swap in the same family:
+
+    | The brands carried | By ΔE | By the gap |
+    |---|---|---|
+    | Every brand | 65% | 64% |
+    | Warhammer Colour + Army Painter + Two Thin Coats | 49% | 64% |
+    | Warhammer Colour + Army Painter | 44% | 71% |
+    | Army Painter only | 42% | 73% |
+    | Warhammer Colour only | 32% | 74% |
+
+    - So with every brand there is no gain (each maker's way meets its own kind), and the gain is where a store
+      has few brands. Other forms did not do better: the gap alone (61% with every brand), a larger ΔE share
+      (0.1: 4 to 5 points less in a small store), and a "same coat" ΔE that scales each line to one median
+      strength (equal within the noise, and it needs line statistics).
+    - Limits: the gap does not show a wash's strength, so all blacks and greys are near 0° (Light Grey is "Close" to
+      a black wash); 2 of 131 washes hardly absorb (Vallejo White, Smoke Grey Wash) and keep ΔE; a pair under 4°
+      is one family for only 2 in 3.
+    - **Open:** the Equivalents tab (still ΔE). **The Recipe's wash step** (still ΔE, gate 10): it finds a real
+      wash for 93% of 1,573 base colours, but Warhammer Colour's 16 Shades win 3.4% of those (9% of the pool)
+      and Nuln Oil and Agrax Earthshade never win, while Army Painter's Wash line wins 32% (20% of the pool). A
+      change there alters every Recipe, so it needs its own decision. **Data seen on the way:** Army Painter's
+      "Brush-On Primer" has the type `wash` (it is a primer), so it shows as a swap for a black wash.
 69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
     later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
     the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint

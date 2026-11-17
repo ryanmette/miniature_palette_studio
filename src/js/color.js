@@ -61,6 +61,30 @@ export const linearToSrgb = c => 255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Mat
 export const rgbToLinear = ([r, g, b]) => [srgbToLinear(r), srgbToLinear(g), srgbToLinear(b)];
 export const linearToRgb = ([r, g, b]) => [linearToSrgb(r), linearToSrgb(g), linearToSrgb(b)];
 
+/* ---- what a clear coat absorbs (PLAN §5 item 68; CLAUDE.md §7) ----
+   A wash is a clear, coloured coat. Light goes through it, reflects from the ground and comes back, and each
+   pass takes away the same share of each colour (the Beer–Lambert law). So a coat over white that is twice as
+   thick has the square of the thin coat's colour in linear light: its absorbance, −ln(colour), is twice as large
+   in every channel, in the same proportion. The DIRECTION of the absorbance is thus the colour of the wash
+   itself, and its LENGTH is how thick the coat was (or how full the pot). The paint data holds washes at very
+   different thicknesses (some makers show a thin coat on white, others the liquid in the pot), so two washes
+   compare well by direction and badly by ΔE. */
+/** A channel never keeps less than this share of the light, or more than 1 minus it: ln(0) has no value, and
+ *  a recorded #000000 is a placeholder, not a wash that absorbs all light. About one 8-bit step (1/255). */
+export const ABSORB_FLOOR = 0.004;
+/** The absorbance [aR, aG, aB] of a colour seen as a clear coat over white: −ln of each linear channel. */
+export function absorbance(hex) {
+  return rgbToLinear(hexToRgb(hex)).map(v => -Math.log(Math.min(1 - ABSORB_FLOOR, Math.max(ABSORB_FLOOR, v))));
+}
+/** How much a coat absorbs in all: the length of its absorbance. Near 0 for a white, about 9.6 for a black. */
+export const absorbStrength = a => Math.hypot(a[0], a[1], a[2]);
+/** The gap between two coats' colours: the angle between their absorbances, in degrees. 0 is the same wash at
+ *  any two thicknesses; a neutral (black or grey) coat and a pure red, green or blue one are about 55° apart. */
+export function absorbGap(a, b) {
+  const cos = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (absorbStrength(a) * absorbStrength(b));
+  return Math.acos(Math.min(1, Math.max(-1, cos))) * 180 / Math.PI;
+}
+
 const D65 = [0.95047, 1.0, 1.08883];
 
 /**

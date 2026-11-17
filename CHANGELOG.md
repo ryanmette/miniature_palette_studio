@@ -27,6 +27,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Changed
+- **Store swaps: a wash is compared by its colour, not by how dark it looks** (PLAN §5 item 68, way C; a ranking
+  change, CLAUDE.md §7 and §3.2). The makers show a wash in different ways: a thin coat on white (the Warhammer
+  Colour Shades) or the liquid in the pot (Army Painter). So Shadow Wash and Nuln Oil, two black washes, were ΔE
+  50 apart, and neither was a swap for the other. A wash is a clear coat, and a thicker coat absorbs the same
+  colours in the same proportion. In **Not on the rack?**, a wash or shade now ranks its swaps by that proportion
+  (`color.js absorbance`, `absorbGap`) and shows a **gap** in degrees with words of its own: **Close colour**
+  (4° or less), **Near colour** (8° or less) and **Other colour**. Measured against the colour word in the
+  washes' names, the first swap is in the same colour family in 71% of cases in a store with Warhammer Colour and
+  Army Painter (44% by ΔE), and in 74% with Warhammer Colour only (32%). With every brand it is equal (64% and
+  65%). The gap does not show how strong a wash is, and no paint value changed. Inks, Contrast paints and glazes
+  keep ΔE, and so do the Equivalents tab and the Recipe's wash step.
 - **A store swap goes under the heading of its own rack** (PLAN §5 item 70; CLAUDE.md §3.6). After **Use**, the
   new pot stayed in the old row's place, so a Two Thin Coats pot could be below "AK Interactive", a brand the
   store did not have, and the counts beside the headings were wrong. Now the row moves at once to the heading of

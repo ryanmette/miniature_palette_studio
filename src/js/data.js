@@ -1,7 +1,7 @@
 // data.js — load + index the paint dataset and search it by perceptual distance.
 // Pure search functions (testable); only loadDataset() touches the network.
 
-import { hexToLab, hexToRgb, rgbToHsl, deltaE2000, adjustDirection, NEUTRAL_EXIT } from './color.js';
+import { hexToLab, hexToRgb, rgbToHsl, deltaE2000, adjustDirection, NEUTRAL_EXIT, absorbance, absorbStrength, absorbGap } from './color.js';
 
 /** Fixed ΔE2000 → quality mapping (CLAUDE.md §3.2). */
 export function matchQuality(dE) {
@@ -245,7 +245,8 @@ export const swapKind = p => p.type === 'wash' || p.type === 'shade' ? 'wash'
  *  only; the reported ΔE stays true, §2/§7). Measured on dataset 1.9.0 with every brand carried: the best swap
  *  of a wash or shade is a wash or shade for 69% (was 40%), for +0.29 mean ΔE; of a Contrast paint, a Contrast
  *  paint for 86% (was 65%), for +0.21. At 3 the gain is 10 points more for +0.22 ΔE more; 2 is half of
- *  FINISH_PENALTY, the cost of another finish class in Equivalents. */
+ *  FINISH_PENALTY, the cost of another finish class in Equivalents. For a wash or shade the score is the gap in
+ *  degrees (below), and the same 2 holds there: its best swap is then a wash or shade for 81% (42% with none). */
 export const SWAP_KIND_PENALTY = 2;
 /** A swap the painter owns goes first when its ΔE is this or less (the "Good" limit, CLAUDE.md §3.2): with a
  *  good pot on the shelf, there is nothing to buy. A looser owned pot stays in its own place: first place
@@ -255,9 +256,45 @@ export const SWAP_OWNED_MAX = 3.5;
 /** The words for a store swap's ΔE. A translucent paint's hex is the least sure value in the data: some lines
  *  hold the colour of a thin coat on white, others the colour in the pot (PLAN §5 item 68), and two near-black
  *  values are close to each other whatever the two washes do on a model. So a translucent swap never says more
- *  than "Good". The ΔE itself stays the true one, and the list says that these colours are rough (§2). */
+ *  than "Good". The ΔE itself stays the true one, and the list says that these colours are rough (§2).
+ *  A wash or shade is not compared by ΔE at all (gapQuality); this is for an ink, a Contrast paint and a glaze. */
 export function swapQuality(deltaE, cls) {
   return cls === 'translucent' && deltaE <= 2 ? matchQuality(3.5) : matchQuality(deltaE);
+}
+
+/* ---- a wash against a wash: the gap (PLAN §5 item 68, way C; Ryan, 2026-11-17) ----
+   The washes' values cannot go on one scale from the makers' images (they show a wash in different ways), so
+   a wash's swaps rank by the colour of the coat, which does not change with its thickness: the angle between
+   the two absorbances (color.js absorbGap). Measured on dataset 1.9.0, with the colour word in each wash's name
+   as the check (106 of 131 washes have one; the browns, fleshes, sepias and rusts count as one family):
+     the brands carried               best swap is the same family: by ΔE → by the gap
+     every brand                      65% → 64%   (the makers' ways meet their own kind; no loss)
+     Warhammer Colour + Army Painter  44% → 71%
+     Warhammer Colour only            32% → 74%
+     Army Painter only                42% → 73%
+   A pair of other brands with a gap under 4° is the same family for 2 in 3; from 4° to 8°, for 1 in 3 to 1 in 2;
+   over 8°, for less than 1 in 3. Those are the limits of the three words. */
+/** Under this strength a paint hardly absorbs (a white wash, a pale glaze): its absorbance has no clear
+ *  direction, so it is no swap for a wash by the gap, and as the paint to buy it falls back to ΔE. */
+export const WEAK_ABSORB = 0.5;
+/** The gap's limits, in degrees: Close colour up to 4, Near colour up to 8, Other colour over that. */
+export const WASH_GAP_CLOSE = 4;
+export const WASH_GAP_NEAR = 8;
+/** Two washes with the same gap (all the blacks and greys are near 0°): the nearer recorded value first. A
+ *  tie-break only: a ΔE of 50 moves a wash 1° down the list. At 0.1 it cost 4 to 5 points in a small store. */
+export const WASH_GAP_TIE = 0.02;
+/** The words for a gap. The same three tiers as ΔE's (success · warning · danger), with words of their own:
+ *  "Good" and "Poor" are ΔE's (§3.2), and the gap is another measure. */
+export function gapQuality(gap) {
+  if (gap <= WASH_GAP_CLOSE) return { label: 'Close colour', tier: 'success' };
+  if (gap <= WASH_GAP_NEAR) return { label: 'Near colour', tier: 'warning' };
+  return { label: 'Other colour', tier: 'danger' };
+}
+const ABSORB = new WeakMap();   // paint → { a, strength }, made once for a paint
+function absorbOf(p) {
+  let v = ABSORB.get(p);
+  if (!v) { const a = absorbance(p.hex); v = { a, strength: absorbStrength(a) }; ABSORB.set(p, v); }
+  return v;
 }
 
 /**
@@ -268,23 +305,32 @@ export function swapQuality(deltaE, cls) {
  * its words are swapQuality's.
  * Inside the class (PLAN §5 item 71): an effect paint swaps only for one with the same `fx` (wet blood is no
  * swap for a rust texture); any other paint of another kind (swapKind) ranks SWAP_KIND_PENALTY further.
+ * A wash or shade (item 68) ranks its swaps by the gap, not by ΔE: each swap then has `gap` (degrees) and the
+ * gap's words, and a paint that hardly absorbs is no swap. `deltaE` is still there, and still the true one.
  * @param opts.notCarried  brands the store does not carry (a Set): no swap comes from them
  * @param opts.except      paint ids that are no swap here (a Set): the pot that is not on the rack, when the
  *                         swaps are for the paint it replaced
- * @param opts.ownedIds    the paints the painter owns (a Set): one within SWAP_OWNED_MAX goes first (item 72).
- *                         The store's brands do not limit them: a pot on the shelf needs no rack
- * @returns {Array<{paint, deltaE, quality}>} best first, at most `n`
+ * @param opts.ownedIds    the paints the painter owns (a Set): one within SWAP_OWNED_MAX (by the gap: within
+ *                         WASH_GAP_CLOSE) goes first (item 72). The store's brands do not limit them: a pot on
+ *                         the shelf needs no rack
+ * @returns {Array<{paint, deltaE, quality, gap?}>} best first, at most `n`
  */
 export function storeSwaps(indexed, paint, { notCarried = new Set(), except = null, ownedIds = null, n = 3 } = {}) {
   const lab = paint.lab || hexToLab(paint.hex), cls = finishClass(paint.type), kind = swapKind(paint);
+  const mine = absorbOf(paint), byGap = kind === 'wash' && mine.strength >= WEAK_ABSORB;
   const mineId = id => !!ownedIds && ownedIds.has(id);
-  const first = m => mineId(m.paint.id) && m.deltaE <= SWAP_OWNED_MAX ? 0 : 1;
+  const first = m => mineId(m.paint.id) && (byGap ? m.gap <= WASH_GAP_CLOSE : m.deltaE <= SWAP_OWNED_MAX) ? 0 : 1;
   return indexed.paints.filter(p => p.id !== paint.id && (!notCarried.has(p.brand) || mineId(p.id)) && !(except && except.has(p.id))
-      && finishClass(p.type) === cls && (cls !== 'effect' || swapKind(p) === kind))
-    .map(p => { const deltaE = deltaE2000(lab, p.lab); return { paint: p, deltaE, score: deltaE + (swapKind(p) === kind ? 0 : SWAP_KIND_PENALTY) }; })
+      && finishClass(p.type) === cls && (cls !== 'effect' || swapKind(p) === kind) && (!byGap || absorbOf(p).strength >= WEAK_ABSORB))
+    .map(p => {
+      const deltaE = deltaE2000(lab, p.lab), pen = swapKind(p) === kind ? 0 : SWAP_KIND_PENALTY;
+      if (!byGap) return { paint: p, deltaE, score: deltaE + pen };
+      const gap = absorbGap(mine.a, absorbOf(p).a);
+      return { paint: p, deltaE, gap, score: gap + WASH_GAP_TIE * deltaE + pen };
+    })
     .sort((a, b) => first(a) - first(b) || a.score - b.score)
     .slice(0, n)
-    .map(({ paint, deltaE }) => ({ paint, deltaE, quality: swapQuality(deltaE, cls) }));
+    .map(({ paint, deltaE, gap }) => byGap ? { paint, deltaE, gap, quality: gapQuality(gap) } : { paint, deltaE, quality: swapQuality(deltaE, cls) });
 }
 
 /** The paints closest to a typed colour, best first. They rank as the Equivalents tab ranks a flat colour:

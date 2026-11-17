@@ -782,22 +782,25 @@ export function swapRowPlan({ cameRow, leftRow, leftStays, cameShows, undo }) {
  *  finish class, each with its true ΔE and label (§2). `r.swaps`: { list: [{paint, deltaE, quality, owned}],
  *  notCarried: the row's brand is switched off, of: on a row that is a swap, the paint it replaced (the list,
  *  its ΔE values and the words are then for that paint, item 69), rough: a wash-class paint, whose colours
- *  are the least sure in the data (item 68): one line says so, before the list }. */
+ *  are the least sure in the data (item 68): one line says so, before the list }. A swap with `gap` (the
+ *  paint to buy is a wash or shade) shows the gap in degrees and its words in place of ΔE. */
 function rackSwaps(r, tr) {
   const p = r.paint, s = r.swaps, name = pname(s.of || p);
   const best = s.list[0];
   let h = `<div class="rkswaps" id="rks-${esc(p.id)}" role="group" aria-label="${esc(tr('swapsFor', { name }))}">`;
-  if (s.rough && best) h += `<p class="rksnote">${esc(tr('washRough'))}</p>`;
+  // a wash or shade is compared by the gap (item 68): the line says what the number is
+  if (best && best.gap != null) h += `<p class="rksnote">${esc(tr('washGap'))}</p>`;
+  else if (s.rough && best) h += `<p class="rksnote">${esc(tr('washRough'))}</p>`;
   if (s.notCarried) h += `<p class="rksnote">${esc(s.of ? tr('notCarriedOf', { brand: p.brand, name }) : tr('notCarried', { brand: p.brand }))}</p>`;
   else if (s.of) h += `<p class="rksnote">${esc(tr('swapsOf', { name }))}</p>`;
   if (!best) h += `<p class="rksnote">${esc(tr('noSwap'))}</p>`;
-  else if (best.deltaE > 10) h += `<p class="rksnote">${esc(tr('noCloseSwap'))}</p>`;
+  else if (best.quality.tier === 'danger') h += `<p class="rksnote">${esc(tr('noCloseSwap'))}</p>`;   // ΔE over 10, or a gap over 8°
   for (const m of s.list) {
     const q = m.paint, qn = pname(q);
     h += `<div class="rkswap">${swatch(q.hex, 'rkssw' + fxCls(q))}`
       + `<span class="rksmain"><span class="rksname">${esc(qn)}</span>`
       + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q.type)}`
-      + ` <span class="mono">ΔE ${m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
+      + ` <span class="mono">${m.gap != null ? esc(tr('gapDeg', { n: m.gap.toFixed(0) })) : 'ΔE ' + m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
       + `${m.owned ? ` <span class="ownmini">${icon('check')}${esc(tr('ownedWord'))}</span>` : ''}</span></span>`
       + `<button type="button" class="btn sm" data-rkuse="${esc(q.id)}" data-for="${esc(p.id)}" aria-label="${esc(tr('useInPlace', { name: qn, was: name }))}">${esc(tr('useSwap'))}</button></div>`;
   }

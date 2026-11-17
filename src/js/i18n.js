@@ -337,6 +337,8 @@ const LOCALES = {
     notCarriedOf: 'This store does not carry {brand}. The next closest to {name}:',
     swapsOf: 'The next closest to {name}:',
     washRough: 'The colours of washes, inks and Contrast paints are rough in this app. Compare the pots before you buy.',
+    washGap: 'Washes are compared by their colour, not by how dark they look: a small gap is a close colour. The wash colours in this app are rough, so compare the pots before you buy.',
+    gapDeg: 'gap {n}°',
     noSwap: 'No pot of this finish from these brands. Keep it on the list for another store.',
     noCloseSwap: 'None is close. Keep it on the list for another store, or take the closest:',
     useSwap: 'Use',

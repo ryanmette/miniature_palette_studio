@@ -570,20 +570,67 @@ test('storeSwaps (item 71): another kind in the class ranks 2 ΔE further, with 
   assert.deepEqual(storeSwaps(sx, sx.byId.get('slime')), [], 'the one slime paint: no swap, said as none');
 });
 
-test('swapQuality (item 68): a wash-class swap never says more than Good; the ΔE stays true', async () => {
+test('swapQuality (item 68): an ink, Contrast or glaze swap never says more than Good; the ΔE stays true', async () => {
   const { storeSwaps, swapQuality } = await import('../src/js/data.js');
   for (const d of [0, 0.8, 1.9, 2]) assert.equal(swapQuality(d, 'translucent').label, 'Good', 'ΔE ' + d);
   for (const d of [2.1, 3.5, 4.2, 7, 12]) assert.deepEqual(swapQuality(d, 'translucent'), matchQuality(d), 'no change over 2');
   for (const cls of ['flat', 'metal', 'effect']) for (const d of [0.5, 1.5, 3, 6]) assert.deepEqual(swapQuality(d, cls), matchQuality(d), cls);
   const sx = indexDataset({ version: 't', paints: [
-    { id: 'w1', brand: 'A', line: 'W', name: 'Black Wash', hex: '#000103', type: 'wash' },
-    { id: 'w2', brand: 'B', line: 'W', name: 'Black Wash', hex: '#010101', type: 'wash' },
+    { id: 'i1', brand: 'A', line: 'I', name: 'Black Ink', hex: '#000103', type: 'ink' },
+    { id: 'i2', brand: 'B', line: 'I', name: 'Black Ink', hex: '#010101', type: 'ink' },
     { id: 'f1', brand: 'A', line: 'L', name: 'Black', hex: '#000103', type: 'layer' },
     { id: 'f2', brand: 'B', line: 'L', name: 'Black', hex: '#010101', type: 'layer' },
   ] });
-  const w = storeSwaps(sx, sx.byId.get('w1'))[0], f = storeSwaps(sx, sx.byId.get('f1'))[0];
+  const w = storeSwaps(sx, sx.byId.get('i1'))[0], f = storeSwaps(sx, sx.byId.get('f1'))[0];
   assert.ok(w.deltaE < 1 && w.deltaE === f.deltaE, 'the same true ΔE');
   assert.equal(w.quality.label, 'Good'); assert.equal(f.quality.label, 'Indistinguishable');
+  assert.equal(w.gap, undefined, 'an ink is compared by ΔE, not by the gap');
+});
+
+test('storeSwaps (item 68, way C): a wash ranks its swaps by the gap, whatever the coat each maker recorded', async () => {
+  const { storeSwaps, gapQuality, WASH_GAP_CLOSE, WASH_GAP_NEAR, WASH_GAP_TIE, WEAK_ABSORB, SWAP_KIND_PENALTY } = await import('../src/js/data.js');
+  assert.deepEqual([WASH_GAP_CLOSE, WASH_GAP_NEAR, WEAK_ABSORB], [4, 8, 0.5]);
+  assert.deepEqual([0, 4, 4.1, 8, 8.1, 40].map(g => gapQuality(g).label), ['Close colour', 'Close colour', 'Near colour', 'Near colour', 'Other colour', 'Other colour']);
+  assert.deepEqual([2, 6, 20].map(g => gapQuality(g).tier), ['success', 'warning', 'danger']);
+  // The real values: Shadow Wash and Dark Tone hold the liquid in the pot, Nuln Oil and Agrax Earthshade a thin
+  // coat on white. By ΔE, Nuln Oil is 50 from Shadow Wash, and it never showed.
+  const sx = indexDataset({ version: 't', paints: [
+    { id: 'shadow', brand: 'Army Painter', line: "Nolzur's", name: 'Shadow Wash', hex: '#000103', type: 'wash' },
+    { id: 'nuln', brand: 'Warhammer Colour', line: 'Shade', name: 'Nuln Oil', hex: '#9E9A98', type: 'shade' },
+    { id: 'agrax', brand: 'Warhammer Colour', line: 'Shade', name: 'Agrax Earthshade', hex: '#A99D8D', type: 'shade' },
+    { id: 'druchii', brand: 'Warhammer Colour', line: 'Shade', name: 'Druchii Violet', hex: '#8F6592', type: 'shade' },
+    { id: 'strong', brand: 'Army Painter', line: 'Wash', name: 'Strong Tone', hex: '#211913', type: 'wash' },
+    { id: 'dark', brand: 'Army Painter', line: 'Wash', name: 'Dark Tone', hex: '#0C060E', type: 'wash' },
+    { id: 'blue', brand: 'Army Painter', line: 'Wash', name: 'Blue Tone', hex: '#0D2540', type: 'wash' },
+    { id: 'leviadon', brand: 'Warhammer Colour', line: 'Contrast', name: 'Leviadon Blue', hex: '#000A13', type: 'contrast' },
+    { id: 'white', brand: 'Vallejo', line: 'Wash', name: 'White', hex: '#FFFFFF', type: 'wash' },
+    { id: 'flat', brand: 'Vallejo', line: 'MC', name: 'Black', hex: '#000103', type: 'layer' },
+  ] });
+  const of = (id, o) => storeSwaps(sx, sx.byId.get(id), { n: 9, ...o });
+  const shadow = of('shadow');
+  assert.deepEqual(shadow.slice(0, 2).map(m => m.paint.id), ['dark', 'nuln'], 'the black wash gets the black wash, then the black shade');
+  const nuln = shadow[1];
+  assert.ok(nuln.deltaE > 45, 'although its true ΔE is about 50');
+  assert.ok(nuln.gap < 2); assert.equal(nuln.quality.label, 'Close colour');
+  const lev = shadow.find(m => m.paint.id === 'leviadon');
+  assert.ok(lev.deltaE < 5 && shadow.indexOf(lev) > 1, 'the blue Contrast paint was second by ΔE; it is after the shade now');
+  assert.ok(!shadow.some(m => m.paint.id === 'white'), 'a white wash hardly absorbs: no swap by the gap');
+  assert.ok(!shadow.some(m => m.paint.id === 'flat'), 'the finish class stays strict');
+  assert.equal(of('agrax')[0].paint.id, 'strong', 'the brown shade (a thin coat) gets the brown wash (the pot)');
+  assert.ok(of('strong').find(m => m.paint.id === 'agrax').gap < of('strong').find(m => m.paint.id === 'blue').gap, 'and a brown wash is nearer to the brown shade than to a blue wash');
+  // the order is the gap, with a little of the true ΔE to part two washes at the same gap
+  const dr = of('druchii'), scores = dr.filter(m => m.paint.type !== 'contrast').map(m => m.gap + WASH_GAP_TIE * m.deltaE);
+  assert.deepEqual(scores, [...scores].sort((a, b) => a - b));
+  assert.equal(WASH_GAP_TIE, 0.02);
+  assert.equal(gapQuality(dr.find(m => m.paint.id === 'nuln').gap).tier, 'danger', 'a violet shade and a black one: Other colour');
+  // the white wash as the paint to buy: no direction, so ΔE as before, with ΔE's words
+  const white = of('white');
+  assert.ok(white.length && white.every(m => m.gap === undefined));
+  // a wash you own goes first when it is a Close colour, and only then
+  assert.equal(of('shadow', { ownedIds: new Set(['nuln']) })[0].paint.id, 'nuln', 'owned and a Close colour: before the nearer Dark Tone');
+  assert.equal(of('shadow', { ownedIds: new Set(['blue']) })[0].paint.id, 'dark', 'owned but an Other colour: its own place');
+  // the kind penalty is in the score's unit, here degrees
+  assert.equal(SWAP_KIND_PENALTY, 2);
 });
 
 test('storeSwaps (item 72): a pot you own goes first when it is Good or better, and only then', async () => {

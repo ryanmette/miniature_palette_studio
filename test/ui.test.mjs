@@ -521,6 +521,14 @@ test('rackRow: a swap made in this visit says what it replaced; Undo only while 
   assert.match(rough, /<p class="rksnote">washRough<\/p>.*class="rkswap"/s);
   assert.doesNotMatch(rackRow38({ paint: wash, countable: true, qty: 1, canSwap: true, swaps: { rough: true, list: [] } }, t38), /washRough/);
   assert.doesNotMatch(again, /washRough/);
+  // a wash or shade to buy (way C): the gap in degrees and its words in place of ΔE, and a line that says what it is
+  const gapped = rackRow38({ paint: wash, countable: true, qty: 1, canSwap: true, swaps: { rough: true,
+    list: [{ paint: wash, deltaE: 50.5, gap: 1.4, quality: { label: 'Close colour', tier: 'success' } }] } }, t38);
+  assert.match(gapped, /<p class="rksnote">washGap<\/p>/); assert.doesNotMatch(gapped, /washRough/);
+  assert.match(gapped, /<span class="mono">gapDeg\(n=1\)<\/span> <span class="tag success">Close colour<\/span>/);
+  assert.doesNotMatch(gapped, /ΔE/, 'no ΔE beside a gap: the two would not agree');
+  const farGap = rackRow38({ paint: wash, countable: true, qty: 1, canSwap: true, swaps: { list: [{ paint: wash, deltaE: 3, gap: 21, quality: { label: 'Other colour', tier: 'danger' } }] } }, t38);
+  assert.match(farGap, /noCloseSwap/, 'a best gap over 8° says none is close');
   assert.doesNotMatch(rackRow38({ paint: carm, countable: true, owned: true, qty: 0, insteadOf: red }, t38), /data-rkunswap/);
 });
 
