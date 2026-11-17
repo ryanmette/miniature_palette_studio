@@ -627,9 +627,7 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     **Built (2026-11-17):** (a). The gradients are gone from every swatch; `data.js finishKind` + `FINISH_ICONS` are
     the one table (the tag, the swatch's mark as a mask in `app.css`, the share image); a contrast glyph of its own;
     a neutral finish tag; `--sw-edge` (a light edge in dark). An effect paint with no `fx` gets the plain star.
-    CLAUDE.md §2 and §3.5 Swatch are rewritten. **Open (data, its own PR):** `fx: "fluo"` for the 36 fluorescent and
-    neon `layer` paints and `fx: "gloss"` for the 5 Vallejo gloss `layer` paints (a schema change: `fx` is for
-    effect paints only today), then their two icons.
+    CLAUDE.md §2 and §3.5 Swatch are rewritten. **Built after it (2026-11-17), dataset 1.11.0:** `fx: "fluo"` for the 36 fluorescent and neon `layer` paints and `fx: "gloss"` for the 5 Vallejo gloss `layer` paints, by the words in the paint's own name; a sun icon for fluorescent; `finishWord` for the tag and the search. No type changed, so no match changed.
 
 **Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
 
@@ -733,7 +731,8 @@ Do these three in one bug pass, in this order.
     paints** segment has the focus ring. CLAUDE.md §3.6 sends focus to that segment when ⋯ opens, and WebKit shows
     the ring after that focus. Direction: when a touch or a pointer opens ⋯, focus goes to the sheet's title (a
     landing spot with no ring, as the Filters sheet does); when a key opens it, focus goes to the segment, as now.
-    Change the §3.6 line in the same PR.
+    Change the §3.6 line in the same PR. **Built (2026-11-17):** `openSettings(opener, byKey)`; a click event with
+    `detail` 0 is a key press.
 60. **Every way of input on Apple devices: touch, a pointer and a keyboard, on one device.** An iPad has touch, a
     trackpad and a keyboard; a Mac may have a touch screen. Today the app chooses one mode for each device from
     `(pointer: coarse)`: the ⋯ sheet or popover, 44px targets, the system picker in a select, the share sheet
@@ -809,7 +808,10 @@ Do these three in one bug pass, in this order.
     paints of; keep Only; add every maker's families** (Reaper, Two Thin Coats, Army Painter Fanatic; one brand for
     each PR, Reaper first). **A built (2026-11-06):** dataset 1.9.0 gives the 150 Tone Pro paints `family` + `tone`; the
     Recipe card shows a pot's family as the maker made it (`ui.makerLadder`; no ΔE, "your pot" marked; not in
-    `ladders`, so the shopping list is unchanged). **Next:** B (the Brand setting), or the next brand's families
+    `ladders`, so the shopping list is unchanged). **B built (2026-11-17):** **Brand: Any · Prefer · Only** in ⋯
+    with a brand select; Prefer is `BRAND_BOOST` = 2 ΔE (ranking only), Only is a filter; the default shown is the
+    brand you own most (`data.js mostOwnedBrand`), and it acts only after the painter chose or confirmed it; a line
+    in the matching note; prefs `brandMode` and `brand` in the backup. **Next:** the next brand's families
     (Reaper).
 
 ### Raised by Ryan on 2026-11-07 — an update log (built)

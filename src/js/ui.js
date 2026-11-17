@@ -3,7 +3,7 @@
 
 import { textOn, normHex, rgbToHsl, hexToRgb } from './color.js';
 import { HARMONY_OFFSETS } from './harmony.js';
-import { FINISH_WORDS, FINISH_ICONS, finishKind } from './data.js';   // the finish words: the tag shows the word the search finds
+import { FINISH_ICONS, finishKind, finishWord } from './data.js';   // the finish words: the tag shows the word the search finds
 
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const LABELS = { 'neutral-pop': 'Neutral + pop', 'warm-cool': 'Warm / cool' };   // neutral harmonies read as phrases
@@ -44,7 +44,7 @@ const asPaint = x => (x && typeof x === 'object' ? x : { type: x });
 /** The finish tag (icon + word) for a non-flat paint (metallic · contrast · wash · …); '' for a flat paint.
  *  A neutral tag (§3.5): a finish is a fact about the paint, not a state. */
 export const finishTag = x => {
-  const p = asPaint(x), word = FINISH_WORDS[p.type];
+  const p = asPaint(x), word = finishWord(p);
   return word ? `<span class="finish finish-${p.type}">${finishSvg(finishKind(p))}${word}</span>` : '';
 };
 /** A paint the maker no longer makes says so beside its finish tag (dataset 1.10.0): a neutral tag, state as
@@ -79,7 +79,7 @@ export const menuTitle = p => `${pname(p)} · ${p.brand}${pname(p) === p.name &&
  *  pick", and for a hex match its quality ("Good match, ΔE 2.4"). "Not owned" is left out: it is most paints. */
 function pickSaid(p, { mark = 'none', current = false, match = null }, t) {
   return [`${pname(p)}, ${p.brand}${pname(p) === p.name && lineOf(p) ? ' ' + lineOf(p) : ''}`,
-    FINISH_WORDS[p.type] || '', mark === 'none' ? '' : markLabel(mark), current ? t('pkCurrentSaid') : '',
+    finishWord(p), mark === 'none' ? '' : markLabel(mark), current ? t('pkCurrentSaid') : '',
     match ? t('pkMatchSaid', { label: match.quality.label, de: match.deltaE.toFixed(1) }) : '']
     .filter(Boolean).join(', ');
 }
@@ -340,7 +340,7 @@ export function planControls(ladder, includeContrast, gapCount) {
  * The accessible name is the visible words; the dash before the target word is for screen readers.
  * `t` is i18n.t, passed in so this module stays pure.
  */
-export function matchNote({ collection = 'off', owned = 0, contrast = false, expanded = false } = {}, t = k => k) {
+export function matchNote({ collection = 'off', owned = 0, contrast = false, expanded = false, brandMode = 'any', brand = '' } = {}, t = k => k) {
   const go = word => `<span class="ngo"><span class="sr-only"> — </span>${esc(word)}</span>`;
   const lines = [];
   if (collection === 'prefer' || collection === 'only') {
@@ -355,6 +355,12 @@ export function matchNote({ collection = 'off', owned = 0, contrast = false, exp
       lines.push(`<button type="button" class="mnote" data-note="ump" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="${!!expanded}">`
         + `<span class="nk" aria-hidden="true">${icon('check')}</span><span class="ntx">${head} <span class="mt">${esc(why)}</span></span>${go(t('change'))}</button>`);
     }
+  }
+  // The Brand setting (docs/TONE_LADDERS.md B): a line only while it changes the matches (a mode and a brand)
+  if (brand && (brandMode === 'prefer' || brandMode === 'only')) {
+    const head = `<b>${esc(t('noteBrand', { mode: t(brandMode === 'only' ? 'brandOnly' : 'brandPrefer'), brand }))}</b>\u00a0·`;
+    lines.push(`<button type="button" class="mnote" data-note="brand" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="${!!expanded}">`
+      + `<span class="nk" aria-hidden="true">${icon('check')}</span><span class="ntx">${head} <span class="mt">${esc(t(brandMode === 'only' ? 'noteBrandOnly' : 'noteBrandPrefer'))}</span></span>${go(t('change'))}</button>`);
   }
   if (contrast) {
     lines.push(`<button type="button" class="mnote" data-note="contrast"><span class="nk nk-contrast" aria-hidden="true">${finishGlyph('contrast')}</span>`

@@ -112,12 +112,18 @@ function passesFilter(p, { excludeId, excludeIds, brands, excludeBrands, ownedId
  * on the model) while still letting a metal win when it's clearly the closest thing you have. In an
  * all-metal pool (the Metal role's type filter) every candidate is demoted equally, so it's a no-op.
  */
-const rankScore = (d, p, { boostIds, boostAmount = 0, ownedIds, demoteTypes, demoteAmount = 0, preferIds }) => {
+const rankScore = (d, p, { boostIds, boostAmount = 0, ownedIds, demoteTypes, demoteAmount = 0, preferIds, brandBoost, brandAmount = 0 }) => {
   // No floor on the boost: clamping to 0 collapsed every owned paint within boostAmount of the
   // target to the same score, letting dataset order pick an owned ΔE-5.8 paint over an owned
   // ΔE-0.3 one. A negative score is fine — it just means "owned and very close wins".
   let s = ((boostIds && boostIds.has(p.id)) || (ownedIds && ownedIds.has(p.id))) ? d - boostAmount : d;
+  // The Brand setting, Prefer (docs/TONE_LADDERS.md B): a paint of the chosen brand ranks brandAmount ΔE closer.
+  // It is a second term beside the owned bonus, so both add for an owned paint of the brand, and an owned paint
+  // of another brand (6) still wins over a paint to buy of the chosen brand (2) at the same distance.
+  // The paint the painter PICKED gets the same bonus: a brand preference must not take the starting paint's
+  // own slot away from it (a Vallejo blue 1.5 ΔE away won Primary from the picked Macragge Blue).
   const preferred = preferIds && preferIds.has(p.id);
+  if (brandBoost && (p.brand === brandBoost || preferred)) s -= brandAmount;
   // An explicit pick is EXEMPT from the type demote — otherwise picking any metallic paint would
   // lose its own slot to a flat within demoteAmount ΔE (review finding: 228/236 metals affected).
   if (demoteTypes && demoteTypes.has(p.type) && !preferred) s += demoteAmount;
@@ -126,6 +132,21 @@ const rankScore = (d, p, { boostIds, boostAmount = 0, ownedIds, demoteTypes, dem
   if (preferred) s -= 0.001;
   return s;
 };
+
+/** The Brand setting's Prefer bonus, in ΔE (ranking only; the reported ΔE stays true, §2/§7). Measured in
+ *  docs/TONE_LADDERS.md §4.2 on the ladder steps: 2 is the knee. The role's brand then wins 54% of the steps
+ *  (14% with no bonus) and the median true ΔE stays Good (2.16 against 1.83); at 3 it is 71% and 2.61. */
+export const BRAND_BOOST = 2;
+/** The brand the painter owns the most paints of: the Brand setting's default (TONE_LADDERS.md §8, answer 2).
+ *  A tie takes the brand that comes first in the data's order. null with no owned paint. */
+export function mostOwnedBrand(indexed, ownedIds) {
+  if (!ownedIds || !ownedIds.size) return null;
+  const n = new Map();
+  for (const p of indexed.paints) if (ownedIds.has(p.id)) n.set(p.brand, (n.get(p.brand) || 0) + 1);
+  let best = null, top = 0;
+  for (const [brand, count] of n) if (count > top) { best = brand; top = count; }
+  return best;
+}
 
 /**
  * Is this paint one the user owns? `knownOwnedIds` is decoration-only and is supplied on EVERY
@@ -412,11 +433,12 @@ export function randomStartPaint(indexed, rand) {
 /* ---- the paint search: ONE matcher for the seed field and the Shelf search ---- */
 
 /** A paint's finish kind, for its ONE finish icon (PLAN §5 item 51; CLAUDE.md §3.5 Swatch): its `fx` first
- *  (gloss · slime · texture), then its type. Shade, ink and glaze share the wash's drop: they are one finish
+ *  (gloss · slime · texture · fluo), then its type. A base or layer paint whose own name says fluorescent or
+ *  gloss has an `fx` too (dataset 1.11.0): it has that icon, and it stays a flat paint for every match. Shade, ink and glaze share the wash's drop: they are one finish
  *  class (§5.2), and the tag's word tells them apart. An effect paint with no `fx` is a plain 'effect'.
- *  @returns {string|null} null for a flat paint (base · layer · dry): it has no icon. */
+ *  @returns {string|null} null for a flat paint (base · layer · dry) with no `fx`: it has no icon. */
 const KIND_BY_TYPE = { metal: 'metal', wash: 'wash', shade: 'wash', ink: 'wash', glaze: 'wash', contrast: 'contrast', effect: 'effect' };
-const KIND_BY_FX = { gloss: 'gloss', slime: 'slime', texture: 'texture' };
+const KIND_BY_FX = { gloss: 'gloss', slime: 'slime', texture: 'texture', fluo: 'fluo' };
 export const finishKind = p => (p ? KIND_BY_FX[p.fx] || KIND_BY_TYPE[p.type] || null : null);
 /** The finish icons, one for each kind, on the icon set's 20px grid (§3.5 Icons): `stroke` is drawn as a line
  *  (square ends, mitred joins; 2.25px at 10–13px), `fill` is a filled part. The ONE table: the tag in a text row
@@ -432,12 +454,18 @@ export const FINISH_ICONS = {
   gloss: { stroke: 'M3.75 10a6.25 6.25 0 1 0 12.5 0a6.25 6.25 0 1 0-12.5 0z', fill: 'M6.75 6.75h2.5v2.5h-2.5z' },
   slime: { stroke: 'M4 4.75h12v5.5a1.5 1.5 0 0 1-3 0V9.5h-1.5v3.75a1.5 1.5 0 0 1-3 0V9.5H7v1a1.5 1.5 0 0 1-3 0z' },
   texture: { fill: dots([[5, 5], [10, 5], [15, 5], [7.5, 10], [12.5, 10], [5, 15], [10, 15], [15, 15]]) },
+  fluo: { stroke: 'M6.75 10a3.25 3.25 0 1 0 6.5 0a3.25 3.25 0 1 0-6.5 0zM10 2.75v2M10 15.25v2M2.75 10h2M15.25 10h2' },
   effect: { stroke: 'M10 3l2.1 4.3 4.7.7-3.4 3.3.8 4.7L10 13.8 5.8 16l.8-4.7L3.2 8l4.7-.7z' },
 };
 
 /** The finish word each type shows on a swatch's finish tag (ui.js finishTag reads these). A search for
  *  a finish word finds the paints that show it: "metallic" finds the metal type. */
 export const FINISH_WORDS = { metal: 'metallic', contrast: 'contrast', wash: 'wash', shade: 'shade', ink: 'ink', glaze: 'glaze', effect: 'effect' };
+/** The word for a flat paint (base · layer) that has a finish in its name (dataset 1.11.0). */
+const FLAT_FX_WORDS = { fluo: 'fluorescent', gloss: 'gloss' };
+/** A paint's finish word, for its tag, its spoken name and the search: its type's word, or for a flat paint its
+ *  `fx` word ("fluorescent" also finds Neon Yellow). '' for a flat paint with no finish. */
+export const finishWord = p => (p ? FINISH_WORDS[p.type] || (finishKind(p) ? FLAT_FX_WORDS[p.fx] || '' : '') : '');
 
 /** Text for matching: no accents, lower case, no apostrophes, any other punctuation as a space.
  *  "Dawnstone (Layer)" → "dawnstone layer" · "Resedagrün" → "resedagrun" · "Tiger’s Eye" → "tigers eye". */
@@ -462,7 +490,7 @@ function foldOf(p) {
     const name = foldText(p.name);
     // words: the name with a space before each word, so " w" finds a word that starts with w (no split per search)
     const also = `${BRAND_WORDS[p.brand] || ''} ${(p.formerly || []).join(' ')}`;
-    f = { hay: ` ${foldText(`${p.name} ${p.dname || ''} ${p.brand} ${line} ${p.type || ''} ${FINISH_WORDS[p.type] || ''} ${also}`)} `,
+    f = { hay: ` ${foldText(`${p.name} ${p.dname || ''} ${p.brand} ${line} ${p.type || ''} ${finishWord(p)} ${also}`)} `,
       name, dname: foldText(p.dname || p.name), words: ` ${name}` };
     folded.set(p, f);
   }

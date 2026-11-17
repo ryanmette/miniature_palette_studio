@@ -191,13 +191,18 @@ test('exportJSON writes a `saved` date that importJSON ignores', async () => {
   assert.equal(JSON.parse(ls.getItem('ps-state')).saved, undefined, 'the date is about the file, not the stored state');
 });
 
-test('a backup carries exactly theme, locale, collection, ladder and contrast (no dead `fill`)', async () => {
+test('a backup carries exactly theme, locale, collection, ladder, contrast and the Brand setting (no dead `fill`)', async () => {
   const seed = { 'ps-state': JSON.stringify({ v: 1, owned: [], want: [], prefs: { fill: 'real', theme: 'dark', bogus: 1 } }) };
   const { store } = await freshStore(seed);
   const prefs = JSON.parse(store.exportJSON()).prefs;
-  assert.deepEqual(Object.keys(prefs).sort(), ['collection', 'contrast', 'ladder', 'locale', 'theme']);
+  assert.deepEqual(Object.keys(prefs).sort(), ['brand', 'brandMode', 'collection', 'contrast', 'ladder', 'locale', 'theme']);
   assert.equal(prefs.theme, 'dark');
   assert.equal(store.getPref('fill'), undefined);
+  // the Brand setting: a value it may not have gets its default
+  const odd = await freshStore({ 'ps-state': JSON.stringify({ v: 2, owned: [], want: [], prefs: { brandMode: 'all', brand: 42 } }) });
+  assert.equal(odd.store.getPref('brandMode'), 'any'); assert.equal(odd.store.getPref('brand'), '');
+  const ok = await freshStore({ 'ps-state': JSON.stringify({ v: 2, owned: [], want: [], prefs: { brandMode: 'only', brand: 'Vallejo' } }) });
+  assert.equal(ok.store.getPref('brandMode'), 'only'); assert.equal(ok.store.getPref('brand'), 'Vallejo');
 });
 
 test('inspectJSON counts a backup and applies nothing', async () => {
@@ -268,7 +273,7 @@ test('a pref value it may not have gets the default on load, and is not restored
   const junk = { theme: 'Dark', locale: 'fr-FR', collection: 'yes', ladder: 7, contrast: 'no' };
   // on load: every junk value falls back to its default
   const { store } = await freshStore({ 'ps-state': JSON.stringify({ v: 1, owned: [], want: [], prefs: junk }) });
-  assert.deepEqual(JSON.parse(store.exportJSON()).prefs, { theme: null, ladder: 'wash', locale: null, collection: 'off', contrast: false });
+  assert.deepEqual(JSON.parse(store.exportJSON()).prefs, { theme: null, ladder: 'wash', locale: null, collection: 'off', contrast: false, brandMode: 'any', brand: '' });
   // on restore: a junk value counts as not carried, so this device's own value stays
   store.setPref('theme', 'dark'); store.setPref('collection', 'prefer'); store.setPref('contrast', true);
   assert.equal(store.importJSON(JSON.stringify({ owned: ['a'], prefs: junk })), true);

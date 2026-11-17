@@ -1,5 +1,5 @@
 {
- "version": "1.10.0",
+ "version": "1.11.0",
  "generated": "2026-11-17",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
@@ -1751,7 +1751,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
-   "captured": "2026-10-26"
+   "captured": "2026-10-26",
+   "fx": "fluo"
   },
   {
    "id": "ak-interactive-3rd-gen-fluorescent-green",
@@ -1764,7 +1765,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
-   "captured": "2026-10-26"
+   "captured": "2026-10-26",
+   "fx": "fluo"
   },
   {
    "id": "ak-interactive-3rd-gen-fluorescent-magenta",
@@ -1777,7 +1779,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
-   "captured": "2026-10-26"
+   "captured": "2026-10-26",
+   "fx": "fluo"
   },
   {
    "id": "ak-interactive-3rd-gen-fluorescent-orange",
@@ -1790,7 +1793,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
-   "captured": "2026-10-26"
+   "captured": "2026-10-26",
+   "fx": "fluo"
   },
   {
    "id": "ak-interactive-3rd-gen-fluorescent-yellow",
@@ -1804,6 +1808,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/AK.md",
    "captured": "2026-10-26",
+   "fx": "fluo",
    "groupId": "yellow-02"
   },
   {
@@ -25403,6 +25408,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "green-07"
   },
   {
@@ -25416,7 +25422,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "pro-acryl-signature-fluorescent-pink",
@@ -25429,7 +25436,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "pro-acryl-signature-fluorescent-purple",
@@ -25442,7 +25450,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "pro-acryl-signature-fluorescent-red",
@@ -25455,7 +25464,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "pro-acryl-signature-fluorescent-yellow",
@@ -25468,7 +25478,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Monument.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "pro-acryl-signature-matt-cexwish-bone",
@@ -29133,7 +29144,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "reaper-master-series-new-copper",
@@ -29675,7 +29687,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "reaper-master-series-red-shadow",
@@ -31947,7 +31960,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "scale75-artist-neon-green",
@@ -31960,7 +31974,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "scale75-artist-neon-orange",
@@ -31973,7 +31988,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "scale75-artist-neon-pink",
@@ -31986,7 +32002,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "scale75-artist-neon-red",
@@ -31999,7 +32016,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "scale75-artist-neon-yellow",
@@ -32012,7 +32030,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Scale75.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "scale75-artist-off-white",
@@ -38997,7 +39016,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "vallejo-game-color-fluorescent-cold-green",
@@ -39010,7 +39030,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "vallejo-game-color-fluorescent-green",
@@ -39023,7 +39044,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "vallejo-game-color-fluorescent-magenta",
@@ -39036,7 +39058,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "vallejo-game-color-fluorescent-orange",
@@ -39049,7 +39072,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "vallejo-game-color-fluorescent-red",
@@ -39062,7 +39086,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "vallejo-game-color-fluorescent-violet",
@@ -39075,7 +39100,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "fluo"
   },
   {
    "id": "vallejo-game-color-fluorescent-yellow",
@@ -39089,6 +39115,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "yellow-23"
   },
   {
@@ -40554,7 +40581,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "vallejo-mecha-color-gold",
@@ -40607,6 +40635,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "green-08"
   },
   {
@@ -40804,6 +40833,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "red-05"
   },
   {
@@ -40884,7 +40914,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "vallejo-mecha-color-oiled-earth-wash",
@@ -40950,6 +40981,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "orange-01"
   },
   {
@@ -40963,7 +40995,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "vallejo-mecha-color-phantom-grey",
@@ -41230,6 +41263,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "yellow-23"
   },
   {
@@ -41697,6 +41731,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "dark-blue-07"
   },
   {
@@ -42632,7 +42667,8 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "fx": "gloss"
   },
   {
    "id": "vallejo-model-color-glossy-black",
@@ -42646,6 +42682,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "gloss",
    "groupId": "dark-grey-09"
   },
   {
@@ -42725,6 +42762,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "green-08"
   },
   {
@@ -43253,6 +43291,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "red-05"
   },
   {
@@ -43607,6 +43646,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "orange-01"
   },
   {
@@ -44334,6 +44374,7 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Vallejo.md",
    "captured": "2026-06-25",
+   "fx": "fluo",
    "groupId": "yellow-23"
   },
   {
