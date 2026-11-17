@@ -1047,8 +1047,8 @@ item 85, come after the first painters answer.
     "Interchangeable — same colour" for a group made from hex values; Ryan to read the 15 pairs of
     `mockups/ux-review/trust.mjs` as a painter.
 83. **"From my pots, which go well together?"** (F03; 3 · 3 · 2). In Only mode, 63% of the roles are "Poor": the
-    labels are honest, and the painter reads "your pots are poor". A product question, near item 61 (a map of my
-    paints). Not a small fix.
+    labels are honest, and the painter reads "your pots are poor". A product question. Item 61 (the Shelf's Map, built in
+    1.16.0) shows the shelf's tones and gaps, but it does not make a scheme. Not a small fix.
 84. **The phone's first screen** (F09, F13; 2 · 2 · 2 each). After a pick, the pots start 134 px below the screen.
     The first pick keeps the random harmony of the first load (a value harmony about 2 times in 9). Recommend: the
     pots on the first screen after a pick (a reason to look again at item 48), and a fixed harmony for the first pick.

@@ -8,6 +8,18 @@ severity from three independent raters, and a direction. Ryan decides what to bu
 App version: 1.15.0 (the local `src/`, paint data 1.9.0). Evidence and scripts:
 [`mockups/ux-review/`](../mockups/ux-review/).
 
+**After the review: version 1.16.0.** On the same day, `main` got version 1.16.0 and more: the Shelf's **Map**
+view (PLAN item 61), a "No longer made" tag, a wash step that finds a real wash more often, and fixes to the
+store swaps. The walkthrough and the screenshots are of 1.15.0. A check on the merged code:
+
+- `measure.cjs` gives **the same numbers** as §3.1, in all three modes.
+- The main findings still occur: the door to "mark my shelf" opens the grid with no names (F05, F06); a marked
+  Shelf still gives "+ Add 14" with Use my paints Off (F01); Other brands has no brand choice (F11); the first
+  screen's positions are the same (F09).
+- **Not reviewed:** the Map view. It is the first part of the app that starts from the painter's own pots, so it
+  is near the product question of F03. For the test painter it says "70 of 95 tones have no paint you own".
+- The list is now one of three views (Grid · List · Map), so the icon in F07 is one of three.
+
 ---
 
 ## 1. The short answer
@@ -324,7 +336,8 @@ make a good model.
 *Evidence:* [`08-only-poor.jpg`](../mockups/ux-review/08-only-poor.jpg), §3.1.
 *Direction:* this is the largest question in the review, and it is a product question. Today the app
 starts from the rule's target and measures each pot against it. A painter with a shelf wants the other
-direction: "from my pots, which sets go well together?" PLAN item 61 ("a map of my paints") is near it.
+direction: "from my pots, which sets go well together?" PLAN item 61 (the Shelf's Map, built in 1.16.0 after
+this review) is the nearest part: it shows the shelf's tones and its gaps, but it does not make a scheme.
 A smaller step: in Only, say what the scheme *is* with the painter's pots (the hue relation that the pots
 make), and keep the ΔE as a second fact.
 
