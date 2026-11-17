@@ -1052,6 +1052,12 @@ item 85, come after the first painters answer.
 79. **The Metal role with a shelf** (F02; 3 · 3 · 3). With Prefer, the Metal role is an owned metallic in 0 of 203
     schemes for a painter who owns 6. A study: prefer an owned metallic of the role's kind, and say why. It changes
     a §7 ranking rule (a CHANGELOG note).
+    **Measured (2026-11-17; `docs/UX_REVIEW.md` §11, `mockups/ux-review/metal-rule.mjs`), not built.** On five
+    shelves, an owned metallic is the Metal pot for 7% today, and for 80% with an owned boost of 15 for the Metal
+    role, with no pot of the wrong kind and none over ΔE 14.2. A rule by kind (white or yellow metal, from the hex)
+    gives the same 80% but puts a bright silver on a gunmetal part; "any owned metallic" gives a silver for a gold.
+    Recommended: the boost is 15 for the Metal role, and an owned Metal pot shows its true ΔE with a neutral line
+    in place of "Poor". **Waits for Ryan's choice** (the rule, and the words).
 80. **The shopping list's main button** (F04; 3 · 3 · 3). "+ Add N" is a median 14 pots from 7 brands, and counts the
     metallic ladder and the NMM ladder together. Recommend: the main button adds the role pots that the painter does
     not own; the ladders are a second choice; never NMM with the metallics. Then the Brand setting of item 64

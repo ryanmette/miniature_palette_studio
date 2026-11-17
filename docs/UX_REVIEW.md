@@ -584,3 +584,68 @@ node mockups/ux-review/trust.mjs       # F12
 
 The scripts need Playwright with Chromium. It is not a dependency of this repo (CLAUDE.md §6), and the
 scripts are never shipped.
+
+---
+
+## 11. After the review: the Metal role with a shelf, measured (F02; PLAN item 79)
+
+Ryan asked for a test of candidate rules before any change (2026-11-17). Nothing in the app changed.
+The script is [`metal-rule.mjs`](../mockups/ux-review/metal-rule.mjs); it needs no browser.
+
+### 11.1 Why an owned metallic never wins today
+
+The Metal role's target is one of three fixed colours (`scheme.js metalIdeal`): gold `#C8A13A`, silver
+`#B5B5BD` or gunmetal `#6E7177`. The app's own pool of 1,573 starting paints gives gold for 64%, silver for
+23% and gunmetal for 14%. The pot is the nearest of the data's 244 metallics, so some pot is always within
+about 3 ΔE. With **Prefer**, an owned paint ranks 6 ΔE closer (`OWNED_BOOST`). The common pots are further
+than that from the fixed targets: Retributor Armour is 9.4 from the gold, Leadbelcher 10.3 from the silver,
+Ironbreaker 11.9 from the gunmetal. So they lose each time.
+
+### 11.2 The rules, on five shelves
+
+The five shelves: the test painter's six metallics; a starter pair (Leadbelcher and Retributor Armour); one
+silver; one gold; four Army Painter metallics. The numbers are weighted by how often each target comes up.
+
+| Rule | An owned pot is the Metal pot | Of the wrong kind | Shown as "Poor" | ΔE of those pots |
+|---|---:|---:|---:|---|
+| **Now**: the owned boost is 6 | 7% | 0% | 0% | 5.6 to 6.3 |
+| The boost is 10 for the Metal role | 62% | 0% | 16% | 5.6 to 11.9 |
+| **The boost is 15** | **80%** | **0%** | 34% | 5.6 to 14.2 |
+| The boost is 20 | 80% | 0% | 34% | 5.6 to 14.2 |
+| **Kind**: an owned metallic of the target's kind, whatever its ΔE | 80% | 0% | 34% | 5.6 to 14.2 |
+| **Any**: the nearest owned metallic | 100% | 20% | 54% | 5.6 to 38.6 |
+
+"Kind" reads two kinds from the hex: a white metal (Lab C\* under 15: silver, steel, gunmetal) and a yellow
+metal (hue 40° to 110°: gold, brass, bronze). "Any" is out: with one silver on the shelf it gives
+Leadbelcher for a gold part.
+
+### 11.3 Three shelves at the edges
+
+These separate "the boost is 15" from "Kind" and from "the boost is 20":
+
+| The only metallic on the shelf | The boost is 15 | Kind | The boost is 20 |
+|---|---|---|---|
+| Warplock Bronze, for the gold | not used | used, ΔE 24.8 | not used |
+| Stormhost Silver, for the gunmetal | not used | used, ΔE 32.2 | not used |
+| Runelord Brass, for the gold | not used | not used (its hex is nearly grey, so it counts as a white metal) | used, ΔE 21.7: the wrong kind |
+
+"Kind" needs a class for each pot, and the hex of a metallic is the weakest value in the data. It puts a
+bright silver on a gunmetal part. A boost of 20 lets a brass in for a gold. **A boost of 15 for the Metal
+role gave no wrong kind and no pot over ΔE 14.2 on all eight shelves**, and it needs no class.
+
+### 11.4 The second problem: the words
+
+Each rule that uses the painter's pot then shows that pot as **Loose** or **Poor**: "Leadbelcher · Poor ΔE
+10.3", with "No pot within ΔE 10. A mix or a glaze gets closer" and "shift hue". That is the F03 problem,
+moved into Prefer. The distance is true, but it is a distance to one of three colours that the app chose
+for "a silver", not to a colour that the harmony made. A painter reads "your silver is a poor silver".
+
+### 11.5 Recommended (Ryan to decide)
+
+1. **The rule: the owned boost is 15 for the Metal role** (6 for the colour roles, as now). In plain words: a
+   metallic that you own is the Metal pot unless it is far from the kind that the scheme wants. This changes
+   a ranking rule of CLAUDE.md §7, so it needs its line there and a CHANGELOG note.
+2. **The words: for an owned pot in the Metal role, the true ΔE stays as a number, and a neutral line takes
+   the place of the quality word** ("A metallic you own"), with no advice to mix or to shift the hue. §3.2
+   has two such limits on the words now (a translucent paint never says more than Good; a wash shows its
+   gap). The other choice is to keep "Poor": it is true to the table, and it discourages.
