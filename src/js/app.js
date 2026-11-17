@@ -12,7 +12,7 @@ import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, r
 import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf, randomStartPaint } from './data.js';
+import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, mostOwnedBrand, BRAND_BOOST, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf, randomStartPaint } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
@@ -38,6 +38,7 @@ const state = {
   dropOffsets: [],                   // harmony offsets "detached" by lock/edit so the rule stops regenerating them
   mode: 'studio', shelfBrand: '', shelfMark: '', shelfQ: '', shelfTypes: new Set(), shelfSort: '', brands: [],   // Studio/Shelf mode; shelf brand · status · search · type · sort
   shelfView: 'grid', shelfGroup: 'rack',   // the Shelf as the grid or the list (item 36); the list in rack order or by project
+  brandMode: 'any', brand: '',        // the Brand setting (⋯): any | prefer (a 2 ΔE bonus) | only (a filter), and the painter's saved brand
   ladder: 'wash', collection: 'off',  // #7 tone-ladder style; how the collection drives matching: off | prefer (#6 boost) | only (hard filter)
   includeContrast: false,             // include Contrast paints in harmony suggestions (washes/shades stay excluded)
   popHex: null,                        // neutral mode's pop accent (null = DEFAULT_POP); drives the hue math when the seed is neutral
@@ -87,6 +88,10 @@ function matchOpts() {
   if (owned.size) o.knownOwnedIds = owned;
   if (state.collection === 'only' && owned.size) o.ownedIds = owned;
   else if (state.collection === 'prefer' && owned.size) { o.boostIds = owned; o.boostAmount = OWNED_BOOST; }
+  // The Brand setting (docs/TONE_LADDERS.md B): Only is a filter, Prefer a ranking bonus beside the owned one.
+  // It acts only with a brand the painter chose or confirmed (state.brand), never with the default alone.
+  if (state.brand && state.brandMode === 'only') o.brands = new Set([state.brand]);
+  else if (state.brand && state.brandMode === 'prefer') { o.brandBoost = state.brand; o.brandAmount = BRAND_BOOST; }
   // Keep finishes (washes/shades/contrast/effects) out of harmony suggestions; Contrast is opt-in.
   const ex = new Set(FINISH_TYPES);
   if (state.includeContrast) ex.delete('contrast');
@@ -2659,6 +2664,40 @@ function setCollection(v) {
   syncCollectionSeg(); syncUmpHint();
   renderLive(); renderActive(); renderMatchNote();
 }
+/** ⋯ → Brand (docs/TONE_LADDERS.md B; Ryan 2026-11-06): any · prefer (a 2 ΔE bonus) · only (a filter), for one
+ *  brand; saved for the device. The brand the select SHOWS is the painter's own pick, or else the brand they
+ *  own the most paints of (the default). The matches use only a saved brand: turning the setting on saves the
+ *  brand shown, so a later mark on the Shelf never changes the matches by itself. */
+const brandShown = () => (state.brands.includes(state.brand) ? state.brand : '') || mostOwnedBrand(state.idx, store.ownedIds()) || '';
+function setBrandMode(v) {
+  if (!['any', 'prefer', 'only'].includes(v)) return;
+  state.brandMode = v; store.setPref('brandMode', v);
+  if (v !== 'any' && !state.brand && brandShown()) { state.brand = brandShown(); store.setPref('brand', state.brand); }
+  syncBrand();
+  renderLive(); renderActive(); renderMatchNote();
+}
+function setBrand(name) {
+  if (!state.brands.includes(name)) return;
+  state.brand = name; store.setPref('brand', name);
+  syncBrand();
+  renderLive(); renderActive(); renderMatchNote();
+}
+const BRAND_WORD = { any: 'brandAny', prefer: 'brandPrefer', only: 'brandOnly' };
+const BRAND_HINT = { any: 'brandHintAny', prefer: 'brandHintPrefer', only: 'brandHintOnly' };
+const brandHintHtml = (mode, brand) => (mode !== 'any' && !brand ? ui.esc(t('brandHintNone'))
+  : `<b>${ui.esc(t(BRAND_WORD[mode]))}</b> · ${ui.esc(t(BRAND_HINT[mode], { brand }))}`);
+/** The Brand row: the pressed mode, the select (the brand shown; a "Choose a brand" line only while there is
+ *  none) and the hint. The hint is a live region: written only when its words change. */
+function syncBrand() {
+  for (const b of $('#brandSeg').children) b.setAttribute('aria-pressed', String(b.dataset.brandmode === state.brandMode));
+  const shown = brandShown(), sel = $('#brandSel');
+  const opts = (shown ? '' : `<option value="">${ui.esc(t('brandChoose'))}</option>`)
+    + state.brands.map(b => `<option value="${ui.esc(b)}">${ui.esc(b)}</option>`).join('');
+  if (sel.dataset.opts !== opts) { sel.innerHTML = opts; sel.dataset.opts = opts; }
+  sel.value = shown;
+  const el = $('#brandHint'), html = brandHintHtml(state.brandMode, state.brandMode === 'any' ? shown : state.brand);
+  if (el.innerHTML !== html) el.innerHTML = html;
+}
 function toggleContrast() {                       // include Contrast paints in harmony suggestions (persisted)
   state.includeContrast = !state.includeContrast; store.setPref('contrast', state.includeContrast);
   renderLive(); renderActive(); renderMatchNote();
@@ -2880,6 +2919,8 @@ function applyPrefsToState({ keepLinkTheme = false } = {}) {
   const lp = store.getPref('ladder'); state.ladder = ['wash', 'tone', 'both'].includes(lp) ? lp : 'wash';
   const cp = store.getPref('collection'); state.collection = ['off', 'prefer', 'only'].includes(cp) ? cp : 'off';
   state.includeContrast = !!store.getPref('contrast');
+  const bm = store.getPref('brandMode'); state.brandMode = ['any', 'prefer', 'only'].includes(bm) ? bm : 'any';
+  const bp = store.getPref('brand'); state.brand = typeof bp === 'string' ? bp : '';
 }
 /** The shelf and settings were replaced (Restore) or deleted: apply the new prefs at once and repaint
  *  everything that shows a mark or a setting. Without this they took effect only after a reload. */
@@ -2959,12 +3000,16 @@ function buildSlotSizers() {
     ...['off', 'prefer', 'only'].map(v => size(`<div class="umpnow"><p class="sethint">${umpHintHtml(v)}</p></div>${shared}`)),
     size(`<div class="umpnow"><p class="sethint">${ui.esc(t('umpHintEmpty'))}</p><span class="btn">${ui.esc(t('openShelf'))}</span></div>${shared}`),
   ]);
+  // the Brand hint: each state with the longest brand name in the data
+  const longest = state.brands.reduce((a, b) => (b.length > a.length ? b : a), '');
+  fill($('#brandSlot'), [...['any', 'prefer', 'only'].map(m => brandHintHtml(m, longest)), ui.esc(t('brandHintNone'))]
+    .map(x => size(`<p class="sethint">${x}</p>`)));
   fill($('#backupSlot'), [t('backupHint'), t('backupSaved', { file: backupName() })]
     .map(x => size(`<p class="sethint">${ui.esc(x)}</p>`)));
 }
 /** Every settings control from the current state — before the menu shows, so nothing is announced. */
 function syncSettingsControls() {
-  syncCollectionSeg(); syncUmpHint(); syncThemeSlot();
+  syncCollectionSeg(); syncUmpHint(); syncBrand(); syncThemeSlot();
 }
 /** The Backup row's status line goes back to its hint. Only while the menu is closed (on open and on
  *  close): it is a live region, and a reset while you can hear it would read the hint out again. */
@@ -2999,17 +3044,18 @@ function syncSettingsFade() {
  *  segment, the first control (WAI-ARIA dialog pattern), and it shows its ring. After a touch or a click, focus
  *  starts on the title: a landing spot with no ring (PLAN §5 item 59; WebKit drew the ring on the segment after a
  *  touch, where no ring belongs). It is inside the dialog, so Tab goes on to the first control. */
-function openSettings(opener = 'button', byKey = false) {
+function openSettings(opener = 'button', byKey = false, noteKey = 'ump') {
   const m = sMenu(); if (m.open) return;
   if (!news.menuSeen) { news.menuSeen = true; renderNews(); }   // the dot has led here; About's tag leads on
-  settings.opener = opener; settings.ret = 'opener';
+  settings.opener = opener; settings.noteKey = noteKey; settings.ret = 'opener';
   picker.close();
   syncSettingsControls(); resetBackupNow();
   if (SHEET.matches) m.showModal(); else m.show();
   placeSettings();
   $('#settingsBody').scrollTop = 0; syncSettingsFade();
   setSettingsExpanded(true);
-  (byKey ? $('#collectionSeg [aria-pressed="true"]') : $('#settingsTitle')).focus({ preventScroll: true });
+  const first = opener === 'note' && noteKey === 'brand' ? '#brandSeg' : '#collectionSeg';   // the note's Brand line goes to its own control
+  (byKey ? $(`${first} [aria-pressed="true"]`) : $('#settingsTitle')).focus({ preventScroll: true });
   // Make the share image now, after the menu has painted. Then a tap on Share image… calls share() at once:
   // Safari refuses a share whose tap is too old, and fonts + the PNG inside the tap could take that long.
   setTimeout(() => { if (settingsOpen()) shareImage().catch(() => {}); }, 60);
@@ -3027,7 +3073,7 @@ function onSettingsClosed() {
   resetBackupNow();   // reset while hidden, so the status line is not read out
   const ret = settings.ret; settings.ret = 'opener';
   if (ret === null) return;
-  const el = ret === 'opener' && settings.opener === 'note' ? $('#matchnote [data-note="ump"]') : null;
+  const el = ret === 'opener' && settings.opener === 'note' ? $(`#matchnote [data-note="${settings.noteKey}"]`) : null;
   (el || $('#settingsBtn')).focus({ preventScroll: true });
 }
 function setupSettings() {
@@ -3056,7 +3102,7 @@ function setupSettings() {
   // Popover: a click outside closes it — not one on ⋯ or the note (their own click toggles it), and not
   // one in another open dialog (the Restore confirm opens over it).
   document.addEventListener('pointerdown', e => {
-    if (e.target.closest('#settingsBtn, #matchnote [data-note="ump"]')) { settings.btnDown = true; return; }   // cleared by their click (or the pointerup below)
+    if (e.target.closest('#settingsBtn, #matchnote [aria-haspopup="dialog"]')) { settings.btnDown = true; return; }   // cleared by their click (or the pointerup below)
     if (!settingsOpen() || isModal(m) || m.contains(e.target) || e.target.closest('dialog[open]')) return;
     closeSettings(null);
   }, true);
@@ -3072,6 +3118,8 @@ function setupSettings() {
   // Use my paints
   $('#collectionSeg').addEventListener('click', e => { const b = e.target.closest('[data-collection]'); if (b) setCollection(b.dataset.collection); });
   $('#umpOpenShelf').addEventListener('click', () => { closeSettings(null); setMode('shelf'); });
+  $('#brandSeg').addEventListener('click', e => { const b = e.target.closest('[data-brandmode]'); if (b) setBrandMode(b.dataset.brandmode); });
+  $('#brandSel').addEventListener('change', e => setBrand(e.target.value));
   // Theme: the switch saves a choice; "Use device setting" clears it and follows the device again
   $('#themeToggle').addEventListener('click', () => { linkTheme = null; setTheme(state.theme === 'dark' ? 'light' : 'dark', { save: true }); wheelDraw(); updateUrl(); });
   $('#themeUseDevice').addEventListener('click', () => {
@@ -3600,14 +3648,14 @@ let noteHtml = null;
 function renderMatchNote() {
   const el = $('#matchnote'); if (!el) return;
   const html = ui.matchNote({ collection: state.collection, owned: store.counts().owned,
-    contrast: state.includeContrast, expanded: settingsOpen() }, t);
+    contrast: state.includeContrast, expanded: settingsOpen(), brandMode: state.brandMode, brand: state.brand }, t);
   if (html !== noteHtml) { el.innerHTML = html; noteHtml = html; }   // unchanged → keep the DOM (and focus)
 }
 function setupMatchNote() {
   $('#matchnote').addEventListener('click', e => {
     const b = e.target.closest('[data-note]'); if (!b) return;
     const k = b.dataset.note;
-    if (k === 'ump') { settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('note', e.detail === 0); }
+    if (k === 'ump' || k === 'brand') { settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('note', e.detail === 0, k); }
     else if (k === 'shelf') setMode('shelf');
     else if (k === 'contrast') {
       setTab('plan');

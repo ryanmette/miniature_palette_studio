@@ -22,7 +22,7 @@ const LINK_MAX = 4000;
 const SCHEME_ID = /^[a-z0-9]{8}$/;
 // The settings a backup carries. theme and locale are null until the painter picks one: null means
 // "follow the device". (Ideal | Real is not here: it belongs to one scheme and lives in the link.)
-const PREF_DEFAULTS = { theme: null, ladder: 'wash', locale: null, collection: 'off', contrast: false };
+const PREF_DEFAULTS = { theme: null, ladder: 'wash', locale: null, collection: 'off', contrast: false, brandMode: 'any', brand: '' };
 // The values each pref may have. A backup is a file the painter can edit or get from somewhere else, so
 // a value is kept only when it is one of these: an odd theme ('Dark') stopped the device-following, and
 // contrast: 'no' turned Include Contrast on. The locales are i18n.js's LOCALES keys (i18n imports this
@@ -34,6 +34,9 @@ const PREF_OK = {
   locale: v => v === null || LOCALES.includes(v),
   collection: v => v === 'off' || v === 'prefer' || v === 'only',
   contrast: v => typeof v === 'boolean',
+  // the Brand setting (⋯): its mode and the painter's brand. The app uses a brand only when the paint data has it.
+  brandMode: v => v === 'any' || v === 'prefer' || v === 'only',
+  brand: v => typeof v === 'string' && v.length <= 80,
 };
 /** Does the blob `src` carry a usable value for pref `k`? */
 const hasPref = (src, k) => k in src && PREF_OK[k](src[k]);

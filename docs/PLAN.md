@@ -808,7 +808,10 @@ Do these three in one bug pass, in this order.
     paints of; keep Only; add every maker's families** (Reaper, Two Thin Coats, Army Painter Fanatic; one brand for
     each PR, Reaper first). **A built (2026-11-06):** dataset 1.9.0 gives the 150 Tone Pro paints `family` + `tone`; the
     Recipe card shows a pot's family as the maker made it (`ui.makerLadder`; no ΔE, "your pot" marked; not in
-    `ladders`, so the shopping list is unchanged). **Next:** B (the Brand setting), or the next brand's families
+    `ladders`, so the shopping list is unchanged). **B built (2026-11-17):** **Brand: Any · Prefer · Only** in ⋯
+    with a brand select; Prefer is `BRAND_BOOST` = 2 ΔE (ranking only), Only is a filter; the default shown is the
+    brand you own most (`data.js mostOwnedBrand`), and it acts only after the painter chose or confirmed it; a line
+    in the matching note; prefs `brandMode` and `brand` in the backup. **Next:** the next brand's families
     (Reaper).
 
 ### Raised by Ryan on 2026-11-07 — an update log (built)

@@ -29,6 +29,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - The icon does not show on a swatch smaller than 26 px (the Map's small pots, the Schemes strip). The
     paint's tag or name gives the finish there.
 ### Added
+- **A Brand setting: keep a scheme in one brand** (PLAN §5 item 64 B; `docs/TONE_LADDERS.md`; CLAUDE.md §3.6
+  and §7). **⋯ → Brand** has **Any · Prefer · Only** and a list of the brands. With **Prefer**, a paint of your
+  brand counts as 2 ΔE closer than it is, so it wins a close call and not a clear one. With **Only**, only paints
+  of that brand can match, also when the match is poor. The ΔE that you see is always the true value. The list
+  starts on the brand that you own the most paints of. A line under the live palette says when the setting is
+  on. The setting changes the live palette, the Recipe and the shopping list, and never the Other brands tab.
+  It is saved on the device and is in a backup. Your starting paint keeps its place, whatever its brand, unless
+  the setting is Only.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made

@@ -340,7 +340,7 @@ export function planControls(ladder, includeContrast, gapCount) {
  * The accessible name is the visible words; the dash before the target word is for screen readers.
  * `t` is i18n.t, passed in so this module stays pure.
  */
-export function matchNote({ collection = 'off', owned = 0, contrast = false, expanded = false } = {}, t = k => k) {
+export function matchNote({ collection = 'off', owned = 0, contrast = false, expanded = false, brandMode = 'any', brand = '' } = {}, t = k => k) {
   const go = word => `<span class="ngo"><span class="sr-only"> — </span>${esc(word)}</span>`;
   const lines = [];
   if (collection === 'prefer' || collection === 'only') {
@@ -355,6 +355,12 @@ export function matchNote({ collection = 'off', owned = 0, contrast = false, exp
       lines.push(`<button type="button" class="mnote" data-note="ump" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="${!!expanded}">`
         + `<span class="nk" aria-hidden="true">${icon('check')}</span><span class="ntx">${head} <span class="mt">${esc(why)}</span></span>${go(t('change'))}</button>`);
     }
+  }
+  // The Brand setting (docs/TONE_LADDERS.md B): a line only while it changes the matches (a mode and a brand)
+  if (brand && (brandMode === 'prefer' || brandMode === 'only')) {
+    const head = `<b>${esc(t('noteBrand', { mode: t(brandMode === 'only' ? 'brandOnly' : 'brandPrefer'), brand }))}</b>\u00a0·`;
+    lines.push(`<button type="button" class="mnote" data-note="brand" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="${!!expanded}">`
+      + `<span class="nk" aria-hidden="true">${icon('check')}</span><span class="ntx">${head} <span class="mt">${esc(t(brandMode === 'only' ? 'noteBrandOnly' : 'noteBrandPrefer'))}</span></span>${go(t('change'))}</button>`);
   }
   if (contrast) {
     lines.push(`<button type="button" class="mnote" data-note="contrast"><span class="nk nk-contrast" aria-hidden="true">${finishGlyph('contrast')}</span>`

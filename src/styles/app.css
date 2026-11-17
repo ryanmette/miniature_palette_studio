@@ -956,7 +956,10 @@ main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 521px) and (pointer: fine) { .setseg button { min-height: var(--tap); } }   /* the control is --tap tall, as the buttons beside it */
 .setbtns { display: flex; flex-wrap: wrap; gap: 8px; }
 .setbtns .btn { justify-content: center; height: auto; min-height: var(--tap); padding-block: 4px; line-height: 1.25; text-align: center; }   /* with large text a label wraps, not out of the sheet */
-.umpslot, #backupSlot { margin-top: 4px; }
+.umpslot, #backupSlot, .brandslot { margin-top: 4px; }
+/* The Brand row: the mode, then the brand it acts on, full width under it (the same in the sheet and the popover) */
+.brandsel { display: block; width: 100%; margin-top: 8px; }
+.brandslot > * { align-self: start; }
 .umplive, .umpslot > .fixsize { align-self: start; }
 .umpnow { display: flex; align-items: center; gap: 8px; }
 .umpnow .sethint { flex: 1; min-width: 0; }

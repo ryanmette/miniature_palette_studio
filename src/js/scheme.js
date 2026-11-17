@@ -185,6 +185,7 @@ export function buildScheme(idx, baseHex, harmony, opts = {}) {
     if (seedTarget && match && match.paint.id !== opts.seed.id) {
       const sp = idx.byId.get(opts.seed.id);
       const why = opts.ownedIds && !opts.ownedIds.has(opts.seed.id) ? 'not owned'
+        : sp && opts.brands && !opts.brands.has(sp.brand) ? `not a ${[...opts.brands][0]} paint (Brand: Only)`
         : sp && opts.excludeTypes && opts.excludeTypes.has(sp.type) ? `a ${sp.type} — excluded from suggestions`
         : 'not eligible under the current filters';
       substituted = { name: opts.seed.name, why };

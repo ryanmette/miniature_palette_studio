@@ -112,12 +112,18 @@ function passesFilter(p, { excludeId, excludeIds, brands, excludeBrands, ownedId
  * on the model) while still letting a metal win when it's clearly the closest thing you have. In an
  * all-metal pool (the Metal role's type filter) every candidate is demoted equally, so it's a no-op.
  */
-const rankScore = (d, p, { boostIds, boostAmount = 0, ownedIds, demoteTypes, demoteAmount = 0, preferIds }) => {
+const rankScore = (d, p, { boostIds, boostAmount = 0, ownedIds, demoteTypes, demoteAmount = 0, preferIds, brandBoost, brandAmount = 0 }) => {
   // No floor on the boost: clamping to 0 collapsed every owned paint within boostAmount of the
   // target to the same score, letting dataset order pick an owned ΔE-5.8 paint over an owned
   // ΔE-0.3 one. A negative score is fine — it just means "owned and very close wins".
   let s = ((boostIds && boostIds.has(p.id)) || (ownedIds && ownedIds.has(p.id))) ? d - boostAmount : d;
+  // The Brand setting, Prefer (docs/TONE_LADDERS.md B): a paint of the chosen brand ranks brandAmount ΔE closer.
+  // It is a second term beside the owned bonus, so both add for an owned paint of the brand, and an owned paint
+  // of another brand (6) still wins over a paint to buy of the chosen brand (2) at the same distance.
+  // The paint the painter PICKED gets the same bonus: a brand preference must not take the starting paint's
+  // own slot away from it (a Vallejo blue 1.5 ΔE away won Primary from the picked Macragge Blue).
   const preferred = preferIds && preferIds.has(p.id);
+  if (brandBoost && (p.brand === brandBoost || preferred)) s -= brandAmount;
   // An explicit pick is EXEMPT from the type demote — otherwise picking any metallic paint would
   // lose its own slot to a flat within demoteAmount ΔE (review finding: 228/236 metals affected).
   if (demoteTypes && demoteTypes.has(p.type) && !preferred) s += demoteAmount;
@@ -126,6 +132,21 @@ const rankScore = (d, p, { boostIds, boostAmount = 0, ownedIds, demoteTypes, dem
   if (preferred) s -= 0.001;
   return s;
 };
+
+/** The Brand setting's Prefer bonus, in ΔE (ranking only; the reported ΔE stays true, §2/§7). Measured in
+ *  docs/TONE_LADDERS.md §4.2 on the ladder steps: 2 is the knee. The role's brand then wins 54% of the steps
+ *  (14% with no bonus) and the median true ΔE stays Good (2.16 against 1.83); at 3 it is 71% and 2.61. */
+export const BRAND_BOOST = 2;
+/** The brand the painter owns the most paints of: the Brand setting's default (TONE_LADDERS.md §8, answer 2).
+ *  A tie takes the brand that comes first in the data's order. null with no owned paint. */
+export function mostOwnedBrand(indexed, ownedIds) {
+  if (!ownedIds || !ownedIds.size) return null;
+  const n = new Map();
+  for (const p of indexed.paints) if (ownedIds.has(p.id)) n.set(p.brand, (n.get(p.brand) || 0) + 1);
+  let best = null, top = 0;
+  for (const [brand, count] of n) if (count > top) { best = brand; top = count; }
+  return best;
+}
 
 /**
  * Is this paint one the user owns? `knownOwnedIds` is decoration-only and is supplied on EVERY

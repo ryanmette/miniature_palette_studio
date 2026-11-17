@@ -653,6 +653,18 @@ test('the finish mark reads on every non-flat paint: its ink is 3:1 or more agai
   assert.ok(low >= 4, `lowest ${low.toFixed(2)}:1`);
 });
 
+test('matchNote: the Brand line shows only with a mode and a brand, and opens the settings', () => {
+  const on = matchNote({ brandMode: 'prefer', brand: 'Vallejo', expanded: true }, tr);
+  assert.match(on, /data-note="brand" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="true"/);
+  assert.match(on, /noteBrand\(mode=brandPrefer,brand=Vallejo\)/); assert.match(on, /noteBrandPrefer/);
+  assert.match(matchNote({ brandMode: 'only', brand: 'P3' }, tr), /noteBrandOnly/);
+  assert.equal(matchNote({ brandMode: 'prefer', brand: '' }, tr), '', 'no brand: it changes nothing, so no line');
+  assert.equal(matchNote({ brandMode: 'any', brand: 'Vallejo' }, tr), '');
+  // with Use my paints, both lines show, Use my paints first
+  const both = matchNote({ collection: 'prefer', owned: 3, brandMode: 'only', brand: 'P3' }, tr);
+  assert.ok(both.indexOf('data-note="ump"') < both.indexOf('data-note="brand"'));
+});
+
 import { makerLadder } from '../src/js/ui.js';
 test("makerLadder: every tone in order, the pot marked in words, no ΔE (the maker's steps are not matches)", () => {
   const t = (n, hex) => ({ id: `b${n}`, brand: 'Warhammer Colour', line: 'Tone Pro', name: `Ultramar Blue ${n}`, hex, type: 'layer', tone: n });
