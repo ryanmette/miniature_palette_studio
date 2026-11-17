@@ -945,9 +945,8 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       its swaps by itself; `nearestPaint(s)` skips it unless it is owned or picked (`passesFilter`).
     - A rebuild from upstream as it is today gave the same file as 1.9.0, so upstream has not changed.
     - **Open: GW's seven Shades of 2022** (Mortarion Grime, Berserker Bloodshade, Targor Rageshade, Tyran Blue,
-      Poxwalker, Kroak Green, Soulblight Grey). The same release had new Contrast paints, so this is a check of
-      the whole Warhammer Colour range against GW's list, not one correction. Also open: Nolzur's Glistening Blood
-      (type `wash`), which needs its own maker's page.
+      Poxwalker, Kroak Green, Soulblight Grey), and Nolzur's Glistening Blood (type `wash`). Both are checked and
+      recorded in item 75.
 74. **The Recipe's wash step by the gap?** (**built 2026-11-17** as a second try, below; Ryan: "go with your
     recommendations".) Measured 2026-11-17 on 1,882 base and layer
     paints with a colour word in the name (dataset 1.9.0): the share that gets a real wash, shade or ink, and the
@@ -980,6 +979,24 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     A limit of 4° adds about half as many washes and is not more accurate (46–68%), so the limit is 8° (Near
     colour). The step shows the gap; the ΔE in the match is the true one. **Open:** the accuracy of both ways is
     about 1 in 2 by this measure, and only measured wash colours can raise it (item 68).
+75. **The Warhammer Colour range against GW's list** (open; data; found 2026-11-17). By name, against Ryan's list
+    in `docs/sources/warhammer-colour-list-2026-11-03.md` (a secondary source for names), the data has no row for
+    **34** paints: Base 1 (Ceramite White) · Shade 7 (Berserker Bloodshade, Kroak Green, Mortarion Grime,
+    Poxwalker, Soulblight Grey, Targor Rageshade, Tyran Blue) · Contrast 26 (Aeldari Emerald, Asurmen Blue, Baal
+    Red, Bad Moon Yellow, Briar Queen Chill, Celestium Blue, Doomfire Magenta, Dreadful Visage, Frostheart,
+    Garaghak's Sewer, Gutrippa Flesh, Hexwraith Flame, Imperial Fist, Ironjawz Yellow, Karandras Green, Kroxigor
+    Scales, Leviathan Purple, Luxion Purple, Magmadroth Flame, Mantis Warriors Green, Nighthaunt Gloom, Pylar
+    Glacier, Ratling Grime, Sigvald Burgundy, Stormfiend, Striking Scorpion Green; the data has Hexwraith Flame
+    and Nighthaunt Gloom as Technical paints, so their line needs a check) · Texture 2 (Blackfire Earth, Lustrian
+    Undergrowth). Five Technical products are left out on purpose (mediums, a primer, a filler). **No row was
+    added:** upstream has no values for them, `warhammer.com` refuses automated access, and `paint.warhammer.com`
+    has no range list. They need values from an accepted source (§5.2): GW's own swatches read by hand, or
+    Ryan's measurements, as Tone Pro (`scripts/tone-pro.json`).
+    - **Also open: Glistening Blood.** The data has it twice (`Army Painter · Warpaints`, type `layer`, and
+      `Army Painter · Nolzur's`, type `wash`). Army Painter sold it as "Warpaints Effects: Glistening Blood", so
+      both are probably effects (`fx: gloss`). The product page is gone (404) and it is not in the maker's
+      public product list, so there is no primary source to read. No change until one is found.
+
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:
