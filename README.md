@@ -10,6 +10,11 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.18.0** — the true-colour release. Every swatch shows the paint's own colour, with no gradient, and a paint
+that is not flat has one small **finish icon** in its corner (metallic, wash, Contrast, effect, fluorescent). A
+**Brand** setting in ⋯ keeps a scheme in one brand: **Prefer** (the brand wins a close call) or **Only**. Paint data
+1.11.0 marks 36 fluorescent or neon paints and 5 gloss paints. In the dark theme, near-black paints have a light edge.
+
 **v1.17.0** — the store-swap release, from an audit of **Not on the rack?**. "This store carries" has a switch for
 every brand, a pot you own comes first, a swap goes under the heading of its own brand, and a swap can be swapped
 again. Washes and shades are compared by their colour and show a **gap** in degrees, because the makers show a wash
