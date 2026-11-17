@@ -515,6 +515,12 @@ test('rackRow: a swap made in this visit says what it replaced; Undo only while 
   assert.match(again, /data-rkuse="ap-red" data-for="val-carm" aria-label="useInPlace\(name=Pure Red,was=Mephiston Red\)"/);
   const againOff = rackRow38({ paint: carm, countable: true, qty: 1, insteadOf: red, canSwap: true, swaps: { of: red, notCarried: true, list: [] } }, t38);
   assert.match(againOff, /notCarriedOf\(brand=Vallejo,name=Mephiston Red\)/);
+  // a wash-class paint (item 68): one line says its colours are rough, before the list; none with no swap
+  const wash = { id: 'ap-wash', brand: 'Army Painter', line: 'Wash', name: 'Dark Tone', hex: '#0C060E', type: 'wash' };
+  const rough = rackRow38({ paint: wash, countable: true, qty: 1, canSwap: true, swaps: { rough: true, list: [{ paint: wash, deltaE: 0.8, quality: { label: 'Good', tier: 'success' } }] } }, t38);
+  assert.match(rough, /<p class="rksnote">washRough<\/p>.*class="rkswap"/s);
+  assert.doesNotMatch(rackRow38({ paint: wash, countable: true, qty: 1, canSwap: true, swaps: { rough: true, list: [] } }, t38), /washRough/);
+  assert.doesNotMatch(again, /washRough/);
   assert.doesNotMatch(rackRow38({ paint: carm, countable: true, owned: true, qty: 0, insteadOf: red }, t38), /data-rkunswap/);
 });
 

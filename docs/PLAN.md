@@ -815,7 +815,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 71 and the owned-first part of 72 built; 68 and 70 open)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 71, a first step of 68 and the owned-first part of 72 built; 70 open)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -847,6 +847,10 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     Oil's own swaps hold no black wash of another brand. "Indistinguishable" between two near-black values says
     little (28 translucent paints have L\* < 12). Needs: one written rule for a wash's hex; until then, perhaps no
     Indistinguishable / Excellent word on a translucent swap (§2).
+    **A first step, built (2026-11-17):** a translucent swap never says more than "Good" (`data.js swapQuality`;
+    the ΔE stays true), and its list starts with one line that says these colours are rough. **Open:** the data
+    itself (one rule, one line of washes at a time, from the makers' own swatches), and the same words on the
+    Equivalents tab, which still says "Indistinguishable" for two near-black washes.
 69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
     later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
     the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint

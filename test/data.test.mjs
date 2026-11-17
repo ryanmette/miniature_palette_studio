@@ -570,6 +570,22 @@ test('storeSwaps (item 71): another kind in the class ranks 2 ΔE further, with 
   assert.deepEqual(storeSwaps(sx, sx.byId.get('slime')), [], 'the one slime paint: no swap, said as none');
 });
 
+test('swapQuality (item 68): a wash-class swap never says more than Good; the ΔE stays true', async () => {
+  const { storeSwaps, swapQuality } = await import('../src/js/data.js');
+  for (const d of [0, 0.8, 1.9, 2]) assert.equal(swapQuality(d, 'translucent').label, 'Good', 'ΔE ' + d);
+  for (const d of [2.1, 3.5, 4.2, 7, 12]) assert.deepEqual(swapQuality(d, 'translucent'), matchQuality(d), 'no change over 2');
+  for (const cls of ['flat', 'metal', 'effect']) for (const d of [0.5, 1.5, 3, 6]) assert.deepEqual(swapQuality(d, cls), matchQuality(d), cls);
+  const sx = indexDataset({ version: 't', paints: [
+    { id: 'w1', brand: 'A', line: 'W', name: 'Black Wash', hex: '#000103', type: 'wash' },
+    { id: 'w2', brand: 'B', line: 'W', name: 'Black Wash', hex: '#010101', type: 'wash' },
+    { id: 'f1', brand: 'A', line: 'L', name: 'Black', hex: '#000103', type: 'layer' },
+    { id: 'f2', brand: 'B', line: 'L', name: 'Black', hex: '#010101', type: 'layer' },
+  ] });
+  const w = storeSwaps(sx, sx.byId.get('w1'))[0], f = storeSwaps(sx, sx.byId.get('f1'))[0];
+  assert.ok(w.deltaE < 1 && w.deltaE === f.deltaE, 'the same true ΔE');
+  assert.equal(w.quality.label, 'Good'); assert.equal(f.quality.label, 'Indistinguishable');
+});
+
 test('storeSwaps (item 72): a pot you own goes first when it is Good or better, and only then', async () => {
   const { storeSwaps, SWAP_OWNED_MAX } = await import('../src/js/data.js');
   assert.equal(SWAP_OWNED_MAX, 3.5, 'the Good limit');

@@ -252,11 +252,20 @@ export const SWAP_KIND_PENALTY = 2;
  *  would say it is the best swap, and it is not (§2). */
 export const SWAP_OWNED_MAX = 3.5;
 
+/** The words for a store swap's ΔE. A translucent paint's hex is the least sure value in the data: some lines
+ *  hold the colour of a thin coat on white, others the colour in the pot (PLAN §5 item 68), and two near-black
+ *  values are close to each other whatever the two washes do on a model. So a translucent swap never says more
+ *  than "Good". The ΔE itself stays the true one, and the list says that these colours are rough (§2). */
+export function swapQuality(deltaE, cls) {
+  return cls === 'translucent' && deltaE <= 2 ? matchQuality(3.5) : matchQuality(deltaE);
+}
+
 /**
  * Swaps for a pot that is not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B): the
  * nearest paints from the brands the store carries, kept STRICTLY to the paint's own finish class. A wash's
  * swap is a wash, or there is none: a wash's hex is its colour on white, so a flat paint can look close to it
- * and still be no swap at all (a strict tier, not the Equivalents tab's penalty). Reported ΔE is true (§2).
+ * and still be no swap at all (a strict tier, not the Equivalents tab's penalty). Reported ΔE is true (§2);
+ * its words are swapQuality's.
  * Inside the class (PLAN §5 item 71): an effect paint swaps only for one with the same `fx` (wet blood is no
  * swap for a rust texture); any other paint of another kind (swapKind) ranks SWAP_KIND_PENALTY further.
  * @param opts.notCarried  brands the store does not carry (a Set): no swap comes from them
@@ -275,7 +284,7 @@ export function storeSwaps(indexed, paint, { notCarried = new Set(), except = nu
     .map(p => { const deltaE = deltaE2000(lab, p.lab); return { paint: p, deltaE, score: deltaE + (swapKind(p) === kind ? 0 : SWAP_KIND_PENALTY) }; })
     .sort((a, b) => first(a) - first(b) || a.score - b.score)
     .slice(0, n)
-    .map(({ paint, deltaE }) => ({ paint, deltaE, quality: matchQuality(deltaE) }));
+    .map(({ paint, deltaE }) => ({ paint, deltaE, quality: swapQuality(deltaE, cls) }));
 }
 
 /** The paints closest to a typed colour, best first. They rank as the Equivalents tab ranks a flat colour:

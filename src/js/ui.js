@@ -775,11 +775,13 @@ export function swapRowPlan({ cameRow, leftRow, leftStays, undo, spot }) {
 /** The swaps under a row (item 38): the closest pots from the brands the store carries, in the paint's own
  *  finish class, each with its true ΔE and label (§2). `r.swaps`: { list: [{paint, deltaE, quality, owned}],
  *  notCarried: the row's brand is switched off, of: on a row that is a swap, the paint it replaced (the list,
- *  its ΔE values and the words are then for that paint, item 69) }. */
+ *  its ΔE values and the words are then for that paint, item 69), rough: a wash-class paint, whose colours
+ *  are the least sure in the data (item 68): one line says so, before the list }. */
 function rackSwaps(r, tr) {
   const p = r.paint, s = r.swaps, name = pname(s.of || p);
   const best = s.list[0];
   let h = `<div class="rkswaps" id="rks-${esc(p.id)}" role="group" aria-label="${esc(tr('swapsFor', { name }))}">`;
+  if (s.rough && best) h += `<p class="rksnote">${esc(tr('washRough'))}</p>`;
   if (s.notCarried) h += `<p class="rksnote">${esc(s.of ? tr('notCarriedOf', { brand: p.brand, name }) : tr('notCarried', { brand: p.brand }))}</p>`;
   else if (s.of) h += `<p class="rksnote">${esc(tr('swapsOf', { name }))}</p>`;
   if (!best) h += `<p class="rksnote">${esc(tr('noSwap'))}</p>`;

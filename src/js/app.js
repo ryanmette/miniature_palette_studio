@@ -12,7 +12,7 @@ import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, r
 import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, browseOrder, storeSwaps, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf, randomStartPaint } from './data.js';
+import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf, randomStartPaint } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
@@ -1085,7 +1085,8 @@ function rackRowData(p) {
     // struck through: bought from the shopping list in this list's visit (a checklist's tick-off), not every owned paint
     struck: mark === 'owned' && rk.kept.has(p.id) && prev?.mark === 'want',
     canSwap,
-    swaps: open ? { notCarried, of: first, list: storeSwaps(state.idx, first || p, { notCarried: storeOff, except: new Set([...offRack, p.id]), ownedIds: store.ownedIds() })
+    // rough: a wash-class paint's colour is the least sure in the data (item 68), and the list says so
+    swaps: open ? { notCarried, of: first, rough: finishClass((first || p).type) === 'translucent', list: storeSwaps(state.idx, first || p, { notCarried: storeOff, except: new Set([...offRack, p.id]), ownedIds: store.ownedIds() })
       .map(m => ({ ...m, owned: store.isOwned(m.paint.id) })) } : null,
     insteadOf: first,
     paint: p, owned: mark === 'owned',

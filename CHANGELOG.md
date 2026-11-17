@@ -27,6 +27,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Changed
+- **Store swaps: a wash never says "Indistinguishable"** (PLAN §5 item 68; CLAUDE.md §3.2). The colour of a wash,
+  an ink or a Contrast paint is the least sure value in the paint data: some lines hold the colour of a thin coat
+  on white, others the colour in the pot. So in **Not on the rack?**, a swap for one of these paints now says
+  "Good" at most (`data.js swapQuality`), and a line before the list says "The colours of washes, inks and Contrast
+  paints are rough in this app. Compare the pots before you buy." The ΔE number stays the true one. This is a
+  first step: the wash colours themselves are not corrected yet.
 - **Store swaps: a pot you own comes first** (PLAN §5 item 72; a ranking change, CLAUDE.md §7). In **Not on the
   rack?**, a pot you own was marked "owned" but kept its place, so one in fourth place did not show. Now an
   owned pot that is a Good match or better (ΔE 3.5 or less, `data.js SWAP_OWNED_MAX`) is the first swap: you then
