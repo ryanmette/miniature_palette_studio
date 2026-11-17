@@ -12,7 +12,7 @@ import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, r
 import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, FINISH_WORDS, groupMembers, groupOf, randomStartPaint } from './data.js';
+import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf, randomStartPaint } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
@@ -2728,7 +2728,7 @@ function shareImageView() {
   return shareView(currentScheme(), {
     seed: { id: info.id || null, name: info.name },
     harmony: ui.harmonyLabel(state.harmony),
-    words: { from: t('imgFrom'), yourPaint: t('imgYourPaint'), noPot: t('imgNoPot'), footer: t('imgFooter'), finish: FINISH_WORDS },
+    words: { from: t('imgFrom'), yourPaint: t('imgYourPaint'), noPot: t('imgNoPot'), footer: t('imgFooter') },
   });
 }
 /** The image of the scheme on screen now: { blob, name, text }. Made once for each scheme, theme and

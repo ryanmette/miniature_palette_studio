@@ -627,9 +627,7 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     **Built (2026-11-17):** (a). The gradients are gone from every swatch; `data.js finishKind` + `FINISH_ICONS` are
     the one table (the tag, the swatch's mark as a mask in `app.css`, the share image); a contrast glyph of its own;
     a neutral finish tag; `--sw-edge` (a light edge in dark). An effect paint with no `fx` gets the plain star.
-    CLAUDE.md §2 and §3.5 Swatch are rewritten. **Open (data, its own PR):** `fx: "fluo"` for the 36 fluorescent and
-    neon `layer` paints and `fx: "gloss"` for the 5 Vallejo gloss `layer` paints (a schema change: `fx` is for
-    effect paints only today), then their two icons.
+    CLAUDE.md §2 and §3.5 Swatch are rewritten. **Built after it (2026-11-17), dataset 1.11.0:** `fx: "fluo"` for the 36 fluorescent and neon `layer` paints and `fx: "gloss"` for the 5 Vallejo gloss `layer` paints, by the words in the paint's own name; a sun icon for fluorescent; `finishWord` for the tag and the search. No type changed, so no match changed.
 
 **Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
 

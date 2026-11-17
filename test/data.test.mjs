@@ -805,6 +805,25 @@ test('washByGap: the wash nearest by its colour, from the same pool as nearestPa
   if (near) { const got = washByGap(real, blue, { ...media, boostIds: new Set([near.p.id]), boostAmount: 6 }); assert.equal(got.paint.id, near.p.id); assert.equal(got.owned, true); }
 });
 
+test('dataset 1.11.0: a flat paint whose name says fluorescent or gloss has an fx, and stays a flat paint', async () => {
+  const { finishKind, finishWord, searchPaints, finishClass } = await import('../src/js/data.js');
+  const flat = real.paints.filter(p => p.fx && p.type !== 'effect');
+  assert.ok(flat.every(p => p.type === 'layer' || p.type === 'base'));
+  assert.equal(flat.filter(p => p.fx === 'fluo').length, 36);
+  assert.equal(flat.filter(p => p.fx === 'gloss').length, 5);
+  assert.ok(flat.every(p => finishClass(p.type) === 'flat'), 'the class for matching does not change');
+  const neon = real.paints.find(p => p.name === 'Neon Yellow' && p.brand === 'Scale75');
+  assert.equal(finishKind(neon), 'fluo'); assert.equal(finishWord(neon), 'fluorescent');
+  const black = real.paints.find(p => p.name === 'Glossy Black');
+  assert.equal(finishKind(black), 'gloss'); assert.equal(finishWord(black), 'gloss');
+  assert.equal(finishWord(real.byId.get('citadel-base-mephiston-red')), '');
+  assert.equal(finishWord({ type: 'effect', fx: 'gloss' }), 'effect', 'an effect paint keeps its type word');
+  // the word finds the paint: "fluorescent" also finds a paint that the maker calls Neon
+  assert.ok(searchPaints(real, 'fluorescent scale75').some(p => p.id === neon.id));
+  // a fluorescent layer is still a suggestion (its type did not change)
+  assert.equal(nearestPaint(real, neon.hex, { excludeTypes: new Set(FINISH_TYPES) }).paint.id, neon.id);
+});
+
 test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {
   assert.match(BRAND_WORDS['Warhammer Colour'], /Citadel/);
   const wc = real.paints.filter(matcher56('citadel'));

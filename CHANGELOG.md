@@ -7,6 +7,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.17.0 took only the web entries. -->
 ### Changed
+- **Paint data 1.11.0: fluorescent and gloss paints say so** (PLAN §5 item 51; `src/data/SOURCES.md`). 36
+  fluorescent or neon paints and 5 Vallejo gloss paints are ordinary layer paints in the data, so they had no
+  finish icon and looked like flat colours. Each one now has an icon (a small sun for fluorescent, the gloss
+  icon for gloss) and a tag with the word. A search for "fluorescent" also finds the paints that a maker calls
+  "Neon". No colour value, type or paint id changed, so no match changed.
 - **Swatches show the paint's true colour, with one finish icon** (PLAN §5 item 51; chosen from
   `mockups/swatch-finish.html`, direction B with round 2's variant a; CLAUDE.md §2, §3.1 and §3.5). A metallic,
   a wash, a Contrast paint and an effect paint had a gradient on their swatch to show the finish. The gradient

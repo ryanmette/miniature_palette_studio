@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = process.argv[2] || join(ROOT, '.cache', 'raw');
 const CAPTURED = '2026-06-25';
-const VERSION = '1.10.0';
+const VERSION = '1.11.0';
 // The build that took three corrections from the makers' own pages (PLAN §5 item 73): 14 Army Painter effects
 // that upstream lists as washes, one Two Thin Coats name, and four Gloss Shades that GW no longer makes. No hex
 // changed: the upstream values are still CAPTURED's.
@@ -227,6 +227,22 @@ for (const p of paints) {
 }
 console.log(`special-effect fx → gloss ${fxCount.gloss}, slime ${fxCount.slime}, texture ${fxCount.texture}`);
 console.log('  e.g. ' + fxSample.join(' · '));
+
+/* ---- a finish in the name of a flat paint (dataset 1.11.0; PLAN §5 item 51) ----
+   A base or layer paint can have a finish that its hex cannot show: the maker's own name says it is fluorescent
+   (or neon), or gloss. It stays a base or layer paint for every match: `fx` only gives it its finish icon and
+   tag, so a painter does not take it for an ordinary flat colour. The source is the paint's own name. */
+const FLAT_FX_RULES = [
+  ['fluo', /fluorescent|\bneon\b/],
+  ['gloss', /\bgloss(y)?\b/],
+];
+const flatFx = { fluo: 0, gloss: 0 };
+for (const p of paints) {
+  if (p.type !== 'base' && p.type !== 'layer') continue;
+  const hit = FLAT_FX_RULES.find(([, re]) => re.test(p.name.toLowerCase()));
+  if (hit) { p.fx = hit[0]; flatFx[hit[0]]++; }
+}
+console.log(`flat paints with a finish in the name → fluorescent ${flatFx.fluo}, gloss ${flatFx.gloss}`);
 
 /* ---- curated equivalence groups (auto-seeded by tight ΔE2000) ---- */
 const hx = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];

@@ -1,4 +1,4 @@
-# Data sources & attribution — dataset v1.10.0
+# Data sources & attribution — dataset v1.11.0
 
 Provenance for `src/data/paints.json` (values captured `2026-06-25`, `2026-10-26` and, for Tone Pro, `2026-11-06`; built `2026-11-17`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
@@ -65,6 +65,19 @@ Each is the maker's fact, read on 2026-11-17 and written in our own words. No im
   have marked it, and a paint that goes from the data would take that mark with it.
 - The same GW article names seven new Shades (2022). They are **not** in the data yet: the only values this
   project can read are GW's pot pictures, and the other Shades hold another kind of value (`docs/PLAN.md` §5 item 68).
+
+## A finish in the name of a flat paint (v1.11.0; no colour value, type or id changed)
+
+41 base and layer paints have a finish that a hex cannot show, and the maker's own name says so. From v1.11.0 the
+build gives them an `fx`, by the words in the name (`FLAT_FX_RULES` in `scripts/build-dataset.mjs`):
+
+| `fx` | Words in the name | Paints |
+|---|---|---|
+| `fluo` | "fluorescent", "neon" | 36: AK Interactive 3rd Gen (5), Pro Acryl Signature (6), Reaper Master Series (2), Scale75 Artist (6), Vallejo Game Color (8), Mecha Color (4), Model Color (5) |
+| `gloss` | "gloss", "glossy" | 5: Vallejo Model Color Gloss White and Glossy Black; Vallejo Mecha Color Fuel Stains, Oil Stains and Petrol Spills (Gloss) |
+
+The source is the paint's name, from the primary source above. The `fx` gives the paint its finish icon and tag
+in the app (PLAN §5 item 51). Each paint keeps its type, so it is matched as a flat paint, as before.
 
 ## Coverage — 3375 paints, 10 brands
 

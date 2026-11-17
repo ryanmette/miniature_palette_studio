@@ -633,6 +633,10 @@ test('the finish mark (item 51): one icon per finish kind, from one table; the c
   assert.match(finishTag({ type: 'effect', fx: 'gloss' }), /class="finish finish-effect"><svg[^>]*><path d="M3\.75 10a6\.25/);
   assert.match(finishTag('metal'), /<svg.*metallic<\/span>$/);
   assert.equal(finishTag({ type: 'layer' }), ''); assert.equal(finishTag('base'), '');
+  // a flat paint with a finish in its name (dataset 1.11.0): its icon and its word
+  assert.equal(fxCls({ type: 'layer', fx: 'fluo' }), ' fm fm-fluo');
+  assert.match(finishTag({ type: 'layer', fx: 'fluo' }), /class="finish finish-layer"><svg.*fluorescent<\/span>$/);
+  assert.match(finishTag({ type: 'layer', fx: 'gloss' }), /gloss<\/span>$/);
   assert.notEqual(finishGlyph('contrast'), finishGlyph('wash'), 'contrast has an icon of its own');
   assert.equal(finishKind({ type: 'glaze' }), 'wash');
 });
