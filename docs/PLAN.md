@@ -816,7 +816,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, 73, way C of 68 and the owned-first part of 72 built)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, 73, way C of 68 and the owned-first part of 72 built; 74 open)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -944,6 +944,23 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       Poxwalker, Kroak Green, Soulblight Grey). The same release had new Contrast paints, so this is a check of
       the whole Warhammer Colour range against GW's list, not one correction. Also open: Nolzur's Glistening Blood
       (type `wash`), which needs its own maker's page.
+74. **The Recipe's wash step by the gap?** (open; Ryan's decision.) Measured 2026-11-17 on 1,882 base and layer
+    paints with a colour word in the name (dataset 1.9.0): the share that gets a real wash, shade or ink, and the
+    share of those whose wash is in the base paint's colour family (the browns as one; grey with black).
+
+    | Washes available | Found, ΔE ≤ 10 (now) | Found, gap ≤ 8° | Same family, ΔE | Same family, gap |
+    |---|---|---|---|---|
+    | Every brand | 95% | 99% | 61% | 60% |
+    | Warhammer Colour + Army Painter | 75% | 93% | 59% | 57% |
+    | Army Painter only | 69% | 88% | 60% | 59% |
+    | Vallejo only | 56% | 90% | 51% | 57% |
+    | Warhammer Colour only | 8% | 78% | 53% | 48% |
+
+    So with every brand the gap changes almost nothing, and with one brand it finds a real wash much more often at
+    about the same accuracy. The gain is for a painter with **Use my paints** on. With every brand, Warhammer
+    Colour's Shades win 3.3% of the steps by ΔE and 4.1% by the gap (they are 9% of the pool). A change alters
+    every Recipe and shopping list, and the gap does not show strength, which is what this step is about.
+
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:
