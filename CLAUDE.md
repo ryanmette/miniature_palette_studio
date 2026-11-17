@@ -488,7 +488,8 @@ verification methodology: [`docs/DATA_SOURCING.md`](docs/DATA_SOURCING.md).
   only larger. So the **direction** of the absorbance is the wash's colour and its **length** is the coat's
   thickness. In the store swaps, a wash or shade ranks the paints of its class by **the gap**: the angle between
   the two absorbances, in degrees (`absorbGap`), plus `0.02 × ΔE` to part two washes at one gap (`WASH_GAP_TIE`;
-  all blacks and greys are near 0°) and the kind penalty, here 2°. A paint that hardly absorbs (length under
+  all blacks and greys are near 0°) and **4°** for a swap of another kind (`WASH_KIND_GAP`: an ink, a Contrast
+  paint, a glaze; at 4° the best swap is a wash or shade for 96%, at no cost in colour family). A paint that hardly absorbs (length under
   `WEAK_ABSORB` = 0.5: a white wash) has no clear direction: it is no swap by the gap, and as the paint to buy
   it keeps ΔE. An owned wash goes first when its gap is 4° or less. The words: **Close colour** ≤ 4° · **Near
   colour** ≤ 8° · **Other colour** over that (§3.2). Measured on dataset 1.9.0 against the colour word in the

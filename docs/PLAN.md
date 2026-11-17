@@ -875,7 +875,9 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       in linear RGB, which does not change with the coat's thickness), with words of its own in place of ΔE.
     **Way (c), built (2026-11-17; Ryan: "go with C").** In the store swaps a wash or shade ranks by **the gap**: the
     angle between the two absorbances (`color.js absorbance`, `absorbGap`; `data.js storeSwaps`, `gapQuality`),
-    plus 0.02 × ΔE as the tie-break and the kind penalty (2°). The check was the colour word in each wash's name
+    plus 0.02 × ΔE as the tie-break and the kind penalty (2° at first; 4° since dataset 1.10.0, `WASH_KIND_GAP`: at
+    2° a black Contrast paint came before Nuln Oil for a black wash, and at 4° the best swap is a wash or shade for
+    96%, not 82%, with the colour family as good: 80% against 77%). The check was the colour word in each wash's name
     (106 of 131 have one; the browns, fleshes, sepias and rusts as one family). Best swap in the same family:
 
     | The brands carried | By ΔE | By the gap |

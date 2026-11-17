@@ -588,7 +588,7 @@ test('swapQuality (item 68): an ink, Contrast or glaze swap never says more than
 });
 
 test('storeSwaps (item 68, way C): a wash ranks its swaps by the gap, whatever the coat each maker recorded', async () => {
-  const { storeSwaps, gapQuality, WASH_GAP_CLOSE, WASH_GAP_NEAR, WASH_GAP_TIE, WEAK_ABSORB, SWAP_KIND_PENALTY } = await import('../src/js/data.js');
+  const { storeSwaps, gapQuality, WASH_GAP_CLOSE, WASH_GAP_NEAR, WASH_GAP_TIE, WEAK_ABSORB, WASH_KIND_GAP } = await import('../src/js/data.js');
   assert.deepEqual([WASH_GAP_CLOSE, WASH_GAP_NEAR, WEAK_ABSORB], [4, 8, 0.5]);
   assert.deepEqual([0, 4, 4.1, 8, 8.1, 40].map(g => gapQuality(g).label), ['Close colour', 'Close colour', 'Near colour', 'Near colour', 'Other colour', 'Other colour']);
   assert.deepEqual([2, 6, 20].map(g => gapQuality(g).tier), ['success', 'warning', 'danger']);
@@ -629,8 +629,16 @@ test('storeSwaps (item 68, way C): a wash ranks its swaps by the gap, whatever t
   // a wash you own goes first when it is a Close colour, and only then
   assert.equal(of('shadow', { ownedIds: new Set(['nuln']) })[0].paint.id, 'nuln', 'owned and a Close colour: before the nearer Dark Tone');
   assert.equal(of('shadow', { ownedIds: new Set(['blue']) })[0].paint.id, 'dark', 'owned but an Other colour: its own place');
-  // the kind penalty is in the score's unit, here degrees
-  assert.equal(SWAP_KIND_PENALTY, 2);
+  // a swap of another kind is 4° further: a black Contrast paint at the same gap comes after the black shade
+  assert.equal(WASH_KIND_GAP, 4);
+  const sx2 = indexDataset({ version: 't', paints: [
+    { id: 'shadow', brand: 'Army Painter', line: "Nolzur's", name: 'Shadow Wash', hex: '#000103', type: 'wash' },
+    { id: 'nuln', brand: 'Warhammer Colour', line: 'Shade', name: 'Nuln Oil', hex: '#9E9A98', type: 'shade' },
+    { id: 'templar', brand: 'Warhammer Colour', line: 'Contrast', name: 'Black Templar', hex: '#171717', type: 'contrast' },
+  ] });
+  const two = storeSwaps(sx2, sx2.byId.get('shadow'));
+  assert.deepEqual(two.map(m => m.paint.id), ['nuln', 'templar']);
+  assert.ok(two[1].gap < two[0].gap && two[1].deltaE < two[0].deltaE, 'the Contrast paint is nearer by the gap and by ΔE; the kind decides');
 });
 
 test('storeSwaps (item 72): a pot you own goes first when it is Good or better, and only then', async () => {

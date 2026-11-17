@@ -33,7 +33,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   washes' names, the first swap is in the same colour family in 71% of cases in a store with Warhammer Colour and
   Army Painter (44% by ΔE), and in 74% with Warhammer Colour only (32%). With every brand it is equal (64% and
   65%). The gap does not show how strong a wash is, and no paint value changed. Inks, Contrast paints and glazes
-  keep ΔE, and so do the Equivalents tab and the Recipe's wash step.
+  keep ΔE, and so do the Equivalents tab and the Recipe's wash step. An ink, a Contrast paint or a glaze ranks 4°
+  further as the swap for a wash (`WASH_KIND_GAP`): the first swap is then a wash or shade for 96% (82% at 2°),
+  and it is in the same colour family as often (80% against 77%).
 - **A store swap goes under the heading of its own rack** (PLAN §5 item 70; CLAUDE.md §3.6). After **Use**, the
   new pot stayed in the old row's place, so a Two Thin Coats pot could be below "AK Interactive", a brand the
   store did not have, and the counts beside the headings were wrong. Now the row moves at once to the heading of
