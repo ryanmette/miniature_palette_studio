@@ -624,8 +624,12 @@ with one id). A fix renames the public page's anchors, so its links change: it w
     sees the pots, not a coat over white. It does not block the swatch build (the field shows the paint's hex,
     whatever the rule). It is settled with the first measured batch (item 49): measure each wash both ways (a dab of
     the liquid, and one coat over white primer) on the same card, and compare the real values side by side.
-    **Next:** build (a) in its own PR after #65 merges. It changes CLAUDE.md §2 (the finish overlays go; a finish
-    icon in the paint's ink takes their place) and §3.5 Swatch.
+    **Built (2026-11-17):** (a). The gradients are gone from every swatch; `data.js finishKind` + `FINISH_ICONS` are
+    the one table (the tag, the swatch's mark as a mask in `app.css`, the share image); a contrast glyph of its own;
+    a neutral finish tag; `--sw-edge` (a light edge in dark). An effect paint with no `fx` gets the plain star.
+    CLAUDE.md §2 and §3.5 Swatch are rewritten. **Open (data, its own PR):** `fx: "fluo"` for the 36 fluorescent and
+    neon `layer` paints and `fx: "gloss"` for the 5 Vallejo gloss `layer` paints (a schema change: `fx` is for
+    effect paints only today), then their two icons.
 
 **Open, from the review:** `support.html` repeats two app ids inside the Help sheet (a fix changes the page's anchors).
 
@@ -1002,9 +1006,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
 
 Ryan's order (2026-11-17: "go with your recommendation"):
 
-1. **The swatch pass (item 51).** Chosen: B, a pure colour field with one finish icon in the corner. Today the
-   finish overlays shift the colour by up to ΔE 10.4, which CLAUDE.md §2 forbids: the largest known gap between
-   the app and its own rules.
+1. **The swatch pass (item 51): built 2026-11-17** (a pure colour field with one finish icon in the corner).
 2. **Small and decided:** item 59 (⋯ shows a focus ring when a touch opens it).
 3. **Studied and chosen, larger:** item 64 B (a Brand setting in ⋯: Any · Prefer · Only), or the next maker's tone
    families (Reaper first); item 7 (the paint detail sheet).

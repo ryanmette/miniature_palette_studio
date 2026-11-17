@@ -3,7 +3,7 @@
 
 import { textOn, normHex, rgbToHsl, hexToRgb } from './color.js';
 import { HARMONY_OFFSETS } from './harmony.js';
-import { FINISH_WORDS } from './data.js';   // the finish words: the tag shows the word the search finds
+import { FINISH_WORDS, FINISH_ICONS, finishKind } from './data.js';   // the finish words: the tag shows the word the search finds
 
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const LABELS = { 'neutral-pop': 'Neutral + pop', 'warm-cool': 'Warm / cool' };   // neutral harmonies read as phrases
@@ -16,28 +16,42 @@ export const harmonyLabel = label;
 // re-assert here so a future caller can't turn a swatch into a CSS/HTML-injection sink.
 const safeColor = c => normHex(c) || '#000000';
 
-// background-color (not the `background` shorthand) so the metallic-sheen background-image can layer on top.
-export const swatch = (hex, cls = '', extra = '') => `<span class="sw ${cls}" style="background-color:${safeColor(hex)};${extra}"></span>`;
+// The colour field is the paint's hex and nothing else: no gradient, no sheen (§2; PLAN §5 item 51). A non-flat
+// paint's swatch carries ONE finish icon (the `fm` classes from fxCls), drawn by app.css in `--ink`, the
+// swatch's own ink (textOn), as the copy button and the lock badge are.
+export const swatch = (hex, cls = '', extra = '') => {
+  const c = safeColor(hex);
+  return `<span class="sw ${cls}" style="background-color:${c};${cls.includes('fm-') ? `--ink:${textOn(c)};` : ''}${extra}"></span>`;
+};
 
-// Finish VFX modifier class for a swatch (§2/§3.5 finish overlays — non-tinting, convey finish not colour):
-//  metal → specular sheen · wash/ink/shade/glaze → translucent satin · contrast → softer translucent ·
-//  curated p.fx (gloss/slime/texture) → bespoke wet-gloss / goopy / gritty-matte for technical paints.
-const FX_BY_TYPE = { metal: 'metal', wash: 'fx-wash', ink: 'fx-wash', shade: 'fx-wash', glaze: 'fx-wash', contrast: 'fx-contrast' };
-export const fxCls = p => { if (!p) return ''; if (p.fx) return ' fx-' + p.fx; const c = FX_BY_TYPE[p.type]; return c ? ' ' + c : ''; };
+/** The finish-mark classes for a paint's swatch: " fm fm-<kind>" (data.js finishKind), '' for a flat paint.
+ *  The element must also set `--ink` (swatch() does). The name is from the finish overlays this replaced. */
+export const fxCls = p => { const k = finishKind(p); return k ? ` fm fm-${k}` : ''; };
+/** `--ink` for an element that draws its own swatch (a picker tile, a Shelf cell): '' for a flat paint. */
+const inkVar = p => (finishKind(p) ? `;--ink:${textOn(safeColor(p.hex))}` : '');
 
-// Finish-type glyphs (inline SVG so they inherit colour/size). Flat paints (base/layer/dry/primer) get none.
-const GEM = '<svg viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"><path fill="currentColor" d="M3 6l5-4 5 4-5 8z"/></svg>';
-const DROP = '<svg viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"><path fill="currentColor" d="M8 2c2.4 3.2 4 5.2 4 7.2A4 4 0 0 1 4 9.2C4 7.2 5.6 5.2 8 2z"/></svg>';
-const STAR = '<svg viewBox="0 0 16 16" width="10" height="10" aria-hidden="true"><path fill="currentColor" d="M8 1l1.6 4.4L14 7l-4.4 1.6L8 13 6.4 8.6 2 7l4.4-1.6z"/></svg>';
-const GLYPHS = { metal: GEM, contrast: DROP, wash: DROP, shade: DROP, ink: DROP, glaze: DROP, effect: STAR };
-const FINISHES = Object.fromEntries(Object.entries(GLYPHS).map(([type, g]) => [type, [FINISH_WORDS[type], g]]));
-/** Small finish pill (icon + label) flagging non-flat paints (metallic/contrast/wash/…); '' for flat paints. */
-export const finishTag = type => { const f = FINISHES[type]; return f ? `<span class="finish finish-${type}">${f[1]}${f[0]}</span>` : ''; };
+// The finish icons (data.js FINISH_ICONS, the icon set's grid and stroke, §3.5), inline so they take the text's
+// colour and size. A flat paint (base · layer · dry) has none.
+const finishSvg = kind => {
+  const g = FINISH_ICONS[kind];
+  if (!g) return '';
+  return '<svg viewBox="0 0 20 20" width="10" height="10" aria-hidden="true">'
+    + (g.stroke ? `<path d="${g.stroke}" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="square" stroke-linejoin="miter"/>` : '')
+    + (g.fill ? `<path d="${g.fill}" fill="currentColor"/>` : '') + '</svg>';
+};
+// A paint, or a bare type (a caller that has no paint): the icon is the paint's kind, the word its type.
+const asPaint = x => (x && typeof x === 'object' ? x : { type: x });
+/** The finish tag (icon + word) for a non-flat paint (metallic · contrast · wash · …); '' for a flat paint.
+ *  A neutral tag (§3.5): a finish is a fact about the paint, not a state. */
+export const finishTag = x => {
+  const p = asPaint(x), word = FINISH_WORDS[p.type];
+  return word ? `<span class="finish finish-${p.type}">${finishSvg(finishKind(p))}${word}</span>` : '';
+};
 /** A paint the maker no longer makes says so beside its finish tag (dataset 1.10.0): a neutral tag, state as
  *  words (§3.5). A store cannot have it, so the Shelf's list opens its swaps. */
 export const goneTag = p => (p && p.discontinued ? ' <span class="tag gone">No longer made</span>' : '');
 /** The finish icon alone (aria-hidden SVG), for a surface that names the finish in its own words. */
-export const finishGlyph = type => (FINISHES[type] ? FINISHES[type][1] : '');
+export const finishGlyph = x => finishSvg(finishKind(asPaint(x)));
 
 /** Display name for a dataset paint — dname carries the line when (brand, name) is ambiguous
  *  ("Dawnstone (Layer)" vs "Dawnstone (Dry)"). Use wherever the line isn't otherwise visible —
@@ -71,14 +85,14 @@ function pickSaid(p, { mark = 'none', current = false, match = null }, t) {
 }
 
 /** One tile of the browse grid: the swatch (finish overlay + owned / to-buy badge), the display name
- *  ("Dawnstone (Layer)": twins stay apart) and the brand, with the finish icon for a non-flat paint (§2).
+ *  ("Dawnstone (Layer)": twins stay apart) and the brand. A non-flat paint's swatch has its finish icon (§3.5 Swatch).
  *  `current`: your pick, a ring inside the swatch (state); the keyboard cursor is the outer ring (.act). */
 export function pickTile(p, { id, k, mark = 'none', current = false }, t = x => x) {
   return `<div class="pkt${current ? ' cur' : ''}" role="gridcell" id="${esc(id)}" data-k="${Number(k)}"`
     + ` aria-label="${esc(pickSaid(p, { mark, current }, t))}">`
-    + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}">${markBadge(mark)}</span>`
+    + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}${inkVar(p)}">${markBadge(mark)}</span>`
     + `<span class="pkn">${esc(pname(p))}</span>`
-    + `<span class="pkb">${finishGlyph(p.type)}<span>${esc(p.brand)}</span></span></div>`;
+    + `<span class="pkb"><span>${esc(p.brand)}</span></span></div>`;
 }
 
 /** One row of a search: the paint's name, then brand · line · its mark and the finish tag on the second
@@ -92,8 +106,8 @@ export function pickRow(p, { id, k, mark = 'none', current = false, match = null
     : '';
   return `<div class="pko${current ? ' cur' : ''}" role="option" id="${esc(id)}" data-k="${Number(k)}" aria-selected="false"`
     + ` aria-label="${esc(pickSaid(p, { mark, current, match }, t))}">`
-    + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}">${markBadge(mark)}</span>`
-    + `<span class="pktx"><b>${esc(p.name)}</b><span class="pksub">${sub} ${finishTag(p.type)}${goneTag(p)}</span></span>${de}</div>`;
+    + `<span class="sw${fxCls(p)}" style="background-color:${safeColor(p.hex)}${inkVar(p)}">${markBadge(mark)}</span>`
+    + `<span class="pktx"><b>${esc(p.name)}</b><span class="pksub">${sub} ${finishTag(p)}${goneTag(p)}</span></span>${de}</div>`;
 }
 
 /** The row that seeds a typed hex: "Seed: #9A1115" while the field's live hex is the seed, else "Use
@@ -137,7 +151,7 @@ export function shelfGrid(paints, markOf, selected = new Set()) {
     const state = markLabel(mark);
     return `<div class="cell${fxCls(p)}" role="option" data-id="${esc(p.id)}" data-mark="${mark}"`
       + ` aria-selected="${sel}" aria-label="${esc(pname(p))}, ${esc(p.brand)} — ${state}"`
-      + ` style="--cell:${safeColor(p.hex)}">`
+      + ` style="--cell:${safeColor(p.hex)}${inkVar(p)}">`
       + `${badge}<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>`
       + `</div>`;
   }).join('');
@@ -289,7 +303,7 @@ export function matchChip(m, markOf) {
   return swatch(p.hex, 'act' + fxCls(p))
     + `<div style="min-width:0"><div class="ttl">${m.chosen ? 'Chosen pot' : 'Nearest pot'}</div>`
     + `<div class="nm">${esc(p.name)}</div>`
-    + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}</div>`
+    + `<div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}</div>`
     + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span>`
     + `<span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
     + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></div>`
@@ -382,7 +396,7 @@ export function potRows(items, markOf = () => 'none', currentId = null) {
     return `<li><button type="button" class="potrow" data-potid="${esc(p.id)}"${cur ? ' aria-current="true"' : ''}>`
       + `${swatch(p.hex, fxCls(p).trim())}`
       + `<span class="potname">${esc(pname(p))}${cur ? ' <span class="potcur">· chosen</span>' : ''}`
-      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}${mark === 'owned' ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span></span>`
+      + `<span class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}${mark === 'owned' ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span></span>`
       + `<span class="de"><span class="dot" style="background:${tier(m.quality.tier)}"></span><span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span><span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>`
       + `</button></li>`;
   }).join('');
@@ -420,7 +434,7 @@ export function roleSlots(scheme, markOf, holdable = new Set(), tr = null) {
       + `<div class="pn">${p ? esc(p.name) : '—'}</div>`
       + (p ? `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span>` : '')
       // wash-step honesty: a real wash/shade/ink shows its finish pill; no close medium → "watered down"
-      + (s.media === 'wash' && p ? `<div class="steptag media">${finishTag(p.type)}${goneTag(p)}${gap ? ` <span class="stepgap" title="${esc(gapWhy)}">${esc(gap)}</span>` : ''}</div>` : '')
+      + (s.media === 'wash' && p ? `<div class="steptag media">${finishTag(p)}${goneTag(p)}${gap ? ` <span class="stepgap" title="${esc(gapWhy)}">${esc(gap)}</span>` : ''}</div>` : '')
       + (s.dilute ? `<div class="steptag dilute" title="No bottled wash lands close enough — thin (water down) this base paint into the recesses instead">watered down</div>` : '')
       + `</div>`;
   };
@@ -489,7 +503,7 @@ export function equivGroup(label, members, markOf) {
     + `<div class="eq">${members.map(p => {
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}</div>`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}</div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
     }).join('')}</div></div>`;
 }
@@ -502,7 +516,7 @@ export function equivalentsPanel(name, equivs, markOf) {
       const p = e.paint, q = e.quality;
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`
-        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p.type)}${goneTag(p)}</div>`
+        + `<div class="nm">${esc(p.name)}</div><div class="br">${esc(p.brand)}${p.line && p.line !== '—' ? ' · ' + esc(p.line) : ''} ${finishTag(p)}${goneTag(p)}</div>`
         + `<div class="de"><span class="dot" style="background:${tier(q.tier)}"></span><span style="color:${tierText(q.tier)}">${esc(q.label)}</span>`
         + `<span class="badge">ΔE ${e.deltaE.toFixed(1)}</span></div>`
         + `<div class="ownline" style="margin-top:6px">${ownOrBuy(p.id, mark)}</div></div></div>`;
@@ -547,9 +561,8 @@ export function livePalette(vm, roleByHex = {}) {
     const tag = isPin ? (role ? `${role} · your paint` : 'Your accent (kept)')
       : role || (isBase ? 'Base' : isFree ? 'Extra' : isMetal ? 'Metal'
       : c.deg ? `${c.deg > 0 ? '+' : ''}${c.deg}°` : toneTag(c.hex, baseCol));   // deg 0 = a value partner, not a hue offset
-    // Finish overlay: the pot band wears its paint's finish; the Metal target wears the metallic sheen
-    // (a flat hex misrepresents metal — §2 finish overlays convey finish, not colour).
-    const fx = isMetal ? 'metal' : '';
+    // The pot band carries its paint's finish icon (§3.5 Swatch). The target block is a colour, not a paint,
+    // so it has none: the Metal column's role name says what it is.
     const potHex = m ? safeColor(m.paint.hex) : null;
     const potBand = m
       ? `<span class="lcpot ${fxCls(m.paint).trim()}" style="background-color:${potHex};color:${textOn(potHex)}">`
@@ -559,7 +572,7 @@ export function livePalette(vm, roleByHex = {}) {
       ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
         + `<span class="de" style="margin:2px 0 0"><span class="dot" style="background:${tier(m.quality.tier)}"></span>`
         + `<span style="color:${tierText(m.quality.tier)}">${esc(m.quality.label)}</span>`
-        + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint.type)}${goneTag(m.paint)}`
+        + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint)}${goneTag(m.paint)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
     const fi = isFree ? +c.id.slice(1) : -1;                                     // index among the added swatches
     const sw = isBase ? 'base' : isFree ? 'x:' + c.id.slice(1) : 'p:' + c.deg;   // addressable swatch key
@@ -602,7 +615,7 @@ export function livePalette(vm, roleByHex = {}) {
     // link) and the Equivalents selection. It had been an inset shadow that the colour block covered.
     const lockBadge = lockOn ? `<span class="lclock" title="Locked: it stays when you roll or change the harmony">${icon('lock')}<span class="sr-only"> locked</span></span>` : '';
     return `<div class="lcol${isMetal || isPin ? ' display' : ''}" data-hex="${cHex}"${isFree ? ` draggable="true" data-dragidx="${c.id.slice(1)}"` : ''}>`
-      + `<div class="lctop${fx ? ' ' + fx : ''}" style="background-color:${bg};color:${t}">`
+      + `<div class="lctop" style="background-color:${bg};color:${t}">`
       +   `<span class="lctag">${esc(tag)}${lockBadge}</span>`
       +   `<span class="lchexrow"><span class="lchex">${bg}</span>`
       +     `<button type="button" class="lccopy${t === '#FFFFFF' ? ' light' : ''}" data-copy="${bg}" title="Copy ${bg}" aria-label="Copy ${esc(tag)} target ${bg}">${COPY_ICON}</button>`
@@ -748,7 +761,7 @@ export function rackRow(r, tr) {
     // the plain name: the line is in the row (and the rack group) already; the tick's name keeps the full
     // display name, so twins (Dawnstone (Layer) / (Dry)) stay apart for a screen reader
     + `<span class="rkmain"><span class="rkname">${esc(p.name)}</span>`
-    + `<span class="rkline">${line}${finishTag(p.type)}${goneTag(p)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
+    + `<span class="rkline">${line}${finishTag(p)}${goneTag(p)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
     // a swap made in this visit says what it replaced; Undo only while it is still to buy (once ticked, it was bought)
     + (r.insteadOf ? `<span class="rkinst">${esc(tr('inPlaceOf', { name: pname(r.insteadOf) }))}`
       + (r.owned ? '' : ` <button type="button" class="textact" data-rkunswap="${esc(p.id)}" aria-label="${esc(tr('undoSwapFor', { name: pname(r.insteadOf) }))}">${esc(tr('undo'))}</button>`) + '</span>' : '')
@@ -807,7 +820,7 @@ function rackSwaps(r, tr) {
     const q = m.paint, qn = pname(q);
     h += `<div class="rkswap">${swatch(q.hex, 'rkssw' + fxCls(q))}`
       + `<span class="rksmain"><span class="rksname">${esc(qn)}</span>`
-      + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q.type)}${goneTag(q)}`
+      + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q)}${goneTag(q)}`
       + ` <span class="mono">${m.gap != null ? esc(tr('gapDeg', { n: m.gap.toFixed(0) })) : 'ΔE ' + m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
       + `${m.owned ? ` <span class="ownmini">${icon('check')}${esc(tr('ownedWord'))}</span>` : ''}</span></span>`
       + `<button type="button" class="btn sm" data-rkuse="${esc(q.id)}" data-for="${esc(p.id)}" aria-label="${esc(tr('useInPlace', { name: qn, was: name }))}">${esc(tr('useSwap'))}</button></div>`;
@@ -892,7 +905,7 @@ export function mapSummaryLine(sum, map, tr) {
 export function mapDetail(map, b, r, fills, tr) {
   const c = map.cells[b][r], o = c.owned.length, name = mapToneName(b, r, tr);
   const row = (p, extra = '') => `<li class="mdrow">${swatch(p.hex, 'mdsw' + fxCls(p))}`
-    + `<span class="mdmain"><span class="mdname">${esc(pname(p))}</span><span class="rkline">${[esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ')}${finishTag(p.type)}${goneTag(p)}</span></span>${extra}</li>`;
+    + `<span class="mdmain"><span class="mdname">${esc(pname(p))}</span><span class="rkline">${[esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ')}${finishTag(p)}${goneTag(p)}</span></span>${extra}</li>`;
   let h = `<h3 class="mdhead" id="mapDetailHead" tabindex="-1">${esc(name)}</h3>`;
   h += `<p class="mdstate">${esc(o || c.want.length ? mapCellCounts(c, tr) : tr('mapGapLong', { tone: name.toLowerCase() }))}</p>`;
   if (o || c.want.length) h += `<ul class="mdlist">${c.owned.map(p => row(p)).join('')}`
