@@ -14,6 +14,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Changed
+- **Paint data 1.10.0: three corrections from the makers' own pages** (PLAN §5 item 73; `src/data/SOURCES.md`). No
+  colour value changed, and no paint id changed.
+  - **14 Army Painter paints are effects, not washes.** The community source lists them with the Fanatic washes.
+    Army Painter's own shop lists them as "Warpaints Fanatic Effects": Brush-On Primer, the rust and blood
+    effects, the slime and the glow paints. As washes they showed as swaps for washes and as the wash in a Recipe.
+  - **"RC Flesh Wash" is "Orc Flesh Wash"** (Two Thin Coats' own chart). A search for the old spelling still
+    finds it.
+  - **The four Gloss Shades are marked as no longer made** (Games Workshop, 2022): Nuln Oil Gloss, Agrax Earthshade
+    Gloss, Reikland Fleshshade Gloss and Cryptek Armourshade Gloss. They stay in the app, because you can own them.
 - **Store swaps: a wash is compared by its colour, not by how dark it looks** (PLAN §5 item 68, way C; a ranking
   change, CLAUDE.md §7 and §3.2). The makers show a wash in different ways: a thin coat on white (the Warhammer
   Colour Shades) or the liquid in the pot (Army Painter). So Shadow Wash and Nuln Oil, two black washes, were ΔE

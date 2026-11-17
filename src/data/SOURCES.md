@@ -1,6 +1,6 @@
-# Data sources & attribution — dataset v1.9.0
+# Data sources & attribution — dataset v1.10.0
 
-Provenance for `src/data/paints.json` (values captured `2026-06-25`, `2026-10-26` and, for Tone Pro, `2026-11-06`; built `2026-11-06`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
+Provenance for `src/data/paints.json` (values captured `2026-06-25`, `2026-10-26` and, for Tone Pro, `2026-11-06`; built `2026-11-17`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
 
 ## Primary source (used)
@@ -48,6 +48,23 @@ records the article, the three chart URLs and this method.
   with real pots can correct them later (`docs/COLOUR_CHECK.md`).
 - 32 Tone Pro names have a hue outside their name's colour band (a dark tone of an orange reads as red); they
   are GW's names and are accepted in `scripts/data-exceptions.json`.
+
+## Corrections from the makers' own pages (v1.10.0; no colour value changed)
+
+The upstream compilation gives each paint's colour. For three facts that are not a colour, the maker's own page
+is the better source, so the build takes them from there (`scripts/build-dataset.mjs`: `types`, `names`, `gone`).
+Each is the maker's fact, read on 2026-11-17 and written in our own words. No image and no text is copied.
+
+| What | The maker's source | The change |
+|------|--------------------|------------|
+| 14 Army Painter paints are effects, not washes | **[The Army Painter's shop](https://www.thearmypainter.com/)**, its public product list (`/products.json`): the titles "Warpaints Fanatic Effects: …" and "Warpaints Fanatic Wash: …" | Upstream's set "Warpaints Fanatic Wash" holds 32 paints. Army Painter lists 18 as Fanatic Washes and 14 as Fanatic Effects: Brush-On Primer, Dark Rust, Data System Glow, Disgusting Slime, Dry Blood, Fresh Rust, Lens Flare Glow, Oil Stains, Oozing Vomit, Plasma Coil Glow, Power Node Glow, Radiation Glow, True Blood, Verdigris. These 14 now have the type `effect`. The line ("Wash") and the ids stay as they were. |
+| "RC Flesh Wash" is "Orc Flesh Wash" | **[Two Thin Coats paints](https://www.duncanrhodes.com/ttc-paints/)**, the "Two Thin Coats paint reference chart" (© Trans Atlantis Games and Duncan Rhodes Painting Academy, 2022) | The name is the maker's. The id stays `two-thin-coats-wave-1-rc-flesh-wash`, and the paint keeps the upstream name in `formerly`. |
+| Four Gloss Shades are no longer made | **[A New Era of Paints](https://www.warhammer-community.com/en-gb/articles/llZeorVj/a-new-era-of-paints-new-contrast-colours-reformulated-shades-and-our-best-white-spray-ever/)** (Warhammer Community, Games Workshop, 13 Jun 2022): "The four gloss shades … are leaving the range." | Nuln Oil Gloss, Agrax Earthshade Gloss, Reikland Fleshshade Gloss and Cryptek Armourshade Gloss have `discontinued: true`. They stay in the data, because a painter can still own them. |
+
+- Brush-On Primer is a primer, and this dataset leaves primers out (below). It stays, as an effect: a painter can
+  have marked it, and a paint that goes from the data would take that mark with it.
+- The same GW article names seven new Shades (2022). They are **not** in the data yet: the only values this
+  project can read are GW's pot pictures, and the other Shades hold another kind of value (`docs/PLAN.md` §5 item 68).
 
 ## Coverage — 3375 paints, 10 brands
 
@@ -100,11 +117,12 @@ The paint values are the source's. `scripts/build-dataset.mjs` changes only thes
 - Built by [`scripts/build-dataset.mjs`](../../scripts/build-dataset.mjs): stage the raw brand markdown
   from the source repo into `.cache/raw/`, then `node scripts/build-dataset.mjs`.
 - Built from two inputs: the upstream markdown and `scripts/tone-pro.json` (committed).
+- Built from three inputs since v1.10.0: the two above and the corrections in the build script itself (the section above).
 - All rows are `approx: true` (community values, and GW's charts for Tone Pro). `lab` is derived at runtime, never stored.
 - **Curated equivalence groups** are auto-seeded at build time: paints within **ΔE 2000 ≤ 1.0** ("indistinguishable")
   **and the same finish class** (metal · translucent media · effect · opaque — a hex match across finish classes is
   not interchangeability on the model) are union-find clustered into `groups[]` (each with a representative `refHex`
-  + a basic-colour `label`), and every member paint carries a `groupId`. v1.8.0: **191 groups, 459 paints**
+  + a basic-colour `label`), and every member paint carries a `groupId`. v1.10.0: **190 groups, 457 paints**
   (max group diameter ΔE 2.16). Surfaced in the
   Equivalents tab; the *closest other-brand* matches are still computed at runtime by ΔE 2000.
 - QA: [`scripts/validate-data.mjs`](../../scripts/validate-data.mjs) — **hard checks PASS** (valid sRGB hex,

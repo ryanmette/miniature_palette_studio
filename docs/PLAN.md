@@ -816,7 +816,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, a first step of 68 and the owned-first part of 72 built)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, 73, way C of 68 and the owned-first part of 72 built)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -864,7 +864,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       makers' own two ways. One rule needs our own measurement (item 49: each wash both ways, on one card).
     - **Why the rule matters to the Recipe too:** the wash step's target is a darkened base (§7), so a Shade with a
       light value (Nuln Oil `#9E9A98`) can almost never be the wash step's pot.
-    - **Errors found on the way:** `two-thin-coats-wave-1-rc-flesh-wash` is "Orc Flesh Wash" on Two Thin Coats' own
+    - **Errors found on the way (item 73):** `two-thin-coats-wave-1-rc-flesh-wash` is "Orc Flesh Wash" on Two Thin Coats' own
       chart (the name lost its first letter); GW's seven Shades of 2022 are not in the data (Mortarion Grime,
       Berserker Bloodshade, Targor Rageshade, Tyran Blue, Poxwalker, Kroak Green, Soulblight Grey), and its four
       Gloss Shades are not marked `discontinued`, although GW's article "A New Era of Paints" (Warhammer Community,
@@ -896,8 +896,9 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     - **Open:** the Equivalents tab (still ΔE). **The Recipe's wash step** (still ΔE, gate 10): it finds a real
       wash for 93% of 1,573 base colours, but Warhammer Colour's 16 Shades win 3.4% of those (9% of the pool)
       and Nuln Oil and Agrax Earthshade never win, while Army Painter's Wash line wins 32% (20% of the pool). A
-      change there alters every Recipe, so it needs its own decision. **Data seen on the way:** Army Painter's
-      "Brush-On Primer" has the type `wash` (it is a primer), so it shows as a swap for a black wash.
+      change there alters every Recipe, so it needs its own decision (item 74). **Data seen on the way:** Army
+      Painter's "Brush-On Primer" had the type `wash` (it is a primer), so it showed as a swap for a black wash
+      (corrected in item 73).
 69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
     later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
     the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint
@@ -929,6 +930,19 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     at 3; the shared hex values wait for item 49; the type of Glistening Blood needs a check against Army
     Painter's own page before the data changes (§5).
 
+73. **Data errors found during the audit** (item 68's source check and item 72). **Built (2026-11-17), dataset
+    1.10.0, from the makers' own pages (`src/data/SOURCES.md`); no hex and no id changed:**
+    - **14 Army Painter paints are effects, not washes.** Upstream's set "Warpaints Fanatic Wash" holds 32 paints;
+      Army Painter's own shop lists 18 as Fanatic Washes and 14 as Fanatic Effects (its public product list). The
+      first one seen was Brush-On Primer, the third swap for a black wash. The build has a `types` map for this.
+    - **"RC Flesh Wash" is "Orc Flesh Wash"** (Two Thin Coats' chart); the old spelling stays in `formerly`.
+    - **The four Gloss Shades are `discontinued`** (GW, "A New Era of Paints", 13 Jun 2022; Ryan's range list in
+      `docs/sources/` says the same). They are the data's first discontinued paints. **Open:** the app shows no "no longer made" mark on such a paint.
+    - A rebuild from upstream as it is today gave the same file as 1.9.0, so upstream has not changed.
+    - **Open: GW's seven Shades of 2022** (Mortarion Grime, Berserker Bloodshade, Targor Rageshade, Tyran Blue,
+      Poxwalker, Kroak Green, Soulblight Grey). The same release had new Contrast paints, so this is a check of
+      the whole Warhammer Colour range against GW's list, not one correction. Also open: Nolzur's Glistening Blood
+      (type `wash`), which needs its own maker's page.
 ### Next session (planned 2026-08-11 for 2026-08-12)
 
 Ordered, with the reasoning rather than just the list:

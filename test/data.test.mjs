@@ -707,22 +707,47 @@ test('the rename keeps every id: Warhammer Colour paints are still citadel-…, 
     'citadel-base-retributor-armour', 'citadel-layer-sotek-green']) assert.ok(real.byId.has(id), id);
 });
 
-test('the five names are the maker\'s spelling, and each keeps its former name', () => {
+test('the six names are the maker\'s spelling, and each keeps its former name', () => {
   const fixed = {
     'citadel-base-bugman-glow': ["Bugman's Glow", 'Bugman Glow'],
     'citadel-layer-emperor-children': ["Emperor's Children", 'Emperor Children'],
     'citadel-layer-gehenna-gold': ["Gehenna's Gold", 'Gehenna Gold'],
     'citadel-technical-nurgles-rot': ["Nurgle's Rot", 'Nurgles Rot'],
     'citadel-shade-cassandora-yellow': ['Casandora Yellow', 'Cassandora Yellow'],
+    'two-thin-coats-wave-1-rc-flesh-wash': ['Orc Flesh Wash', 'RC Flesh Wash'],   // dataset 1.10.0: Two Thin Coats' own chart
   };
   for (const [id, [name, old]] of Object.entries(fixed)) {
     const p = real.byId.get(id);
     assert.equal(p.name, name, id);
     assert.deepEqual(p.formerly, [old], id);
   }
-  assert.equal(real.paints.filter(p => p.formerly).length, 5, 'no other paint has a former name');
+  assert.equal(real.paints.filter(p => p.formerly).length, 6, 'no other paint has a former name');
   assert.equal(real.byId.get('citadel-technical-nurgles-rot').fx, 'slime', 'the fixed name keeps its finish');
+  assert.equal(ids(searchPaints(real, 'rc flesh wash'))[0], 'two-thin-coats-wave-1-rc-flesh-wash', 'the old spelling still finds it');
+  assert.equal(ids(searchPaints(real, 'orc flesh wash'))[0], 'two-thin-coats-wave-1-rc-flesh-wash');
 });
+
+// ---- dataset 1.10.0 (PLAN §5 item 73): three corrections from the makers' own pages, no hex changed ----
+test('Army Painter: the 14 Fanatic Effects are effects, not washes; the 18 Fanatic Washes stay washes', () => {
+  const effects = ['Brush-On Primer', 'Dark Rust', 'Data System Glow', 'Disgusting Slime', 'Dry Blood', 'Fresh Rust', 'Lens Flare Glow',
+    'Oil Stains', 'Oozing Vomit', 'Plasma Coil Glow', 'Power Node Glow', 'Radiation Glow', 'True Blood', 'Verdigris'];
+  const line = real.paints.filter(p => p.brand === 'Army Painter' && p.line === 'Wash');
+  assert.equal(line.length, 34, 'the line and the ids stay as they were');
+  assert.deepEqual(line.filter(p => p.type === 'effect').map(p => p.name).sort(), effects);
+  assert.ok(line.filter(p => p.type !== 'effect').every(p => p.type === 'wash'));
+  for (const n of ['Dark Tone', 'Strong Tone', 'Soft Tone', 'Blue Tone', 'Military Shade']) assert.equal(line.find(p => p.name === n).type, 'wash', n);
+  assert.ok(real.byId.has('army-painter-wash-brush-on-primer'), 'the id does not change');
+  const fx = n => line.find(p => p.name === n).fx;
+  assert.deepEqual([fx('True Blood'), fx('Dry Blood'), fx('Disgusting Slime'), fx('Fresh Rust'), fx('Verdigris')], ['gloss', 'gloss', 'slime', 'texture', undefined]);
+});
+
+test('Warhammer Colour: the four Gloss Shades are discontinued, and no other paint is', () => {
+  const gone = real.paints.filter(p => p.discontinued);
+  assert.deepEqual(gone.map(p => p.id).sort(), ['citadel-shade-agrax-earthshade-gloss', 'citadel-shade-cryptek-armourshade-gloss',
+    'citadel-shade-nuln-oil-gloss', 'citadel-shade-reikland-fleshshade-gloss']);
+  assert.ok(gone.every(p => p.type === 'shade' && p.brand === 'Warhammer Colour'));
+});
+
 
 test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {
   assert.match(BRAND_WORDS['Warhammer Colour'], /Citadel/);
