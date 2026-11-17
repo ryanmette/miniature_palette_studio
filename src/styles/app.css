@@ -937,6 +937,7 @@ main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
 .settings[open] { display: flex; flex-direction: column; }
 .settings::backdrop { background: var(--scrim); }
 .sethead { flex: none; padding: 4px 16px; min-height: calc(var(--tap) + 9px); border-bottom: 1px solid var(--border); }   /* the title row stays put; the rows scroll under its rule, as in About */
+#settingsTitle:focus { outline: 2px solid transparent; }   /* a landing spot after a touch or a click opens ⋯, not a control (as .hero; item 59) */
 .setdone { display: none; }
 .setbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px 16px 16px;
   scroll-padding-block-end: 40px; }   /* a control scrolled into view by Tab, or "✓ Saved …", stops above the 32px fade */

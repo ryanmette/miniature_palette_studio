@@ -31,6 +31,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Fixed
+- **⋯ no longer shows a focus ring after a touch** (PLAN §5 item 59; CLAUDE.md §3.6). When you opened ⋯ with
+  a finger or a mouse, the **Use my paints** control had a focus ring on an iPhone, as if you had used a
+  keyboard. Now the focus starts on the sheet's title after a touch or a click, with no ring. After a key press
+  it starts on the control, with its ring, as before.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap

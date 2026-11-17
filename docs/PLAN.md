@@ -733,7 +733,8 @@ Do these three in one bug pass, in this order.
     paints** segment has the focus ring. CLAUDE.md §3.6 sends focus to that segment when ⋯ opens, and WebKit shows
     the ring after that focus. Direction: when a touch or a pointer opens ⋯, focus goes to the sheet's title (a
     landing spot with no ring, as the Filters sheet does); when a key opens it, focus goes to the segment, as now.
-    Change the §3.6 line in the same PR.
+    Change the §3.6 line in the same PR. **Built (2026-11-17):** `openSettings(opener, byKey)`; a click event with
+    `detail` 0 is a key press.
 60. **Every way of input on Apple devices: touch, a pointer and a keyboard, on one device.** An iPad has touch, a
     trackpad and a keyboard; a Mac may have a touch screen. Today the app chooses one mode for each device from
     `(pointer: coarse)`: the ⋯ sheet or popover, 44px targets, the system picker in a select, the share sheet

@@ -2995,7 +2995,11 @@ function syncSettingsFade() {
   const b = $('#settingsBody');
   sMenu().classList.toggle('more', b.scrollTop + b.clientHeight < b.scrollHeight - 2);
 }
-function openSettings(opener = 'button') {
+/** `byKey`: a key press opened it (a click event with detail 0). Focus then starts on the pressed Use my paints
+ *  segment, the first control (WAI-ARIA dialog pattern), and it shows its ring. After a touch or a click, focus
+ *  starts on the title: a landing spot with no ring (PLAN §5 item 59; WebKit drew the ring on the segment after a
+ *  touch, where no ring belongs). It is inside the dialog, so Tab goes on to the first control. */
+function openSettings(opener = 'button', byKey = false) {
   const m = sMenu(); if (m.open) return;
   if (!news.menuSeen) { news.menuSeen = true; renderNews(); }   // the dot has led here; About's tag leads on
   settings.opener = opener; settings.ret = 'opener';
@@ -3005,7 +3009,7 @@ function openSettings(opener = 'button') {
   placeSettings();
   $('#settingsBody').scrollTop = 0; syncSettingsFade();
   setSettingsExpanded(true);
-  $('#collectionSeg [aria-pressed="true"]').focus();   // the first control (WAI-ARIA dialog pattern)
+  (byKey ? $('#collectionSeg [aria-pressed="true"]') : $('#settingsTitle')).focus({ preventScroll: true });
   // Make the share image now, after the menu has painted. Then a tap on Share image… calls share() at once:
   // Safari refuses a share whose tap is too old, and fonts + the PNG inside the tap could take that long.
   setTimeout(() => { if (settingsOpen()) shareImage().catch(() => {}); }, 60);
@@ -3029,7 +3033,7 @@ function onSettingsClosed() {
 function setupSettings() {
   const m = sMenu(), sBtn = $('#settingsBtn');
   buildSlotSizers();
-  sBtn.addEventListener('click', e => { e.stopPropagation(); settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('button'); });
+  sBtn.addEventListener('click', e => { e.stopPropagation(); settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('button', e.detail === 0); });
   $('#settingsDone').addEventListener('click', () => closeSettings());
   m.addEventListener('close', onSettingsClosed);
   $('#settingsBody').addEventListener('scroll', syncSettingsFade, { passive: true });
@@ -3603,7 +3607,7 @@ function setupMatchNote() {
   $('#matchnote').addEventListener('click', e => {
     const b = e.target.closest('[data-note]'); if (!b) return;
     const k = b.dataset.note;
-    if (k === 'ump') { settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('note'); }
+    if (k === 'ump') { settings.btnDown = false; settingsOpen() ? closeSettings() : openSettings('note', e.detail === 0); }
     else if (k === 'shelf') setMode('shelf');
     else if (k === 'contrast') {
       setTab('plan');
