@@ -307,7 +307,8 @@ function absorbOf(p) {
  * swap for a rust texture); any other paint of another kind (swapKind) ranks SWAP_KIND_PENALTY further.
  * A wash or shade (item 68) ranks its swaps by the gap, not by ΔE: each swap then has `gap` (degrees) and the
  * gap's words, and a paint that hardly absorbs is no swap. `deltaE` is still there, and still the true one.
- * @param opts.notCarried  brands the store does not carry (a Set): no swap comes from them
+ * @param opts.notCarried  brands the store does not carry (a Set): no swap comes from them. A `discontinued`
+ *                         paint is no swap either (dataset 1.10.0): a store cannot have it
  * @param opts.except      paint ids that are no swap here (a Set): the pot that is not on the rack, when the
  *                         swaps are for the paint it replaced
  * @param opts.ownedIds    the paints the painter owns (a Set): one within SWAP_OWNED_MAX (by the gap: within
@@ -320,7 +321,8 @@ export function storeSwaps(indexed, paint, { notCarried = new Set(), except = nu
   const mine = absorbOf(paint), byGap = kind === 'wash' && mine.strength >= WEAK_ABSORB;
   const mineId = id => !!ownedIds && ownedIds.has(id);
   const first = m => mineId(m.paint.id) && (byGap ? m.gap <= WASH_GAP_CLOSE : m.deltaE <= SWAP_OWNED_MAX) ? 0 : 1;
-  return indexed.paints.filter(p => p.id !== paint.id && (!notCarried.has(p.brand) || mineId(p.id)) && !(except && except.has(p.id))
+  // a brand the store does not carry, or a paint the maker no longer makes, is no swap, but a pot on the shelf is
+  return indexed.paints.filter(p => p.id !== paint.id && ((!notCarried.has(p.brand) && !p.discontinued) || mineId(p.id)) && !(except && except.has(p.id))
       && finishClass(p.type) === cls && (cls !== 'effect' || swapKind(p) === kind) && (!byGap || absorbOf(p).strength >= WEAK_ABSORB))
     .map(p => {
       const deltaE = deltaE2000(lab, p.lab), pen = swapKind(p) === kind ? 0 : SWAP_KIND_PENALTY;

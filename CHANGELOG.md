@@ -70,6 +70,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   those brands' paints got their best swap from a brand that had no switch. The row now has all ten brands, A to
   Z, in an order that does not change. Switch off each brand the store does not have.
 ### Fixed
+- **A paint that is no longer made is not offered as a store swap** (PLAN §5 item 73). The four Gloss Shades are
+  now marked as discontinued, so **Not on the rack?** skips them: a store cannot have them. A pot you own is still
+  offered, because it is on your shelf.
 - **Undo of a store swap no longer hides a paint you must buy** (PLAN §5 item 67). When the swap you chose was on
   your shopping list already, **Undo** put the original paint in the swap's row. The swap was still to buy, but
   the list did not show it until you opened the list again, and its count stayed at the sum of the two. Now the

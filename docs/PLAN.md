@@ -937,7 +937,8 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       first one seen was Brush-On Primer, the third swap for a black wash. The build has a `types` map for this.
     - **"RC Flesh Wash" is "Orc Flesh Wash"** (Two Thin Coats' chart); the old spelling stays in `formerly`.
     - **The four Gloss Shades are `discontinued`** (GW, "A New Era of Paints", 13 Jun 2022; Ryan's range list in
-      `docs/sources/` says the same). They are the data's first discontinued paints. **Open:** the app shows no "no longer made" mark on such a paint.
+      `docs/sources/` says the same). They are the data's first discontinued paints. The store swaps now skip a
+      discontinued paint, unless it is owned. **Open:** the app shows no "no longer made" mark on such a paint.
     - A rebuild from upstream as it is today gave the same file as 1.9.0, so upstream has not changed.
     - **Open: GW's seven Shades of 2022** (Mortarion Grime, Berserker Bloodshade, Targor Rageshade, Tyran Blue,
       Poxwalker, Kroak Green, Soulblight Grey). The same release had new Contrast paints, so this is a check of

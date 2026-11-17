@@ -748,6 +748,16 @@ test('Warhammer Colour: the four Gloss Shades are discontinued, and no other pai
   assert.ok(gone.every(p => p.type === 'shade' && p.brand === 'Warhammer Colour'));
 });
 
+test('storeSwaps: a paint that is no longer made is no swap, unless it is on your shelf', async () => {
+  const { storeSwaps } = await import('../src/js/data.js');
+  const nuln = real.byId.get('citadel-shade-nuln-oil'), gloss = 'citadel-shade-nuln-oil-gloss';
+  const only = { notCarried: new Set(real.paints.map(p => p.brand).filter(b => b !== 'Warhammer Colour')), n: 20 };
+  assert.ok(!storeSwaps(real, nuln, only).some(m => m.paint.discontinued), 'a store cannot have it');
+  assert.ok(storeSwaps(real, nuln, { ...only, ownedIds: new Set([gloss]) }).some(m => m.paint.id === gloss), 'a pot you own is still a swap');
+  // the primer and the effect paints are out of a black wash's swaps
+  const shadow = storeSwaps(real, real.byId.get('army-painter-nolzurs-shadow-wash'), { n: 40 });
+  assert.ok(shadow.length && shadow.every(m => m.paint.type !== 'effect' && m.paint.name !== 'Brush-On Primer'));
+});
 
 test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {
   assert.match(BRAND_WORDS['Warhammer Colour'], /Citadel/);
