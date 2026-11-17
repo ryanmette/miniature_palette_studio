@@ -6,9 +6,14 @@
 // measured by a function it is given. paintShareImage() draws those operations on a canvas context it is
 // given. Neither touches the DOM or a global, so node --test runs both (a fake measure, a fake context).
 // The app (app.js) makes the canvas, loads the fonts, reads the theme's tokens and encodes the PNG.
+import { textOn } from './color.js';
+import { finishKind, FINISH_ICONS } from './data.js';
+export { finishKind };
 
 /** Square: Messages, Instagram and WhatsApp show it whole, and Discord shows it at about 300 × 300. */
 export const SHARE_SIZE = 1080;
+/** The finish icon on a pot's swatch, and its distance from the swatch's bottom-right corner. */
+const MARK = 30, MARK_IN = 10;
 
 /** The §3.3 faces. A canvas does not wait for a webfont, so the app loads these before it draws. */
 const FAMILY = {
@@ -27,23 +32,9 @@ export const SHARE_TOKENS = {
   success: '--success', warning: '--warning', danger: '--danger',
 };
 
-// The finish overlays (§2, §3.5): the same stops as app.css .metal / .fx-wash / .fx-contrast, as canvas
-// gradients. They convey the finish and never change the paint's colour. test/shareimage.test.mjs holds
-// these three to app.css, so the image and the app cannot drift apart.
-export const FINISH_FX = {
-  metal: { deg: 158, stops: [[0, 'rgba(255,255,255,.5)'], [0.4, 'rgba(255,255,255,0)'], [1, 'rgba(0,0,0,.26)']] },
-  'fx-wash': { deg: 155, stops: [[0, 'rgba(255,255,255,.40)'], [0.48, 'rgba(255,255,255,0)'], [1, 'rgba(0,0,0,.16)']] },
-  'fx-contrast': { deg: 150, stops: [[0, 'rgba(255,255,255,.30)'], [0.42, 'rgba(255,255,255,0)'], [0.96, 'rgba(0,0,0,.20)']] },
-};
-// The same type → overlay map as ui.js fxCls; a curated p.fx (gloss · slime · texture) wins.
-const FX_BY_TYPE = { metal: 'metal', wash: 'fx-wash', ink: 'fx-wash', shade: 'fx-wash', glaze: 'fx-wash', contrast: 'fx-contrast' };
-export const finishKind = p => (p ? (p.fx ? 'fx-' + p.fx : FX_BY_TYPE[p.type] || null) : null);
-
-// The finish icons (ui.js GLYPHS, a 16 px grid) and their words (data.js FINISH_WORDS), drawn after the brand.
-const GEM = 'M3 6l5-4 5 4-5 8z';
-const DROP = 'M8 2c2.4 3.2 4 5.2 4 7.2A4 4 0 0 1 4 9.2C4 7.2 5.6 5.2 8 2z';
-const STAR = 'M8 1l1.6 4.4L14 7l-4.4 1.6L8 13 6.4 8.6 2 7l4.4-1.6z';
-export const FINISH_GLYPHS = { metal: GEM, contrast: DROP, wash: DROP, shade: DROP, ink: DROP, glaze: DROP, effect: STAR };
+// The finish (§2, §3.5 Swatch; PLAN §5 item 51): the pot's colour field is its hex and nothing else. A non-flat
+// pot has ONE finish icon (data.js FINISH_ICONS, the app's own table), bottom-right on the swatch in the
+// swatch's ink (textOn), and the same icon with its word after the brand.
 
 /** Fit text into at most `maxLines` lines of `maxW`; the last line ends with "…" when text is left over.
  *  A word wider than the box breaks between characters. */
@@ -120,7 +111,9 @@ export function layoutShareImage(view, tokens, measure) {
   view.roles.forEach((r, i) => {
     const x = M + (i % 2) * (colW + gap), y0 = top + Math.floor(i / 2) * rowH, pot = r.pot;
     // the pot's own colour, never tinted (§2); the band on top is the target, so the gap between them shows
-    ops.push({ t: 'swatch', x, y: y0, w: colW, h: swH, hex: pot ? pot.hex : r.ideal, kind: finishKind(pot), band: r.ideal, bandH: band });
+    const hex = pot ? pot.hex : r.ideal, kind = finishKind(pot);
+    ops.push({ t: 'swatch', x, y: y0, w: colW, h: swH, hex, band: r.ideal, bandH: band });
+    if (kind) ops.push({ t: 'glyph', kind, x: x + colW - MARK - MARK_IN, y: y0 + swH - MARK - MARK_IN, size: MARK, fill: textOn(hex) });
     let y = y0 + swH + Math.round(px.role * 1.7);
     text(x, y, `${r.role.toUpperCase()}  ${r.weight}`, font(600, px.role), px.role, T.muted, { spacing: 0.05 });
     y += lh + 4;
@@ -149,7 +142,7 @@ function meta(ops, measure, x, y, pot, maxW, T, px, words) {
   ops.push({ t: 'text', x, y, text: s, font: f, px, fill: T.muted, ground: T.bg });
   if (!word) return;
   const gx = x + measure(f, s) + px * 0.4;
-  ops.push({ t: 'glyph', d: FINISH_GLYPHS[pot.type], x: gx, y: y - px * 0.8, size: px * 0.8, fill: T.muted });
+  ops.push({ t: 'glyph', kind: finishKind(pot), x: gx, y: y - px * 0.8, size: px * 0.8, fill: T.muted });
   ops.push({ t: 'text', x: gx + px * 0.9, y, text: word, font: f, px, fill: T.muted, ground: T.bg });
 }
 
@@ -182,30 +175,15 @@ function rounded(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-function linear(ctx, x, y, w, h, deg, stops) {
-  // a CSS angle on a box (0deg = to top, 90deg = to right) and its gradient line, as CSS defines it
-  const a = deg * Math.PI / 180, vx = Math.sin(a), vy = -Math.cos(a), len = Math.abs(w * vx) + Math.abs(h * vy);
-  const cx = x + w / 2, cy = y + h / 2;
-  const g = ctx.createLinearGradient(cx - vx * len / 2, cy - vy * len / 2, cx + vx * len / 2, cy + vy * len / 2);
-  for (const [o, c] of stops) g.addColorStop(o, c);
-  return g;
-}
-function overlay(ctx, o) {
-  const { x, y, w, h, kind } = o;
-  if (FINISH_FX[kind]) { ctx.fillStyle = linear(ctx, x, y, w, h, FINISH_FX[kind].deg, FINISH_FX[kind].stops); ctx.fillRect(x, y, w, h); return; }
-  if (kind === 'fx-gloss' || kind === 'fx-slime') {
-    // a wet highlight top-left and a darker foot (app.css .fx-gloss / .fx-slime, simplified to one highlight)
-    ctx.save(); ctx.translate(x + w * 0.34, y + h * 0.26); ctx.scale(w * 0.58, h * 0.42);
-    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-    g.addColorStop(0, 'rgba(255,255,255,.82)'); g.addColorStop(0.6, 'rgba(255,255,255,0)');
-    ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore();
-    ctx.fillStyle = linear(ctx, x, y, w, h, 180, [[0.52, 'rgba(255,255,255,0)'], [1, 'rgba(0,0,0,.34)']]); ctx.fillRect(x, y, w, h);
-  } else if (kind === 'fx-texture') {
-    // a gritty matte grain (app.css .fx-texture): light and dark specks on a 5 px grid
-    for (let j = 0; j < h; j += 5) for (let i = (j / 5) % 2 ? 2 : 0; i < w; i += 5) {
-      ctx.fillStyle = (i + j) % 3 ? 'rgba(0,0,0,.30)' : 'rgba(255,255,255,.12)'; ctx.fillRect(x + i, y + j, 1.5, 1.5);
-    }
-  }
+/** One finish icon (data.js FINISH_ICONS, a 20px grid): the stroke with square ends and mitred joins, 1.75px
+ *  on the grid at these sizes (§3.5 Icons), then the filled part. */
+function finishIcon(ctx, o) {
+  const g = FINISH_ICONS[o.kind];
+  if (!g) return;
+  ctx.save(); ctx.translate(o.x, o.y); ctx.scale(o.size / 20, o.size / 20);
+  if (g.stroke) { ctx.strokeStyle = o.fill; ctx.lineWidth = 1.75; ctx.lineCap = 'square'; ctx.lineJoin = 'miter'; ctx.stroke(new Path2D(g.stroke)); }
+  if (g.fill) { ctx.fillStyle = o.fill; ctx.fill(new Path2D(g.fill)); }
+  ctx.restore();
 }
 
 /** Draw a layout on a 2D context (a canvas of layout.W × layout.H). */
@@ -222,7 +200,6 @@ export function paintShareImage(ctx, layout) {
       // square, --r-sw, an inset border so a white-ish paint still shows (§3.5)
       ctx.save(); rounded(ctx, o.x, o.y, o.w, o.h, 6); ctx.clip();
       ctx.fillStyle = o.hex; ctx.fillRect(o.x, o.y, o.w, o.h);
-      if (o.kind) overlay(ctx, o);
       ctx.fillStyle = o.band; ctx.fillRect(o.x, o.y, o.w, o.bandH);
       ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(o.x, o.y + o.bandH, o.w, 2);
       ctx.restore();
@@ -232,8 +209,7 @@ export function paintShareImage(ctx, layout) {
       if ('letterSpacing' in ctx) ctx.letterSpacing = o.spacing ? `${o.spacing * o.px}px` : '0px';
       ctx.fillText(o.text, o.x, o.y);
     } else if (o.t === 'glyph') {
-      ctx.save(); ctx.translate(o.x, o.y); ctx.scale(o.size / 16, o.size / 16);
-      ctx.fillStyle = o.fill; ctx.fill(new Path2D(o.d)); ctx.restore();
+      finishIcon(ctx, o);
     } else if (o.t === 'mark') {
       // the mark (src/icon.svg): a dropper whose colour lands as a round pot lid
       ctx.save(); ctx.translate(o.x, o.y); ctx.scale(o.size / 32, o.size / 32);

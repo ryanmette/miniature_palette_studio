@@ -6,6 +6,23 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.17.0 took only the web entries. -->
+### Changed
+- **Swatches show the paint's true colour, with one finish icon** (PLAN §5 item 51; chosen from
+  `mockups/swatch-finish.html`, direction B with round 2's variant a; CLAUDE.md §2, §3.1 and §3.5). A metallic,
+  a wash, a Contrast paint and an effect paint had a gradient on their swatch to show the finish. The gradient
+  changed the colour that you saw: by up to ΔE 10.4 on a gloss effect, which is a different colour. Now every
+  pixel of a swatch is the paint's own colour, and a paint that is not flat has one small icon in the
+  bottom-right corner: a gem for a metallic, a drop for a wash, shade, ink or glaze, a half-filled drop for a
+  Contrast paint, and icons for gloss, slime, texture and other effects. The icon is black or white, whichever
+  is clearer on that paint (4.28:1 or more on every paint in the data). The same icon is in the finish tag
+  beside the paint's name and on the share image.
+  - **A Contrast paint has an icon of its own.** It had the same drop as a wash.
+  - **Every effect paint has an icon.** 22 of 55 had none, because the icon came only from the `fx` field.
+  - **The finish tag is neutral.** The metallic tag had the warning colour, which means "Fair match" in this app.
+  - **In the dark theme, a swatch has a light edge** (`--sw-edge`), so a near-black paint does not merge with
+    the page. 127 paints did.
+  - The icon does not show on a swatch smaller than 26 px (the Map's small pots, the Schemes strip). The
+    paint's tag or name gives the finish there.
 ### Added
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,

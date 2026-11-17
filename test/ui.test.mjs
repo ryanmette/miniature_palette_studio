@@ -81,13 +81,13 @@ test('pickTile: a grid cell with the swatch, the display name, the brand and the
   assert.doesNotMatch(html, /aria-selected/);   // only the active option gets aria-selected (picker.js)
 });
 
-test('pickTile: your pick has the pick ring and says so; a metallic has its overlay and finish icon', () => {
+test('pickTile: your pick has the pick ring and says so; a metallic has its finish mark in the swatch\'s ink', () => {
   const cur = pickTile(RED, { id: 'pko0', k: 0, current: true }, tk);
   assert.match(cur, /class="pkt cur"/);
   assert.match(cur, /aria-label="Red, Citadel Base, pkCurrentSaid"/);   // "not owned" is left out: it is most paints
   const metal = pickTile(LEAD, { id: 'pko1', k: 1, mark: 'want' }, tk);
-  assert.match(metal, /class="sw metal"/);
-  assert.match(metal, /class="pkb"><svg/);                  // the finish icon before the brand (§2)
+  assert.match(metal, /class="sw fm fm-metal" style="background-color:#[0-9A-F]{6};--ink:#(15150F|FFFFFF)"/i);
+  assert.match(metal, /class="pkb"><span>/, 'one finish icon: on the swatch, not also before the brand');
   assert.match(metal, /Leadbelcher, Citadel Base, metallic, on the shopping list/);
   assert.match(metal, /cbadge want/);
 });
@@ -162,7 +162,7 @@ test('ladder steps show the pot: the matched paint\'s colour and finish, not the
     if (p.hex.toUpperCase() !== s.idealHex.toUpperCase())
       assert.ok(html.includes(`background-color:${p.hex}`), `the ${s.key} chip draws the pot ${p.hex}`);
   }
-  assert.match(html, /class="sw fx-wash" style="background-color:#3A3C38/, 'a wash pot keeps its finish overlay');
+  assert.match(html, /class="sw fm fm-wash" style="background-color:#3A3C38;--ink:#FFFFFF;/, 'a wash pot has its finish mark');
 });
 
 test('seed docks: chip on the seeded role, switch dock on the other, reserved row everywhere', () => {
@@ -388,11 +388,11 @@ const row = {
   owned: 2, roles: 4, toBuy: 3, date: '29 Oct', renaming: false,
 };
 
-test('schemeRow: the strip carries the pots and the metal sheen; the facts; one-tap actions with names', () => {
+test('schemeRow: the strip carries the pots; the facts; one-tap actions with names', () => {
   const html = schemeRow(row, tr);
   assert.match(html, /class="scstrip" aria-hidden="true"/);
   assert.equal((html.match(/class="sw /g) || []).length, 4);
-  assert.match(html, /class="sw metal"/);
+  assert.match(html, /class="sw fm fm-metal"/);
   assert.match(html, /data-scopen="abcd1234"/);
   assert.match(html, /Triadic · ownedOf\(n=2,of=4\)/);
   assert.match(html, /class="tag buy">nToBuy\(n=3\)/);
@@ -460,7 +460,7 @@ test('rackRow: an open count is a stepper; owned keeps the slot (no height chang
   assert.match(done, /aria-pressed="true"/);
   const plain = rackRow({ paint: gold, owned: true, countable: false, qty: 0 }, tr);
   assert.doesNotMatch(plain, /rkslot/, 'a paint never on the list has no count slot');
-  assert.match(plain, /class="sw rksw metal"/, 'the finish overlay');
+  assert.match(plain, /class="sw rksw fm fm-metal"/, 'the finish mark');
 });
 
 test('rackGroups: one section per group, its title and count, rows in the given order', () => {
@@ -598,6 +598,55 @@ test('roleSlots: a wash chosen by its colour shows the gap, with the reason in i
   assert.doesNotMatch(byDE, /stepgap|gapDeg/);
   // with no translator, plain English
   assert.match(roleSlots({ roles: [role({ key: 'wash', idealHex: '#062A5C', match: m(pot), media: 'wash', gap: 3.2 })] }, () => 'none'), />gap 3°</);
+});
+
+test('the finish mark (item 51): one icon per finish kind, from one table; the colour field has no gradient', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { FINISH_ICONS, finishKind } = await import('../src/js/data.js');
+  const { fxCls, finishTag, finishGlyph, swatch } = await import('../src/js/ui.js');
+  const css = readFileSync(new URL('../src/styles/app.css', import.meta.url), 'utf8');
+  // app.css's masks are the table's own paths (the icon set's stroke: 2.25px, square ends, mitred joins)
+  for (const [kind, g] of Object.entries(FINISH_ICONS)) {
+    const m = new RegExp(`--fm-${kind}: url\\("data:image/svg\\+xml,([^"]+)"\\);`).exec(css);
+    assert.ok(m, `no mask for ${kind}`);
+    const svg = decodeURIComponent(m[1]);
+    const want = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>`
+      + (g.stroke ? `<path d='${g.stroke}' fill='none' stroke='#000' stroke-width='2.25' stroke-linecap='square' stroke-linejoin='miter'/>` : '')
+      + (g.fill ? `<path d='${g.fill}'/>` : '') + '</svg>';
+    assert.equal(svg, want, kind);
+    assert.match(css, new RegExp(`\\.fm-${kind} \\{ --fm: var\\(--fm-${kind}\\); \\}`), `${kind} has its class`);
+  }
+  // no gradient, sheen or image on a swatch (§2: every pixel of the colour field is the hex)
+  for (const line of css.split('\n')) {
+    if (/^\.(sw|cell|lctop|lcpot)[.\s,{]/.test(line)) assert.doesNotMatch(line, /gradient|background-image/, line.slice(0, 60));
+  }
+  assert.doesNotMatch(css, /--metal-sheen/);
+  // the classes, and the ink only where there is a mark
+  assert.equal(fxCls({ type: 'base' }), ''); assert.equal(fxCls(null), '');
+  assert.equal(fxCls({ type: 'shade' }), ' fm fm-wash');
+  assert.equal(fxCls({ type: 'effect', fx: 'texture' }), ' fm fm-texture');
+  assert.equal(fxCls({ type: 'effect' }), ' fm fm-effect', 'an effect with no fx still has an icon');
+  assert.match(swatch('#101010', 'x' + fxCls({ type: 'metal' })), /--ink:#FFFFFF;/);
+  assert.match(swatch('#F0F0F0', 'x' + fxCls({ type: 'metal' })), /--ink:#15150F;/);
+  assert.doesNotMatch(swatch('#F0F0F0', 'x'), /--ink/);
+  // the tag: the paint's kind as the icon, its type as the word; a bare type still works
+  assert.match(finishTag({ type: 'effect', fx: 'gloss' }), /class="finish finish-effect"><svg[^>]*><path d="M3\.75 10a6\.25/);
+  assert.match(finishTag('metal'), /<svg.*metallic<\/span>$/);
+  assert.equal(finishTag({ type: 'layer' }), ''); assert.equal(finishTag('base'), '');
+  assert.notEqual(finishGlyph('contrast'), finishGlyph('wash'), 'contrast has an icon of its own');
+  assert.equal(finishKind({ type: 'glaze' }), 'wash');
+});
+
+test('the finish mark reads on every non-flat paint: its ink is 3:1 or more against the paint (WCAG 1.4.11)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { finishKind } = await import('../src/js/data.js');
+  const { contrastRatio } = await import('../src/js/a11y.js');
+  const { textOn } = await import('../src/js/color.js');
+  const paints = JSON.parse(readFileSync(new URL('../src/data/paints.json', import.meta.url))).paints.filter(p => finishKind(p));
+  assert.ok(paints.length > 700);
+  let low = Infinity;
+  for (const p of paints) low = Math.min(low, contrastRatio(p.hex, textOn(p.hex)));
+  assert.ok(low >= 4, `lowest ${low.toFixed(2)}:1`);
 });
 
 import { makerLadder } from '../src/js/ui.js';

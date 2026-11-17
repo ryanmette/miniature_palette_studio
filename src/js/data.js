@@ -411,6 +411,30 @@ export function randomStartPaint(indexed, rand) {
 
 /* ---- the paint search: ONE matcher for the seed field and the Shelf search ---- */
 
+/** A paint's finish kind, for its ONE finish icon (PLAN §5 item 51; CLAUDE.md §3.5 Swatch): its `fx` first
+ *  (gloss · slime · texture), then its type. Shade, ink and glaze share the wash's drop: they are one finish
+ *  class (§5.2), and the tag's word tells them apart. An effect paint with no `fx` is a plain 'effect'.
+ *  @returns {string|null} null for a flat paint (base · layer · dry): it has no icon. */
+const KIND_BY_TYPE = { metal: 'metal', wash: 'wash', shade: 'wash', ink: 'wash', glaze: 'wash', contrast: 'contrast', effect: 'effect' };
+const KIND_BY_FX = { gloss: 'gloss', slime: 'slime', texture: 'texture' };
+export const finishKind = p => (p ? KIND_BY_FX[p.fx] || KIND_BY_TYPE[p.type] || null : null);
+/** The finish icons, one for each kind, on the icon set's 20px grid (§3.5 Icons): `stroke` is drawn as a line
+ *  (square ends, mitred joins; 2.25px at 10–13px), `fill` is a filled part. The ONE table: the tag in a text row
+ *  (ui.js), the mark on a swatch (app.css's --fm-* masks; a test holds them to this table) and the share image
+ *  (shareimage.js) all draw from it. Contrast is the drop with its lower half filled: the colour pools low,
+ *  which is how a Contrast paint shades itself. */
+const DROP_PATH = 'M10 2.75c-3 3.9-5 6.6-5 9.25a5 5 0 0 0 10 0c0-2.65-2-5.35-5-9.25z';
+const dots = pts => pts.map(([x, y]) => `M${x - 1.375} ${y - 1.375}h2.75v2.75h-2.75z`).join('');
+export const FINISH_ICONS = {
+  metal: { stroke: 'M3.5 8L10 3l6.5 5L10 17zM3.5 8h13' },
+  wash: { stroke: DROP_PATH },
+  contrast: { stroke: DROP_PATH, fill: 'M5 12a5 5 0 0 0 10 0z' },
+  gloss: { stroke: 'M3.75 10a6.25 6.25 0 1 0 12.5 0a6.25 6.25 0 1 0-12.5 0z', fill: 'M6.75 6.75h2.5v2.5h-2.5z' },
+  slime: { stroke: 'M4 4.75h12v5.5a1.5 1.5 0 0 1-3 0V9.5h-1.5v3.75a1.5 1.5 0 0 1-3 0V9.5H7v1a1.5 1.5 0 0 1-3 0z' },
+  texture: { fill: dots([[5, 5], [10, 5], [15, 5], [7.5, 10], [12.5, 10], [5, 15], [10, 15], [15, 15]]) },
+  effect: { stroke: 'M10 3l2.1 4.3 4.7.7-3.4 3.3.8 4.7L10 13.8 5.8 16l.8-4.7L3.2 8l4.7-.7z' },
+};
+
 /** The finish word each type shows on a swatch's finish tag (ui.js finishTag reads these). A search for
  *  a finish word finds the paints that show it: "metallic" finds the metal type. */
 export const FINISH_WORDS = { metal: 'metallic', contrast: 'contrast', wash: 'wash', shade: 'shade', ink: 'ink', glaze: 'glaze', effect: 'effect' };
