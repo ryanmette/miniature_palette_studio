@@ -5,7 +5,42 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.17.0 took only the web entries. -->
+<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.18.0 took only the web entries. -->
+### Added
+- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
+  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
+  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
+  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
+  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
+  has its own releases later.
+### Fixed
+- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
+  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
+  padding. The web view's white background showed behind the clock and the home bar, with a double gap
+  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
+  clear of the notch and the home bar.
+### Security
+- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
+  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
+  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
+  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
+  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
+  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
+  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
+  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
+  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
+  with no `AbortSignal` and no glob pattern from outside.
+
+## [1.18.0] - 2026-11-17
+### Added
+- **A Brand setting: keep a scheme in one brand** (PLAN §5 item 64 B; `docs/TONE_LADDERS.md`; CLAUDE.md §3.6
+  and §7). **⋯ → Brand** has **Any · Prefer · Only** and a list of the brands. With **Prefer**, a paint of your
+  brand counts as 2 ΔE closer than it is, so it wins a close call and not a clear one. With **Only**, only paints
+  of that brand can match, also when the match is poor. The ΔE that you see is always the true value. The list
+  starts on the brand that you own the most paints of. A line under the live palette says when the setting is
+  on. The setting changes the live palette, the Recipe and the shopping list, and never the Other brands tab.
+  It is saved on the device and is in a backup. Your starting paint keeps its place, whatever its brand, unless
+  the setting is Only.
 ### Changed
 - **Paint data 1.11.0: fluorescent and gloss paints say so** (PLAN §5 item 51; `src/data/SOURCES.md`). 36
   fluorescent or neon paints and 5 Vallejo gloss paints are ordinary layer paints in the data, so they had no
@@ -28,42 +63,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     the page. 127 paints did.
   - The icon does not show on a swatch smaller than 26 px (the Map's small pots, the Schemes strip). The
     paint's tag or name gives the finish there.
-### Added
-- **A Brand setting: keep a scheme in one brand** (PLAN §5 item 64 B; `docs/TONE_LADDERS.md`; CLAUDE.md §3.6
-  and §7). **⋯ → Brand** has **Any · Prefer · Only** and a list of the brands. With **Prefer**, a paint of your
-  brand counts as 2 ΔE closer than it is, so it wins a close call and not a clear one. With **Only**, only paints
-  of that brand can match, also when the match is poor. The ΔE that you see is always the true value. The list
-  starts on the brand that you own the most paints of. A line under the live palette says when the setting is
-  on. The setting changes the live palette, the Recipe and the shopping list, and never the Other brands tab.
-  It is saved on the device and is in a backup. Your starting paint keeps its place, whatever its brand, unless
-  the setting is Only.
-- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
-  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
-  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
-  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
-  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
-  has its own releases later.
 ### Fixed
 - **⋯ no longer shows a focus ring after a touch** (PLAN §5 item 59; CLAUDE.md §3.6). When you opened ⋯ with
   a finger or a mouse, the **Use my paints** control had a focus ring on an iPhone, as if you had used a
   keyboard. Now the focus starts on the sheet's title after a touch or a click, with no ring. After a key press
   it starts on the control, with its ring, as before.
-- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
-  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
-  padding. The web view's white background showed behind the clock and the home bar, with a double gap
-  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
-  clear of the notch and the home bar.
-### Security
-- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
-  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
-  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
-  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
-  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
-  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
-  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
-  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
-  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
-  with no `AbortSignal` and no glob pattern from outside.
 
 ## [1.17.0] - 2026-11-17
 ### Added
