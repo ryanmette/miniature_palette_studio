@@ -27,6 +27,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Changed
+- **A store swap goes under the heading of its own rack** (PLAN §5 item 70; CLAUDE.md §3.6). After **Use**, the
+  new pot stayed in the old row's place, so a Two Thin Coats pot could be below "AK Interactive", a brand the
+  store did not have, and the counts beside the headings were wrong. Now the row moves at once to the heading of
+  its own brand and line. The page scrolls only as far as it must to show the row, the row has a ring for a
+  moment, the focus is on its **Undo**, and a screen reader hears "It is under Two Thin Coats · Wave 1 now."
+  **Undo** does the same for the first paint. This is a choice (Ryan, 2026-11-17): the correct rack is more
+  important here than the "nothing moves" rule.
 - **Store swaps: a wash never says "Indistinguishable"** (PLAN §5 item 68; CLAUDE.md §3.2). The colour of a wash,
   an ink or a Contrast paint is the least sure value in the paint data: some lines hold the colour of a thin coat
   on white, others the colour in the pot. So in **Not on the rack?**, a swap for one of these paints now says

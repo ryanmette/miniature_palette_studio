@@ -1177,31 +1177,44 @@ function rackTick(id) {
   syncSendBought();
 }
 /** The list's rows after a Use or its Undo (ui.swapRowPlan decides). `leftId` came off the shopping list (the
- *  original at a Use, the swap at an Undo) and `came` is to buy now. `came` takes `leftId`'s row, in the same
- *  place, so nothing under the finger moves (§3.4) - unless each paint has a row of its own:
- *  - a Use of a swap that was on the list already: the swap keeps its row and the original's row goes. The
- *    place it had comes back from this function, and Undo puts the original there again.
- *  - an Undo of that Use: the swap is still to buy, so it keeps its row. It was replaced by the original, and a
- *    paint to buy was missing from the list until the next full redraw (audit, 2026-11-14).
- *  - a list with no status filter: the paint that left is still one of its paints, so its row stays.
- *  @returns {{parent:Element, next:Element|null}|null} where a removed row was */
-function placeSwapRows(leftId, came, { undo = false, spot = null } = {}) {
+ *  original at a Use, the swap at an Undo) and `came` is to buy now. When the filters show `came`, the list is
+ *  drawn again: its row goes under its own rack heading, where the painter looks for it at that rack, and the
+ *  group counts are right (PLAN §5 item 70). The list here is the shopping list, so it is short (a list of all
+ *  paints holds a row for each paint already, and nothing moves). When a filter hides `came`, its row takes the
+ *  other row's place, so it shows all the same.
+ *  @returns {string} the plan that ran */
+function placeSwapRows(leftId, came, { undo = false } = {}) {
   const rowOf = id => $(`[data-rk="${CSS.escape(id)}"]`);
-  const html = p => { const r = rackRowData(p); if (state.shelfGroup !== 'project') r.forName = schemeNameOf(r.sid); return ui.rackRow(r, t); };
   rk.kept.delete(leftId);   // a tick's "stay in the list" does not hold a paint that was swapped away
   const leftLi = rowOf(leftId), leftStays = !!leftLi && inShelfView(state.idx.byId.get(leftId));
-  const plan = ui.swapRowPlan({ cameRow: !!rowOf(came.id), leftRow: !!leftLi, leftStays, undo, spot: !!spot?.parent.isConnected });
-  let freed = null;
-  if (plan === 'rebuild') { renderShelf(); return null; }
-  if (plan === 'remove') { freed = { parent: leftLi.parentElement, next: leftLi.nextElementSibling }; leftLi.remove(); }
-  else if (plan === 'replace') leftLi.outerHTML = html(came);
-  else if (plan === 'insert') {
-    // before the row that was after it; when that row is gone, at the end of the same group
-    if (spot.next?.parentElement === spot.parent) spot.next.insertAdjacentHTML('beforebegin', html(came));
-    else spot.parent.insertAdjacentHTML('beforeend', html(came));
+  const plan = ui.swapRowPlan({ cameRow: !!rowOf(came.id), leftRow: !!leftLi, leftStays, cameShows: inShelfView(came), undo });
+  if (plan === 'rebuild') renderShelf();
+  else if (plan === 'remove') leftLi.remove();
+  else if (plan === 'replace') {
+    const r = rackRowData(came);
+    if (state.shelfGroup !== 'project') r.forName = schemeNameOf(r.sid);
+    leftLi.outerHTML = ui.rackRow(r, t);
   }
-  if (leftStays && plan !== 'replace') updateRackRow(leftId);
-  return freed;
+  if (leftStays && plan === 'update') updateRackRow(leftId);
+  return plan;
+}
+/** The heading a paint's row is under now ("Army Painter · Wash", or a project's name); '' with no row. */
+const rackHeadOf = id => $(`[data-rk="${CSS.escape(id)}"]`)?.closest('.rkgroup')?.getAttribute('aria-label') || '';
+/** A row that went to another place in the list (item 70): bring it into view, clear of the header and the dock,
+ *  and ring it for a moment (app.css .rkrow.moved), so the eye finds it. The focus is on it already. */
+function showMovedRow(id) {
+  const li = $(`[data-rk="${CSS.escape(id)}"]`); if (!li) return;
+  li.classList.add('moved');
+  // The groups are content-visibility: auto, so a group not yet on screen counts as 600px tall (app.css). In a
+  // list just drawn, the row's place was then some thousands of px too far down: the page went there, showed
+  // nothing for a moment, and came back. Lay out the groups down to the row's own first, so its place is true.
+  for (const g of $('#shelfList').children) { g.style.contentVisibility = 'visible'; if (g.contains(li)) break; }
+  const r = li.getBoundingClientRect(), top = Math.max(headerH(), $('#shelfDock').getBoundingClientRect().bottom) + 8;
+  const dy = r.top < top ? r.top - top : r.bottom > innerHeight - 8 ? Math.min(r.bottom - innerHeight + 8, r.top - top) : 0;
+  if (!dy) return;
+  dock.quietUntil = performance.now() + 200;   // our own scroll: it must not tuck or reveal the dock over the row
+  window.scrollBy(0, dy);
+  dock.lastY = window.scrollY;
 }
 /** The role of `link`'s scheme whose pot is `id`, when that role can hold a pot (not Primary, not the
  *  starting paint's role): there a swap becomes the role's pot. Else null: only the list changes. */
@@ -1224,14 +1237,14 @@ function holdInScheme(sid, role, hold) {
     render('scheme');
   }
 }
-/** Use a swap (item 38): the swap goes on the list in the original's place, with its count and project, and
+/** Use a swap (item 38): the swap goes on the list for the original, with its count and project, and
  *  the original comes off. When the original is a role's pot in the scheme it is for, the swap becomes that
  *  role's pot, with the original on record (`was`), so the Recipe says so and can go back. */
 function applySwap(origId, swapId) {
   // The row is a swap itself (item 69): back to the paint it replaced, then that paint's new swap. So the list
   // and the scheme hold one swap for a paint, never a swap of a swap, and Undo goes back to the first paint.
   const again = swapOf(origId);
-  if (again && swapId !== again.orig && state.idx.byId.has(swapId)) { undoSwap(origId); offRack.add(origId); applySwap(again.orig, swapId); return; }
+  if (again && swapId !== again.orig && state.idx.byId.has(swapId)) { undoSwap(origId, { quiet: true }); offRack.add(origId); applySwap(again.orig, swapId); return; }
   const orig = state.idx.byId.get(origId), sw = state.idx.byId.get(swapId);
   if (!orig || !sw || store.markOf(origId) !== 'want') return;
   const origQty = store.qtyOf(origId), origFor = store.projectOf(origId);
@@ -1254,21 +1267,28 @@ function applySwap(origId, swapId) {
   }
   store.setMark(origId, 'none');
   const dropped = kept.filter(sc => !store.getScheme(sc.id));
-  const log = { orig: origId, origQty, origFor, swapPrev, scheme, dropped, spot: null };
+  const log = { orig: origId, origQty, origFor, swapPrev, scheme, dropped };
   offRack.add(origId);
   // before the rows are drawn: the swap's row reads it ("in place of")
   if (swapLog.has(swapId)) swapLog.get(swapId).push(log); else swapLog.set(swapId, [log]);
   rk.swapOpen.delete(origId);
-  log.spot = placeSwapRows(origId, sw);
+  const headWas = rackHeadOf(origId);
+  const plan = placeSwapRows(origId, sw);
   render('marks', { ids: [swapId] });
   ($(`[data-rkunswap="${CSS.escape(swapId)}"]`) || $(`[data-rktick="${CSS.escape(swapId)}"]`))?.focus({ preventScroll: true });
+  if (plan === 'rebuild') showMovedRow(swapId);
   // name the scheme only while it is still kept (an owned swap can end an unsaved project)
-  say(scheme && store.getScheme(origFor) ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
-    : t('swappedList', { name: ui.pname(sw), was: ui.pname(orig) }));
+  say((scheme && store.getScheme(origFor) ? t('swappedRole', { name: ui.pname(sw), was: ui.pname(orig), role, scheme: schemeNameOf(origFor) })
+    : t('swappedList', { name: ui.pname(sw), was: ui.pname(orig) })) + movedWords(swapId, headWas));
+}
+/** " It is under X now.": the heading a row went to, when that is another heading than `headWas` (item 70). */
+function movedWords(id, headWas) {
+  const head = rackHeadOf(id);
+  return head && head !== headWas ? ' ' + t('movedUnder', { group: head }) : '';
 }
 /** Undo a swap made in this visit: the original back on the list (count and project), the swap back to the
  *  mark it had, and the scheme's role back to what it held. */
-function undoSwap(swapId) {
+function undoSwap(swapId, { quiet = false } = {}) {
   const e = swapOf(swapId), orig = e && state.idx.byId.get(e.orig);
   if (!e || !orig) return;
   for (const sc of e.dropped || []) store.putScheme(sc);   // the projects the swap ended, under their own ids
@@ -1283,10 +1303,13 @@ function undoSwap(swapId) {
   const log = swapLog.get(swapId);
   log.pop(); if (!log.length) swapLog.delete(swapId);
   offRack.delete(e.orig);
-  placeSwapRows(swapId, orig, { undo: true, spot: e.spot });
+  const headWas = rackHeadOf(swapId);
+  const plan = placeSwapRows(swapId, orig, { undo: true });
   render('marks', { ids: [e.orig] });
+  if (quiet) return;   // a swap of a swap: the new swap's Use says and shows the result
   $(`[data-rknot="${CSS.escape(e.orig)}"]`)?.focus({ preventScroll: true });
-  say(t('swapUndone', { was: ui.pname(orig) }));
+  if (plan === 'rebuild') showMovedRow(e.orig);
+  say(t('swapUndone', { was: ui.pname(orig) }) + movedWords(e.orig, headWas));
 }
 /** The Recipe's "Use the original" on a swapped role: back to the pot the swap replaced. If the scheme picks
  *  that pot by itself, the hold goes; else the original is held as the role's pot. One undo step. */

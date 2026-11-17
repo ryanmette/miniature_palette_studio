@@ -524,24 +524,27 @@ test('rackRow: a swap made in this visit says what it replaced; Undo only while 
   assert.doesNotMatch(rackRow38({ paint: carm, countable: true, owned: true, qty: 0, insteadOf: red }, t38), /data-rkunswap/);
 });
 
-test('swapRowPlan: a Use or an Undo never drops a paint that is still to buy from the list', async () => {
+test('swapRowPlan: a paint to buy always has a row, under its own rack heading when the filters show it', async () => {
   const { swapRowPlan } = await import('../src/js/ui.js');
-  // Use, the swap is new to the list: it takes the original's row, the same place
-  assert.equal(swapRowPlan({ cameRow: false, leftRow: true, leftStays: false, undo: false, spot: false }), 'replace');
-  // Use, a search still matches the original but not the swap: the swap must show, so it takes the row all the same
-  assert.equal(swapRowPlan({ cameRow: false, leftRow: true, leftStays: true, undo: false, spot: false }), 'replace');
-  // Use, the swap was on the list already: it keeps its row, the original's row goes
-  assert.equal(swapRowPlan({ cameRow: true, leftRow: true, leftStays: false, undo: false, spot: false }), 'remove');
-  // Use, a list of all paints: the two rows stay
-  assert.equal(swapRowPlan({ cameRow: true, leftRow: true, leftStays: true, undo: false, spot: false }), 'update');
-  // Undo, the swap goes off the list: the original takes its row back
-  assert.equal(swapRowPlan({ cameRow: false, leftRow: true, leftStays: false, undo: true, spot: false }), 'replace');
-  // Undo, the swap was to buy before the Use, so it stays: the original gets its own row again (it replaced the
-  // swap's row, and a paint to buy was missing from the list; audit 2026-11-14)
-  assert.equal(swapRowPlan({ cameRow: false, leftRow: true, leftStays: true, undo: true, spot: true }), 'insert');
-  assert.equal(swapRowPlan({ cameRow: false, leftRow: true, leftStays: true, undo: true, spot: false }), 'rebuild', 'the list was drawn again since the Use');
-  // Undo, a list of all paints: the two rows are there
-  assert.equal(swapRowPlan({ cameRow: true, leftRow: true, leftStays: true, undo: true, spot: false }), 'update');
+  const plan = (cameRow, leftRow, leftStays, cameShows, undo = false) => swapRowPlan({ cameRow, leftRow, leftStays, cameShows, undo });
+  // the shopping list (the status filter shows only paints to buy)
+  assert.equal(plan(false, true, false, true), 'rebuild', 'Use, a new swap: it goes under its own heading (item 70)');
+  assert.equal(plan(true, true, false, true), 'rebuild', 'Use, the swap was on the list: the original goes, the counts are right');
+  assert.equal(plan(false, true, false, true, true), 'rebuild', 'Undo: the original goes back under its own heading');
+  // Undo, the swap was to buy before the Use, so it stays. It was replaced by the original, and a paint to buy
+  // was missing from the list (item 67)
+  assert.equal(plan(false, true, true, true, true), 'rebuild', 'Undo, the swap stays: the two rows');
+  // a list of all paints: each paint has its row already, nothing moves
+  assert.equal(plan(true, true, true, true), 'update');
+  assert.equal(plan(true, true, true, true, true), 'update');
+  assert.equal(plan(true, false, false, true), 'update');
+  // a filter hides the paint that came (a search for the original's name)
+  assert.equal(plan(false, true, false, false), 'replace', 'Use: the swap must show, so it takes the row');
+  assert.equal(plan(false, true, true, false), 'replace', 'Use, the search still matches the original: the same');
+  assert.equal(plan(true, true, false, false), 'remove');
+  assert.equal(plan(false, true, false, false, true), 'replace', 'Undo, the swap goes: the original takes its row back');
+  assert.equal(plan(false, true, true, false, true), 'update', 'Undo, the swap is still to buy: it keeps its row, never replaced');
+  assert.equal(plan(false, false, false, false), 'rebuild', 'no row to work with');
 });
 
 test('storeCarries: one toggle per brand, pressed while the store carries it; nothing with no brands', () => {

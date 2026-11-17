@@ -351,6 +351,7 @@ const LOCALES = {
     swappedList: '{name} is on the list in place of {was}.',
     swappedRole: '{name} is on the list in place of {was}, and is now the {role} pot of {scheme}.',
     swapUndone: '{was} is back on the list.',
+    movedUnder: 'It is under {group} now.',
     brandOff: '{brand} off: its paints show swaps.',
     brandOn: '{brand} on.',
     originalBack: '{role} uses {name} again.',

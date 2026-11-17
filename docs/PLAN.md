@@ -815,7 +815,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 71, a first step of 68 and the owned-first part of 72 built; 70 open)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, a first step of 68 and the owned-first part of 72 built)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -857,9 +857,15 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     it replaced (`storeSwaps`' `except`), and Use goes back to that paint and then to the new swap, so the list and
     the scheme never hold a swap of a swap. The swap log is a list per pot (one pot for two paints), and a pot
     swapped away is no swap for another paint in the same visit.
-70. **A swap or its Undo stays under the old heading** (open; needs Ryan's choice). The row is drawn in the same
+70. **A swap or its Undo stays under the old heading.** The row is drawn in the same
     place (§3.4), so a Two Thin Coats pot can sit under "AK Interactive", a brand that is off, until the list is
     drawn again; the group counts are then wrong too. The heading says which rack to walk to.
+    **Built (2026-11-17; Ryan chose the correct rack over "nothing moves"):** when the list's filters show the
+    paint, the list is drawn again, so the row is under its own heading and the counts are right. The focus is on
+    the row, the page scrolls only as far as it must, a ring on the row fades, and the live region says the new
+    heading. The groups are `content-visibility: auto`, so the row's place is measured after the groups above it
+    are laid out (the 600px estimate put the page some thousands of px too far for a moment). Only when a filter
+    hides the swap does it take the original's place.
 71. **One class for wash, shade, ink, Contrast and glaze** (open; ranking). For 60% of washes and shades the best
     swap is not a wash or a shade (most are Contrast paints); in half of those a wash was under 2 ΔE further. For
     effect paints, 21 of 55 best swaps have another `fx` (Blood For The Blood God, gloss, gets Vallejo Corrosion,

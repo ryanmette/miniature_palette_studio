@@ -753,23 +753,29 @@ export function rackRow(r, tr) {
 }
 
 /**
- * What the list's rows do after a Use or its Undo (item 38). `left` is the paint that came off the shopping
- * list (the original at a Use, the swap at an Undo); `came` is the paint that is to buy now.
+ * What the list's rows do after a Use or its Undo (items 38, 67 and 70). `left` is the paint that came off the
+ * shopping list (the original at a Use, the swap at an Undo); `came` is the paint that is to buy now.
+ * A paint that is to buy always has a row, and that row is under its own rack heading: the heading says which
+ * rack to walk to (item 70; Ryan, 2026-11-17). So when the list's filters show `came`, the list is drawn again.
+ * The row stays where the other row was only when a filter hides `came` (a search for the original's name):
+ * the painter chose it there, and it must show, with its Undo.
  * @param o.cameRow    `came` has a row in the list already
  * @param o.leftRow    `left` has a row in the list
  * @param o.leftStays  the list's filters still show `left` (the swap that was to buy before; a list of all paints)
- * @param o.undo       this is an Undo. At a Use, the swap always takes the original's row: the painter chose it
- *                     there, and it must show, with its Undo, although a search may not match it
- * @param o.spot       the place a removed row had is known, and still in the page
- * @returns {'update'|'remove'|'replace'|'insert'|'rebuild'}
- *   update:  each paint has its row; redraw them in place · remove: `came` has its row, `left`'s row goes ·
- *   replace: `came` takes `left`'s row, the same place · insert: `left` keeps its row, `came` goes back to its
- *   place · rebuild: `came` needs a row and no place is known, so draw the list again
+ * @param o.cameShows  the list's filters show `came`
+ * @param o.undo       this is an Undo
+ * @returns {'update'|'rebuild'|'remove'|'replace'}
+ *   update:  redraw the rows that are there, each in its place · rebuild: draw the list again, so `came` is under
+ *   its own heading and the counts are right · remove: `came` has its row, `left`'s row goes · replace: `came`
+ *   takes `left`'s row, the same place
  */
-export function swapRowPlan({ cameRow, leftRow, leftStays, undo, spot }) {
-  if (cameRow) return leftRow && !leftStays ? 'remove' : 'update';
-  if (leftRow && !(undo && leftStays)) return 'replace';
-  return spot ? 'insert' : 'rebuild';
+export function swapRowPlan({ cameRow, leftRow, leftStays, cameShows, undo }) {
+  if (cameRow && (!leftRow || leftStays)) return 'update';
+  if (cameShows) return 'rebuild';
+  if (cameRow) return 'remove';
+  // an Undo whose swap is still to buy: the swap keeps its row, and the filters hide the original
+  if (leftRow && undo && leftStays) return 'update';
+  return leftRow ? 'replace' : 'rebuild';
 }
 
 /** The swaps under a row (item 38): the closest pots from the brands the store carries, in the paint's own
