@@ -5,7 +5,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.17.0 took only the web entries. -->
+<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.18.0 took only the web entries. -->
+### Added
+- **The Studio offers to use your paints** (PLAN §5 item 76; `docs/UX_REVIEW.md` F01, the review's first
+  finding of the highest severity; CLAUDE.md §3.6). Step 2 of the review's build order, second part. A painter
+  marked their paints, went back to the Studio, and the scheme still ignored them: **Use my paints** is Off
+  until you change it, and it is in ⋯. Now, when the Studio opens with paints marked as owned and the setting
+  Off, a band under the paint field asks one time: **Prefer my paints**, **Only my paints** or **Not now**.
+  An answer sets the setting, and the note under the live palette shows it. The band does not come back after
+  an answer, or after you change the setting in ⋯. It never comes in while you work in the Studio, so nothing
+  moves under your finger. The answer is saved on the device and is in a backup (a new saved setting,
+  `umpAsked`). `sw.js`: `CACHE` is `ps-v105`.
+- **A UX review before the first showing (`docs/UX_REVIEW.md`; a study, no app code changed).** The app as a new
+  painter meets it: an experienced painter with many pots, a link, alone, mostly on an iPhone. Two deep journeys
+  (arrive → mark my paints → a scheme with them → a shopping list; and "what is close to this paint?"), ten seams
+  between the app's parts, and measurements from the real app. 24 findings, each with its evidence, a direction and
+  a severity from three independent raters on Nielsen's 0 to 4 scale. Two are a 4: the scheme ignores the Shelf
+  until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
+  iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
+  screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 76 to 85 are the proposed work.
+- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
+  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
+  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
+  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
+  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
+  has its own releases later.
 ### Changed
 - **The Metal part of a scheme uses a metallic that you own** (PLAN §5 item 79; `docs/UX_REVIEW.md` F02 and
   §11; a matching change: CLAUDE.md §3.2 and §7). Step 2 of the UX review's build order, with the rule and
@@ -32,6 +56,35 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     (Layer) and Dawnstone (Dry) no longer look the same. With no search, the grid is as before.
   - Help has a new answer: "What is the quickest way to mark the paints I own?"
   - No match changes.
+### Fixed
+- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
+  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
+  padding. The web view's white background showed behind the clock and the home bar, with a double gap
+  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
+  clear of the notch and the home bar.
+### Security
+- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
+  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
+  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
+  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
+  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
+  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
+  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
+  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
+  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
+  with no `AbortSignal` and no glob pattern from outside.
+
+## [1.18.0] - 2026-11-17
+### Added
+- **A Brand setting: keep a scheme in one brand** (PLAN §5 item 64 B; `docs/TONE_LADDERS.md`; CLAUDE.md §3.6
+  and §7). **⋯ → Brand** has **Any · Prefer · Only** and a list of the brands. With **Prefer**, a paint of your
+  brand counts as 2 ΔE closer than it is, so it wins a close call and not a clear one. With **Only**, only paints
+  of that brand can match, also when the match is poor. The ΔE that you see is always the true value. The list
+  starts on the brand that you own the most paints of. A line under the live palette says when the setting is
+  on. The setting changes the live palette, the Recipe and the shopping list, and never the Other brands tab.
+  It is saved on the device and is in a backup. Your starting paint keeps its place, whatever its brand, unless
+  the setting is Only.
+### Changed
 - **Paint data 1.11.0: fluorescent and gloss paints say so** (PLAN §5 item 51; `src/data/SOURCES.md`). 36
   fluorescent or neon paints and 5 Vallejo gloss paints are ordinary layer paints in the data, so they had no
   finish icon and looked like flat colours. Each one now has an icon (a small sun for fluorescent, the gloss
@@ -53,59 +106,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     the page. 127 paints did.
   - The icon does not show on a swatch smaller than 26 px (the Map's small pots, the Schemes strip). The
     paint's tag or name gives the finish there.
-### Added
-- **The Studio offers to use your paints** (PLAN §5 item 76; `docs/UX_REVIEW.md` F01, the review's first
-  finding of the highest severity; CLAUDE.md §3.6). Step 2 of the review's build order, second part. A painter
-  marked their paints, went back to the Studio, and the scheme still ignored them: **Use my paints** is Off
-  until you change it, and it is in ⋯. Now, when the Studio opens with paints marked as owned and the setting
-  Off, a band under the paint field asks one time: **Prefer my paints**, **Only my paints** or **Not now**.
-  An answer sets the setting, and the note under the live palette shows it. The band does not come back after
-  an answer, or after you change the setting in ⋯. It never comes in while you work in the Studio, so nothing
-  moves under your finger. The answer is saved on the device and is in a backup (a new saved setting,
-  `umpAsked`). `sw.js`: `CACHE` is `ps-v105`.
-- **A UX review before the first showing (`docs/UX_REVIEW.md`; a study, no app code changed).** The app as a new
-  painter meets it: an experienced painter with many pots, a link, alone, mostly on an iPhone. Two deep journeys
-  (arrive → mark my paints → a scheme with them → a shopping list; and "what is close to this paint?"), ten seams
-  between the app's parts, and measurements from the real app. 24 findings, each with its evidence, a direction and
-  a severity from three independent raters on Nielsen's 0 to 4 scale. Two are a 4: the scheme ignores the Shelf
-  until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
-  iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
-  screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 76 to 85 are the proposed work.
-- **A Brand setting: keep a scheme in one brand** (PLAN §5 item 64 B; `docs/TONE_LADDERS.md`; CLAUDE.md §3.6
-  and §7). **⋯ → Brand** has **Any · Prefer · Only** and a list of the brands. With **Prefer**, a paint of your
-  brand counts as 2 ΔE closer than it is, so it wins a close call and not a clear one. With **Only**, only paints
-  of that brand can match, also when the match is poor. The ΔE that you see is always the true value. The list
-  starts on the brand that you own the most paints of. A line under the live palette says when the setting is
-  on. The setting changes the live palette, the Recipe and the shopping list, and never the Other brands tab.
-  It is saved on the device and is in a backup. Your starting paint keeps its place, whatever its brand, unless
-  the setting is Only.
-- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
-  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
-  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
-  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
-  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
-  has its own releases later.
 ### Fixed
 - **⋯ no longer shows a focus ring after a touch** (PLAN §5 item 59; CLAUDE.md §3.6). When you opened ⋯ with
   a finger or a mouse, the **Use my paints** control had a focus ring on an iPhone, as if you had used a
   keyboard. Now the focus starts on the sheet's title after a touch or a click, with no ring. After a key press
   it starts on the control, with its ring, as before.
-- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
-  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
-  padding. The web view's white background showed behind the clock and the home bar, with a double gap
-  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
-  clear of the notch and the home bar.
-### Security
-- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
-  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
-  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
-  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
-  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
-  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
-  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
-  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
-  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
-  with no `AbortSignal` and no glob pattern from outside.
 
 ## [1.17.0] - 2026-11-17
 ### Added

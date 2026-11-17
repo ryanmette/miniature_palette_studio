@@ -1,19 +1,19 @@
 // version.js — the app's version, in one place. About shows it next to the paint data's own
 // version (from paints.json). scripts/check-docs.mjs fails the build when it differs from
 // package.json, so a release that bumps one and forgets the other cannot ship (CLAUDE.md §8).
-export const APP_VERSION = '1.17.0';
+export const APP_VERSION = '1.18.0';
 
 /** What's new (mockups/help-about.html, answer 5): About shows these lines under "What's new in {version}". Write
  *  them when a release is cut (CLAUDE.md §8 checklist), a few short lines for a painter, from the CHANGELOG. */
 export const WHATS_NEW = {
-  version: '1.17.0',
+  version: '1.18.0',
   date: '2026-11-17',
   items: [
-    'Not on the rack? has a switch for every brand, and a pot you own comes first.',
-    'Washes are compared by their colour, not by how dark they look. You see a gap in degrees.',
-    'A swap goes under the heading of its own brand, and you can swap a swap again.',
-    'The Recipe finds a real wash more often, before it says “watered down”.',
-    'A paint that is no longer made says so, and its closest pots show at once.',
+    'Every swatch now shows the paint’s true colour. The gradients are gone.',
+    'A small icon in the corner shows the finish: metallic, wash, Contrast, effect or fluorescent.',
+    'Keep a scheme in one brand: ⋯ → Brand, then Prefer or Only.',
+    'Search “fluorescent” to find every fluorescent and neon paint.',
+    'In the dark theme, near-black paints have a light edge, so you can see them.',
   ],
 };
 
@@ -21,6 +21,17 @@ export const WHATS_NEW = {
  *  moves the WHATS_NEW it replaces to the front of this list (CLAUDE.md §8; a test fails when one is missing). It
  *  starts at 1.13.0, the first release with lines for a painter: older releases are in CHANGELOG.md only. */
 export const EARLIER_NEWS = [
+  {
+    version: '1.17.0',
+    date: '2026-11-17',
+    items: [
+      'Not on the rack? has a switch for every brand, and a pot you own comes first.',
+      'Washes are compared by their colour, not by how dark they look. You see a gap in degrees.',
+      'A swap goes under the heading of its own brand, and you can swap a swap again.',
+      'The Recipe finds a real wash more often, before it says “watered down”.',
+      'A paint that is no longer made says so, and its closest pots show at once.',
+    ],
+  },
   {
     version: '1.16.0',
     date: '2026-11-17',
