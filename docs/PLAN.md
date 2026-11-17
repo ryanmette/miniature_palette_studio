@@ -817,7 +817,7 @@ Do these three in one bug pass, in this order.
     checklist (CLAUDE.md §8) now moves the old What's new into the log, and a test fails when a released version is
     missing. Not a copy of the CHANGELOG: those entries are written for developers.
 
-### Raised by Ryan on 2026-11-14 — an audit of the store swaps (66, 67, 69, 70, 71, 73, way C of 68 and the owned-first part of 72 built; 74 open)
+### Raised by Ryan on 2026-11-14 — an audit of the store swaps (released in v1.17.0; open: the wash data of 68, the list length of 72, the missing paints of 75)
 
 Ryan, with a screenshot of the Shelf's list in a store with five brands off: "can we do an audit of the
 equivalents' recommendations? Specifically when we toggle certain paints not on the rack at a game store." The
@@ -902,7 +902,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       change there alters every Recipe, so it needs its own decision (item 74). **Data seen on the way:** Army
       Painter's "Brush-On Primer" had the type `wash` (it is a primer), so it showed as a swap for a black wash
       (corrected in item 73).
-69. **A row that is a swap cannot swap again** (open; `canSwap` is false for it). When its brand is switched off
+69. **A row that is a swap cannot swap again** (built; `canSwap` was false for it). When its brand is switched off
     later, it gets no note and no swaps: the list says to buy a paint of a brand the store does not have. Undo is
     the only way out. **Built (2026-11-15):** a swap row has the toggle. Its swaps are the next closest to the paint
     it replaced (`storeSwaps`' `except`), and Use goes back to that paint and then to the new swap, so the list and
@@ -917,7 +917,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
     heading. The groups are `content-visibility: auto`, so the row's place is measured after the groups above it
     are laid out (the 600px estimate put the page some thousands of px too far for a moment). Only when a filter
     hides the swap does it take the original's place.
-71. **One class for wash, shade, ink, Contrast and glaze** (open; ranking). For 60% of washes and shades the best
+71. **One class for wash, shade, ink, Contrast and glaze** (built; ranking). For 60% of washes and shades the best
     swap is not a wash or a shade (most are Contrast paints); in half of those a wash was under 2 ΔE further. For
     effect paints, 21 of 55 best swaps have another `fx` (Blood For The Blood God, gloss, gets Vallejo Corrosion,
     texture). **Built (2026-11-15):** `data.js swapKind` + `SWAP_KIND_PENALTY` = 2 (ranking only): a wash's or
@@ -998,7 +998,23 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       both are probably effects (`fx: gloss`). The product page is gone (404) and it is not in the maker's
       public product list, so there is no primary source to read. No change until one is found.
 
-### Next session (planned 2026-08-11 for 2026-08-12)
+### Next (as of 2026-11-17, after v1.17.0)
+
+Ryan's order (2026-11-17: "go with your recommendation"):
+
+1. **The swatch pass (item 51).** Chosen: B, a pure colour field with one finish icon in the corner. Today the
+   finish overlays shift the colour by up to ΔE 10.4, which CLAUDE.md §2 forbids: the largest known gap between
+   the app and its own rules.
+2. **Small and decided:** item 59 (⋯ shows a focus ring when a touch opens it).
+3. **Studied and chosen, larger:** item 64 B (a Brand setting in ⋯: Any · Prefer · Only), or the next maker's tone
+   families (Reaper first); item 7 (the paint detail sheet).
+4. **Waits for Ryan:** measured wash colours and the 34 missing Warhammer Colour paints (items 49, 68, 75); a test
+   on a real iPad (item 60); the device build of the native app (Stage 1); the retailer applications
+   (`MONETIZATION.md` A).
+5. **Studies not started:** item 62 (sheen), item 63 (colour in three dimensions).
+
+### An earlier plan, kept as a record (planned 2026-08-11 for 2026-08-12; item 7 is still not built)
+
 
 Ordered, with the reasoning rather than just the list:
 
