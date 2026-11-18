@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = process.argv[2] || join(ROOT, '.cache', 'raw');
 const CAPTURED = '2026-06-25';
-const VERSION = '1.13.0';
+const VERSION = '1.14.0';
 // The build that took three corrections from the makers' own pages (PLAN §5 item 73): 14 Army Painter effects
 // that upstream lists as washes, one Two Thin Coats name, and four Gloss Shades that GW no longer makes. No hex
 // changed: the upstream values are still CAPTURED's.
@@ -103,7 +103,11 @@ const BRANDS = [
   } },
   // Two Thin Coats' own Wave 1 chart says "Orc Flesh Wash" (duncanrhodes.com/ttc-paints/, "Two Thin Coats paint
   // reference chart", 2022, read 2026-11-17): upstream's name lost its first letter.
-  { brand: 'Two Thin Coats', file: 'Duncan.md', setIdx: 2, names: { 'RC Flesh Wash': 'Orc Flesh Wash' }, sets: {
+  // The same charts, and the Wave 3 chart (read 2026-11-18; scripts/two-thin-coats-triads.json), have five more
+  // names that upstream has wrong. Three lost their first letter, as "RC Flesh Wash" did.
+  { brand: 'Two Thin Coats', file: 'Duncan.md', setIdx: 2, names: { 'RC Flesh Wash': 'Orc Flesh Wash',
+    'Keleton Legion': 'Skeleton Legion', 'Merald Green': 'Emerald Green', 'Ur Cloak': 'Fur Cloak',
+    'Elder Robe': 'Eldar Robe', 'Von Evile Pimple': 'Von Evile Purple' }, sets: {
     'Wave 1': ['Wave 1', 'layer'], 'Wave 2': ['Wave 2', 'layer'], 'Wave 3': ['Wave 3', 'layer'],
   } },
   { brand: 'P3', file: 'P3.md', setIdx: 2, sets: {
@@ -253,6 +257,25 @@ for (const t of AP_TRIADS.triads) {
   apCount++;
 }
 console.log(`Army Painter triads → ${apCount} tone families, ${apCount * 6} paints`);
+
+// Two Thin Coats' triads (docs/TONE_LADDERS.md §6, the fourth maker; dataset 1.14.0). Every colour of the range
+// is a shadow, a midtone or a highlight, and the maker's charts mark each paint S, M or H.
+// scripts/two-thin-coats-triads.json holds the 43 triads, read from those charts. A paint is found by its name in
+// its wave. `family` is a stable id from the shadow's name; `tone` is 1 (the shadow) to 3. A triad on a colour
+// wheel has no name of its own, so its `families` entry has none, and the Recipe says only "Two Thin Coats triad".
+const TTC_TRIADS = JSON.parse(readFileSync(join(ROOT, 'scripts', 'two-thin-coats-triads.json'), 'utf8'));
+const ttc = new Map(paints.filter(p => p.brand === 'Two Thin Coats').map(p => [`${p.line}|${apKey(p.name)}`, p]));
+let ttcCount = 0;
+for (const t of TTC_TRIADS.triads) {
+  const ps = t.paints.map(n => ttc.get(`Wave ${t.wave}|${apKey(n)}`));
+  if (ps.some(p => !p)) throw new Error(`two-thin-coats-triads.json: a paint of the Wave ${t.wave} triad "${t.paints.join(' · ')}" is not in the data`);
+  if (ps.some(p => p.family)) throw new Error(`two-thin-coats-triads.json: a paint of the triad "${t.paints.join(' · ')}" is in another family already`);
+  const id = `two-thin-coats-triad-${slug(t.paints[0])}`;
+  ps.forEach((p, i) => { p.family = id; p.tone = i + 1; });
+  families.push({ id, ...(t.heading ? { name: t.heading } : {}), kind: 'triad' });
+  ttcCount++;
+}
+console.log(`Two Thin Coats triads → ${ttcCount} tone families, ${ttcCount * 3} paints`);
 
 // Sort by the upstream name too, so a fixed name keeps its place (the order breaks ΔE ties, see `key`)
 const upName = p => p.formerly?.[0] || p.name;

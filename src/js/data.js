@@ -47,7 +47,9 @@ export function indexDataset(dataset) {
 /**
  * The maker's family of a paint, as the maker made it (direction A of docs/TONE_LADDERS.md): its name, its line
  * and brand, and every tone in order, darkest first. null for a paint in no family, or a family of one. The
- * name is the tones' shared name without the tone number ("Ultramar Blue"), else the line.
+ * name is the maker's own (a triad's, from the data's `families`), else the tones' shared name without the tone
+ * number ("Ultramar Blue"), else the line. A triad that the maker gave no name has '' (a Two Thin Coats triad on
+ * its colour wheel): the Recipe then says only what it is, the `label`.
  * @returns {{id:string, name:string, brand:string, line:string, tones:object[]}|null}
  */
 export function familyOf(indexed, paint) {
@@ -56,7 +58,7 @@ export function familyOf(indexed, paint) {
   if (tones.length < 2) return null;
   const meta = indexed.familyMeta && indexed.familyMeta.get(paint.family);
   const roots = new Set(tones.map(p => p.name.replace(/\s+\d+$/, '')));
-  const name = meta ? meta.name : roots.size === 1 ? [...roots][0] : paint.line;
+  const name = meta ? meta.name || '' : roots.size === 1 ? [...roots][0] : paint.line;
   // `label`: what the family is, after its name ("Tone Pro", "Reaper triad")
   return { id: paint.family, name, brand: paint.brand, line: paint.line, label: meta && meta.kind ? `${paint.brand} ${meta.kind}` : paint.line, tones };
 }

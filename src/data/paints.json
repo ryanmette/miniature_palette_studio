@@ -1,5 +1,5 @@
 {
- "version": "1.13.0",
+ "version": "1.14.0",
  "generated": "2026-11-17",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
@@ -1305,6 +1305,193 @@
   {
    "id": "army-painter-triad-deep-skin-tones",
    "name": "Deep Skin Tones",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-berserker-red",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-rust-orange",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-dark-sun-yellow",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-wyvern-green",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-marine-blue",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-cold-corpse-blue",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-amethyst-rayne",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-royal-cloak",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-doom-death-black",
+   "name": "Black",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-wizard-grey",
+   "name": "White",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-spartan-bronze",
+   "name": "Gold",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-sir-coates-silver",
+   "name": "Silver",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-cuirass-leather",
+   "name": "Warm Brown",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-dragon-fang",
+   "name": "Bone",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-griffon-claw",
+   "name": "Ivory",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-dust-bowl",
+   "name": "Khaki",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-scorched-earth",
+   "name": "Cold Brown",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-barbarian-brawn",
+   "name": "Fleshtone",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-dread-red",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-field-grey",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-fury-green",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-orc-hide",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-hydra-green",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-sentient-turquoise",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-abyss-blue",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-perisher-pink",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-ashen-grey",
+   "name": "Grey Brown",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-noble-steed-brown",
+   "name": "Orange Brown",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-gyzmo-fur",
+   "name": "Ochre",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-argonaut-skin",
+   "name": "Flesh Tones",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-druid-flesh",
+   "name": "Flesh Tones",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-amphora-red",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-red-rage",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-panzer-yellow",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-serpent-eye-yellow",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-war-master-green",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-contagion-green",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-oxidation-green",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-eldar-robe",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-faust-blue",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-von-evile-purple",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-incubus-purple",
+   "kind": "triad"
+  },
+  {
+   "id": "two-thin-coats-triad-scabbard-brown",
    "kind": "triad"
   }
  ],
@@ -37065,7 +37252,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-amethyst-rayne",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-ancient-forest",
@@ -37078,7 +37267,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-scorched-earth",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-archaic-sepia-wash",
@@ -37104,7 +37295,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-barbarian-brawn",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-battle-mud-wash",
@@ -37130,7 +37323,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-berserker-red",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-boar-hide",
@@ -37143,7 +37338,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-cuirass-leather",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-carcharodon-grey",
@@ -37156,7 +37353,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-wizard-grey",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-celestial-blue",
@@ -37169,7 +37368,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-marine-blue",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-cold-corpse-blue",
@@ -37182,7 +37383,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-cold-corpse-blue",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-cuirass-leather",
@@ -37195,7 +37398,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-cuirass-leather",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-dark-sun-yellow",
@@ -37208,7 +37413,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dark-sun-yellow",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-death-reaper",
@@ -37221,7 +37428,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-doom-death-black",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-demon-red",
@@ -37235,6 +37444,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-berserker-red",
+   "tone": 3,
    "groupId": "dark-red-02"
   },
   {
@@ -37248,7 +37459,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-doom-death-black",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-dragon-fang",
@@ -37261,7 +37474,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dragon-fang",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-dragons-gold",
@@ -37274,7 +37489,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-spartan-bronze",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-dungeon-stone-grey",
@@ -37287,7 +37504,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-doom-death-black",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-dust-bowl",
@@ -37300,7 +37519,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dust-bowl",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-dwarven-skin",
@@ -37313,7 +37534,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-barbarian-brawn",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-elven-skin",
@@ -37326,7 +37549,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-barbarian-brawn",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-elysium-blue",
@@ -37340,6 +37565,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-marine-blue",
+   "tone": 2,
    "groupId": "blue-03"
   },
   {
@@ -37353,7 +37580,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-wyvern-green",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-fanatic-orange",
@@ -37366,7 +37595,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-rust-orange",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-flesh-wash",
@@ -37392,7 +37623,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-spartan-bronze",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-glistening-gums",
@@ -37405,7 +37638,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-royal-cloak",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-gravestone-blue",
@@ -37418,7 +37653,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-cold-corpse-blue",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-griffon-claw",
@@ -37431,7 +37668,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-griffon-claw",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-ivory-tusk",
@@ -37444,20 +37683,27 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-griffon-claw",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-keleton-legion",
    "brand": "Two Thin Coats",
    "line": "Wave 1",
-   "name": "Keleton Legion",
+   "name": "Skeleton Legion",
    "hex": "#AF966C",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Keleton Legion"
+   ],
+   "family": "two-thin-coats-triad-dragon-fang",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-marine-blue",
@@ -37470,20 +37716,27 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-marine-blue",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-merald-green",
    "brand": "Two Thin Coats",
    "line": "Wave 1",
-   "name": "Merald Green",
+   "name": "Emerald Green",
    "hex": "#3C5C43",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Merald Green"
+   ],
+   "family": "two-thin-coats-triad-wyvern-green",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-mythril-blade",
@@ -37496,7 +37749,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-sir-coates-silver",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-necrosis-green-wash",
@@ -37535,7 +37790,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-rust-orange",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-plate-armour",
@@ -37548,7 +37805,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-sir-coates-silver",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-rc-flesh-wash",
@@ -37577,7 +37836,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-royal-cloak",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-runic-purple",
@@ -37590,7 +37851,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-amethyst-rayne",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-rust-orange",
@@ -37603,7 +37866,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-rust-orange",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-sandstone",
@@ -37616,7 +37881,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dust-bowl",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-sanguine-scarlet",
@@ -37629,7 +37896,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-berserker-red",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-scorched-earth",
@@ -37642,7 +37911,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-scorched-earth",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-sir-coates-silver",
@@ -37655,7 +37926,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-sir-coates-silver",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-skulker-yellow",
@@ -37669,6 +37942,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dark-sun-yellow",
+   "tone": 2,
    "groupId": "orange-08"
   },
   {
@@ -37682,7 +37957,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-amethyst-rayne",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-spartan-bronze",
@@ -37695,7 +37972,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-spartan-bronze",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-sword-hilt-burgundy",
@@ -37708,7 +37987,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-royal-cloak",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-temple-stone",
@@ -37721,7 +38002,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dust-bowl",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-trooper-white",
@@ -37735,20 +38018,27 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-griffon-claw",
+   "tone": 3,
    "groupId": "pale-yellow-01"
   },
   {
    "id": "two-thin-coats-wave-1-ur-cloak",
    "brand": "Two Thin Coats",
    "line": "Wave 1",
-   "name": "Ur Cloak",
+   "name": "Fur Cloak",
    "hex": "#91524D",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Ur Cloak"
+   ],
+   "family": "two-thin-coats-triad-cuirass-leather",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-vampire-fang",
@@ -37761,7 +38051,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dragon-fang",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-wasteland-brown",
@@ -37774,7 +38066,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-scorched-earth",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-1-white-star",
@@ -37788,6 +38082,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-wizard-grey",
+   "tone": 3,
    "groupId": "near-white-04"
   },
   {
@@ -37801,7 +38097,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-wizard-grey",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-wolf-grey",
@@ -37814,7 +38112,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-cold-corpse-blue",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-1-wyvern-green",
@@ -37827,7 +38127,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-wyvern-green",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-1-yellow-flame",
@@ -37840,7 +38142,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dark-sun-yellow",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-abyss-blue",
@@ -37853,7 +38157,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-abyss-blue",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-amulet-purple",
@@ -37879,7 +38185,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-argonaut-skin",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-argonaut-skin",
@@ -37892,7 +38200,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-argonaut-skin",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-ashen-grey",
@@ -37905,7 +38215,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-ashen-grey",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-asmodeus-red",
@@ -37918,7 +38230,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dread-red",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-bard-skin",
@@ -37931,7 +38245,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-druid-flesh",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-batle-axe-brass",
@@ -37970,7 +38286,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-gyzmo-fur",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-craven-yellow",
@@ -37997,6 +38315,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-sentient-turquoise",
+   "tone": 2,
    "groupId": "teal-02"
   },
   {
@@ -38010,7 +38330,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dread-red",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-druid-flesh",
@@ -38023,7 +38345,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-druid-flesh",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-dry-rust-brown",
@@ -38036,7 +38360,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-noble-steed-brown",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-dwarven-iron",
@@ -38063,6 +38389,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-ashen-grey",
+   "tone": 2,
    "groupId": "dark-grey-08"
   },
   {
@@ -38076,7 +38404,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-dread-red",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-field-grey",
@@ -38089,7 +38419,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-field-grey",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-flaming-forge-orange",
@@ -38115,7 +38447,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-fury-green",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-ghoul-green",
@@ -38128,7 +38462,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-hydra-green",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-gigawatt-blue",
@@ -38154,7 +38490,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-orc-hide",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-green-beret",
@@ -38167,7 +38505,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-fury-green",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-green-glaze",
@@ -38193,7 +38533,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-fury-green",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-gyzmo-fur",
@@ -38207,6 +38549,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-gyzmo-fur",
+   "tone": 1,
    "groupId": "orange-11"
   },
   {
@@ -38246,7 +38590,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-perisher-pink",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-hydra-green",
@@ -38259,7 +38605,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-hydra-green",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-jade-green",
@@ -38272,7 +38620,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-hydra-green",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-kobold-grey",
@@ -38285,7 +38635,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-field-grey",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-kronos-flesh",
@@ -38299,6 +38651,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-argonaut-skin",
+   "tone": 2,
    "groupId": "orange-18"
   },
   {
@@ -38312,7 +38666,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-abyss-blue",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-magi-purple-wash",
@@ -38338,7 +38694,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-gyzmo-fur",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-neo-pink",
@@ -38352,6 +38710,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-perisher-pink",
+   "tone": 3,
    "groupId": "pale-red-01"
   },
   {
@@ -38365,7 +38725,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-noble-steed-brown",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-orange-glaze",
@@ -38391,7 +38753,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-orc-hide",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-overlord-brass",
@@ -38417,7 +38781,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-druid-flesh",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-perisher-pink",
@@ -38430,7 +38796,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-perisher-pink",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-platinum-crown",
@@ -38469,7 +38837,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-field-grey",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-ray-gun-glow",
@@ -38482,7 +38852,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-sentient-turquoise",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-red-glaze",
@@ -38508,7 +38880,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-ashen-grey",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-satyr-brown",
@@ -38521,7 +38895,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-noble-steed-brown",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-sentient-turquoise",
@@ -38534,7 +38910,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-sentient-turquoise",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-2-steampunk-copper",
@@ -38600,7 +38978,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-orc-hide",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-2-witching-hour-blue",
@@ -38613,7 +38993,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-abyss-blue",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-2-yellow-glaze",
@@ -38639,7 +39021,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-panzer-yellow",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-amphora-red",
@@ -38652,7 +39036,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-amphora-red",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-ancient-gold",
@@ -38678,7 +39064,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-oxidation-green",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-apocalypse-sky",
@@ -38691,7 +39079,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-red-rage",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-aztec-turquoise-wash",
@@ -38743,7 +39133,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-scabbard-brown",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-carapace-green",
@@ -38769,7 +39161,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-amphora-red",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-chaos-bronze",
@@ -38795,7 +39189,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-contagion-green",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-cyber-pink",
@@ -38834,20 +39230,27 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-incubus-purple",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-elder-robe",
    "brand": "Two Thin Coats",
    "line": "Wave 3",
-   "name": "Elder Robe",
+   "name": "Eldar Robe",
    "hex": "#2259A0",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Elder Robe"
+   ],
+   "family": "two-thin-coats-triad-eldar-robe",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-elixir-green",
@@ -38873,7 +39276,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-amphora-red",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-emperors-purple",
@@ -38912,7 +39317,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-von-evile-purple",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-enticing-purple",
@@ -38925,7 +39332,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-incubus-purple",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-faust-blue",
@@ -38938,7 +39347,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-faust-blue",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-fire-opal",
@@ -38964,7 +39375,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-panzer-yellow",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-frost-blue",
@@ -38977,7 +39390,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-faust-blue",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-hazard-yellow-wash",
@@ -39016,7 +39431,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-incubus-purple",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-inferno-orange",
@@ -39029,7 +39446,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-red-rage",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-ion-blue",
@@ -39055,7 +39474,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-war-master-green",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-mythic-turquoise",
@@ -39068,7 +39489,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-oxidation-green",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-omega-blue",
@@ -39094,7 +39517,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-oxidation-green",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-pale-skin",
@@ -39120,7 +39545,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-panzer-yellow",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-pestilence-green",
@@ -39133,7 +39560,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-contagion-green",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-red-rage",
@@ -39147,6 +39576,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-red-rage",
+   "tone": 1,
    "groupId": "dark-red-09"
   },
   {
@@ -39160,7 +39591,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-eldar-robe",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-ritz-otin",
@@ -39186,7 +39619,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-scabbard-brown",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-scarab-red",
@@ -39212,7 +39647,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-eldar-robe",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-septric-green",
@@ -39238,7 +39675,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-serpent-eye-yellow",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-shadow-blue",
@@ -39251,7 +39690,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-faust-blue",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-smoke-grey-wash",
@@ -39290,7 +39731,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-von-evile-purple",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-sun-bleach-yellow",
@@ -39303,7 +39746,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-serpent-eye-yellow",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-traitor-green",
@@ -39316,7 +39761,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-war-master-green",
+   "tone": 2
   },
   {
    "id": "two-thin-coats-wave-3-twin-suns-yellow",
@@ -39329,7 +39776,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-serpent-eye-yellow",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-vambrace-brown",
@@ -39342,20 +39791,27 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-scabbard-brown",
+   "tone": 3
   },
   {
    "id": "two-thin-coats-wave-3-von-evile-pimple",
    "brand": "Two Thin Coats",
    "line": "Wave 3",
-   "name": "Von Evile Pimple",
+   "name": "Von Evile Purple",
    "hex": "#22012E",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Von Evile Pimple"
+   ],
+   "family": "two-thin-coats-triad-von-evile-purple",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-war-master-green",
@@ -39368,7 +39824,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-war-master-green",
+   "tone": 1
   },
   {
    "id": "two-thin-coats-wave-3-zombie-rot",
@@ -39381,7 +39839,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "two-thin-coats-triad-contagion-green",
+   "tone": 2
   },
   {
    "id": "vallejo-game-color-abyssal-turquoise",

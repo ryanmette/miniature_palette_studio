@@ -811,6 +811,14 @@ test('makerLadder: a family with a name of its own says what it is (a Reaper tri
   assert.match(makerLadder({ name: 'Ultramar Blue', line: 'Tone Pro', tones, current: 't1' }), /Ultramar Blue · Tone Pro: the maker's 3 tones/);
 });
 
+test('makerLadder: a triad that the maker gave no name says only what it is (a Two Thin Coats triad)', () => {
+  const tones = ['Berserker Red', 'Sanguine Scarlet', 'Demon Red'].map((name, i) => ({ id: 't' + i, name, brand: 'Two Thin Coats', line: 'Wave 1', hex: '#901010', type: 'layer', tone: i + 1 }));
+  const html = makerLadder({ id: 'two-thin-coats-triad-berserker-red', name: '', brand: 'Two Thin Coats', line: 'Wave 1', label: 'Two Thin Coats triad', tones, current: 't1' });
+  assert.match(html, /class="ladcap famcap">Two Thin Coats triad: the maker's 3 tones</, 'no empty name and no stray dot');
+  assert.match(html, /role="group" aria-label="Two Thin Coats triad, the maker's 3 tones, darkest first"/);
+  assert.doesNotMatch(html, /undefined|> · /);
+});
+
 test('the paint detail sheet (item 7): the paint, its mark, the three lists with the true ΔE, and the ways on', async () => {
   const { paintSheet, detailsLink } = await import('../src/js/ui.js');
   const m = (p, deltaE, label, tier, extra = {}) => ({ paint: p, deltaE, quality: { label, tier }, ...extra });

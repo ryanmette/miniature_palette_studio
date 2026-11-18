@@ -15,6 +15,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   descriptions, which say each paint's place ("the darkest tone from the "Browns" Flexible Colour Triad"). The
   colour values in the app, from another source, agree with that order in all 27 families. Only the `family` and
   `tone` fields changed on these paints, so no match changed.
+- **Two Thin Coats' triads: the maker's three tones on the Recipe** (PLAN §5 item 64; paint data 1.14.0;
+  `src/data/SOURCES.md`). Two Thin Coats makes each colour as a shadow, a midtone and a highlight. When a role's
+  pot is one of those paints, its Recipe card now shows the three: "Warm Brown · Two Thin Coats triad: the
+  maker's 3 tones", with your pot marked. 43 triads (129 paints) are in, from the maker's own charts. A triad
+  on the maker's colour wheel has no name of its own, so its row says only "Two Thin Coats triad". The washes,
+  glazes, brights and the later metallics are not tones of one colour, so they have no such row. Only the
+  `family` and `tone` fields changed on these paints, so no match changed.
 - **Keep your shelf safe: the app says how, one time** (PLAN §5 item 77; `docs/UX_REVIEW.md` F08, a finding of
   the highest severity, and Ryan's iPhone check of 2026-11-18; CLAUDE.md §3.6). Step 4 of the review's build
   order. Your shelf is only in your browser. Safari can remove it when you do not use Palette Studio for 7 days.
@@ -106,6 +113,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Bony Spikes (Boney), Terrestrial Titan (Terrestial) and Violent Vermilion (Vermillion). The old spelling still
   finds each paint in a search and in a CSV import, and no id changed, so a saved shelf and a share link are
   not affected.
+- **Five Two Thin Coats names have the maker's spelling** (paint data 1.14.0): Skeleton Legion (was Keleton
+  Legion), Emerald Green (Merald Green), Fur Cloak (Ur Cloak), Eldar Robe (Elder Robe) and Von Evile Purple (Von
+  Evile Pimple). The old spelling still finds each paint, and no id changed.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap

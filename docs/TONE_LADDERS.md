@@ -189,7 +189,11 @@ colour". Search can take a family word later ("ultramar blue" already finds the 
    paint's triad and its place in words, so the source is text (`scripts/army-painter-triads.json`): 27 triads
    of six tones, 162 paints, all of them families. The maker's codes give the order, the words agree with it,
    and the upstream colour values (a second record) rise from dark to light in all 27. Four names took the
-   maker's spelling. **Next:** Two Thin Coats.
+   maker's spelling.
+   **Two Thin Coats: built 2026-11-18** (dataset 1.14.0). The maker's charts mark each paint S, M or H; they
+   are images, read by eye (`scripts/two-thin-coats-triads.json`). 43 triads, 129 paints. For Waves 1 and 2 two
+   charts agree; Wave 3 has one chart. A triad on a colour wheel has no name, so its family has none and the
+   Recipe says only "Two Thin Coats triad". Five names took the charts' spelling. This is the last maker of §3.
 
 ---
 

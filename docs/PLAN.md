@@ -837,7 +837,19 @@ Do these three in one bug pass, in this order.
     `formerly`. **Found on the way (open; data):** the line "Skin Tones" (15 paints, from the upstream set "Skin
     Tones Paint Set") has paints with the names of Fanatic skin tones and other colour values (Tiger's Eye Skin
     is #7F4841 there and #904D52 in Warpaints Fanatic); it is probably an older set, to check on the maker's
-    site before any change. **Next:** Two Thin Coats.
+    site before any change. **Two Thin Coats' triads built (2026-11-18), dataset 1.14.0:** 43 triads (129 paints)
+    from the maker's own charts (`scripts/two-thin-coats-triads.json`; `SOURCES.md`); a triad with a heading on a
+    chart has that name ("Warm Brown · Two Thin Coats triad: the maker's 3 tones"), and one on a colour wheel has
+    none ("Two Thin Coats triad: …"). Five names took the charts' spelling. With this, every maker of
+    `TONE_LADDERS.md` §3 is in. **Found on the way (open; data; the evidence is the charts' marks, so it is ready
+    to build as one change, but it changes matches):** (a) **types.** The charts mark as **metallic** eight paints
+    that have the type `layer`: Plate Armour and Mythril Blade (Wave 1, the "Silver" triad) and Scarab Red, Omega
+    Blue, Enchantment Blue, Emperor's Purple, Carapace Green and Fire Opal (Wave 3, marked ME). They mark as
+    **glaze** the six Wave 2 glazes (Red, Yellow, Blue, Orange, Green, Purple Glaze), which have the type `layer`.
+    So the app offers a metallic or a glaze as a flat paint. (b) **Five more names** differ from the charts:
+    Battle Axe Brass (the data has "Batle Axe Brass"), Hellion Red Wash ("Helion Red Wash"), Septic Green
+    ("Septric Green"), Bits O'Tin ("Ritz O'Tin") and Doom Metal ("Death Metal"). (c) The chart's two varnishes
+    (Satin, Gloss) are not in the data, which is correct: they are no colours.
 
 ### Raised by Ryan on 2026-11-07 — an update log (built)
 
@@ -1142,10 +1154,11 @@ Ryan's order (2026-11-17: "go with your recommendation"):
 2. **Item 59** (⋯ showed a focus ring when a touch opened it): **built 2026-11-17**. To confirm on an iPhone.
 3. **Item 64 B** (a Brand setting in ⋯: Any · Prefer · Only): **built 2026-11-17**. **Item 7** (the paint detail
    sheet): **first part built 2026-11-17, its other ways in 2026-11-18**. **Reaper's tone families: built
-   2026-11-18.** **Released in v1.19.0 (2026-11-18).** **The Army Painter's triads: built
-   2026-11-18** (dataset 1.13.0; not in a release yet). **Next** (Ryan, 2026-11-18: "go with your
-   recommendation"): Two Thin Coats' families. The Reaper type corrections found on the way (item 64) wait for
-   the maker's own page for each paint.
+   2026-11-18.** **Released in v1.19.0 (2026-11-18).** **The Army Painter's triads and Two Thin Coats':
+   built 2026-11-18** (datasets 1.13.0 and 1.14.0; not in a release yet). Every maker of the study is in.
+   **Next, for Ryan to choose:** the Two Thin Coats type and name corrections found on the way (item 64: eight
+   metallics and six glazes have the type `layer`; it changes matches); the resizable sheet on a phone (item 7).
+   The Reaper type corrections (item 64) wait for the maker's own page for each paint.
 4. **Waits for Ryan:** measured wash colours and the 34 missing Warhammer Colour paints (items 49, 68, 75); a test
    on a real iPad (item 60); the device build of the native app (Stage 1); the retailer applications
    (`MONETIZATION.md` A).
