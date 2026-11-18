@@ -3,7 +3,7 @@
 
 import { textOn, normHex, rgbToHsl, hexToRgb } from './color.js';
 import { HARMONY_OFFSETS } from './harmony.js';
-import { FINISH_ICONS, finishKind, finishWord } from './data.js';   // the finish words: the tag shows the word the search finds
+import { FINISH_ICONS, finishKind, finishWord, brandLabel } from './data.js';   // the finish words: the tag shows the word the search finds
 
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const LABELS = { 'neutral-pop': 'Neutral + pop', 'warm-cool': 'Warm / cool' };   // neutral harmonies read as phrases
@@ -282,7 +282,8 @@ export const segmented = (types, active, opts = {}) => {
 };
 
 /** <option> list for the brand filter. */
-export const brandOptions = brands => brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+// the label has the name painters still say (data.js brandLabel); the value stays the brand's own name
+export const brandOptions = brands => brands.map(b => `<option value="${esc(b)}">${esc(brandLabel(b))}</option>`).join('');
 
 /** Quick-pop chips for neutral mode — shortcuts that move the wheel's pop node (not a second system).
  *  `pops`: [{hex, name}]; `active` = the current pop hex (a chip is "on" when it IS the pop). */
@@ -726,7 +727,11 @@ export function livePalette(vm, roleByHex = {}) {
 export function a11yPanel(model) {
   const strip = cols => `<div class="cstrip">${cols.map(c => `<span class="sw" style="flex:1;height:30px;background:${safeColor(c)}"></span>`).join('')}</div>`;
   const simRows = model.sims.map(s => `<div class="crow"><span class="clab">${esc(s.label)}</span>${strip(s.colors)}</div>`).join('');
-  const verdict = c => c.passAAText ? ['Passes AA text', 'var(--success-text)'] : c.passAALarge ? ['Large/UI only', 'var(--warning-text)'] : ['Fails AA', 'var(--danger-text)'];
+  // Painters' words (UX review F20): "Fails AA" is a rule for text on a screen, and it said nothing about two
+  // paints. The WCAG ratio measures light against dark, and nothing else: so the words say that, and not "hard
+  // to tell apart" (a red and a green of one lightness have a low ratio and are easy to tell apart by hue).
+  // The limits are the same (4.5 and 3), and the ratio stays as the detail.
+  const verdict = c => c.passAAText ? ['Strong light–dark contrast', 'var(--success-text)'] : c.passAALarge ? ['Medium light–dark contrast', 'var(--warning-text)'] : ['Weak: close in light and dark', 'var(--danger-text)'];
   const ctr = model.contrasts.map(c => {
     const [v, col] = verdict(c);
     return `<div class="ctrbox"><div class="ttl">${esc(c.labelA)} ↔ ${esc(c.labelB)}</div>`
@@ -744,7 +749,9 @@ export function a11yPanel(model) {
     coll = '<div class="collide ok">No major colour-blindness collisions in this scheme.</div>';
   }
   return `<div class="micro" style="margin:14px 0 8px">Colour-blindness simulation (role colours)</div>${simRows}`
-    + `<div class="micro" style="margin:18px 0 8px">Contrast (WCAG 2.1)</div><div class="ctr">${ctr}</div>${coll}`;
+    + `<div class="micro" style="margin:18px 0 4px">Light and dark contrast between the roles</div>`
+    + `<p class="sethint" style="margin:0 0 8px">How far two colours are from each other in light and dark (the WCAG 2.1 contrast ratio). Under 3:1 the two are close in light and dark, so the parts can blend at arm’s length, also when the hues differ.</p>`
+    + `<div class="ctr">${ctr}</div>${coll}`;
 }
 
 

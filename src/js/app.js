@@ -2951,7 +2951,7 @@ function syncBrand() {
   for (const b of $('#brandSeg').children) b.setAttribute('aria-pressed', String(b.dataset.brandmode === state.brandMode));
   const shown = brandShown(), sel = $('#brandSel');
   const opts = (shown ? '' : `<option value="">${ui.esc(t('brandChoose'))}</option>`)
-    + state.brands.map(b => `<option value="${ui.esc(b)}">${ui.esc(b)}</option>`).join('');
+    + ui.brandOptions(state.brands);   // "Warhammer Colour (Citadel)": the name painters still say (F20)
   if (sel.dataset.opts !== opts) { sel.innerHTML = opts; sel.dataset.opts = opts; }
   sel.value = shown;
   const el = $('#brandHint'), html = brandHintHtml(state.brandMode, state.brandMode === 'any' ? shown : state.brand);

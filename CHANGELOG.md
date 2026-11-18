@@ -37,6 +37,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     knight", then pick a new starting paint. **Save** put the new scheme in Blue knight, with no question. It
     now asks, names the two starting paints, and says how to keep the two schemes (**Save as new**). A change
     that keeps the starting paint saves at once, as before.
+  - **Plainer words in the Accessibility tab** (F20). "Fails AA" is a rule for text on a screen. The tab now
+    says **Strong**, **Medium** or **Weak light–dark contrast**, with one line that explains it. The limits
+    (4.5 and 3) and the ratio are the same.
+  - **"Warhammer Colour (Citadel)" in the brand lists** (F20): the Shelf's brand filter and ⋯ → Brand. A
+    painter who looks for Citadel finds the word.
   - **A link to a paint that the app does not have says so** (F18): "This link's paint is not in the app. Here
     is a different paint." Before, it opened a random scheme with no message.
 ### Fixed

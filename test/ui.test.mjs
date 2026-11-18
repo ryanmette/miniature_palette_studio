@@ -91,6 +91,24 @@ test('hero: a colour that is not a paint says so, and shows its hex one time (UX
   assert.match(hero({ id: 'x', hex: '#9A1115', name: 'Mephiston Red', brand: 'A', line: 'Base', type: 'base' }, false), /<h2 class="heroname">Mephiston Red<\/h2>/);
 });
 
+test('brandOptions: the label has the name painters still say; the value is the brand (UX review F20)', async () => {
+  const { brandOptions } = await import('../src/js/ui.js');
+  const html = brandOptions(['Vallejo', 'Warhammer Colour']);
+  assert.match(html, /<option value="Vallejo">Vallejo<\/option>/);
+  assert.match(html, /<option value="Warhammer Colour">Warhammer Colour \(Citadel\)<\/option>/);
+});
+
+test('a11yPanel: the contrast words are a painter’s, and the ratio stays (UX review F20)', async () => {
+  const { a11yPanel } = await import('../src/js/ui.js');
+  const c = (ratio, passAAText, passAALarge) => ({ a: '#111111', b: '#EEEEEE', labelA: 'Primary', labelB: 'Accent', ratio, passAAText, passAALarge });
+  const html = a11yPanel({ names: [], sims: [], contrasts: [c(7.2, true, true), c(3.4, false, true), c(1.3, false, false)], collision: null });
+  assert.match(html, /7\.2:1<\/div>[^]*?Strong light–dark contrast/);
+  assert.match(html, /3\.4:1<\/div>[^]*?Medium light–dark contrast/);
+  assert.match(html, /1\.3:1<\/div>[^]*?Weak: close in light and dark/);
+  assert.doesNotMatch(html, /Fails AA|Passes AA|Large\/UI/);
+  assert.match(html, /the WCAG 2\.1 contrast ratio/);   // the source of the number is still named
+});
+
 test('equivGroup: "almost the same colour", never "interchangeable"; the counts have the right number (F12, F19)', () => {
   const pt = (id, brand) => ({ id, name: id, brand, line: '—', hex: '#9A1115', type: 'layer' });
   const one = equivGroup('dark red', [pt('a', 'A')], () => 'none');

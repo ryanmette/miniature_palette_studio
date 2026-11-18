@@ -68,7 +68,7 @@ constitution, [`CLAUDE_NATIVE.md`](CLAUDE_NATIVE.md) (active since Stage 1 began
 1. **The paint is the hero.** UI chrome is neutral and quiet so real colors read true. We never tint swatches with our own styling: **every pixel of a swatch's colour field is the paint's hex** — no gradient, no sheen, no overlay (PLAN §5 item 51, Ryan 2026-10-30; the old finish overlays moved the colour by up to ΔE 10.4). A flat hex cannot show a finish, so a non-flat paint's swatch carries **one finish icon** in the swatch's own ink (§3.5 Swatch) and its row a **finish tag**: a suggestion is never mistaken for flat paint.
 2. **Honest about approximation.** Hex values for physical paint are *approximate*. We always show the match quality (ΔE) and never imply a perfect match. "Ideal vs actual" is the whole point — surface the gap, don't hide it.
 3. **One click to value.** Pick a paint → see a usable palette. No setup, no login, no wizard.
-4. **Explain, don't mystify.** Every number (ΔE, contrast ratio) has a plain-language label ("excellent match", "fails AA").
+4. **Explain, don't mystify.** Every number (ΔE, contrast ratio) has a plain-language label in a painter's words ("excellent match", "weak: close in light and dark"; UX review F20: "Fails AA" is a rule for text on a screen). The Accessibility tab's contrast keeps WCAG's limits (4.5 and 3) and shows the ratio as the detail; its words say only what the ratio measures, light against dark.
 5. **Portable & durable.** It must keep working as a dumb static file for years. Favor boring, standard tech.
 
 ---
@@ -216,6 +216,7 @@ does a held role's pot.
   | The tab of role cards | **Recipe** | plan |
   | The theoretical colour and the real paint | **Target** and **Pot** ("Nearest pot") | ideal / real |
   | Cross-brand matches | **Other brands** | equivalents (`equiv`) |
+  | A brand in a list of brands | its name with the name painters still say: **Warhammer Colour (Citadel)** (`data.js brandLabel`: the Shelf's brand filter and ⋯ → Brand; F20). On a paint's row and in a rack heading the brand's own name stays | `BRAND_SAID`; the value and the filter key are the brand's own name |
   | Paints to buy | the **shopping list**; the action is **Add** | to buy (`want`) |
   | The files | **Save my shelf (CSV)** · **Save the recipe** (the scheme on screen) · **Save as text** (the shopping list, in the store panel) · **Back up everything** | — |
   | A pot the store does not have | **Not on the rack?** (a row's toggle); **This store carries** (the brand toggles); a swap's **Use**; on the row "in place of X" + **Undo**; in the Recipe "Swapped in the store for X" + **Use the original** | `storeOff`, `swapLog`, `storeSwaps`, a pot hold's `was` |
