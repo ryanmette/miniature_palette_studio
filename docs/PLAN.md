@@ -276,6 +276,12 @@ to-buy marks) but files them *inside* the scheme output. Four routing directions
    equivalents row).
    On a phone it is a good first user of the **resizable sheet** (a part-height card that grows to full
    height when you scroll or drag it) recorded for the full app release in `IOS_APP_PLAN.md` §1.
+   **Built (2026-11-17), first part:** `#paintDlg` + `ui.paintSheet`: the paint, its mark, The same colour,
+   Closest in other brands, Closest on your shelf (with how to move it), Start a scheme from this; a row opens
+   that paint in the same sheet. The ways in: a paint's name in the Recipe and Other brands, a ladder step, and
+   **Paint details** in the mark menu (the Shelf and the seed list). **Open:** the other ways in (a row of the
+   Shelf's list, the Map's rows, the live palette's pot band, a store swap); the resizable sheet on a phone (it is
+   a plain modal dialog now).
 8. **Substitute finder — direction C.** “I need X, what can I use?” as a mode *on* that sheet rather than
    a new surface: constrain by *only what I own* / *only these brands* (the in-store constraint) and rank
    the alternatives. The literal buying assistant; still no engine work.

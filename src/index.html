@@ -618,6 +618,15 @@
 <!-- Choose a pot for a role (mockups/hold-flow.html, direction A). The one dialog anatomy (§3.5): the h2 in
      a .sheethead with ✕, a search field, the closest paints to the role's target first (metallics first for
      Metal), each with its ΔE. A pick holds that pot on the role; focus returns to the card's control. -->
+<!-- The paint detail sheet (PLAN §5 item 7): everything about one paint, from any surface. Its body is ui.paintSheet. -->
+<dialog id="paintDlg" class="about paintdlg" aria-labelledby="paintTitle">
+  <div class="abouthead sheethead">
+    <h2 id="paintTitle" tabindex="-1"></h2>
+    <button class="iconbtn" id="paintClose" aria-label="Close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="aboutbody paintbody" id="paintBody"></div>
+  <p class="sr-only" role="status" data-say></p>
+</dialog>
 <dialog id="potDlg" class="about potdlg" aria-labelledby="potTitle">
   <div class="abouthead sheethead">
     <h2 id="potTitle">Choose a pot</h2>

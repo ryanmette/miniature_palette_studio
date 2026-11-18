@@ -24,6 +24,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
   iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
   screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 76 to 85 are the proposed work.
+- **Paint details: everything about one paint, in one sheet** (PLAN §5 item 7; `mockups/buying-assistant.html`,
+  direction B; CLAUDE.md §3.5). Select a paint's name in the Recipe or in Other brands, press a ladder step, or
+  choose **Paint details** in the menu of a paint on the Shelf or in the seed field's list. The sheet shows the
+  paint and its finish, your mark (Not marked · Owned · Shopping list), the paints that are **the same colour**,
+  the **closest in other brands**, and the **closest on your shelf**, each with its true ΔE. A paint on your
+  shelf that is not an exact match says how to change it ("To match: darken slightly"). A row opens that paint
+  in the same sheet, and **Start a scheme from this** takes the paint to the Studio. The sheet changes no match.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
