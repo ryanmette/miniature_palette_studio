@@ -13,6 +13,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+### Changed
+- **Small fixes from the UX review** (PLAN §5 item 85; `docs/UX_REVIEW.md`, the findings rated 2 or less).
+  - **A way from the Recipe to the shopping list** (F14). After **Add**, a text action **See the list** shows
+    beside the button. It opens the Shelf's list of the paints to buy. In the Shelf's grid, the **Shopping
+    list** filter now shows each paint's name under its square, as a search does. The two lines that take the
+    buttons' places are shorter: "Role pots: owned or on the list" and "Ladder pots: owned or on the list".
+    `sw.js`: `CACHE` is `ps-v112`.
 ### Fixed
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area

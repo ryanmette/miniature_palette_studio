@@ -363,14 +363,17 @@ test('planControls: the main Add button counts the role pots only; the ladder po
   // the role pots are done: their line takes the button's place (a landing spot for the focus), the ladders stay
   const laddersLeft = planControls('wash', false, { pots: 0, steps: 7 });
   assert.match(laddersLeft, /<span class="addact off"><button class="btn sm primary" id="addGaps"/);
-  assert.match(laddersLeft, /class="micro nogaps" id="addDone" tabindex="-1">The role pots are owned or on the list</);
+  assert.match(laddersLeft, /class="micro nogaps" id="addDone" tabindex="-1">Role pots: owned or on the list</);
   assert.match(laddersLeft, /<span class="addact"><button class="btn sm" id="addLadders"/);
   // nothing left: two lines, and no line says "everything" (the NMM pots have their own action)
   const none = planControls('wash', false, {});
-  assert.match(none, /class="micro nogaps" id="addDone" tabindex="-1">The role pots are owned or on the list</);
-  assert.match(none, /class="micro nogaps" id="laddersDone" tabindex="-1">The ladder pots are owned or on the list</);
+  assert.match(none, /class="micro nogaps" id="addDone" tabindex="-1">Role pots: owned or on the list</);
+  assert.match(none, /class="micro nogaps" id="laddersDone" tabindex="-1">Ladder pots: owned or on the list</);
   assert.match(none, /<span class="addact off"><button class="btn sm" id="addLadders"/);
   assert.doesNotMatch(none, /[Ee]verything/);
+  // See the list (F14): in its place from the start, shown when the shopping list holds a paint
+  assert.match(none, /class="textact seelist off" id="seeList"/);
+  assert.match(planControls('wash', false, { pots: 0, steps: 0, listed: 3 }), /class="textact seelist" id="seeList"[^>]*>See the list</);
 });
 
 test('matchNote: the "·" ends the bold head (no-break space), so a wrapped explanation never starts with it', () => {

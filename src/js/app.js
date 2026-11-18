@@ -386,7 +386,7 @@ function renderPlan() {
   // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5), counted by
   // their part of the Recipe: the roles' pots are the main button, the ladder pots a second action (item 80).
   const gaps = schemeGaps(state.scheme, store.ownedIds()).filter(g => store.markOf(g.paint.id) !== 'want');
-  const addable = { pots: gaps.filter(g => g.part === 'role').length, steps: gaps.filter(g => g.part === 'ladder').length };
+  const addable = { pots: gaps.filter(g => g.part === 'role').length, steps: gaps.filter(g => g.part === 'ladder').length, listed: store.counts().want };
   // No overview colour bar here — the role-labelled live palette (beside the wheel) is now the single
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
@@ -1118,7 +1118,9 @@ function renderShelf() {
     return;
   }
   $('#shelfListView').hidden = true;
-  const named = !!state.shelfQ.trim();   // a search result shows its name (UX review F06; item 78)
+  // A search result shows its name (UX review F06; item 78), and so does the Shopping list filter (F14): it is a
+  // short list of paints to find in a store, and it was a row of squares with no names.
+  const named = !!state.shelfQ.trim() || state.shelfMark === 'want';
   $('#shelfGrid').classList.toggle('named', named);
   $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel, { named });
   $('#shelfEmpty').hidden = view.length > 0;
@@ -3993,6 +3995,7 @@ function wire() {
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
     if (e.target.closest('#addGaps')) { addGapsToBuy('role'); return; }
     if (e.target.closest('#addLadders')) { addGapsToBuy('ladder'); return; }
+    if (e.target.closest('#seeList')) { showStoreListHere(); return; }   // the Shelf's list of paints to buy (F14)
     if (e.target.closest('[data-addnmm]')) { addGapsToBuy('nmm'); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
   });

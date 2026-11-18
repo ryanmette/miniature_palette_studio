@@ -345,8 +345,9 @@ export const potsSaid = (n, kind = '') => `${n} ${kind ? kind + ' ' : ''}pot${n 
  *  most, because that is the scheme. `gaps.pots` is how many of them are not owned and not on the list. The
  *  ladder pots (washes, shadows, highlights: `gaps.steps`) are a second, smaller action beside it. The NMM
  *  pots are in neither count: NMM is another way to paint the Metal part, and its action is on the Metal card
- *  (roleSlots). One button used to add all three: a median 14 pots from 7 brands. */
-export function planControls(ladder, includeContrast, { pots = 0, steps = 0 } = {}) {
+ *  (roleSlots). One button used to add all three: a median 14 pots from 7 brands. `gaps.listed` is how many
+ *  paints the shopping list holds: with one or more, **See the list** shows between the two slots. */
+export function planControls(ladder, includeContrast, { pots = 0, steps = 0, listed = 0 } = {}) {
   const lad = [['wash', 'Wash · base · highlight'], ['tone', 'Shadow · mid · highlight'], ['both', 'Both']]
     .map(([v, l]) => `<button data-ladder="${v}" aria-pressed="${v === ladder}">${esc(l)}</button>`).join('');
   // One slot for each part, and each slot holds BOTH its states in one grid cell (.fixslot): the button, and
@@ -361,9 +362,13 @@ export function planControls(ladder, includeContrast, { pots = 0, steps = 0 } = 
     + `<button class="btn sm incl-contrast" id="inclContrast" aria-pressed="${!!includeContrast}" title="Washes, shades and effects are kept out of suggestions; tick to include Contrast paints (used as one-coat base colours)">Include Contrast</button>`
     + `<div class="addrow">`
     + slot(pots, `<button class="btn sm primary" id="addGaps" title="The pots of the roles (Primary, Secondary, Accent, Metal) that you do not own">+ Add ${potsSaid(pots)} to the shopping list</button>`,
-      'addDone', 'The role pots are owned or on the list')
+      'addDone', 'Role pots: owned or on the list')
+    // The way from here to the list (UX review F14): after Add, the toast went and nothing opened the list (it was
+    // Shelf, then Shopping list, then the list icon). It has its place from the start and shows when the shopping
+    // list holds a paint (`listed`), so it moves nothing when it comes in (§3.4).
+    + `<button type="button" class="textact seelist${listed > 0 ? '' : ' off'}" id="seeList" title="Open the shopping list on the Shelf">See the list</button>`
     + slot(steps, `<button class="btn sm" id="addLadders" title="The washes, shadows and highlights of the tone ladders shown, to the shopping list. The NMM pots are not in this count: add them on the Metal card.">Add ${potsSaid(steps, 'ladder')}</button>`,
-      'laddersDone', 'The ladder pots are owned or on the list')
+      'laddersDone', 'Ladder pots: owned or on the list')
     + `</div></div>`;
 }
 

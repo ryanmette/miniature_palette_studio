@@ -424,7 +424,12 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .addrow { flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .addslot { align-items: center; justify-items: start; min-height: var(--tap); }
 .addslot > .off { visibility: hidden; }
-@media (max-width: 520px) { .addrow { display: grid; grid-template-columns: minmax(0, 1fr); } }
+/* See the list (UX review F14): between the two slots, in its place from the start (hidden until the shopping
+   list holds a paint), so it moves nothing when it comes in */
+.addrow .seelist { min-width: 0; padding: 0 4px; }
+.addrow .seelist.off { visibility: hidden; }
+/* a phone: the role slot and See the list share row 1; the ladder slot has row 2 */
+@media (max-width: 520px) { .addrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; } .addrow .addslot + .seelist + .addslot { grid-column: 1 / -1; } }
 
 /* The chevron as a mask image, for the selects' ::picker-icon (a pseudo-element cannot hold <use>). Same path
    and stroke as the sprite's i-chev, at the 2.25 weight the 12–14px icons use. */
