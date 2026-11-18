@@ -613,7 +613,7 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .lcol.dragging { opacity: .5; }
 .lctag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; opacity: .92; }
 .lchex { font-family: var(--mono); font-size: 11.5px; opacity: .9; }
-.lcfoot { padding: 7px 9px 9px; min-width: 0; }
+.lcfoot { position: relative; padding: 7px 9px 9px; min-width: 0; }   /* positioned: on touch, the pot name's hit area is the whole footer (see .pslink) */
 /* Colour link highlight (interaction, §3.5): outline so neighbours never reflow (§3.4 no-jiggle). Drawn on
    the live-palette column (left) and the matching Plan role card (right) when either is hovered/focused. */
 .lcol.linkhi { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -622,7 +622,10 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .lcol.eqsel { outline: 3px solid var(--accent); outline-offset: -3px; }
 .slot.linkhi { outline: 2px solid var(--accent); outline-offset: -2px; }   /* inside the padded box: 10px clear of the content */
 /* Metal rides the live palette as a display-only summary column (no wheel node to edit). */
-.lcname { display: block; font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The pot's name is cut with an ellipsis; "owned" after it always shows. The name clips itself (not .lcname), so its focus ring is not cut. */
+.lcname { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.lcname .pslink { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lcname .ownmini { flex: none; }
 .lcfoot .br { font-size: 11px; color: var(--text-muted); }
 
 /* accessibility (M7) */
@@ -927,6 +930,20 @@ main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
 .pslink { padding: 0; border: none; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; border-radius: var(--r-tag); }
 .pslink:hover { text-decoration: underline; }
 .pslink:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Where the name is one short line in a row (the live palette's pot, a row of the Shelf's list, a store swap, a
+   paint of the Map's tone), its hit area on touch is the block round it: 44px tall or more (§3.6). With a mouse
+   the name alone is the target: a click on the empty part of a row must do nothing. The ::after belongs to the
+   positioned box named here, so the name's own overflow does not clip it, and it covers plain text only
+   (brand · line, the tags, the match words): no other control is under it. */
+.rkname, .rksmain, .mdmain { position: relative; }
+@media (pointer: coarse), (max-width: 520px) {
+  .lcname .pslink::after, .rkname .pslink::after, .rksname .pslink::after, .mdname .pslink::after { content: ''; position: absolute; inset: 0; }
+  .rkname .pslink::after { inset: -8px 0 -20px; }   /* the row's top padding, the name, and the brand · line under it */
+  .rksname .pslink::after, .mdname .pslink::after { inset: -4px 0; }
+}
+/* a button does not take its parent's line-through, so the ticked-off name gets its own */
+.rkrow.done .rkname .pslink { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.rkrow.done .rkname .pslink:hover { text-decoration-line: underline line-through; }
 .ladder .step[data-psid] { cursor: pointer; }
 .potbody { display: grid; gap: 8px; }
 .potbody input[type="search"] { width: 100%; }
