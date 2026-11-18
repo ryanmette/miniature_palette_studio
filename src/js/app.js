@@ -3,7 +3,7 @@
 
 import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
   isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony, startsNeutral } from './harmony.js';
-import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex, deltaE2000Hex } from './color.js';
+import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex, adjustDirection, deltaE2000, deltaE2000Hex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
 import { encodeState, decodeState, shareUrl, schemeQuery, encodeList, decodeList, encodeBought, decodeBought, setHoldInLink, decodeHolds } from './share.js';   // the share-link contract (state ⇄ URL)
 import { shareView, layoutShareImage, paintShareImage, shareText, shareFileName, SHARE_SIZE, SHARE_FONTS, SHARE_TOKENS } from './shareimage.js';   // the share image (pure layout + painter)
@@ -237,6 +237,76 @@ function chooseColour(hex) {
   $('#potDlg').close();
   if (role) { setHold(role, { kind: 'lock', hex }); say(`${role} colour locked at ${hex}.`); }
   else editSwatch(sw, hex);
+}
+/* ---- the paint detail sheet (PLAN §5 item 7; mockups/buying-assistant.html, direction B) ----
+   Everything about ONE paint, from any surface: its finish, the painter's mark, the paints that are the same
+   colour, the closest in other brands, and the closest on the painter's shelf with how to move it. It reuses the
+   matching that exists (groupMembers, equivalents) and changes no match. A row opens that paint in the same
+   sheet; `stack` is the way back. */
+const sheet = { id: null, stack: [], opener: null, openerId: null };
+const SHEET_ROWS = 5, SHEET_SHELF = 3;
+function paintSheetData(p) {
+  const owned = store.ownedIds(), cls = finishClass(p.type);
+  const match = q => { const deltaE = deltaE2000(p.lab, q.lab); return { paint: q, deltaE, quality: matchQuality(deltaE) }; };
+  // The closest paints the painter owns: one of another finish class ranks FINISH_PENALTY further, as in Other
+  // brands (a wash is not the answer for a flat paint unless it is clearly closer). The ΔE shown is true (§2).
+  const shelf = state.idx.paints.filter(q => owned.has(q.id) && q.id !== p.id).map(match)
+    .map(m => ({ ...m, score: m.deltaE + (finishClass(m.paint.type) === cls ? 0 : FINISH_PENALTY) }))
+    .sort((a, b) => a.score - b.score).slice(0, SHEET_SHELF)
+    .map(m => ({ ...m, adjust: m.deltaE > 1.5 ? adjustDirection(p.hex, m.paint.hex) : null }));
+  const back = sheet.stack.length ? state.idx.byId.get(sheet.stack[sheet.stack.length - 1]) : null;
+  return { paint: p, mark: store.markOf(p.id), markOf: store.markOf, owned: owned.size, shelf, back,
+    same: groupMembers(state.idx, p).map(match).sort((a, b) => a.deltaE - b.deltaE).slice(0, SHEET_ROWS),
+    other: equivalents(state.idx, p, { n: SHEET_ROWS }),
+    // not for the paint the Studio already starts from
+    canStart: !(state.mode === 'studio' && !state.customHex && state.baseId === p.id) };
+}
+function renderPaintSheet() {
+  const p = state.idx.byId.get(sheet.id); if (!p) return;
+  $('#paintTitle').textContent = ui.pname(p);
+  $('#paintBody').innerHTML = ui.paintSheet(paintSheetData(p), t);
+}
+/** Open the sheet on a paint. From a row inside the sheet, the paint on screen goes on the way back. */
+function openPaintSheet(id, opener = document.activeElement) {
+  const p = state.idx.byId.get(id), d = $('#paintDlg'); if (!p) return;
+  if (d.open) { if (sheet.id && sheet.id !== id) sheet.stack.push(sheet.id); }
+  else { sheet.stack = []; sheet.opener = opener; sheet.openerId = opener?.dataset?.psid || null; }
+  sheet.id = id;
+  renderPaintSheet();
+  if (!d.open) d.showModal();
+  $('#paintBody').scrollTop = 0;
+  $('#paintTitle').focus({ preventScroll: true });   // a landing spot with no ring: the name is read first
+  say(t('psOpened', { name: ui.pname(p) }));
+}
+function setupPaintSheet() {
+  const d = $('#paintDlg');
+  $('#paintClose').addEventListener('click', () => d.close());
+  d.addEventListener('close', () => {
+    const o = sheet.opener, oid = sheet.openerId; sheet.id = null; sheet.stack = []; sheet.opener = null; sheet.openerId = null;
+    // A mark made in the sheet draws the Recipe again, so the name that opened it is a new element: find it by
+    // its paint. Else the hero line, a landing spot.
+    const again = o && o.isConnected ? o : oid ? $(`main [data-psid="${CSS.escape(oid)}"]`) : null;
+    (again || $('#hero')).focus({ preventScroll: true });
+  });
+  d.addEventListener('click', e => {
+    const mk = e.target.closest('[data-psmark]');
+    if (mk) { markPaint(sheet.id, mk.dataset.psmark); $(`#paintBody [data-psmark="${mk.dataset.psmark}"]`)?.focus(); return; }
+    if (e.target.closest('[data-psback]')) { const id = sheet.stack.pop(); sheet.id = id; renderPaintSheet(); $('#paintTitle').focus({ preventScroll: true }); return; }
+    const buy = e.target.closest('[data-buy]');
+    if (buy) { e.stopPropagation(); const id = buy.dataset.buy; toggleBuy(id); $(`#paintBody [data-buy="${CSS.escape(id)}"]`)?.focus(); return; }
+    if (e.target.closest('[data-psstart]')) { const id = sheet.id; sheet.opener = null; d.close(); useAsSeed(id); }
+  });
+  // The ways in: a paint's name in the Recipe and Other brands (a button), a ladder step (role=button), and
+  // a row of the sheet itself. One listener for all of them.
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-psid]'); if (!el || e.target.closest('[data-buy]')) return;
+    e.stopPropagation(); openPaintSheet(el.dataset.psid, el);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest?.('[data-psid][role="button"]'); if (!el || el !== e.target) return;
+    e.preventDefault(); openPaintSheet(el.dataset.psid, el);
+  });
 }
 function setupPotDialog() {
   const d = $('#potDlg');
@@ -717,6 +787,7 @@ function render(reason = 'scheme', { speak = true, ids = null, keepWheelL = fals
    setMode('shelf') rebuilds its grid. The ⋯ Use my paints hint does not follow marks (§3.6). */
 let studioMarksStale = false;
 function renderMarks(ids) {
+  if ($('#paintDlg')?.open) renderPaintSheet();   // the sheet shows marks too (its own paint's and its rows')
   renderSchemeBar();   // a Restore, a Delete or another tab can add or remove the saved scheme on screen
   if (state.mode === 'schemes') { renderSchemesPage(); studioMarksStale = true; return; }
   if (state.mode === 'shelf') { renderShelfMarks(ids); studioMarksStale = true; return; }
@@ -2027,13 +2098,14 @@ function openShelfMenu(c, how = 'key', point = null) {
       { value: 'seed', label: t('useAsSeed'), disabled: n !== 1,
         hint: n === 1 ? '' : n ? t('useSeedMany') : t('useSeedNone'),
         why: n ? t('useSeedManySaid', { n }) : t('useSeedNoneSaid') },
+      { value: 'details', label: t('paintDetails'), disabled: n !== 1, hint: n === 1 ? '' : t('detailsMany'), why: t('detailsManySaid') },
       { sep: true },
       { value: 'owned', label: t('markOwned') },
       { value: 'want', label: t('markWant') },
       { value: 'none', label: t('clearMark') },
     ],
     anchor: c, point: how === 'mouse' ? point : null, back: $('#shelfGrid'),
-    onChoose: v => { if (v === 'seed') useAsSeed(ids[0]); else applyMark(v); },
+    onChoose: v => { if (v === 'seed') useAsSeed(ids[0]); else if (v === 'details') openPaintSheet(ids[0], c.isConnected ? $('#shelfGrid') : null); else applyMark(v); },
     onDisabled: it => say(it.why),
     onClose: () => $('#shelfGrid').classList.remove('menuopen'),
   });
@@ -3987,6 +4059,7 @@ async function init() {
   }));
   setupEyedropper();
   setupPotDialog();
+  setupPaintSheet();
   setupBig();
   picker = setupPicker({
     state, t, say, markMenu,
@@ -3996,6 +4069,7 @@ async function init() {
     seedPaint: selectPaint,
     seedHex: (hex, { live } = {}) => seedFromHex(hex, live ? { speak: false } : { news: true }),
     restoreSeed, markPaint, histMark, takeModeNote,
+    paintDetails: (id, back) => openPaintSheet(id, back),
     coarse: () => COARSE, phone: () => PHONE.matches,
   });
   if (linkName) linkNameFor = schemeLink();
