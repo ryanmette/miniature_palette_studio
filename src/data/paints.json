@@ -1,5 +1,5 @@
 {
- "version": "1.14.0",
+ "version": "1.15.0",
  "generated": "2026-11-17",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
@@ -37744,7 +37744,7 @@
    "line": "Wave 1",
    "name": "Mythril Blade",
    "hex": "#7D7F7F",
-   "type": "layer",
+   "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -37800,14 +37800,15 @@
    "line": "Wave 1",
    "name": "Plate Armour",
    "hex": "#787979",
-   "type": "layer",
+   "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
    "captured": "2026-06-25",
    "family": "two-thin-coats-triad-sir-coates-silver",
-   "tone": 2
+   "tone": 2,
+   "groupId": "grey-08"
   },
   {
    "id": "two-thin-coats-wave-1-rc-flesh-wash",
@@ -38253,14 +38254,17 @@
    "id": "two-thin-coats-wave-2-batle-axe-brass",
    "brand": "Two Thin Coats",
    "line": "Wave 2",
-   "name": "Batle Axe Brass",
+   "name": "Battle Axe Brass",
    "hex": "#D4A97D",
    "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Batle Axe Brass"
+   ]
   },
   {
    "id": "two-thin-coats-wave-2-blue-glaze",
@@ -38268,7 +38272,7 @@
    "line": "Wave 2",
    "name": "Blue Glaze",
    "hex": "#5A79BC",
-   "type": "layer",
+   "type": "glaze",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -38515,7 +38519,7 @@
    "line": "Wave 2",
    "name": "Green Glaze",
    "hex": "#95CB74",
-   "type": "layer",
+   "type": "glaze",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -38557,14 +38561,17 @@
    "id": "two-thin-coats-wave-2-helion-red-wash",
    "brand": "Two Thin Coats",
    "line": "Wave 2",
-   "name": "Helion Red Wash",
+   "name": "Hellion Red Wash",
    "hex": "#865453",
    "type": "wash",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Helion Red Wash"
+   ]
   },
   {
    "id": "two-thin-coats-wave-2-hellspawn-red",
@@ -38735,7 +38742,7 @@
    "line": "Wave 2",
    "name": "Orange Glaze",
    "hex": "#F89F5B",
-   "type": "layer",
+   "type": "glaze",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -38819,7 +38826,7 @@
    "line": "Wave 2",
    "name": "Purple Glaze",
    "hex": "#B679AA",
-   "type": "layer",
+   "type": "glaze",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -38862,7 +38869,7 @@
    "line": "Wave 2",
    "name": "Red Glaze",
    "hex": "#F38366",
-   "type": "layer",
+   "type": "glaze",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -39003,7 +39010,7 @@
    "line": "Wave 2",
    "name": "Yellow Glaze",
    "hex": "#F2F075",
-   "type": "layer",
+   "type": "glaze",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -39143,7 +39150,7 @@
    "line": "Wave 3",
    "name": "Carapace Green",
    "hex": "#4F955A",
-   "type": "layer",
+   "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -39210,14 +39217,17 @@
    "id": "two-thin-coats-wave-3-death-metal",
    "brand": "Two Thin Coats",
    "line": "Wave 3",
-   "name": "Death Metal",
+   "name": "Doom Metal",
    "hex": "#69655D",
    "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Death Metal"
+   ]
   },
   {
    "id": "two-thin-coats-wave-3-decadent-purple",
@@ -39286,7 +39296,7 @@
    "line": "Wave 3",
    "name": "Emperor's Purple",
    "hex": "#7A6089",
-   "type": "layer",
+   "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -39299,7 +39309,7 @@
    "line": "Wave 3",
    "name": "Enchantment Blue",
    "hex": "#347DAA",
-   "type": "layer",
+   "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -39357,7 +39367,7 @@
    "line": "Wave 3",
    "name": "Fire Opal",
    "hex": "#C36E4A",
-   "type": "layer",
+   "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -39499,7 +39509,7 @@
    "line": "Wave 3",
    "name": "Omega Blue",
    "hex": "#58B9B6",
-   "type": "layer",
+   "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -39599,14 +39609,17 @@
    "id": "two-thin-coats-wave-3-ritz-otin",
    "brand": "Two Thin Coats",
    "line": "Wave 3",
-   "name": "Ritz O'Tin",
+   "name": "Bits O'Tin",
    "hex": "#968273",
    "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Ritz O'Tin"
+   ]
   },
   {
    "id": "two-thin-coats-wave-3-scabbard-brown",
@@ -39629,7 +39642,7 @@
    "line": "Wave 3",
    "name": "Scarab Red",
    "hex": "#B04045",
-   "type": "layer",
+   "type": "metal",
    "discontinued": false,
    "approx": true,
    "source": "community",
@@ -39655,14 +39668,17 @@
    "id": "two-thin-coats-wave-3-septric-green",
    "brand": "Two Thin Coats",
    "line": "Wave 3",
-   "name": "Septric Green",
+   "name": "Septic Green",
    "hex": "#ABB337",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Duncan.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Septric Green"
+   ]
   },
   {
    "id": "two-thin-coats-wave-3-serpent-eye-yellow",

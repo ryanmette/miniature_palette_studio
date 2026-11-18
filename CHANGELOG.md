@@ -113,6 +113,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Bony Spikes (Boney), Terrestrial Titan (Terrestial) and Violent Vermilion (Vermillion). The old spelling still
   finds each paint in a search and in a CSV import, and no id changed, so a saved shelf and a share link are
   not affected.
+- **Two Thin Coats: eight metallics and six glazes have their true type** (PLAN §5 item 64; paint data 1.15.0;
+  `src/data/SOURCES.md`). The maker's charts mark each paint. The community source has one list for each wave,
+  so these paints were stored as flat colours, and the app could offer a metallic or a glaze for a flat colour
+  role. Now they are metallics: Plate Armour, Mythril Blade, Scarab Red, Omega Blue, Enchantment Blue, Emperor's
+  Purple, Carapace Green and Fire Opal. And these are glazes: Red, Yellow, Blue, Orange, Green and Purple Glaze.
+  Each has its finish icon and its tag. **This changes matches:** in a test of 7,008 schemes, 13.8% changed in
+  one or more slots (0.78% of all slots). In each change a metallic or a glaze leaves a flat colour's slot, or a
+  true metallic takes a step of the Metal ladder. Five more names have the maker's spelling: Battle Axe Brass,
+  Hellion Red Wash, Septic Green, Bits O'Tin and Doom Metal. The old spelling still finds each paint, and no id
+  changed.
 - **Five Two Thin Coats names have the maker's spelling** (paint data 1.14.0): Skeleton Legion (was Keleton
   Legion), Emerald Green (Merald Green), Fur Cloak (Ur Cloak), Eldar Robe (Elder Robe) and Von Evile Purple (Von
   Evile Pimple). The old spelling still finds each paint, and no id changed.

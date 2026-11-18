@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = process.argv[2] || join(ROOT, '.cache', 'raw');
 const CAPTURED = '2026-06-25';
-const VERSION = '1.14.0';
+const VERSION = '1.15.0';
 // The build that took three corrections from the makers' own pages (PLAN §5 item 73): 14 Army Painter effects
 // that upstream lists as washes, one Two Thin Coats name, and four Gloss Shades that GW no longer makes. No hex
 // changed: the upstream values are still CAPTURED's.
@@ -107,7 +107,19 @@ const BRANDS = [
   // names that upstream has wrong. Three lost their first letter, as "RC Flesh Wash" did.
   { brand: 'Two Thin Coats', file: 'Duncan.md', setIdx: 2, names: { 'RC Flesh Wash': 'Orc Flesh Wash',
     'Keleton Legion': 'Skeleton Legion', 'Merald Green': 'Emerald Green', 'Ur Cloak': 'Fur Cloak',
-    'Elder Robe': 'Eldar Robe', 'Von Evile Pimple': 'Von Evile Purple' }, sets: {
+    'Elder Robe': 'Eldar Robe', 'Von Evile Pimple': 'Von Evile Purple',
+    // dataset 1.15.0: five more names, of paints that are in no triad (the same charts)
+    'Batle Axe Brass': 'Battle Axe Brass', 'Helion Red Wash': 'Hellion Red Wash', 'Septric Green': 'Septic Green',
+    "Ritz O'Tin": "Bits O'Tin", 'Death Metal': 'Doom Metal' },
+    // The charts' "Paint bottle key" marks each paint. Upstream has one set for a wave, so every paint that is
+    // no wash by its name got the type `layer`. The charts mark these as metallic (Wave 1: the "Silver" triad,
+    // under the metallics; Wave 3: the mark ME) and these as glazes (Wave 2: the mark G). As flat paints, the
+    // app offered them for a flat colour role (dataset 1.15.0).
+    types: {
+      'Wave 1': { 'Plate Armour': 'metal', 'Mythril Blade': 'metal' },
+      'Wave 2': Object.fromEntries(['Red', 'Yellow', 'Blue', 'Orange', 'Green', 'Purple'].map(c => [`${c} Glaze`, 'glaze'])),
+      'Wave 3': Object.fromEntries(['Scarab Red', 'Omega Blue', 'Enchantment Blue', "Emperor's Purple", 'Carapace Green', 'Fire Opal'].map(n => [n, 'metal'])),
+    }, sets: {
     'Wave 1': ['Wave 1', 'layer'], 'Wave 2': ['Wave 2', 'layer'], 'Wave 3': ['Wave 3', 'layer'],
   } },
   { brand: 'P3', file: 'P3.md', setIdx: 2, sets: {
