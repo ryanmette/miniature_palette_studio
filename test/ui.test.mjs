@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, holdControls, holdNote, potRows, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
+import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, equivGroup, holdControls, holdNote, potRows, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -78,6 +78,27 @@ test('roleSlots tags each role card with data-hex for the colour link', () => {
   const html = roleSlots(scheme, () => 'none');
   assert.match(html, /class="slot" data-hex="#9A1115"/);
   assert.match(html, /class="slot" data-hex="#C8A13A"/);
+});
+
+test('hero: a colour that is not a paint says so, and shows its hex one time (UX review F19)', () => {
+  const html = hero({ hex: '#711A1A', name: 'Custom #711A1A', custom: true }, false, () => 'none', 'main');
+  assert.match(html, /<h2 class="heroname">Custom colour<\/h2>/);
+  assert.match(html, /<span class="herometa">not a paint<\/span>/);
+  assert.doesNotMatch(html, /typed hex/);
+  // the hex is the copy button's text and nothing else: the name does not repeat it
+  assert.equal((html.match(/>#711A1A</g) || []).length, 1);
+  // a paint keeps its own name
+  assert.match(hero({ id: 'x', hex: '#9A1115', name: 'Mephiston Red', brand: 'A', line: 'Base', type: 'base' }, false), /<h2 class="heroname">Mephiston Red<\/h2>/);
+});
+
+test('equivGroup: "almost the same colour", never "interchangeable"; the counts have the right number (F12, F19)', () => {
+  const pt = (id, brand) => ({ id, name: id, brand, line: '—', hex: '#9A1115', type: 'layer' });
+  const one = equivGroup('dark red', [pt('a', 'A')], () => 'none');
+  assert.match(one, /Almost the same colour in the paint data \(ΔE 1 or less\): <strong>dark red<\/strong> · 1 paint in 1 brand\. /);
+  assert.match(one, /approximate: compare the pots/);
+  assert.doesNotMatch(one, /Interchangeable|1 paints|across/);
+  assert.match(equivGroup('dark red', [pt('a', 'A'), pt('b', 'B'), pt('c', 'B')], () => 'none'), /· 3 paints in 2 brands\. /);
+  assert.equal(equivGroup('dark red', [], () => 'none'), '');
 });
 
 test('hero badges the picked paint with its seed role (main/accent)', () => {
@@ -309,10 +330,47 @@ test('matchNote: the Contrast line wears the Contrast finish icon, not the check
 });
 
 test('planControls: Use my paints is no longer in the Plan tab (it is in ⋯)', () => {
-  const html = planControls('wash', false, 3);
+  const html = planControls('wash', false, { pots: 3 });
   assert.doesNotMatch(html, /data-collection|Use my collection/);
   assert.match(html, /data-ladder="wash" aria-pressed="true"/);
   assert.match(html, /id="inclContrast" aria-pressed="false"/);
+});
+
+test('roleSlots: the NMM recipe has its own Add action, in a slot that keeps its place (item 80)', () => {
+  const pot = (id, hex) => ({ paint: { id, name: id, brand: 'A', line: '—', hex, type: 'layer' }, deltaE: 1, quality: { label: 'Excellent', tier: 'success' } });
+  const rung = (key, id, hex) => ({ key, idealHex: hex, match: pot(id, hex) });
+  const scheme = { roles: [{ role: 'Metal', weight: 'spot', idealHex: '#B5B5BD', match: null, shared: false, ladders: [],
+    nmm: [rung('shadow', 'n1', '#404048'), rung('mid', 'n2', '#B5B5BD'), rung('highlight', 'n3', '#F4F4F8')] }] };
+  const open = roleSlots(scheme, () => 'none');
+  assert.match(open, /class="nmmslot"><button type="button" class="textact" data-addnmm>Add the 3 NMM pots</);
+  // an owned rung and one on the list are not counted
+  assert.match(roleSlots(scheme, id => ({ n1: 'owned', n2: 'want' }[id] || 'none')), /data-addnmm>Add the NMM pot</);
+  // every rung owned or on the list: the slot stays, with words in place of the action
+  const done = roleSlots(scheme, () => 'want');
+  assert.match(done, /class="nmmslot"><span class="nmmdone" tabindex="-1">Owned or on the list</);
+  assert.doesNotMatch(done, /data-addnmm/);
+});
+
+test('planControls: the main Add button counts the role pots only; the ladder pots are a second action (item 80)', () => {
+  // each slot holds its button and its line in one cell; the state that is not shown is `.off` (it keeps its room)
+  const both = planControls('wash', false, { pots: 3, steps: 7 });
+  assert.match(both, /<span class="addact"><button class="btn sm primary" id="addGaps"[^>]*>\+ Add 3 pots to the shopping list</);
+  assert.match(both, /<span class="addact"><button class="btn sm" id="addLadders"[^>]*>Add 7 ladder pots</);
+  assert.match(both, /class="micro nogaps off" id="addDone" tabindex="-1">/);
+  assert.match(both, /class="micro nogaps off" id="laddersDone" tabindex="-1">/);
+  // one pot: the singular
+  assert.match(planControls('wash', false, { pots: 1, steps: 1 }), />\+ Add 1 pot to the shopping list<[\s\S]*>Add 1 ladder pot</);
+  // the role pots are done: their line takes the button's place (a landing spot for the focus), the ladders stay
+  const laddersLeft = planControls('wash', false, { pots: 0, steps: 7 });
+  assert.match(laddersLeft, /<span class="addact off"><button class="btn sm primary" id="addGaps"/);
+  assert.match(laddersLeft, /class="micro nogaps" id="addDone" tabindex="-1">The role pots are owned or on the list</);
+  assert.match(laddersLeft, /<span class="addact"><button class="btn sm" id="addLadders"/);
+  // nothing left: two lines, and no line says "everything" (the NMM pots have their own action)
+  const none = planControls('wash', false, {});
+  assert.match(none, /class="micro nogaps" id="addDone" tabindex="-1">The role pots are owned or on the list</);
+  assert.match(none, /class="micro nogaps" id="laddersDone" tabindex="-1">The ladder pots are owned or on the list</);
+  assert.match(none, /<span class="addact off"><button class="btn sm" id="addLadders"/);
+  assert.doesNotMatch(none, /[Ee]verything/);
 });
 
 test('matchNote: the "·" ends the bold head (no-break space), so a wrapped explanation never starts with it', () => {
@@ -494,6 +552,61 @@ test('rackGroups: one section per group, its title and count, rows in the given 
   assert.equal((html.match(/<section class="rkgroup"/g) || []).length, 2);
   assert.match(html, /<span>Citadel · Base<\/span><span class="rkcount">1<\/span>/);
   assert.match(html, /<span>Other paints<\/span><span class="rkcount">2<\/span>/);
+});
+
+/* ---- "A metallic you own" (PLAN §5 item 79): a quality word with no grade ---- */
+test('matchChip: the neutral word has no dot, no state colour and no "No pot within ΔE 10" note; the ΔE stays', () => {
+  const own = { paint: gold, deltaE: 10.3, quality: { label: 'A metallic you own', tier: 'neutral' }, owned: true, adjust: null };
+  const html = matchChip(own, () => 'owned');
+  assert.match(html, /<div class="de"><span class="qplain">A metallic you own<\/span><span class="badge">ΔE 10\.3<\/span><\/div>/);
+  assert.doesNotMatch(html, /class="dot"|poornote|var\(--neutral/);
+  assert.match(html, /class="owntag"/, 'the owned tag is still there');
+  // a graded word keeps its dot and its colour
+  const poor = matchChip({ paint: gold, deltaE: 10.3, quality: { label: 'Poor', tier: 'danger' } }, () => 'none');
+  assert.match(poor, /class="dot" style="background:var\(--danger\)"><\/span><span style="color:var\(--danger-text\)">Poor</);
+  assert.match(poor, /poornote/);
+});
+
+/* ---- The list as an index, and the named grid (PLAN §5 item 78; UX review F05 to F07) ---- */
+test('rackGroups: a folded group is a heading button with its counts; closed, it holds no rows', () => {
+  const html = rackGroups([
+    { key: 'Citadel · Base', title: 'Citadel · Base', fold: true, open: false, count: 57, owned: 0, rows: [] },
+    { key: 'Citadel · Layer', title: 'Citadel · Layer', fold: true, open: true, count: 1, owned: 1,
+      rows: [{ paint: dawn, owned: true, countable: false, qty: 0 }] },
+  ], tr);
+  assert.equal((html.match(/<section class="rkgroup rkfold/g) || []).length, 2);
+  // closed: aria-expanded="false", a hidden list that the button controls, and no row
+  assert.match(html, /<section class="rkgroup rkfold" aria-label="Citadel · Base">/);
+  assert.match(html, /data-rkgroup="Citadel · Base" aria-expanded="false" aria-controls="rkg-0"/);
+  assert.match(html, /<ul class="rklist" id="rkg-0" hidden><\/ul>/);
+  // its name starts with the words on screen (WCAG 2.5.3) and says the count
+  assert.match(html, /aria-label="rkGroupName\(title=Citadel · Base,paints=nPaints\(n=57\),owned=\)"/);
+  assert.match(html, /<span class="rkname">Citadel · Base<\/span><span class="rkown"><\/span><span class="rkcount">57<\/span>/);
+  // open: its rows, the owned count in words, and one paint is "1 paint"
+  assert.match(html, /<section class="rkgroup rkfold open" aria-label="Citadel · Layer">/);
+  assert.match(html, /data-rkgroup="Citadel · Layer" aria-expanded="true" aria-controls="rkg-1"/);
+  assert.match(html, /aria-label="rkGroupOwned\(title=Citadel · Layer,paints=onePaint,owned=rkOwnedN\(n=1\)\)"/);
+  assert.match(html, /<span class="rkown">rkOwnedN\(n=1\)<\/span>/);
+  assert.match(html, /<ul class="rklist" id="rkg-1"><li class="rkrow"/);
+  // the closed heading points right, the open one down: one icon each, from the icon set
+  assert.match(html, /aria-expanded="false"[^>]*><svg class="ic"[^>]*><use href="#i-chevr"/);
+  assert.match(html, /aria-expanded="true"[^>]*><svg class="ic"[^>]*><use href="#i-chev"\/>/);
+});
+
+test('rackGroups: a group with no fold is the plain heading, as the shopping list and the print use it', () => {
+  const html = rackGroups([{ key: 'Citadel · Base', title: 'Citadel · Base', rows: [{ paint: gold, owned: false, countable: true, qty: 1 }] }], tr);
+  assert.doesNotMatch(html, /rkfold|rktoggle|aria-expanded/);
+});
+
+test('shelfGrid: the grid of a search shows each name and brand under its cell; the plain grid does not', () => {
+  const plain = shelfGrid([dawn, gold], () => 'none');
+  assert.doesNotMatch(plain, /cellname/);
+  const named = shelfGrid([dawn, gold], () => 'none', new Set(), { named: true });
+  assert.equal((named.match(/class="cellname"/g) || []).length, 2);
+  // the twin's full name, so Dawnstone (Layer) and Dawnstone (Dry) differ; then the brand
+  assert.match(named, /<span class="cellname" aria-hidden="true"><span class="pkn">Dawnstone \(Layer\)<\/span><span class="pkb"><span>Citadel<\/span><\/span><\/span>/);
+  // the option's name is still its aria-label, and the caption is inside the cell (a tap on it marks the cell)
+  assert.match(named, /role="option" data-id="c-layer-dawnstone"[^>]*aria-label="Dawnstone \(Layer\), Citadel — [^"]+"[^>]*>.*?<span class="cellname"/);
 });
 
 /* ---- Not on the rack (PLAN §5 item 38) ---- */

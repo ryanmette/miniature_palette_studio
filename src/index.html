@@ -195,6 +195,22 @@
   <p class="loadcap" id="loadCap" data-i18n="loadingPaints">Loading the paints…</p>
 </div>
 <main>
+  <!-- Keep the Shelf (PLAN §5 item 77; UX review F08, rated 4 by all three raters; Ryan's iPhone check, 2026-11-18).
+       The shelf is only in this browser, and Safari can delete it after 7 days with no use. Help said so, and a
+       painter reads Help after the shelf is gone. So the app says it ONE time, in the flow, when the shelf first
+       holds real work: 10 owned paints, or a saved scheme. It is the first thing in <main>, so it shows in each
+       mode; it comes in only when a mode opens, never under the painter's finger (§3.4; app.js syncKeepNote).
+       The first-run band's look: a region with a rule under it, not a card. -->
+  <section class="firstrun keepnote" id="keepNote" aria-labelledby="keepNoteTitle" hidden>
+    <h2 id="keepNoteTitle">Keep your shelf safe</h2>
+    <p id="keepNoteBody"></p>
+    <div class="umpchoices">
+      <button type="button" class="btn primary" id="keepBackup">Back up now</button>
+      <button type="button" class="textact" id="keepHow" aria-haspopup="dialog">How to keep it</button>
+      <button type="button" class="textact" id="keepNo">Not now</button>
+    </div>
+    <p class="sethint" id="keepNoteHint" hidden></p>
+  </section>
   <section class="workspace">
     <div class="card pad seedtoolbar">
       <!-- The seed field (§3.6; mockups/paints-picker.html "Recommended"): ONE field takes a paint name,
@@ -247,6 +263,19 @@
         <li>Add the pots you do not have to your shopping list.</li>
       </ol>
       <button type="button" class="textact" id="firstRunShelf">I own paints — mark my shelf first</button>
+    </section>
+    <!-- The offer of Use my paints (PLAN §5 item 76; UX review F01): the painter marked paints, and the setting
+         that uses them is Off, in ⋯. It shows when the Studio opens with owned paints on the Shelf, the setting
+         Off, and no answer yet (app.js syncUmpOffer). An answer ends it for good (store.js pref umpAsked). -->
+    <section class="firstrun umpoffer" id="umpOffer" aria-labelledby="umpOfferTitle" hidden>
+      <h2 id="umpOfferTitle">Use your paints in your schemes?</h2>
+      <p id="umpOfferBody"></p>
+      <div class="umpchoices">
+        <button type="button" class="btn primary" id="umpOfferPrefer">Prefer my paints</button>
+        <button type="button" class="btn" id="umpOfferOnly">Only my paints</button>
+        <button type="button" class="textact" id="umpOfferNo">Not now</button>
+      </div>
+      <p class="sethint">Prefer: a paint that you own wins when it is close. Only: only your paints can match, also when the match is poor. You can change this in ⋯ Settings, under Use my paints.</p>
     </section>
     <div class="wsplit">
       <div class="card pad studio">

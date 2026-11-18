@@ -13,7 +13,7 @@ import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the O
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
 import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, mostOwnedBrand, BRAND_BOOST, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf, randomStartPaint } from './data.js';
-import { buildScheme, shoppingList, schemeGaps, roleIdeals } from './scheme.js';
+import { buildScheme, shoppingList, schemeGaps, roleIdeals, metalMatch } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
 import { loaderRoles, drawLoader, LOADER_TOKENS } from './loader.js';
@@ -22,7 +22,7 @@ import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
 import { APP_VERSION, WHATS_NEW, EARLIER_NEWS } from './version.js';
-import { describeDevice, supportLine } from './help.js';   // the support details line (Help's Contact)   // the one app-version constant (check-docs.mjs holds it to package.json)
+import { describeDevice, supportLine, shelfHome } from './help.js';   // the support details line (Help's Contact)   // the one app-version constant (check-docs.mjs holds it to package.json)
 
 const t = i18n.t;
 
@@ -383,9 +383,10 @@ function renderPlan() {
   state.scheme = currentScheme();
   const cur = { base: schemeBase(), harmony: state.harmony, colors: state.scheme.roles.map(r => r.idealHex) };
   const cmp = state.compareA ? ui.compareBar(state.compareA, cur) : '';
-  // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5).
-  const gaps = schemeGaps(state.scheme, store.ownedIds());
-  const addable = gaps.filter(g => store.markOf(g.paint.id) !== 'want').length;
+  // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5), counted by
+  // their part of the Recipe: the roles' pots are the main button, the ladder pots a second action (item 80).
+  const gaps = schemeGaps(state.scheme, store.ownedIds()).filter(g => store.markOf(g.paint.id) !== 'want');
+  const addable = { pots: gaps.filter(g => g.part === 'role').length, steps: gaps.filter(g => g.part === 'ladder').length };
   // No overview colour bar here — the role-labelled live palette (beside the wheel) is now the single
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
@@ -526,7 +527,8 @@ function renderLive() {
     vm.push(pc);
   }
   const metal = ideals.find(d => d.metal);
-  vm.push(heldColumn({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: nearestPaint(state.idx, metal.idealHex, { ...opts, types: new Set(['metal']) }) }, 'Metal'));
+  // the Recipe's own rule for the Metal pot (scheme.js metalMatch), so the column and the card agree
+  vm.push(heldColumn({ id: 'metal', kind: 'metal', hex: metal.idealHex, match: metalMatch(state.idx, metal.idealHex, opts) }, 'Metal'));
   el.innerHTML = ui.livePalette(vm, roleByHex);
   applyLinkHighlight();   // re-assert any active hover-link after the columns are rebuilt
   applyEquivSelect();     // re-assert the Equivalents-source ring after the columns are rebuilt
@@ -828,7 +830,7 @@ function renderShelfMarks(ids) {
   // The list: a tick (or one mark from elsewhere) redraws only its row. A full rebuild of 3,225 rows took
   // 660ms per tick; a row is about 1ms. Many paints (an import, another tab) rebuild the list.
   if (state.shelfView === 'list') {
-    if (ids && ids.length <= 20 && ids.every(id => $(`[data-rk="${CSS.escape(id)}"]`))) { ids.forEach(updateRackRow); renderShelfStats(); }
+    if (ids && ids.length <= 20 && ids.every(id => $(`[data-rk="${CSS.escape(id)}"]`))) { ids.forEach(updateRackRow); ids.forEach(syncRackOwned); renderShelfStats(); }
     else renderShelf();
     return;
   }
@@ -945,8 +947,8 @@ function renderEquiv() {
   const srcHex = normHex(equivSourceHex()) || '#000000';
   const p = basePaint();
   const chips = ui.equivSourceChips(equivSourceCols(), srcHex);
-  // When the source is the seed AND the seed is a real paint, keep the richer view (curated interchangeable
-  // group + that paint's cross-brand equivalents). Any other selected column resolves to its ideal colour.
+  // When the source is the seed AND the seed is a real paint, keep the richer view (its group of almost-same
+  // colours + that paint's cross-brand equivalents). Any other selected column resolves to its ideal colour.
   if (p && srcHex === (pickHex() || '').toUpperCase()) {
     const self = state.idx.byId.get(p.id);
     const members = groupMembers(state.idx, self);                 // curated equivalents (ΔE ≤ 1)
@@ -1116,7 +1118,9 @@ function renderShelf() {
     return;
   }
   $('#shelfListView').hidden = true;
-  $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel);
+  const named = !!state.shelfQ.trim();   // a search result shows its name (UX review F06; item 78)
+  $('#shelfGrid').classList.toggle('named', named);
+  $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel, { named });
   $('#shelfEmpty').hidden = view.length > 0;
   $('#shelfGrid').hidden = !view.length;
   if (!view.length) $('#shelfEmpty').innerHTML = ui.shelfEmpty(shelfEmptyKind(), state.shelfQ);
@@ -1147,6 +1151,14 @@ function shelfFilterChanged() { setSelection([], { anchor: null, cursor: null })
    open (rk.kept), and the count's slot keeps its height, so nothing under the finger moves (§3.4). */
 const rk = { kept: new Set(), prev: new Map(), countOpen: new Set(), swapOpen: new Map() };
 function resetRackSession() { rk.kept.clear(); rk.prev.clear(); rk.countOpen.clear(); rk.swapOpen.clear(); }
+/* The list as an index (PLAN §5 item 78; UX review F05 and F07, direction A; Ryan 2026-11-17). With no search
+   and no status filter, the list is every paint the brand and type filters pick: 3,375 rows, 54,000px on a
+   phone. It is then an index: one line per brand · line, closed at first, and the painter opens the lines
+   they own. A search or a status filter has made the list short already, so its groups are open, as before.
+   The groups opened in this visit stay open (in memory; not cleared when a filter changes). */
+const rackOpen = new Set();
+const rackKeyOf = p => [p.brand, rackLine(p)].filter(Boolean).join(' · ');
+const rackIndexOn = () => state.shelfView === 'list' && !state.shelfQ.trim() && !state.shelfMark;
 /* Not on the rack (PLAN §5 item 38; mockups/shopping-list.html, direction B). For this visit only (in memory,
    like Recent picks): the brands this store does not carry, and the swaps made (swap id → what it replaced,
    so a row can say "in place of" and Undo puts everything back). One pot can be the swap for two paints, so
@@ -1206,34 +1218,46 @@ function updateRackRow(id) {
 function renderShelfList(view) {
   const names = new Map();
   const nameOf = sid => schemeNameOf(sid, names);
-  const rows = view.map(rackRowData);
   // Rack order inside every group: brand, line, then name (Ryan: the order a store racks its paints)
-  rows.sort((a, b) => a.paint.brand.localeCompare(b.paint.brand) || rackLine(a.paint).localeCompare(rackLine(b.paint))
-    || ui.pname(a.paint).localeCompare(ui.pname(b.paint)));
+  const sorted = view.slice().sort((a, b) => a.brand.localeCompare(b.brand) || rackLine(a).localeCompare(rackLine(b))
+    || ui.pname(a).localeCompare(ui.pname(b)));
   const groups = [];
   // By project means something only when a paint here is for a scheme (a paint to buy, or one just ticked
   // off); else the switch hides and the list stays in rack order
-  const hasProject = rows.some(r => r.sid);
+  const sidOf = p => (store.markOf(p.id) === 'want' ? store.projectOf(p.id) : rk.prev.get(p.id)?.for) || null;
+  const hasProject = sorted.some(sidOf);
   $('#shelfGroupSeg').hidden = !hasProject;
-  if (hasProject && state.shelfGroup === 'project') {
+  const byProject = hasProject && state.shelfGroup === 'project';
+  // The index: only the groups that are open get their rows (a row's data and its markup cost about 0.2ms,
+  // and a list of every paint took 660ms to build)
+  const index = !byProject && rackIndexOn();
+  if (byProject) {
+    const rows = sorted.map(rackRowData);
     const by = new Map();
     for (const r of rows) { const k = r.sid && nameOf(r.sid) ? r.sid : ''; if (!by.has(k)) by.set(k, []); by.get(k).push(r); }
     for (const sc of store.listSchemes()) if (by.has(sc.id)) groups.push({ key: sc.id, title: nameOf(sc.id), rows: by.get(sc.id) });
     if (by.has('')) groups.push({ key: '', title: t('otherPaints'), rows: by.get('') });
   } else {
-    for (const r of rows) {
-      r.forName = nameOf(r.sid);
-      const key = [r.paint.brand, rackLine(r.paint)].filter(Boolean).join(' · ');
-      const g = groups[groups.length - 1];
-      if (g && g.key === key) g.rows.push(r); else groups.push({ key, title: key, rows: [r] });
+    const packs = [];
+    for (const p of sorted) {
+      const key = rackKeyOf(p), g = packs[packs.length - 1];
+      if (g && g.key === key) g.paints.push(p); else packs.push({ key, paints: [p] });
+    }
+    for (const g of packs) {
+      const open = !index || rackOpen.has(g.key);
+      const rows = open ? g.paints.map(p => { const r = rackRowData(p); r.forName = nameOf(r.sid); return r; }) : [];
+      groups.push({ key: g.key, title: g.key, rows, fold: index, open, count: g.paints.length,
+        owned: index ? g.paints.filter(p => store.isOwned(p.id)).length : 0 });
     }
   }
   // The list is rebuilt: focus goes back to the same control of the same paint
   const ae = document.activeElement, host = $('#shelfList');
   const keep = host.contains(ae) ? (ae.dataset.rktick ? `[data-rktick="${CSS.escape(ae.dataset.rktick)}"]`
-    : ae.dataset.rkqty ? `[data-rkqty="${ae.dataset.rkqty}"][data-id="${CSS.escape(ae.dataset.id)}"]` : null) : null;
+    : ae.dataset.rkqty ? `[data-rkqty="${ae.dataset.rkqty}"][data-id="${CSS.escape(ae.dataset.id)}"]`
+    : ae.dataset.rkgroup != null ? `[data-rkgroup="${CSS.escape(ae.dataset.rkgroup)}"]` : null) : null;
   host.innerHTML = ui.rackGroups(groups, t);
-  $('#rkHint').textContent = t(state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
+  $('#rkHint').textContent = t(index ? 'rkHintIndex' : state.shelfMark === 'want' ? 'rkHintWant' : 'rkHintAll');
+  $('#rkHint').classList.toggle('index', index);   // the index's one line of how-to shows on a phone too (app.css)
   syncSendBought();
   // This store carries: every brand in the paint data, while there is a paint to buy. It was only the brands on
   // the shopping list, so a brand with no paint on the list had no toggle and always counted as carried: with
@@ -1245,6 +1269,15 @@ function renderShelfList(view) {
   if (chip) $(`[data-rkbrand="${CSS.escape(chip)}"]`)?.focus({ preventScroll: true });
   for (const b of $('#shelfGroupSeg').children) b.setAttribute('aria-pressed', String(b.dataset.sg === state.shelfGroup));
   if (keep) host.querySelector(keep)?.focus({ preventScroll: true });
+}
+/** The index's heading over a paint's row: its "N owned" and its name, after a tick changed one row. Every
+ *  row of an open group is in the page, so the count is the group's pressed ticks. Text only: nothing moves. */
+function syncRackOwned(id) {
+  const g = $(`[data-rk="${CSS.escape(id)}"]`)?.closest('.rkfold'), b = g?.querySelector('.rktoggle'); if (!b) return;
+  const n = g.querySelectorAll('[data-rktick][aria-pressed="true"]').length, all = g.querySelectorAll('[data-rktick]').length;
+  const owned = ui.rackOwnedSaid(n, t);
+  b.querySelector('.rkown').textContent = owned;
+  b.setAttribute('aria-label', t(owned ? 'rkGroupOwned' : 'rkGroupName', { title: b.dataset.rkgroup, paints: paintsSaid(all), owned }));
 }
 /** A tick: owned at once; a second tap puts back the mark it had (to buy, with its count and project). */
 function rackTick(id) {
@@ -1282,6 +1315,7 @@ function placeSwapRows(leftId, came, { undo = false } = {}) {
   rk.kept.delete(leftId);   // a tick's "stay in the list" does not hold a paint that was swapped away
   const leftLi = rowOf(leftId), leftStays = !!leftLi && inShelfView(state.idx.byId.get(leftId));
   const plan = ui.swapRowPlan({ cameRow: !!rowOf(came.id), leftRow: !!leftLi, leftStays, cameShows: inShelfView(came), undo });
+  rackOpen.add(rackKeyOf(came));   // in the index, the row that came must show: its line opens
   if (plan === 'rebuild') renderShelf();
   else if (plan === 'remove') leftLi.remove();
   else if (plan === 'replace') {
@@ -1556,6 +1590,14 @@ function setupShelfList() {
   $('#shelfList').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.rktick) { rackTick(b.dataset.rktick); return; }
+    if (b.dataset.rkgroup != null) {
+      // Open or close one line of the index. The list is drawn again (only open lines have rows, so it is
+      // quick); the focus goes back to this heading, and the rows open under it (one direction, §3.4).
+      const key = b.dataset.rkgroup;
+      if (rackOpen.has(key)) rackOpen.delete(key); else rackOpen.add(key);
+      renderShelf();
+      return;
+    }
     if (b.dataset.rknot) {
       const id = b.dataset.rknot, r = rackRowData(state.idx.byId.get(id));
       rk.swapOpen.set(id, !r.swaps);
@@ -1589,7 +1631,7 @@ function clearShelfFilters() {
   state.shelfQ = state.shelfMark = state.shelfBrand = ''; state.shelfTypes = new Set();
   $('#shelfQ').value = $('#shelfBrand').value = '';
   shelfFilterChanged();
-  (state.shelfView === 'list' ? $('#shelfList [data-rktick]') : state.shelfView === 'map' ? $('#mapGrid [tabindex="0"]') : $('#shelfGrid'))?.focus({ preventScroll: true });
+  (state.shelfView === 'list' ? $('#shelfList [data-rkgroup], #shelfList [data-rktick]') : state.shelfView === 'map' ? $('#mapGrid [tabindex="0"]') : $('#shelfGrid'))?.focus({ preventScroll: true });
 }
 
 /* ---- Shelf dock (§3.6; mockups/shelf-landing.html "Chosen" + its design critique) ----
@@ -2619,6 +2661,8 @@ function setMode(mode) {
   }
   else if (state.mode === 'schemes') { renamingId = null; renderSchemesPage(); window.scrollTo(0, 0); }
   else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows
+  syncUmpOffer({ open: state.mode === 'studio' });   // back in the Studio with paints on the Shelf: ask once (item 76)
+  syncKeepNote({ open: true });   // a mode has opened: the one moment the keep message may come in (item 77)
   updateUrl();
 }
 /** Seed from a paint: the seed field's list, or the Shelf's Use as seed. It goes into Recent. The render's
@@ -2731,12 +2775,19 @@ function toggleBuy(id) {
   else store.setMark(id, 'want', { for: projectOnScreen() || undefined });
   render('marks', { ids: [id] });   // the hero and the Plan can both show this paint's toggle
 }
-/** One click: flag every paint this scheme needs (that you don't own) as to-buy (#5). */
-function addGapsToBuy() {
-  const ids = [...new Set(schemeGaps(state.scheme, store.ownedIds()).map(g => g.paint.id))].filter(id => store.markOf(id) !== 'want');
+/** The Recipe's Add actions (#5; PLAN §5 item 80): one press puts ONE part of the scheme on the shopping list.
+ *  `part`: 'role' = the roles' own pots (the main button) · 'ladder' = the tone ladders' pots · 'nmm' = the
+ *  Metal role's NMM recipe (every rung, also one that is a ladder step somewhere else). Never all three in one
+ *  press: that was a median 14 pots from 7 brands, with two ways to paint one metal part (UX review F04). */
+function addGapsToBuy(part = 'role') {
+  const ids = schemeGaps(state.scheme, store.ownedIds())
+    .filter(g => (part === 'nmm' ? g.nmm : g.part === part) && store.markOf(g.paint.id) !== 'want').map(g => g.paint.id);
   const n = ids.length;
   if (n) { store.setMarks(ids, 'want', { for: projectOnScreen() || undefined }); render('marks', { ids }); }   // one write, one repaint
-  toast(n ? `Added ${n} paint${n > 1 ? 's' : ''} to the shopping list` : 'Nothing new to add');
+  toast(n ? `Added ${ui.potsSaid(n, part === 'ladder' ? 'ladder' : part === 'nmm' ? 'NMM' : '')} to the shopping list` : 'Nothing new to add');
+  // The pressed button is gone (its work is done). Put the focus on the line that took its place, so a keyboard
+  // or a screen reader stays in the Recipe, and Tab goes on to the next action.
+  if (n) $(part === 'nmm' ? '#panel-plan .nmmdone' : part === 'role' ? '#addDone' : '#laddersDone')?.focus({ preventScroll: true });
 }
 function setLadder(v) {                          // #7 — tone-ladder style (persisted)
   if (!['wash', 'tone', 'both'].includes(v)) return;
@@ -2749,8 +2800,81 @@ function setLadder(v) {                          // #7 — tone-ladder style (pe
 function setCollection(v) {
   if (!['off', 'prefer', 'only'].includes(v)) return;
   state.collection = v; store.setPref('collection', v);
+  // The painter chose, here or in the Studio's offer: the offer has its answer (item 76)
+  if (!store.getPref('umpAsked')) store.setPref('umpAsked', true);
+  syncUmpOffer();
   syncCollectionSeg(); syncUmpHint();
   renderLive(); renderActive(); renderMatchNote();
+}
+/* ---- The offer of Use my paints (PLAN §5 item 76; UX review F01, rated 4 by all three raters) ----
+   A painter marks 45 paints and goes back to the Studio. The setting that uses them is Off, in ⋯, and nothing
+   pointed to it: the Recipe still said "+ Add 14". So the Studio asks once, under the paint field (the
+   first-run band's place and look): Prefer, Only, or Not now. It shows when the Studio opens (a mode switch,
+   or a load), never at the moment of a mark: a band that came in then would push the wheel down under the
+   painter's finger (§3.4). An answer, or a change of the setting in ⋯, ends it for good (the pref umpAsked). */
+const umpOfferDue = () => state.mode === 'studio' && !firstRun && state.collection === 'off'
+  && !store.getPref('umpAsked') && store.counts().owned > 0;
+/** Show the offer when it is due (`open`: the Studio has just opened); in every case, hide it when it is not. */
+function syncUmpOffer({ open = false } = {}) {
+  const el = $('#umpOffer'), due = umpOfferDue();
+  if (!due) { el.hidden = true; return; }
+  if (!open && el.hidden) return;   // due, but the Studio is in use: wait for its next opening
+  $('#umpOfferBody').textContent = t('umpOfferBody', { n: paintsSaid(store.counts().owned) });
+  el.hidden = false;
+}
+function answerUmpOffer(v) {
+  if (v) setCollection(v);   // it sets umpAsked and hides the band
+  else { store.setPref('umpAsked', true); syncUmpOffer(); }
+  // the band is gone, and the control that had the focus with it: the hero line is the Studio's landing spot
+  $('#hero').focus({ preventScroll: true });
+  toast(t(v === 'prefer' ? 'umpOfferPrefer' : v === 'only' ? 'umpOfferOnly' : 'umpOfferLater'));
+}
+/* ---- Keep the Shelf (PLAN §5 item 77; UX review F08, rated 4 by all three raters) ----
+   The shelf is only in this browser. Safari can delete it after 7 days of Safari use with no use of the app
+   (WebKit, "Full Third-Party Cookie Blocking and More", 2020), and on Ryan's iPhone (2026-11-18) the Home Screen
+   app started with an EMPTY shelf: its storage is apart from Safari's. Help said "add the app to your Home
+   Screen", and a painter reads Help after the shelf is gone. So the app says it one time, in the flow, when
+   the shelf first holds real work, with the one action that always helps: a backup file.
+   Like the offer of Use my paints, it comes in only when a mode opens (a mode switch, or a load), never at the
+   moment of a mark (§3.4), and in the Studio it waits while another band shows. An answer, or any backup,
+   ends it for good (the pref keepAsked; it is set before the file is written, so a Restore of that file on
+   the Home Screen does not ask again). */
+const KEEP_AT = 10;   // owned paints: about the point where marking them again is real work
+const hasRealWork = () => store.counts().owned >= KEEP_AT || store.listSchemes().some(sc => sc.saved);
+const shelfHomeNow = () => shelfHome(navigator.userAgent, {
+  standalone: navigator.standalone === true || matchMedia('(display-mode: standalone)').matches,
+  native: !!globalThis.Capacitor?.isNativePlatform?.(),
+});
+const keepNoteDue = () => !firstRun && !store.getPref('keepAsked') && hasRealWork() && shelfHomeNow() !== 'native';
+/** Show the message when it is due (`open`: a mode has just opened); in every case, hide it when it is not. */
+function syncKeepNote({ open = false } = {}) {
+  const el = $('#keepNote');
+  if (!keepNoteDue()) { el.hidden = true; return; }
+  if (!open) return;   // due, but the painter is at work: wait for the next opening (a visible one stays)
+  // one band at a time in the Studio: the offer of Use my paints goes first
+  if (state.mode === 'studio' && !$('#umpOffer').hidden) { el.hidden = true; return; }
+  const home = shelfHomeNow();
+  $('#keepNoteBody').textContent = t(home === 'home' ? 'keepBody_home' : home.startsWith('safari') ? 'keepBody_safari' : 'keepBody_browser');
+  const hint = $('#keepNoteHint');
+  hint.hidden = home !== 'safari-ios';
+  if (!hint.hidden) hint.textContent = t('keepHintHome');
+  el.hidden = false;
+}
+/** The message has its answer. `focus`: one of the band's own buttons was pressed, so the focus goes with the
+ *  band: the mode switch is in every mode, and its pressed button is the landing spot. (A backup from ⋯ leaves
+ *  the focus where it is: moving it out of the ⋯ popover closes the popover.) */
+function endKeepNote({ focus = false } = {}) {
+  if (!store.getPref('keepAsked')) store.setPref('keepAsked', true);
+  $('#keepNote').hidden = true;
+  if (focus) $('#modeNav [aria-pressed="true"]')?.focus({ preventScroll: true });
+}
+/** Ask the browser to keep this site's data (the Storage API's persistent mode). WebKit: an origin "might be
+ *  excluded from eviction if … its storage is in persistent mode", and it "grants a request based on heuristics
+ *  like whether the website is opened as a Home Screen Web App" ("Updates to Storage Policy", 2023). So it can
+ *  help, and it is no promise: the backup file is the real copy. Firefox asks the painter, so the request is
+ *  made only after a backup (the painter has said that the shelf matters), or in an installed app. */
+function askPersist() {
+  try { navigator.storage?.persist?.()?.catch?.(() => {}); } catch { /* an old browser: nothing to ask */ }
 }
 /** ⋯ → Brand (docs/TONE_LADDERS.md B; Ryan 2026-11-06): any · prefer (a 2 ΔE bonus) · only (a filter), for one
  *  brand; saved for the device. The brand the select SHOWS is the painter's own pick, or else the brand they
@@ -3020,6 +3144,7 @@ function afterStoreReplaced({ keepLinkTheme = false } = {}) {
   if (state.mode === 'shelf') renderShelf();
   renderMatchNote();
   syncLocaleStrings();
+  syncUmpOffer(); syncKeepNote();   // a Restore or a Delete can end them (they never come in here)
 }
 
 /* ---- ⋯ Settings (§3.6; mockups/collection-setting.html #fullmenu, corrected by #critique) ----
@@ -3506,10 +3631,14 @@ async function sendBought() {
 }
 
 /* ---- Back up / Restore / Delete ---- */
-/** Download the backup file (store.exportJSON, with its `saved` date). @returns the file name */
+/** Download the backup file (store.exportJSON, with its `saved` date), and ask the browser to keep the data. @returns the file name */
 function saveBackup() {
   const name = backupName();
+  // A painter who makes a backup knows how to keep the shelf: the "Keep your shelf safe" message has its
+  // answer (item 77). Before the file is written, so the file holds the answer too.
+  endKeepNote();
   download(name, store.exportJSON(), 'application/json');
+  askPersist();
   return name;
 }
 const cdlg = { onOk: null, opener: null, body: null };
@@ -3862,7 +3991,9 @@ function wire() {
       if (lc && !e.target.closest('.lccopy, [data-psid]')) { e.stopPropagation(); setEquivSource(lc.dataset.hex); return; }
     }
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
-    if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
+    if (e.target.closest('#addGaps')) { addGapsToBuy('role'); return; }
+    if (e.target.closest('#addLadders')) { addGapsToBuy('ladder'); return; }
+    if (e.target.closest('[data-addnmm]')) { addGapsToBuy('nmm'); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
   });
   $('#seg').addEventListener('click', e => {
@@ -3954,7 +4085,21 @@ function wire() {
   });
   setupTypePick();
   $('#firstRunPicks').addEventListener('click', e => { const b = e.target.closest('[data-firstpick]'); if (b) selectPaint(b.dataset.firstpick); });
-  $('#firstRunShelf').addEventListener('click', () => { endFirstRun(); setMode('shelf'); });
+  $('#umpOfferPrefer').addEventListener('click', () => answerUmpOffer('prefer'));
+  $('#umpOfferOnly').addEventListener('click', () => answerUmpOffer('only'));
+  $('#umpOfferNo').addEventListener('click', () => answerUmpOffer(null));
+  // Keep the Shelf (item 77): a backup now, the steps in Help, or not now. Each of the two answers ends it.
+  $('#keepBackup').addEventListener('click', () => { endKeepNote({ focus: true }); toast(t('backupSaved', { file: saveBackup() })); });
+  $('#keepHow').addEventListener('click', e => openHelp(e.currentTarget, '#shelf-saved'));
+  $('#keepNo').addEventListener('click', () => { endKeepNote({ focus: true }); toast(t('keepLater')); });
+  // "Mark my shelf first" opens the list, as an index (item 78): the grid was 3,375 squares with no names
+  $('#firstRunShelf').addEventListener('click', () => {
+    endFirstRun();
+    Object.assign(state, { shelfView: 'list', shelfGroup: 'rack', shelfMark: '', shelfQ: '' });
+    $('#shelfQ').value = '';
+    setMode('shelf');
+    if (!COARSE) $('#shelfList [data-rkgroup]')?.focus({ preventScroll: true });   // the link that had focus is gone
+  });
   $('#shelfEmpty').addEventListener('click', e => { if (e.target.closest('[data-shelfclear]')) clearShelfFilters(); });
   // Sorting doesn't change which paints are shown, so keep the selection — just re-render in the new order.
   $('#shelfSort').addEventListener('change', e => { state.shelfSort = e.target.value; renderShelf(); revealShelfResults(); });
@@ -4021,6 +4166,7 @@ async function init() {
       syncSettingsControls(); syncLocaleStrings();
     }
     render('marks');
+    syncKeepNote();     // another tab made a backup, or deleted the shelf: the message here goes too
     refreshConfirm();   // an open Restore or Delete confirm shows the counts on this device now
   });
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
@@ -4094,6 +4240,9 @@ async function init() {
   // A first visit with no paint in the link: show "Start a scheme" (after the first render, so that
   // render does not end it). A native shell that restored a shelf is not a first visit.
   if (store.firstVisit && !restored && !url.get('p') && !url.get('c') && !url.has('l') && !url.has('b')) startFirstRun();
+  syncUmpOffer({ open: true });   // a visit that starts in the Studio, with paints marked on an earlier one
+  syncKeepNote({ open: true });
+  if (shelfHomeNow() === 'home' && hasRealWork()) askPersist();   // an installed app: WebKit grants it there, with no question
   if (url.get('m') === 'shelf' || url.get('m') === 'schemes') setMode(url.get('m'));   // deep-link / refresh stays in that mode
   // A store list or a "bought" link (item 37). The first render has already written the address bar without
   // them, so a reload does not ask again.

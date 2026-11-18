@@ -1,4 +1,5 @@
-// help.js — the support details line (mockups/help-about.html, answer 3). Pure: no DOM, no globals.
+// help.js — the support details line (mockups/help-about.html, answer 3), and where the shelf is saved, in words
+// (shelfHome, item 77). Pure: no DOM, no globals.
 // Help's Contact section shows this line, and copies it only when the painter presses "Copy support details".
 // Nothing is sent by the app: the painter sees every word and pastes it into a message, or does not. So the app
 // keeps "Data Not Collected" (Apple's optional case for support requests). It never holds the shelf, the
@@ -27,6 +28,27 @@ export function describeDevice(ua = '', { native = false } = {}) {
         : /Chrome\//.test(ua) ? `Chrome ${num(/Chrome\/(\d+)/, ua)}`
           : /Safari\//.test(ua) ? `Safari ${num(/Version\/(\d+)/, ua)}`.trim() : '';
   return [browser, os].filter(Boolean).join(' on ') || 'Unknown browser';
+}
+
+/**
+ * Where the shelf is saved, for the words of the "Keep your shelf safe" message (PLAN §5 item 77). It chooses
+ * words only, never behaviour (§6):
+ *   'native'      the iOS app (Capacitor): it has its own copy of the shelf, so the message does not show
+ *   'home'        a web app on the Home Screen or in the Dock (its own storage, apart from Safari's)
+ *   'safari-ios'  Safari on an iPhone or iPad, in a tab: WebKit can delete the data after 7 days with no use,
+ *                 and a Home Screen app starts with an empty shelf (Ryan's iPhone check, 2026-11-18)
+ *   'safari'      Safari on a Mac, in a tab: the same 7-day rule
+ *   'browser'     any other browser, an in-app browser too
+ * @param o.standalone  the page runs as an installed web app (navigator.standalone, or display-mode: standalone)
+ */
+export function shelfHome(ua = '', { standalone = false, native = false } = {}) {
+  ua = String(ua);
+  if (native) return 'native';
+  if (standalone) return 'home';
+  // Safari's own user agent: "Version/…" and "Safari/…", and none of the other browsers' words
+  const safari = /Version\/\d/.test(ua) && /Safari\//.test(ua) && !/Chrome\/|Chromium\/|CriOS\/|FxiOS\/|Edg(?:A|iOS)?\/|OPR\/|Android/.test(ua);
+  if (!safari) return 'browser';
+  return /\b(iPhone|iPad|iPod)\b/.test(ua) ? 'safari-ios' : 'safari';
 }
 
 /**

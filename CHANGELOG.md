@@ -7,12 +7,92 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.19.0 took only the web entries. -->
 ### Added
+- **Keep your shelf safe: the app says how, one time** (PLAN §5 item 77; `docs/UX_REVIEW.md` F08, a finding of
+  the highest severity, and Ryan's iPhone check of 2026-11-18; CLAUDE.md §3.6). Step 4 of the review's build
+  order. Your shelf is only in your browser. Safari can remove it when you do not use Palette Studio for 7 days.
+  Only Help said so, and a painter reads Help after the shelf is gone.
+  - When your shelf first holds real work (10 owned paints, or a saved scheme), a message shows one time:
+    **Keep your shelf safe**, with **Back up now**, **How to keep it** and **Not now**. It comes in only when
+    you open the Studio, Schemes or the Shelf, never while you work. A backup from ⋯ ends it too.
+  - **Help is corrected.** It told you to add the app to your Home Screen. On an iPhone, the Home Screen app
+    has its own shelf, and it starts empty (seen on a real iPhone). Help now gives the order: back up in
+    Safari, add to the Home Screen, open the app from its icon, then Restore… there. It also says that a
+    shared link holds a scheme, not your shelf.
+  - When you make a backup, the app asks the browser to keep its data (`navigator.storage.persist()`). The
+    browser can say no, so the backup file is the real copy.
+  - A new saved setting, `keepAsked`, holds your answer; it is in a backup. `sw.js`: `CACHE` is `ps-v108`.
+- **The Studio offers to use your paints** (PLAN §5 item 76; `docs/UX_REVIEW.md` F01, the review's first
+  finding of the highest severity; CLAUDE.md §3.6). Step 2 of the review's build order, second part. A painter
+  marked their paints, went back to the Studio, and the scheme still ignored them: **Use my paints** is Off
+  until you change it, and it is in ⋯. Now, when the Studio opens with paints marked as owned and the setting
+  Off, a band under the paint field asks one time: **Prefer my paints**, **Only my paints** or **Not now**.
+  An answer sets the setting, and the note under the live palette shows it. The band does not come back after
+  an answer, or after you change the setting in ⋯. It never comes in while you work in the Studio, so nothing
+  moves under your finger. The answer is saved on the device and is in a backup (a new saved setting,
+  `umpAsked`).
+- **A UX review before the first showing (`docs/UX_REVIEW.md`; a study, no app code changed).** The app as a new
+  painter meets it: an experienced painter with many pots, a link, alone, mostly on an iPhone. Two deep journeys
+  (arrive → mark my paints → a scheme with them → a shopping list; and "what is close to this paint?"), ten seams
+  between the app's parts, and measurements from the real app. 24 findings, each with its evidence, a direction and
+  a severity from three independent raters on Nielsen's 0 to 4 scale. Two are a 4: the scheme ignores the Shelf
+  until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
+  iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
+  screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 76 to 85 are the proposed work.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+### Changed
+- **Words: "Almost the same colour", and three small errors** (PLAN §5 items 82 and 85; `docs/UX_REVIEW.md` F12
+  and F19; CLAUDE.md §3.5 Words). Step 5 of the UX review's build order.
+  - **Other brands** said "Interchangeable — same colour (ΔE ≤ 1)" for a paint's group. The group is made from
+    hex values, and a hex is approximate: a painter read "Mephiston Red is the same colour as Chotec Orange 1".
+    It now says **Almost the same colour in the paint data (ΔE 1 or less)**, and adds "compare the pots before
+    you use one in place of another". **Paint details** has the same words for the same list (it said "The
+    same colour"), and Help too. The groups and the matches do not change.
+  - "1 paints across 1 brand" is now "1 paint in 1 brand".
+  - A colour that is not a paint had the tag "typed hex", also after a tap on the wheel. The tag is now
+    **not a paint**.
+  - The top line of such a colour said "Custom #711A1A #711A1A". Its name is now **Custom colour**, and the
+    hex shows one time.
+- **The Recipe's Add button adds the scheme's own pots, not every paint** (PLAN §5 item 80; `docs/UX_REVIEW.md`
+  F04; CLAUDE.md §3.6). Step 3 of the UX review's build order. One button put every paint of the Recipe on the
+  shopping list: a median 14 pots from 7 brands for the review's test painter, with the metallic ladder and the
+  NMM recipe together, which are two ways to paint one metal part.
+  - **+ Add N pots to the shopping list** now adds the pot of each role (Primary, Secondary, Accent, Metal)
+    that you do not own: four pots at most.
+  - **Add N ladder pots**, beside it, adds the washes, shadows and highlights of the tone ladders that show.
+  - **Add the N NMM pots**, on the Metal card, adds the NMM recipe. No button adds it with the metallics.
+  - A press moves nothing on the screen: each action has a reserved place, and a line ("The role pots are owned
+    or on the list") takes the button's place. The focus goes to that line.
+  - `schemeGaps` gives each paint its part (`role`, `ladder`, `nmm`). The matches do not change.
+- **The Metal part of a scheme uses a metallic that you own** (PLAN §5 item 79; `docs/UX_REVIEW.md` F02 and
+  §11; a matching change: CLAUDE.md §3.2 and §7). Step 2 of the UX review's build order, with the rule and
+  the words that Ryan chose ("15 and A", 2026-11-17).
+  - **The rule.** With **Use my paints: Prefer**, a paint that you own counts as 6 ΔE closer. For the Metal
+    part that was never enough: the app's gold, silver and gunmetal targets are 9 to 12 ΔE from the common pots
+    (Retributor Armour, Leadbelcher, Ironbreaker), and some other metallic is always closer. An owned metallic
+    now counts as 15 ΔE closer, for the Metal part only. Measured on five shelves: your own metallic is the
+    Metal pot for 80% of schemes (it was 7%), never one of the wrong kind, and never one more than ΔE 14.2 away.
+    For the review's test painter it is every scheme (it was none).
+  - **The words.** Such a pot said "Loose" or "Poor", with advice to mix or to shift the hue. It now says
+    **A metallic you own**, in plain words. The ΔE shows as before and is the true value. A pot that is more
+    than ΔE 15 away keeps its word, and so does a Metal part that you lock or choose yourself.
+  - The Recipe, the live palette and the image show the same pot and the same words (`scheme.js metalMatch`).
+    Off, Only's choice of pot, the colour parts and Other brands do not change.
+- **Marking the paints you own is quicker** (PLAN §5 item 78; `docs/UX_REVIEW.md` F05, F06 and F07; CLAUDE.md
+  §3.5 and §3.6). The first step of the UX review's build order, with direction A (Ryan, 2026-11-17).
+  - **The Shelf's list is an index.** With no search and no status filter, the list was every paint: 3,375 rows,
+    about 54,000px on a phone. It is now one line for each range of each brand (54 lines, about 2,900px), closed
+    at first. Open a line to see its paints and tick the ones you own. A line shows its count and how many of
+    its paints you own ("18 owned"). A search or a status filter shows the paints at once, as before.
+  - **"I own paints — mark my shelf first" opens that list.** It opened the grid: 3,375 squares with no names.
+  - **A search in the grid shows names.** Each result has its name and brand under its swatch, so Dawnstone
+    (Layer) and Dawnstone (Dry) no longer look the same. With no search, the grid is as before.
+  - Help has a new answer: "What is the quickest way to mark the paints I own?"
+  - No match changes.
 ### Fixed
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
