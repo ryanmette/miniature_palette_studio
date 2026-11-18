@@ -279,9 +279,11 @@ to-buy marks) but files them *inside* the scheme output. Four routing directions
    **Built (2026-11-17), first part:** `#paintDlg` + `ui.paintSheet`: the paint, its mark, The same colour,
    Closest in other brands, Closest on your shelf (with how to move it), Start a scheme from this; a row opens
    that paint in the same sheet. The ways in: a paint's name in the Recipe and Other brands, a ladder step, and
-   **Paint details** in the mark menu (the Shelf and the seed list). **Open:** the other ways in (a row of the
-   Shelf's list, the Map's rows, the live palette's pot band, a store swap); the resizable sheet on a phone (it is
-   a plain modal dialog now).
+   **Paint details** in the mark menu (the Shelf and the seed list). **Built (2026-11-18), second part:** the
+   other ways in: the pot's name under each colour of the live palette, a row of the Shelf's list, a store swap,
+   and a paint of the Map's tone. On touch the name's hit area is the block round it; with a mouse it is the
+   name alone. Not a way in: the Schemes page's colour strip (a picture of four pots, with no names; a row there
+   opens the scheme). **Open:** the resizable sheet on a phone (it is a plain modal dialog now).
 8. **Substitute finder — direction C.** “I need X, what can I use?” as a mode *on* that sheet rather than
    a new surface: constrain by *only what I own* / *only these brands* (the in-store constraint) and rank
    the alternatives. The literal buying assistant; still no engine work.
@@ -1026,9 +1028,10 @@ Ryan's order (2026-11-17: "go with your recommendation"):
 1. **The swatch pass (item 51): built 2026-11-17** (a pure colour field with one finish icon in the corner).
 2. **Item 59** (⋯ showed a focus ring when a touch opened it): **built 2026-11-17**. To confirm on an iPhone.
 3. **Item 64 B** (a Brand setting in ⋯: Any · Prefer · Only): **built 2026-11-17**. **Item 7** (the paint detail
-   sheet): **first part built 2026-11-17**. **Reaper's tone families: built 2026-11-18.** **Next:** the paint
-   sheet's other ways in; the next maker's families (Two Thin Coats, Army Painter Fanatic); the Reaper type
-   corrections found on the way (item 64).
+   sheet): **first part built 2026-11-17, its other ways in 2026-11-18**. **Reaper's tone families: built
+   2026-11-18.** **Next** (Ryan, 2026-11-18: "go with your recommendation"): release 1.19.0; then the next
+   maker's families, one brand for each pull request (Army Painter Fanatic, then Two Thin Coats). The Reaper
+   type corrections found on the way (item 64) wait for the maker's own page for each paint.
 4. **Waits for Ryan:** measured wash colours and the 34 missing Warhammer Colour paints (items 49, 68, 75); a test
    on a real iPad (item 60); the device build of the native app (Stage 1); the retailer applications
    (`MONETIZATION.md` A).
