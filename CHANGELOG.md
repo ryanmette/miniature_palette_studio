@@ -30,6 +30,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     start.
   - **From Other brands back to the same role card** (F23). A role card's **Other brands** opens that tab.
     The way back opened the Recipe at a different place. It now shows the card that you came from.
+  - **Take to the store… on a phone starts with your list** (F15). The panel was made for a computer: it
+    showed a code for the phone to scan itself. On a touch phone it now says "Your list is on this phone" and
+    has **Open the list**. The code and the link come after that, "to send it to another device".
   - **A link to a paint that the app does not have says so** (F18): "This link's paint is not in the app. Here
     is a different paint." Before, it opened a random scheme with no message.
 ### Fixed

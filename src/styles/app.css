@@ -1570,6 +1570,11 @@ main[data-mode="schemes"] { grid-template-columns: minmax(0, 1fr); }
 /* Take to the store (PLAN §5 item 37; mockups/shopping-list.html §6) -------------------------------------- */
 .storedlg { width: min(640px, calc(100vw - 32px)); }
 .storesub { font-size: var(--fs-body); font-weight: 600; margin: 0 0 4px; }
+/* the panel on a touch phone (UX review F15): the list is here, then "To send it to another device" */
+.storehere { display: grid; gap: 8px; justify-items: start; margin-bottom: 12px; }
+.storehere p { margin: 0; }
+.storeherelead { font-weight: 600; }
+.storehere .storesub { margin: 16px 0 0; padding-top: 16px; border-top: 1px solid var(--border); justify-self: stretch; }
 .storefields { display: grid; gap: 12px; margin: 16px 0 8px; }
 .storewhich { width: 100%; max-width: 360px; margin: 4px 0 16px; }
 .storeout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: start; }

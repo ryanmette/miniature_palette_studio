@@ -3475,8 +3475,12 @@ function finishNameStep(keep) {
 function showStorePanel() {
   $('#storeNameStep').hidden = true; $('#storePanel').hidden = false;
   renderStorePanel();
-  $('#storeCopy').focus({ preventScroll: true });   // not the select: iOS opens its picker when a select takes focus in a tap
+  // not the select: iOS opens its picker when a select takes focus in a tap. On a touch phone the main action is
+  // Open the list (F15).
+  (storeOnPhone() ? $('#storeOpenList') : $('#storeCopy')).focus({ preventScroll: true });
 }
+/** The panel is open ON the device that will be in the store: a touch phone (UX review F15). */
+const storeOnPhone = () => COARSE && PHONE.matches;
 function renderStorePanel() {
   const { all, projects } = storeChoices();
   if (storeDlg.which && !projects.some(p => p.id === storeDlg.which)) storeDlg.which = '';
@@ -3500,6 +3504,13 @@ function renderStorePanel() {
   }
   $('#storeUrl').textContent = url;
   $('#storeCopy').textContent = t(CAN_SHARE ? 'shareStoreLink' : 'copyStoreLink');
+  // On a touch phone: the list is here. Open the list is the one main action; the link and the code are for
+  // another device, and the line about "bought" (it is for the desk's view) does not show.
+  const here = storeOnPhone() && all.length > 0;
+  $('#storeHere').hidden = !here;
+  $('#storeCopy').classList.toggle('primary', !here);
+  $('#storeHow').textContent = t(here ? 'storeHowHere' : 'storeHow');
+  $('#storeBack').hidden = here;
 }
 async function sendStoreLink() {
   const url = storeDlg.url;
@@ -3559,6 +3570,7 @@ function setupStore() {
   $('#storeSkip').addEventListener('click', () => finishNameStep(false));
   $('#storeWhich').addEventListener('change', e => { storeDlg.which = e.target.value; renderStorePanel(); });
   $('#storeCopy').addEventListener('click', sendStoreLink);
+  $('#storeOpenList').addEventListener('click', () => { $('#storeDlg').close(); showStoreListHere(); });
   $('#storePrintBtn').addEventListener('click', printStoreList);
   $('#storeText').addEventListener('click', saveStoreText);
   d.addEventListener('close', () => {

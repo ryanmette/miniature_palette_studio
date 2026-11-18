@@ -325,6 +325,12 @@ const LOCALES = {
     whichOne: '{name} · {n}',
     storeHow: 'Scan the code with your phone’s camera, or send the link to your phone. The list opens there, ready to tick.',
     storeBack: 'On the phone, tick each paint you buy. Then Send “bought” marks them owned on this device too.',
+    // the same panel opened ON a touch phone (UX review F15): the list is here; the link is for another device
+    storeHereLead: 'Your list is on this phone.',
+    storeHereHint: 'Open it, and tick each paint as you buy it.',
+    storeOpenList: 'Open the list',
+    storeElsewhere: 'To send it to another device',
+    storeHowHere: 'Scan the code with the other device’s camera, or send the link. The list opens there, ready to tick.',
     qrName: 'QR code of the link to {count}',
     qrTooLong: 'Too many paints for one code. Choose one project, or send the link.',
     copyStoreLink: 'Copy link',
