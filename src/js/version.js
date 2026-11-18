@@ -1,19 +1,19 @@
 // version.js — the app's version, in one place. About shows it next to the paint data's own
 // version (from paints.json). scripts/check-docs.mjs fails the build when it differs from
 // package.json, so a release that bumps one and forgets the other cannot ship (CLAUDE.md §8).
-export const APP_VERSION = '1.18.0';
+export const APP_VERSION = '1.19.0';
 
 /** What's new (mockups/help-about.html, answer 5): About shows these lines under "What's new in {version}". Write
  *  them when a release is cut (CLAUDE.md §8 checklist), a few short lines for a painter, from the CHANGELOG. */
 export const WHATS_NEW = {
-  version: '1.18.0',
-  date: '2026-11-17',
+  version: '1.19.0',
+  date: '2026-11-18',
   items: [
-    'Every swatch now shows the paint’s true colour. The gradients are gone.',
-    'A small icon in the corner shows the finish: metallic, wash, Contrast, effect or fluorescent.',
-    'Keep a scheme in one brand: ⋯ → Brand, then Prefer or Only.',
-    'Search “fluorescent” to find every fluorescent and neon paint.',
-    'In the dark theme, near-black paints have a light edge, so you can see them.',
+    'Select a paint’s name to see everything about it: Paint details.',
+    'It shows the same colour, the closest in other brands and the closest on your shelf.',
+    'A close paint on your shelf says how to change it: “darken slightly”.',
+    'On the Shelf’s grid and in the seed list, Paint details is in the paint’s menu.',
+    'Reaper’s triads are in: the Recipe shows a pot’s shadow, midtone and highlight.',
   ],
 };
 
@@ -21,6 +21,17 @@ export const WHATS_NEW = {
  *  moves the WHATS_NEW it replaces to the front of this list (CLAUDE.md §8; a test fails when one is missing). It
  *  starts at 1.13.0, the first release with lines for a painter: older releases are in CHANGELOG.md only. */
 export const EARLIER_NEWS = [
+  {
+    version: '1.18.0',
+    date: '2026-11-17',
+    items: [
+      'Every swatch now shows the paint’s true colour. The gradients are gone.',
+      'A small icon in the corner shows the finish: metallic, wash, Contrast, effect or fluorescent.',
+      'Keep a scheme in one brand: ⋯ → Brand, then Prefer or Only.',
+      'Search “fluorescent” to find every fluorescent and neon paint.',
+      'In the dark theme, near-black paints have a light edge, so you can see them.',
+    ],
+  },
   {
     version: '1.17.0',
     date: '2026-11-17',
