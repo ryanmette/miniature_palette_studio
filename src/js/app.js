@@ -2760,10 +2760,26 @@ function syncTabs(focusActive = false) {
   }
   for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== state.tab;
 }
+/* Back to the role card (UX review F23). A role card's Other brands jump opens that tab, and the way back opened
+   the Recipe wherever the page was: on a phone the four cards are 1,400px tall, so the painter lost their
+   place. The jump remembers its role; the next change from Other brands to the Recipe shows that card again,
+   under the header and the pinned tabs. Any other tab ends the memory. Only the scroll: the focus stays on the
+   tab that the painter pressed. */
+let planReturnRole = null;
+function showRoleCard(role) {
+  const card = [...document.querySelectorAll('#panel-plan .slot')].find(c => c.querySelector('.role')?.textContent === role);
+  if (!card) return;
+  const tabs = $('#tabs'), pinned = getComputedStyle(tabs).position === 'sticky' ? tabs.offsetHeight : 0;
+  const clear = document.querySelector('header').offsetHeight + pinned + 8;
+  window.scrollTo(0, Math.max(0, card.getBoundingClientRect().top + window.scrollY - clear));
+}
 function setTab(tab, focusActive = false) {
+  const backTo = tab === 'plan' && state.tab === 'equiv' ? planReturnRole : null;
+  if (tab !== 'equiv') planReturnRole = null;
   state.tab = tab;
   syncTabs(focusActive);
   renderActive(); applyEquivSelect(); announce(); updateUrl();   // show/clear the Equivalents-source ring with the tab
+  if (backTo) showRoleCard(backTo);
 }
 /** The project a paint added from the Studio is for: the scheme on screen (mockups/project-naming.html, "label
  *  now, name later"). The saved scheme while it shows Saved; else a kept scheme with this exact link; else a
@@ -3978,7 +3994,13 @@ function wire() {
     const eqs = e.target.closest('[data-eqsrc]');
     if (eqs) { e.stopPropagation(); setEquivSource(eqs.dataset.eqsrc); return; }   // tab-local source chips (A)
     const gq = e.target.closest('[data-goequiv]');
-    if (gq) { e.stopPropagation(); setTab('equiv'); setEquivSource(gq.dataset.goequiv); return; }   // Plan-card jump (B)
+    if (gq) {   // Plan-card jump (B); it remembers its card, for the way back (F23)
+      e.stopPropagation();
+      const role = gq.closest('.slot')?.querySelector('.role')?.textContent || null;
+      setTab('equiv'); setEquivSource(gq.dataset.goequiv);
+      planReturnRole = role;
+      return;
+    }
     const sd = e.target.closest('[data-seeddock]');
     if (sd) {   // the palette's seed dock IS the Main|Accent control now
       e.stopPropagation();
