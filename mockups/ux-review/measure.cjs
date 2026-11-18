@@ -3,8 +3,9 @@
 //
 // For each owned flat Warhammer Colour pot as the starting paint (29) x each hue harmony (7) x each
 // "Use my paints" mode (off, prefer, only), it reads the Recipe's four roles from the real app: the pot,
-// its match label and whether the painter owns it. Then it presses "+ Add N to the shopping list" and
-// counts the pots and the brands that go on the list.
+// its match label and whether the painter owns it. Then it presses the Recipe's main Add button and counts
+// the pots and the brands that go on the list. (Until item 80 that button was "+ Add N to the shopping list"
+// and added the ladders and the NMM pots too; from item 80 it adds the roles' own pots only.)
 //
 // Run from the repo root, with the app served on port 8765 (about 5 minutes):
 //   python3 -m http.server 8765 --bind 127.0.0.1 -d src

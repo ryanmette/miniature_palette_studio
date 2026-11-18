@@ -367,9 +367,10 @@ function renderPlan() {
   state.scheme = currentScheme();
   const cur = { base: schemeBase(), harmony: state.harmony, colors: state.scheme.roles.map(r => r.idealHex) };
   const cmp = state.compareA ? ui.compareBar(state.compareA, cur) : '';
-  // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5).
-  const gaps = schemeGaps(state.scheme, store.ownedIds());
-  const addable = gaps.filter(g => store.markOf(g.paint.id) !== 'want').length;
+  // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5), counted by
+  // their part of the Recipe: the roles' pots are the main button, the ladder pots a second action (item 80).
+  const gaps = schemeGaps(state.scheme, store.ownedIds()).filter(g => store.markOf(g.paint.id) !== 'want');
+  const addable = { pots: gaps.filter(g => g.part === 'role').length, steps: gaps.filter(g => g.part === 'ladder').length };
   // No overview colour bar here — the role-labelled live palette (beside the wheel) is now the single
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
@@ -2757,12 +2758,19 @@ function toggleBuy(id) {
   else store.setMark(id, 'want', { for: projectOnScreen() || undefined });
   render('marks', { ids: [id] });   // the hero and the Plan can both show this paint's toggle
 }
-/** One click: flag every paint this scheme needs (that you don't own) as to-buy (#5). */
-function addGapsToBuy() {
-  const ids = [...new Set(schemeGaps(state.scheme, store.ownedIds()).map(g => g.paint.id))].filter(id => store.markOf(id) !== 'want');
+/** The Recipe's Add actions (#5; PLAN §5 item 80): one press puts ONE part of the scheme on the shopping list.
+ *  `part`: 'role' = the roles' own pots (the main button) · 'ladder' = the tone ladders' pots · 'nmm' = the
+ *  Metal role's NMM recipe (every rung, also one that is a ladder step somewhere else). Never all three in one
+ *  press: that was a median 14 pots from 7 brands, with two ways to paint one metal part (UX review F04). */
+function addGapsToBuy(part = 'role') {
+  const ids = schemeGaps(state.scheme, store.ownedIds())
+    .filter(g => (part === 'nmm' ? g.nmm : g.part === part) && store.markOf(g.paint.id) !== 'want').map(g => g.paint.id);
   const n = ids.length;
   if (n) { store.setMarks(ids, 'want', { for: projectOnScreen() || undefined }); render('marks', { ids }); }   // one write, one repaint
-  toast(n ? `Added ${n} paint${n > 1 ? 's' : ''} to the shopping list` : 'Nothing new to add');
+  toast(n ? `Added ${ui.potsSaid(n, part === 'ladder' ? 'ladder' : part === 'nmm' ? 'NMM' : '')} to the shopping list` : 'Nothing new to add');
+  // The pressed button is gone (its work is done). Put the focus on the line that took its place, so a keyboard
+  // or a screen reader stays in the Recipe, and Tab goes on to the next action.
+  if (n) $(part === 'nmm' ? '#panel-plan .nmmdone' : part === 'role' ? '#addDone' : '#laddersDone')?.focus({ preventScroll: true });
 }
 function setLadder(v) {                          // #7 — tone-ladder style (persisted)
   if (!['wash', 'tone', 'both'].includes(v)) return;
@@ -3913,7 +3921,9 @@ function wire() {
       if (lc && !e.target.closest('.lccopy')) { e.stopPropagation(); setEquivSource(lc.dataset.hex); return; }
     }
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
-    if (e.target.closest('#addGaps')) { addGapsToBuy(); return; }
+    if (e.target.closest('#addGaps')) { addGapsToBuy('role'); return; }
+    if (e.target.closest('#addLadders')) { addGapsToBuy('ladder'); return; }
+    if (e.target.closest('[data-addnmm]')) { addGapsToBuy('nmm'); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
   });
   $('#seg').addEventListener('click', e => {

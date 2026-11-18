@@ -399,6 +399,12 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 /* a wash chosen by its colour (the gap, §7): the number is plain mono text, as ΔE is (§3.5) */
 .steptag .stepgap { font-family: var(--mono); color: var(--text-muted); white-space: nowrap; }
 .nmmcap { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 12px; }
+/* The NMM recipe's own Add action (item 80): the caption and a slot of one height in both states (the action,
+   or "Owned or on the list"), so the card does not move when the pots go on the list (§3.4) */
+.nmmcap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 12px; }
+.nmmslot { display: inline-flex; align-items: center; min-height: var(--tap); text-transform: none; letter-spacing: 0; font-size: var(--fs-small); font-weight: 400; }
+.nmmslot .textact { min-width: 0; padding: 0 2px; }
+.nmmdone:focus { outline: 2px solid transparent; }   /* a landing spot for the focus, not a control (as the hero line) */
 .ladcap { font-size: 10px; font-weight: 600; letter-spacing: .03em; color: var(--text-muted); margin-top: 12px; text-transform: capitalize; }
 /* The maker's ladder (TONE_LADDERS.md, A): its caption keeps the maker's capitals; the pot's tone is marked in
    words and weight (state, §3.5: never a ring, which means focus). Five steps share the row as three do. */
@@ -411,6 +417,14 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .ladsel button { font-size: 12px; }
 .btn.incl-contrast[aria-pressed="true"] { background: var(--accent-weak); border-color: var(--accent); color: var(--accent); }
 .nogaps { color: var(--text-muted); align-self: center; }
+.nogaps:focus { outline: 2px solid transparent; }   /* a landing spot for the focus after Add, not a control */
+/* The Recipe's Add actions (item 80): a row of their own, one slot for each part (the role pots, the ladder
+   pots). A slot holds its button and its "owned or on the list" line in one cell (.fixslot), and the one not
+   shown keeps its room, so a press moves nothing (§3.4). On a phone the slots stack: the two do not fit 358px. */
+.addrow { flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.addslot { align-items: center; justify-items: start; min-height: var(--tap); }
+.addslot > .off { visibility: hidden; }
+@media (max-width: 520px) { .addrow { display: grid; grid-template-columns: minmax(0, 1fr); } }
 
 /* The chevron as a mask image, for the selects' ::picker-icon (a pseudo-element cannot hold <use>). Same path
    and stroke as the sprite's i-chev, at the 2.25 weight the 12–14px icons use. */

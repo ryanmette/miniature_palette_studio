@@ -673,3 +673,22 @@ Ryan chose the rule and the words ("15 and A", 2026-11-17). Both are built (PLAN
 In Only, the pots are the same as before. The 203 Metal roles now say "A metallic you own" in place of Loose
 (84) or Poor (119). Off is the same in every number. The colour roles of Only still say Poor for most
 schemes: that is F03, the product question, and it is open.
+
+### 11.7 Step 3, built: the Add button (F04; PLAN item 80)
+
+One button put every paint of the Recipe on the shopping list. Now each part of the Recipe has its own action
+(CLAUDE.md §3.6): the main button adds the roles' own pots that the painter does not own, **Add N ladder pots**
+is a second button beside it, and **Add the N NMM pots** is on the Metal card. The same 203 schemes in the real
+app (`measure.cjs`, 2026-11-18), one press of the main button:
+
+| The main Add button | Before (§3.1, §11.6) | After |
+|---|---:|---:|
+| Use my paints Off: the median number of pots | 14 (11 to 18) | **3** (2 to 3) |
+| Use my paints Off: the median number of brands | 7 | **3** |
+| Use my paints Prefer: the median number of pots | 10 | **1** (0 to 2) |
+| Use my paints Prefer: the median number of brands | 6 | **1** |
+
+The matches are the same in every number (the roles, their labels, the Metal role): this step changes which
+paints one press adds, and no match. A press moves nothing on the screen: measured on a phone (390 px) and on a
+desktop (1440 px), the role cards have the same position before and after each of the three actions. F14 (a
+way from that place to the list) is open, in PLAN item 85.

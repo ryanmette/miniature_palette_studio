@@ -1011,7 +1011,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       both are probably effects (`fx: gloss`). The product page is gone (404) and it is not in the maker's
       public product list, so there is no primary source to read. No change until one is found.
 
-### Raised by the UX review on 2026-11-17 — before the first showing (items 76, 78 and 79 built; the others not yet)
+### Raised by the UX review on 2026-11-17 — before the first showing (items 76, 78, 79 and 80 built; the others not yet)
 
 [`docs/UX_REVIEW.md`](UX_REVIEW.md): a review of the whole app as a new painter meets it (experienced painters, a
 link, alone, mostly on an iPhone). Two deep journeys, ten seams, measurements, and a severity from three independent
@@ -1026,7 +1026,7 @@ early step never sees a later fix:
 1. Item 78: "mark my shelf" opens the list, and a grid result has its name. **Built (2026-11-17).**
 2. Items 76 and 79 together: offer Use my paints when the Shelf gets paints, and the Metal role with a shelf. (Two
    raters said that item 76 alone moves the complaint to item 79.) **Built (2026-11-17).**
-3. Item 80, its first part: the main Add button puts only the role pots on the list.
+3. Item 80, its first part: the main Add button puts only the role pots on the list. **Built (2026-11-18).**
 4. Item 77: keep the Shelf on an iPhone, after step 0.
 5. With any of the steps: the three wording errors (F19) and a softer word than "Interchangeable" (item 82, in part).
 
@@ -1077,6 +1077,11 @@ item 85, come after the first painters answer.
     metallic ladder and the NMM ladder together. Recommend: the main button adds the role pots that the painter does
     not own; the ladders are a second choice; never NMM with the metallics. Then the Brand setting of item 64
     (`docs/TONE_LADDERS.md`).
+    **Built (2026-11-18), both parts.** The first part: `scheme.js schemeGaps` gives each paint its part (role ·
+    ladder · nmm); the Recipe's primary button is "+ Add N pots to the shopping list" (the roles' pots, four at
+    most), "Add N ladder pots" is a secondary button beside it, and "Add the N NMM pots" is a text action on the
+    Metal card. Each has a reserved slot, so a press moves nothing (CLAUDE.md §3.6). The second part, the Brand
+    setting, is built on main (1.18.0). **Open:** a way to the list from that place (F14, item 85).
 81. **Other brands for one brand, and a front door for the lookup** (F11: 3 · 3 · 3; F10: 2 · 2 · 2). "The Vallejo
     version of Mephiston Red" has an answer only when a Vallejo paint is in the 8 closest. Recommend: a brand select
     on the tab, with the best match for each brand as the default view; and one direction of

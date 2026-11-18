@@ -15,7 +15,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   An answer sets the setting, and the note under the live palette shows it. The band does not come back after
   an answer, or after you change the setting in ⋯. It never comes in while you work in the Studio, so nothing
   moves under your finger. The answer is saved on the device and is in a backup (a new saved setting,
-  `umpAsked`). `sw.js`: `CACHE` is `ps-v105`.
+  `umpAsked`).
 - **A UX review before the first showing (`docs/UX_REVIEW.md`; a study, no app code changed).** The app as a new
   painter meets it: an experienced painter with many pots, a link, alone, mostly on an iPhone. Two deep journeys
   (arrive → mark my paints → a scheme with them → a shopping list; and "what is close to this paint?"), ten seams
@@ -38,6 +38,18 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Changed
+- **The Recipe's Add button adds the scheme's own pots, not every paint** (PLAN §5 item 80; `docs/UX_REVIEW.md`
+  F04; CLAUDE.md §3.6). Step 3 of the UX review's build order. One button put every paint of the Recipe on the
+  shopping list: a median 14 pots from 7 brands for the review's test painter, with the metallic ladder and the
+  NMM recipe together, which are two ways to paint one metal part.
+  - **+ Add N pots to the shopping list** now adds the pot of each role (Primary, Secondary, Accent, Metal)
+    that you do not own: four pots at most.
+  - **Add N ladder pots**, beside it, adds the washes, shadows and highlights of the tone ladders that show.
+  - **Add the N NMM pots**, on the Metal card, adds the NMM recipe. No button adds it with the metallics.
+  - A press moves nothing on the screen: each action has a reserved place, and a line ("The role pots are owned
+    or on the list") takes the button's place. The focus goes to that line.
+  - `schemeGaps` gives each paint its part (`role`, `ladder`, `nmm`). The matches do not change. `sw.js`:
+    `CACHE` is `ps-v106`.
 - **The Metal part of a scheme uses a metallic that you own** (PLAN §5 item 79; `docs/UX_REVIEW.md` F02 and
   §11; a matching change: CLAUDE.md §3.2 and §7). Step 2 of the UX review's build order, with the rule and
   the words that Ryan chose ("15 and A", 2026-11-17).

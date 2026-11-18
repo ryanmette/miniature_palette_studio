@@ -327,19 +327,37 @@ export function matchChip(m, markOf) {
     + ownTag + buyBtn(p.id, mark) + `</div>`;
 }
 
-/** Plan-tab controls (#5/#7): tone-ladder style · Include Contrast · "add gaps to buy". Use my paints
+/** "3 pots", "1 pot": a count of pots in words (the Recipe's Add actions and their toasts, item 80). */
+export const potsSaid = (n, kind = '') => `${n} ${kind ? kind + ' ' : ''}pot${n === 1 ? '' : 's'}`;
+
+/** Plan-tab controls (#5/#7): tone-ladder style · Include Contrast · the Add actions. Use my paints
  *  (off · prefer · only) is in ⋯ now: it changes more than the Plan (the live palette too), and the
- *  matching note under the live palette shows it while it is on (matchNote). */
-export function planControls(ladder, includeContrast, gapCount) {
+ *  matching note under the live palette shows it while it is on (matchNote).
+ *
+ *  The Add actions (PLAN §5 item 80; UX review F04): the MAIN button adds only the roles' own pots, four at
+ *  most, because that is the scheme. `gaps.pots` is how many of them are not owned and not on the list. The
+ *  ladder pots (washes, shadows, highlights: `gaps.steps`) are a second, smaller action beside it. The NMM
+ *  pots are in neither count: NMM is another way to paint the Metal part, and its action is on the Metal card
+ *  (roleSlots). One button used to add all three: a median 14 pots from 7 brands. */
+export function planControls(ladder, includeContrast, { pots = 0, steps = 0 } = {}) {
   const lad = [['wash', 'Wash · base · highlight'], ['tone', 'Shadow · mid · highlight'], ['both', 'Both']]
     .map(([v, l]) => `<button data-ladder="${v}" aria-pressed="${v === ladder}">${esc(l)}</button>`).join('');
+  // One slot for each part, and each slot holds BOTH its states in one grid cell (.fixslot): the button, and
+  // the line that takes its place when the part is owned or on the list. The state that is not shown is `.off`
+  // (visibility: hidden: no screen reader, no keyboard, but it keeps its room). So a press moves nothing (§3.4).
+  // The line is also where the focus goes after a press (tabindex -1: a landing spot, not a control).
+  const slot = (n, btn, doneId, done) => `<span class="fixslot addslot">`
+    + `<span class="addact${n > 0 ? '' : ' off'}">${btn}</span>`
+    + `<span class="micro nogaps${n > 0 ? ' off' : ''}" id="${doneId}" tabindex="-1">${done}</span></span>`;
   return `<div class="planctl">`
     + `<div class="ctlgrp"><span class="micro">Tone ladder</span><div class="seg ladsel" role="group" aria-label="Tone ladder">${lad}</div></div>`
     + `<button class="btn sm incl-contrast" id="inclContrast" aria-pressed="${!!includeContrast}" title="Washes, shades and effects are kept out of suggestions; tick to include Contrast paints (used as one-coat base colours)">Include Contrast</button>`
-    + (gapCount > 0
-      ? `<button class="btn sm primary" id="addGaps">+ Add ${gapCount} to the shopping list</button>`
-      : `<span class="micro nogaps">Everything for this scheme is owned or on the list</span>`)
-    + `</div>`;
+    + `<div class="addrow">`
+    + slot(pots, `<button class="btn sm primary" id="addGaps" title="The pots of the roles (Primary, Secondary, Accent, Metal) that you do not own">+ Add ${potsSaid(pots)} to the shopping list</button>`,
+      'addDone', 'The role pots are owned or on the list')
+    + slot(steps, `<button class="btn sm" id="addLadders" title="The washes, shadows and highlights of the tone ladders shown, to the shopping list. The NMM pots are not in this count: add them on the Metal card.">Add ${potsSaid(steps, 'ladder')}</button>`,
+      'laddersDone', 'The ladder pots are owned or on the list')
+    + `</div></div>`;
 }
 
 /**
@@ -490,6 +508,15 @@ export function roleSlots(scheme, markOf, holdable = new Set(), tr = null) {
       + (s.dilute ? `<div class="steptag dilute" title="No bottled wash lands close enough — thin (water down) this base paint into the recesses instead">watered down</div>` : '')
       + `</div>`;
   };
+  // NMM is another way to paint the Metal part, so the Recipe's main Add button never adds its pots with the
+  // metallics (item 80). Its own action is here, in a slot of one height in both states (§3.4).
+  const nmmAdd = r => {
+    if (!markOf) return '';
+    const n = new Set(r.nmm.filter(s => s.match && markOf(s.match.paint.id) === 'none').map(s => s.match.paint.id)).size;
+    return `<span class="nmmslot">${n
+      ? `<button type="button" class="textact" data-addnmm>Add ${n === 1 ? 'the NMM pot' : `the ${n} NMM pots`}</button>`
+      : `<span class="nmmdone" tabindex="-1">Owned or on the list</span>`}</span>`;
+  };
   // When a limited collection forces two roles onto the same paint, say so + how to separate / what to buy.
   const sharedNote = r => r.shared
     ? `<div class="sharednote"><span class="warnpill">shared paint</span> reused for another role — ${esc(r.differentiate)} to separate`
@@ -510,7 +537,7 @@ export function roleSlots(scheme, markOf, holdable = new Set(), tr = null) {
       + `<div class="ladder">${lad.steps.map(step).join('')}</div>`).join('')
     // Metal's second voice: the true metallic above is what most painters expect, but NMM (non-
     // metallic metal) paints the metal ILLUSION with flat paints — offer both, honestly labelled.
-    + (r.nmm ? `<div class="ladcap nmmcap" title="Non-metallic metal: paint the metal illusion with flat paints — deep shadow, mid tone, near-white ping">NMM · non-metallic metal (flats)</div>`
+    + (r.nmm ? `<div class="ladcap nmmcap" title="Non-metallic metal: paint the metal illusion with flat paints — deep shadow, mid tone, near-white ping"><span>NMM · non-metallic metal (flats)</span>${nmmAdd(r)}</div>`
       + `<div class="ladder">${r.nmm.map(step).join('')}</div>` : '')
     + makerLadder(r.family)
     + `</div>`).join('')}</div>`;

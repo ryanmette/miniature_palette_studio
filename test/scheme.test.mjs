@@ -121,6 +121,26 @@ test('NMM rungs reach schemeGaps and the export — they are shown as a real rec
   assert.equal(ids.length, new Set(ids).size);             // dedupe still holds across ladders + NMM
 });
 
+test('schemeGaps: each gap names its part of the Recipe, the role pots first (item 80)', () => {
+  const s = buildScheme(fx, '#9A1115', 'complementary');
+  const gaps = schemeGaps(s);
+  const pots = new Set(s.roles.map(r => r.match && r.match.paint.id).filter(Boolean));
+  // a role's own pot is 'role', also when a ladder's middle step is the same paint
+  const roleGaps = gaps.filter(g => g.part === 'role');
+  assert.deepEqual(new Set(roleGaps.map(g => g.paint.id)), pots);
+  assert.ok(roleGaps.length <= 4);
+  // the roles' pots come first, so the main button's count is the front of the list
+  assert.deepEqual(gaps.slice(0, roleGaps.length), roleGaps);
+  // every NMM rung has the nmm flag, whatever part it counts in; a paint counts in one part only
+  const metal = s.roles.find(r => r.role === 'Metal');
+  for (const n of metal.nmm) assert.equal(gaps.find(g => g.paint.id === n.match.paint.id).nmm, true);
+  assert.ok(gaps.every(g => ['role', 'ladder', 'nmm'].includes(g.part)));
+  assert.equal(gaps.length, new Set(gaps.map(g => g.paint.id)).size);
+  // 'nmm' as a part: only a rung that is no role pot and no ladder step
+  const ladderIds = new Set(s.roles.flatMap(r => r.ladders.flatMap(l => l.steps.map(st => st.match && st.match.paint.id))));
+  for (const g of gaps.filter(x => x.part === 'nmm')) assert.ok(!pots.has(g.paint.id) && !ladderIds.has(g.paint.id));
+});
+
 test('shoppingList labels NMM-only rungs as the alternative technique', () => {
   // Straight from a scheme shape: in the small fixture above every NMM paint also serves a ladder
   // step, and dedupe (correctly) keeps the first label — so the labelling needs its own case.

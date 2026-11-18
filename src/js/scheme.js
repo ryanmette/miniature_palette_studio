@@ -297,24 +297,30 @@ function metalLadders(idx, hex, opts, styles) {
 }
 
 /**
- * Scheme "gaps" (#5): the distinct real paints this scheme relies on that the user does NOT own —
- * i.e. the candidates to add to a to-buy list. Walks every role match + ladder step, deduped by id.
- * @returns {Array<{role:string, paint:object, deltaE:number}>}
+ * The paints a scheme needs that the painter does not own, each one time (#5).
+ *
+ * Each gap says which PART of the Recipe it is from (PLAN §5 item 80; UX review F04), because the parts are
+ * different buys: `part: 'role'` is a role's own pot (four at most: the scheme itself); `'ladder'` is a step of
+ * a tone ladder (a wash, a shadow, a highlight); `'nmm'` is a rung of the Metal role's NMM recipe only. One
+ * button used to add all three: a median 14 pots from 7 brands, with the metallic ladder AND the NMM recipe,
+ * which are two ways to paint one part. A paint in two parts counts in the first of role, ladder, nmm.
+ * `nmm: true` marks every NMM rung, also one that is a role pot or a ladder step, so "add the NMM pots" can
+ * add the whole recipe. The roles' pots come first in the list, then the ladders, then NMM.
  */
 export function schemeGaps(scheme, ownedSet = new Set()) {
-  const seen = new Set(), gaps = [];
-  for (const r of scheme.roles) {
-    // The NMM rungs are rendered on the Metal card as a real recipe, so they're real gaps too —
-    // omitting them sent a painter following that recipe to the shop missing exactly its paints.
-    const nmm = (r.nmm || []).map(s => s.match);
-    const matches = [r.match, ...r.ladders.flatMap(l => l.steps.map(s => s.match)), ...nmm];
-    for (const m of matches) {
-      if (!m || ownedSet.has(m.paint.id) || seen.has(m.paint.id)) continue;
-      seen.add(m.paint.id);
-      gaps.push({ role: r.role, paint: m.paint, deltaE: Math.round(m.deltaE * 10) / 10 });
-    }
-  }
-  return gaps;
+  const byId = new Map();
+  const take = (r, m, part) => {
+    if (!m || ownedSet.has(m.paint.id)) return;
+    const had = byId.get(m.paint.id);
+    if (had) { if (part === 'nmm') had.nmm = true; return; }
+    byId.set(m.paint.id, { role: r.role, paint: m.paint, deltaE: Math.round(m.deltaE * 10) / 10, part, nmm: part === 'nmm' });
+  };
+  for (const r of scheme.roles) take(r, r.match, 'role');
+  for (const r of scheme.roles) for (const l of r.ladders) for (const s of l.steps) take(r, s.match, 'ladder');
+  // The NMM rungs are rendered on the Metal card as a real recipe, so they're real gaps too —
+  // omitting them sent a painter following that recipe to the shop missing exactly its paints.
+  for (const r of scheme.roles) for (const s of (r.nmm || [])) take(r, s.match, 'nmm');
+  return [...byId.values()];
 }
 
 /**

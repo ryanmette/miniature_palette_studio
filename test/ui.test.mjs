@@ -287,10 +287,47 @@ test('matchNote: the Contrast line wears the Contrast finish icon, not the check
 });
 
 test('planControls: Use my paints is no longer in the Plan tab (it is in ⋯)', () => {
-  const html = planControls('wash', false, 3);
+  const html = planControls('wash', false, { pots: 3 });
   assert.doesNotMatch(html, /data-collection|Use my collection/);
   assert.match(html, /data-ladder="wash" aria-pressed="true"/);
   assert.match(html, /id="inclContrast" aria-pressed="false"/);
+});
+
+test('roleSlots: the NMM recipe has its own Add action, in a slot that keeps its place (item 80)', () => {
+  const pot = (id, hex) => ({ paint: { id, name: id, brand: 'A', line: '—', hex, type: 'layer' }, deltaE: 1, quality: { label: 'Excellent', tier: 'success' } });
+  const rung = (key, id, hex) => ({ key, idealHex: hex, match: pot(id, hex) });
+  const scheme = { roles: [{ role: 'Metal', weight: 'spot', idealHex: '#B5B5BD', match: null, shared: false, ladders: [],
+    nmm: [rung('shadow', 'n1', '#404048'), rung('mid', 'n2', '#B5B5BD'), rung('highlight', 'n3', '#F4F4F8')] }] };
+  const open = roleSlots(scheme, () => 'none');
+  assert.match(open, /class="nmmslot"><button type="button" class="textact" data-addnmm>Add the 3 NMM pots</);
+  // an owned rung and one on the list are not counted
+  assert.match(roleSlots(scheme, id => ({ n1: 'owned', n2: 'want' }[id] || 'none')), /data-addnmm>Add the NMM pot</);
+  // every rung owned or on the list: the slot stays, with words in place of the action
+  const done = roleSlots(scheme, () => 'want');
+  assert.match(done, /class="nmmslot"><span class="nmmdone" tabindex="-1">Owned or on the list</);
+  assert.doesNotMatch(done, /data-addnmm/);
+});
+
+test('planControls: the main Add button counts the role pots only; the ladder pots are a second action (item 80)', () => {
+  // each slot holds its button and its line in one cell; the state that is not shown is `.off` (it keeps its room)
+  const both = planControls('wash', false, { pots: 3, steps: 7 });
+  assert.match(both, /<span class="addact"><button class="btn sm primary" id="addGaps"[^>]*>\+ Add 3 pots to the shopping list</);
+  assert.match(both, /<span class="addact"><button class="btn sm" id="addLadders"[^>]*>Add 7 ladder pots</);
+  assert.match(both, /class="micro nogaps off" id="addDone" tabindex="-1">/);
+  assert.match(both, /class="micro nogaps off" id="laddersDone" tabindex="-1">/);
+  // one pot: the singular
+  assert.match(planControls('wash', false, { pots: 1, steps: 1 }), />\+ Add 1 pot to the shopping list<[\s\S]*>Add 1 ladder pot</);
+  // the role pots are done: their line takes the button's place (a landing spot for the focus), the ladders stay
+  const laddersLeft = planControls('wash', false, { pots: 0, steps: 7 });
+  assert.match(laddersLeft, /<span class="addact off"><button class="btn sm primary" id="addGaps"/);
+  assert.match(laddersLeft, /class="micro nogaps" id="addDone" tabindex="-1">The role pots are owned or on the list</);
+  assert.match(laddersLeft, /<span class="addact"><button class="btn sm" id="addLadders"/);
+  // nothing left: two lines, and no line says "everything" (the NMM pots have their own action)
+  const none = planControls('wash', false, {});
+  assert.match(none, /class="micro nogaps" id="addDone" tabindex="-1">The role pots are owned or on the list</);
+  assert.match(none, /class="micro nogaps" id="laddersDone" tabindex="-1">The ladder pots are owned or on the list</);
+  assert.match(none, /<span class="addact off"><button class="btn sm" id="addLadders"/);
+  assert.doesNotMatch(none, /[Ee]verything/);
 });
 
 test('matchNote: the "·" ends the bold head (no-break space), so a wrapped explanation never starts with it', () => {
