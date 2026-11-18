@@ -470,6 +470,15 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
   padding: 2px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
 .eqjump:hover { border-color: var(--accent); color: var(--accent); }
 .eqjump:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus); }
+/* the hero's way to Other brands (item 81; UX review F10): the same small button, with the swap icon. It shows
+   where the output is under the studio (one column, 1024px or less): there the tabs are a long scroll away. In
+   two columns the Other brands tab is on the screen beside the hero, and the button made the hero a row taller. */
+.herojump { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.herorow2 { display: contents; }
+@media (min-width: 1025px) { .herojump { display: none; } }
+/* Other brands → In (item 81): one brand, or the best match of each brand. The label is the micro-caps one. */
+.eqin { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.eqin select { width: auto; min-width: 0; max-width: 100%; }
 
 /* generic chips/rows reused by equivalents + a11y */
 .eq { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); column-gap: 24px; margin-top: 14px; }
@@ -931,6 +940,7 @@ main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
 .frpick .sw { width: 24px; height: 24px; }
 .frsteps { margin: 0; padding-left: 24px; color: var(--text-muted); display: grid; gap: 4px; }
 .firstrun .textact { justify-self: start; }
+.fracts { display: flex; flex-wrap: wrap; column-gap: 24px; }
 /* The offer of Use my paints (PLAN §5 item 76): the first-run band's look. One row of choices that wraps; the
    main button is first, and "Not now" is words only. */
 .umpchoices { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
@@ -1295,6 +1305,12 @@ a.btn { text-decoration: none; }
   /* one 16px gutter (§3.4 scale): main's 14px and the regions' own 14px had stacked into 28px */
   main { padding: 16px; }
   .hero .herochip { width: 26px; height: 26px; }
+  .herojump { padding: 4px 8px; }
+  /* row 2 of the hero: the paint's line takes the room that is left (its words wrap inside it), so Other brands
+     and the mark never go to a third row */
+  .herorow2 { display: flex; flex: 1 1 100%; align-items: center; gap: 10px; min-width: 0; min-height: 28px; }
+  .herorow2 .herometa { flex: 1 1 0; }
+  .eqin select { flex: 1; }
   .seg { width: 100%; }
   /* long labels ("Wash · base · highlight") may wrap on phones: pills grow instead of overflowing */
   .seg button { flex: 1; text-align: center; height: auto; padding: 5px 8px; line-height: 1.25; }

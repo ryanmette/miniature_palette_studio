@@ -195,6 +195,7 @@ const LOCALES = {
     useSeedManySaid: 'Start a scheme from this needs one paint. {n} paints are selected.',
     useSeedNoneSaid: 'Start a scheme from this needs one paint. No paint is selected.',
     nSelected: '{n} paints selected',
+    lookupHow: 'Type the paint’s name. Its matches in other brands show next.',
     newSeed: 'Starting paint: {name}',
     seedSame: 'Starting paint: {name}',
     menuNoPaint: 'No paint is selected. Use the arrow keys to go to a paint.',

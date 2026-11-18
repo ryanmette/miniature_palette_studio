@@ -249,9 +249,17 @@ export function hero(base, animate = true, markOf, seedRole = '', neutral = fals
     + swatch(base.hex, 'herochip' + (animate ? ' pop' : '') + fxCls(base)) + `</button>`
     + `<h2 class="heroname">${esc(base.custom ? 'Custom colour' : base.name)}</h2>`
     + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button>`
-    + seed + ntag
+    + seed
+    // The hero's second part (item 81): on a phone it is a row of its own, always (the tag, the paint's line,
+    // Other brands, the mark), so the hero is two rows for every pick and the wheel does not move between picks
+    // (§3.4; it was one, two or three rows). Above 520px the wrapper has no box (display: contents).
+    + `<span class="herorow2">` + ntag
     + `<span class="herometa">${meta}</span>`
-    + own;
+    // the lookup's front door (UX review F10): "what is close to this paint?" was 3 taps and a long scroll away,
+    // and nothing said that it was there. It shows in one column only (1024px or less; app.css): in two columns
+    // the Other brands tab is on the screen beside the hero.
+    + `<button type="button" class="eqjump herojump" data-heroequiv title="Show this ${base.custom ? 'colour' : 'paint'} in other brands" aria-label="Other brands for ${esc(base.custom ? 'this colour' : base.name)}">${icon('swap')}<span class="hjw">Other brands</span></button>`
+    + own + `</span>`;
 }
 
 /** Suggestive glyph angles for the neutral harmonies (they have no HARMONY_OFFSETS — the pop/tints
@@ -606,10 +614,21 @@ export function equivGroup(label, members, markOf) {
     }).join('')}</div></div>`;
 }
 
-/** Cross-brand equivalents list (M6). `equivs`: [{paint, deltaE, quality}]. markOf adds owned/buy. */
-export function equivalentsPanel(name, equivs, markOf) {
-  if (!equivs.length) return '<div class="placeholder">No other-brand matches in the dataset for this paint.</div>';
-  return `<p class="hint" style="margin:14px 0 0">Closest matches to <strong>${esc(name)}</strong> in other ranges (ΔE 2000).</p>`
+/** The Other brands list (M6). `equivs`: [{paint, deltaE, quality}], ranked. markOf adds owned/buy.
+ *  `view` (PLAN §5 item 81; UX review F11): `brands` is every brand of the paint data, and `brand` the one the
+ *  painter chose in the **In** select ('' = each brand's best match, the default). "The Vallejo version of
+ *  Mephiston Red" had an answer only when a Vallejo paint was among the 8 closest of all brands. `own`: the
+ *  source is a paint of this brand, so "each brand" is each OTHER brand. The select's first option is the
+ *  default view; the brands follow, A to Z, with the name painters still say (brandOptions). */
+export function equivalentsPanel(name, equivs, markOf, { brands = null, brand = '', own = '' } = {}) {
+  const pick = brands
+    ? `<div class="eqin"><label class="micro" for="eqBrand">In</label>`
+      + `<select id="eqBrand"><option value=""${brand ? '' : ' selected'}>Each brand: its best match</option>`
+      + brands.map(b => `<option value="${esc(b)}"${b === brand ? ' selected' : ''}>${esc(brandLabel(b))}</option>`).join('') + `</select></div>`
+    : '';
+  const where = brand ? `in <strong>${esc(brandLabel(brand))}</strong>` : own ? 'in each other brand' : 'in each brand';
+  if (!equivs.length) return pick + `<div class="placeholder">No paint ${brand ? `of ${esc(brandLabel(brand))}` : 'of another brand'} is in the paint data for this.</div>`;
+  return pick + `<p class="hint" style="margin:10px 0 0">${brand ? 'The closest matches' : 'The closest match'} to <strong>${esc(name)}</strong> ${where} (ΔE 2000).</p>`
     + `<div class="eq">${equivs.map(e => {
       const p = e.paint, q = e.quality;
       const mark = markOf ? markOf(p.id) : 'none';

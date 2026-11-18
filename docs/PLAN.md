@@ -1122,9 +1122,12 @@ item 85, come after the first painters answer.
     Metal card. Each has a reserved slot, so a press moves nothing (CLAUDE.md §3.6). The second part, the Brand
     setting, is built on main (1.18.0). **Open:** a way to the list from that place (F14, item 85).
 81. **Other brands for one brand, and a front door for the lookup** (F11: 3 · 3 · 3; F10: 2 · 2 · 2). "The Vallejo
-    version of Mephiston Red" has an answer only when a Vallejo paint is in the 8 closest. Recommend: a brand select
-    on the tab, with the best match for each brand as the default view; and one direction of
-    `mockups/buying-assistant.html` for the front door.
+    version of Mephiston Red" had an answer only when a Vallejo paint was in the 8 closest. **Built 2026-11-18**
+    (`docs/UX_REVIEW.md` §11.11): the tab's **In** select, with the best match of each brand as the default view
+    and a brand's 8 closest paints as the other; an **Other brands** button in the hero line (one column only);
+    **Find a paint's match in another brand** in the first-run band. The front door is the review's minimum, not a
+    new screen: direction B of `mockups/buying-assistant.html` (the paint detail sheet) is built already, and
+    direction C (a substitute finder with own, buy and brand limits) waits for the painters' answers.
 82. **Trust in the matches** (F12; 3 · 3 · 3). A painter tests the app with a paint they know. Do the first batch of
     item 49 (`docs/COLOUR_CHECK.md`: Citadel Base, then Layer) before the showing; use a softer word than
     "Interchangeable — same colour" for a group made from hex values; Ryan to read the 15 pairs of

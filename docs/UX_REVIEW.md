@@ -763,3 +763,39 @@ for a low contrast ratio. That is not true for two hues of one lightness (a red 
 WCAG ratio measures only light against dark. The tab says "Weak: close in light and dark".
 
 Checked in Chromium at phone and desktop sizes; not on an iPhone. Open: items 81 to 84.
+
+### 11.11 Other brands for one brand, and the lookup's door (F11, F10; PLAN item 81)
+
+**F11.** The Other brands list was the 8 closest paints of all brands together. A painter who asks for "the
+Vallejo version of Mephiston Red" asks about one brand. Measured on the 2,626 base and layer paints that are
+still made (`equivalents`, dataset 1.15.0):
+
+| | Before | Now |
+|---|---:|---:|
+| Brands in the list of one paint (mean) | 4.8 of 9 | 9 of 9 |
+| A given other brand has a row | 54% | 100% |
+
+The tab now has a select, **In**. Its default view is the best match of each brand. A brand, when chosen,
+shows its 8 closest paints. The rows keep the true ΔE and its label (§2 of the constitution). A row for each
+brand also shows the weak matches that the old list hid: of the 23,634 rows of the default view, 32% are Good
+or better, 25% Fair, 38% Loose and 5% Poor. That is the honest answer to the question: for some paints a brand
+has no close paint, and the row says so.
+
+**F10.** The review's minimum was built, not a new screen:
+
+- The hero line has an **Other brands** button where the output is under the studio (1,024px or less). It
+  opens the tab for the starting paint and puts its top under the header. One tap replaces a scroll of about
+  1,000px and a tap.
+- The first-run band has **Find a paint's match in another brand**. It puts the cursor in the paint field,
+  and the next paint picked opens Other brands.
+
+The button needs room in the hero line. On a phone the hero is now two rows for every pick (64px to 74px; 92px
+for a neutral paint at 360px). Before, it was one, two or three rows (26px to 100px), so the wheel moved when
+the pick changed. In two columns the tab is on the screen beside the hero, and the button would make the hero a
+row taller for some paints, so it does not show there.
+
+Not built: direction C of `mockups/buying-assistant.html` (a substitute finder with own, buy and brand
+limits). It waits for the painters' answers (§8).
+
+Checked in Chromium at 360px, 390px, 820px, 1,180px and 1,440px, light and dark; not on an iPhone. Open:
+items 82 to 84.

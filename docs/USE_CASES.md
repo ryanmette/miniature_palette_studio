@@ -160,7 +160,7 @@ Each: *who · trigger · flow · output · features*. IDs are stable.
 - **UC-13 — Save / share a find.** *Trigger:* "Don't lose this." *Flow:* state→URL; copy/share. *Feat:* URL encoding. **Share as an image** (✅ built): a link preview cannot show a scheme (the preview bots run no JavaScript, and there is no server), so ⋯ → **Share image…** (touch) or **Copy image** / **Save the image** (mouse) makes a square PNG of the four roles on the device and shares it with the link (`shareimage.js`; `mockups/share-image.html`, direction A).
 
 ### Range Switcher (P3)
-- **UC-14 — Cross-brand equivalents.** *Trigger:* "Vallejo version of Mephiston Red?" *Flow:* show the paint's equivalence group across brands w/ ΔE. *Feat:* equivalents.
+- **UC-14 — Cross-brand equivalents.** *Trigger:* "Vallejo version of Mephiston Red?" *Flow:* show the paint's equivalence group across brands w/ ΔE. *Feat:* equivalents. *As built (PLAN §5 item 81):* the Other brands tab shows the best match of each brand, or one brand's 8 closest paints (the **In** select), each with its true ΔE and label. The ways in: the hero line's **Other brands** button (one column), and the first-run band's **Find a paint's match in another brand**.
 - **UC-15 — Replace a discontinued paint.** *Trigger:* "This is gone — what's closest now?" *Flow:* nearest current paint by ΔE. *Feat:* ΔE match, discontinued flag.
 - **UC-16 — Match an arbitrary colour.** *Trigger:* a hex from anywhere. *Flow:* nearest N paints to that hex. *Feat:* entry mode E.
 

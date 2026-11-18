@@ -246,7 +246,7 @@ export function nearestPaints(indexed, hex, n = 5, opts = {}) {
  *  metal on the model — so for a metal source, metals rank strictly first. Any other paint of a different
  *  finish class (a wash, a contrast or a texture paint for a flat source) ranks FINISH_PENALTY further.
  *  Reported ΔE stays true either way (§2). */
-export function equivalents(indexed, paint, { n = 6 } = {}) {
+export function equivalents(indexed, paint, { n = 6, brand = '', perBrand = false } = {}) {
   const lab = paint.lab || hexToLab(paint.hex);
   const isMetal = paint.type === 'metal';
   // Rank every paint of another brand, with no prefilter (candidatePool). The prefilter keeps the paints
@@ -258,11 +258,31 @@ export function equivalents(indexed, paint, { n = 6 } = {}) {
   // call per source-chip click (budget 16 ms, §6).
   const tier = isMetal ? (p => p.type === 'metal' ? 0 : 1) : () => 0;
   const cls = finishClass(paint.type);
-  return indexed.paints.filter(p => p.brand !== paint.brand)
+  // `brand` (PLAN §5 item 81): only that brand's paints. It can be the paint's own brand ("the closest other
+  // Warhammer Colour paints"): then only the paint itself is left out. With no brand, the other brands, as before.
+  const pool = brand ? indexed.paints.filter(p => p.brand === brand && p.id !== paint.id) : indexed.paints.filter(p => p.brand !== paint.brand);
+  const ranked = pool
     .map(p => { const deltaE = deltaE2000(lab, p.lab); return { paint: p, deltaE, score: deltaE + (finishClass(p.type) === cls ? 0 : FINISH_PENALTY) }; })
-    .sort((a, b) => tier(a.paint) - tier(b.paint) || a.score - b.score)
+    .sort((a, b) => tier(a.paint) - tier(b.paint) || a.score - b.score);
+  // `perBrand`: the best match of each brand, by the same ranking (the list is ranked, so the first of a brand
+  // is its best)
+  return (perBrand ? bestPerBrand(ranked) : ranked)
     .slice(0, n)
     .map(({ paint, deltaE }) => ({ paint, deltaE, quality: matchQuality(deltaE) }));
+}
+
+/** Of a list of matches that is ranked best first, the first match of each brand: "the best match in each
+ *  brand" (PLAN §5 item 81; UX review F11). The order of the list stays, so the result is ranked too. */
+export function bestPerBrand(list) {
+  const seen = new Set();
+  return list.filter(m => (seen.has(m.paint.brand) ? false : (seen.add(m.paint.brand), true)));
+}
+/** The brands of the paint data, A to Z (worked out once for an index). */
+const brandLists = new WeakMap();
+export function brandsOf(indexed) {
+  let b = brandLists.get(indexed);
+  if (!b) { b = [...new Set(indexed.paints.map(p => p.brand))].sort(); brandLists.set(indexed, b); }
+  return b;
 }
 
 /** A paint's kind inside its finish class, for a store swap: the kinds are different products, and one is not
@@ -404,15 +424,33 @@ export function washByGap(indexed, hex, opts = {}) {
 /** The paints closest to a typed colour, best first. They rank as the Equivalents tab ranks a flat colour:
  *  a paint of another finish class (a wash, a contrast, an effect, a metallic) ranks FINISH_PENALTY ΔE
  *  further, so it shows only when it is clearly closer. Each match reports its TRUE ΔE (§2, §7). The seed
- *  field lists these under "Seed: #…"; the Equivalents tab uses them for a role colour or a custom hex. */
-export function closestPaints(indexed, hex, n = 6, { quick = false } = {}) {
+ *  field lists these under "Seed: #…"; the Equivalents tab uses them for a role colour or a custom hex, for one
+ *  brand (`brand`) or as the best match of each brand (`perBrand`). */
+export function closestPaints(indexed, hex, n = 6, { quick = false, brand = '', perBrand = false, metal = false } = {}) {
   // Every paint is a candidate (keep). The cheap Euclidean prefilter ranks by Lab distance alone, but the
   // finish penalty moves washes and metallics down, so a flat paint ranked 79th by Lab distance (Raf Azure
   // Blue for #8899F4, ΔE 6.4) was cut before the ranking and two Poor matches took its place. A full pool
   // costs about 2 ms (about 12 ms on a slow phone): right for a keystroke or a tab render, too much for
   // every frame of a drag. `quick` takes the old pool of 192 for a drag frame; the caller then shows the
   // exact list once the drag stops.
-  return nearestPaints(indexed, hex, n, { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, keep: quick ? 192 : indexed.paints.length, withGone: true });
+  // `metal`: the colour is a metal part (the Metal role's target). True metallics rank strictly first, and the
+  // other finishes rank FINISH_PENALTY further (§7).
+  const rank = metal
+    ? { floatTypes: new Set(['metal']), demoteTypes: new Set(FINISH_TYPES), demoteAmount: FINISH_PENALTY, withGone: true }
+    : { demoteTypes: new Set([...FINISH_TYPES, 'metal']), demoteAmount: FINISH_PENALTY, withGone: true };
+  // `perBrand` (PLAN §5 item 81): the best match of each brand, best first. One search for each brand, so each
+  // brand has its row also on a drag frame (a pool of the 192 nearest paints can hold no paint of a brand, and
+  // its row would come and go while the wheel moves). Each search takes every paint of its brand, also when
+  // `quick` is set: all ten cost about 3 ms, and a pool of each brand's 24 nearest gave a different row in 9 of
+  // 200 colours, so a row would change when the drag stopped.
+  if (perBrand) {
+    const score = m => (rank.floatTypes && !rank.floatTypes.has(m.paint.type) ? 1e6 : 0) + m.deltaE + (rank.demoteTypes.has(m.paint.type) ? FINISH_PENALTY : 0);
+    return brandsOf(indexed)
+      .map(b => nearestPaints(indexed, hex, 1, { ...rank, brands: new Set([b]), keep: indexed.paints.length })[0])
+      .filter(Boolean).sort((a, b) => score(a) - score(b)).slice(0, n);
+  }
+  // `brand`: only that brand's paints
+  return nearestPaints(indexed, hex, n, { ...rank, ...(brand ? { brands: new Set([brand]) } : {}), keep: quick ? 192 : indexed.paints.length });
 }
 
 /* ---- the random first scheme (PLAN §5 item 55) ----

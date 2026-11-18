@@ -874,7 +874,7 @@ test('the paint detail sheet (item 7): the paint, its mark, the three lists with
   assert.match(slots, /class="step" tabindex="0" role="button" data-psid="cit-red" aria-label="base: Mephiston Red, Citadel"/);
 });
 
-import { makerLadder } from '../src/js/ui.js';
+import { makerLadder, equivalentsPanel } from '../src/js/ui.js';
 test("makerLadder: every tone in order, the pot marked in words, no ΔE (the maker's steps are not matches)", () => {
   const t = (n, hex) => ({ id: `b${n}`, brand: 'Warhammer Colour', line: 'Tone Pro', name: `Ultramar Blue ${n}`, hex, type: 'layer', tone: n });
   const fam = { id: 'citadel-tone-pro-ultramar-blue', name: 'Ultramar Blue', brand: 'Warhammer Colour', line: 'Tone Pro',
@@ -901,4 +901,38 @@ test("main's column may shrink below its content: minmax(0, 1fr), never a bare 1
   for (const r of mainRules) assert.match(r, /grid-template-columns:\s*minmax\(0,\s*1fr\)/, r);
   assert.match(css, /^\.shelf \{[^}]*min-width: 0/m, '.shelf may shrink');
   assert.match(css, /\.rkchips \{[^}]*overflow-x: auto[^}]*min-width: 0/, 'the store row scrolls inside the page');
+});
+
+test('Other brands: the In select and its two views (item 81)', () => {
+  const eq = [{ paint: { id: 'v1', name: 'Carmine Red', brand: 'Vallejo', line: 'Model Color', hex: '#A01020', type: 'base' }, deltaE: 4.2, quality: { label: 'Fair', tier: 'warning' } }];
+  const brands = ['Vallejo', 'Warhammer Colour'];
+  // no view: the list as before, with no select (the pot dialog and older callers)
+  assert.doesNotMatch(equivalentsPanel('X', eq, () => 'none'), /eqBrand/);
+  // each brand: the select's first option is chosen, and the words say "each other brand" for a paint
+  const each = equivalentsPanel('Mephiston Red (Warhammer Colour)', eq, () => 'none', { brands, brand: '', own: 'Warhammer Colour' });
+  assert.match(each, /<label class="micro" for="eqBrand">In<\/label>/);
+  assert.match(each, /<option value="" selected>Each brand: its best match<\/option>/);
+  assert.match(each, /<option value="Warhammer Colour">Warhammer Colour \(Citadel\)<\/option>/);
+  assert.match(each, /The closest match to <strong>Mephiston Red \(Warhammer Colour\)<\/strong> in each other brand \(ΔE 2000\)/);
+  // a colour has no brand of its own
+  assert.match(equivalentsPanel('Accent · #09960C', eq, () => 'none', { brands, brand: '' }), /in each brand \(ΔE 2000\)/);
+  // one brand: its option is chosen and the words name it; the true ΔE and its label stay on the row (§2)
+  const one = equivalentsPanel('Mephiston Red (Warhammer Colour)', eq, () => 'none', { brands, brand: 'Vallejo', own: 'Warhammer Colour' });
+  assert.match(one, /<option value="Vallejo" selected>Vallejo<\/option>/);
+  assert.match(one, /The closest matches to <strong>.*<\/strong> in <strong>Vallejo<\/strong>/);
+  assert.match(one, /ΔE 4\.2/);
+  assert.match(one, /Fair/);
+  // a brand with no paint for this: the select stays, so the painter can choose another brand
+  const none = equivalentsPanel('X', [], () => 'none', { brands, brand: 'Vallejo' });
+  assert.match(none, /eqBrand/);
+  assert.match(none, /No paint of Vallejo/);
+});
+
+test('the hero has a way to Other brands, named for the paint (F10)', () => {
+  const html = hero({ id: 'x', hex: '#9A1115', name: 'Mephiston Red', brand: 'A', line: 'Base', type: 'base' }, false, () => 'none', 'main');
+  assert.match(html, /data-heroequiv[^>]*aria-label="Other brands for Mephiston Red"/);
+  assert.match(html, /<span class="hjw">Other brands<\/span>/);
+  // the tag, the paint's line, the way to Other brands and the mark are one unit: a row of its own on a phone
+  assert.match(html, /<span class="herorow2">.*herometa.*data-heroequiv.*herobuy.*<\/span>$/s);
+  assert.match(hero({ hex: '#711A1A', name: 'Custom #711A1A', custom: true }, false, () => 'none', 'main'), /aria-label="Other brands for this colour"/);
 });
