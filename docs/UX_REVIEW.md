@@ -740,3 +740,26 @@ Checked in Chromium with an iPhone user agent and with a desktop one: the messag
 10th mark, it comes in when the next mode opens, each answer ends it, the backup file holds the answer, and a
 backup from ⋯ ends it and leaves the ⋯ popover open. **Not checked on an iPhone.** Open: the in-app browser
 question (item 2), and the 8 days (item 8).
+
+### 11.10 After the release: the small fixes (PLAN item 85)
+
+Version 1.20.0 holds steps 1 to 5. The findings rated 2 or less were built after it, each as its own commit:
+
+| Finding | What changed |
+|---|---|
+| F14 | **See the list** beside the Recipe's Add button; the Shelf's grid shows names under the Shopping list filter |
+| F15 | On a touch phone, **Take to the store…** starts with "Your list is on this phone" and **Open the list** |
+| F16 | In the naming step, a name that the painter did not change is not saved as a scheme |
+| F17 | **Save** asks first when the starting paint is not the saved scheme's |
+| F18 | A link to a paint that the app does not have says so |
+| F20 | The Accessibility tab says Strong, Medium or Weak light–dark contrast; "Warhammer Colour (Citadel)" in the brand lists. The other words of F20 wait for the painters' answers (§8) |
+| F21 | Each tick in the Shelf's list has the brand and the line in its accessible name |
+| F22 | "showing N of M" has its own line, so a search does not move the grid |
+| F23 | From Other brands back to the Recipe, the page shows the role card that the painter came from |
+| F24 | On a phone, a pot's name in the live palette has two lines |
+
+One change differs from the finding's direction. F20 proposed "these two are hard to tell apart side by side"
+for a low contrast ratio. That is not true for two hues of one lightness (a red and a green), because the
+WCAG ratio measures only light against dark. The tab says "Weak: close in light and dark".
+
+Checked in Chromium at phone and desktop sizes; not on an iPhone. Open: items 81 to 84.
