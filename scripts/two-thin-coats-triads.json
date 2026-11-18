@@ -1,0 +1,399 @@
+{
+  "about": "Two Thin Coats (Duncan Rhodes Painting Academy, Trans Atlantis Games): the triads of its three waves. A triad is the maker's set of three tones of one colour: a shadow, a midtone and a highlight. An input of scripts/build-dataset.mjs: each paint of a triad gets `family` and `tone` (docs/TONE_LADDERS.md §6).",
+  "source": {
+    "publisher": "Duncan Rhodes Painting Academy / Trans Atlantis Games",
+    "url": "https://duncanrhodes.com/ttc-paints/",
+    "charts": {
+      "Wave 1, Paint Reference Chart (2022)": "https://www.duncanrhodes.com/wp-content/uploads/2023/08/Colour-Wheel-Wave-1_2023_01.pdf",
+      "Wave 1, Paint Conversion Chart (2022)": "https://www.duncanrhodes.com/wp-content/uploads/2023/08/Conversion-Chart-Wave-1_2023_01.pdf",
+      "Wave 2, Paint Reference Chart (2023)": "https://www.duncanrhodes.com/wp-content/uploads/2023/08/Colour-Wheel-Wave-2_2023_01.pdf",
+      "Wave 2, Paint Conversion Chart (2023)": "https://www.duncanrhodes.com/wp-content/uploads/2023/08/Conversion-Chart-Wave-2_2023_01.pdf",
+      "Wave 3, Paint Comparison Chart (2024)": "https://www.duncanrhodes.com/wp-content/uploads/2025/10/Wave-3-Colour-Chart_2024.pdf"
+    },
+    "captured": "2026-11-18",
+    "method": "The maker's page says: \"We have designed these, including most of the the metallics, as a triad system. That means we start off with your Shadow colour, then your Mid-tone and finally your Highlight.\" Its charts are images with no text, so they were read by eye. Each paint on a chart has a mark from the \"Paint bottle key\": S (shadow), M (midtone), H (highlight), W (wash), ME (metallic), G (glaze), B (brights) or E (effect). Waves 1 and 2: the Paint Reference Chart shows each triad (a part of the wheel, or three paints under a heading), and the Paint Conversion Chart, a second chart, has the same paints in the same sets of S, M, H. Wave 3 has one chart only: its paints are in rows of S, M, H, S, M, H, and each run of S, M, H is taken as a triad. No colour value was taken.",
+    "order": "In each triad the paints are the shadow, the midtone and the highlight, in that order: tones 1, 2 and 3.",
+    "rule": "A triad is a family when its three paints have the marks S, M and H. The sets with other marks are not tones of one colour and are not here: the washes (W), the Wave 2 and Wave 3 metallics (ME), the glazes (G), the brights (B) and the varnishes (E). The maker gives the place of each paint, so the build does not test the order against the app's approximate colour values. In two triads those values do not rise from dark to light (see lightness).",
+    "heading": "`heading` is the maker's own word for a triad, where the chart has one (\"Warm Brown\"). The triads on the wheels and all Wave 3 triads have no heading, so the family has no name. Two Wave 2 triads are under one heading, \"Flesh Tones\".",
+    "names": "`paints` has the names as they are in the app's data after the build's corrections. Five names of these paints were wrong in the community source and now have the charts' spelling: Skeleton Legion (was Keleton Legion), Emerald Green (Merald Green), Fur Cloak (Ur Cloak), Eldar Robe (Elder Robe), Von Evile Purple (Von Evile Pimple). One name on the Wave 3 chart is an evident printing error, \"Enticing Puple\": the data keeps \"Enticing Purple\".",
+    "lightness": {
+      "about": "Triads whose colour values in the app (from the community source) fall by more than 3 L* from one tone to the next. The maker's order is kept. The values of metallic paints are the least sure in the data (docs/COLOUR_CHECK.md).",
+      "triads": [
+        [
+          "Spartan Bronze",
+          "Dragon's Gold",
+          "Glistening Gold"
+        ],
+        [
+          "Red Rage",
+          "Apocalypse Sky",
+          "Inferno Orange"
+        ]
+      ]
+    }
+  },
+  "triads": [
+    {
+      "wave": 1,
+      "paints": [
+        "Berserker Red",
+        "Sanguine Scarlet",
+        "Demon Red"
+      ]
+    },
+    {
+      "wave": 1,
+      "paints": [
+        "Rust Orange",
+        "Fanatic Orange",
+        "Orange Flare"
+      ]
+    },
+    {
+      "wave": 1,
+      "paints": [
+        "Dark Sun Yellow",
+        "Skulker Yellow",
+        "Yellow Flame"
+      ]
+    },
+    {
+      "wave": 1,
+      "paints": [
+        "Wyvern Green",
+        "Emerald Green",
+        "Ethereal Green"
+      ]
+    },
+    {
+      "wave": 1,
+      "paints": [
+        "Marine Blue",
+        "Elysium Blue",
+        "Celestial Blue"
+      ]
+    },
+    {
+      "wave": 1,
+      "paints": [
+        "Cold Corpse Blue",
+        "Wolf Grey",
+        "Gravestone Blue"
+      ]
+    },
+    {
+      "wave": 1,
+      "paints": [
+        "Amethyst Rayne",
+        "Sorceror's Cloak",
+        "Runic Purple"
+      ]
+    },
+    {
+      "wave": 1,
+      "paints": [
+        "Royal Cloak",
+        "Sword Hilt Burgundy",
+        "Glistening Gums"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "Black",
+      "paints": [
+        "Doom Death Black",
+        "Death Reaper",
+        "Dungeon Stone Grey"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "White",
+      "paints": [
+        "Wizard Grey",
+        "Carcharodon Grey",
+        "White Star"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "Gold",
+      "paints": [
+        "Spartan Bronze",
+        "Dragon's Gold",
+        "Glistening Gold"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "Silver",
+      "paints": [
+        "Sir Coates Silver",
+        "Plate Armour",
+        "Mythril Blade"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "Warm Brown",
+      "paints": [
+        "Cuirass Leather",
+        "Boar Hide",
+        "Fur Cloak"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "Bone",
+      "paints": [
+        "Dragon Fang",
+        "Skeleton Legion",
+        "Vampire Fang"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "Ivory",
+      "paints": [
+        "Griffon Claw",
+        "Ivory Tusk",
+        "Trooper White"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "Khaki",
+      "paints": [
+        "Dust Bowl",
+        "Sandstone",
+        "Temple Stone"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "Cold Brown",
+      "paints": [
+        "Scorched Earth",
+        "Ancient Forest",
+        "Wasteland Brown"
+      ]
+    },
+    {
+      "wave": 1,
+      "heading": "Fleshtone",
+      "paints": [
+        "Barbarian Brawn",
+        "Dwarven Skin",
+        "Elven Skin"
+      ]
+    },
+    {
+      "wave": 2,
+      "paints": [
+        "Dread Red",
+        "Asmodeus Red",
+        "Evil Eye Red"
+      ]
+    },
+    {
+      "wave": 2,
+      "paints": [
+        "Field Grey",
+        "Ranger Cloak",
+        "Kobold Grey"
+      ]
+    },
+    {
+      "wave": 2,
+      "paints": [
+        "Fury Green",
+        "Gung-Ho Green",
+        "Green Beret"
+      ]
+    },
+    {
+      "wave": 2,
+      "paints": [
+        "Orc Hide",
+        "Goblinoid Green",
+        "Troll Snot Green"
+      ]
+    },
+    {
+      "wave": 2,
+      "paints": [
+        "Hydra Green",
+        "Jade Green",
+        "Ghoul Green"
+      ]
+    },
+    {
+      "wave": 2,
+      "paints": [
+        "Sentient Turquoise",
+        "Cursed Blue",
+        "Ray Gun Glow"
+      ]
+    },
+    {
+      "wave": 2,
+      "paints": [
+        "Abyss Blue",
+        "Witching Hour Blue",
+        "Leviathan Blue"
+      ]
+    },
+    {
+      "wave": 2,
+      "paints": [
+        "Perisher Pink",
+        "Hot Pink",
+        "Neo Pink"
+      ]
+    },
+    {
+      "wave": 2,
+      "heading": "Grey Brown",
+      "paints": [
+        "Ashen Grey",
+        "Eidolon Grey",
+        "Rodent Grey"
+      ]
+    },
+    {
+      "wave": 2,
+      "heading": "Orange Brown",
+      "paints": [
+        "Noble Steed Brown",
+        "Dry Rust Brown",
+        "Satyr Brown"
+      ]
+    },
+    {
+      "wave": 2,
+      "heading": "Ochre",
+      "paints": [
+        "Gyzmo Fur",
+        "Manticore Ochre",
+        "Cerberus Brown"
+      ]
+    },
+    {
+      "wave": 2,
+      "heading": "Flesh Tones",
+      "paints": [
+        "Argonaut Skin",
+        "Kronos Flesh",
+        "Ares Flesh"
+      ]
+    },
+    {
+      "wave": 2,
+      "heading": "Flesh Tones",
+      "paints": [
+        "Druid Flesh",
+        "Paladin Flesh",
+        "Bard Skin"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Amphora Red",
+        "Emperor Red",
+        "Centurion Red"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Red Rage",
+        "Apocalypse Sky",
+        "Inferno Orange"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Panzer Yellow",
+        "Flak Gun Yellow",
+        "Ambush Yellow"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Serpent Eye Yellow",
+        "Sun Bleach Yellow",
+        "Twin Suns Yellow"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "War Master Green",
+        "Traitor Green",
+        "Legion Green"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Contagion Green",
+        "Zombie Rot",
+        "Pestilence Green"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Oxidation Green",
+        "Antiquity Green",
+        "Mythic Turquoise"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Eldar Robe",
+        "Relic Blue",
+        "Seafarer Blue"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Faust Blue",
+        "Shadow Blue",
+        "Frost Blue"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Von Evile Purple",
+        "Enchantress Purple",
+        "Spectral Purple"
+      ]
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Incubus Purple",
+        "Enticing Purple",
+        "Decadent Purple"
+      ],
+      "chartSays": {
+        "Enticing Purple": "Enticing Puple"
+      }
+    },
+    {
+      "wave": 3,
+      "paints": [
+        "Scabbard Brown",
+        "Boot Strap Brown",
+        "Vambrace Brown"
+      ]
+    }
+  ]
+}

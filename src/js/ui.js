@@ -564,8 +564,10 @@ export function makerLadder(fam) {
       + `<div class="cap">${p.tone}</div><div class="pn">${cur ? 'your pot' : ''}</div>`
       + `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span></div>`;
   };
-  return `<div class="ladcap famcap">${esc(fam.name)} · ${esc(fam.label || fam.line)}: the maker's ${n} tones</div>`
-    + `<div class="ladder famlad" role="group" aria-label="${esc(`${fam.name}, the maker's ${n} tones, darkest first`)}">${fam.tones.map(tone).join('')}</div>`;
+  // a triad that the maker gave no name (a Two Thin Coats triad on its colour wheel) says only what it is
+  const label = fam.label || fam.line, head = fam.name ? `${fam.name} · ${label}` : label;
+  return `<div class="ladcap famcap">${esc(head)}: the maker's ${n} tones</div>`
+    + `<div class="ladder famlad" role="group" aria-label="${esc(`${fam.name || label}, the maker's ${n} tones, darkest first`)}">${fam.tones.map(tone).join('')}</div>`;
 }
 
 /** Equivalents source picker (§3.6 mobile fix): one chip per scheme colour, labelled by role.

@@ -1,4 +1,4 @@
-# Data sources & attribution — dataset v1.13.0
+# Data sources & attribution — dataset v1.14.0
 
 Provenance for `src/data/paints.json` (values captured `2026-06-25`, `2026-10-26` and, for Tone Pro, `2026-11-06`; built `2026-11-17`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
@@ -127,6 +127,38 @@ for each paint.
 - **Four names corrected to the maker's spelling** (the product titles). Each keeps the upstream spelling in
   `formerly`, and its id does not change: Brigandine Brown (was Brigadine), Bony Spikes (Boney), Terrestrial
   Titan (Terrestial), Violent Vermilion (Vermillion).
+- **Not taken:** no colour value, and no type.
+
+## Fifth source: Two Thin Coats' triads (v1.14.0; no colour value, type or id changed)
+
+| Source | What was taken | Captured |
+|--------|----------------|----------|
+| **[Duncan Rhodes Painting Academy, Two Thin Coats paints](https://duncanrhodes.com/ttc-paints/)**: the Paint Reference Charts and Paint Conversion Charts of Waves 1 and 2, and the Paint Comparison Chart of Wave 3 (five PDF files; their addresses are in `scripts/two-thin-coats-triads.json`) | Which three paints are in each triad, and which is the shadow, the midtone and the highlight; the spelling of five names | 2026-11-18 |
+
+The maker's page says that the range is "a triad system": a shadow colour, then a mid-tone, then a highlight.
+Each paint on a chart has a mark from the chart's key: S, M or H for a tone, and W (wash), ME (metallic), G
+(glaze), B (brights) or E (effect) for the other paints. The charts are images with no text, so they were read
+by eye. `scripts/two-thin-coats-triads.json` holds what they say.
+
+- **Waves 1 and 2:** the Paint Reference Chart shows each triad (a part of the colour wheel, or three paints
+  under a heading such as "Warm Brown"). The Paint Conversion Chart, a second chart, has the same paints in the
+  same sets of S, M and H. The two charts agree for all 31 triads.
+- **Wave 3:** there is one chart. Its paints are in rows of S, M, H, S, M, H, and each run of S, M, H is taken as
+  a triad (12 triads). There is no second chart to compare.
+- **Tone families:** 43 triads (129 paints): 18 in Wave 1, 13 in Wave 2, 12 in Wave 3. The sets with other marks
+  are not tones of one colour, so they are no families: the washes, the Wave 2 and Wave 3 metallics, the glazes,
+  the brights and the varnishes.
+- **Checked against a second record:** the upstream compilation's colour values. In 41 of the 43 triads their
+  lightness (L\*) rises from the shadow to the highlight. The two others keep the maker's order, and the file
+  names them: Spartan Bronze · Dragon's Gold · Glistening Gold (metallic values are the least sure in the data)
+  and Red Rage · Apocalypse Sky · Inferno Orange (the highlight's value is 4 L\* darker than the midtone's).
+- **In the data:** each paint has `family` (`two-thin-coats-triad-` + the shadow's name, as a slug) and `tone`
+  (1 the shadow, 2 the midtone, 3 the highlight). The 15 triads with a heading on a chart have that heading as
+  the family's name in `families`; the 28 on the wheels and in Wave 3 have no name.
+- **Five names corrected to the charts' spelling.** Each keeps the upstream spelling in `formerly`, and its id
+  does not change: Skeleton Legion (was Keleton Legion), Emerald Green (Merald Green), Fur Cloak (Ur Cloak),
+  Eldar Robe (Elder Robe), Von Evile Purple (Von Evile Pimple). One name on the Wave 3 chart is an evident
+  printing error ("Enticing Puple"); the data keeps "Enticing Purple".
 - **Not taken:** no colour value, and no type.
 
 ## Coverage — 3375 paints, 10 brands
