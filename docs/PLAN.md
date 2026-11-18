@@ -830,7 +830,14 @@ Do these three in one bug pass, in this order.
     data; each needs the maker's page):** seven paints of Reaper's "Colored Metallics" triads have the type `layer`
     (Pearl White, Ruby Red, Coppery Orange, Emerald Green, Sparkling Blue, Sparkling Amethyst, Adamantium Black);
     Amber Gold, in the "Warm Light Brown" triad, has the type `metal`; and the three paints of "NMM Copper Colors"
-    (non-metallic metal, so flat paints) have the type `metal`. **Next:** Two Thin Coats or Army Painter Fanatic.
+    (non-metallic metal, so flat paints) have the type `metal`. **The Army Painter's triads built (2026-11-18),
+    dataset 1.13.0:** 27 "Flexible Colour Triads" of six tones (the 162 Warpaints Fanatic colours), from the
+    maker's own product descriptions (`scripts/army-painter-triads.json`; `SOURCES.md`); the Recipe shows "Browns ·
+    Army Painter triad: the maker's 6 tones". Four names took the maker's spelling, with the old one in
+    `formerly`. **Found on the way (open; data):** the line "Skin Tones" (15 paints, from the upstream set "Skin
+    Tones Paint Set") has paints with the names of Fanatic skin tones and other colour values (Tiger's Eye Skin
+    is #7F4841 there and #904D52 in Warpaints Fanatic); it is probably an older set, to check on the maker's
+    site before any change. **Next:** Two Thin Coats.
 
 ### Raised by Ryan on 2026-11-07 — an update log (built)
 
@@ -1135,10 +1142,10 @@ Ryan's order (2026-11-17: "go with your recommendation"):
 2. **Item 59** (⋯ showed a focus ring when a touch opened it): **built 2026-11-17**. To confirm on an iPhone.
 3. **Item 64 B** (a Brand setting in ⋯: Any · Prefer · Only): **built 2026-11-17**. **Item 7** (the paint detail
    sheet): **first part built 2026-11-17, its other ways in 2026-11-18**. **Reaper's tone families: built
-   2026-11-18.** **Released in v1.19.0 (2026-11-18).** **Next** (Ryan, 2026-11-18: "go with your
-   recommendation"): the next maker's families, one brand for each pull request (Army Painter Fanatic, then Two
-   Thin Coats). The Reaper
-   type corrections found on the way (item 64) wait for the maker's own page for each paint.
+   2026-11-18.** **Released in v1.19.0 (2026-11-18).** **The Army Painter's triads: built
+   2026-11-18** (dataset 1.13.0; not in a release yet). **Next** (Ryan, 2026-11-18: "go with your
+   recommendation"): Two Thin Coats' families. The Reaper type corrections found on the way (item 64) wait for
+   the maker's own page for each paint.
 4. **Waits for Ryan:** measured wash colours and the 34 missing Warhammer Colour paints (items 49, 68, 75); a test
    on a real iPad (item 60); the device build of the native app (Stage 1); the retailer applications
    (`MONETIZATION.md` A).

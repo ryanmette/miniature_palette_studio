@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = process.argv[2] || join(ROOT, '.cache', 'raw');
 const CAPTURED = '2026-06-25';
-const VERSION = '1.12.0';
+const VERSION = '1.13.0';
 // The build that took three corrections from the makers' own pages (PLAN §5 item 73): 14 Army Painter effects
 // that upstream lists as washes, one Two Thin Coats name, and four Gloss Shades that GW no longer makes. No hex
 // changed: the upstream values are still CAPTURED's.
@@ -84,7 +84,10 @@ const BRANDS = [
   // "Warpaints Fanatic Wash: …" and these 14 as "Warpaints Fanatic Effects: …" (thearmypainter.com/products.json,
   // read 2026-11-17): a primer, rust and blood effects, slime and fluorescent glow paints. As washes they were
   // offered as swaps for washes, and as the Recipe's wash step.
-  { brand: 'Army Painter', file: 'Army_Painter.md', setIdx: 3, types: { 'Warpaints Fanatic Wash': Object.fromEntries([
+  // The maker's product titles spell four Fanatic names in another way than upstream (thearmypainter.com/products.json,
+  // read 2026-11-18; scripts/army-painter-triads.json): `names` has the maker's spelling.
+  { brand: 'Army Painter', file: 'Army_Painter.md', setIdx: 3, names: { 'Brigadine Brown': 'Brigandine Brown',
+    'Boney Spikes': 'Bony Spikes', 'Terrestial Titan': 'Terrestrial Titan', 'Violent Vermillion': 'Violent Vermilion' }, types: { 'Warpaints Fanatic Wash': Object.fromEntries([
     'Brush-On Primer', 'Dark Rust', 'Data System Glow', 'Disgusting Slime', 'Dry Blood', 'Fresh Rust', 'Lens Flare Glow',
     'Oil Stains', 'Oozing Vomit', 'Plasma Coil Glow', 'Power Node Glow', 'Radiation Glow', 'True Blood', 'Verdigris',
   ].map(n => [n, 'effect'])) }, sets: {
@@ -229,6 +232,27 @@ for (const t of TRIADS.triads.filter(x => x.family)) {
   families.push({ id, name: t.name, kind: 'triad' });
 }
 console.log(`Reaper triads → ${families.length} tone families, ${families.length * 3} paints`);
+
+// The Army Painter's "Flexible Colour Triads" (docs/TONE_LADDERS.md §6, the third maker; dataset 1.13.0). Each
+// Warpaints Fanatic colour is one of six tones of a triad, and the maker's product description says its place
+// ("the darkest tone from the “Browns” Flexible Colour Triad"). scripts/army-painter-triads.json holds the 27
+// triads, each paint with that sentence. Upstream has no code for these paints, so a paint is found by its name
+// in the line (an apostrophe may be ' or ’). `family` is a stable id from the triad's name; `tone` is 1 (the
+// darkest) to 6. All 27 are families: the maker says each place, so there is no test against the colour values.
+const AP_TRIADS = JSON.parse(readFileSync(join(ROOT, 'scripts', 'army-painter-triads.json'), 'utf8'));
+const apKey = n => n.toLowerCase().replace(/[’']/g, "'");
+const fanatic = new Map(paints.filter(p => p.brand === 'Army Painter' && p.line === 'Warpaints Fanatic').map(p => [apKey(p.name), p]));
+let apCount = 0;
+for (const t of AP_TRIADS.triads) {
+  const ps = t.paints.map(x => fanatic.get(apKey(x.name)));
+  if (ps.some(p => !p)) throw new Error(`army-painter-triads.json: triad "${t.name}" has a paint that is not in the data: ${t.paints.filter((x, i) => !ps[i]).map(x => x.name).join(', ')}`);
+  if (ps.some(p => p.family)) throw new Error(`army-painter-triads.json: a paint of triad "${t.name}" is in another family already`);
+  const id = `army-painter-triad-${slug(t.name)}`;
+  ps.forEach((p, i) => { p.family = id; p.tone = i + 1; });
+  families.push({ id, name: t.name, kind: 'triad' });
+  apCount++;
+}
+console.log(`Army Painter triads → ${apCount} tone families, ${apCount * 6} paints`);
 
 // Sort by the upstream name too, so a fixed name keeps its place (the order breaks ΔE ties, see `key`)
 const upName = p => p.formerly?.[0] || p.name;
