@@ -482,6 +482,11 @@ export const foldText = s => String(s ?? '').normalize('NFKD').replace(/[̀-ͯ]/
  *  Colour on 6 Mar 2026 (PLAN §5 item 56; Ryan, 2026-11-03: "keep the name as current as possible but have
  *  Citadel as a search option"). A search word only: the app shows the brand's own name. */
 export const BRAND_WORDS = Object.freeze({ 'Warhammer Colour': 'Citadel Games Workshop GW' });
+/** A brand's name for a list of brands: with the name that painters still say, "Warhammer Colour (Citadel)" (UX
+ *  review F20: a painter who looks for Citadel in a brand list did not find the word). For a list's label only:
+ *  the brand's own name stays the value, the filter key and the name on a paint's row. */
+const BRAND_SAID = Object.freeze({ 'Warhammer Colour': 'Citadel' });
+export const brandLabel = b => (BRAND_SAID[b] ? `${b} (${BRAND_SAID[b]})` : b);
 
 // The folded words of each paint, worked out once per paint object (a search runs on every keystroke).
 // A WeakMap, so the paint objects keep their shape and nothing is stored with the data.

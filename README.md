@@ -10,6 +10,13 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.20.0** — the your-shelf release. The work of a UX review before the first showing (`docs/UX_REVIEW.md`): the
+Shelf's **List** is an index of brands and lines, so marking the paints you own is quick; the Studio asks one time if
+your schemes must **use your paints**, and the Metal part uses a metallic that you own; the Recipe's **Add** button
+puts only the scheme's own pots on the shopping list; and the app says one time how to **keep your shelf safe**
+(a backup file, and the right order for an iPhone's Home Screen). Paint data 1.14.0 adds The Army Painter's and Two
+Thin Coats' triads as the maker's tones.
+
 **v1.19.0** — the paint details release. Select a paint's name, in the Recipe, Other brands, the live palette, the
 Shelf's List or its Map, and one sheet shows everything about that paint: its finish, your mark, the paints that are
 **the same colour**, the **closest in other brands** and the **closest on your shelf**, each with its true ΔE. Paint

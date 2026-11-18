@@ -5,7 +5,77 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.19.0 took only the web entries. -->
+<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.20.0 took only the web entries. -->
+### Added
+- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
+  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
+  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
+  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
+  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
+  has its own releases later.
+### Changed
+- **Small fixes from the UX review** (PLAN §5 item 85; `docs/UX_REVIEW.md`, the findings rated 2 or less).
+  - **A way from the Recipe to the shopping list** (F14). After **Add**, a text action **See the list** shows
+    beside the button. It opens the Shelf's list of the paints to buy. In the Shelf's grid, the **Shopping
+    list** filter now shows each paint's name under its square, as a search does. The two lines that take the
+    buttons' places are shorter: "Role pots: owned or on the list" and "Ladder pots: owned or on the list".
+    `sw.js`: `CACHE` is `ps-v112`.
+  - **A project name that you did not change is not saved** (F16). In **Take to the store…**, the first step
+    asks for a project's name, and the field comes filled. **Continue** saved that name as a scheme in Schemes.
+    Now only a name that you change saves the scheme; the others stay automatic, as with **Skip**.
+  - **Each tick in the Shelf's list has the brand in its name, for a screen reader** (F21): "Owned: Ivory,
+    Vallejo · Model Color". Before, four paints had the name "Owned: Ivory".
+  - **The Shelf's counts line does not move the grid** (F22). On a phone, "showing 1 of 3375 · Clear filters"
+    went to a second line when a search was on, and the grid moved down. That line now has its place from the
+    start.
+  - **From Other brands back to the same role card** (F23). A role card's **Other brands** opens that tab.
+    The way back opened the Recipe at a different place. It now shows the card that you came from.
+  - **Take to the store… on a phone starts with your list** (F15). The panel was made for a computer: it
+    showed a code for the phone to scan itself. On a touch phone it now says "Your list is on this phone" and
+    has **Open the list**. The code and the link come after that, "to send it to another device".
+  - **Save asks first when it would replace a saved scheme with a different one** (F17). You save "Blue
+    knight", then pick a new starting paint. **Save** put the new scheme in Blue knight, with no question. It
+    now asks, names the two starting paints, and says how to keep the two schemes (**Save as new**). A change
+    that keeps the starting paint saves at once, as before.
+  - **Plainer words in the Accessibility tab** (F20). "Fails AA" is a rule for text on a screen. The tab now
+    says **Strong**, **Medium** or **Weak light–dark contrast**, with one line that explains it. The limits
+    (4.5 and 3) and the ratio are the same.
+  - **"Warhammer Colour (Citadel)" in the brand lists** (F20): the Shelf's brand filter and ⋯ → Brand. A
+    painter who looks for Citadel finds the word.
+  - **The live palette shows whole paint names on a phone** (F24). An owned paint's name was cut to a few
+    letters ("Mephi…"), because "✓ owned" used half the line. On a phone the name now has two lines, and the
+    owned mark is its tick alone, before the name.
+  - **A link to a paint that the app does not have says so** (F18): "This link's paint is not in the app. Here
+    is a different paint." Before, it opened a random scheme with no message.
+### Fixed
+- **Two Thin Coats: eight metallics and six glazes have their true type** (PLAN §5 item 64; paint data 1.15.0;
+  `src/data/SOURCES.md`). The maker's charts mark each paint. The community source has one list for each wave,
+  so these paints were stored as flat colours, and the app could offer a metallic or a glaze for a flat colour
+  role. Now they are metallics: Plate Armour, Mythril Blade, Scarab Red, Omega Blue, Enchantment Blue, Emperor's
+  Purple, Carapace Green and Fire Opal. And these are glazes: Red, Yellow, Blue, Orange, Green and Purple Glaze.
+  Each has its finish icon and its tag. **This changes matches:** in a test of 7,008 schemes, 13.8% changed in
+  one or more slots (0.78% of all slots). In each change a metallic or a glaze leaves a flat colour's slot, or a
+  true metallic takes a step of the Metal ladder. Five more names have the maker's spelling: Battle Axe Brass,
+  Hellion Red Wash, Septic Green, Bits O'Tin and Doom Metal. The old spelling still finds each paint, and no id
+  changed.
+- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
+  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
+  padding. The web view's white background showed behind the clock and the home bar, with a double gap
+  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
+  clear of the notch and the home bar.
+### Security
+- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
+  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
+  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
+  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
+  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
+  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
+  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
+  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
+  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
+  with no `AbortSignal` and no glob pattern from outside.
+
+## [1.20.0] - 2026-11-18
 ### Added
 - **The Army Painter's triads: the maker's six tones on the Recipe** (PLAN §5 item 64; paint data 1.13.0;
   `src/data/SOURCES.md`). The Army Painter groups its 162 Warpaints Fanatic colours in 27 "Flexible Colour
@@ -53,12 +123,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
   iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
   screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 76 to 85 are the proposed work.
-- **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
-  iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
-  and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
-  from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
-  so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
-  has its own releases later.
 ### Changed
 - **Words: "Almost the same colour", and three small errors** (PLAN §5 items 82 and 85; `docs/UX_REVIEW.md` F12
   and F19; CLAUDE.md §3.5 Words). Step 5 of the UX review's build order.
@@ -113,35 +177,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Bony Spikes (Boney), Terrestrial Titan (Terrestial) and Violent Vermilion (Vermillion). The old spelling still
   finds each paint in a search and in a CSV import, and no id changed, so a saved shelf and a share link are
   not affected.
-- **Two Thin Coats: eight metallics and six glazes have their true type** (PLAN §5 item 64; paint data 1.15.0;
-  `src/data/SOURCES.md`). The maker's charts mark each paint. The community source has one list for each wave,
-  so these paints were stored as flat colours, and the app could offer a metallic or a glaze for a flat colour
-  role. Now they are metallics: Plate Armour, Mythril Blade, Scarab Red, Omega Blue, Enchantment Blue, Emperor's
-  Purple, Carapace Green and Fire Opal. And these are glazes: Red, Yellow, Blue, Orange, Green and Purple Glaze.
-  Each has its finish icon and its tag. **This changes matches:** in a test of 7,008 schemes, 13.8% changed in
-  one or more slots (0.78% of all slots). In each change a metallic or a glaze leaves a flat colour's slot, or a
-  true metallic takes a step of the Metal ladder. Five more names have the maker's spelling: Battle Axe Brass,
-  Hellion Red Wash, Septic Green, Bits O'Tin and Doom Metal. The old spelling still finds each paint, and no id
-  changed.
 - **Five Two Thin Coats names have the maker's spelling** (paint data 1.14.0): Skeleton Legion (was Keleton
   Legion), Emerald Green (Merald Green), Fur Cloak (Ur Cloak), Eldar Robe (Elder Robe) and Von Evile Purple (Von
   Evile Pimple). The old spelling still finds each paint, and no id changed.
-- **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
-  `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
-  padding. The web view's white background showed behind the clock and the home bar, with a double gap
-  above the header. It is `"never"` now: the page reaches the screen edges, and the CSS keeps the content
-  clear of the notch and the home bar.
-### Security
-- **Capacitor 8.5.3 → 8.6.0 (native stream; dev tools only).** The Capacitor command-line tool used `xcode`
-  3.0.1, which needs `uuid` 7.0.3 ([GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)).
-  Capacitor 8.6.0 uses `xcode` 4.0.0, which has no `uuid` dependency, so that Dependabot alert closes. The
-  risk was low: `xcode` calls only `uuid.v4()`, and the advisory is about `v3()`, `v5()` and `v6()`. Nothing
-  here goes into the website, which has no runtime dependencies (CLAUDE.md §6). Two moderate advisories stay
-  open: `glob` 13.0.6 ([GHSA-3g3m-2fjr-6pw4](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4)) and
-  `minimatch` 10.2.6 ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)), both under
-  `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
-  versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
-  with no `AbortSignal` and no glob pattern from outside.
 
 ## [1.19.0] - 2026-11-18
 ### Added

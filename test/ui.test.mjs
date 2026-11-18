@@ -91,6 +91,24 @@ test('hero: a colour that is not a paint says so, and shows its hex one time (UX
   assert.match(hero({ id: 'x', hex: '#9A1115', name: 'Mephiston Red', brand: 'A', line: 'Base', type: 'base' }, false), /<h2 class="heroname">Mephiston Red<\/h2>/);
 });
 
+test('brandOptions: the label has the name painters still say; the value is the brand (UX review F20)', async () => {
+  const { brandOptions } = await import('../src/js/ui.js');
+  const html = brandOptions(['Vallejo', 'Warhammer Colour']);
+  assert.match(html, /<option value="Vallejo">Vallejo<\/option>/);
+  assert.match(html, /<option value="Warhammer Colour">Warhammer Colour \(Citadel\)<\/option>/);
+});
+
+test('a11yPanel: the contrast words are a painter’s, and the ratio stays (UX review F20)', async () => {
+  const { a11yPanel } = await import('../src/js/ui.js');
+  const c = (ratio, passAAText, passAALarge) => ({ a: '#111111', b: '#EEEEEE', labelA: 'Primary', labelB: 'Accent', ratio, passAAText, passAALarge });
+  const html = a11yPanel({ names: [], sims: [], contrasts: [c(7.2, true, true), c(3.4, false, true), c(1.3, false, false)], collision: null });
+  assert.match(html, /7\.2:1<\/div>[^]*?Strong light–dark contrast/);
+  assert.match(html, /3\.4:1<\/div>[^]*?Medium light–dark contrast/);
+  assert.match(html, /1\.3:1<\/div>[^]*?Weak: close in light and dark/);
+  assert.doesNotMatch(html, /Fails AA|Passes AA|Large\/UI/);
+  assert.match(html, /the WCAG 2\.1 contrast ratio/);   // the source of the number is still named
+});
+
 test('equivGroup: "almost the same colour", never "interchangeable"; the counts have the right number (F12, F19)', () => {
   const pt = (id, brand) => ({ id, name: id, brand, line: '—', hex: '#9A1115', type: 'layer' });
   const one = equivGroup('dark red', [pt('a', 'A')], () => 'none');
@@ -363,14 +381,17 @@ test('planControls: the main Add button counts the role pots only; the ladder po
   // the role pots are done: their line takes the button's place (a landing spot for the focus), the ladders stay
   const laddersLeft = planControls('wash', false, { pots: 0, steps: 7 });
   assert.match(laddersLeft, /<span class="addact off"><button class="btn sm primary" id="addGaps"/);
-  assert.match(laddersLeft, /class="micro nogaps" id="addDone" tabindex="-1">The role pots are owned or on the list</);
+  assert.match(laddersLeft, /class="micro nogaps" id="addDone" tabindex="-1">Role pots: owned or on the list</);
   assert.match(laddersLeft, /<span class="addact"><button class="btn sm" id="addLadders"/);
   // nothing left: two lines, and no line says "everything" (the NMM pots have their own action)
   const none = planControls('wash', false, {});
-  assert.match(none, /class="micro nogaps" id="addDone" tabindex="-1">The role pots are owned or on the list</);
-  assert.match(none, /class="micro nogaps" id="laddersDone" tabindex="-1">The ladder pots are owned or on the list</);
+  assert.match(none, /class="micro nogaps" id="addDone" tabindex="-1">Role pots: owned or on the list</);
+  assert.match(none, /class="micro nogaps" id="laddersDone" tabindex="-1">Ladder pots: owned or on the list</);
   assert.match(none, /<span class="addact off"><button class="btn sm" id="addLadders"/);
   assert.doesNotMatch(none, /[Ee]verything/);
+  // See the list (F14): in its place from the start, shown when the shopping list holds a paint
+  assert.match(none, /class="textact seelist off" id="seeList"/);
+  assert.match(planControls('wash', false, { pots: 0, steps: 0, listed: 3 }), /class="textact seelist" id="seeList"[^>]*>See the list</);
 });
 
 test('matchNote: the "·" ends the bold head (no-break space), so a wrapped explanation never starts with it', () => {
@@ -514,11 +535,12 @@ import { rackRow, rackGroups } from '../src/js/ui.js';
 const dawn = { id: 'c-layer-dawnstone', name: 'Dawnstone', dname: 'Dawnstone (Layer)', brand: 'Citadel', line: 'Layer', hex: '#70746D', type: 'layer' };
 const gold = { id: 'c-base-gold', name: 'Balthasar Gold', brand: 'Citadel', line: 'Base', hex: '#A77353', type: 'metal' };
 
-test('rackRow: the plain name shows; the tick names the twin in full; aria-pressed is the owned state', () => {
+test('rackRow: the plain name shows; the tick names the paint with its brand and line; aria-pressed is the owned state', () => {
   const html = rackRow({ paint: dawn, owned: false, countable: true, qty: 1, countOpen: false, forName: 'Plague Marine' }, tr);
   // the name is the way to Paint details (item 7): the words are the plain name, its name for a screen reader the full one
   assert.match(html, /class="rkname"><button type="button" class="pslink" data-psid="c-layer-dawnstone" title="Paint details" aria-label="Dawnstone \(Layer\)">Dawnstone</);
-  assert.match(html, /data-rktick="c-layer-dawnstone" aria-pressed="false" aria-label="ownedName\(name=Dawnstone \(Layer\)\)"/);
+  // the tick: the plain name with the brand and the line, so two brands' "Ivory" and a line's twins stay apart (F21)
+  assert.match(html, /data-rktick="c-layer-dawnstone" aria-pressed="false" aria-label="ownedName\(name=Dawnstone, Citadel · Layer\)"/);
   assert.match(html, /Citadel · Layer/);
   assert.match(html, /class="rkfor">forName\(name=Plague Marine\)/);
   assert.match(html, /data-rkcount="c-layer-dawnstone"/);

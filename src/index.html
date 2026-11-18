@@ -583,7 +583,7 @@
   <div class="aboutbody storebody">
     <form id="storeNameStep" class="storestep" hidden>
       <h3 class="storesub" id="storeNameHead" data-i18n="nameProjectsHead">Name your projects</h3>
-      <p class="sethint" id="storeNameIntro" data-i18n="nameProjectsIntro">A name tells you what a paint is for, in the store and in Schemes. You are asked once.</p>
+      <p class="sethint" id="storeNameIntro" data-i18n="nameProjectsIntro">A name tells you what a paint is for, in the store and in Schemes. You are asked once. A name that you change saves the scheme in Schemes; a name that you do not change stays automatic.</p>
       <div id="storeNameFields" class="storefields"></div>
       <p class="sethint" id="storeNameLink" data-i18n="nameInLink">The name is part of the link you send.</p>
       <div class="cdlgacts">
@@ -592,6 +592,15 @@
       </div>
     </form>
     <div id="storePanel" class="storestep">
+      <!-- On a touch phone the painter HAS the list (UX review F15): the panel was made for desk → phone, and it
+           showed a QR code for the phone to scan itself. So it starts with the list on this phone, and the link
+           and the code come second, for another device (app.js renderStorePanel). -->
+      <div class="storehere" id="storeHere" hidden>
+        <p class="storeherelead" data-i18n="storeHereLead">Your list is on this phone.</p>
+        <p class="sethint" data-i18n="storeHereHint">Open it, and tick each paint as you buy it.</p>
+        <button type="button" class="btn primary" id="storeOpenList" data-i18n="storeOpenList">Open the list</button>
+        <h3 class="storesub" data-i18n="storeElsewhere">To send it to another device</h3>
+      </div>
       <label class="setlbl" for="storeWhich" data-i18n="whichPaints">Which paints?</label>
       <select id="storeWhich" class="storewhich"></select>
       <div class="storeout">

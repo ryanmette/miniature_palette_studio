@@ -386,7 +386,7 @@ function renderPlan() {
   // Gaps = paints this scheme needs that you don't own and haven't already flagged to buy (#5), counted by
   // their part of the Recipe: the roles' pots are the main button, the ladder pots a second action (item 80).
   const gaps = schemeGaps(state.scheme, store.ownedIds()).filter(g => store.markOf(g.paint.id) !== 'want');
-  const addable = { pots: gaps.filter(g => g.part === 'role').length, steps: gaps.filter(g => g.part === 'ladder').length };
+  const addable = { pots: gaps.filter(g => g.part === 'role').length, steps: gaps.filter(g => g.part === 'ladder').length, listed: store.counts().want };
   // No overview colour bar here — the role-labelled live palette (beside the wheel) is now the single
   // scheme summary; this tab is its detail (ideal→nearest paint + tone ladders), linked by hover (data-hex).
   $('#panel-plan').innerHTML = cmp + ui.planControls(state.ladder, state.includeContrast, addable)
@@ -1064,8 +1064,11 @@ function renderShelfStats() {
   // showed 2 paints while this line said 12 on the shopping list, and the filters were not noticed).
   const narrowed = !!(state.shelfQ.trim() || state.shelfBrand || state.shelfTypes.size);
   const of = state.shelfMark === 'owned' ? c.owned : state.shelfMark === 'want' ? c.want : total;
-  const showing = narrowed ? ` · <b class="s-showing">${ui.esc(t('shelfShowing', { n: shelfPaints().length, of }))}</b>`
-    + ` <button type="button" class="textact" id="shelfClearFilters">${ui.esc(t('clearFilters'))}</button>` : '';
+  // "showing N of M" has a place of its own (UX review F22): on a narrow screen it is a second line that is
+  // always there, empty when nothing is narrowed, so a search does not push the hint and the grid down (§3.4).
+  const showing = `<span class="s-narrow${narrowed ? '' : ' off'}">` + (narrowed
+    ? `<b class="s-showing">${ui.esc(t('shelfShowing', { n: shelfPaints().length, of }))}</b>`
+      + ` <button type="button" class="textact" id="shelfClearFilters">${ui.esc(t('clearFilters'))}</button>` : '') + '</span>';
   $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} on the shopping list</span> · ${total} total${showing}`;
 }
 /** Clear the search, brand and type: the stats line's Clear filters. The status filter stays (it is the view the
@@ -1118,7 +1121,9 @@ function renderShelf() {
     return;
   }
   $('#shelfListView').hidden = true;
-  const named = !!state.shelfQ.trim();   // a search result shows its name (UX review F06; item 78)
+  // A search result shows its name (UX review F06; item 78), and so does the Shopping list filter (F14): it is a
+  // short list of paints to find in a store, and it was a row of squares with no names.
+  const named = !!state.shelfQ.trim() || state.shelfMark === 'want';
   $('#shelfGrid').classList.toggle('named', named);
   $('#shelfGrid').innerHTML = ui.shelfGrid(view, store.markOf, shelf.sel, { named });
   $('#shelfEmpty').hidden = view.length > 0;
@@ -2412,12 +2417,38 @@ function setupSaveDialog() {
     if (k === 'save' || k === 'asnew') { openSaveDialog(k === 'save' ? 'new' : 'asnew', b); return; }
     if (k === 'update') {
       const st = schemeStatus(); if (st.kind !== 'changed') return;
-      store.updateScheme(st.sc.id, { link: schemeLink() });
-      renderSchemeBar();
+      const put = () => {
+        store.updateScheme(st.sc.id, { link: schemeLink() });
+        renderSchemeBar();
+        toast(t('savedChanges', { name: st.name }));
+      };
+      // A new starting paint makes a different scheme (UX review F17): Save "Blue knight", pick Caliban Green,
+      // and Save put a green scheme in Blue knight, with the shopping list's "for Blue knight" paints now
+      // pointing at it. So this Save asks first, and says how to keep both. A change that keeps the starting
+      // paint (a harmony, a hold, the lightness of a custom colour is a new colour) saves at once, as before.
+      const was = savedStartName(st.sc.link), now = baseInfo().name;
+      if (was && was !== now) {
+        $('#confirmDlg').classList.add('nobackup');   // a scheme is not the shelf: no backup offer here
+        openConfirm({
+          title: t('replaceSchemeTitle', { name: st.name }),
+          body: () => `<p>${ui.esc(t('replaceSchemeBody', { name: st.name, was, now }))}</p><p>${ui.esc(t('replaceSchemeKeep'))}</p>`,
+          okLabel: t('replace'), opener: b,
+          // the Save button goes with the save: the name is the Save line's landing spot
+          onOk: () => { put(); cdlg.opener = $('#sbName'); },
+        });
+        return;
+      }
+      put();
       $('#sbName')?.focus({ preventScroll: true });
-      toast(t('savedChanges', { name: st.name }));
     }
   });
+}
+/** The name of the starting paint (or colour) that a kept scheme's link holds, as the hero names it; '' when
+ *  this build cannot read it. For the Save that would put a different scheme in a saved one (F17). */
+function savedStartName(link) {
+  const d = decodeState(link, { validHarmony, hasPaint: id => state.idx.byId.has(id), maxFree: MAX_FREE });
+  const paint = d.baseId ? state.idx.byId.get(d.baseId) : null;
+  return paint ? ui.pname(paint) : d.customHex ? 'Custom ' + d.customHex : '';
 }
 /** A kept scheme built from its link alone, as the Recipe builds it (currentScheme), without changing
  *  the scheme on screen. The link was made from a scheme on screen, so its harmony already suits its
@@ -2755,10 +2786,26 @@ function syncTabs(focusActive = false) {
   }
   for (const panel of document.querySelectorAll('[data-panel]')) panel.hidden = panel.dataset.panel !== state.tab;
 }
+/* Back to the role card (UX review F23). A role card's Other brands jump opens that tab, and the way back opened
+   the Recipe wherever the page was: on a phone the four cards are 1,400px tall, so the painter lost their
+   place. The jump remembers its role; the next change from Other brands to the Recipe shows that card again,
+   under the header and the pinned tabs. Any other tab ends the memory. Only the scroll: the focus stays on the
+   tab that the painter pressed. */
+let planReturnRole = null;
+function showRoleCard(role) {
+  const card = [...document.querySelectorAll('#panel-plan .slot')].find(c => c.querySelector('.role')?.textContent === role);
+  if (!card) return;
+  const tabs = $('#tabs'), pinned = getComputedStyle(tabs).position === 'sticky' ? tabs.offsetHeight : 0;
+  const clear = document.querySelector('header').offsetHeight + pinned + 8;
+  window.scrollTo(0, Math.max(0, card.getBoundingClientRect().top + window.scrollY - clear));
+}
 function setTab(tab, focusActive = false) {
+  const backTo = tab === 'plan' && state.tab === 'equiv' ? planReturnRole : null;
+  if (tab !== 'equiv') planReturnRole = null;
   state.tab = tab;
   syncTabs(focusActive);
   renderActive(); applyEquivSelect(); announce(); updateUrl();   // show/clear the Equivalents-source ring with the tab
+  if (backTo) showRoleCard(backTo);
 }
 /** The project a paint added from the Studio is for: the scheme on screen (mockups/project-naming.html, "label
  *  now, name later"). The saved scheme while it shows Saved; else a kept scheme with this exact link; else a
@@ -2904,7 +2951,7 @@ function syncBrand() {
   for (const b of $('#brandSeg').children) b.setAttribute('aria-pressed', String(b.dataset.brandmode === state.brandMode));
   const shown = brandShown(), sel = $('#brandSel');
   const opts = (shown ? '' : `<option value="">${ui.esc(t('brandChoose'))}</option>`)
-    + state.brands.map(b => `<option value="${ui.esc(b)}">${ui.esc(b)}</option>`).join('');
+    + ui.brandOptions(state.brands);   // "Warhammer Colour (Citadel)": the name painters still say (F20)
   if (sel.dataset.opts !== opts) { sel.innerHTML = opts; sel.dataset.opts = opts; }
   sel.value = shown;
   const el = $('#brandHint'), html = brandHintHtml(state.brandMode, state.brandMode === 'any' ? shown : state.brand);
@@ -3426,24 +3473,27 @@ function showNameStep(schemes) {
     const suggestion = store.uniqueName((sc.link === linkNameFor && linkName) || auto, sc.id);
     return `<div class="storefield"><label class="savelbl" for="storeNm${i}">${ui.esc(auto)}</label>`
       + `<input id="storeNm${i}" class="saveinput" type="text" maxlength="80" autocomplete="off" data-sid="${ui.esc(sc.id)}"`
-      + ` data-auto="${ui.esc(auto)}" value="${ui.esc(suggestion)}" aria-label="${ui.esc(t('nameFor', { auto }))}" aria-describedby="storeNameLink"></div>`;
+      + ` data-auto="${ui.esc(auto)}" data-given="${ui.esc(suggestion)}" value="${ui.esc(suggestion)}" aria-label="${ui.esc(t('nameFor', { auto }))}" aria-describedby="storeNameLink"></div>`;
   }).join('');
   const first = $('#storeNameFields input');
   first?.focus(); first?.select();
 }
-/** Continue (names) or Skip (`keep` false): every project shown is asked for good, then the panel. */
+/** Continue (names) or Skip (`keep` false): every project shown is asked for good, then the panel.
+ *  A name that the painter did not change is a Skip for that project (UX review F16): Continue is the main
+ *  button and the field comes filled, so Continue alone made a saved scheme that the painter did not ask for.
+ *  Only a name that the painter typed saves the scheme. */
 function finishNameStep(keep) {
   const fields = [...$('#storeNameFields').querySelectorAll('input')];
   let named = 0;
   for (const f of fields) {
     const sid = f.dataset.sid, typed = f.value.trim();
-    if (keep && (typed || f.dataset.auto)) {
+    if (keep && typed && typed !== f.dataset.given) {
       // a name saves the scheme for good (Ryan, scheme-library.html); a taken name becomes "(2)"
-      store.updateScheme(sid, { name: store.uniqueName(typed || f.dataset.auto, sid), saved: true, asked: true });
+      store.updateScheme(sid, { name: store.uniqueName(typed, sid), saved: true, asked: true });
       named++;
     } else store.updateScheme(sid, { asked: true });
   }
-  say(keep ? (named === 1 ? t('namedProject') : t('namedProjects', { n: named })) : t('skippedNames'));
+  say(named ? (named === 1 ? t('namedProject') : t('namedProjects', { n: named })) : t('skippedNames'));
   showStorePanel();
   if (state.mode === 'schemes') renderSchemesPage();
   renderSchemeBar();
@@ -3451,8 +3501,12 @@ function finishNameStep(keep) {
 function showStorePanel() {
   $('#storeNameStep').hidden = true; $('#storePanel').hidden = false;
   renderStorePanel();
-  $('#storeCopy').focus({ preventScroll: true });   // not the select: iOS opens its picker when a select takes focus in a tap
+  // not the select: iOS opens its picker when a select takes focus in a tap. On a touch phone the main action is
+  // Open the list (F15).
+  (storeOnPhone() ? $('#storeOpenList') : $('#storeCopy')).focus({ preventScroll: true });
 }
+/** The panel is open ON the device that will be in the store: a touch phone (UX review F15). */
+const storeOnPhone = () => COARSE && PHONE.matches;
 function renderStorePanel() {
   const { all, projects } = storeChoices();
   if (storeDlg.which && !projects.some(p => p.id === storeDlg.which)) storeDlg.which = '';
@@ -3476,6 +3530,13 @@ function renderStorePanel() {
   }
   $('#storeUrl').textContent = url;
   $('#storeCopy').textContent = t(CAN_SHARE ? 'shareStoreLink' : 'copyStoreLink');
+  // On a touch phone: the list is here. Open the list is the one main action; the link and the code are for
+  // another device, and the line about "bought" (it is for the desk's view) does not show.
+  const here = storeOnPhone() && all.length > 0;
+  $('#storeHere').hidden = !here;
+  $('#storeCopy').classList.toggle('primary', !here);
+  $('#storeHow').textContent = t(here ? 'storeHowHere' : 'storeHow');
+  $('#storeBack').hidden = here;
 }
 async function sendStoreLink() {
   const url = storeDlg.url;
@@ -3535,6 +3596,7 @@ function setupStore() {
   $('#storeSkip').addEventListener('click', () => finishNameStep(false));
   $('#storeWhich').addEventListener('change', e => { storeDlg.which = e.target.value; renderStorePanel(); });
   $('#storeCopy').addEventListener('click', sendStoreLink);
+  $('#storeOpenList').addEventListener('click', () => { $('#storeDlg').close(); showStoreListHere(); });
   $('#storePrintBtn').addEventListener('click', printStoreList);
   $('#storeText').addEventListener('click', saveStoreText);
   d.addEventListener('close', () => {
@@ -3970,7 +4032,13 @@ function wire() {
     const eqs = e.target.closest('[data-eqsrc]');
     if (eqs) { e.stopPropagation(); setEquivSource(eqs.dataset.eqsrc); return; }   // tab-local source chips (A)
     const gq = e.target.closest('[data-goequiv]');
-    if (gq) { e.stopPropagation(); setTab('equiv'); setEquivSource(gq.dataset.goequiv); return; }   // Plan-card jump (B)
+    if (gq) {   // Plan-card jump (B); it remembers its card, for the way back (F23)
+      e.stopPropagation();
+      const role = gq.closest('.slot')?.querySelector('.role')?.textContent || null;
+      setTab('equiv'); setEquivSource(gq.dataset.goequiv);
+      planReturnRole = role;
+      return;
+    }
     const sd = e.target.closest('[data-seeddock]');
     if (sd) {   // the palette's seed dock IS the Main|Accent control now
       e.stopPropagation();
@@ -3993,6 +4061,7 @@ function wire() {
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
     if (e.target.closest('#addGaps')) { addGapsToBuy('role'); return; }
     if (e.target.closest('#addLadders')) { addGapsToBuy('ladder'); return; }
+    if (e.target.closest('#seeList')) { showStoreListHere(); return; }   // the Shelf's list of paints to buy (F14)
     if (e.target.closest('[data-addnmm]')) { addGapsToBuy('nmm'); return; }
     const c = e.target.closest('[data-copy]'); if (c) copyText(c.dataset.copy);
   });
@@ -4185,6 +4254,9 @@ async function init() {
   // (PLAN §5 item 55). A random starting paint from a locked pool (data.js startPaints) and, unless the link
   // names a harmony, a random one by Roll a scheme's rules (§7). The first render writes it to the address
   // bar, so a reload keeps it. Every such load, not only a first visit: the old fixed start was arbitrary too.
+  // The link named a paint or a colour, and this build has neither (a link from another build, a typing error):
+  // the scheme below is NOT the one that was shared, so the app says so after the first render (UX review F18).
+  const linkSeedGone = !state.customHex && !state.baseId && !!(url.get('p') || url.get('c'));
   if (!state.customHex && !state.baseId) {
     state.baseId = (randomStartPaint(state.idx, Math.random) || state.idx.paints[0]).id;
     if (!linked.harmony) state.harmony = rollHarmony(null, { neutral: false }, Math.random);
@@ -4240,6 +4312,7 @@ async function init() {
   // A first visit with no paint in the link: show "Start a scheme" (after the first render, so that
   // render does not end it). A native shell that restored a shelf is not a first visit.
   if (store.firstVisit && !restored && !url.get('p') && !url.get('c') && !url.has('l') && !url.has('b')) startFirstRun();
+  if (linkSeedGone) toast(t('linkSeedGone'));   // a toast, and its words for a screen reader (say())
   syncUmpOffer({ open: true });   // a visit that starts in the Studio, with paints marked on an earlier one
   syncKeepNote({ open: true });
   if (shelfHomeNow() === 'home' && hasRealWork()) askPersist();   // an installed app: WebKit grants it there, with no question

@@ -3,7 +3,7 @@
 
 import { textOn, normHex, rgbToHsl, hexToRgb } from './color.js';
 import { HARMONY_OFFSETS } from './harmony.js';
-import { FINISH_ICONS, finishKind, finishWord } from './data.js';   // the finish words: the tag shows the word the search finds
+import { FINISH_ICONS, finishKind, finishWord, brandLabel } from './data.js';   // the finish words: the tag shows the word the search finds
 
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const LABELS = { 'neutral-pop': 'Neutral + pop', 'warm-cool': 'Warm / cool' };   // neutral harmonies read as phrases
@@ -282,7 +282,8 @@ export const segmented = (types, active, opts = {}) => {
 };
 
 /** <option> list for the brand filter. */
-export const brandOptions = brands => brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+// the label has the name painters still say (data.js brandLabel); the value stays the brand's own name
+export const brandOptions = brands => brands.map(b => `<option value="${esc(b)}">${esc(brandLabel(b))}</option>`).join('');
 
 /** Quick-pop chips for neutral mode — shortcuts that move the wheel's pop node (not a second system).
  *  `pops`: [{hex, name}]; `active` = the current pop hex (a chip is "on" when it IS the pop). */
@@ -345,8 +346,9 @@ export const potsSaid = (n, kind = '') => `${n} ${kind ? kind + ' ' : ''}pot${n 
  *  most, because that is the scheme. `gaps.pots` is how many of them are not owned and not on the list. The
  *  ladder pots (washes, shadows, highlights: `gaps.steps`) are a second, smaller action beside it. The NMM
  *  pots are in neither count: NMM is another way to paint the Metal part, and its action is on the Metal card
- *  (roleSlots). One button used to add all three: a median 14 pots from 7 brands. */
-export function planControls(ladder, includeContrast, { pots = 0, steps = 0 } = {}) {
+ *  (roleSlots). One button used to add all three: a median 14 pots from 7 brands. `gaps.listed` is how many
+ *  paints the shopping list holds: with one or more, **See the list** shows between the two slots. */
+export function planControls(ladder, includeContrast, { pots = 0, steps = 0, listed = 0 } = {}) {
   const lad = [['wash', 'Wash · base · highlight'], ['tone', 'Shadow · mid · highlight'], ['both', 'Both']]
     .map(([v, l]) => `<button data-ladder="${v}" aria-pressed="${v === ladder}">${esc(l)}</button>`).join('');
   // One slot for each part, and each slot holds BOTH its states in one grid cell (.fixslot): the button, and
@@ -361,9 +363,13 @@ export function planControls(ladder, includeContrast, { pots = 0, steps = 0 } = 
     + `<button class="btn sm incl-contrast" id="inclContrast" aria-pressed="${!!includeContrast}" title="Washes, shades and effects are kept out of suggestions; tick to include Contrast paints (used as one-coat base colours)">Include Contrast</button>`
     + `<div class="addrow">`
     + slot(pots, `<button class="btn sm primary" id="addGaps" title="The pots of the roles (Primary, Secondary, Accent, Metal) that you do not own">+ Add ${potsSaid(pots)} to the shopping list</button>`,
-      'addDone', 'The role pots are owned or on the list')
+      'addDone', 'Role pots: owned or on the list')
+    // The way from here to the list (UX review F14): after Add, the toast went and nothing opened the list (it was
+    // Shelf, then Shopping list, then the list icon). It has its place from the start and shows when the shopping
+    // list holds a paint (`listed`), so it moves nothing when it comes in (§3.4).
+    + `<button type="button" class="textact seelist${listed > 0 ? '' : ' off'}" id="seeList" title="Open the shopping list on the Shelf">See the list</button>`
     + slot(steps, `<button class="btn sm" id="addLadders" title="The washes, shadows and highlights of the tone ladders shown, to the shopping list. The NMM pots are not in this count: add them on the Metal card.">Add ${potsSaid(steps, 'ladder')}</button>`,
-      'laddersDone', 'The ladder pots are owned or on the list')
+      'laddersDone', 'Ladder pots: owned or on the list')
     + `</div></div>`;
 }
 
@@ -661,7 +667,7 @@ export function livePalette(vm, roleByHex = {}) {
         + `<span class="lcpotlbl">Pot</span><span class="lchex">${potHex}</span></span>`
       : `<span class="lcpot none"><span class="lcpotlbl">No close pot</span></span>`;
     const foot = m
-      ? `<span class="lcname">${detailsLink(m.paint, pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
+      ? `<span class="lcname">${detailsLink(m.paint, pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}<span class="ownw">owned</span></span>` : ''}</span>`
         + `<span class="de" style="margin:2px 0 0">${qualityWord(m.quality)}`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint)}${goneTag(m.paint)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
@@ -721,7 +727,11 @@ export function livePalette(vm, roleByHex = {}) {
 export function a11yPanel(model) {
   const strip = cols => `<div class="cstrip">${cols.map(c => `<span class="sw" style="flex:1;height:30px;background:${safeColor(c)}"></span>`).join('')}</div>`;
   const simRows = model.sims.map(s => `<div class="crow"><span class="clab">${esc(s.label)}</span>${strip(s.colors)}</div>`).join('');
-  const verdict = c => c.passAAText ? ['Passes AA text', 'var(--success-text)'] : c.passAALarge ? ['Large/UI only', 'var(--warning-text)'] : ['Fails AA', 'var(--danger-text)'];
+  // Painters' words (UX review F20): "Fails AA" is a rule for text on a screen, and it said nothing about two
+  // paints. The WCAG ratio measures light against dark, and nothing else: so the words say that, and not "hard
+  // to tell apart" (a red and a green of one lightness have a low ratio and are easy to tell apart by hue).
+  // The limits are the same (4.5 and 3), and the ratio stays as the detail.
+  const verdict = c => c.passAAText ? ['Strong light–dark contrast', 'var(--success-text)'] : c.passAALarge ? ['Medium light–dark contrast', 'var(--warning-text)'] : ['Weak: close in light and dark', 'var(--danger-text)'];
   const ctr = model.contrasts.map(c => {
     const [v, col] = verdict(c);
     return `<div class="ctrbox"><div class="ttl">${esc(c.labelA)} ↔ ${esc(c.labelB)}</div>`
@@ -739,7 +749,9 @@ export function a11yPanel(model) {
     coll = '<div class="collide ok">No major colour-blindness collisions in this scheme.</div>';
   }
   return `<div class="micro" style="margin:14px 0 8px">Colour-blindness simulation (role colours)</div>${simRows}`
-    + `<div class="micro" style="margin:18px 0 8px">Contrast (WCAG 2.1)</div><div class="ctr">${ctr}</div>${coll}`;
+    + `<div class="micro" style="margin:18px 0 4px">Light and dark contrast between the roles</div>`
+    + `<p class="sethint" style="margin:0 0 8px">How far two colours are from each other in light and dark (the WCAG 2.1 contrast ratio). Under 3:1 the two are close in light and dark, so the parts can blend at arm’s length, also when the hues differ.</p>`
+    + `<div class="ctr">${ctr}</div>${coll}`;
 }
 
 
@@ -849,16 +861,19 @@ export function rackRow(r, tr) {
   // the line through the name is "ticked off the shopping list" (r.struck), not "owned": an owned paint has the filled tick
   return `<li class="rkrow${r.struck ? ' done' : ''}" data-rk="${esc(p.id)}">`
     + swatch(p.hex, 'rksw' + fxCls(p), '')
-    // the plain name: the line is in the row (and the rack group) already; the tick's name and the name's own
-    // (it is the way to Paint details) keep the full display name, so twins (Dawnstone (Layer) / (Dry)) stay
-    // apart for a screen reader
+    // the plain name: the line is in the row (and the rack group) already; the name's own accessible name (it is
+    // the way to Paint details) keeps the full display name, so twins (Dawnstone (Layer) / (Dry)) stay apart
+    // for a screen reader
     + `<span class="rkmain"><span class="rkname">${detailsLink(p, p.name, name)}</span>`
     + `<span class="rkline">${line}${finishTag(p)}${goneTag(p)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
     // a swap made in this visit says what it replaced; Undo only while it is still to buy (once ticked, it was bought)
     + (r.insteadOf ? `<span class="rkinst">${esc(tr('inPlaceOf', { name: pname(r.insteadOf) }))}`
       + (r.owned ? '' : ` <button type="button" class="textact" data-rkunswap="${esc(p.id)}" aria-label="${esc(tr('undoSwapFor', { name: pname(r.insteadOf) }))}">${esc(tr('undo'))}</button>`) + '</span>' : '')
     + slot + '</span>'
-    + `<button type="button" class="rktick" data-rktick="${esc(p.id)}" aria-pressed="${r.owned}" aria-label="${esc(tr('ownedName', { name }))}">${CHECK}</button>`
+    // the tick's name is the plain name with the brand and the line (UX review F21): "Owned: Ivory" was the name
+    // of four ticks (Vallejo Model Color, Vallejo Mecha Color, AK, Pro Acryl), so a screen reader could not tell
+    // them apart. The line keeps twins apart too ("Dawnstone, Warhammer Colour · Layer" / "… · Dry").
+    + `<button type="button" class="rktick" data-rktick="${esc(p.id)}" aria-pressed="${r.owned}" aria-label="${esc(tr('ownedName', { name: `${p.name}, ${[p.brand, lineOf(p)].filter(Boolean).join(' · ')}` }))}">${CHECK}</button>`
     + (r.swaps ? rackSwaps(r, tr) : '')
     + '</li>';
 }
