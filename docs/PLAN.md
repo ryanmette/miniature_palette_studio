@@ -604,7 +604,7 @@ with one id). A fix renames the public page's anchors, so its links change: it w
 47. **Built.** **Tap the starting paint for a big view.** Today the hero does nothing on a tap. Recommend: the hero's swatch opens
     a sheet with the starting paint large (pot, target, ΔE) and the scheme's four pots beside it at 60-30-10. It can
     reuse the share image (`shareimage.js`), with Share and Save beside it.
-48. **Kept as it is.** **A smaller wheel on a phone?** It is 330px of a 402px screen. Recommend: keep it, now that it scrolls; revisit after 42–47.
+48. **Kept as it is.** **A smaller wheel on a phone?** It is 330px of a 402px screen. Recommend: keep it, now that it scrolls; revisit after 42–47. *Looked at again for item 84 (2026-11-18): the size stays, and on a phone the wheel is now under the live palette.*
 49. **Studied: [`docs/COLOUR_CHECK.md`](COLOUR_CHECK.md).** Ryan's answers (2026-10-30): our own measurement leads (the
     recommendation: own measurement first, the maker's swatch as the fallback, and a source label on each paint
     rather than a settings toggle); a change needs ΔE > 5 from a maker's photo or > 3.5 from our own measurement
@@ -1141,6 +1141,10 @@ item 85, come after the first painters answer.
 84. **The phone's first screen** (F09, F13; 2 · 2 · 2 each). After a pick, the pots start 134 px below the screen.
     The first pick keeps the random harmony of the first load (a value harmony about 2 times in 9). Recommend: the
     pots on the first screen after a pick (a reason to look again at item 48), and a fixed harmony for the first pick.
+    **Built 2026-11-18** (`docs/UX_REVIEW.md` §11.12): on a phone the order is the paint, the harmony row, the live
+    palette, then the wheel, so the pots start at y = 523 (they started at y = 994); the first pick after a random
+    load starts on Triadic. The wheel keeps its size (item 48 stays as it is): a smaller wheel could not give the
+    400px that were necessary. **For Ryan to confirm on an iPhone:** the wheel is now one scroll down on a phone.
 85. **Small fixes, one batch** (rated 2 or less; **built 2026-11-18**, each as its own commit: F14 to F18 and F20 to F24. For F20, the two concrete parts are built, the Accessibility tab's words and "Warhammer Colour (Citadel)" in the brand lists; its other words wait for the painters' answers): a way to the list after Add, and the Shopping list filter opens in
     the list view (F14); Take to the store on a phone says "your list is on this phone" first (F15); a name the
     painter did not change is Skip (F16); a new starting paint on a saved scheme (F17; Save has no confirm); a

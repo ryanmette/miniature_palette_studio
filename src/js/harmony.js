@@ -125,6 +125,17 @@ export const startsNeutral = (chroma, harmony) =>
 export const ROLL_TYPES = Object.freeze(HARMONY_TYPES.filter(t => t !== 'custom'));
 /** A neutral seed: the harmonies it can use (neutral-pop, duotone, warm-cool, shades). */
 export const ROLL_NEUTRAL_TYPES = Object.freeze(NEUTRAL_HARMONY_TYPES.filter(t => t !== 'custom'));
+/**
+ * The harmony of a visit's first pick, when the harmony on screen is one that the load rolled (PLAN §5 item 84;
+ * UX review F13). A load with no paint in its link rolls a random harmony for its random paint. The painter did
+ * not choose it, and it stayed for their own first paint: about 2 times in 9 it was Shades or Monochromatic, a
+ * scheme of three near-alike colours that looked like the app's best answer. Triadic gives the three most
+ * distinct colours: measured on the 1,562 starting paints, two colour roles' pots are under ΔE 10 of each other
+ * in 6% of Triadic schemes (Split-complementary 8%, Complementary 32%, Monochromatic 83%), and 75% of its pots
+ * are a Good match or better.
+ */
+export const FIRST_PICK_HARMONY = 'triadic';
+
 /** The harmonies a roll can give: the seed's pool without the current harmony. */
 export const rollPool = (current, { neutral = false } = {}) =>
   (neutral ? ROLL_NEUTRAL_TYPES : ROLL_TYPES).filter(t => t !== current);
