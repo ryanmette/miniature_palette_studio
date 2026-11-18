@@ -1,4 +1,4 @@
-# Data sources & attribution — dataset v1.12.0
+# Data sources & attribution — dataset v1.13.0
 
 Provenance for `src/data/paints.json` (values captured `2026-06-25`, `2026-10-26` and, for Tone Pro, `2026-11-06`; built `2026-11-17`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
@@ -101,6 +101,33 @@ paints, top to bottom, each with its code and name. `scripts/reaper-triads.json`
 - **In the data:** each paint of a family has `family` (`reaper-triad-` + the triad's SKU) and `tone` (1 to 3, the
   maker's order). The family's name is the maker's ("Blood Colors"), in the top-level `families` list.
 - **Not taken:** no colour value. The images' colours are not used.
+
+## Fourth source: The Army Painter's Flexible Colour Triads (v1.13.0; no colour value, type or id changed)
+
+| Source | What was taken | Captured |
+|--------|----------------|----------|
+| **[The Army Painter's shop](https://www.thearmypainter.com/)**, its public product list (`/products.json`) | For each Warpaints Fanatic colour: its triad and its place in the triad, from the product's description; the product's code; the spelling of its name | 2026-11-18 |
+
+The Army Painter groups the 162 Warpaints Fanatic colours in 27 "Flexible Colour Triads". A triad is six tones of
+one colour, from the darkest to the lightest. Each product's description says the paint's place in words: "It's
+the darkest tone from the "Browns" Flexible Colour Triad". `scripts/army-painter-triads.json` holds that sentence
+for each paint.
+
+- **Read:** all 162 colours, 27 triads of six. No metallic, wash or effect paint is in a triad.
+- **The order:** in each triad the maker's codes are six numbers in a row (Browns: WP3073 to WP3078), and the
+  words agree with that order for every paint. The words do not put the two middle tones in an order; their
+  order is the order of their codes.
+- **Checked against a second record:** the upstream compilation's colour values, which do not come from this
+  source. In all 27 triads their lightness (L\*) rises in the maker's order (no step falls by more than 3 L\*),
+  the two middle tones included.
+- **Tone families:** all 27 triads (162 paints). The maker says the place of each paint, so there is no test
+  against the colour values in the build (Reaper's triads needed one).
+- **In the data:** each paint has `family` (`army-painter-triad-` + the triad's name, as a slug) and `tone` (1 to
+  6, 1 the darkest). The family's name is the maker's ("Browns"), in the top-level `families` list.
+- **Four names corrected to the maker's spelling** (the product titles). Each keeps the upstream spelling in
+  `formerly`, and its id does not change: Brigandine Brown (was Brigadine), Bony Spikes (Boney), Terrestrial
+  Titan (Terrestial), Violent Vermilion (Vermillion).
+- **Not taken:** no colour value, and no type.
 
 ## Coverage — 3375 paints, 10 brands
 

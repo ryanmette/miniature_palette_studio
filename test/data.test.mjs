@@ -715,7 +715,7 @@ test('the rename keeps every id: Warhammer Colour paints are still citadel-…, 
     'citadel-base-retributor-armour', 'citadel-layer-sotek-green']) assert.ok(real.byId.has(id), id);
 });
 
-test('the six names are the maker\'s spelling, and each keeps its former name', () => {
+test('the ten names are the maker\'s spelling, and each keeps its former name', () => {
   const fixed = {
     'citadel-base-bugman-glow': ["Bugman's Glow", 'Bugman Glow'],
     'citadel-layer-emperor-children': ["Emperor's Children", 'Emperor Children'],
@@ -723,13 +723,19 @@ test('the six names are the maker\'s spelling, and each keeps its former name', 
     'citadel-technical-nurgles-rot': ["Nurgle's Rot", 'Nurgles Rot'],
     'citadel-shade-cassandora-yellow': ['Casandora Yellow', 'Cassandora Yellow'],
     'two-thin-coats-wave-1-rc-flesh-wash': ['Orc Flesh Wash', 'RC Flesh Wash'],   // dataset 1.10.0: Two Thin Coats' own chart
+    // dataset 1.13.0: The Army Painter's own product titles (scripts/army-painter-triads.json)
+    'army-painter-warpaints-fanatic-brigadine-brown': ['Brigandine Brown', 'Brigadine Brown'],
+    'army-painter-warpaints-fanatic-boney-spikes': ['Bony Spikes', 'Boney Spikes'],
+    'army-painter-warpaints-fanatic-terrestial-titan': ['Terrestrial Titan', 'Terrestial Titan'],
+    'army-painter-warpaints-fanatic-violent-vermillion': ['Violent Vermilion', 'Violent Vermillion'],
   };
   for (const [id, [name, old]] of Object.entries(fixed)) {
     const p = real.byId.get(id);
     assert.equal(p.name, name, id);
     assert.deepEqual(p.formerly, [old], id);
   }
-  assert.equal(real.paints.filter(p => p.formerly).length, 6, 'no other paint has a former name');
+  assert.equal(real.paints.filter(p => p.formerly).length, 10, 'no other paint has a former name');
+  assert.equal(ids(searchPaints(real, 'brigadine brown'))[0], 'army-painter-warpaints-fanatic-brigadine-brown', 'the old spelling still finds it');
   assert.equal(real.byId.get('citadel-technical-nurgles-rot').fx, 'slime', 'the fixed name keeps its finish');
   assert.equal(ids(searchPaints(real, 'rc flesh wash'))[0], 'two-thin-coats-wave-1-rc-flesh-wash', 'the old spelling still finds it');
   assert.equal(ids(searchPaints(real, 'orc flesh wash'))[0], 'two-thin-coats-wave-1-rc-flesh-wash');
@@ -858,8 +864,9 @@ test('Reaper triads (dataset 1.12.0): 43 tone families of 3, in the maker\'s ord
   assert.equal(inFam.length, 129); assert.ok(inFam.every(p => p.brand === 'Reaper'));
   const ids = new Set(inFam.map(p => p.family));
   assert.equal(ids.size, 43);
-  assert.equal(real.families.length, 43);
-  assert.deepEqual([...ids].sort(), real.families.map(f => f.id).sort(), 'every family has its name, and no name is spare');
+  const named = real.families.filter(f => f.id.startsWith('reaper-triad-'));
+  assert.equal(named.length, 43);
+  assert.deepEqual([...ids].sort(), named.map(f => f.id).sort(), 'every family has its name, and no name is spare');
   for (const id of ids) {
     const tones = real.byFamily.get(id);
     assert.deepEqual(tones.map(p => p.tone), [1, 2, 3], id);
@@ -941,6 +948,46 @@ test('Tone Pro: every earlier paint keeps its id (saved shelves and links hold i
     assert.ok(real.byId.has(id), id);
   assert.equal(real.paints.length, 3375);
   assert.equal(new Set(real.paints.map(p => p.id)).size, real.paints.length, 'no id is used twice');
+});
+
+test('Army Painter triads (dataset 1.13.0): 27 tone families of 6, in the maker\'s order, with the maker\'s name', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { hexToLab } = await import('../src/js/color.js');
+  const src = JSON.parse(readFileSync(new URL('../scripts/army-painter-triads.json', import.meta.url)));
+  const inFam = real.paints.filter(p => p.family && p.family.startsWith('army-painter-triad-'));
+  assert.equal(inFam.length, 162);
+  assert.ok(inFam.every(p => p.brand === 'Army Painter' && p.line === 'Warpaints Fanatic' && p.type === 'layer'), 'flat Fanatic colours only: no metallic, wash or effect');
+  const ids = new Set(inFam.map(p => p.family));
+  const named = real.families.filter(f => f.id.startsWith('army-painter-triad-'));
+  assert.equal(ids.size, 27); assert.equal(named.length, 27);
+  assert.deepEqual([...ids].sort(), named.map(f => f.id).sort(), 'every family has its name, and no name is spare');
+  assert.equal(real.families.length, 43 + 27, 'Reaper\'s and Army Painter\'s; Tone Pro\'s names come from its paints');
+  for (const id of ids) {
+    const tones = real.byFamily.get(id);
+    assert.deepEqual(tones.map(p => p.tone), [1, 2, 3, 4, 5, 6], id);
+    // A second record agrees with the maker's order: the community colour values rise from dark to light
+    // (a step may fall by 3 L* at most, because the values are approximate).
+    const L = tones.map(p => hexToLab(p.hex)[0]);
+    for (let i = 1; i < L.length; i++) assert.ok(L[i] - L[i - 1] > -3, `${id}: tone ${i + 1} is darker than tone ${i}`);
+  }
+  // the source file: 27 triads of 6; each paint has the maker's sentence and its code, six codes in a row
+  assert.equal(src.triads.length, 27);
+  for (const t of src.triads) {
+    assert.equal(t.paints.length, 6, t.name);
+    assert.ok(t.paints.every(x => x.says.includes(t.name) && /Flexible Colou?r Triad/.test(x.says)), t.name);
+    const n = t.paints.map(x => +x.code.slice(2));
+    assert.deepEqual(n, n.map((_, i) => n[0] + i), t.name + ': six codes in a row');
+    assert.match(t.paints[0].says, /the darkest/); assert.match(t.paints[5].says, /the lightest/);
+  }
+  // one triad, as the maker's descriptions have it
+  const browns = familyOf(real, real.paints.find(p => p.brand === 'Army Painter' && p.line === 'Warpaints Fanatic' && p.name === 'Leather Brown'));
+  assert.equal(browns.id, 'army-painter-triad-browns'); assert.equal(browns.name, 'Browns'); assert.equal(browns.label, 'Army Painter triad');
+  assert.deepEqual(browns.tones.map(p => p.name), ['Brigandine Brown', 'Bootstrap Brown', 'Leather Brown', 'Paratrooper Tan', 'Command Khaki', 'Urban Buff']);
+  // a paint of the same name in another line is in no family, and no Fanatic metallic, wash or effect is
+  assert.equal(real.byId.get('army-painter-warpaints-leather-brown').family, undefined);
+  assert.equal(real.byId.get('army-painter-skin-tones-tigers-eye-skin').family, undefined);
+  assert.equal(real.byId.get('army-painter-warpaints-fanatic-tigers-eye-skin').family, 'army-painter-triad-warm-skin-tones', 'found with either apostrophe');
+  assert.ok(real.paints.filter(p => p.brand === 'Army Painter' && p.type !== 'layer').every(p => !p.family));
 });
 
 // ---- Tone Pro families (dataset 1.9.0; docs/TONE_LADDERS.md §6) ----

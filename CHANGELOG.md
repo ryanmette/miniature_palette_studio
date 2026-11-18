@@ -7,6 +7,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.19.0 took only the web entries. -->
 ### Added
+- **The Army Painter's triads: the maker's six tones on the Recipe** (PLAN §5 item 64; paint data 1.13.0;
+  `src/data/SOURCES.md`). The Army Painter groups its 162 Warpaints Fanatic colours in 27 "Flexible Colour
+  Triads": six tones of one colour, from the darkest to the lightest. When a role's pot is one of those paints,
+  its Recipe card now shows the family, as it does for Warhammer Tone Pro and Reaper: "Browns · Army Painter
+  triad: the maker's 6 tones", with your pot marked. The families come from the maker's own product
+  descriptions, which say each paint's place ("the darkest tone from the "Browns" Flexible Colour Triad"). The
+  colour values in the app, from another source, agree with that order in all 27 families. Only the `family` and
+  `tone` fields changed on these paints, so no match changed.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
@@ -14,6 +22,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
 ### Fixed
+- **Four Army Painter names have the maker's spelling** (paint data 1.13.0): Brigandine Brown (was Brigadine),
+  Bony Spikes (Boney), Terrestrial Titan (Terrestial) and Violent Vermilion (Vermillion). The old spelling still
+  finds each paint in a search and in a CSV import, and no id changed, so a saved shelf and a share link are
+  not affected.
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
   padding. The web view's white background showed behind the clock and the home bar, with a double gap

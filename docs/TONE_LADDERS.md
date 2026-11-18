@@ -185,6 +185,11 @@ colour". Search can take a family word later ("ultramar blue" already finds the 
    triad's product image has them. 43 of the 70 readable triads are tone families (`scripts/reaper-triads.json`
    holds the rule: the lightness rises in the maker's order, and the hues are within 45°). A family's name is the
    maker's, in a top-level `families` list, because it is not in the paints' names.
+   **Army Painter Fanatic: built 2026-11-18** (dataset 1.13.0). The maker's product descriptions say each
+   paint's triad and its place in words, so the source is text (`scripts/army-painter-triads.json`): 27 triads
+   of six tones, 162 paints, all of them families. The maker's codes give the order, the words agree with it,
+   and the upstream colour values (a second record) rise from dark to light in all 27. Four names took the
+   maker's spelling. **Next:** Two Thin Coats.
 
 ---
 

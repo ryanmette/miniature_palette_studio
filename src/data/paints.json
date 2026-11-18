@@ -1,5 +1,5 @@
 {
- "version": "1.12.0",
+ "version": "1.13.0",
  "generated": "2026-11-17",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
@@ -1170,6 +1170,141 @@
   {
    "id": "reaper-triad-09801",
    "name": "NMM Gold Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-black-greys",
+   "name": "Black & Greys",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-warm-greys-white",
+   "name": "Warm Greys & White",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-desaturated-blue-greys",
+   "name": "Desaturated Blue-Greys",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-strong-pale-blues",
+   "name": "Strong Pale Blues",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-vivid-blues",
+   "name": "Vivid Blues",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-deep-green-blues",
+   "name": "Deep Green-Blues",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-turquoises",
+   "name": "Turquoises",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-teals",
+   "name": "Teals",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-deep-greens",
+   "name": "Deep Greens",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-vibrant-greens",
+   "name": "Vibrant Greens",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-desaturated-cool-greens",
+   "name": "Desaturated Cool Greens",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-olive-greens",
+   "name": "Olive Greens",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-browns",
+   "name": "Browns",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-ochres-tans",
+   "name": "Ochres & Tans",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-light-neutrals",
+   "name": "Light Neutrals",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-yellows",
+   "name": "Yellows",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-oranges",
+   "name": "Oranges",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-warm-reds",
+   "name": "Warm Reds",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-ruddy-browns",
+   "name": "Ruddy Browns",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-cool-reds",
+   "name": "Cool Reds",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-pinks",
+   "name": "Pinks",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-purples",
+   "name": "Purples",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-magentas",
+   "name": "Magentas",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-desaturated-violets",
+   "name": "Desaturated Violets",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-rose-skin-tones",
+   "name": "Rose Skin Tones",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-warm-skin-tones",
+   "name": "Warm Skin Tones",
+   "kind": "triad"
+  },
+  {
+   "id": "army-painter-triad-deep-skin-tones",
+   "name": "Deep Skin Tones",
    "kind": "triad"
   }
  ],
@@ -14261,7 +14396,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-green-blues",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-aegis-aqua",
@@ -14274,7 +14411,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-green-blues",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-afterglow",
@@ -14287,7 +14426,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-vibrant-greens",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-agate-skin",
@@ -14300,7 +14441,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-rose-skin-tones",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-alien-purple",
@@ -14313,7 +14456,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-purples",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-alpha-blue",
@@ -14326,7 +14471,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-strong-pale-blues",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-amber-skin",
@@ -14339,7 +14486,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-skin-tones",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-amulet-aqua",
@@ -14352,7 +14501,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-teals",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-ancient-stone",
@@ -14365,7 +14516,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-light-neutrals",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-angel-green",
@@ -14378,7 +14531,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-greens",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-angelic-red",
@@ -14391,7 +14546,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-reds",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-aqua-alchemy",
@@ -14404,7 +14561,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-teals",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-aquamarine",
@@ -14417,7 +14576,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-turquoises",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-arctic-gem",
@@ -14430,7 +14591,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-vivid-blues",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-army-green",
@@ -14443,7 +14606,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-olive-greens",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-ash-grey",
@@ -14457,6 +14622,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-black-greys",
+   "tone": 4,
    "groupId": "grey-10"
   },
   {
@@ -14470,7 +14637,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-strong-pale-blues",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-autumn-sage",
@@ -14483,7 +14652,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-cool-greens",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-barbarian-flesh",
@@ -14497,6 +14668,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-rose-skin-tones",
+   "tone": 3,
    "groupId": "red-02"
   },
   {
@@ -14510,7 +14683,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-strong-pale-blues",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-barren-dune",
@@ -14523,7 +14698,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ochres-tans",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-basilisk-red",
@@ -14536,7 +14713,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-cool-reds",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-blood-chalice",
@@ -14549,20 +14728,27 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-cool-reds",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-boney-spikes",
    "brand": "Army Painter",
    "line": "Warpaints Fanatic",
-   "name": "Boney Spikes",
+   "name": "Bony Spikes",
    "hex": "#E6D4C1",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Boney Spikes"
+   ],
+   "family": "army-painter-triad-light-neutrals",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-bootstrap-brown",
@@ -14575,7 +14761,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-browns",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-brainmatter-beige",
@@ -14588,7 +14776,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-greys-white",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-brigade-grey",
@@ -14602,20 +14792,27 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-black-greys",
+   "tone": 6,
    "groupId": "light-grey-05"
   },
   {
    "id": "army-painter-warpaints-fanatic-brigadine-brown",
    "brand": "Army Painter",
    "line": "Warpaints Fanatic",
-   "name": "Brigadine Brown",
+   "name": "Brigandine Brown",
    "hex": "#443A40",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Brigadine Brown"
+   ],
+   "family": "army-painter-triad-browns",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-bright-gold",
@@ -14641,7 +14838,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-vivid-blues",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-buffed-hide",
@@ -14654,7 +14853,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ruddy-browns",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-burning-ore",
@@ -14667,7 +14868,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-oranges",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-burnt-turf",
@@ -14680,7 +14883,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ochres-tans",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-camouflage-green",
@@ -14693,7 +14898,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-olive-greens",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-carnelian-skin",
@@ -14706,7 +14913,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-skin-tones",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-cobalt-metal",
@@ -14732,7 +14941,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-browns",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-company-grey",
@@ -14745,7 +14956,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-black-greys",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-crystal-blue",
@@ -14759,6 +14972,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-vivid-blues",
+   "tone": 4,
    "groupId": "dark-blue-03"
   },
   {
@@ -14773,6 +14988,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-purples",
+   "tone": 3,
    "groupId": "blue-01"
   },
   {
@@ -14786,7 +15003,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-yellows",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-dark-emerald",
@@ -14825,7 +15044,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-turquoises",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-deep-grey",
@@ -14838,7 +15059,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-black-greys",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-deep-ocean-blue",
@@ -14851,7 +15074,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-green-blues",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-demigod-flames",
@@ -14864,7 +15089,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-yellows",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-desert-yellow",
@@ -14878,6 +15105,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-ochres-tans",
+   "tone": 3,
    "groupId": "dark-orange-03"
   },
   {
@@ -14892,6 +15121,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-magentas",
+   "tone": 1,
    "groupId": "dark-purple-01"
   },
   {
@@ -14905,7 +15136,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-magentas",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-doomfire-drab",
@@ -14918,7 +15151,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-pinks",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-dorado-skin",
@@ -14931,7 +15166,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-skin-tones",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-dragon-red",
@@ -14944,7 +15181,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-cool-reds",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-dryad-brown",
@@ -14958,6 +15197,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-ruddy-browns",
+   "tone": 3,
    "groupId": "deep-red-06"
   },
   {
@@ -14971,7 +15212,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-light-neutrals",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-elder-flower",
@@ -14984,7 +15227,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-violets",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-electric-lime",
@@ -14997,7 +15242,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-vibrant-greens",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-emerald-forest",
@@ -15010,7 +15257,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-vibrant-greens",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-enchanted-pink",
@@ -15023,7 +15272,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-magentas",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-eternal-hunt",
@@ -15036,7 +15287,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-greens",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-evergreen-fog",
@@ -15049,7 +15302,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-cool-greens",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-evil-chrome",
@@ -15075,7 +15330,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-greens",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-fiendish-yellow",
@@ -15088,7 +15345,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-yellows",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-figgy-pink",
@@ -15101,7 +15360,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-violets",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-flickering-flame",
@@ -15114,7 +15375,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-oranges",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-forbidden-fruit",
@@ -15127,7 +15390,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-violets",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-forest-faun",
@@ -15140,7 +15405,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-cool-greens",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-frost-blue",
@@ -15153,7 +15420,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-blue-greys",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-fur-brown",
@@ -15166,7 +15435,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ruddy-browns",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-gargoyle-grey",
@@ -15179,7 +15450,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-greys-white",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-gemstone-red",
@@ -15218,7 +15491,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-oranges",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-gothic-blue",
@@ -15231,7 +15506,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-strong-pale-blues",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-great-hall-grey",
@@ -15244,7 +15521,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-greys-white",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-greedy-gold",
@@ -15270,7 +15549,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-greens",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-grey-castle",
@@ -15283,7 +15564,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-greys-white",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-grotesque-green",
@@ -15296,7 +15579,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-olive-greens",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-guardian-green",
@@ -15310,6 +15595,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-greens",
+   "tone": 2,
    "groupId": "deep-green-07"
   },
   {
@@ -15336,7 +15623,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-purples",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-hydra-turquoise",
@@ -15349,7 +15638,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-turquoises",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-ice-yellow",
@@ -15363,6 +15654,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-yellows",
+   "tone": 6,
    "groupId": "pale-yellow-02"
   },
   {
@@ -15376,7 +15669,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-vivid-blues",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-impish-rouge",
@@ -15389,7 +15684,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-pinks",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-inner-light",
@@ -15402,7 +15699,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-oranges",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-jasper-skin",
@@ -15415,7 +15714,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-skin-tones",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-kraken-lavender",
@@ -15428,7 +15729,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-purples",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-lava-orange",
@@ -15441,7 +15744,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-oranges",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-leafy-green",
@@ -15455,6 +15760,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-vibrant-greens",
+   "tone": 2,
    "groupId": "green-03"
   },
   {
@@ -15468,7 +15775,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-browns",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-legendary-red",
@@ -15481,7 +15790,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-reds",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-leopard-stone-skin",
@@ -15494,7 +15805,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-skin-tones",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-magecast-magenta",
@@ -15507,7 +15820,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-magentas",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-marine-mist",
@@ -15520,7 +15835,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-turquoises",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-matt-black",
@@ -15534,6 +15851,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-black-greys",
+   "tone": 1,
    "groupId": "near-black-03"
   },
   {
@@ -15548,6 +15867,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-greys-white",
+   "tone": 6,
    "groupId": "near-white-01"
   },
   {
@@ -15561,7 +15882,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-cool-greens",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-mithril",
@@ -15588,7 +15911,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-skin-tones",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-moldy-wine",
@@ -15601,7 +15926,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-violets",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-molten-lava",
@@ -15614,7 +15941,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-oranges",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-moonstone-skin",
@@ -15627,7 +15956,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-rose-skin-tones",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-mossy-green",
@@ -15640,7 +15971,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-cool-greens",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-mulled-berry",
@@ -15653,7 +15986,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-violets",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-necrotic-flesh",
@@ -15666,7 +16001,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-olive-greens",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-neptune-glow",
@@ -15679,7 +16016,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-turquoises",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-night-sky",
@@ -15692,7 +16031,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-blue-greys",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-oak-brown",
@@ -15705,7 +16046,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ruddy-browns",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-obsidian-skin",
@@ -15718,7 +16061,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-skin-tones",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-olive-drab",
@@ -15731,7 +16076,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-olive-greens",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-onyx-skin",
@@ -15744,7 +16091,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-skin-tones",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-opal-skin",
@@ -15757,7 +16106,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-rose-skin-tones",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-pale-sand",
@@ -15770,7 +16121,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-light-neutrals",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-paratrooper-tan",
@@ -15783,7 +16136,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-browns",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-patagon-pine",
@@ -15796,7 +16151,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-cool-greens",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-pearl-skin",
@@ -15809,7 +16166,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-rose-skin-tones",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-phalanx-blue",
@@ -15822,7 +16181,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-green-blues",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-pharaoh-guard",
@@ -15835,7 +16196,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-teals",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-pink-potion",
@@ -15849,6 +16212,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-pinks",
+   "tone": 5,
    "groupId": "pale-red-01"
   },
   {
@@ -15862,7 +16227,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-pinks",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-plate-mail-metal",
@@ -15888,7 +16255,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ochres-tans",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-pure-red",
@@ -15901,7 +16270,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-cool-reds",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-quartz-skin",
@@ -15915,6 +16286,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-skin-tones",
+   "tone": 6,
    "groupId": "pale-orange-03"
   },
   {
@@ -15928,7 +16301,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-cool-reds",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-raging-rouge",
@@ -15941,7 +16316,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-reds",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-rainforest",
@@ -15954,7 +16331,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-vibrant-greens",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-red-copper",
@@ -15981,6 +16360,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-vivid-blues",
+   "tone": 2,
    "groupId": "deep-blue-05"
   },
   {
@@ -15995,6 +16376,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
    "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-reds",
+   "tone": 1,
    "groupId": "dark-red-03"
   },
   {
@@ -16021,7 +16404,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-vivid-blues",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-ruby-skin",
@@ -16034,7 +16419,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-rose-skin-tones",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-ruddy-umber",
@@ -16047,7 +16434,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ruddy-browns",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-runic-cobalt",
@@ -16060,7 +16449,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-blue-greys",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-sacred-scarlet",
@@ -16073,7 +16464,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-reds",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-scarab-green",
@@ -16086,7 +16479,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-teals",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-shieldwall-blue",
@@ -16099,7 +16494,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-green-blues",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-shining-silver",
@@ -16125,7 +16522,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-light-neutrals",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-space-dust",
@@ -16138,7 +16537,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-yellows",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-spellbound-fuchsia",
@@ -16151,7 +16552,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-magentas",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-stratos-blue",
@@ -16164,7 +16567,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-blue-greys",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-tainted-gold",
@@ -16190,7 +16595,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-teals",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-temple-gate-teal",
@@ -16203,20 +16610,27 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-teals",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-terrestial-titan",
    "brand": "Army Painter",
    "line": "Warpaints Fanatic",
-   "name": "Terrestial Titan",
+   "name": "Terrestrial Titan",
    "hex": "#303149",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Terrestial Titan"
+   ],
+   "family": "army-painter-triad-purples",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-thunderous-blue",
@@ -16229,7 +16643,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-blue-greys",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-tidal-blue",
@@ -16242,7 +16658,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-green-blues",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-tigers-eye-skin",
@@ -16255,7 +16673,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-skin-tones",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-tomb-king-tan",
@@ -16268,7 +16688,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-light-neutrals",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-topaz-skin",
@@ -16281,7 +16703,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-skin-tones",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-tourmaline-skin",
@@ -16294,7 +16718,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-skin-tones",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-tree-ancient",
@@ -16307,7 +16733,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ruddy-browns",
+   "tone": 2
   },
   {
    "id": "army-painter-warpaints-fanatic-triumphant-navy",
@@ -16320,7 +16748,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-strong-pale-blues",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-true-brass",
@@ -16359,7 +16789,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ochres-tans",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-turquoise-siren",
@@ -16372,7 +16804,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-turquoises",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-ultramarine-blue",
@@ -16385,7 +16819,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-strong-pale-blues",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-uniform-grey",
@@ -16398,7 +16834,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-black-greys",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-urban-buff",
@@ -16411,20 +16849,27 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-browns",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-violent-vermillion",
    "brand": "Army Painter",
    "line": "Warpaints Fanatic",
-   "name": "Violent Vermillion",
+   "name": "Violent Vermilion",
    "hex": "#F37964",
    "type": "layer",
    "discontinued": false,
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "formerly": [
+    "Violent Vermillion"
+   ],
+   "family": "army-painter-triad-warm-reds",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-violet-coven",
@@ -16437,7 +16882,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-purples",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-vivid-volt",
@@ -16450,7 +16897,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-vibrant-greens",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-warlock-magenta",
@@ -16463,7 +16912,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-magentas",
+   "tone": 3
   },
   {
    "id": "army-painter-warpaints-fanatic-warped-yellow",
@@ -16476,7 +16927,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-yellows",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-wasteland-clay",
@@ -16489,7 +16942,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-ochres-tans",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-weapon-bronze",
@@ -16515,7 +16970,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-pinks",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-wicked-pink",
@@ -16528,7 +16985,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-pinks",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-wild-green",
@@ -16541,7 +17000,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-deep-greens",
+   "tone": 5
   },
   {
    "id": "army-painter-warpaints-fanatic-wilted-rose",
@@ -16554,7 +17015,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-violets",
+   "tone": 6
   },
   {
    "id": "army-painter-warpaints-fanatic-wolf-grey",
@@ -16567,7 +17030,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-desaturated-blue-greys",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-woodland-camo",
@@ -16580,7 +17045,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-olive-greens",
+   "tone": 1
   },
   {
    "id": "army-painter-warpaints-fanatic-worn-stone",
@@ -16593,7 +17060,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-warm-greys-white",
+   "tone": 4
   },
   {
    "id": "army-painter-warpaints-fanatic-wyvern-fury",
@@ -16606,7 +17075,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Army_Painter.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "army-painter-triad-cool-reds",
+   "tone": 2
   },
   {
    "id": "army-painter-wash-blue-tone",

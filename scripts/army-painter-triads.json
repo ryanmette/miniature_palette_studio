@@ -1,0 +1,959 @@
+{
+  "about": "The Army Painter's Warpaints Fanatic range: its 27 \"Flexible Colour Triads\". A triad is the maker's family of six tones of one colour, from the darkest to the lightest. An input of scripts/build-dataset.mjs: each paint of a triad gets `family` and `tone` (docs/TONE_LADDERS.md §6).",
+  "source": {
+    "publisher": "The Army Painter",
+    "url": "https://www.thearmypainter.com/products.json",
+    "captured": "2026-11-18",
+    "method": "The shop's public product list (the address above, pages 1 to 4, 250 products a page). Each product \"Warpaints Fanatic: <name>\" has a description that names the paint's triad and its place, in words: \"It's the darkest tone from the \\\"Browns\\\" Flexible Colour Triad\". `says` is that sentence, copied. `code` is the product's own code (its SKU without the last letter). No colour value was taken.",
+    "order": "In each triad the maker's codes are six numbers in a row, and the words agree with that order for every paint: the first code is \"the darkest\", the second \"the second-darkest\", the third and fourth \"one of the two middle tones\", the fifth \"the second-lightest\" and the sixth \"the lightest\". The maker's words do not put the two middle tones in an order. Their order here (tones 3 and 4) is the order of their codes.",
+    "rule": "Every triad is a tone family. The maker says the place of each paint, so the build does not test the order against the app's approximate colour values (Reaper's triads needed that test: scripts/reaper-triads.json).",
+    "names": "The paint names are the maker's, from the product titles. Four differ from the community source's spelling: Brigandine Brown (Brigadine), Bony Spikes (Boney), Terrestrial Titan (Terrestial), Violent Vermilion (Vermillion). The build corrects those four names and keeps the old spelling in `formerly`."
+  },
+  "triads": [
+    {
+      "name": "Black & Greys",
+      "paints": [
+        {
+          "code": "WP3001",
+          "name": "Matt Black",
+          "says": "It's the darkest tone from the \"Black & Greys\" Flexible Colour Triad"
+        },
+        {
+          "code": "WP3002",
+          "name": "Deep Grey",
+          "says": "It's the second-darkest tone from the \"Black & Greys\" Flexible Colour Triad"
+        },
+        {
+          "code": "WP3003",
+          "name": "Uniform Grey",
+          "says": "It’s one of the two middle tones from the \"Black & Greys\" Flexible Colour Triad"
+        },
+        {
+          "code": "WP3004",
+          "name": "Ash Grey",
+          "says": "It’s one of the two middle tones from the \"Black & Greys\" Flexible Colour Triad"
+        },
+        {
+          "code": "WP3005",
+          "name": "Company Grey",
+          "says": "It’s the second-lightest tone from the \"Black & Greys\" Flexible Colour Triad"
+        },
+        {
+          "code": "WP3006",
+          "name": "Brigade Grey",
+          "says": "It’s the lightest tone from the \"Black & Greys\" Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Warm Greys & White",
+      "paints": [
+        {
+          "code": "WP3007",
+          "name": "Grey Castle",
+          "says": "It’s the darkest tone from the “Warm Greys & White” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3008",
+          "name": "Gargoyle Grey",
+          "says": "It’s the second-darkest tone from the “Warm Greys & White” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3009",
+          "name": "Great Hall Grey",
+          "says": "It’s one of the two middle tones from the “Warm Greys & White” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3010",
+          "name": "Worn Stone",
+          "says": "It’s one of the two middle tones from the “Warm Greys & White” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3011",
+          "name": "Brainmatter Beige",
+          "says": "It’s the second-lightest tone from the “Warm Greys & White” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3012",
+          "name": "Matt White",
+          "says": "It’s the lightest tone from the “Warm Greys & White” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Desaturated Blue-Greys",
+      "paints": [
+        {
+          "code": "WP3013",
+          "name": "Night Sky",
+          "says": "It’s the darkest tone from the “Desaturated Blue-Greys” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3014",
+          "name": "Thunderous Blue",
+          "says": "It’s the second-darkest tone from the “Desaturated Blue-Greys” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3015",
+          "name": "Stratos Blue",
+          "says": "It’s one of the two middle tones from the “Desaturated Blue-Greys” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3016",
+          "name": "Wolf Grey",
+          "says": "It’s one of the two middle tones from the “Desaturated Blue-Greys” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3017",
+          "name": "Runic Cobalt",
+          "says": "It’s the second-lightest from the “Desaturated Blue-Greys” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3018",
+          "name": "Frost Blue",
+          "says": "It’s the lightest from the “Desaturated Blue-Greys” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Strong Pale Blues",
+      "paints": [
+        {
+          "code": "WP3019",
+          "name": "Triumphant Navy",
+          "says": "It’s the darkest tone from the “Strong Pale Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3020",
+          "name": "Gothic Blue",
+          "says": "It’s the second-darkest tone from the “Strong Pale Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3021",
+          "name": "Ultramarine Blue",
+          "says": "It’s one of the two middle tones from the “Strong Pale Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3022",
+          "name": "Alpha Blue",
+          "says": "It’s one of the two middle tones from the “Strong Pale Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3023",
+          "name": "Baron Blue",
+          "says": "It’s the second-lightest tone from the “Strong Pale Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3024",
+          "name": "Augur Blue",
+          "says": "It’s the lightest tone from the “Strong Pale Blues” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Vivid Blues",
+      "paints": [
+        {
+          "code": "WP3025",
+          "name": "Imperial Navy",
+          "says": "It’s the darkest tone from the “Vivid Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3026",
+          "name": "Regal Blue",
+          "says": "It’s the second-darkest tone from the “Vivid Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3027",
+          "name": "Royal Blue",
+          "says": "It’s one of the two middle tones from the “Vivid Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3028",
+          "name": "Crystal Blue",
+          "says": "It’s one of the two middle tones from the “Vivid Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3029",
+          "name": "Arctic Gem",
+          "says": "It’s the second-lightest tone from the “Vivid Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3030",
+          "name": "Bright Sapphire",
+          "says": "It’s the lightest tone from the “Vivid Blues” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Deep Green-Blues",
+      "paints": [
+        {
+          "code": "WP3031",
+          "name": "Deep Ocean Blue",
+          "says": "It’s the darkest tone from the “Deep Green-Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3032",
+          "name": "Abyssal Blue",
+          "says": "It’s the second-darkest tone from the “Deep Green-Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3033",
+          "name": "Tidal Blue",
+          "says": "It’s one of the two middle tones from the “Deep Green-Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3034",
+          "name": "Phalanx Blue",
+          "says": "It’s one of the two middle tones from the “Deep Green-Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3035",
+          "name": "Shieldwall Blue",
+          "says": "It’s the second-lightest tone from the “Deep Green-Blues” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3036",
+          "name": "Aegis Aqua",
+          "says": "It’s the lightest tone from the “Deep Green-Blues” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Turquoises",
+      "paints": [
+        {
+          "code": "WP3037",
+          "name": "Deep Azure",
+          "says": "It’s the darkest tone from the “Turquoises” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3038",
+          "name": "Hydra Turquoise",
+          "says": "It’s the second-darkest tone from the “Turquoises” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3039",
+          "name": "Turquoise Siren",
+          "says": "It’s one of the two middle tones from the “Turquoises” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3040",
+          "name": "Aquamarine",
+          "says": "It’s one of the two middle tones from the “Turquoises” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3041",
+          "name": "Neptune Glow",
+          "says": "It’s the second-lightest tone from the “Turquoises” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3042",
+          "name": "Marine Mist",
+          "says": "It’s the lightest tone from the “Turquoises” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Teals",
+      "paints": [
+        {
+          "code": "WP3043",
+          "name": "Scarab Green",
+          "says": "It’s the darkest tone from the “Teals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3044",
+          "name": "Temple Gate Teal",
+          "says": "It’s the second-darkest tone from the “Teals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3045",
+          "name": "Pharaoh Guard",
+          "says": "It’s one of the two middle tones from the “Teals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3046",
+          "name": "Talisman Teal",
+          "says": "It’s one of the two middle tones from the “Teals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3047",
+          "name": "Aqua Alchemy",
+          "says": "It’s the second-lightest tone from the “Teals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3048",
+          "name": "Amulet Aqua",
+          "says": "It’s the lightest tone from the “Teals” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Deep Greens",
+      "paints": [
+        {
+          "code": "WP3049",
+          "name": "Angel Green",
+          "says": "It’s the darkest tone from the “Deep Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3050",
+          "name": "Guardian Green",
+          "says": "It’s the second-darkest tone from the “Deep Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3051",
+          "name": "Greenskin",
+          "says": "It’s one of the two middle tones from the “Deep Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3052",
+          "name": "Eternal Hunt",
+          "says": "It’s one of the two middle tones from the “Deep Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3053",
+          "name": "Wild Green",
+          "says": "It’s the second-lightest tone from the “Deep Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3054",
+          "name": "Ferocious Green",
+          "says": "It’s the lightest tone from the “Deep Greens” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Vibrant Greens",
+      "paints": [
+        {
+          "code": "WP3055",
+          "name": "Emerald Forest",
+          "says": "It’s the darkest tone from the “Vibrant Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3056",
+          "name": "Leafy Green",
+          "says": "It’s the second-darkest tone from the “Vibrant Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3057",
+          "name": "Rainforest",
+          "says": "It’s one of the two middles tones from the “Vibrant Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3058",
+          "name": "Electric Lime",
+          "says": "It’s one of the two middles tones from the “Vibrant Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3059",
+          "name": "Vivid Volt",
+          "says": "It’s the second-lightest tone from the “Vibrant Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3060",
+          "name": "Afterglow",
+          "says": "It’s the lightest tone from the “Vibrant Greens” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Desaturated Cool Greens",
+      "paints": [
+        {
+          "code": "WP3061",
+          "name": "Evergreen Fog",
+          "says": "It’s the darkest tone from the “Desaturated Cool Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3062",
+          "name": "Medieval Forest",
+          "says": "It’s the second-darkest tone from the “Desaturated Cool Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3063",
+          "name": "Patagon Pine",
+          "says": "It’s one of the two middle tones from the “Desaturated Cool Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3064",
+          "name": "Autumn Sage",
+          "says": "It’s one of the two middle tones from the “Desaturated Cool Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3065",
+          "name": "Forest Faun",
+          "says": "It’s the second-lightest tone from the “Desaturated Cool Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3066",
+          "name": "Mossy Green",
+          "says": "It’s the lightest tone from the “Desaturated Cool Greens” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Olive Greens",
+      "paints": [
+        {
+          "code": "WP3067",
+          "name": "Woodland Camo",
+          "says": "It’s the darkest tone from the “Olive Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3068",
+          "name": "Army Green",
+          "says": "It’s the second-darkest tone from the “Olive Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3069",
+          "name": "Camouflage Green",
+          "says": "It’s one of the two middle tones from the “Olive Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3070",
+          "name": "Olive Drab",
+          "says": "It’s one of the two middle tones from the “Olive Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3071",
+          "name": "Necrotic Flesh",
+          "says": "It’s the second-lightest tone from the “Olive Greens” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3072",
+          "name": "Grotesque Green",
+          "says": "It’s the lightest tone from the “Olive Greens” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Browns",
+      "paints": [
+        {
+          "code": "WP3073",
+          "name": "Brigandine Brown",
+          "says": "It’s the darkest tone from the “Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3074",
+          "name": "Bootstrap Brown",
+          "says": "It’s the second-darkest tone from the “Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3075",
+          "name": "Leather Brown",
+          "says": "It’s one of the two middles tones from the “Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3076",
+          "name": "Paratrooper Tan",
+          "says": "It’s one of the two middles tones from the “Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3077",
+          "name": "Command Khaki",
+          "says": "It’s the second-lightest tone from the “Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3078",
+          "name": "Urban Buff",
+          "says": "It’s the lightest tone from the “Browns” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Ochres & Tans",
+      "paints": [
+        {
+          "code": "WP3079",
+          "name": "Tundra Taupe",
+          "says": "It’s the darkest tone from the “Ochres & Tans” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3080",
+          "name": "Prairie Ochre",
+          "says": "It’s the second-darkest tone from the “Ochres & Tans” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3081",
+          "name": "Desert Yellow",
+          "says": "It’s one of the two middle tones from the “Ochres & Tans” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3082",
+          "name": "Wasteland Clay",
+          "says": "It’s one of the two middle tones from the “Ochres & Tans” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3083",
+          "name": "Burnt Turf",
+          "says": "It’s the second-lightest tone from the “Ochres & Tans” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3084",
+          "name": "Barren Dune",
+          "says": "It’s the lightest tone from the “Ochres & Tans” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Light Neutrals",
+      "paints": [
+        {
+          "code": "WP3085",
+          "name": "Dusty Skull",
+          "says": "It’s the darkest tone from the “Light Neutrals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3086",
+          "name": "Tomb King Tan",
+          "says": "It’s the second-darkest tone from the “Light Neutrals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3087",
+          "name": "Skeleton Bone",
+          "says": "It’s one of the two middle tones from the “Light Neutrals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3088",
+          "name": "Ancient Stone",
+          "says": "It’s one of the two middle tones from the “Light Neutrals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3089",
+          "name": "Bony Spikes",
+          "says": "It’s the second-lightest tone from the “Light Neutrals” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3090",
+          "name": "Pale Sand",
+          "says": "It’s the lightest tone from the “Light Neutrals” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Yellows",
+      "paints": [
+        {
+          "code": "WP3091",
+          "name": "Demigod Flames",
+          "says": "It’s the darkest tone from the “Yellows” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3092",
+          "name": "Fiendish Yellow",
+          "says": "It’s the second-darkest tone from the “Yellows” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3093",
+          "name": "Daemonic Yellow",
+          "says": "It’s one of the two middles tones from the “Yellows” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3094",
+          "name": "Warped Yellow",
+          "says": "It’s one of the two middles tones from the “Yellows” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3095",
+          "name": "Space Dust",
+          "says": "It’s the second-lightest tone from the “Yellows” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3096",
+          "name": "Ice Yellow",
+          "says": "It’s the lightest tone from the “Yellows” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Oranges",
+      "paints": [
+        {
+          "code": "WP3097",
+          "name": "Molten Lava",
+          "says": "It’s the darkest tone from the “Oranges” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3098",
+          "name": "Burning Ore",
+          "says": "It’s the second-darkest tone from the “Oranges” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3099",
+          "name": "Lava Orange",
+          "says": "It’s one of the two middle tones from the “Oranges” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3100",
+          "name": "Flickering Flame",
+          "says": "It’s one of the two middle tones from the “Oranges” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3101",
+          "name": "Glowing Inferno",
+          "says": "It’s the second-lightest tone from the “Oranges” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3102",
+          "name": "Inner Light",
+          "says": "It’s the lightest tone from the “Oranges” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Warm Reds",
+      "paints": [
+        {
+          "code": "WP3103",
+          "name": "Resplendent Red",
+          "says": "It’s the darkest tone from the “Warm Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3104",
+          "name": "Angelic Red",
+          "says": "It’s the second-darkest tone from the “Warm Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3105",
+          "name": "Legendary Red",
+          "says": "It’s one of the two middle tones from the “Warm Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3106",
+          "name": "Sacred Scarlet",
+          "says": "It’s one of the two middle tones from the “Warm Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3107",
+          "name": "Violent Vermilion",
+          "says": "It’s the second-lightest tone from the “Warm Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3108",
+          "name": "Raging Rouge",
+          "says": "It’s the lightest tone from the “Warm Reds” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Ruddy Browns",
+      "paints": [
+        {
+          "code": "WP3109",
+          "name": "Oak Brown",
+          "says": "It’s the darkest tone from the “Ruddy Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3110",
+          "name": "Tree Ancient",
+          "says": "It’s the second-darkest tone from the “Ruddy Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3111",
+          "name": "Dryad Brown",
+          "says": "It’s one of the two middle tones from the “Ruddy Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3112",
+          "name": "Fur Brown",
+          "says": "It’s one of the two middle tones from the “Ruddy Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3113",
+          "name": "Ruddy Umber",
+          "says": "It’s the second-lightest tone from the “Ruddy Browns” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3114",
+          "name": "Buffed Hide",
+          "says": "It’s the lightest tone from the “Ruddy Browns” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Cool Reds",
+      "paints": [
+        {
+          "code": "WP3115",
+          "name": "Basilisk Red",
+          "says": "It’s the darkest tone from the “Cool Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3116",
+          "name": "Wyvern Fury",
+          "says": "It’s the second-darkest tone from the “Cool Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3117",
+          "name": "Dragon Red",
+          "says": "It’s one of the two middle tones from the “Cool Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3118",
+          "name": "Pure Red",
+          "says": "It’s one of the two middle tones from the “Cool Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3119",
+          "name": "Blood Chalice",
+          "says": "It’s the second-lightest tone from the “Cool Reds” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3120",
+          "name": "Raging Rose",
+          "says": "It’s the lightest tone from the “Cool Reds” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Pinks",
+      "paints": [
+        {
+          "code": "WP3121",
+          "name": "Wicked Pink",
+          "says": "It’s the darkest tone from the “Pinks” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3122",
+          "name": "Impish Rouge",
+          "says": "It’s the second-darkest tone from the “Pinks” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3123",
+          "name": "Pixie Pink",
+          "says": "It’s one of the two middle tones from the “Pinks” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3124",
+          "name": "Weird Elixir",
+          "says": "It’s one of the two middle tones from the “Pinks” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3125",
+          "name": "Pink Potion",
+          "says": "It’s the second-lightest tone from the “Pinks” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3126",
+          "name": "Doomfire Drab",
+          "says": "It’s the lightest tone from the “Pinks” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Purples",
+      "paints": [
+        {
+          "code": "WP3127",
+          "name": "Terrestrial Titan",
+          "says": "It’s the darkest tone from the “Purples” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3128",
+          "name": "Alien Purple",
+          "says": "It’s the second-darkest tone from the “Purples” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3129",
+          "name": "Cultist Purple",
+          "says": "It’s one of the two middle tones from the “Purples” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3130",
+          "name": "Hexed Violet",
+          "says": "It’s one of the two middle tones from the “Purples” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3131",
+          "name": "Violet Coven",
+          "says": "It’s the second-lightest tone from the “Purples” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3132",
+          "name": "Kraken Lavender",
+          "says": "It’s the lightest tone from the “Purples” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Magentas",
+      "paints": [
+        {
+          "code": "WP3133",
+          "name": "Diabolic Plum",
+          "says": "It’s the darkest tone from the “Magentas” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3134",
+          "name": "Magecast Magenta",
+          "says": "It’s the second-darkest tone from the “Magentas” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3135",
+          "name": "Warlock Magenta",
+          "says": "It’s one of the two middle tones from the “Magentas” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3136",
+          "name": "Spellbound Fuchsia",
+          "says": "It’s one of the two middle tones from the “Magentas” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3137",
+          "name": "Enchanted Pink",
+          "says": "It’s the second-lightest tone from the “Magentas” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3138",
+          "name": "Diviner Light",
+          "says": "It’s the lightest tone from the “Magentas” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Desaturated Violets",
+      "paints": [
+        {
+          "code": "WP3139",
+          "name": "Mulled Berry",
+          "says": "It’s the darkest tone from the “Desaturated Violets” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3140",
+          "name": "Moldy Wine",
+          "says": "It’s the second-darkest tone from the “Desaturated Violets” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3141",
+          "name": "Elder Flower",
+          "says": "It’s one of the two middle tones from the “Desaturated Violets” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3142",
+          "name": "Forbidden Fruit",
+          "says": "It’s one of the two middle tones from the “Desaturated Violets” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3143",
+          "name": "Figgy Pink",
+          "says": "It’s the second-lightest tone from the “Desaturated Violets” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3144",
+          "name": "Wilted Rose",
+          "says": "It’s the lightest tone from the “Desaturated Violets” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Rose Skin Tones",
+      "paints": [
+        {
+          "code": "WP3145",
+          "name": "Moonstone Skin",
+          "says": "It’s the darkest tone from the “Rose Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3146",
+          "name": "Agate Skin",
+          "says": "It’s the second-darkest tone from the “Rose Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3147",
+          "name": "Barbarian Flesh",
+          "says": "It’s one of the two middle tones from the “Rose Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3148",
+          "name": "Ruby Skin",
+          "says": "It’s one of the two middle tones from the “Rose Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3149",
+          "name": "Opal Skin",
+          "says": "It’s the second-lightest tone from the “Rose Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3150",
+          "name": "Pearl Skin",
+          "says": "It’s the lightest tone from the “Rose Skin Tones” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Warm Skin Tones",
+      "paints": [
+        {
+          "code": "WP3151",
+          "name": "Carnelian Skin",
+          "says": "It’s the darkest tone from the “Warm Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3152",
+          "name": "Tiger's Eye Skin",
+          "says": "It’s the second-darkest tone from the “Warm Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3153",
+          "name": "Topaz Skin",
+          "says": "It’s one of the two middle tones from the “Warm Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3154",
+          "name": "Jasper Skin",
+          "says": "It’s one of the two middle tones from the “Warm Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3155",
+          "name": "Tourmaline Skin",
+          "says": "It’s the second-lightest tone from the “Warm Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3156",
+          "name": "Leopard Stone Skin",
+          "says": "It’s the lightest tone from the “Warm Skin Tones” Flexible Colour Triad"
+        }
+      ]
+    },
+    {
+      "name": "Deep Skin Tones",
+      "paints": [
+        {
+          "code": "WP3157",
+          "name": "Obsidian Skin",
+          "says": "It’s the darkest tone from the “Deep Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3158",
+          "name": "Onyx Skin",
+          "says": "It’s the second-darkest tone from the “Deep Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3159",
+          "name": "Mocca Skin",
+          "says": "It’s one of the two middle tones from the “Deep Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3160",
+          "name": "Amber Skin",
+          "says": "It’s one of the two middle tones from the “Deep Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3161",
+          "name": "Dorado Skin",
+          "says": "It’s the second-lightest tone from the “Deep Skin Tones” Flexible Colour Triad"
+        },
+        {
+          "code": "WP3162",
+          "name": "Quartz Skin",
+          "says": "It’s the lightest tone from the “Deep Skin Tones” Flexible Colour Triad"
+        }
+      ]
+    }
+  ]
+}
