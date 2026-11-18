@@ -33,6 +33,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **Take to the store… on a phone starts with your list** (F15). The panel was made for a computer: it
     showed a code for the phone to scan itself. On a touch phone it now says "Your list is on this phone" and
     has **Open the list**. The code and the link come after that, "to send it to another device".
+  - **Save asks first when it would replace a saved scheme with a different one** (F17). You save "Blue
+    knight", then pick a new starting paint. **Save** put the new scheme in Blue knight, with no question. It
+    now asks, names the two starting paints, and says how to keep the two schemes (**Save as new**). A change
+    that keeps the starting paint saves at once, as before.
   - **A link to a paint that the app does not have says so** (F18): "This link's paint is not in the app. Here
     is a different paint." Before, it opened a random scheme with no message.
 ### Fixed

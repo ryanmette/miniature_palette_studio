@@ -2417,12 +2417,38 @@ function setupSaveDialog() {
     if (k === 'save' || k === 'asnew') { openSaveDialog(k === 'save' ? 'new' : 'asnew', b); return; }
     if (k === 'update') {
       const st = schemeStatus(); if (st.kind !== 'changed') return;
-      store.updateScheme(st.sc.id, { link: schemeLink() });
-      renderSchemeBar();
+      const put = () => {
+        store.updateScheme(st.sc.id, { link: schemeLink() });
+        renderSchemeBar();
+        toast(t('savedChanges', { name: st.name }));
+      };
+      // A new starting paint makes a different scheme (UX review F17): Save "Blue knight", pick Caliban Green,
+      // and Save put a green scheme in Blue knight, with the shopping list's "for Blue knight" paints now
+      // pointing at it. So this Save asks first, and says how to keep both. A change that keeps the starting
+      // paint (a harmony, a hold, the lightness of a custom colour is a new colour) saves at once, as before.
+      const was = savedStartName(st.sc.link), now = baseInfo().name;
+      if (was && was !== now) {
+        $('#confirmDlg').classList.add('nobackup');   // a scheme is not the shelf: no backup offer here
+        openConfirm({
+          title: t('replaceSchemeTitle', { name: st.name }),
+          body: () => `<p>${ui.esc(t('replaceSchemeBody', { name: st.name, was, now }))}</p><p>${ui.esc(t('replaceSchemeKeep'))}</p>`,
+          okLabel: t('replace'), opener: b,
+          // the Save button goes with the save: the name is the Save line's landing spot
+          onOk: () => { put(); cdlg.opener = $('#sbName'); },
+        });
+        return;
+      }
+      put();
       $('#sbName')?.focus({ preventScroll: true });
-      toast(t('savedChanges', { name: st.name }));
     }
   });
+}
+/** The name of the starting paint (or colour) that a kept scheme's link holds, as the hero names it; '' when
+ *  this build cannot read it. For the Save that would put a different scheme in a saved one (F17). */
+function savedStartName(link) {
+  const d = decodeState(link, { validHarmony, hasPaint: id => state.idx.byId.has(id), maxFree: MAX_FREE });
+  const paint = d.baseId ? state.idx.byId.get(d.baseId) : null;
+  return paint ? ui.pname(paint) : d.customHex ? 'Custom ' + d.customHex : '';
 }
 /** A kept scheme built from its link alone, as the Recipe builds it (currentScheme), without changing
  *  the scheme on screen. The link was made from a scheme on screen, so its harmony already suits its

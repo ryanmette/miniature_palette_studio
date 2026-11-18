@@ -213,6 +213,10 @@ const LOCALES = {
     nameTaken: 'Another scheme is called {name}. This one will be {unique}.',
     savedAs: 'Saved as {name}',
     savedChanges: 'Saved the changes to {name}',
+    // Save on a saved scheme after a new starting paint (UX review F17): it asks first
+    replaceSchemeTitle: 'Put a different scheme in {name}?',
+    replaceSchemeBody: '{name} starts from {was}. The scheme on screen starts from {now}. Replace puts the scheme on screen in {name}. The paints on your shopping list that are for {name} then go with the new scheme. You cannot undo this.',
+    replaceSchemeKeep: 'To keep the two schemes, choose Cancel, then Save as new.',
     openedScheme: 'Opened {name}',
     schemesTitle: 'Schemes',
     savedSchemes: 'Saved schemes',
