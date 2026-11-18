@@ -158,7 +158,9 @@ function delta(ops, measure, x, y, pot, seed, yourPaint, T, px, maxW) {
   // ΔE is plain mono text, never a chip, and always has its §3.2 label (§2: never imply a perfect match).
   // The picked paint itself says "Starting paint". A tag that does not fit beside the number goes under it.
   if (seed) { tag(ops, measure, x, y, yourPaint, T.borderStrong, T.muted, T, px); return; }
-  const tier = pot.tier === 'success' ? [T.success, T.successText] : pot.tier === 'warning' ? [T.warning, T.warningText] : [T.danger, T.dangerText];
+  // a neutral word ("A metallic you own", scheme.js OWN_METAL_QUALITY) is a neutral tag, as "Starting paint"
+  const tier = pot.tier === 'success' ? [T.success, T.successText] : pot.tier === 'warning' ? [T.warning, T.warningText]
+    : pot.tier === 'neutral' ? [T.borderStrong, T.muted] : [T.danger, T.dangerText];
   const de = `ΔE ${pot.dE.toFixed(1)}`, mf = font(400, px, 'mono');
   ops.push({ t: 'text', x, y, text: de, font: mf, px, fill: T.text, ground: T.bg });
   const beside = measure(mf, de) + px * 0.6, tagW = measure(font(500, px), pot.label) + px * 0.9;

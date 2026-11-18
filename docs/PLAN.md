@@ -1029,6 +1029,111 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       both are probably effects (`fx: gloss`). The product page is gone (404) and it is not in the maker's
       public product list, so there is no primary source to read. No change until one is found.
 
+### Raised by the UX review on 2026-11-17 — before the first showing (items 76 to 80 built, and the words of items 82 and 85; the others not yet)
+
+[`docs/UX_REVIEW.md`](UX_REVIEW.md): a review of the whole app as a new painter meets it (experienced painters, a
+link, alone, mostly on an iPhone). Two deep journeys, ten seams, measurements, and a severity from three independent
+raters on Nielsen's 0 to 4 scale. No app code changed. The items are in the order of the ratings. Ryan decides which
+to build before the link goes out; the review's stop rule is "the 4s and the 3s that you agree with".
+
+**Ryan's answers (2026-11-17):** there is no date for the link; the scheme journey comes first (not the lookup); the
+ratings stand. **The build order** follows the journey, not the ratings alone, because a painter who stops at an
+early step never sees a later fix:
+
+0. Ryan's iPhone check (item 77's first part; no code). Its result decides what item 77 builds. **Done (2026-11-18),
+   in part:** the Home Screen app starts with an empty Shelf; the in-app browser question and the 8 days are open
+   (`docs/UX_REVIEW.md` §7).
+1. Item 78: "mark my shelf" opens the list, and a grid result has its name. **Built (2026-11-17).**
+2. Items 76 and 79 together: offer Use my paints when the Shelf gets paints, and the Metal role with a shelf. (Two
+   raters said that item 76 alone moves the complaint to item 79.) **Built (2026-11-17).**
+3. Item 80, its first part: the main Add button puts only the role pots on the list. **Built (2026-11-18).**
+4. Item 77: keep the Shelf on an iPhone, after step 0. **Built (2026-11-18).**
+5. With any of the steps: the three wording errors (F19) and a softer word than "Interchangeable" (item 82, in part).
+   **Built (2026-11-18):** "Almost the same colour in the paint data", in Other brands and in Paint details.
+
+**This order comes first** (Ryan, 2026-11-17: "review's steps first"). The block "Next (as of 2026-11-18, after
+v1.19.0)" below is a second order that Ryan gave on the same day, in another session, for other work; it follows
+steps 1 to 4. Item 64 B there (a Brand setting in ⋯) is built: it was also the second part of item 80 here.
+
+The link goes out when steps 1 to 4 are done. Items 81 (the lookup), 82 (the hex data), 83 and 84, and the rest of
+item 85, come after the first painters answer.
+
+76. **The scheme ignores the Shelf until the painter finds a setting in ⋯** (F01; rated 4 · 4 · 4). After 45 marks,
+    Use my paints is still Off and the Recipe says "+ Add 14". Recommend: when the Shelf gets its first owned paints,
+    offer the setting in that place (Prefer · Only · Not now), and keep a next step in the Studio after "mark my shelf
+    first" (the band ends there today). The control stays in ⋯ (CLAUDE.md §3.6).
+    **Built (2026-11-17).** The offer is in the Studio, not on the Shelf: a band under the seed toolbar, when the
+    Studio opens with owned paints, the setting Off and no answer yet (Prefer my paints · Only my paints · Not now;
+    `app.js umpOfferDue`, the pref `umpAsked`). Why there: on the Shelf it would come in at the moment of a mark and
+    move the list under the finger (§3.4); the Studio's opening is the seam where the finding occurs, and it is
+    also the next step after "mark my shelf first". Checked in a browser from a new device: the door, three ticks,
+    back to the Studio, the offer, Prefer, a reload (no offer).
+77. **Keep the Shelf on an iPhone** (F08; 4 · 4 · 4, from WebKit's text, not yet from a phone). **First: Ryan's hand
+    check** (UX_REVIEW §7, items 1, 2 and 8). Then: one message in the flow when the Shelf first holds real work
+    (Back up · Add to Home Screen); correct Help ("Where is my shelf saved?": back up in Safari, add to the Home
+    Screen, Restore there, because a Home Screen app has its own storage); call `navigator.storage.persist()`.
+    **Built (2026-11-18).** The hand check's first item is confirmed on Ryan's iPhone: the Home Screen app starts
+    with an empty Shelf. The message is `#keepNote` (first in `<main>`, when a mode opens, at 10 owned paints or a
+    saved scheme, one time: Back up now · How to keep it · Not now; the pref `keepAsked`); Help has the order of
+    the steps; a backup calls `persist()` (CLAUDE.md §3.6). **Open:** the in-app browser question (hand check
+    item 2: a Shelf marked inside Discord's or Instagram's own browser), and the 8-day result (item 8).
+78. **"Mark my shelf" opens the list, and a grid result has its name** (F05, F06, F07; 3 · 3 · 3 for the first two).
+    **Built (2026-11-17), direction A** (Ryan: "go with A"; the other two were B, one question about the painter's
+    main brand, and C, the list as it was). With no search and no status filter the list is an index: 54 lines
+    (brand · line), closed at first, each with its count and "N owned"; the first-run link opens it; the grid of a
+    search shows each paint's name and brand. Measured on a phone: the list of every paint is 2,948px tall (it was
+    about 54,000px), and a line of 220 paints opens in 12ms. Not built here: lines that close by brand (two
+    levels), and a brand order that puts the painter's own brands first. The first painters can say if they miss
+    them.
+    The door opens on 3,375 squares with no names; the list (names and a tick) is behind an icon. Recommend one
+    study: the door opens the list at the painter's brand, with lines that close; a search result in the grid shows
+    its name. Measured: 96 taps + 211 key presses to mark 48 pots through the grid's search.
+79. **The Metal role with a shelf** (F02; 3 · 3 · 3). With Prefer, the Metal role is an owned metallic in 0 of 203
+    schemes for a painter who owns 6. A study: prefer an owned metallic of the role's kind, and say why. It changes
+    a §7 ranking rule (a CHANGELOG note).
+    **Measured (2026-11-17; `docs/UX_REVIEW.md` §11, `mockups/ux-review/metal-rule.mjs`), not built.** On five
+    shelves, an owned metallic is the Metal pot for 7% today, and for 80% with an owned boost of 15 for the Metal
+    role, with no pot of the wrong kind and none over ΔE 14.2. A rule by kind (white or yellow metal, from the hex)
+    gives the same 80% but puts a bright silver on a gunmetal part; "any owned metallic" gives a silver for a gold.
+    Recommended: the boost is 15 for the Metal role, and an owned Metal pot shows its true ΔE with a neutral line
+    in place of "Poor". **Built (2026-11-17), as Ryan chose ("15 and A"):** `scheme.js metalMatch` (the Recipe and
+    the live palette call it), `METAL_OWNED_REACH` = 15, the words "A metallic you own" (CLAUDE.md §3.2 and §7).
+    For the test painter with Prefer, the Metal pot is an owned metallic in 203 of 203 schemes (it was 0).
+80. **The shopping list's main button** (F04; 3 · 3 · 3). "+ Add N" is a median 14 pots from 7 brands, and counts the
+    metallic ladder and the NMM ladder together. Recommend: the main button adds the role pots that the painter does
+    not own; the ladders are a second choice; never NMM with the metallics. Then the Brand setting of item 64
+    (`docs/TONE_LADDERS.md`).
+    **Built (2026-11-18), both parts.** The first part: `scheme.js schemeGaps` gives each paint its part (role ·
+    ladder · nmm); the Recipe's primary button is "+ Add N pots to the shopping list" (the roles' pots, four at
+    most), "Add N ladder pots" is a secondary button beside it, and "Add the N NMM pots" is a text action on the
+    Metal card. Each has a reserved slot, so a press moves nothing (CLAUDE.md §3.6). The second part, the Brand
+    setting, is built on main (1.18.0). **Open:** a way to the list from that place (F14, item 85).
+81. **Other brands for one brand, and a front door for the lookup** (F11: 3 · 3 · 3; F10: 2 · 2 · 2). "The Vallejo
+    version of Mephiston Red" has an answer only when a Vallejo paint is in the 8 closest. Recommend: a brand select
+    on the tab, with the best match for each brand as the default view; and one direction of
+    `mockups/buying-assistant.html` for the front door.
+82. **Trust in the matches** (F12; 3 · 3 · 3). A painter tests the app with a paint they know. Do the first batch of
+    item 49 (`docs/COLOUR_CHECK.md`: Citadel Base, then Layer) before the showing; use a softer word than
+    "Interchangeable — same colour" for a group made from hex values; Ryan to read the 15 pairs of
+    `mockups/ux-review/trust.mjs` as a painter.
+    **Built (2026-11-18), the words only:** a group says "Almost the same colour in the paint data (ΔE 1 or
+    less)" and "compare the pots", in Other brands and in Paint details (CLAUDE.md §3.5 Words). **Open:** the
+    first batch of item 49, and Ryan's reading of the 15 pairs.
+83. **"From my pots, which go well together?"** (F03; 3 · 3 · 2). In Only mode, 63% of the roles are "Poor": the
+    labels are honest, and the painter reads "your pots are poor". A product question. Item 61 (the Shelf's Map, built in
+    1.16.0) shows the shelf's tones and gaps, but it does not make a scheme. Not a small fix.
+84. **The phone's first screen** (F09, F13; 2 · 2 · 2 each). After a pick, the pots start 134 px below the screen.
+    The first pick keeps the random harmony of the first load (a value harmony about 2 times in 9). Recommend: the
+    pots on the first screen after a pick (a reason to look again at item 48), and a fixed harmony for the first pick.
+85. **Small fixes, one batch** (rated 2 or less): a way to the list after Add, and the Shopping list filter opens in
+    the list view (F14); Take to the store on a phone says "your list is on this phone" first (F15); a name the
+    painter did not change is Skip (F16); a new starting paint on a saved scheme (F17; Save has no confirm); a
+    message for a link to an unknown paint (F18); "1 paints", "typed hex" for a wheel tap, the doubled hex (F19:
+    **built 2026-11-18**);
+    painters' words in the Accessibility tab and "Warhammer Colour (Citadel)" (F20); the brand in the tick's name
+    (F21); the counts line's reflow (F22); back to the role card from Other brands (F23); two lines for a name in the
+    live palette (F24).
+
 ### Next (as of 2026-11-18, after v1.19.0)
 
 Ryan's order (2026-11-17: "go with your recommendation"):
