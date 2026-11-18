@@ -294,6 +294,12 @@ const LOCALES = {
     rkHintWant: 'Tick a paint when it is in your basket: it is then owned. Tap again to undo.',
     rkHintAll: 'A tick marks a paint owned. Tap again to undo.',
     umpOfferBody: 'You marked {n} as owned. A scheme does not use them until you say so.',
+    // the "Keep your shelf safe" message (item 77): where the shelf is, by help.js shelfHome
+    keepBody_safari: 'Your shelf is saved only in Safari on this device. Safari can remove it when you do not use Palette Studio for 7 days. A backup file keeps it safe.',
+    keepBody_browser: 'Your shelf is saved only in this browser on this device. If the browser clears its data, the shelf goes with it. A backup file keeps it safe.',
+    keepBody_home: 'Your shelf is saved only in this app on this device. A backup file keeps a copy of it.',
+    keepHintHome: 'On the Home Screen, the app keeps its shelf longer. But the Home Screen app starts with an empty shelf: back up here first, then use Restore… there.',
+    keepLater: 'You can back up at any time: ⋯ → Back up everything.',
     umpOfferPrefer: 'Use my paints: Prefer. Change it in ⋯ Settings.',
     umpOfferOnly: 'Use my paints: Only. Change it in ⋯ Settings.',
     umpOfferLater: 'To turn it on later: ⋯ Settings, Use my paints.',

@@ -540,6 +540,21 @@ Chromium cannot answer these. Use an iPhone, and the live site.
 8. **Come back after 8 days** with no visit between (use Safari each day). Is the Shelf there? This is the
    only real test of the 7-day rule.
 
+### 7.1 Results (Ryan's iPhone, the live site, 2026-11-18)
+
+| Item | Result |
+|---|---|
+| 1. Home Screen and the Shelf | **The Home Screen app's Shelf was empty.** WebKit's text is confirmed on a phone. The time of a Restore was not measured. |
+| 2. In-app browsers | **Not answered.** Ryan did a different test: a link shared from the phone's browser to Discord, opened in a private window on a desktop, showed no marked paints. That is as designed: a link holds a scheme, not the Shelf. The question stays open: is a Shelf that is marked inside Discord's own browser in Safari the next day? |
+| 3. The seed field | The keyboard goes down after a pick. |
+| 4. A fast scroll on the grid | The count of owned paints did not change. |
+| 5. Hold and slide, then hold still | The loupe works. **No menu after the hold.** The instruction was not clear: a slide and then a hold in one press never opens the menu, by design. In Chromium with real touch events, a still press opens the menu at 500 ms, also with 6 px of finger movement, and a movement of 12 px stops it. To try again on the iPhone: a new press on one paint, with no slide, for one second. |
+| 6. Share image… and Share link… | The share sheet opens at once. The image and a link go with it. |
+| 7. Take to the store… | Two paints were ticked (Amethyst Blue and Anthracite Grey, AK Interactive). The result of **Send “bought”…** was not reported. |
+| 8. After 8 days | To come. |
+
+Item 1 decided step 4 (§11.9).
+
 ---
 
 ## 8. Questions to send with the link
@@ -704,3 +719,24 @@ way from that place to the list) is open, in PLAN item 85.
 
 The groups and the matches are the same. The other parts of F12 are open: the first batch of
 [`COLOUR_CHECK.md`](COLOUR_CHECK.md), and Ryan's reading of the 15 pairs.
+
+### 11.9 Step 4, built: keep the Shelf (F08; PLAN item 77)
+
+The hand check (§7.1) confirmed the point that the raters did not have at first: the Home Screen app starts
+with an empty Shelf. So "add the app to your Home Screen", alone, was advice that loses the Shelf.
+
+- **One message, one time** (CLAUDE.md §3.6): "Keep your shelf safe", when the Shelf first holds real work
+  (10 owned paints, or a saved scheme) and a mode opens. **Back up now** writes the backup file at once.
+  **How to keep it** opens Help at the steps. **Not now** ends it. In Safari it names the 7 days; on an
+  iPhone it adds the Home Screen order.
+- **Help** gives the order: back up in Safari, add to the Home Screen, open the app from its icon, Restore…
+  there. It also says that a shared link holds a scheme, not the Shelf (§7.1, item 2).
+- **`navigator.storage.persist()`** on each backup, and at load in an installed web app. WebKit's page says
+  that persistent storage "might be excluded from eviction" and that the request is granted "based on
+  heuristics like whether the website is opened as a Home Screen Web App"
+  ([WebKit, 10 Aug 2023](https://webkit.org/blog/14403/updates-to-storage-policy/)). It is no promise.
+
+Checked in Chromium with an iPhone user agent and with a desktop one: the message does not come in at the
+10th mark, it comes in when the next mode opens, each answer ends it, the backup file holds the answer, and a
+backup from ⋯ ends it and leaves the ⋯ popover open. **Not checked on an iPhone.** Open: the in-app browser
+question (item 2), and the 8 days (item 8).

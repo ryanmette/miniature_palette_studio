@@ -195,7 +195,7 @@ test('a backup carries exactly theme, locale, collection, ladder, contrast, the 
   const seed = { 'ps-state': JSON.stringify({ v: 1, owned: [], want: [], prefs: { fill: 'real', theme: 'dark', bogus: 1 } }) };
   const { store } = await freshStore(seed);
   const prefs = JSON.parse(store.exportJSON()).prefs;
-  assert.deepEqual(Object.keys(prefs).sort(), ['brand', 'brandMode', 'collection', 'contrast', 'ladder', 'locale', 'theme', 'umpAsked']);
+  assert.deepEqual(Object.keys(prefs).sort(), ['brand', 'brandMode', 'collection', 'contrast', 'keepAsked', 'ladder', 'locale', 'theme', 'umpAsked']);
   assert.equal(prefs.theme, 'dark');
   assert.equal(store.getPref('fill'), undefined);
   // the Brand setting: a value it may not have gets its default
@@ -273,7 +273,7 @@ test('a pref value it may not have gets the default on load, and is not restored
   const junk = { theme: 'Dark', locale: 'fr-FR', collection: 'yes', ladder: 7, contrast: 'no' };
   // on load: every junk value falls back to its default
   const { store } = await freshStore({ 'ps-state': JSON.stringify({ v: 1, owned: [], want: [], prefs: junk }) });
-  assert.deepEqual(JSON.parse(store.exportJSON()).prefs, { theme: null, ladder: 'wash', locale: null, collection: 'off', contrast: false, brandMode: 'any', brand: '', umpAsked: false });
+  assert.deepEqual(JSON.parse(store.exportJSON()).prefs, { theme: null, ladder: 'wash', locale: null, collection: 'off', contrast: false, brandMode: 'any', brand: '', umpAsked: false, keepAsked: false });
   // on restore: a junk value counts as not carried, so this device's own value stays
   store.setPref('theme', 'dark'); store.setPref('collection', 'prefer'); store.setPref('contrast', true);
   assert.equal(store.importJSON(JSON.stringify({ owned: ['a'], prefs: junk })), true);
@@ -612,6 +612,20 @@ test('v2: asked — the naming step shows a project once; it survives a reload a
   const again = await freshStore({ 'ps-state': ls.getItem('ps-state') });
   assert.equal(again.store.getScheme(sid).asked, true);
   assert.equal(again.store.getScheme(sid).saved, false);           // asked and skipped: still not saved
+});
+
+test('keepAsked (the "Keep your shelf safe" message, PLAN item 77): false at first, and a backup carries the answer', async () => {
+  const fresh = await freshStore({});
+  assert.equal(fresh.store.getPref('keepAsked'), false);
+  fresh.store.setPref('keepAsked', true);
+  // the app sets it before it writes the file, so a Restore of that file (the Home Screen app) does not ask again
+  const file = fresh.store.exportJSON();
+  assert.equal(JSON.parse(file).prefs.keepAsked, true);
+  const home = await freshStore({});
+  assert.equal(home.store.importJSON(file), true);
+  assert.equal(home.store.getPref('keepAsked'), true);
+  const odd = await freshStore({ 'ps-state': JSON.stringify({ v: 2, owned: [], want: [], prefs: { keepAsked: 1 } }) });
+  assert.equal(odd.store.getPref('keepAsked'), false, 'an odd value gets the default');
 });
 
 test('umpAsked (the offer of Use my paints, PLAN item 76): false at first, saved, and only a boolean is kept', async () => {

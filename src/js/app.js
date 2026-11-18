@@ -22,7 +22,7 @@ import * as ui from './ui.js';
 import * as store from './store.js';   // versioned, portable collection + prefs persistence (the only storage chokepoint)
 import * as i18n from './i18n.js';      // lightweight UI-string localization (chrome only; paint names never translate)
 import { APP_VERSION, WHATS_NEW, EARLIER_NEWS } from './version.js';
-import { describeDevice, supportLine } from './help.js';   // the support details line (Help's Contact)   // the one app-version constant (check-docs.mjs holds it to package.json)
+import { describeDevice, supportLine, shelfHome } from './help.js';   // the support details line (Help's Contact)   // the one app-version constant (check-docs.mjs holds it to package.json)
 
 const t = i18n.t;
 
@@ -2646,6 +2646,7 @@ function setMode(mode) {
   else if (state.mode === 'schemes') { renamingId = null; renderSchemesPage(); window.scrollTo(0, 0); }
   else if (studioMarksStale) paintStudioMarks();   // marks made on the Shelf: the Studio repaints now it shows
   syncUmpOffer({ open: state.mode === 'studio' });   // back in the Studio with paints on the Shelf: ask once (item 76)
+  syncKeepNote({ open: true });   // a mode has opened: the one moment the keep message may come in (item 77)
   updateUrl();
 }
 /** Seed from a paint: the seed field's list, or the Shelf's Use as seed. It goes into Recent. The render's
@@ -2811,6 +2812,53 @@ function answerUmpOffer(v) {
   // the band is gone, and the control that had the focus with it: the hero line is the Studio's landing spot
   $('#hero').focus({ preventScroll: true });
   toast(t(v === 'prefer' ? 'umpOfferPrefer' : v === 'only' ? 'umpOfferOnly' : 'umpOfferLater'));
+}
+/* ---- Keep the Shelf (PLAN §5 item 77; UX review F08, rated 4 by all three raters) ----
+   The shelf is only in this browser. Safari can delete it after 7 days of Safari use with no use of the app
+   (WebKit, "Full Third-Party Cookie Blocking and More", 2020), and on Ryan's iPhone (2026-11-18) the Home Screen
+   app started with an EMPTY shelf: its storage is apart from Safari's. Help said "add the app to your Home
+   Screen", and a painter reads Help after the shelf is gone. So the app says it one time, in the flow, when
+   the shelf first holds real work, with the one action that always helps: a backup file.
+   Like the offer of Use my paints, it comes in only when a mode opens (a mode switch, or a load), never at the
+   moment of a mark (§3.4), and in the Studio it waits while another band shows. An answer, or any backup,
+   ends it for good (the pref keepAsked; it is set before the file is written, so a Restore of that file on
+   the Home Screen does not ask again). */
+const KEEP_AT = 10;   // owned paints: about the point where marking them again is real work
+const hasRealWork = () => store.counts().owned >= KEEP_AT || store.listSchemes().some(sc => sc.saved);
+const shelfHomeNow = () => shelfHome(navigator.userAgent, {
+  standalone: navigator.standalone === true || matchMedia('(display-mode: standalone)').matches,
+  native: !!globalThis.Capacitor?.isNativePlatform?.(),
+});
+const keepNoteDue = () => !firstRun && !store.getPref('keepAsked') && hasRealWork() && shelfHomeNow() !== 'native';
+/** Show the message when it is due (`open`: a mode has just opened); in every case, hide it when it is not. */
+function syncKeepNote({ open = false } = {}) {
+  const el = $('#keepNote');
+  if (!keepNoteDue()) { el.hidden = true; return; }
+  if (!open) return;   // due, but the painter is at work: wait for the next opening (a visible one stays)
+  // one band at a time in the Studio: the offer of Use my paints goes first
+  if (state.mode === 'studio' && !$('#umpOffer').hidden) { el.hidden = true; return; }
+  const home = shelfHomeNow();
+  $('#keepNoteBody').textContent = t(home === 'home' ? 'keepBody_home' : home.startsWith('safari') ? 'keepBody_safari' : 'keepBody_browser');
+  const hint = $('#keepNoteHint');
+  hint.hidden = home !== 'safari-ios';
+  if (!hint.hidden) hint.textContent = t('keepHintHome');
+  el.hidden = false;
+}
+/** The message has its answer. `focus`: one of the band's own buttons was pressed, so the focus goes with the
+ *  band: the mode switch is in every mode, and its pressed button is the landing spot. (A backup from ⋯ leaves
+ *  the focus where it is: moving it out of the ⋯ popover closes the popover.) */
+function endKeepNote({ focus = false } = {}) {
+  if (!store.getPref('keepAsked')) store.setPref('keepAsked', true);
+  $('#keepNote').hidden = true;
+  if (focus) $('#modeNav [aria-pressed="true"]')?.focus({ preventScroll: true });
+}
+/** Ask the browser to keep this site's data (the Storage API's persistent mode). WebKit: an origin "might be
+ *  excluded from eviction if … its storage is in persistent mode", and it "grants a request based on heuristics
+ *  like whether the website is opened as a Home Screen Web App" ("Updates to Storage Policy", 2023). So it can
+ *  help, and it is no promise: the backup file is the real copy. Firefox asks the painter, so the request is
+ *  made only after a backup (the painter has said that the shelf matters), or in an installed app. */
+function askPersist() {
+  try { navigator.storage?.persist?.()?.catch?.(() => {}); } catch { /* an old browser: nothing to ask */ }
 }
 /** ⋯ → Brand (docs/TONE_LADDERS.md B; Ryan 2026-11-06): any · prefer (a 2 ΔE bonus) · only (a filter), for one
  *  brand; saved for the device. The brand the select SHOWS is the painter's own pick, or else the brand they
@@ -3080,6 +3128,7 @@ function afterStoreReplaced({ keepLinkTheme = false } = {}) {
   if (state.mode === 'shelf') renderShelf();
   renderMatchNote();
   syncLocaleStrings();
+  syncUmpOffer(); syncKeepNote();   // a Restore or a Delete can end them (they never come in here)
 }
 
 /* ---- ⋯ Settings (§3.6; mockups/collection-setting.html #fullmenu, corrected by #critique) ----
@@ -3566,10 +3615,14 @@ async function sendBought() {
 }
 
 /* ---- Back up / Restore / Delete ---- */
-/** Download the backup file (store.exportJSON, with its `saved` date). @returns the file name */
+/** Download the backup file (store.exportJSON, with its `saved` date), and ask the browser to keep the data. @returns the file name */
 function saveBackup() {
   const name = backupName();
+  // A painter who makes a backup knows how to keep the shelf: the "Keep your shelf safe" message has its
+  // answer (item 77). Before the file is written, so the file holds the answer too.
+  endKeepNote();
   download(name, store.exportJSON(), 'application/json');
+  askPersist();
   return name;
 }
 const cdlg = { onOk: null, opener: null, body: null };
@@ -4018,6 +4071,10 @@ function wire() {
   $('#umpOfferPrefer').addEventListener('click', () => answerUmpOffer('prefer'));
   $('#umpOfferOnly').addEventListener('click', () => answerUmpOffer('only'));
   $('#umpOfferNo').addEventListener('click', () => answerUmpOffer(null));
+  // Keep the Shelf (item 77): a backup now, the steps in Help, or not now. Each of the two answers ends it.
+  $('#keepBackup').addEventListener('click', () => { endKeepNote({ focus: true }); toast(t('backupSaved', { file: saveBackup() })); });
+  $('#keepHow').addEventListener('click', e => openHelp(e.currentTarget, '#shelf-saved'));
+  $('#keepNo').addEventListener('click', () => { endKeepNote({ focus: true }); toast(t('keepLater')); });
   // "Mark my shelf first" opens the list, as an index (item 78): the grid was 3,375 squares with no names
   $('#firstRunShelf').addEventListener('click', () => {
     endFirstRun();
@@ -4092,6 +4149,7 @@ async function init() {
       syncSettingsControls(); syncLocaleStrings();
     }
     render('marks');
+    syncKeepNote();     // another tab made a backup, or deleted the shelf: the message here goes too
     refreshConfirm();   // an open Restore or Delete confirm shows the counts on this device now
   });
   state.brands = [...new Set(state.idx.paints.map(p => p.brand))].sort();
@@ -4166,6 +4224,8 @@ async function init() {
   // render does not end it). A native shell that restored a shelf is not a first visit.
   if (store.firstVisit && !restored && !url.get('p') && !url.get('c') && !url.has('l') && !url.has('b')) startFirstRun();
   syncUmpOffer({ open: true });   // a visit that starts in the Studio, with paints marked on an earlier one
+  syncKeepNote({ open: true });
+  if (shelfHomeNow() === 'home' && hasRealWork()) askPersist();   // an installed app: WebKit grants it there, with no question
   if (url.get('m') === 'shelf' || url.get('m') === 'schemes') setMode(url.get('m'));   // deep-link / refresh stays in that mode
   // A store list or a "bought" link (item 37). The first render has already written the address bar without
   // them, so a reload does not ask again.

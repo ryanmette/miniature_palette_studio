@@ -1,7 +1,7 @@
 // help.js — the support details line (mockups/help-about.html, answer 3).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { describeDevice, supportLine } from '../src/js/help.js';
+import { describeDevice, supportLine, shelfHome } from '../src/js/help.js';
 
 const UA = {
   iphoneSafari: 'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1',
@@ -35,4 +35,13 @@ test('supportLine: only what is known, in a fixed order; the scheme only when gi
     'Palette Studio 1.13.0 · paint data 1.6.0 · Safari 27 on macOS · 1180 × 900 · dark theme · en-GB');
   assert.equal(supportLine({ version: '1.13.0' }), 'Palette Studio 1.13.0');
   assert.equal(supportLine({ version: '1.13.0', scheme: 'https://x.test/?c=112233' }), 'Palette Studio 1.13.0\nScheme: https://x.test/?c=112233');
+});
+
+test('shelfHome: where the shelf is saved, for the words of the keep message (item 77)', () => {
+  assert.equal(shelfHome(UA.iphoneSafari), 'safari-ios');          // the 7-day rule, and the Home Screen hint
+  assert.equal(shelfHome(UA.macSafari), 'safari');                 // the 7-day rule
+  assert.equal(shelfHome(UA.iphoneSafari, { standalone: true }), 'home');   // the Home Screen app: its own storage
+  assert.equal(shelfHome(UA.ipadApp, { native: true }), 'native');          // the iOS app: no message
+  // every other browser gets the plain words: Chrome says "Safari/" too, and Chrome on an iPhone is not Safari
+  for (const ua of [UA.macChrome, UA.winEdge, UA.winFirefox, UA.android, UA.iphoneChrome, UA.ipadApp, '']) assert.equal(shelfHome(ua), 'browser');
 });

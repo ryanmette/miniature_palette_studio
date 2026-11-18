@@ -7,6 +7,20 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.18.0 took only the web entries. -->
 ### Added
+- **Keep your shelf safe: the app says how, one time** (PLAN §5 item 77; `docs/UX_REVIEW.md` F08, a finding of
+  the highest severity, and Ryan's iPhone check of 2026-11-18; CLAUDE.md §3.6). Step 4 of the review's build
+  order. Your shelf is only in your browser. Safari can remove it when you do not use Palette Studio for 7 days.
+  Only Help said so, and a painter reads Help after the shelf is gone.
+  - When your shelf first holds real work (10 owned paints, or a saved scheme), a message shows one time:
+    **Keep your shelf safe**, with **Back up now**, **How to keep it** and **Not now**. It comes in only when
+    you open the Studio, Schemes or the Shelf, never while you work. A backup from ⋯ ends it too.
+  - **Help is corrected.** It told you to add the app to your Home Screen. On an iPhone, the Home Screen app
+    has its own shelf, and it starts empty (seen on a real iPhone). Help now gives the order: back up in
+    Safari, add to the Home Screen, open the app from its icon, then Restore… there. It also says that a
+    shared link holds a scheme, not your shelf.
+  - When you make a backup, the app asks the browser to keep its data (`navigator.storage.persist()`). The
+    browser can say no, so the backup file is the real copy.
+  - A new saved setting, `keepAsked`, holds your answer; it is in a backup. `sw.js`: `CACHE` is `ps-v108`.
 - **The Studio offers to use your paints** (PLAN §5 item 76; `docs/UX_REVIEW.md` F01, the review's first
   finding of the highest severity; CLAUDE.md §3.6). Step 2 of the review's build order, second part. A painter
   marked their paints, went back to the Studio, and the scheme still ignored them: **Use my paints** is Off
@@ -57,7 +71,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     **not a paint**.
   - The top line of such a colour said "Custom #711A1A #711A1A". Its name is now **Custom colour**, and the
     hex shows one time.
-  - `sw.js`: `CACHE` is `ps-v107`.
 - **The Recipe's Add button adds the scheme's own pots, not every paint** (PLAN §5 item 80; `docs/UX_REVIEW.md`
   F04; CLAUDE.md §3.6). Step 3 of the UX review's build order. One button put every paint of the Recipe on the
   shopping list: a median 14 pots from 7 brands for the review's test painter, with the metallic ladder and the

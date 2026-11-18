@@ -1019,7 +1019,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       both are probably effects (`fx: gloss`). The product page is gone (404) and it is not in the maker's
       public product list, so there is no primary source to read. No change until one is found.
 
-### Raised by the UX review on 2026-11-17 — before the first showing (items 76, 78, 79 and 80 built, and the words of items 82 and 85; the others not yet)
+### Raised by the UX review on 2026-11-17 — before the first showing (items 76 to 80 built, and the words of items 82 and 85; the others not yet)
 
 [`docs/UX_REVIEW.md`](UX_REVIEW.md): a review of the whole app as a new painter meets it (experienced painters, a
 link, alone, mostly on an iPhone). Two deep journeys, ten seams, measurements, and a severity from three independent
@@ -1030,12 +1030,14 @@ to build before the link goes out; the review's stop rule is "the 4s and the 3s 
 ratings stand. **The build order** follows the journey, not the ratings alone, because a painter who stops at an
 early step never sees a later fix:
 
-0. Ryan's iPhone check (item 77's first part; no code). Its result decides what item 77 builds.
+0. Ryan's iPhone check (item 77's first part; no code). Its result decides what item 77 builds. **Done (2026-11-18),
+   in part:** the Home Screen app starts with an empty Shelf; the in-app browser question and the 8 days are open
+   (`docs/UX_REVIEW.md` §7).
 1. Item 78: "mark my shelf" opens the list, and a grid result has its name. **Built (2026-11-17).**
 2. Items 76 and 79 together: offer Use my paints when the Shelf gets paints, and the Metal role with a shelf. (Two
    raters said that item 76 alone moves the complaint to item 79.) **Built (2026-11-17).**
 3. Item 80, its first part: the main Add button puts only the role pots on the list. **Built (2026-11-18).**
-4. Item 77: keep the Shelf on an iPhone, after step 0.
+4. Item 77: keep the Shelf on an iPhone, after step 0. **Built (2026-11-18).**
 5. With any of the steps: the three wording errors (F19) and a softer word than "Interchangeable" (item 82, in part).
    **Built (2026-11-18):** "Almost the same colour in the paint data", in Other brands and in Paint details.
 
@@ -1060,6 +1062,11 @@ item 85, come after the first painters answer.
     check** (UX_REVIEW §7, items 1, 2 and 8). Then: one message in the flow when the Shelf first holds real work
     (Back up · Add to Home Screen); correct Help ("Where is my shelf saved?": back up in Safari, add to the Home
     Screen, Restore there, because a Home Screen app has its own storage); call `navigator.storage.persist()`.
+    **Built (2026-11-18).** The hand check's first item is confirmed on Ryan's iPhone: the Home Screen app starts
+    with an empty Shelf. The message is `#keepNote` (first in `<main>`, when a mode opens, at 10 owned paints or a
+    saved scheme, one time: Back up now · How to keep it · Not now; the pref `keepAsked`); Help has the order of
+    the steps; a backup calls `persist()` (CLAUDE.md §3.6). **Open:** the in-app browser question (hand check
+    item 2: a Shelf marked inside Discord's or Instagram's own browser), and the 8-day result (item 8).
 78. **"Mark my shelf" opens the list, and a grid result has its name** (F05, F06, F07; 3 · 3 · 3 for the first two).
     **Built (2026-11-17), direction A** (Ryan: "go with A"; the other two were B, one question about the painter's
     main brand, and C, the list as it was). With no search and no status filter the list is an index: 54 lines
