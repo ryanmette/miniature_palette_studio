@@ -42,6 +42,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     (4.5 and 3) and the ratio are the same.
   - **"Warhammer Colour (Citadel)" in the brand lists** (F20): the Shelf's brand filter and ⋯ → Brand. A
     painter who looks for Citadel finds the word.
+  - **The live palette shows whole paint names on a phone** (F24). An owned paint's name was cut to a few
+    letters ("Mephi…"), because "✓ owned" used half the line. On a phone the name now has two lines, and the
+    owned mark is its tick alone, before the name.
   - **A link to a paint that the app does not have says so** (F18): "This link's paint is not in the app. Here
     is a different paint." Before, it opened a random scheme with no message.
 ### Fixed

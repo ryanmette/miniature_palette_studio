@@ -667,7 +667,7 @@ export function livePalette(vm, roleByHex = {}) {
         + `<span class="lcpotlbl">Pot</span><span class="lchex">${potHex}</span></span>`
       : `<span class="lcpot none"><span class="lcpotlbl">No close pot</span></span>`;
     const foot = m
-      ? `<span class="lcname">${detailsLink(m.paint, pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
+      ? `<span class="lcname">${detailsLink(m.paint, pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}<span class="ownw">owned</span></span>` : ''}</span>`
         + `<span class="de" style="margin:2px 0 0">${qualityWord(m.quality)}`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint)}${goneTag(m.paint)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;

@@ -645,6 +645,17 @@ input:focus, select:focus { outline: 2px solid transparent; outline-offset: 2px;
 .lcname { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; }
 .lcname .pslink { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lcname .ownmini { flex: none; }
+/* A phone (UX review F24): three columns in 390px left about 40px for an owned paint's name ("Mephi…", "Retrib…").
+   The name has two lines there, and the owned mark is its tick alone, before the name (the word stays for a
+   screen reader; the Recipe card under it says "owned" in words). The two lines are always there, so a name of
+   one line and a name of two give the same height, and a drag on the wheel moves nothing under the palette (§3.4). */
+@media (max-width: 520px) {
+  .lcname { align-items: flex-start; white-space: normal; min-height: 3em; }
+  .lcname .pslink { white-space: normal; text-align: left; overflow-wrap: anywhere; max-height: 3em;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+  .lcname .ownmini { order: -1; margin-top: 3px; }
+  .lcname .ownw { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 .lcfoot .br { font-size: 11px; color: var(--text-muted); }
 
 /* accessibility (M7) */
