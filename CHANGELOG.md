@@ -7,6 +7,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 <!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.18.0 took only the web entries. -->
 ### Added
+- **Reaper's triads: the maker's three tones on the Recipe** (PLAN §5 item 64; paint data 1.12.0;
+  `src/data/SOURCES.md`). Reaper sells its Master Series colours in sets of three: a shadow, a midtone and a
+  highlight. When a role's pot is one of those paints, its Recipe card now shows the set, as it does for
+  Warhammer Tone Pro: "Blood Colors · Reaper triad: the maker's 3 tones", with your pot marked. 43 triads (129
+  paints) are in. The triads come from Reaper's own product images, and each paint code was checked against the
+  community source. A triad that is a set of three products (liners, clear brights, washes) is not shown as
+  tones. Only the `family` and `tone` fields changed, so no match changed.
 - **Paint details: everything about one paint, in one sheet** (PLAN §5 item 7; `mockups/buying-assistant.html`,
   direction B; CLAUDE.md §3.5). Select a paint's name in the Recipe or in Other brands, press a ladder step, or
   choose **Paint details** in the menu of a paint on the Shelf or in the seed field's list. The sheet shows the

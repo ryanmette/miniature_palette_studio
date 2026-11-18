@@ -1,4 +1,4 @@
-# Data sources & attribution — dataset v1.11.0
+# Data sources & attribution — dataset v1.12.0
 
 Provenance for `src/data/paints.json` (values captured `2026-06-25`, `2026-10-26` and, for Tone Pro, `2026-11-06`; built `2026-11-17`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
@@ -78,6 +78,29 @@ build gives them an `fx`, by the words in the name (`FLAT_FX_RULES` in `scripts/
 
 The source is the paint's name, from the primary source above. The `fx` gives the paint its finish icon and tag
 in the app (PLAN §5 item 51). Each paint keeps its type, so it is matched as a flat paint, as before.
+
+## Third source: Reaper's triads (v1.12.0; no colour value, type or id changed)
+
+| Source | What was taken | Captured |
+|--------|----------------|----------|
+| **[Reaper Miniatures, Master Series Paints: Triads](https://www.reapermini.com/paints/master-series-paints-triads)** | Which three paints are in each triad, and their order | 2026-11-18 |
+
+Reaper sells its Master Series colours in sets of three: a shadow, a midtone and a highlight. The page lists 76
+triads by name and SKU. It does not name the paints in text, but each triad's own product image shows its three
+paints, top to bottom, each with its code and name. `scripts/reaper-triads.json` holds what the images say.
+
+- **Read:** 70 of the 76 images. Reaper's image host returned a server error for the other six (Woods, Stone and
+  Sky, Misty Colors, Exotics, Tinted Glosses #2, ReaperCon 2024 Hall of Fame).
+- **Checked:** each code against the upstream compilation, which has Reaper's codes. 182 of the 210 codes are
+  there: 168 with the same name, and 14 with a longer or corrected name of the same paint. The other 28 are newer
+  paints, additives and primers that the upstream does not have, or codes on a bottle photo that cannot be read.
+- **Tone families:** 43 triads (129 paints). A triad is a family when its three paints are in the data as base,
+  layer or metal paints, their lightness rises in the maker's order (a step may fall by 3 L\* at most, because the
+  values are approximate) and their hues are within 45°. The other triads are sets of three products: liners,
+  clear brights, coloured metallics, washes, additives.
+- **In the data:** each paint of a family has `family` (`reaper-triad-` + the triad's SKU) and `tone` (1 to 3, the
+  maker's order). The family's name is the maker's ("Blood Colors"), in the top-level `families` list.
+- **Not taken:** no colour value. The images' colours are not used.
 
 ## Coverage — 3375 paints, 10 brands
 

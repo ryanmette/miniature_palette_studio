@@ -851,6 +851,34 @@ test('the Brand setting: Prefer ranks the brand 2 ΔE closer with the true ΔE; 
   assert.equal(mostOwnedBrand(fx, new Set()), null); assert.equal(mostOwnedBrand(fx, null), null);
 });
 
+test('Reaper triads (dataset 1.12.0): 43 tone families of 3, in the maker\'s order, with the maker\'s name', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = JSON.parse(readFileSync(new URL('../scripts/reaper-triads.json', import.meta.url)));
+  const inFam = real.paints.filter(p => p.family && p.family.startsWith('reaper-triad-'));
+  assert.equal(inFam.length, 129); assert.ok(inFam.every(p => p.brand === 'Reaper'));
+  const ids = new Set(inFam.map(p => p.family));
+  assert.equal(ids.size, 43);
+  assert.equal(real.families.length, 43);
+  assert.deepEqual([...ids].sort(), real.families.map(f => f.id).sort(), 'every family has its name, and no name is spare');
+  for (const id of ids) {
+    const tones = real.byFamily.get(id);
+    assert.deepEqual(tones.map(p => p.tone), [1, 2, 3], id);
+    assert.match(id, /^reaper-triad-\d{5}$/);
+  }
+  // the source file: 70 triads read, 43 families, each with three codes; the six images that did not load are named
+  assert.equal(src.triads.length, 70); assert.equal(src.triads.filter(t => t.family).length, 43);
+  assert.ok(src.triads.every(t => t.codes.length === 3 && t.names.length === 3 && (t.family || t.why)));
+  assert.equal(src.unavailable.triads.length, 6);
+  // the first triad, as Reaper's image has it: 9001 Red Brick, 9002 Deep Red, 9003 Blood Red
+  const blood = familyOf(real, real.paints.find(p => p.brand === 'Reaper' && p.name === 'Deep Red'));
+  assert.equal(blood.id, 'reaper-triad-09701'); assert.equal(blood.name, 'Blood Colors'); assert.equal(blood.label, 'Reaper triad');
+  assert.deepEqual(blood.tones.map(p => p.name), ['Red Brick', 'Deep Red', 'Blood Red']);
+  // a set of three products is no family: the liners, the clear brights, the washes
+  for (const n of ['Brown Liner', 'Clear Red', 'Flesh Wash']) assert.equal(real.paints.find(p => p.brand === 'Reaper' && p.name === n).family, undefined, n);
+  // nothing else changed: a family is not a group, and the paints keep their type
+  assert.ok(inFam.every(p => p.type === 'layer' || p.type === 'metal'));
+});
+
 test('search: "citadel", "games workshop" and a former spelling still find the paints', () => {
   assert.match(BRAND_WORDS['Warhammer Colour'], /Citadel/);
   const wc = real.paints.filter(matcher56('citadel'));
@@ -928,5 +956,6 @@ test('Tone Pro families: 30 families of 5, tones 1–5 in order, named without t
   assert.equal(f.name, 'Ultramar Blue');
   assert.deepEqual(f.tones.map(p => p.tone), [1, 2, 3, 4, 5]);
   assert.equal(familyOf(real, real.byId.get('citadel-base-macragge-blue')), null, 'a paint in no family');
-  assert.equal(real.paints.filter(p => p.family).length, 150, 'only Tone Pro has families so far');
+  assert.equal(real.paints.filter(p => p.family && p.line === 'Tone Pro').length, 150);
+  assert.equal(f.label, 'Tone Pro', 'a family with no name of its own: its line says what it is');
 });
