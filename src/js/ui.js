@@ -307,8 +307,11 @@ const buyBtn = (id, mark) => mark === 'owned' ? '' :
   + `${mark === 'want' ? `${icon('check')}On the list` : `${icon('plus')}Add`}</button>`;
 
 /** A paint's name as the way to its details (the paint detail sheet, item 7): a button that looks like the
- *  name, with an underline on hover and the focus ring. Its name is the paint's name, as before. */
-export const detailsLink = (p, text) => `<button type="button" class="pslink" data-psid="${esc(p.id)}" title="Paint details">${esc(text)}</button>`;
+ *  name, with an underline on hover and the focus ring. Its name is the paint's name, as before. Where the
+ *  words on screen are the plain name (a row of the Shelf's list: the line is beside it), `full` is the display
+ *  name for a screen reader, so twins (Dawnstone (Layer) / (Dry)) stay apart; it starts with the words on screen. */
+export const detailsLink = (p, text, full = text) => `<button type="button" class="pslink" data-psid="${esc(p.id)}" title="Paint details"`
+  + `${full !== text ? ` aria-label="${esc(full)}"` : ''}>${esc(text)}</button>`;
 
 /** Render a nearest-paint match (or a graceful empty state). `markOf(id)` adds owned/adjust + a buy toggle. */
 export function matchChip(m, markOf) {
@@ -656,7 +659,7 @@ export function livePalette(vm, roleByHex = {}) {
         + `<span class="lcpotlbl">Pot</span><span class="lchex">${potHex}</span></span>`
       : `<span class="lcpot none"><span class="lcpotlbl">No close pot</span></span>`;
     const foot = m
-      ? `<span class="lcname">${esc(pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
+      ? `<span class="lcname">${detailsLink(m.paint, pname(m.paint))}${m.owned ? ` <span class="ownmini">${icon('check')}owned</span>` : ''}</span>`
         + `<span class="de" style="margin:2px 0 0">${qualityWord(m.quality)}`
         + `<span class="badge">ΔE ${m.deltaE.toFixed(1)}</span></span>${finishTag(m.paint)}${goneTag(m.paint)}`
       : `<span class="lcname">—</span><span class="br">no close paint</span>`;
@@ -844,9 +847,10 @@ export function rackRow(r, tr) {
   // the line through the name is "ticked off the shopping list" (r.struck), not "owned": an owned paint has the filled tick
   return `<li class="rkrow${r.struck ? ' done' : ''}" data-rk="${esc(p.id)}">`
     + swatch(p.hex, 'rksw' + fxCls(p), '')
-    // the plain name: the line is in the row (and the rack group) already; the tick's name keeps the full
-    // display name, so twins (Dawnstone (Layer) / (Dry)) stay apart for a screen reader
-    + `<span class="rkmain"><span class="rkname">${esc(p.name)}</span>`
+    // the plain name: the line is in the row (and the rack group) already; the tick's name and the name's own
+    // (it is the way to Paint details) keep the full display name, so twins (Dawnstone (Layer) / (Dry)) stay
+    // apart for a screen reader
+    + `<span class="rkmain"><span class="rkname">${detailsLink(p, p.name, name)}</span>`
     + `<span class="rkline">${line}${finishTag(p)}${goneTag(p)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
     // a swap made in this visit says what it replaced; Undo only while it is still to buy (once ticked, it was bought)
     + (r.insteadOf ? `<span class="rkinst">${esc(tr('inPlaceOf', { name: pname(r.insteadOf) }))}`
@@ -905,7 +909,7 @@ function rackSwaps(r, tr) {
   for (const m of s.list) {
     const q = m.paint, qn = pname(q);
     h += `<div class="rkswap">${swatch(q.hex, 'rkssw' + fxCls(q))}`
-      + `<span class="rksmain"><span class="rksname">${esc(qn)}</span>`
+      + `<span class="rksmain"><span class="rksname">${detailsLink(q, qn)}</span>`
       + `<span class="rkline">${[esc(q.brand), esc(lineOf(q))].filter(Boolean).join(' · ')}${finishTag(q)}${goneTag(q)}`
       + ` <span class="mono">${m.gap != null ? esc(tr('gapDeg', { n: m.gap.toFixed(0) })) : 'ΔE ' + m.deltaE.toFixed(1)}</span> <span class="tag ${m.quality.tier}">${esc(m.quality.label)}</span>`
       + `${m.owned ? ` <span class="ownmini">${icon('check')}${esc(tr('ownedWord'))}</span>` : ''}</span></span>`
@@ -1008,7 +1012,7 @@ export function mapSummaryLine(sum, map, tr) {
 export function mapDetail(map, b, r, fills, tr) {
   const c = map.cells[b][r], o = c.owned.length, name = mapToneName(b, r, tr);
   const row = (p, extra = '') => `<li class="mdrow">${swatch(p.hex, 'mdsw' + fxCls(p))}`
-    + `<span class="mdmain"><span class="mdname">${esc(pname(p))}</span><span class="rkline">${[esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ')}${finishTag(p)}${goneTag(p)}</span></span>${extra}</li>`;
+    + `<span class="mdmain"><span class="mdname">${detailsLink(p, pname(p))}</span><span class="rkline">${[esc(p.brand), esc(lineOf(p))].filter(Boolean).join(' · ')}${finishTag(p)}${goneTag(p)}</span></span>${extra}</li>`;
   let h = `<h3 class="mdhead" id="mapDetailHead" tabindex="-1">${esc(name)}</h3>`;
   h += `<p class="mdstate">${esc(o || c.want.length ? mapCellCounts(c, tr) : tr('mapGapLong', { tone: name.toLowerCase() }))}</p>`;
   if (o || c.want.length) h += `<ul class="mdlist">${c.owned.map(p => row(p)).join('')}`

@@ -52,6 +52,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   the **closest in other brands**, and the **closest on your shelf**, each with its true ΔE. A paint on your
   shelf that is not an exact match says how to change it ("To match: darken slightly"). A row opens that paint
   in the same sheet, and **Start a scheme from this** takes the paint to the Studio. The sheet changes no match.
+- **Paint details: four more ways in** (PLAN §5 item 7, second part; CLAUDE.md §3.5). A paint's name now opens
+  its details in these places too: under each colour of the **live palette**, in a row of the Shelf's **List**,
+  in a pot under **Not on the rack?**, and in a tone of the Shelf's **Map** (the paints the tone holds, and the
+  pots that fill it). The buttons beside a name do what they did: the tick, **Use**, **Add** and the count. On a
+  touch screen the name's touch area is the block round it (44px tall or more); with a mouse it is the name
+  alone, so a click on the empty part of a row does nothing. On the Other brands tab, a click on a colour block
+  of the live palette still shows that colour's matches, and a click on the pot's name opens its details. When
+  the sheet closes, the focus goes back to the name that opened it, also after a mark redrew that row.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
@@ -107,6 +115,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     (Layer) and Dawnstone (Dry) no longer look the same. With no search, the grid is as before.
   - Help has a new answer: "What is the quickest way to mark the paints I own?"
   - No match changes.
+- **The live palette: "owned" always shows beside the pot's name.** A long name is cut with an ellipsis. Before,
+  the word "owned" after a long name was cut off with it.
 ### Fixed
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area

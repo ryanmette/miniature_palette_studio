@@ -39,6 +39,28 @@ test('livePalette shows the target on top and the pot in a band under it (no fil
   assert.match(html, /class="lcpot[^"]*" style="background-color:#9A1115/, 'the band is the pot');
   const none = livePalette([{ id: 'p0', kind: 'base', deg: 0, hex: '#A01010', match: null }]);
   assert.match(none, /class="lcpot none"/, 'no close pot still keeps the band, so columns line up');
+  // the pot's name is the way to Paint details (item 7); a column with no pot has no such button
+  assert.match(html, /class="lcname"><button type="button" class="pslink" data-psid="citadel-x" title="Paint details">Mephiston Red<\/button>/);
+  assert.doesNotMatch(none, /data-psid/);
+});
+
+test('Paint details: a store swap and a paint of the Map\'s tone open it from their names (item 7)', async () => {
+  const { rackRow, mapDetail } = await import('../src/js/ui.js');
+  const k = (key, v = {}) => key + (Object.keys(v).length ? '(' + Object.values(v).join(',') + ')' : '');
+  const a = { id: 'a-red', brand: 'Citadel', line: 'Base', name: 'Mephiston Red', hex: '#960C09', type: 'base' };
+  const b = { id: 'b-red', brand: 'Vallejo', line: 'Model Color', name: 'Carmine Red', hex: '#97211F', type: 'base' };
+  const row = rackRow({ paint: a, countable: true, owned: false, qty: 1, canSwap: true,
+    swaps: { list: [{ paint: b, deltaE: 4.2, quality: { label: 'Fair', tier: 'warning' } }] } }, k);
+  assert.match(row, /class="rksname"><button type="button" class="pslink" data-psid="b-red"[^>]*>Carmine Red</, 'the swap');
+  assert.match(row, /data-rkuse="b-red" data-for="a-red"/, 'Use is still its own button');
+  // a plain name that is the whole display name needs no aria-label
+  assert.doesNotMatch(row, /data-psid="a-red"[^>]*aria-label/);
+  const cells = Array.from({ length: 19 }, () => Array.from({ length: 5 }, () => ({ owned: [], want: [] })));
+  cells[0][2] = { owned: [a], want: [] };
+  const md = mapDetail({ cells }, 0, 2, [{ paint: b, deltaE: 3.1, quality: { label: 'Good', tier: 'success' } }], k);
+  assert.match(md, /class="mdname"><button type="button" class="pslink" data-psid="a-red"/, 'a paint the tone holds');
+  assert.match(md, /class="mdname"><button type="button" class="pslink" data-psid="b-red"/, 'a pot that fills it');
+  assert.match(md, /data-mapadd="b-red"/, 'Add is still its own button');
 });
 
 test('livePalette marks a lock with a badge, never with a ring on the column', () => {
@@ -494,7 +516,8 @@ const gold = { id: 'c-base-gold', name: 'Balthasar Gold', brand: 'Citadel', line
 
 test('rackRow: the plain name shows; the tick names the twin in full; aria-pressed is the owned state', () => {
   const html = rackRow({ paint: dawn, owned: false, countable: true, qty: 1, countOpen: false, forName: 'Plague Marine' }, tr);
-  assert.match(html, /class="rkname">Dawnstone</);
+  // the name is the way to Paint details (item 7): the words are the plain name, its name for a screen reader the full one
+  assert.match(html, /class="rkname"><button type="button" class="pslink" data-psid="c-layer-dawnstone" title="Paint details" aria-label="Dawnstone \(Layer\)">Dawnstone</);
   assert.match(html, /data-rktick="c-layer-dawnstone" aria-pressed="false" aria-label="ownedName\(name=Dawnstone \(Layer\)\)"/);
   assert.match(html, /Citadel · Layer/);
   assert.match(html, /class="rkfor">forName\(name=Plague Marine\)/);

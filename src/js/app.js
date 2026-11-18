@@ -243,7 +243,7 @@ function chooseColour(hex) {
    colour, the closest in other brands, and the closest on the painter's shelf with how to move it. It reuses the
    matching that exists (groupMembers, equivalents) and changes no match. A row opens that paint in the same
    sheet; `stack` is the way back. */
-const sheet = { id: null, stack: [], opener: null, openerId: null };
+const sheet = { id: null, stack: [], opener: null, openerId: null, openerHost: null, openerSwap: false };
 const SHEET_ROWS = 5, SHEET_SHELF = 3;
 function paintSheetData(p) {
   const owned = store.ownedIds(), cls = finishClass(p.type);
@@ -270,7 +270,13 @@ function renderPaintSheet() {
 function openPaintSheet(id, opener = document.activeElement) {
   const p = state.idx.byId.get(id), d = $('#paintDlg'); if (!p) return;
   if (d.open) { if (sheet.id && sheet.id !== id) sheet.stack.push(sheet.id); }
-  else { sheet.stack = []; sheet.opener = opener; sheet.openerId = opener?.dataset?.psid || null; }
+  else {
+    sheet.stack = []; sheet.opener = opener; sheet.openerId = opener?.dataset?.psid || null;
+    // where the opener is, to find it again after a redraw: the nearest region with an id (the Shelf's list, the
+    // Map's tone, the live palette, a Recipe panel), and whether it is a store swap or the row itself
+    sheet.openerHost = opener?.closest?.('#shelfList, #mapDetail, #livepal, [data-panel]') || null;
+    sheet.openerSwap = !!opener?.closest?.('.rkswaps');
+  }
   sheet.id = id;
   renderPaintSheet();
   if (!d.open) d.showModal();
@@ -282,11 +288,20 @@ function setupPaintSheet() {
   const d = $('#paintDlg');
   $('#paintClose').addEventListener('click', () => d.close());
   d.addEventListener('close', () => {
-    const o = sheet.opener, oid = sheet.openerId; sheet.id = null; sheet.stack = []; sheet.opener = null; sheet.openerId = null;
-    // A mark made in the sheet draws the Recipe again, so the name that opened it is a new element: find it by
-    // its paint. Else the hero line, a landing spot.
-    const again = o && o.isConnected ? o : oid ? $(`main [data-psid="${CSS.escape(oid)}"]`) : null;
-    (again || $('#hero')).focus({ preventScroll: true });
+    const { opener: o, openerId: oid, openerHost: host, openerSwap: swap } = sheet;
+    sheet.id = null; sheet.stack = []; sheet.opener = null; sheet.openerId = null; sheet.openerHost = null; sheet.openerSwap = false;
+    // A mark made in the sheet draws its surface again, so the name that opened it is a new element: find it by
+    // its paint, in the region it was in (a paint can have a name in two places: a row of the Shelf's list and a
+    // store swap under another row; the Recipe and the live palette).
+    const shown = el => el.getClientRects().length > 0;
+    const find = root => [...root.querySelectorAll(`[data-psid="${CSS.escape(oid)}"]`)].filter(shown)
+      .sort((a, b) => (!!a.closest('.rkswaps') === swap ? 0 : 1) - (!!b.closest('.rkswaps') === swap ? 0 : 1))[0];
+    const again = o && o.isConnected ? o : oid ? (host?.isConnected && find(host)) || find($('main')) : null;
+    // Else a landing spot on the surface that shows: the Map's tone, the Shelf's first control, the hero line.
+    const land = state.mode !== 'shelf' ? $('#hero')
+      : state.shelfView === 'map' ? $('#mapDetailHead') || $('#mapGrid [tabindex="0"]')
+      : state.shelfView === 'list' ? $('#shelfList [data-rktick]') : $('#shelfGrid');
+    (again || land || $('#hero'))?.focus({ preventScroll: true });
   });
   d.addEventListener('click', e => {
     const mk = e.target.closest('[data-psmark]');
@@ -296,8 +311,9 @@ function setupPaintSheet() {
     if (buy) { e.stopPropagation(); const id = buy.dataset.buy; toggleBuy(id); $(`#paintBody [data-buy="${CSS.escape(id)}"]`)?.focus(); return; }
     if (e.target.closest('[data-psstart]')) { const id = sheet.id; sheet.opener = null; d.close(); useAsSeed(id); }
   });
-  // The ways in: a paint's name in the Recipe and Other brands (a button), a ladder step (role=button), and
-  // a row of the sheet itself. One listener for all of them.
+  // The ways in: a paint's name (a button: the Recipe, Other brands, the live palette's pot, a row of the
+  // Shelf's list, a store swap, a paint of the Map's tone), a ladder step (role=button), and a row of the
+  // sheet itself. One listener for all of them.
   document.addEventListener('click', e => {
     const el = e.target.closest('[data-psid]'); if (!el || e.target.closest('[data-buy]')) return;
     e.stopPropagation(); openPaintSheet(el.dataset.psid, el);
@@ -3971,7 +3987,8 @@ function wire() {
     const dn = e.target.closest('[data-delnode]'); if (dn) { e.stopPropagation(); removeFreeNode(+dn.dataset.delnode); return; }  // delete an added swatch
     if (state.tab === 'equiv') {   // on the Equivalents tab, clicking a palette column drills into that colour's matches
       const lc = e.target.closest('.lcol[data-hex]');   // …but not when the click is the column's copy button (handled below)
-      if (lc && !e.target.closest('.lccopy')) { e.stopPropagation(); setEquivSource(lc.dataset.hex); return; }
+      // …nor when it is the pot's name: that opens Paint details (the document's listener, setupPaintSheet)
+      if (lc && !e.target.closest('.lccopy, [data-psid]')) { e.stopPropagation(); setEquivSource(lc.dataset.hex); return; }
     }
     if (e.target.closest('#inclContrast')) { toggleContrast(); return; }
     if (e.target.closest('#addGaps')) { addGapsToBuy('role'); return; }
