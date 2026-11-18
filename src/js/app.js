@@ -1064,8 +1064,11 @@ function renderShelfStats() {
   // showed 2 paints while this line said 12 on the shopping list, and the filters were not noticed).
   const narrowed = !!(state.shelfQ.trim() || state.shelfBrand || state.shelfTypes.size);
   const of = state.shelfMark === 'owned' ? c.owned : state.shelfMark === 'want' ? c.want : total;
-  const showing = narrowed ? ` · <b class="s-showing">${ui.esc(t('shelfShowing', { n: shelfPaints().length, of }))}</b>`
-    + ` <button type="button" class="textact" id="shelfClearFilters">${ui.esc(t('clearFilters'))}</button>` : '';
+  // "showing N of M" has a place of its own (UX review F22): on a narrow screen it is a second line that is
+  // always there, empty when nothing is narrowed, so a search does not push the hint and the grid down (§3.4).
+  const showing = `<span class="s-narrow${narrowed ? '' : ' off'}">` + (narrowed
+    ? `<b class="s-showing">${ui.esc(t('shelfShowing', { n: shelfPaints().length, of }))}</b>`
+      + ` <button type="button" class="textact" id="shelfClearFilters">${ui.esc(t('clearFilters'))}</button>` : '') + '</span>';
   $('#shelfStats').innerHTML = `<span class="s-owned">${c.owned} owned</span> · <span class="s-want">${c.want} on the shopping list</span> · ${total} total${showing}`;
 }
 /** Clear the search, brand and type: the stats line's Clear filters. The status filter stays (it is the view the

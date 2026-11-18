@@ -681,8 +681,23 @@ main[data-mode="shelf"] { grid-template-columns: minmax(0, 1fr); }
 .shelfstats .s-want { color: var(--buy-text); }
 .shelfstats .s-showing { color: var(--text); font-weight: 600; }
 /* Clear filters: a text action in the micro-caps line, in sentence case; --tap tall on touch, compact with a mouse */
-.shelfstats .textact { text-transform: none; letter-spacing: 0; font-size: var(--fs-small); min-height: 0; padding: 0 4px; }
-@media (pointer: coarse), (max-width: 520px) { .shelfstats .textact { min-height: var(--tap); } }
+.shelfstats .textact { text-transform: none; letter-spacing: 0; font-size: var(--fs-small); min-height: 0; padding: 0 4px; line-height: 1.2; }   /* the line-height: the button is a little larger than the micro text, and it must not make the line taller when it comes in */
+/* "showing N of M" and Clear filters (UX review F22). Wide: at the end of the counts line. 700px or less: a line
+   of its own that is always there (empty when nothing is narrowed), so a search moves nothing under it (§3.4).
+   The line stays one text line tall: on touch, Clear filters gets its 44px hit area from an ::after (the counts
+   above it and the hint under it are plain text, §3.6). */
+.shelfstats .s-narrow::before { content: " · "; }
+.shelfstats .s-narrow.off { display: none; }
+@media (max-width: 700px) {
+  .shelfstats .s-narrow { display: block; min-height: 1.5em; }
+  .shelfstats .s-narrow.off { display: block; visibility: hidden; }
+  .shelfstats .s-narrow::before { content: none; }
+  .shelfstats .s-narrow .textact { margin-left: -4px; }
+}
+@media (pointer: coarse), (max-width: 520px) {
+  .shelfstats .textact { position: relative; }
+  .shelfstats .textact::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: 44px; transform: translate(-50%, -50%); }
+}
 .shelfhint { margin: 0; font-size: 12.5px; color: var(--text-muted); }
 /* Shelf filter bar: search + status + brand + type + sort on one wrapping row (search grows, controls
    size to content). Brand is a select (a dropdown) — the old wrapped chip rows cost three rows on a phone

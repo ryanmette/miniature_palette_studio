@@ -25,6 +25,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     Now only a name that you change saves the scheme; the others stay automatic, as with **Skip**.
   - **Each tick in the Shelf's list has the brand in its name, for a screen reader** (F21): "Owned: Ivory,
     Vallejo · Model Color". Before, four paints had the name "Owned: Ivory".
+  - **The Shelf's counts line does not move the grid** (F22). On a phone, "showing 1 of 3375 · Clear filters"
+    went to a second line when a search was on, and the grid moved down. That line now has its place from the
+    start.
   - **A link to a paint that the app does not have says so** (F18): "This link's paint is not in the app. Here
     is a different paint." Before, it opened a random scheme with no message.
 ### Fixed
