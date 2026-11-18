@@ -181,6 +181,10 @@ colour". Search can take a family word later ("ultramar blue" already finds the 
    constant (§7: ranking constants change only with a note). CLAUDE.md §3.6 and §7 in the same PR.
 3. **More families**, one brand per PR, each with its source file and `SOURCES.md` line: Reaper, Two Thin Coats,
    Army Painter Fanatic.
+   **Reaper: built 2026-11-18** (dataset 1.12.0). The triads' paints are not on Reaper's page as text; each
+   triad's product image has them. 43 of the 70 readable triads are tone families (`scripts/reaper-triads.json`
+   holds the rule: the lightness rises in the maker's order, and the hues are within 45°). A family's name is the
+   maker's, in a top-level `families` list, because it is not in the paints' names.
 
 ---
 

@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW = process.argv[2] || join(ROOT, '.cache', 'raw');
 const CAPTURED = '2026-06-25';
-const VERSION = '1.11.0';
+const VERSION = '1.12.0';
 // The build that took three corrections from the makers' own pages (PLAN §5 item 73): 14 Army Painter effects
 // that upstream lists as washes, one Two Thin Coats name, and four Gloss Shades that GW no longer makes. No hex
 // changed: the upstream values are still CAPTURED's.
@@ -165,7 +165,9 @@ function parseRows(text, setIdx) {
     .map(l => {
       const c = l.split('|').map(x => x.trim());
       const m = l.match(/`#([0-9A-Fa-f]{6})`/);
-      return m ? { name: c[1], set: norm(c[setIdx] || ''), hex: '#' + m[1].toUpperCase() } : null;
+      // `code`: the maker's own code, where the source has a Code column before the set (setIdx 3). The data does not
+      // keep it; the build uses it to find the paints of a maker's triad (Reaper).
+      return m ? { name: c[1], set: norm(c[setIdx] || ''), hex: '#' + m[1].toUpperCase(), ...(setIdx === 3 && /^\d+$/.test(c[2]) ? { code: String(+c[2]) } : {}) } : null;
     })
     .filter(Boolean);
 }
@@ -178,9 +180,13 @@ function add(b, line, name, hex, type, sourceUrl, captured = CAPTURED, source = 
   const id = `${b.key || slug(b.brand)}-${slug(line)}-${slug(name)}`;   // from the upstream name: ids never change
   if (seen.has(id)) return; seen.add(id);
   const fixed = b.names?.[name];
-  paints.push({ id, brand: b.brand, line, name: fixed || name, hex: hex.toUpperCase(), type, discontinued: !!b.gone?.includes(name), approx: true,
-    source, sourceUrl, captured, ...(fixed ? { formerly: [name] } : {}), ...extra });
+  const paint = { id, brand: b.brand, line, name: fixed || name, hex: hex.toUpperCase(), type, discontinued: !!b.gone?.includes(name), approx: true,
+    source, sourceUrl, captured, ...(fixed ? { formerly: [name] } : {}), ...extra };
+  paints.push(paint);
+  return paint;
 }
+// The maker's own code of a paint ("Reaper:9001" → the paint), for the makers' triads below. Not kept in the data.
+const byCode = new Map();
 const sortKey = new Map(BRANDS.map(b => [b.brand, b.key || b.brand]));
 
 const skipped = {};
@@ -191,7 +197,8 @@ for (const b of BRANDS) {
     const map = wanted[row.set];
     if (!map) { skipped[`${b.brand} / ${row.set}`] = (skipped[`${b.brand} / ${row.set}`] || 0) + 1; continue; }
     const [line, kind] = map;
-    add(b, line, row.name, row.hex, b.types?.[row.set]?.[row.name] || resolveType(row.name, kind), url, b.captured);
+    const paint = add(b, line, row.name, row.hex, b.types?.[row.set]?.[row.name] || resolveType(row.name, kind), url, b.captured);
+    if (paint && row.code) byCode.set(`${b.brand}:${row.code}`, paint);
   }
 }
 
@@ -204,6 +211,24 @@ const WC = BRANDS.find(b => b.brand === 'Warhammer Colour');
 for (const c of TONE_PRO.colours) c.tones.forEach((hex, i) =>
   add(WC, 'Tone Pro', `${c.name} ${i + 1}`, hex, 'layer', TONE_PRO.source.url, TONE_PRO.source.captured, 'manufacturer',
     { family: `${WC.key}-${slug('Tone Pro')}-${slug(c.name)}`, tone: i + 1 }));
+
+// Reaper's triads (docs/TONE_LADDERS.md §6, the second maker; dataset 1.12.0). Reaper sells its Master Series
+// colours in sets of three: shadow, midtone, highlight. scripts/reaper-triads.json holds each triad's three codes,
+// read from Reaper's own product images, and says which triads are tone families (some are sets of three
+// products: liners, clear brights, additives). A family's paints get `family` (a stable id, from the triad's SKU)
+// and `tone` (1 = the maker's first, the shadow). The family's name is the maker's, kept in `families`, because
+// it is not in the paints' names as Tone Pro's is.
+const TRIADS = JSON.parse(readFileSync(join(ROOT, 'scripts', 'reaper-triads.json'), 'utf8'));
+const families = [];
+for (const t of TRIADS.triads.filter(x => x.family)) {
+  const ps = t.codes.map(c => byCode.get(`Reaper:${String(+c)}`));
+  if (ps.some(p => !p)) throw new Error(`reaper-triads.json: triad ${t.sku} (${t.name}) has a code that is not in the data`);
+  if (ps.some(p => p.family)) throw new Error(`reaper-triads.json: a paint of triad ${t.sku} (${t.name}) is in another family already`);
+  const id = `reaper-triad-${t.sku}`;
+  ps.forEach((p, i) => { p.family = id; p.tone = i + 1; });
+  families.push({ id, name: t.name, kind: 'triad' });
+}
+console.log(`Reaper triads → ${families.length} tone families, ${families.length * 3} paints`);
 
 // Sort by the upstream name too, so a fixed name keeps its place (the order breaks ΔE ties, see `key`)
 const upName = p => p.formerly?.[0] || p.name;
@@ -326,6 +351,8 @@ const dataset = {
   attribution: 'Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.',
   note: 'Hex is sRGB and approximate; Lab is derived at runtime (CLAUDE.md §5/§7). Finishes (wash/shade/ink/contrast/glaze/effect) are excluded from harmony suggestions at runtime. groups[] = curated equivalence clusters (paints within ΔE 1.0 of the same finish class — metal, translucent media, effect, opaque); paints carry groupId.',
   groups,
+  // the makers' tone families whose name is not in the paints' names (Reaper's triads): { id, name, kind }
+  families,
   paints,
 };
 mkdirSync(join(ROOT, 'src', 'data'), { recursive: true });

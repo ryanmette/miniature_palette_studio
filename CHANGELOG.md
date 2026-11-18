@@ -24,6 +24,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
   iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
   screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 76 to 85 are the proposed work.
+- **Reaper's triads: the maker's three tones on the Recipe** (PLAN §5 item 64; paint data 1.12.0;
+  `src/data/SOURCES.md`). Reaper sells its Master Series colours in sets of three: a shadow, a midtone and a
+  highlight. When a role's pot is one of those paints, its Recipe card now shows the set, as it does for
+  Warhammer Tone Pro: "Blood Colors · Reaper triad: the maker's 3 tones", with your pot marked. 43 triads (129
+  paints) are in. The triads come from Reaper's own product images, and each paint code was checked against the
+  community source. A triad that is a set of three products (liners, clear brights, washes) is not shown as
+  tones. Only the `family` and `tone` fields changed, so no match changed.
 - **Paint details: everything about one paint, in one sheet** (PLAN §5 item 7; `mockups/buying-assistant.html`,
   direction B; CLAUDE.md §3.5). Select a paint's name in the Recipe or in Other brands, press a ladder step, or
   choose **Paint details** in the menu of a paint on the Shelf or in the seed field's list. The sheet shows the

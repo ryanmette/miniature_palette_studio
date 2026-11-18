@@ -561,7 +561,7 @@ export function makerLadder(fam) {
       + `<div class="cap">${p.tone}</div><div class="pn">${cur ? 'your pot' : ''}</div>`
       + `<span class="celltip">${esc(pname(p))} · ${esc(p.brand)}</span></div>`;
   };
-  return `<div class="ladcap famcap">${esc(fam.name)} · ${esc(fam.line)}: the maker's ${n} tones</div>`
+  return `<div class="ladcap famcap">${esc(fam.name)} · ${esc(fam.label || fam.line)}: the maker's ${n} tones</div>`
     + `<div class="ladder famlad" role="group" aria-label="${esc(`${fam.name}, the maker's ${n} tones, darkest first`)}">${fam.tones.map(tone).join('')}</div>`;
 }
 

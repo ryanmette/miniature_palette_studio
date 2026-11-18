@@ -778,6 +778,16 @@ test('matchNote: the Brand line shows only with a mode and a brand, and opens th
   assert.ok(both.indexOf('data-note="ump"') < both.indexOf('data-note="brand"'));
 });
 
+test('makerLadder: a family with a name of its own says what it is (a Reaper triad)', () => {
+  const tones = [1, 2, 3].map(n => ({ id: 't' + n, name: 'Tone ' + n, brand: 'Reaper', line: 'Master Series', hex: '#501325', type: 'layer', tone: n }));
+  const html = makerLadder({ id: 'reaper-triad-09701', name: 'Blood Colors', brand: 'Reaper', line: 'Master Series', label: 'Reaper triad', tones, current: 't2' });
+  assert.match(html, /Blood Colors · Reaper triad: the maker's 3 tones/);
+  assert.match(html, /aria-label="Blood Colors, the maker's 3 tones, darkest first"/);
+  assert.match(html, /Tone 2 of 3: Tone 2, Reaper, your pot/);
+  // with no label (Tone Pro before 1.12.0's field), the line still shows
+  assert.match(makerLadder({ name: 'Ultramar Blue', line: 'Tone Pro', tones, current: 't1' }), /Ultramar Blue · Tone Pro: the maker's 3 tones/);
+});
+
 test('the paint detail sheet (item 7): the paint, its mark, the three lists with the true ΔE, and the ways on', async () => {
   const { paintSheet, detailsLink } = await import('../src/js/ui.js');
   const m = (p, deltaE, label, tier, extra = {}) => ({ paint: p, deltaE, quality: { label, tier }, ...extra });
