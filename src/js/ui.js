@@ -230,11 +230,15 @@ const ownOrBuy = (id, mark) => mark === 'owned'
   : buyBtn(id, mark);
 
 /** Base-paint hero — a single compact identity line: swatch chip · name · hex · seed-role pill · meta · buy.
- *  `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy.
+ *  `base`: { id?, hex, name, brand?, line?, type?, approx?, custom? }. markOf adds owned/buy. A `custom` colour
+ *  shows "Custom colour" as its name (its `name`, "Custom #hex", is for the announce and the automatic scheme name).
  *  `seedRole` ('main'|'accent') shows the role the *picked paint* plays (the hero always shows your pick,
  *  so this reads true in both seed modes). Condensed from the old tall block to reclaim space above the wheel. */
 export function hero(base, animate = true, markOf, seedRole = '', neutral = false) {
-  const meta = base.custom ? 'typed hex'
+  // A colour that is not a paint (UX review F19): the name is words, because the hex is on the line already
+  // ("Custom #711A1A #711A1A" said it twice), and the tag says what the colour is, not how it was made: a tap
+  // on the wheel, a photo and the lightness slider make one too ("typed hex" was wrong for those).
+  const meta = base.custom ? 'not a paint'
     : `${esc(base.brand || '')}${base.line && base.line !== '—' ? ' · ' + esc(base.line) : ''}${base.type ? ' · ' + esc(base.type) : ''}`
       + (base.approx ? ' · <span class="approx">approx</span>' : '') + goneTag(base);
   const seed = seedRole ? `<span class="seedbadge seed-${esc(seedRole)}">${esc(seedRole)}</span>` : '';
@@ -243,7 +247,7 @@ export function hero(base, animate = true, markOf, seedRole = '', neutral = fals
   // The swatch opens the scheme large (PLAN §5 item 47): the starting paint and the scheme's pots, one tap away.
   return `<button type="button" class="herobig" data-herobig aria-haspopup="dialog" aria-label="See the scheme large" title="See the scheme large">`
     + swatch(base.hex, 'herochip' + (animate ? ' pop' : '') + fxCls(base)) + `</button>`
-    + `<h2 class="heroname">${esc(base.name)}</h2>`
+    + `<h2 class="heroname">${esc(base.custom ? 'Custom colour' : base.name)}</h2>`
     + `<button type="button" class="hexline" data-copy="${esc(base.hex)}" title="Copy ${esc(base.hex)}" aria-label="Copy hex ${esc(base.hex)}">${esc(base.hex)}</button>`
     + seed + ntag
     + `<span class="herometa">${meta}</span>`
@@ -573,12 +577,16 @@ export function equivSourceChips(cols, activeHex) {
     + `</div>`;
 }
 
-/** Curated equivalence group — interchangeable paints (ΔE ≤ 1) across brands. `members`: [paint]. */
+/** A paint's equivalence group (§5.2): the paints within ΔE 1 of it, with the same finish. `members`: [paint].
+ *  The words (UX review F12 and F19): the group is made from hex values, and a hex is approximate (§2), so the
+ *  line says "almost the same colour in the paint data", never "interchangeable" or "the same colour": a painter
+ *  read "Mephiston Red is the same colour as Chotec Orange 1". It also said "1 paints across 1 brand". */
 export function equivGroup(label, members, markOf) {
   if (!members.length) return '';
-  const brands = new Set(members.map(m => m.brand)).size;
+  const n = members.length, brands = new Set(members.map(m => m.brand)).size;
   return `<div class="eqgroup"><p class="hint" style="margin:14px 0 6px">`
-    + `Interchangeable — same colour (ΔE ≤ 1): <strong>${esc(label)}</strong> · ${members.length} paints across ${brands} brand${brands === 1 ? '' : 's'}.</p>`
+    + `Almost the same colour in the paint data (ΔE 1 or less): <strong>${esc(label)}</strong> · ${n} paint${n === 1 ? '' : 's'} in ${brands} brand${brands === 1 ? '' : 's'}. `
+    + `The colours here are approximate: compare the pots before you use one in place of another.</p>`
     + `<div class="eq">${members.map(p => {
       const mark = markOf ? markOf(p.id) : 'none';
       return `<div class="eqc">${swatch(p.hex, fxCls(p).trim())}<div style="min-width:0">`

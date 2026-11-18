@@ -931,8 +931,8 @@ function renderEquiv() {
   const srcHex = normHex(equivSourceHex()) || '#000000';
   const p = basePaint();
   const chips = ui.equivSourceChips(equivSourceCols(), srcHex);
-  // When the source is the seed AND the seed is a real paint, keep the richer view (curated interchangeable
-  // group + that paint's cross-brand equivalents). Any other selected column resolves to its ideal colour.
+  // When the source is the seed AND the seed is a real paint, keep the richer view (its group of almost-same
+  // colours + that paint's cross-brand equivalents). Any other selected column resolves to its ideal colour.
   if (p && srcHex === (pickHex() || '').toUpperCase()) {
     const self = state.idx.byId.get(p.id);
     const members = groupMembers(state.idx, self);                 // curated equivalents (ΔE ≤ 1)

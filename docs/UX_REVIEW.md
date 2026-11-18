@@ -692,3 +692,15 @@ The matches are the same in every number (the roles, their labels, the Metal rol
 paints one press adds, and no match. A press moves nothing on the screen: measured on a phone (390 px) and on a
 desktop (1440 px), the role cards have the same position before and after each of the three actions. F14 (a
 way from that place to the list) is open, in PLAN item 85.
+
+### 11.8 Step 5, built: the words (F12 in part, F19)
+
+- A paint's group said "Interchangeable — same colour (ΔE ≤ 1)". It now says **Almost the same colour in the
+  paint data (ΔE 1 or less)**, with "compare the pots before you use one in place of another". Paint details
+  (built on `main` after this review) said "The same colour" for the same list, and has the new words too.
+- "1 paints across 1 brand" is "1 paint in 1 brand".
+- A colour that is not a paint: its name is **Custom colour**, the hex shows one time, and its tag is **not a
+  paint** in place of "typed hex".
+
+The groups and the matches are the same. The other parts of F12 are open: the first batch of
+[`COLOUR_CHECK.md`](COLOUR_CHECK.md), and Ryan's reading of the 15 pairs.

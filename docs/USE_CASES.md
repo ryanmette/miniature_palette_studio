@@ -71,7 +71,7 @@ we need to power shelf-first planning.
 > **Observed priority inversion (noted 2026-08-11, from Ryan's own use).** In practice the app gets
 > opened less to build a scheme and more to *look a paint up and find what is close to it* — which is
 > **P3 · Marcus** verbatim, not a new persona. Every piece of P3's answer already exists (ΔE matching,
-> cross-brand equivalents, the interchangeable groups, owned/to-buy marks) but is filed *inside* the
+> cross-brand equivalents, the groups of almost-same colours, owned/to-buy marks) but is filed *inside* the
 > scheme output, so answering "what is close to Mephiston Red?" means seeding a scheme first. The IA
 > assumes **PLAN** is the job when the job is often **RESOLVE → SHOP** (§0.5). Four routing fixes are
 > explored in [`mockups/buying-assistant.html`](../mockups/buying-assistant.html); none needs new engine

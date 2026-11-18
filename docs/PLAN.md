@@ -1011,7 +1011,7 @@ How good the best swap is (ΔE ≤ 3.5, "Good" or better), by the brands the sto
       both are probably effects (`fx: gloss`). The product page is gone (404) and it is not in the maker's
       public product list, so there is no primary source to read. No change until one is found.
 
-### Raised by the UX review on 2026-11-17 — before the first showing (items 76, 78, 79 and 80 built; the others not yet)
+### Raised by the UX review on 2026-11-17 — before the first showing (items 76, 78, 79 and 80 built, and the words of items 82 and 85; the others not yet)
 
 [`docs/UX_REVIEW.md`](UX_REVIEW.md): a review of the whole app as a new painter meets it (experienced painters, a
 link, alone, mostly on an iPhone). Two deep journeys, ten seams, measurements, and a severity from three independent
@@ -1029,6 +1029,7 @@ early step never sees a later fix:
 3. Item 80, its first part: the main Add button puts only the role pots on the list. **Built (2026-11-18).**
 4. Item 77: keep the Shelf on an iPhone, after step 0.
 5. With any of the steps: the three wording errors (F19) and a softer word than "Interchangeable" (item 82, in part).
+   **Built (2026-11-18):** "Almost the same colour in the paint data", in Other brands and in Paint details.
 
 **This order comes first** (Ryan, 2026-11-17: "review's steps first"). The block "Next (as of 2026-11-17, after
 v1.18.0)" below is a second order that Ryan gave on the same day, in another session, for other work; it follows
@@ -1090,6 +1091,9 @@ item 85, come after the first painters answer.
     item 49 (`docs/COLOUR_CHECK.md`: Citadel Base, then Layer) before the showing; use a softer word than
     "Interchangeable — same colour" for a group made from hex values; Ryan to read the 15 pairs of
     `mockups/ux-review/trust.mjs` as a painter.
+    **Built (2026-11-18), the words only:** a group says "Almost the same colour in the paint data (ΔE 1 or
+    less)" and "compare the pots", in Other brands and in Paint details (CLAUDE.md §3.5 Words). **Open:** the
+    first batch of item 49, and Ryan's reading of the 15 pairs.
 83. **"From my pots, which go well together?"** (F03; 3 · 3 · 2). In Only mode, 63% of the roles are "Poor": the
     labels are honest, and the painter reads "your pots are poor". A product question. Item 61 (the Shelf's Map, built in
     1.16.0) shows the shelf's tones and gaps, but it does not make a scheme. Not a small fix.
@@ -1099,7 +1103,8 @@ item 85, come after the first painters answer.
 85. **Small fixes, one batch** (rated 2 or less): a way to the list after Add, and the Shopping list filter opens in
     the list view (F14); Take to the store on a phone says "your list is on this phone" first (F15); a name the
     painter did not change is Skip (F16); a new starting paint on a saved scheme (F17; Save has no confirm); a
-    message for a link to an unknown paint (F18); "1 paints", "typed hex" for a wheel tap, the doubled hex (F19);
+    message for a link to an unknown paint (F18); "1 paints", "typed hex" for a wheel tap, the doubled hex (F19:
+    **built 2026-11-18**);
     painters' words in the Accessibility tab and "Warhammer Colour (Citadel)" (F20); the brand in the tick's name
     (F21); the counts line's reflow (F22); back to the role card from Other brands (F23); two lines for a name in the
     live palette (F24).

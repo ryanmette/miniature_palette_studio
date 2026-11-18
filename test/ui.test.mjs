@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, holdControls, holdNote, potRows, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
+import { livePalette, roleSlots, shelfEmpty, shelfGrid, matchChip, equivGroup, holdControls, holdNote, potRows, segmented, hero, pickTile, pickRow, pickUseRow, pickGroup, menuTitle, popChips, matchNote, planControls } from '../src/js/ui.js';
 
 const vm = [
   { id: 'p0', kind: 'base', deg: 0, hex: '#9A1115', match: null },
@@ -56,6 +56,27 @@ test('roleSlots tags each role card with data-hex for the colour link', () => {
   const html = roleSlots(scheme, () => 'none');
   assert.match(html, /class="slot" data-hex="#9A1115"/);
   assert.match(html, /class="slot" data-hex="#C8A13A"/);
+});
+
+test('hero: a colour that is not a paint says so, and shows its hex one time (UX review F19)', () => {
+  const html = hero({ hex: '#711A1A', name: 'Custom #711A1A', custom: true }, false, () => 'none', 'main');
+  assert.match(html, /<h2 class="heroname">Custom colour<\/h2>/);
+  assert.match(html, /<span class="herometa">not a paint<\/span>/);
+  assert.doesNotMatch(html, /typed hex/);
+  // the hex is the copy button's text and nothing else: the name does not repeat it
+  assert.equal((html.match(/>#711A1A</g) || []).length, 1);
+  // a paint keeps its own name
+  assert.match(hero({ id: 'x', hex: '#9A1115', name: 'Mephiston Red', brand: 'A', line: 'Base', type: 'base' }, false), /<h2 class="heroname">Mephiston Red<\/h2>/);
+});
+
+test('equivGroup: "almost the same colour", never "interchangeable"; the counts have the right number (F12, F19)', () => {
+  const pt = (id, brand) => ({ id, name: id, brand, line: '—', hex: '#9A1115', type: 'layer' });
+  const one = equivGroup('dark red', [pt('a', 'A')], () => 'none');
+  assert.match(one, /Almost the same colour in the paint data \(ΔE 1 or less\): <strong>dark red<\/strong> · 1 paint in 1 brand\. /);
+  assert.match(one, /approximate: compare the pots/);
+  assert.doesNotMatch(one, /Interchangeable|1 paints|across/);
+  assert.match(equivGroup('dark red', [pt('a', 'A'), pt('b', 'B'), pt('c', 'B')], () => 'none'), /· 3 paints in 2 brands\. /);
+  assert.equal(equivGroup('dark red', [], () => 'none'), '');
 });
 
 test('hero badges the picked paint with its seed role (main/accent)', () => {
