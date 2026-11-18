@@ -112,8 +112,9 @@ Each milestone = its own branch → PR → CHANGELOG entry → tag. `main` alway
 - **v1.16.0** — the Map release (2026-11-17): the Shelf's **Map** view (item 61; `mockups/shelf-map.html`, C with A, Ryan 2026-11-09): a minimap of the owned paints by Lab hue and strength, over a grid of tones (18 Lab hue bands + the greys × 5 lightness bands); a gap offers the 3 closest opaque pots by true ΔE, with Add. New `shelfmap.js`. Still open from 2026-11-06: sheen (62), colour in 3D (63), the Brand setting (64 B).
 - **v1.17.0** — the store-swap release (2026-11-17), from the audit of **Not on the rack?** (items 66–75): a toggle for every brand (66), Undo keeps a paint to buy (67), a swap can swap again (69), a swap goes under its own rack heading (70), swaps rank by kind (71) and a good owned pot comes first (72); a wash against a wash is compared by **the gap** (68, way C: absorbance direction, `color.js absorbGap`), also as the second try of the Recipe's wash step (74); dataset 1.10.0 (73: 14 Army Painter effects, Orc Flesh Wash, the four Gloss Shades discontinued) and the **No longer made** tag. Open after it: measured wash colours (68), the 34 missing Warhammer Colour paints (75).
 - **v1.18.0** — the true-colour release (2026-11-17): the swatch pass (item 51: no gradient on any swatch; one finish icon in the swatch's ink from one table, `data.js finishKind` + `FINISH_ICONS`; a contrast icon of its own; a neutral finish tag; `--sw-edge`) with dataset 1.11.0 (`fx` for 36 fluorescent or neon and 5 gloss layer paints); the **Brand** setting (item 64 B: Any · Prefer · Only, `BRAND_BOOST` = 2 ΔE, the default is the brand owned most); ⋯ has no focus ring after a touch (item 59). Open after it: the next maker's tone families (Reaper), the paint detail sheet (item 7).
-### Current status (2026-11-17)
-**v1.18.0 released** — the true-colour release (item 51, the swatch pass, with dataset 1.11.0; item 64 B, the Brand setting; item 59). Before it, v1.17.0: the store-swap release (items 66–75: the audit of Not on the rack?, the gap for washes, dataset 1.10.0, the No longer made tag). Before it, v1.16.0: the Map release (item 61: the Shelf's Map view, from the study `mockups/shelf-map.html`). Before it, v1.15.0: the Tone Pro release (items 55–57, 64 A and 65; studies for items 57 and 64, new items 58–63 recorded). Before it, v1.14.0: the phone release (items 40–50 and the 2026-10-30 phone test; the swatch and colour-check studies, items 49 and 51, wait for their builds). Before it, v1.13.0: the shopping-list turn, items 34–38. Before it, v1.12.0: role holds (UC-3) and share as an image. The visual identity is done: v1.10.0 is the look (Workbench+) and v1.11.0 the
+- **v1.19.0** — the paint details release (2026-11-18): the paint detail sheet (item 7: `#paintDlg`, `ui.paintSheet`; the same colour, the closest in other brands, the closest on the shelf with how to move it; the ways in: a paint's name in the Recipe, Other brands, the live palette, the Shelf's list, a store swap and the Map's tone, a ladder step, and Paint details in the mark menu); Reaper's triads as the maker's tones (item 64; dataset 1.12.0: 43 triads, 129 paints, from Reaper's own product images, `scripts/reaper-triads.json`; a new top-level `families` list). Open after it: the next maker's tone families (Army Painter Fanatic, Two Thin Coats), the resizable sheet on a phone (item 7).
+### Current status (2026-11-18)
+**v1.19.0 released** — the paint details release (item 7, the paint detail sheet and its ways in; item 64, Reaper's triads, dataset 1.12.0). Before it, v1.18.0: the true-colour release (item 51, the swatch pass, with dataset 1.11.0; item 64 B, the Brand setting; item 59). Before it, v1.17.0: the store-swap release (items 66–75: the audit of Not on the rack?, the gap for washes, dataset 1.10.0, the No longer made tag). Before it, v1.16.0: the Map release (item 61: the Shelf's Map view, from the study `mockups/shelf-map.html`). Before it, v1.15.0: the Tone Pro release (items 55–57, 64 A and 65; studies for items 57 and 64, new items 58–63 recorded). Before it, v1.14.0: the phone release (items 40–50 and the 2026-10-30 phone test; the swatch and colour-check studies, items 49 and 51, wait for their builds). Before it, v1.13.0: the shopping-list turn, items 34–38. Before it, v1.12.0: role holds (UC-3) and share as an image. The visual identity is done: v1.10.0 is the look (Workbench+) and v1.11.0 the
 UX pass. **Monetization direction chosen: A (affiliate links) + B (audience funnel)** — see
 [`MONETIZATION.md`](MONETIZATION.md); A stays parked until Ryan files retailer applications (§9).
 **Native app, Stage 1 (v2.0): started 2026-10-29** — the `ios/` project is committed and runs in the
@@ -1043,8 +1044,8 @@ early step never sees a later fix:
 5. With any of the steps: the three wording errors (F19) and a softer word than "Interchangeable" (item 82, in part).
    **Built (2026-11-18):** "Almost the same colour in the paint data", in Other brands and in Paint details.
 
-**This order comes first** (Ryan, 2026-11-17: "review's steps first"). The block "Next (as of 2026-11-17, after
-v1.18.0)" below is a second order that Ryan gave on the same day, in another session, for other work; it follows
+**This order comes first** (Ryan, 2026-11-17: "review's steps first"). The block "Next (as of 2026-11-18, after
+v1.19.0)" below is a second order that Ryan gave on the same day, in another session, for other work; it follows
 steps 1 to 4. Item 64 B there (a Brand setting in ⋯) is built: it was also the second part of item 80 here.
 
 The link goes out when steps 1 to 4 are done. Items 81 (the lookup), 82 (the hex data), 83 and 84, and the rest of
@@ -1126,7 +1127,7 @@ item 85, come after the first painters answer.
     (F21); the counts line's reflow (F22); back to the role card from Other brands (F23); two lines for a name in the
     live palette (F24).
 
-### Next (as of 2026-11-17, after v1.18.0)
+### Next (as of 2026-11-18, after v1.19.0)
 
 Ryan's order (2026-11-17: "go with your recommendation"):
 
@@ -1134,8 +1135,9 @@ Ryan's order (2026-11-17: "go with your recommendation"):
 2. **Item 59** (⋯ showed a focus ring when a touch opened it): **built 2026-11-17**. To confirm on an iPhone.
 3. **Item 64 B** (a Brand setting in ⋯: Any · Prefer · Only): **built 2026-11-17**. **Item 7** (the paint detail
    sheet): **first part built 2026-11-17, its other ways in 2026-11-18**. **Reaper's tone families: built
-   2026-11-18.** **Next** (Ryan, 2026-11-18: "go with your recommendation"): release 1.19.0; then the next
-   maker's families, one brand for each pull request (Army Painter Fanatic, then Two Thin Coats). The Reaper
+   2026-11-18.** **Released in v1.19.0 (2026-11-18).** **Next** (Ryan, 2026-11-18: "go with your
+   recommendation"): the next maker's families, one brand for each pull request (Army Painter Fanatic, then Two
+   Thin Coats). The Reaper
    type corrections found on the way (item 64) wait for the maker's own page for each paint.
 4. **Waits for Ryan:** measured wash colours and the 34 missing Warhammer Colour paints (items 49, 68, 75); a test
    on a real iPad (item 60); the device build of the native app (Stage 1); the retailer applications

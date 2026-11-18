@@ -10,6 +10,11 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.19.0** — the paint details release. Select a paint's name, in the Recipe, Other brands, the live palette, the
+Shelf's List or its Map, and one sheet shows everything about that paint: its finish, your mark, the paints that are
+**the same colour**, the **closest in other brands** and the **closest on your shelf**, each with its true ΔE. Paint
+data 1.12.0 adds 43 of Reaper's triads, so a Reaper pot's Recipe card shows the maker's shadow, midtone and highlight.
+
 **v1.18.0** — the true-colour release. Every swatch shows the paint's own colour, with no gradient, and a paint
 that is not flat has one small **finish icon** in its corner (metallic, wash, Contrast, effect, fluorescent). A
 **Brand** setting in ⋯ keeps a scheme in one brand: **Prefer** (the brand wins a close call) or **Only**. Paint data

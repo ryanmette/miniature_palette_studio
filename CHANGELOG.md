@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.18.0 took only the web entries. -->
+<!-- The native stream (2.x, CLAUDE_NATIVE.md §6) waits here for its first release: v1.13.0 to v1.19.0 took only the web entries. -->
 ### Added
 - **Keep your shelf safe: the app says how, one time** (PLAN §5 item 77; `docs/UX_REVIEW.md` F08, a finding of
   the highest severity, and Ryan's iPhone check of 2026-11-18; CLAUDE.md §3.6). Step 4 of the review's build
@@ -38,28 +38,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   until the painter finds **Use my paints** in ⋯, and the app does not say in time how to keep the Shelf on an
   iPhone. The report also has a 10-minute iPhone check for Ryan and three questions to send with the link. The
   screenshots and the scripts are in `mockups/ux-review/`. PLAN §5 items 76 to 85 are the proposed work.
-- **Reaper's triads: the maker's three tones on the Recipe** (PLAN §5 item 64; paint data 1.12.0;
-  `src/data/SOURCES.md`). Reaper sells its Master Series colours in sets of three: a shadow, a midtone and a
-  highlight. When a role's pot is one of those paints, its Recipe card now shows the set, as it does for
-  Warhammer Tone Pro: "Blood Colors · Reaper triad: the maker's 3 tones", with your pot marked. 43 triads (129
-  paints) are in. The triads come from Reaper's own product images, and each paint code was checked against the
-  community source. A triad that is a set of three products (liners, clear brights, washes) is not shown as
-  tones. Only the `family` and `tone` fields changed, so no match changed.
-- **Paint details: everything about one paint, in one sheet** (PLAN §5 item 7; `mockups/buying-assistant.html`,
-  direction B; CLAUDE.md §3.5). Select a paint's name in the Recipe or in Other brands, press a ladder step, or
-  choose **Paint details** in the menu of a paint on the Shelf or in the seed field's list. The sheet shows the
-  paint and its finish, your mark (Not marked · Owned · Shopping list), the paints that are **the same colour**,
-  the **closest in other brands**, and the **closest on your shelf**, each with its true ΔE. A paint on your
-  shelf that is not an exact match says how to change it ("To match: darken slightly"). A row opens that paint
-  in the same sheet, and **Start a scheme from this** takes the paint to the Studio. The sheet changes no match.
-- **Paint details: four more ways in** (PLAN §5 item 7, second part; CLAUDE.md §3.5). A paint's name now opens
-  its details in these places too: under each colour of the **live palette**, in a row of the Shelf's **List**,
-  in a pot under **Not on the rack?**, and in a tone of the Shelf's **Map** (the paints the tone holds, and the
-  pots that fill it). The buttons beside a name do what they did: the tick, **Use**, **Add** and the count. On a
-  touch screen the name's touch area is the block round it (44px tall or more); with a mouse it is the name
-  alone, so a click on the empty part of a row does nothing. On the Other brands tab, a click on a colour block
-  of the live palette still shows that colour's matches, and a click on the pot's name opens its details. When
-  the sheet closes, the focus goes back to the name that opened it, also after a mark redrew that row.
 - **The iPhone app project (native stream, Stage 1; `CLAUDE_NATIVE.md`).** The repo now holds the Capacitor
   iOS project (`ios/`, Swift Package Manager, Capacitor 8). It wraps `src/` as it is: there is no build step,
   and `npx cap sync ios` copies the web app in. The app icon and the light and dark launch screens are made
@@ -115,8 +93,6 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     (Layer) and Dawnstone (Dry) no longer look the same. With no search, the grid is as before.
   - Help has a new answer: "What is the quickest way to mark the paints I own?"
   - No match changes.
-- **The live palette: "owned" always shows beside the pot's name.** A long name is cut with an ellipsis. Before,
-  the word "owned" after a long name was cut off with it.
 ### Fixed
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area
@@ -134,6 +110,34 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `rimraf`. The newest `rimraf` (6.1.3) still needs `glob` 13, so no Capacitor version can take the fixed
   versions yet. Capacitor does not use the code they describe: it calls `rimraf.sync()` on fixed folders,
   with no `AbortSignal` and no glob pattern from outside.
+
+## [1.19.0] - 2026-11-18
+### Added
+- **Reaper's triads: the maker's three tones on the Recipe** (PLAN §5 item 64; paint data 1.12.0;
+  `src/data/SOURCES.md`). Reaper sells its Master Series colours in sets of three: a shadow, a midtone and a
+  highlight. When a role's pot is one of those paints, its Recipe card now shows the set, as it does for
+  Warhammer Tone Pro: "Blood Colors · Reaper triad: the maker's 3 tones", with your pot marked. 43 triads (129
+  paints) are in. The triads come from Reaper's own product images, and each paint code was checked against the
+  community source. A triad that is a set of three products (liners, clear brights, washes) is not shown as
+  tones. Only the `family` and `tone` fields changed, so no match changed.
+- **Paint details: everything about one paint, in one sheet** (PLAN §5 item 7; `mockups/buying-assistant.html`,
+  direction B; CLAUDE.md §3.5). Select a paint's name in the Recipe or in Other brands, press a ladder step, or
+  choose **Paint details** in the menu of a paint on the Shelf or in the seed field's list. The sheet shows the
+  paint and its finish, your mark (Not marked · Owned · Shopping list), the paints that are **the same colour**,
+  the **closest in other brands**, and the **closest on your shelf**, each with its true ΔE. A paint on your
+  shelf that is not an exact match says how to change it ("To match: darken slightly"). A row opens that paint
+  in the same sheet, and **Start a scheme from this** takes the paint to the Studio. The sheet changes no match.
+- **Paint details: four more ways in** (PLAN §5 item 7, second part; CLAUDE.md §3.5). A paint's name now opens
+  its details in these places too: under each colour of the **live palette**, in a row of the Shelf's **List**,
+  in a pot under **Not on the rack?**, and in a tone of the Shelf's **Map** (the paints the tone holds, and the
+  pots that fill it). The buttons beside a name do what they did: the tick, **Use**, **Add** and the count. On a
+  touch screen the name's touch area is the block round it (44px tall or more); with a mouse it is the name
+  alone, so a click on the empty part of a row does nothing. On the Other brands tab, a click on a colour block
+  of the live palette still shows that colour's matches, and a click on the pot's name opens its details. When
+  the sheet closes, the focus goes back to the name that opened it, also after a mark redrew that row.
+### Changed
+- **The live palette: "owned" always shows beside the pot's name.** A long name is cut with an ellipsis. Before,
+  the word "owned" after a long name was cut off with it.
 
 ## [1.18.0] - 2026-11-17
 ### Added
