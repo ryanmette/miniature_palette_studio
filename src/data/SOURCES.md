@@ -1,4 +1,4 @@
-# Data sources & attribution — dataset v1.14.0
+# Data sources & attribution — dataset v1.15.0
 
 Provenance for `src/data/paints.json` (values captured `2026-06-25`, `2026-10-26` and, for Tone Pro, `2026-11-06`; built `2026-11-17`). Methodology: [`docs/DATA_SOURCING.md`](../../docs/DATA_SOURCING.md).
 Every paint row also carries its own `source`, `sourceUrl`, and `captured` fields.
@@ -159,7 +159,27 @@ by eye. `scripts/two-thin-coats-triads.json` holds what they say.
   does not change: Skeleton Legion (was Keleton Legion), Emerald Green (Merald Green), Fur Cloak (Ur Cloak),
   Eldar Robe (Elder Robe), Von Evile Purple (Von Evile Pimple). One name on the Wave 3 chart is an evident
   printing error ("Enticing Puple"); the data keeps "Enticing Purple".
-- **Not taken:** no colour value, and no type.
+- **Not taken:** no colour value, and no type (the types came in v1.15.0, below).
+
+### From the same charts: types and five more names (v1.15.0)
+
+The charts' "Paint bottle key" marks each paint. Upstream has one set for each wave, so every paint that is no
+wash by its name had the type `layer`. As flat paints, the app offered these for a flat colour role.
+
+| The charts' mark | Paints | Type now |
+|---|---|---|
+| Wave 1: the "Silver" triad, with the metallics | Plate Armour, Mythril Blade | `metal` (was `layer`) |
+| Wave 3: ME (metallic) | Scarab Red, Omega Blue, Enchantment Blue, Emperor's Purple, Carapace Green, Fire Opal | `metal` (was `layer`) |
+| Wave 2: G (glaze) | Red, Yellow, Blue, Orange, Green and Purple Glaze | `glaze` (was `layer`) |
+
+- **The effect on matches, measured** (876 flat paints as the starting paint × 4 harmonies × 2 ladder settings,
+  7,008 schemes): 13.8% of the schemes change in one or more slots, and 0.78% of all slots change. In each change
+  a metallic or a glaze leaves a flat colour's slot, or a true metallic takes a step of the Metal ladder.
+- **Five more names** take the charts' spelling, with the upstream spelling in `formerly` and no change of id:
+  Battle Axe Brass (was Batle Axe Brass), Hellion Red Wash (Helion Red Wash), Septic Green (Septric Green), Bits
+  O'Tin (Ritz O'Tin) and Doom Metal (Death Metal).
+- **No colour value changed.** One paint has a new group: Plate Armour, a metallic now, joins the metallics of
+  its colour ("the same colour" is only within one finish class, CLAUDE.md §5.2).
 
 ## Coverage — 3375 paints, 10 brands
 

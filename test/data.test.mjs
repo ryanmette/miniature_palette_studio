@@ -715,7 +715,7 @@ test('the rename keeps every id: Warhammer Colour paints are still citadel-…, 
     'citadel-base-retributor-armour', 'citadel-layer-sotek-green']) assert.ok(real.byId.has(id), id);
 });
 
-test('the fifteen names are the maker\'s spelling, and each keeps its former name', () => {
+test('the twenty names are the maker\'s spelling, and each keeps its former name', () => {
   const fixed = {
     'citadel-base-bugman-glow': ["Bugman's Glow", 'Bugman Glow'],
     'citadel-layer-emperor-children': ["Emperor's Children", 'Emperor Children'],
@@ -734,13 +734,19 @@ test('the fifteen names are the maker\'s spelling, and each keeps its former nam
     'two-thin-coats-wave-1-ur-cloak': ['Fur Cloak', 'Ur Cloak'],
     'two-thin-coats-wave-3-elder-robe': ['Eldar Robe', 'Elder Robe'],
     'two-thin-coats-wave-3-von-evile-pimple': ['Von Evile Purple', 'Von Evile Pimple'],
+    // dataset 1.15.0: the same charts, paints that are in no triad
+    'two-thin-coats-wave-2-batle-axe-brass': ['Battle Axe Brass', 'Batle Axe Brass'],
+    'two-thin-coats-wave-2-helion-red-wash': ['Hellion Red Wash', 'Helion Red Wash'],
+    'two-thin-coats-wave-3-septric-green': ['Septic Green', 'Septric Green'],
+    'two-thin-coats-wave-3-ritz-otin': ["Bits O'Tin", "Ritz O'Tin"],
+    'two-thin-coats-wave-3-death-metal': ['Doom Metal', 'Death Metal'],
   };
   for (const [id, [name, old]] of Object.entries(fixed)) {
     const p = real.byId.get(id);
     assert.equal(p.name, name, id);
     assert.deepEqual(p.formerly, [old], id);
   }
-  assert.equal(real.paints.filter(p => p.formerly).length, 15, 'no other paint has a former name');
+  assert.equal(real.paints.filter(p => p.formerly).length, 20, 'no other paint has a former name');
   assert.equal(ids(searchPaints(real, 'brigadine brown'))[0], 'army-painter-warpaints-fanatic-brigadine-brown', 'the old spelling still finds it');
   assert.ok(ids(searchPaints(real, 'von evile pimple')).includes('two-thin-coats-wave-3-von-evile-pimple'), 'the old spelling still finds it');
   assert.equal(real.byId.get('citadel-technical-nurgles-rot').fx, 'slime', 'the fixed name keeps its finish');
@@ -1034,6 +1040,24 @@ test('Two Thin Coats triads (dataset 1.14.0): 43 tone families of 3, shadow · m
   // the sets with other marks are no families: a wash, a glaze, a bright, a Wave 2 metallic
   for (const n of ['Battle Mud Wash', 'Red Glaze', 'Hellspawn Red', 'Dwarven Iron', 'Cyber Pink', 'Smoke Grey Wash'])
     assert.equal(real.paints.find(p => p.brand === 'Two Thin Coats' && p.name === n).family, undefined, n);
+});
+
+test('Two Thin Coats types follow the marks on the maker\'s charts (dataset 1.15.0): 8 metallics and 6 glazes', () => {
+  const ttc = n => real.paints.find(p => p.brand === 'Two Thin Coats' && p.name === n);
+  const metals = ['Plate Armour', 'Mythril Blade', 'Scarab Red', 'Omega Blue', 'Enchantment Blue', "Emperor's Purple", 'Carapace Green', 'Fire Opal'];
+  for (const n of metals) assert.equal(ttc(n).type, 'metal', n);
+  for (const c of ['Red', 'Yellow', 'Blue', 'Orange', 'Green', 'Purple']) assert.equal(ttc(`${c} Glaze`).type, 'glaze', c);
+  // the range by type: 135 flat colours, 24 metallics, 13 washes and 6 glazes
+  const by = {}; for (const p of real.paints.filter(q => q.brand === 'Two Thin Coats')) by[p.type] = (by[p.type] || 0) + 1;
+  assert.deepEqual(by, { layer: 135, metal: 24, wash: 13, glaze: 6 });
+  // a glaze and a metallic are not offered for a flat colour: the nearest flat paint to a glaze's own colour is another paint
+  const flat = { excludeTypes: new Set(FINISH_TYPES), demoteTypes: new Set(['metal']), demoteAmount: 4 };
+  const blue = ttc('Blue Glaze');
+  assert.notEqual(nearestPaint(real, blue.hex, flat).paint.id, blue.id);
+  assert.notEqual(nearestPaint(real, ttc('Plate Armour').hex, flat).paint.type, 'metal');
+  // the Silver triad is three metallics now, and it is still a family; Plate Armour joins the metallics of its colour
+  assert.deepEqual(familyOf(real, ttc('Plate Armour')).tones.map(p => p.type), ['metal', 'metal', 'metal']);
+  assert.ok(groupMembers(real, ttc('Plate Armour')).length > 0 && groupMembers(real, ttc('Plate Armour')).every(p => p.type === 'metal'));
 });
 
 // ---- Tone Pro families (dataset 1.9.0; docs/TONE_LADDERS.md §6) ----

@@ -841,15 +841,15 @@ Do these three in one bug pass, in this order.
     from the maker's own charts (`scripts/two-thin-coats-triads.json`; `SOURCES.md`); a triad with a heading on a
     chart has that name ("Warm Brown · Two Thin Coats triad: the maker's 3 tones"), and one on a colour wheel has
     none ("Two Thin Coats triad: …"). Five names took the charts' spelling. With this, every maker of
-    `TONE_LADDERS.md` §3 is in. **Found on the way (open; data; the evidence is the charts' marks, so it is ready
-    to build as one change, but it changes matches):** (a) **types.** The charts mark as **metallic** eight paints
-    that have the type `layer`: Plate Armour and Mythril Blade (Wave 1, the "Silver" triad) and Scarab Red, Omega
-    Blue, Enchantment Blue, Emperor's Purple, Carapace Green and Fire Opal (Wave 3, marked ME). They mark as
-    **glaze** the six Wave 2 glazes (Red, Yellow, Blue, Orange, Green, Purple Glaze), which have the type `layer`.
-    So the app offers a metallic or a glaze as a flat paint. (b) **Five more names** differ from the charts:
-    Battle Axe Brass (the data has "Batle Axe Brass"), Hellion Red Wash ("Helion Red Wash"), Septic Green
-    ("Septric Green"), Bits O'Tin ("Ritz O'Tin") and Doom Metal ("Death Metal"). (c) The chart's two varnishes
-    (Satin, Gloss) are not in the data, which is correct: they are no colours.
+    `TONE_LADDERS.md` §3 is in. **The types and five more names: built (2026-11-18), dataset 1.15.0** (Ryan: "lets then do the next item").
+    The charts mark as **metallic** eight paints that had the type `layer`: Plate Armour and Mythril Blade (Wave 1,
+    the "Silver" triad) and Scarab Red, Omega Blue, Enchantment Blue, Emperor's Purple, Carapace Green and Fire
+    Opal (Wave 3, marked ME); and as **glaze** the six Wave 2 glazes. They have those types now (`types` in
+    `build-dataset.mjs`). Measured on 7,008 schemes: 13.8% change in one or more slots, 0.78% of all slots. Five
+    more names took the charts' spelling: Battle Axe Brass, Hellion Red Wash, Septic Green, Bits O'Tin, Doom
+    Metal. **Found on the way (open; data):** Vallejo has five paints with "Glaze" in the name and the type
+    `layer` (Black, Brown, Tan, Verdigris and White Glaze). They are probably glazes, but the maker's site
+    refuses automated access, so there is no primary source read yet. No change until one is read.
 
 ### Raised by Ryan on 2026-11-07 — an update log (built)
 
@@ -1156,9 +1156,10 @@ Ryan's order (2026-11-17: "go with your recommendation"):
    sheet): **first part built 2026-11-17, its other ways in 2026-11-18**. **Reaper's tone families: built
    2026-11-18.** **Released in v1.19.0 (2026-11-18).** **The Army Painter's triads and Two Thin Coats':
    built 2026-11-18** (datasets 1.13.0 and 1.14.0; not in a release yet). Every maker of the study is in.
-   **Next, for Ryan to choose:** the Two Thin Coats type and name corrections found on the way (item 64: eight
-   metallics and six glazes have the type `layer`; it changes matches); the resizable sheet on a phone (item 7).
-   The Reaper type corrections (item 64) wait for the maker's own page for each paint.
+   **The Two Thin Coats types and names: corrected
+   2026-11-18** (dataset 1.15.0). **Next, for Ryan to choose:** a release (1.20.0) for the three makers' families
+   and the corrections; the resizable sheet on a phone (item 7); the UX review's findings that are still open (items 76–85 say which).
+   The Reaper type corrections and the five Vallejo "Glaze" paints (item 64) wait for a maker's source.
 4. **Waits for Ryan:** measured wash colours and the 34 missing Warhammer Colour paints (items 49, 68, 75); a test
    on a real iPad (item 60); the device build of the native app (Stage 1); the retailer applications
    (`MONETIZATION.md` A).
