@@ -1,5 +1,5 @@
 {
- "version": "1.11.0",
+ "version": "1.12.0",
  "generated": "2026-11-17",
  "license": "Compiled from MIT-licensed data (© 2022 Rick Fleuren / Miniature Painter Pro). See data/SOURCES.md.",
  "attribution": "Paint data via github.com/Arcturus5404/miniature-paints (MIT). Cross-reference concept credited to DakkaDakka.",
@@ -954,6 +954,223 @@
    "id": "yellow-23",
    "refHex": "#EFE641",
    "label": "yellow"
+  }
+ ],
+ "families": [
+  {
+   "id": "reaper-triad-09701",
+   "name": "Blood Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09702",
+   "name": "Fire Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09703",
+   "name": "Yellows",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09704",
+   "name": "Warm Greens",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09705",
+   "name": "Cool Greens",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09706",
+   "name": "Pure Blues",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09707",
+   "name": "Grey Blues",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09708",
+   "name": "Royal Purples",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09709",
+   "name": "Violet Reds",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09710",
+   "name": "Warm Deep Browns",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09711",
+   "name": "Warm Light Brown",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09712",
+   "name": "Olive Greens",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09713",
+   "name": "Neutral Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09714",
+   "name": "Dark Skintones",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09715",
+   "name": "Medium Skintones",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09716",
+   "name": "Fair Skintones",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09717",
+   "name": "Gold-toned Metal",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09718",
+   "name": "Silver-toned Metal",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09719",
+   "name": "Martial Blues",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09720",
+   "name": "Bone Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09723",
+   "name": "Rosy Skintones",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09724",
+   "name": "Red-Brown",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09726",
+   "name": "Ocean Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09728",
+   "name": "Moss Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09729",
+   "name": "Stone Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09730",
+   "name": "Neutral Greys",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09737",
+   "name": "Burnt Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09739",
+   "name": "Vivid Blues",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09743",
+   "name": "Khaki Brown",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09745",
+   "name": "Bloodthirsty Reds",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09746",
+   "name": "Classic Browns",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09750",
+   "name": "Undead Skintones",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09754",
+   "name": "Grey Browns",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09755",
+   "name": "Dark Elf Skin",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09763",
+   "name": "Ultramarine Blues",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09767",
+   "name": "Autumn Browns",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09769",
+   "name": "Natural Steel",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09773",
+   "name": "Lava Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09781",
+   "name": "Red Hair",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09786",
+   "name": "Blonde Hair",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09787",
+   "name": "Bronzed Skin",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09792",
+   "name": "Vampiric Skintones Colors",
+   "kind": "triad"
+  },
+  {
+   "id": "reaper-triad-09801",
+   "name": "NMM Gold Colors",
+   "kind": "triad"
   }
  ],
  "paints": [
@@ -27177,7 +27394,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09720",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-aged-pewter",
@@ -27243,7 +27462,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09711",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-amethyst-purple",
@@ -27256,7 +27477,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09708",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-ancient-bronze",
@@ -27269,7 +27492,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09717",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-ancient-wood",
@@ -27295,7 +27520,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09717",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-ashen-blue",
@@ -27308,7 +27535,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09719",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-auburn-shadow",
@@ -27321,7 +27550,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09781",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-basic-dirt",
@@ -27387,7 +27618,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09746",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-blackened-steel",
@@ -27400,7 +27633,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09769",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-blonde-hair",
@@ -27413,7 +27648,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09786",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-blonde-highlight",
@@ -27426,7 +27663,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09786",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-blonde-shadow",
@@ -27439,7 +27678,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09786",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-blood-red",
@@ -27452,7 +27693,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09701",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-bloodless-skin",
@@ -27465,7 +27708,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09750",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-bloodstain-red",
@@ -27479,6 +27724,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09745",
+   "tone": 1,
    "groupId": "deep-red-07"
   },
   {
@@ -27518,7 +27765,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09720",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-braaaains-pink",
@@ -27545,6 +27794,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09719",
+   "tone": 1,
    "groupId": "deep-blue-07"
   },
   {
@@ -27598,7 +27849,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09739",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-brilliant-green",
@@ -27624,7 +27877,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09787",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-bronzed-skin-highlight",
@@ -27637,7 +27892,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09787",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-bronzed-skin-shadow",
@@ -27650,7 +27907,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09787",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-brown-ink",
@@ -27715,7 +27974,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09709",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-burnt-orange",
@@ -27728,7 +27989,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09737",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-camouflage-green",
@@ -27767,7 +28030,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09745",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-carrottop-red",
@@ -27780,7 +28045,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09781",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-chestnut-brown",
@@ -27793,7 +28060,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09724",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-chestnut-gold",
@@ -27912,6 +28181,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09745",
+   "tone": 2,
    "groupId": "deep-red-08"
   },
   {
@@ -27925,7 +28196,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09730",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-coal-black",
@@ -27990,7 +28263,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09739",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-dark-elf-highlight",
@@ -28003,7 +28278,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09755",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-dark-elf-shadow",
@@ -28016,7 +28293,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09755",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-dark-elf-skin",
@@ -28029,7 +28308,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09755",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-dark-highlights",
@@ -28042,7 +28323,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09714",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-dark-shadow",
@@ -28055,7 +28338,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09714",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-dark-skin",
@@ -28068,7 +28353,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09714",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-deep-ocean",
@@ -28081,7 +28368,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09726",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-deep-red",
@@ -28094,7 +28383,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09701",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-deep-twilight",
@@ -28146,7 +28437,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09754",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-dusky-skin",
@@ -28198,7 +28491,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09710",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-emerald-green",
@@ -28224,7 +28519,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09773",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-faded-khaki",
@@ -28237,7 +28534,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09743",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-fair-highlights",
@@ -28250,7 +28549,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09716",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-fair-shadow",
@@ -28263,7 +28564,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09716",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-fair-skin",
@@ -28277,6 +28580,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09716",
+   "tone": 2,
    "groupId": "pale-orange-02"
   },
   {
@@ -28291,6 +28596,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09702",
+   "tone": 3,
    "groupId": "orange-09"
   },
   {
@@ -28304,7 +28611,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09702",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-foggy-grey",
@@ -28331,7 +28640,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09705",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-fresh-blood",
@@ -28384,7 +28695,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09750",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-ginger-cookie",
@@ -28423,7 +28736,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09711",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-golden-glow",
@@ -28501,7 +28816,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09705",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-graveyard-bone",
@@ -28541,7 +28858,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09743",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-grey-liner",
@@ -28581,7 +28900,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09767",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-hearth-fire",
@@ -28634,7 +28955,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09728",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-highlight-orange",
@@ -28647,7 +28970,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09781",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-holly-berry",
@@ -28674,6 +28999,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09718",
+   "tone": 2,
    "groupId": "light-grey-01"
   },
   {
@@ -28700,7 +29027,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09708",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-intense-brown",
@@ -28713,7 +29042,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09746",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-jade-green",
@@ -28726,7 +29057,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09705",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-jungle-mist",
@@ -28752,7 +29085,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09728",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-khaki-highlight",
@@ -28791,7 +29126,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09773",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-leaf-green",
@@ -28804,7 +29141,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09704",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-leather-brown",
@@ -28817,7 +29156,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09710",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-leather-white",
@@ -28857,6 +29198,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09703",
+   "tone": 3,
    "groupId": "yellow-21"
   },
   {
@@ -28922,7 +29265,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09773",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-mahogany-brown",
@@ -28935,7 +29280,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09724",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-malvernian-purple",
@@ -28961,7 +29308,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09703",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-marine-teal",
@@ -28974,7 +29323,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09726",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-midnight-blue",
@@ -28987,7 +29338,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09707",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-military-blue",
@@ -29039,7 +29392,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09730",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-moldy-skin",
@@ -29052,7 +29407,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09750",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-monarch-purple",
@@ -29105,6 +29462,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09710",
+   "tone": 1,
    "groupId": "deep-orange-01"
   },
   {
@@ -29118,7 +29477,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09712",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-muddy-soil",
@@ -29171,7 +29532,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09717",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-nightmare-black",
@@ -29197,7 +29560,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09708",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-nmm-gold-base",
@@ -29210,7 +29575,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09801",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-nmm-gold-highlight",
@@ -29223,7 +29590,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09801",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-nmm-gold-shadow",
@@ -29237,6 +29606,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09801",
+   "tone": 1,
    "groupId": "dark-orange-05"
   },
   {
@@ -29264,7 +29635,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09737",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-old-bronze",
@@ -29316,7 +29689,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09712",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-olive-shadow",
@@ -29381,7 +29756,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09767",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-pale-green",
@@ -29395,6 +29772,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09704",
+   "tone": 3,
    "groupId": "green-07"
   },
   {
@@ -29408,7 +29787,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09728",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-pale-olive",
@@ -29421,7 +29802,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09712",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-pale-violet-red",
@@ -29434,7 +29817,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09709",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-palomino-gold",
@@ -29515,6 +29900,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09702",
+   "tone": 2,
    "groupId": "red-01"
   },
   {
@@ -29528,7 +29915,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09704",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-polished-bone",
@@ -29541,7 +29930,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09720",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-polished-silver",
@@ -29554,7 +29945,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09718",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-prom-night-pink",
@@ -29594,6 +29987,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09713",
+   "tone": 1,
    "groupId": "near-black-03"
   },
   {
@@ -29608,6 +30003,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09713",
+   "tone": 3,
    "groupId": "near-white-01"
   },
   {
@@ -29635,7 +30032,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09713",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-red-brick",
@@ -29648,7 +30047,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09701",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-red-ink",
@@ -29766,7 +30167,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09739",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-rose-gold",
@@ -29792,7 +30195,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09723",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-rosy-shadow",
@@ -29805,7 +30210,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09723",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-rosy-skin",
@@ -29818,7 +30225,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09723",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-rotting-wood",
@@ -29871,6 +30280,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09737",
+   "tone": 1,
    "groupId": "dark-red-09"
   },
   {
@@ -29897,7 +30308,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09767",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-rust-brown",
@@ -29910,7 +30323,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09724",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-saffron-sunset",
@@ -29950,7 +30365,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09706",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-scorched-metal",
@@ -30003,6 +30420,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09718",
+   "tone": 1,
    "groupId": "grey-08"
   },
   {
@@ -30016,7 +30435,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09729",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-shield-brown",
@@ -30029,7 +30450,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09754",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-sky-blue",
@@ -30042,7 +30465,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09706",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-snow-shadow",
@@ -30055,7 +30480,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09707",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-soft-blue",
@@ -30185,7 +30612,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09729",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-stormy-grey",
@@ -30198,7 +30627,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09730",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-sun-yellow",
@@ -30211,7 +30642,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09703",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-sunset-purple",
@@ -30237,7 +30670,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09726",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-swamp-green",
@@ -30263,7 +30698,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09715",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-tanned-leather",
@@ -30276,7 +30713,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09711",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-tanned-shadow",
@@ -30289,7 +30728,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09715",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-tanned-skin",
@@ -30302,7 +30743,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09715",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-tarnished-brass",
@@ -30341,7 +30784,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09769",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-templar-blue",
@@ -30354,7 +30799,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09719",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-terran-khaki",
@@ -30380,7 +30827,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09706",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-true-silver",
@@ -30394,6 +30843,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09769",
+   "tone": 3,
    "groupId": "light-grey-04"
   },
   {
@@ -30420,7 +30871,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09707",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-ultramarine-blue",
@@ -30433,7 +30886,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09763",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-ultramarine-highlight",
@@ -30447,6 +30902,8 @@
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
    "captured": "2026-06-25",
+   "family": "reaper-triad-09763",
+   "tone": 3,
    "groupId": "dark-blue-03"
   },
   {
@@ -30460,7 +30917,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09763",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-uniform-brown",
@@ -30473,7 +30932,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09743",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-vampiric-highlight",
@@ -30486,7 +30947,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09792",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-vampiric-shadow",
@@ -30499,7 +30962,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09792",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-vampiric-skin",
@@ -30512,7 +30977,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09792",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-violet-light",
@@ -30538,7 +31005,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09709",
+   "tone": 2
   },
   {
    "id": "reaper-master-series-violet-shadow",
@@ -30590,7 +31059,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09746",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-weathered-stone",
@@ -30603,7 +31074,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09729",
+   "tone": 3
   },
   {
    "id": "reaper-master-series-woodstain-brown",
@@ -30616,7 +31089,9 @@
    "approx": true,
    "source": "community",
    "sourceUrl": "https://github.com/Arcturus5404/miniature-paints/blob/main/paints/Reaper.md",
-   "captured": "2026-06-25"
+   "captured": "2026-06-25",
+   "family": "reaper-triad-09754",
+   "tone": 1
   },
   {
    "id": "reaper-master-series-worn-navy",

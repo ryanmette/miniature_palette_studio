@@ -818,8 +818,16 @@ Do these three in one bug pass, in this order.
     `ladders`, so the shopping list is unchanged). **B built (2026-11-17):** **Brand: Any · Prefer · Only** in ⋯
     with a brand select; Prefer is `BRAND_BOOST` = 2 ΔE (ranking only), Only is a filter; the default shown is the
     brand you own most (`data.js mostOwnedBrand`), and it acts only after the painter chose or confirmed it; a line
-    in the matching note; prefs `brandMode` and `brand` in the backup. **Next:** the next brand's families
-    (Reaper).
+    in the matching note; prefs `brandMode` and `brand` in the backup. **Reaper's triads built (2026-11-18),
+    dataset 1.12.0:** 43 tone families (129 paints) from Reaper's own product images
+    (`scripts/reaper-triads.json`; `SOURCES.md`); the Recipe shows "Blood Colors · Reaper triad: the maker's 3
+    tones". The family's name is in a new top-level `families` list. **Open for Reaper:** six triads whose image
+    did not load; three triads that are photos of bottles (their codes cannot be read); seven triads of newer
+    paints that the data does not have (codes 09325–09333, 09610–09616, 29216–29218). **Found on the way (open;
+    data; each needs the maker's page):** seven paints of Reaper's "Colored Metallics" triads have the type `layer`
+    (Pearl White, Ruby Red, Coppery Orange, Emerald Green, Sparkling Blue, Sparkling Amethyst, Adamantium Black);
+    Amber Gold, in the "Warm Light Brown" triad, has the type `metal`; and the three paints of "NMM Copper Colors"
+    (non-metallic metal, so flat paints) have the type `metal`. **Next:** Two Thin Coats or Army Painter Fanatic.
 
 ### Raised by Ryan on 2026-11-07 — an update log (built)
 
@@ -1017,8 +1025,10 @@ Ryan's order (2026-11-17: "go with your recommendation"):
 
 1. **The swatch pass (item 51): built 2026-11-17** (a pure colour field with one finish icon in the corner).
 2. **Item 59** (⋯ showed a focus ring when a touch opened it): **built 2026-11-17**. To confirm on an iPhone.
-3. **Item 64 B** (a Brand setting in ⋯: Any · Prefer · Only): **built 2026-11-17**. **Next, studied and chosen:** the
-   next maker's tone families (Reaper first); item 7 (the paint detail sheet).
+3. **Item 64 B** (a Brand setting in ⋯: Any · Prefer · Only): **built 2026-11-17**. **Item 7** (the paint detail
+   sheet): **first part built 2026-11-17**. **Reaper's tone families: built 2026-11-18.** **Next:** the paint
+   sheet's other ways in; the next maker's families (Two Thin Coats, Army Painter Fanatic); the Reaper type
+   corrections found on the way (item 64).
 4. **Waits for Ryan:** measured wash colours and the 34 missing Warhammer Colour paints (items 49, 68, 75); a test
    on a real iPad (item 60); the device build of the native app (Stage 1); the retailer applications
    (`MONETIZATION.md` A).

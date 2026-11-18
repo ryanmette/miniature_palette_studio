@@ -39,7 +39,9 @@ export function indexDataset(dataset) {
   const byFamily = new Map();
   for (const p of paints) if (p.family) { let f = byFamily.get(p.family); if (!f) byFamily.set(p.family, f = []); f.push(p); }
   for (const f of byFamily.values()) f.sort((x, y) => x.tone - y.tone);
-  return { ...dataset, paints, byId: new Map(paints.map(p => [p.id, p])), byGroup, byFamily };
+  // a family's own name and kind, where the data gives them (dataset 1.12.0: Reaper's triads)
+  const familyMeta = new Map((dataset.families || []).map(f => [f.id, f]));
+  return { ...dataset, paints, byId: new Map(paints.map(p => [p.id, p])), byGroup, byFamily, familyMeta };
 }
 
 /**
@@ -52,9 +54,11 @@ export function familyOf(indexed, paint) {
   if (!paint || !paint.family || !indexed.byFamily) return null;
   const tones = indexed.byFamily.get(paint.family) || [];
   if (tones.length < 2) return null;
+  const meta = indexed.familyMeta && indexed.familyMeta.get(paint.family);
   const roots = new Set(tones.map(p => p.name.replace(/\s+\d+$/, '')));
-  const name = roots.size === 1 ? [...roots][0] : paint.line;
-  return { id: paint.family, name, brand: paint.brand, line: paint.line, tones };
+  const name = meta ? meta.name : roots.size === 1 ? [...roots][0] : paint.line;
+  // `label`: what the family is, after its name ("Tone Pro", "Reaper triad")
+  return { id: paint.family, name, brand: paint.brand, line: paint.line, label: meta && meta.kind ? `${paint.brand} ${meta.kind}` : paint.line, tones };
 }
 
 /** Other paints in the same curated equivalence group (cross-brand "same colour", ΔE ≤ 1); [] if ungrouped. */

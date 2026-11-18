@@ -1,0 +1,814 @@
+{
+ "about": "Reaper Master Series Paints triads: the three paints of each triad, as the maker sells them (shadow, midtone, highlight for a colour triad). Read by scripts/build-dataset.mjs, which gives the paints of a tone family their `family` and `tone`. Dev input, NOT shipped.",
+ "source": {
+  "publisher": "Reaper Miniatures",
+  "url": "https://www.reapermini.com/paints/master-series-paints-triads",
+  "captured": "2026-11-18",
+  "method": "The page lists 76 triads by name and SKU, and no paint names. Each triad's own product image on the page (the `image` of each entry) shows its three paints, top to bottom, each with its code and name as text. The codes and names here were read from those images, in the image's order. Check: each code was looked up in the community source (Arcturus5404/miniature-paints, Reaper.md, which has Reaper's codes); 182 of the 210 codes are there, 168 with the same name and 14 with a longer or corrected name of the same paint. The other 28 are newer paints, additives and primers that the community source does not have, or codes that cannot be read. No colour value was taken from the images.",
+  "rule": "A triad is a tone family (`family: true`) when all three paints are in the app's data as base, layer or metal paints, their Lab L* rises in the maker's order (a step may fall by 3 L* at most, because the hex values are approximate), and the hues of the chromatic paints are within 45 degrees. The other triads are sets of three products (liners, clear brights, coloured metallics, washes, additives) and get no family."
+ },
+ "triads": [
+  {
+   "sku": "09701",
+   "name": "Blood Colors",
+   "page": "Blood Colors",
+   "image": "https://images.reapermini.com/4/09701.jpg",
+   "codes": ["9001", "9002", "9003"],
+   "names": ["Red Brick", "Deep Red", "Blood Red"],
+   "lightness": [17, 39, 37],
+   "hueSpread": 16,
+   "family": true
+  },
+  {
+   "sku": "09702",
+   "name": "Fire Colors",
+   "page": "Fire Colors",
+   "image": "https://images.reapermini.com/4/09702.jpg",
+   "codes": ["9004", "9005", "9006"],
+   "names": ["Fire Red", "Phoenix Red", "Fire Orange"],
+   "lightness": [41, 48, 61],
+   "hueSpread": 33,
+   "family": true
+  },
+  {
+   "sku": "09703",
+   "name": "Yellows",
+   "page": "Yellows",
+   "image": "https://images.reapermini.com/4/09703.jpg",
+   "codes": ["9007", "9008", "9009"],
+   "names": ["Marigold Yellow", "Sun Yellow", "Lemon Yellow"],
+   "lightness": [69, 81, 92],
+   "hueSpread": 33,
+   "family": true
+  },
+  {
+   "sku": "09704",
+   "name": "Warm Greens",
+   "page": "Warm Greens",
+   "image": "https://images.reapermini.com/4/09704.jpg",
+   "codes": ["9010", "9011", "9012"],
+   "names": ["Pine Green", "Leaf Green", "Pale Green"],
+   "lightness": [32, 50, 65],
+   "hueSpread": 7,
+   "family": true
+  },
+  {
+   "sku": "09705",
+   "name": "Cool Greens",
+   "page": "Cool Greens",
+   "image": "https://images.reapermini.com/4/09705.jpg",
+   "codes": ["9013", "9014", "9015"],
+   "names": ["Forest Green", "Grass Green", "Jade Green"],
+   "lightness": [25, 45, 62],
+   "hueSpread": 9,
+   "family": true
+  },
+  {
+   "sku": "09706",
+   "name": "Pure Blues",
+   "page": "Pure Blues",
+   "image": "https://images.reapermini.com/4/09706.jpg",
+   "codes": ["9016", "9017", "9018"],
+   "names": ["Sapphire Blue", "True Blue", "Sky Blue"],
+   "lightness": [31, 49, 64],
+   "hueSpread": 38,
+   "family": true
+  },
+  {
+   "sku": "09707",
+   "name": "Grey Blues",
+   "page": "Grey Blues",
+   "image": "https://images.reapermini.com/4/09707.jpg",
+   "codes": ["9019", "9020", "9021"],
+   "names": ["Midnight Blue", "Twilight Blue", "Snow Shadow"],
+   "lightness": [6, 31, 60],
+   "hueSpread": 8,
+   "family": true
+  },
+  {
+   "sku": "09708",
+   "name": "Royal Purples",
+   "page": "Royal Purples",
+   "image": "https://images.reapermini.com/4/09708.jpg",
+   "codes": ["9022", "9023", "9024"],
+   "names": ["Nightshade Purple", "Imperial Purple", "Amethyst Purple"],
+   "lightness": [11, 35, 57],
+   "hueSpread": 2,
+   "family": true
+  },
+  {
+   "sku": "09709",
+   "name": "Violet Reds",
+   "page": "Violet Reds",
+   "image": "https://images.reapermini.com/4/09709.jpg",
+   "codes": ["9025", "9026", "9027"],
+   "names": ["Burgundy Wine", "Violet Red", "Pale Violet"],
+   "lightness": [18, 23, 36],
+   "hueSpread": 12,
+   "family": true
+  },
+  {
+   "sku": "09710",
+   "name": "Warm Deep Browns",
+   "page": "Warm Deep Browns",
+   "image": "https://images.reapermini.com/4/09710.jpg",
+   "codes": ["9028", "9029", "9030"],
+   "names": ["Muddy Brown", "Earth Brown", "Leather Brown"],
+   "lightness": [21, 39, 53],
+   "hueSpread": 4,
+   "family": true
+  },
+  {
+   "sku": "09711",
+   "name": "Warm Light Brown",
+   "page": "Warm Light Brown",
+   "image": "https://images.reapermini.com/4/09711.jpg",
+   "codes": ["9031", "9032", "9033"],
+   "names": ["Tanned Leather", "Amber Gold", "Golden Blond"],
+   "lightness": [59, 70, 90],
+   "hueSpread": 27,
+   "family": true
+  },
+  {
+   "sku": "09712",
+   "name": "Olive Greens",
+   "page": "Olive Greens",
+   "image": "https://images.reapermini.com/4/09712.jpg",
+   "codes": ["9034", "9035", "9036"],
+   "names": ["Muddy Green", "Olive Green", "Pale Olive"],
+   "lightness": [43, 58, 72],
+   "hueSpread": 12,
+   "family": true
+  },
+  {
+   "sku": "09713",
+   "name": "Neutral Colors",
+   "page": "Neutral Colors",
+   "image": "https://images.reapermini.com/4/09713.jpg",
+   "codes": ["9037", "9038", "9039"],
+   "names": ["Pure Black", "Rainy Grey", "Pure White"],
+   "lightness": [0, 62, 100],
+   "hueSpread": 0,
+   "family": true
+  },
+  {
+   "sku": "09714",
+   "name": "Dark Skintones",
+   "page": "Dark Skintones",
+   "image": "https://images.reapermini.com/4/09714.jpg",
+   "codes": ["9040", "9041", "9042"],
+   "names": ["Dark Shadow", "Dark Skin", "Dark Highlight"],
+   "lightness": [6, 18, 20],
+   "hueSpread": 41,
+   "family": true
+  },
+  {
+   "sku": "09715",
+   "name": "Medium Skintones",
+   "page": "Medium Skintones",
+   "image": "https://images.reapermini.com/4/09715.jpg",
+   "codes": ["9043", "9044", "9045"],
+   "names": ["Tanned Shadow", "Tanned Skin", "Tanned Highlight"],
+   "lightness": [53, 62, 71],
+   "hueSpread": 13,
+   "family": true
+  },
+  {
+   "sku": "09716",
+   "name": "Fair Skintones",
+   "page": "Fair Skintones",
+   "image": "https://images.reapermini.com/4/09716.jpg",
+   "codes": ["9046", "9047", "9048"],
+   "names": ["Fair Shadow", "Fair Skin", "Fair Highlight"],
+   "lightness": [80, 86, 92],
+   "hueSpread": 15,
+   "family": true
+  },
+  {
+   "sku": "09717",
+   "name": "Gold-toned Metal",
+   "page": "Gold-toned Metal",
+   "image": "https://images.reapermini.com/4/09717.jpg",
+   "codes": ["9049", "9050", "9051"],
+   "names": ["Ancient Bronze", "Antique Gold", "New Gold"],
+   "lightness": [57, 73, 80],
+   "hueSpread": 27,
+   "family": true
+  },
+  {
+   "sku": "09718",
+   "name": "Silver-toned Metal",
+   "page": "Silver-toned Metal",
+   "image": "https://images.reapermini.com/4/09718.jpg",
+   "codes": ["9052", "9053", "9054"],
+   "names": ["Shadowed Steel", "Honed Steel", "Polished Silver"],
+   "lightness": [51, 72, 91],
+   "hueSpread": 0,
+   "family": true
+  },
+  {
+   "sku": "09719",
+   "name": "Martial Blues",
+   "page": "Martial Blues",
+   "image": "https://images.reapermini.com/4/09719.jpg",
+   "codes": ["9055", "9056", "9057"],
+   "names": ["Breonne Blue", "Templar Blue", "Ashen Blue"],
+   "lightness": [14, 29, 51],
+   "hueSpread": 23,
+   "family": true
+  },
+  {
+   "sku": "09720",
+   "name": "Bone Colors",
+   "page": "Bone Colors",
+   "image": "https://images.reapermini.com/4/09720.jpg",
+   "codes": ["9058", "9059", "9060"],
+   "names": ["Bone Shadow", "Aged Bone", "Polished Bone"],
+   "lightness": [81, 86, 90],
+   "hueSpread": 12,
+   "family": true
+  },
+  {
+   "sku": "09721",
+   "name": "Off-Whites",
+   "page": "Off-Whites",
+   "image": "https://images.reapermini.com/4/09721.jpg",
+   "codes": ["9061", "9062", "9063"],
+   "names": ["Linen White", "Leather White", "Ghost White"],
+   "lightness": [99, 90, 96],
+   "hueSpread": 0,
+   "family": false,
+   "why": "The three paints do not go from dark to light."
+  },
+  {
+   "sku": "09722",
+   "name": "Liners",
+   "page": "Liners",
+   "image": "https://images.reapermini.com/4/09722.jpg",
+   "codes": ["9064", "9065", "9066"],
+   "names": ["Brown Liner", "Grey Liner", "Blue Liner"],
+   "lightness": [9, 23, 6],
+   "hueSpread": 0,
+   "family": false,
+   "why": "The three paints do not go from dark to light."
+  },
+  {
+   "sku": "09723",
+   "name": "Rosy Skintones",
+   "page": "Rosy Skintones",
+   "image": "https://images.reapermini.com/4/09723.jpg",
+   "codes": ["9067", "9068", "9069"],
+   "names": ["Rosy Shadow", "Rosy Skin", "Rosy Highlight"],
+   "lightness": [67, 76, 79],
+   "hueSpread": 15,
+   "family": true
+  },
+  {
+   "sku": "09724",
+   "name": "Red-Brown",
+   "page": "Red-Brown",
+   "image": "https://images.reapermini.com/4/09724.jpg",
+   "codes": ["9070", "9071", "9072"],
+   "names": ["Mahogany Brown", "Chestnut Brown", "Rust Brown"],
+   "lightness": [8, 36, 45],
+   "hueSpread": 6,
+   "family": true
+  },
+  {
+   "sku": "09726",
+   "name": "Ocean Colors",
+   "page": "Ocean Colors",
+   "image": "https://images.reapermini.com/4/09726.jpg",
+   "codes": ["9076", "9077", "9078"],
+   "names": ["Deep Ocean", "Marine Teal", "Surf Aqua"],
+   "lightness": [22, 36, 68],
+   "hueSpread": 36,
+   "family": true
+  },
+  {
+   "sku": "09728",
+   "name": "Moss Colors",
+   "page": "Moss Colors",
+   "image": "https://images.reapermini.com/4/09728.jpg",
+   "codes": ["9082", "9083", "9084"],
+   "names": ["Jungle Moss", "Highlands Moss", "Pale Lichen"],
+   "lightness": [21, 32, 60],
+   "hueSpread": 11,
+   "family": true
+  },
+  {
+   "sku": "09729",
+   "name": "Stone Colors",
+   "page": "Stone Colors",
+   "image": "https://images.reapermini.com/4/09729.jpg",
+   "codes": ["9085", "9086", "9087"],
+   "names": ["Shadowed Stone", "Stone Grey", "Weathered Stone"],
+   "lightness": [41, 50, 60],
+   "hueSpread": 0,
+   "family": true
+  },
+  {
+   "sku": "09730",
+   "name": "Neutral Greys",
+   "page": "Neutral Greys",
+   "image": "https://images.reapermini.com/4/09730.jpg",
+   "codes": ["9088", "9089", "9090"],
+   "names": ["Stormy Grey", "Cloudy Grey", "Misty Grey"],
+   "lightness": [30, 47, 82],
+   "hueSpread": 0,
+   "family": true
+  },
+  {
+   "sku": "09732",
+   "name": "Clear Brights One",
+   "page": "Clear Brights One",
+   "image": "https://images.reapermini.com/4/09732.jpg",
+   "codes": ["9094", "9095", "9096"],
+   "names": ["Clear Red", "Clear Yellow", "Clear Green"],
+   "lightness": [47, 94, 57],
+   "hueSpread": 111,
+   "family": false,
+   "why": "The three paints are different colours, not tones of one."
+  },
+  {
+   "sku": "09733",
+   "name": "Clear Brights Two",
+   "page": "Clear Brights Two",
+   "image": "https://images.reapermini.com/4/09733.jpg",
+   "codes": ["9097", "9098", "9099"],
+   "names": ["Clear Blue", "Clear Magenta", "Clear Purple"],
+   "lightness": [32, 49, 24],
+   "hueSpread": 65,
+   "family": false,
+   "why": "The three paints are different colours, not tones of one."
+  },
+  {
+   "sku": "09734",
+   "name": "Colored Metallics One",
+   "page": "Colored Metallics One",
+   "image": "https://images.reapermini.com/4/09734.jpg",
+   "codes": ["9100", "9101", "9102"],
+   "names": ["Pearl White", "Ruby Red", "Coppery Orange"],
+   "lightness": [100, 77, 70],
+   "hueSpread": 3,
+   "family": false,
+   "why": "The three paints do not go from dark to light."
+  },
+  {
+   "sku": "09735",
+   "name": "Colored Metallics Two",
+   "page": "Colored Metallics Two",
+   "image": "https://images.reapermini.com/4/09735.jpg",
+   "codes": ["9103", "9104", "9105"],
+   "names": ["Emerald Green", "Sparkling Blue", "Sparkling Purple"],
+   "lightness": [72, 74, 72],
+   "hueSpread": 78,
+   "family": false,
+   "why": "The three paints are different colours, not tones of one."
+  },
+  {
+   "sku": "09736",
+   "name": "Additives",
+   "page": "Additives",
+   "image": "https://images.reapermini.com/4/09736.jpg",
+   "codes": ["9106", "9107", "9108"],
+   "names": ["Flow Improver", "Brush-on Sealer", "Brush-on Primer"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09737",
+   "name": "Burnt Colors",
+   "page": "Burnt Colors",
+   "image": "https://images.reapermini.com/4/09737.jpg",
+   "codes": ["9109", "9110", "9111"],
+   "names": ["Ruddy Leather", "Oiled Leather", "Burnt Orange"],
+   "lightness": [29, 43, 65],
+   "hueSpread": 21,
+   "family": true
+  },
+  {
+   "sku": "09739",
+   "name": "Vivid Blues",
+   "page": "Vivid Blues",
+   "image": "https://images.reapermini.com/4/09739.jpg",
+   "codes": ["9115", "9116", "9117"],
+   "names": ["Ritterlich Blue", "Brilliant Blue", "Cyan Blue"],
+   "lightness": [22, 36, 54],
+   "hueSpread": 7,
+   "family": true
+  },
+  {
+   "sku": "09742",
+   "name": "Colored Metallics Three",
+   "page": "Colored Metallics Three",
+   "image": "https://images.reapermini.com/4/09742.jpg",
+   "codes": ["9124", "9125", "9126"],
+   "names": ["Adamantium Black", "Scorched Metal", "Gunmetal Blue"],
+   "lightness": [4, 46, 22],
+   "hueSpread": 151,
+   "family": false,
+   "why": "The three paints are different colours, not tones of one."
+  },
+  {
+   "sku": "09743",
+   "name": "Khaki Brown",
+   "page": "Khaki Brown",
+   "image": "https://images.reapermini.com/4/09743.jpg",
+   "codes": ["9127", "9128", "9129"],
+   "names": ["Uniform Brown", "Green Ochre", "Faded Khaki"],
+   "lightness": [35, 51, 62],
+   "hueSpread": 2,
+   "family": true
+  },
+  {
+   "sku": "09745",
+   "name": "Bloodthirsty Reds",
+   "page": "Bloodthirsty Reds",
+   "image": "https://images.reapermini.com/4/09745.jpg",
+   "codes": ["9133", "9134", "9135"],
+   "names": ["Bloodstain Red", "Clotted Red", "Carnage Red"],
+   "lightness": [20, 28, 37],
+   "hueSpread": 6,
+   "family": true
+  },
+  {
+   "sku": "09746",
+   "name": "Classic Browns",
+   "page": "Classic Browns",
+   "image": "https://images.reapermini.com/4/09746.jpg",
+   "codes": ["9136", "9137", "9138"],
+   "names": ["Walnut Brown", "Blackend Brown", "Intense Brown"],
+   "lightness": [11, 18, 34],
+   "hueSpread": 21,
+   "family": true
+  },
+  {
+   "sku": "09750",
+   "name": "Undead Skintones",
+   "page": "Undead Skintones",
+   "image": "https://images.reapermini.com/4/09750.jpg",
+   "codes": ["9148", "9149", "9150"],
+   "names": ["Ghoul Skin", "Moldy Skin", "Bloodless Skin"],
+   "lightness": [60, 73, 82],
+   "hueSpread": 8,
+   "family": true
+  },
+  {
+   "sku": "09754",
+   "name": "Grey Browns",
+   "page": "Grey Browns",
+   "image": "https://images.reapermini.com/4/09754.jpg",
+   "codes": ["9160", "9161", "9162"],
+   "names": ["Woodstain Brown", "Shield Brown", "Driftwood Brown"],
+   "lightness": [29, 39, 55],
+   "hueSpread": 8,
+   "family": true
+  },
+  {
+   "sku": "09755",
+   "name": "Dark Elf Skin",
+   "page": "Dark Elf Skin",
+   "image": "https://images.reapermini.com/4/09755.jpg",
+   "codes": ["9163", "9164", "9165"],
+   "names": ["Dark Elf Shadow", "Dark Elf Skin", "Dark Elf Highlight"],
+   "lightness": [24, 38, 54],
+   "hueSpread": 0,
+   "family": true
+  },
+  {
+   "sku": "09763",
+   "name": "Ultramarine Blues",
+   "page": "Ultramarine Blues",
+   "image": "https://images.reapermini.com/4/09763.jpg",
+   "codes": ["9187", "9188", "9189"],
+   "names": ["Ultramarine Shadow", "Ultramarine Blue", "Ultramarine Highlight"],
+   "lightness": [12, 31, 48],
+   "hueSpread": 1,
+   "family": true
+  },
+  {
+   "sku": "09766",
+   "name": "Metallics V",
+   "page": "Metallics V",
+   "image": "https://images.reapermini.com/4/09766.jpg",
+   "codes": ["9196", "9197", "9198"],
+   "names": ["Aged Pewter", "Old Bronze", "Tarnished Brass"],
+   "lightness": [34, 17, 26],
+   "hueSpread": 12,
+   "family": false,
+   "why": "The three paints do not go from dark to light."
+  },
+  {
+   "sku": "09767",
+   "name": "Autumn Browns",
+   "page": "Autumn Browns",
+   "image": "https://images.reapermini.com/4/09767.jpg",
+   "codes": ["9199", "9200", "9201"],
+   "names": ["Russet Brown", "Harvest Brown", "Orange Brown"],
+   "lightness": [17, 36, 52],
+   "hueSpread": 16,
+   "family": true
+  },
+  {
+   "sku": "09769",
+   "name": "Natural Steel",
+   "page": "Natural Steel",
+   "image": "https://images.reapermini.com/4/09769.jpg",
+   "codes": ["9205", "9206", "9207"],
+   "names": ["Blackened Steel", "Tarnished Steel", "True Silver"],
+   "lightness": [15, 58, 72],
+   "hueSpread": 0,
+   "family": true
+  },
+  {
+   "sku": "09772",
+   "name": "Additives II",
+   "page": "Additives II",
+   "image": "https://images.reapermini.com/4/09772.jpg",
+   "codes": ["9214", "9215", "9216"],
+   "names": ["Black Primer", "Matte Additive", "Drying Retarder"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09773",
+   "name": "Lava Colors",
+   "page": "Lava Colors",
+   "image": "https://images.reapermini.com/4/09773.jpg",
+   "codes": ["9217", "9218", "9219"],
+   "names": ["Magma Red", "Lava Orange", "Explosion Orange"],
+   "lightness": [50, 54, 62],
+   "hueSpread": 25,
+   "family": true
+  },
+  {
+   "sku": "09781",
+   "name": "Red Hair",
+   "page": "Red Hair",
+   "image": "https://images.reapermini.com/4/09781_1.jpg",
+   "codes": ["9241", "9242", "9243"],
+   "names": ["Auburn Shadow", "Carrottop Red", "Highlight Orange"],
+   "lightness": [32, 47, 61],
+   "hueSpread": 21,
+   "family": true
+  },
+  {
+   "sku": "09785",
+   "name": "Washes I",
+   "page": "Washes I Triad",
+   "image": "https://images.reapermini.com/4/09785.jpg",
+   "codes": ["9253", "9254", "9255"],
+   "names": ["Flesh Wash", "Brown Wash", "Black Wash"],
+   "family": false,
+   "why": "Washes: three products, not three tones."
+  },
+  {
+   "sku": "09786",
+   "name": "Blonde Hair",
+   "page": "Blonde Hair Triad",
+   "image": "https://images.reapermini.com/4/09786.jpg",
+   "codes": ["9256", "9257", "9258"],
+   "names": ["Blonde Shadow", "Blonde Hair", "Blonde Highlight"],
+   "lightness": [41, 65, 81],
+   "hueSpread": 31,
+   "family": true
+  },
+  {
+   "sku": "09787",
+   "name": "Bronzed Skin",
+   "page": "Bronzed Skin Triad",
+   "image": "https://images.reapermini.com/4/09787.jpg",
+   "codes": ["9259", "9260", "9261"],
+   "names": ["Bronzed Shadow", "Bronzed Skin", "Bronzed Highlight"],
+   "lightness": [39, 53, 71],
+   "hueSpread": 28,
+   "family": true
+  },
+  {
+   "sku": "09788",
+   "name": "Pastel Colors",
+   "page": "Pastel Colors Triad",
+   "image": "https://images.reapermini.com/4/09788.jpg",
+   "codes": ["9262", "9263", "9264"],
+   "names": ["Blush Pink", "Mint Green", "Light Blue"],
+   "lightness": [60, 90, 81],
+   "hueSpread": 151,
+   "family": false,
+   "why": "The three paints are different colours, not tones of one."
+  },
+  {
+   "sku": "09792",
+   "name": "Vampiric Skintones Colors",
+   "page": "Vampiric Skintones Colors",
+   "image": "https://images.reapermini.com/4/09792.jpg",
+   "codes": ["9274", "9275", "9276"],
+   "names": ["Vampiric Shadow", "Vampiric Skin", "Vampiric Highlight"],
+   "lightness": [65, 80, 90],
+   "hueSpread": 18,
+   "family": true
+  },
+  {
+   "sku": "09796",
+   "name": "Modern Brights Colors",
+   "page": "Modern Brights Colors",
+   "image": "https://images.reapermini.com/4/09796.jpg",
+   "codes": ["9286", "9287", "9288"],
+   "names": ["Punk Rock Pink", "Neon Yellow", "LED Blue"],
+   "lightness": [44, 94, 80],
+   "hueSpread": 160,
+   "family": false,
+   "why": "The three paints are different colours, not tones of one."
+  },
+  {
+   "sku": "09800",
+   "name": "Additives III",
+   "page": "MSP Core Colors Triad: Additives III (09298-09300)",
+   "image": "https://images.reapermini.com/4/09800_9800.png",
+   "codes": ["9298", "9299", "9300"],
+   "names": ["Gloss Sealer", "Grey Primer", "Wash Medium"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09801",
+   "name": "NMM Gold Colors",
+   "page": "NMM Gold Colors Triad (09301-09303)",
+   "image": "https://images.reapermini.com/4/09801_9801.png",
+   "codes": ["9301", "9302", "9303"],
+   "names": ["NMM Gold Shadow", "NMM Gold Base", "NMM Gold Highlight"],
+   "lightness": [46, 67, 88],
+   "hueSpread": 16,
+   "family": true
+  },
+  {
+   "sku": "09802",
+   "name": "NMM Copper Colors",
+   "page": "NMM Copper Colors Triad (09304-09306)",
+   "image": "https://images.reapermini.com/4/09802.jpg",
+   "codes": ["9304", "9305", "9306"],
+   "names": ["Copper Verdigris", "Tarnished Copper", "New Copper"],
+   "lightness": [73, 37, 71],
+   "hueSpread": 132,
+   "family": false,
+   "why": "The three paints are different colours, not tones of one."
+  },
+  {
+   "sku": "09804",
+   "name": "Washes II",
+   "page": "Washes II Triad (09310-09312)",
+   "image": "https://images.reapermini.com/4/09804.jpg",
+   "codes": ["09310", "09311", "09312"],
+   "names": ["Sepia Wash", "Stone Wash", "Steel Wash"],
+   "family": false,
+   "why": "Washes: three products, not three tones."
+  },
+  {
+   "sku": "09805",
+   "name": "Smores Colors",
+   "page": "MSP Core Color Triad: Smores Colors",
+   "image": "https://images.reapermini.com/4/09805_Smores.jpg",
+   "codes": ["09610", "09611", "09612"],
+   "names": ["Graham Cracker", "Toasted Marshmallow", "Chocolate Bar"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09806",
+   "name": "Seasons Greetings",
+   "page": "MSP Core Color Triad: Seasons Greetings",
+   "image": "https://images.reapermini.com/4/09806_SeaonsGreetings.jpg",
+   "codes": ["09613", "09614", "09615"],
+   "names": ["Cranberry Red", "Angelic Gold", "Spruce Green"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09807",
+   "name": "Winter Snow",
+   "page": "MSP Core Color Triad: Winter Snow",
+   "image": "https://images.reapermini.com/4/09807_WinterSnow.jpg",
+   "codes": ["09616", "09688", "09692"],
+   "names": ["Dreidel Blue", "Peppermint White", "Frosty Blue"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09811",
+   "name": "Glows",
+   "page": "Glows Triad (9319-9321)",
+   "image": "https://images.reapermini.com/4/09811_GlowsTriad.jpg",
+   "codes": ["09319", "09320", "09321"],
+   "names": ["Phantom Glow", "Runic Glow", "Red Neon Glow"],
+   "lightness": [63, 59, 61],
+   "hueSpread": 178,
+   "family": false,
+   "why": "The three paints are different colours, not tones of one."
+  },
+  {
+   "sku": "09813",
+   "name": "Purples",
+   "page": "MSP Core Color Triad: Purples Triad",
+   "image": "https://images.reapermini.com/4/09813_Purples_2.jpg",
+   "codes": ["09325", "09326", "09327"],
+   "names": ["Carnival Purple", "Bruised Purple", "Ashen Brown"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09814",
+   "name": "Indigos",
+   "page": "Indigos Triad",
+   "image": "https://images.reapermini.com/4/09814.jpg",
+   "codes": ["09328", "09329", "09330"],
+   "names": ["Black Indigo", "Rich Indigo", "Wild Violet"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09815",
+   "name": "Oxidized",
+   "page": "Oxidized Triad",
+   "image": "https://images.reapermini.com/4/09815_2.jpg",
+   "codes": ["09331", "09332", "09333"],
+   "names": ["Yellow Ochre", "Oxidized Red", "Oxidized Brown"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09819",
+   "name": "Tinted Glosses #1",
+   "page": "Tinted Glosses Triad #1",
+   "image": "https://images.reapermini.com/4/09819_w_1.jpg",
+   "codes": ["29216", "29217", "29218"],
+   "names": ["Red Tinted Gloss", "Gold Tinted Gloss", "Green Tinted Gloss"],
+   "family": false,
+   "why": "Not all three paints are in the app's data."
+  },
+  {
+   "sku": "09821",
+   "name": "Sunkissed",
+   "page": "Sunkissed Triad",
+   "image": "https://images.reapermini.com/4/09821_w_1.jpg",
+   "codes": [null, null, null],
+   "names": ["Beachcomber", "Tanning Lotion", "Third Degree"],
+   "family": false,
+   "why": "A photo of three bottles: the codes cannot be read."
+  },
+  {
+   "sku": "09822",
+   "name": "The Triliad",
+   "page": "The Triliad",
+   "image": "https://images.reapermini.com/4/09822_w_1.jpg",
+   "codes": [null, null, null],
+   "names": [null, "Golden Fleece", null],
+   "family": false,
+   "why": "A photo of three bottles: the codes cannot be read."
+  },
+  {
+   "sku": "09827",
+   "name": "Darkreaches",
+   "page": "Darkreaches Triad",
+   "image": "https://images.reapermini.com/4/09827_w_2.jpg",
+   "codes": [null, null, null],
+   "names": ["Cavern Shadow", "Violet Fungus", "Darkreach Glow"],
+   "family": false,
+   "why": "A photo of three bottles: the codes cannot be read."
+  }
+ ],
+ "unavailable": {
+  "why": "Reaper's image host returned a server error for these six images on 2026-11-18 (three tries each).",
+  "triads": [
+   {
+    "sku": "09809",
+    "page": "Woods Triad",
+    "image": "https://images.reapermini.com/4/09809_WoodsTriad.jpg"
+   },
+   {
+    "sku": "09810",
+    "page": "Stone and Sky Triad",
+    "image": "https://images.reapermini.com/4/09810_StoneSkyTriad.jpg"
+   },
+   {
+    "sku": "09812",
+    "page": "Misty Colors Triad (9322-9324)",
+    "image": "https://images.reapermini.com/4/09812_MistyColors.jpg"
+   },
+   {
+    "sku": "09816",
+    "page": "Exotics Triad",
+    "image": "https://images.reapermini.com/4/09816.jpg"
+   },
+   {
+    "sku": "09820",
+    "page": "Tinted Glosses Triad #2",
+    "image": "https://images.reapermini.com/4/09820_w_1.jpg"
+   },
+   {
+    "sku": "09887",
+    "page": "ReaperCon 2024 Hall of Fame Triad",
+    "image": "https://images.reapermini.com/4/09887_w_1.jpg"
+   }
+  ]
+ }
+}
