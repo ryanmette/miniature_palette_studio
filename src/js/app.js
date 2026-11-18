@@ -3428,24 +3428,27 @@ function showNameStep(schemes) {
     const suggestion = store.uniqueName((sc.link === linkNameFor && linkName) || auto, sc.id);
     return `<div class="storefield"><label class="savelbl" for="storeNm${i}">${ui.esc(auto)}</label>`
       + `<input id="storeNm${i}" class="saveinput" type="text" maxlength="80" autocomplete="off" data-sid="${ui.esc(sc.id)}"`
-      + ` data-auto="${ui.esc(auto)}" value="${ui.esc(suggestion)}" aria-label="${ui.esc(t('nameFor', { auto }))}" aria-describedby="storeNameLink"></div>`;
+      + ` data-auto="${ui.esc(auto)}" data-given="${ui.esc(suggestion)}" value="${ui.esc(suggestion)}" aria-label="${ui.esc(t('nameFor', { auto }))}" aria-describedby="storeNameLink"></div>`;
   }).join('');
   const first = $('#storeNameFields input');
   first?.focus(); first?.select();
 }
-/** Continue (names) or Skip (`keep` false): every project shown is asked for good, then the panel. */
+/** Continue (names) or Skip (`keep` false): every project shown is asked for good, then the panel.
+ *  A name that the painter did not change is a Skip for that project (UX review F16): Continue is the main
+ *  button and the field comes filled, so Continue alone made a saved scheme that the painter did not ask for.
+ *  Only a name that the painter typed saves the scheme. */
 function finishNameStep(keep) {
   const fields = [...$('#storeNameFields').querySelectorAll('input')];
   let named = 0;
   for (const f of fields) {
     const sid = f.dataset.sid, typed = f.value.trim();
-    if (keep && (typed || f.dataset.auto)) {
+    if (keep && typed && typed !== f.dataset.given) {
       // a name saves the scheme for good (Ryan, scheme-library.html); a taken name becomes "(2)"
-      store.updateScheme(sid, { name: store.uniqueName(typed || f.dataset.auto, sid), saved: true, asked: true });
+      store.updateScheme(sid, { name: store.uniqueName(typed, sid), saved: true, asked: true });
       named++;
     } else store.updateScheme(sid, { asked: true });
   }
-  say(keep ? (named === 1 ? t('namedProject') : t('namedProjects', { n: named })) : t('skippedNames'));
+  say(named ? (named === 1 ? t('namedProject') : t('namedProjects', { n: named })) : t('skippedNames'));
   showStorePanel();
   if (state.mode === 'schemes') renderSchemesPage();
   renderSchemeBar();
@@ -4188,6 +4191,9 @@ async function init() {
   // (PLAN §5 item 55). A random starting paint from a locked pool (data.js startPaints) and, unless the link
   // names a harmony, a random one by Roll a scheme's rules (§7). The first render writes it to the address
   // bar, so a reload keeps it. Every such load, not only a first visit: the old fixed start was arbitrary too.
+  // The link named a paint or a colour, and this build has neither (a link from another build, a typing error):
+  // the scheme below is NOT the one that was shared, so the app says so after the first render (UX review F18).
+  const linkSeedGone = !state.customHex && !state.baseId && !!(url.get('p') || url.get('c'));
   if (!state.customHex && !state.baseId) {
     state.baseId = (randomStartPaint(state.idx, Math.random) || state.idx.paints[0]).id;
     if (!linked.harmony) state.harmony = rollHarmony(null, { neutral: false }, Math.random);
@@ -4243,6 +4249,7 @@ async function init() {
   // A first visit with no paint in the link: show "Start a scheme" (after the first render, so that
   // render does not end it). A native shell that restored a shelf is not a first visit.
   if (store.firstVisit && !restored && !url.get('p') && !url.get('c') && !url.has('l') && !url.has('b')) startFirstRun();
+  if (linkSeedGone) toast(t('linkSeedGone'));   // a toast, and its words for a screen reader (say())
   syncUmpOffer({ open: true });   // a visit that starts in the Studio, with paints marked on an earlier one
   syncKeepNote({ open: true });
   if (shelfHomeNow() === 'home' && hasRealWork()) askPersist();   // an installed app: WebKit grants it there, with no question

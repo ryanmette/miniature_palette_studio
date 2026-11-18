@@ -517,11 +517,12 @@ import { rackRow, rackGroups } from '../src/js/ui.js';
 const dawn = { id: 'c-layer-dawnstone', name: 'Dawnstone', dname: 'Dawnstone (Layer)', brand: 'Citadel', line: 'Layer', hex: '#70746D', type: 'layer' };
 const gold = { id: 'c-base-gold', name: 'Balthasar Gold', brand: 'Citadel', line: 'Base', hex: '#A77353', type: 'metal' };
 
-test('rackRow: the plain name shows; the tick names the twin in full; aria-pressed is the owned state', () => {
+test('rackRow: the plain name shows; the tick names the paint with its brand and line; aria-pressed is the owned state', () => {
   const html = rackRow({ paint: dawn, owned: false, countable: true, qty: 1, countOpen: false, forName: 'Plague Marine' }, tr);
   // the name is the way to Paint details (item 7): the words are the plain name, its name for a screen reader the full one
   assert.match(html, /class="rkname"><button type="button" class="pslink" data-psid="c-layer-dawnstone" title="Paint details" aria-label="Dawnstone \(Layer\)">Dawnstone</);
-  assert.match(html, /data-rktick="c-layer-dawnstone" aria-pressed="false" aria-label="ownedName\(name=Dawnstone \(Layer\)\)"/);
+  // the tick: the plain name with the brand and the line, so two brands' "Ivory" and a line's twins stay apart (F21)
+  assert.match(html, /data-rktick="c-layer-dawnstone" aria-pressed="false" aria-label="ownedName\(name=Dawnstone, Citadel · Layer\)"/);
   assert.match(html, /Citadel · Layer/);
   assert.match(html, /class="rkfor">forName\(name=Plague Marine\)/);
   assert.match(html, /data-rkcount="c-layer-dawnstone"/);

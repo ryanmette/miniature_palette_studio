@@ -20,6 +20,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     list** filter now shows each paint's name under its square, as a search does. The two lines that take the
     buttons' places are shorter: "Role pots: owned or on the list" and "Ladder pots: owned or on the list".
     `sw.js`: `CACHE` is `ps-v112`.
+  - **A project name that you did not change is not saved** (F16). In **Take to the store…**, the first step
+    asks for a project's name, and the field comes filled. **Continue** saved that name as a scheme in Schemes.
+    Now only a name that you change saves the scheme; the others stay automatic, as with **Skip**.
+  - **Each tick in the Shelf's list has the brand in its name, for a screen reader** (F21): "Owned: Ivory,
+    Vallejo · Model Color". Before, four paints had the name "Owned: Ivory".
+  - **A link to a paint that the app does not have says so** (F18): "This link's paint is not in the app. Here
+    is a different paint." Before, it opened a random scheme with no message.
 ### Fixed
 - **iPhone app: no white strips at the top and bottom of the screen.** `capacitor.config.json` had
   `contentInset: "always"`, so the iOS web view moved the page in as well as the page's own safe-area

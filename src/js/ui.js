@@ -854,16 +854,19 @@ export function rackRow(r, tr) {
   // the line through the name is "ticked off the shopping list" (r.struck), not "owned": an owned paint has the filled tick
   return `<li class="rkrow${r.struck ? ' done' : ''}" data-rk="${esc(p.id)}">`
     + swatch(p.hex, 'rksw' + fxCls(p), '')
-    // the plain name: the line is in the row (and the rack group) already; the tick's name and the name's own
-    // (it is the way to Paint details) keep the full display name, so twins (Dawnstone (Layer) / (Dry)) stay
-    // apart for a screen reader
+    // the plain name: the line is in the row (and the rack group) already; the name's own accessible name (it is
+    // the way to Paint details) keeps the full display name, so twins (Dawnstone (Layer) / (Dry)) stay apart
+    // for a screen reader
     + `<span class="rkmain"><span class="rkname">${detailsLink(p, p.name, name)}</span>`
     + `<span class="rkline">${line}${finishTag(p)}${goneTag(p)}${r.forName ? ` <span class="rkfor">${esc(tr('forName', { name: r.forName }))}</span>` : ''}</span>`
     // a swap made in this visit says what it replaced; Undo only while it is still to buy (once ticked, it was bought)
     + (r.insteadOf ? `<span class="rkinst">${esc(tr('inPlaceOf', { name: pname(r.insteadOf) }))}`
       + (r.owned ? '' : ` <button type="button" class="textact" data-rkunswap="${esc(p.id)}" aria-label="${esc(tr('undoSwapFor', { name: pname(r.insteadOf) }))}">${esc(tr('undo'))}</button>`) + '</span>' : '')
     + slot + '</span>'
-    + `<button type="button" class="rktick" data-rktick="${esc(p.id)}" aria-pressed="${r.owned}" aria-label="${esc(tr('ownedName', { name }))}">${CHECK}</button>`
+    // the tick's name is the plain name with the brand and the line (UX review F21): "Owned: Ivory" was the name
+    // of four ticks (Vallejo Model Color, Vallejo Mecha Color, AK, Pro Acryl), so a screen reader could not tell
+    // them apart. The line keeps twins apart too ("Dawnstone, Warhammer Colour · Layer" / "… · Dry").
+    + `<button type="button" class="rktick" data-rktick="${esc(p.id)}" aria-pressed="${r.owned}" aria-label="${esc(tr('ownedName', { name: `${p.name}, ${[p.brand, lineOf(p)].filter(Boolean).join(' · ')}` }))}">${CHECK}</button>`
     + (r.swaps ? rackSwaps(r, tr) : '')
     + '</li>';
 }
