@@ -262,7 +262,10 @@
         <li>Pick a harmony, or roll one.</li>
         <li>Add the pots you do not have to your shopping list.</li>
       </ol>
-      <button type="button" class="textact" id="firstRunShelf">I own paints — mark my shelf first</button>
+      <div class="fracts">
+        <button type="button" class="textact" id="firstRunShelf">I own paints — mark my shelf first</button>
+        <button type="button" class="textact" id="firstRunLookup">Find a paint’s match in another brand</button>
+      </div>
     </section>
     <!-- The offer of Use my paints (PLAN §5 item 76; UX review F01): the painter marked paints, and the setting
          that uses them is Off, in ⋯. It shows when the Studio opens with owned paints on the Shelf, the setting
@@ -320,7 +323,7 @@
           <div class="seg harmscroll" id="seg" role="group" aria-label="Harmony type"></div>
         </div>
         <div class="palhead">
-          <div class="micro">Live palette → nearest pot</div>
+          <div class="micro">Live palette<span class="palmore"> → nearest pot</span></div>
           <div class="palctl">
             <button class="btn" id="undo" aria-label="Undo" title="Undo (Ctrl/⌘+Z)" disabled><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-undo"/></svg></button>
             <button class="btn" id="redo" aria-label="Redo" title="Redo (Ctrl/⌘+Shift+Z)" disabled><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-redo"/></svg></button>

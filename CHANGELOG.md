@@ -13,7 +13,35 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   from `native/assets/`. `CLAUDE_NATIVE.md` is active from this change. `package-lock.json` is committed now,
   so a Capacitor version change is a deliberate change. This is not a release: the native app is `2.x` and
   has its own releases later.
+- **Other brands for one brand, and a way in to the lookup** (PLAN §5 item 81; `docs/UX_REVIEW.md` F11 and F10).
+  - **In.** The Other brands tab has a select, **In**. Its default, **Each brand: its best match**, shows one
+    row for each other brand, best first. Choose a brand, and the list shows that brand's 8 closest paints.
+    Before, the list was the 8 closest paints of all brands together: the question "what is the Vallejo version
+    of Mephiston Red?" had an answer only when a Vallejo paint was among those 8. Measured on the 2,626 base
+    and layer paints: a given other brand had a row for 54% of paints, and has one for 100% now. Each row
+    shows its true ΔE and its label, as before: 32% of the rows are Good or better, 25% Fair, 38% Loose, 5%
+    Poor. The choice stays for the visit and is not saved. The ranking did not change (§7).
+  - **Other brands, in the hero line.** On a phone or a tablet in one column, the line that names the
+    starting paint has an **Other brands** button. It opens the tab for that paint and brings it under the
+    header. Before, the tab was about 1,000px under the wheel on a phone, and nothing pointed to it. On a wide
+    screen the tab is beside the hero, so the button does not show there.
+  - **Find a paint's match in another brand.** The first-run band has this second action. It puts the cursor
+    in the paint field, and the next paint you pick opens Other brands.
+  - **A steadier hero on a phone.** The hero is always two rows there. It was one, two or three rows (26px to
+    100px), so the wheel moved when the pick changed.
 ### Changed
+- **The phone's first screen shows the pots** (PLAN §5 item 84; `docs/UX_REVIEW.md` F09 and F13).
+  - **The pots come before the wheel on a phone** (520px or less). The order is now: the paint, the row of
+    harmonies, the live palette, then the wheel. Before, the wheel was first, and after a pick the pots
+    started 150px below the screen, so each pick needed a scroll. Now the paint, its harmony and its first
+    three pots are on one screen. The wheel is one scroll down, with its lightness slider and ↻. On a tablet
+    and a desktop the order did not change.
+  - **Your first paint starts on Triadic.** A visit with no paint in its link opens on a random paint and a
+    random harmony. That harmony stayed for the first paint you picked, and about 2 times in 9 it was Shades
+    or Monochromatic: three colours that look alike. Now your first pick starts on Triadic, which gives the
+    three most distinct colours (measured: two roles look alike in 6% of Triadic schemes, in 83% of
+    Monochromatic ones). It applies once. A harmony that you chose, or one in a link, stays.
+  - On a phone the live palette's label is "Live palette", so the undo and add buttons fit beside it.
 - **Small fixes from the UX review** (PLAN §5 item 85; `docs/UX_REVIEW.md`, the findings rated 2 or less).
   - **A way from the Recipe to the shopping list** (F14). After **Add**, a text action **See the list** shows
     beside the button. It opens the Shelf's list of the paints to buy. In the Shelf's grid, the **Shopping

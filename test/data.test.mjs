@@ -1076,3 +1076,58 @@ test('Tone Pro families: 30 families of 5, tones 1–5 in order, named without t
   assert.equal(real.paints.filter(p => p.family && p.line === 'Tone Pro').length, 150);
   assert.equal(f.label, 'Tone Pro', 'a family with no name of its own: its line says what it is');
 });
+
+/* ---- Other brands for one brand, and the best match of each brand (PLAN §5 item 81; UX review F11) ---- */
+import { bestPerBrand, brandsOf } from '../src/js/data.js';
+const brandIdx = indexDataset({ version: 't', paints: [
+  { id: 'a-red', brand: 'A', line: 'Base', name: 'A Red', hex: '#9A1115', type: 'base' },
+  { id: 'a-red2', brand: 'A', line: 'Layer', name: 'A Red Two', hex: '#A01A1C', type: 'layer' },
+  { id: 'b-red', brand: 'B', line: '—', name: 'B Red', hex: '#9C1418', type: 'layer' },
+  { id: 'b-red-far', brand: 'B', line: '—', name: 'B Dark Red', hex: '#701010', type: 'layer' },
+  { id: 'b-wash', brand: 'B', line: '—', name: 'B Red Wash', hex: '#9A1116', type: 'wash' },
+  { id: 'c-red', brand: 'C', line: '—', name: 'C Red', hex: '#B02A22', type: 'layer' },
+  { id: 'c-blue', brand: 'C', line: '—', name: 'C Blue', hex: '#0F3D7C', type: 'layer' },
+  { id: 'd-gold', brand: 'D', line: '—', name: 'D Gold', hex: '#C8A13A', type: 'metal' },
+] });
+
+test('bestPerBrand: the first match of each brand, in the order of the list', () => {
+  const m = (id, brand) => ({ paint: { id, brand } });
+  assert.deepEqual(bestPerBrand([m(1, 'A'), m(2, 'B'), m(3, 'A'), m(4, 'C'), m(5, 'B')]).map(x => x.paint.id), [1, 2, 4]);
+  assert.deepEqual(bestPerBrand([]), []);
+  assert.deepEqual(brandsOf(brandIdx), ['A', 'B', 'C', 'D']);
+});
+
+test('equivalents: perBrand gives one match for each OTHER brand, best first, with the true ΔE', () => {
+  const src = brandIdx.byId.get('a-red');
+  const eq = equivalents(brandIdx, src, { n: 20, perBrand: true });
+  assert.deepEqual(eq.map(e => e.paint.brand).sort(), ['B', 'C', 'D']);          // the paint's own brand is not there
+  // B: the flat red, not the wash that is nearer by hex (another finish class ranks FINISH_PENALTY further)
+  assert.equal(eq.find(e => e.paint.brand === 'B').paint.id, 'b-red');
+  assert.equal(eq.find(e => e.paint.brand === 'C').paint.id, 'c-red');
+  for (let i = 1; i < eq.length; i++) assert.ok(eq[i - 1].deltaE <= eq[i].deltaE + 4.001, 'ranked');
+  assert.ok(eq.every(e => e.quality && typeof e.deltaE === 'number'));
+  assert.equal(equivalents(brandIdx, src, { n: 2, perBrand: true }).length, 2);
+});
+
+test('equivalents: brand gives that brand only, also the paint’s own brand without the paint', () => {
+  const src = brandIdx.byId.get('a-red');
+  const b = equivalents(brandIdx, src, { n: 8, brand: 'B' });
+  assert.deepEqual(b.map(e => e.paint.id), ['b-red', 'b-wash', 'b-red-far']);     // the wash ranks 4 further, the ΔE shown is true
+  assert.ok(b[1].deltaE < b[0].deltaE);
+  assert.deepEqual(equivalents(brandIdx, src, { n: 8, brand: 'A' }).map(e => e.paint.id), ['a-red2']);
+  assert.deepEqual(equivalents(brandIdx, src, { n: 8, brand: 'Nobody' }), []);
+  // with no brand: the other brands, as before
+  assert.ok(equivalents(brandIdx, src, { n: 8 }).every(e => e.paint.brand !== 'A'));
+});
+
+test('closestPaints (a colour, not a paint): one brand, or the best of each brand; a drag frame has every brand too', () => {
+  const all = closestPaints(brandIdx, '#9A1115', 20, { perBrand: true });
+  assert.deepEqual(all.map(m => m.paint.brand).sort(), ['A', 'B', 'C', 'D']);
+  assert.equal(all[0].paint.id, 'a-red');
+  assert.equal(all.find(m => m.paint.brand === 'B').paint.id, 'b-red');
+  assert.equal(all[all.length - 1].paint.brand, 'D');                              // the metallic is the furthest
+  assert.deepEqual(closestPaints(brandIdx, '#9A1115', 20, { perBrand: true, quick: true }).map(m => m.paint.id), all.map(m => m.paint.id));
+  assert.deepEqual(closestPaints(brandIdx, '#9A1115', 8, { brand: 'C' }).map(m => m.paint.id), ['c-red', 'c-blue']);
+  // a metal part: the true metallic is first, whatever the hex distance
+  assert.equal(closestPaints(brandIdx, '#9A1115', 20, { perBrand: true, metal: true })[0].paint.id, 'd-gold');
+});

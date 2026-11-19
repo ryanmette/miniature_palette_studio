@@ -2,7 +2,7 @@
 // The only module that touches the DOM. Pure logic lives in color/harmony/data/scheme/a11y/ui.
 
 import { HARMONY_TYPES, isHarmony, isHueHarmony, HARMONY_OFFSETS, harmonize,
-  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony, startsNeutral } from './harmony.js';
+  isNeutralHarmony, neutralPartners, NEUTRAL_HARMONY_TYPES, DEFAULT_POP, POP_MIN_S, clampPop, rollHarmony, startsNeutral, FIRST_PICK_HARMONY } from './harmony.js';
 import { hexToRgb, rgbToHsl, hslToRgb, rgbToHex, rotateHue, textOn, isNeutral, labChroma, NEUTRAL_CHROMA, NEUTRAL_EXIT, normHex, adjustDirection, deltaE2000, deltaE2000Hex } from './color.js';
 import { schemeBaseOf, pickForSchemeBase, swatchKeyHex, addRecent } from './seed.js';   // the pick ↔ scheme-base frame; Recent picks
 import { encodeState, decodeState, shareUrl, schemeQuery, encodeList, decodeList, encodeBought, decodeBought, setHoldInLink, decodeHolds } from './share.js';   // the share-link contract (state ⇄ URL)
@@ -12,7 +12,7 @@ import { setupWheel } from './wheel.js';   // the canvas wheel — bound once, r
 import { createMarkMenu, isMenuKey, MOVE_SLOP } from './markmenu.js';   // the ONE mark menu: the Shelf's and the seed list's
 import { setupPicker } from './picker.js';   // the seed field and its list — bound once, returns { close, refresh, isOpen }
 import { simulateCvd, wcag, minPairDelta } from './a11y.js';
-import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, mostOwnedBrand, BRAND_BOOST, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf, randomStartPaint } from './data.js';
+import { loadDataset, browseOrder, storeSwaps, finishClass, equivalents, nearestPaints, nearestPaint, closestPaints, mostOwnedBrand, brandLabel, BRAND_BOOST, matchQuality, searchPaints, paintMatcher, warmPaintSearch, FINISH_TYPES, FINISH_PENALTY, groupMembers, groupOf, randomStartPaint } from './data.js';
 import { buildScheme, shoppingList, schemeGaps, roleIdeals, metalMatch } from './scheme.js';
 import { csvToMarks, marksToCsv, listToText } from './collection-io.js';   // collection portability (#27); the store list as text (item 37)
 import { qrCode, qrPath } from './qr.js';   // the store link as a QR code (item 37)
@@ -30,6 +30,7 @@ const $ = sel => document.querySelector(sel);
 const state = {
   idx: null, scheme: null,
   baseId: null, customHex: null,
+  equivBrand: '',   // Other brands: the brand chosen in its In select ('' = each brand's best match); this visit only
   harmony: 'complementary',
   seedRole: 'main', tab: 'plan', theme: 'light',
   compareA: null, wheelL: null, hiHex: null,   // hiHex = the colour link-highlighted across wheel/plan/live palette
@@ -588,6 +589,32 @@ function setEquivSource(hex) {
   applyEquivSelect();
   const st = $('#status'); if (st) st.textContent = `Showing other brands for ${(state.roleByHex || {})[h] ? (state.roleByHex[h] + ' ') : ''}${h}`;
 }
+/** Other brands → In (PLAN §5 item 81; UX review F11): one brand, or '' for the best match of each brand. A
+ *  choice for this visit: it stays while the painter looks up paint after paint ("the Vallejo version of…"),
+ *  and it is not saved and not in a link. The list is drawn again, so the select is a new element: it takes
+ *  the focus back. */
+function setEquivBrand(b) {
+  state.equivBrand = state.brands.includes(b) ? b : '';
+  renderEquiv();
+  $('#eqBrand')?.focus({ preventScroll: true });
+  say(state.equivBrand ? `Showing the closest matches in ${brandLabel(state.equivBrand)}` : 'Showing the best match in each brand');
+}
+/* The lookup's front door (UX review F10): "what is close to this paint?" is the Other brands tab, and on a
+   phone that tab is 1,000px under the wheel. showOtherBrands opens it for the starting paint and brings its top
+   under the header when it is not on the screen. Two ways in: the hero line's Other brands, and the first-run
+   band's "find a paint's match" (the next paint picked opens the tab: `lookupNext`). */
+let lookupNext = false;
+function showOtherBrands({ focusTab = false } = {}) {
+  state.equivSource = null;   // the starting paint (or colour), not a role's column
+  if (state.tab !== 'equiv') setTab('equiv', focusTab); else { renderEquiv(); applyEquivSelect(); if (focusTab) syncTabs(true); }
+  // The output region's own place in the page (pinned tabs sit under the header whatever the scroll, so ask the
+  // region, not the tabs). In one column (1024px or less) the output is under the studio: its top goes under the
+  // header. In two columns it is beside the studio, so the page moves only when the top is off the screen.
+  const hdr = document.querySelector('header').offsetHeight;
+  const top = $('#tabs').parentElement.getBoundingClientRect().top;
+  const oneCol = matchMedia('(max-width: 1024px)').matches;
+  if (oneCol ? Math.abs(top - hdr - 8) > 4 : (top < hdr || top > innerHeight - 200)) window.scrollTo(0, Math.max(0, top + window.scrollY - hdr - 8));
+}
 /** Re-render the harmony strip for the current mode: neutral seeds get the neutral-native schemes
  *  first with the hue rotations greyed in place (visible + tooltip'd, never removed — §3.4). */
 function syncSeg() {
@@ -947,6 +974,9 @@ function renderEquiv() {
   const srcHex = normHex(equivSourceHex()) || '#000000';
   const p = basePaint();
   const chips = ui.equivSourceChips(equivSourceCols(), srcHex);
+  // the In select (item 81): one brand, or '' for the best match of each brand
+  const brand = state.brands.includes(state.equivBrand) ? state.equivBrand : '';
+  const view = { brands: state.brands, brand };
   // When the source is the seed AND the seed is a real paint, keep the richer view (its group of almost-same
   // colours + that paint's cross-brand equivalents). Any other selected column resolves to its ideal colour.
   if (p && srcHex === (pickHex() || '').toUpperCase()) {
@@ -956,9 +986,11 @@ function renderEquiv() {
     if (self.type === 'metal') members.sort((a, b) => (a.type === 'metal' ? 0 : 1) - (b.type === 'metal' ? 0 : 1));
     const memberIds = new Set(members.map(m => m.id));
     const label = groupOf(state.idx, self)?.label || 'this colour';
-    const eq = equivalents(state.idx, self, { n: 8 }).filter(e => !memberIds.has(e.paint.id));   // avoid dupes
+    // One brand: its 8 closest paints. No brand: the best match of each other brand (item 81). A paint of the
+    // group above can be in this list too: a brand's best match is its best match, also when it is a near twin.
+    const eq = equivalents(state.idx, self, brand ? { n: 8, brand } : { n: state.brands.length, perBrand: true });
     $('#panel-equiv').innerHTML = chips + ui.equivGroup(label, members, store.markOf)
-      + ui.equivalentsPanel(`${ui.pname(p)} (${p.brand})`, eq, store.markOf);
+      + ui.equivalentsPanel(`${ui.pname(p)} (${p.brand})`, eq, store.markOf, { ...view, own: p.brand });
   } else {
     const role = (state.roleByHex || {})[srcHex];
     const name = role ? `${role} · ${srcHex}` : `the starting colour ${srcHex}`;   // name the role when the column plays one
@@ -966,10 +998,9 @@ function renderEquiv() {
     // Any other colour is a flat target (the Plan matches roles with finishes excluded), so washes, contrasts,
     // texture paints and metals rank FINISH_PENALTY further, as for a picked flat paint (data.js closestPaints,
     // the seed field's hex list too). Reported ΔE stays true.
-    const list = role === 'Metal'
-      ? nearestPaints(state.idx, srcHex, 8, { floatTypes: new Set(['metal']), demoteTypes: new Set(FINISH_TYPES), demoteAmount: FINISH_PENALTY })
-      : closestPaints(state.idx, srcHex, 8, { quick: dragFrame });
-    $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, list, store.markOf);
+    const list = closestPaints(state.idx, srcHex, brand ? 8 : state.brands.length,
+      { quick: dragFrame, metal: role === 'Metal', ...(brand ? { brand } : { perBrand: true }) });
+    $('#panel-equiv').innerHTML = chips + ui.equivalentsPanel(name, list, store.markOf, view);
     // a drag frame drew the quick list: the exact one follows when the frames stop (wheel, slider or keys)
     if (dragFrame) { clearTimeout(exactEquivT); exactEquivT = setTimeout(() => { if (state.tab === 'equiv') renderEquiv(); }, 150); }
   }
@@ -2500,6 +2531,7 @@ function openScheme(id) {
   const d = decodeState(sc.link, { validHarmony, hasPaint: pid => state.idx.byId.has(pid), maxFree: MAX_FREE });
   if (!d.baseId && !d.customHex) return;
   takeModeNote(); newsLead = ''; newsNamesHarmony = false;   // news about the scheme that is going away
+  rolledAtLoad = false;   // a saved scheme's harmony is the painter's own (item 84)
   state.baseId = d.baseId || null; state.customHex = d.baseId ? null : d.customHex;
   state.harmony = d.harmony || 'complementary';
   state.seedRole = d.seedRole === 'accent' ? 'accent' : 'main';
@@ -2673,6 +2705,7 @@ function setMode(mode) {
   state.mode = mode === 'shelf' || mode === 'schemes' ? mode : 'studio';
   const on = state.mode === 'shelf';
   picker.close();   // the seed field's list is a Studio control: never left open across a mode switch
+  lookupNext = false;   // a lookup that was asked for and not made ends with the Studio visit
   document.querySelector('main').dataset.mode = state.mode;
   document.body.dataset.mode = state.mode;   // the phone header drops its rule in Shelf mode (app.css)
   if (!on) closeShelfSheet({ returnFocus: false });
@@ -2696,19 +2729,39 @@ function setMode(mode) {
   syncKeepNote({ open: true });   // a mode has opened: the one moment the keep message may come in (item 77)
   updateUrl();
 }
+/* The first pick of a visit (PLAN §5 item 84; UX review F13). `rolledAtLoad`: the harmony on screen is the one
+   that the load rolled for its random paint, and the painter has not chosen a harmony since (a chip, Roll a
+   scheme, a saved scheme). Their own first paint or colour then starts on FIRST_PICK_HARMONY, in the same
+   render and the same ↶ step as the pick. `keep`: a hex that is still being typed is not yet a pick, so the
+   next real pick still counts (Esc puts back the whole palette, the rolled harmony with it). */
+let rolledAtLoad = false;
+function firstPickHarmony({ keep = false } = {}) {
+  if (!rolledAtLoad) return;
+  if (!keep) rolledAtLoad = false;
+  // A wheel drag took the random paint to grey: the rolled harmony is parked, and it comes back with a hue
+  if (neutralMode) { preNeutralHarmony = FIRST_PICK_HARMONY; return; }
+  if (state.harmony === FIRST_PICK_HARMONY) return;
+  state.harmony = FIRST_PICK_HARMONY;
+  state.dropOffsets = [];
+  syncSeg();
+}
 /** Seed from a paint: the seed field's list, or the Shelf's Use as seed. It goes into Recent. The render's
  *  announce starts with "New seed: X" (seedNews). */
 function selectPaint(id) {
   const same = state.baseId === id && !state.customHex;   // the seed already: not news
   state.baseId = id; state.customHex = null; recentPicks = addRecent(recentPicks, id);
+  if (!same) firstPickHarmony();
   seedNews(t(same ? 'seedSame' : 'newSeed', { name: baseInfo().name }));
   renderAll();
+  // the first-run band's "find a paint's match in another brand": this pick is the paint to look up (F10)
+  if (lookupNext) { lookupNext = false; showOtherBrands(); }
 }
 /** Change the harmony: a chip in the strip, and Roll a scheme. One path, so a roll is exactly a tap on
  *  its chip: one ↶ step, the chip centres, the hero pops, and one announce. `lead` is the news that
  *  leads that announce ("Rolled: Compound"); it names the harmony, so the summary does not say it again.
  *  `trigger`: the control that was pressed, which stays where it was on the screen (holdInPlace). */
 function setHarmony(h, { lead = '', trigger = null } = {}) {
+  rolledAtLoad = false;   // the painter chose this harmony: their first pick keeps it (item 84)
   state.harmony = h;
   state.dropOffsets = [];   // new harmony → fresh partners; any locked/edited swatches persist as free nodes
   for (const x of $('#seg').children) x.setAttribute('aria-pressed', String(x.dataset.h === state.harmony));
@@ -3507,6 +3560,20 @@ function showStorePanel() {
 }
 /** The panel is open ON the device that will be in the store: a touch phone (UX review F15). */
 const storeOnPhone = () => COARSE && PHONE.matches;
+/**
+ * The studio's order on a phone (PLAN §5 item 84; UX review F09). On a wide screen the wheel is first: hero,
+ * wheel, harmony row, live palette. On a phone (520px or less) that put the pots 150px below the first screen
+ * after a pick, so "pick a paint, see a usable palette" (§2) needed a scroll each time. There the order is:
+ * hero, harmony row, live palette and its notes, then the wheel. The paint, its harmony and its first three
+ * pots are on one screen, in the order of the first-run band's three steps. The node itself moves (not a CSS
+ * `order`), so the tab order and a screen reader's order are the order on the screen (WCAG 1.3.2, 2.4.3).
+ */
+function placeWheel() {
+  const col = document.querySelector('.wheelcol'), hero = document.querySelector('.herowrap'), last = $('#pops');
+  if (!col || !hero || !last) return;
+  if (PHONE.matches) { if (last.nextElementSibling !== col) last.after(col); }
+  else if (hero.nextElementSibling !== col) hero.after(col);
+}
 function renderStorePanel() {
   const { all, projects } = storeChoices();
   if (storeDlg.which && !projects.some(p => p.id === storeDlg.which)) storeDlg.which = '';
@@ -3949,11 +4016,17 @@ function setupMatchNote() {
 /** Seed the scheme from an arbitrary hex (the seed field, the photo eyedropper, the base column).
  *  `speak: false`: the caller says the new seed itself (a live hex in the seed field). `news`: the words
  *  of the toast, which the render's announce says first (seedNews); true says "New seed: X". */
-function seedFromHex(hex, { speak = true, news = '' } = {}) {
+function seedFromHex(hex, { speak = true, news = '', pick = '' } = {}) {
   const same = state.customHex === hex.toUpperCase();   // the seed already (its row says "Seed: #…"): not news
   state.customHex = hex.toUpperCase();
+  // `pick`: the painter chose this colour as a new start (a typed hex, a photo), so it is a pick of the visit
+  // (item 84). 'live' is a hex still being typed. A colour of the scheme itself ("Start from this colour") is
+  // not: the painter is in the scheme that is on screen, and its harmony stays.
+  if (pick && !same) firstPickHarmony({ keep: pick === 'live' });
   if (news && speak) seedNews(news === true ? t(same ? 'seedSame' : 'newSeed', { name: baseInfo().name }) : news);
   render('seed', { speak });
+  // a colour chosen for the lookup (F10), not a hex still being typed (that has no news)
+  if (lookupNext && news && speak) { lookupNext = false; showOtherBrands(); }
 }
 
 /** Photo eyedropper (#v2): pick a colour from a local image — drawn to a canvas, sampled (3×3 average),
@@ -4014,7 +4087,7 @@ function setupEyedropper() {
     img.onerror = () => toast("Couldn't read that image");
     img.src = URL.createObjectURL(f);
   });
-  useBtn.addEventListener('click', () => { if (pick) { dlg.close(); seedFromHex(pick, { news: `Seeded from photo ${pick}` }); } });
+  useBtn.addEventListener('click', () => { if (pick) { dlg.close(); seedFromHex(pick, { news: `Seeded from photo ${pick}`, pick: true }); } });
   $('#edClose').addEventListener('click', () => dlg.close());
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });   // backdrop click
 }
@@ -4027,10 +4100,12 @@ function wire() {
   // clip at the viewport (§3.4); clampTip measures + shifts it on every show path.
   $('main').addEventListener('mouseover', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
   $('main').addEventListener('focusin', e => { const st = e.target.closest('.ladder .step'); if (st) clampTip(st); });
+  $('#panel-equiv').addEventListener('change', e => { if (e.target.id === 'eqBrand') setEquivBrand(e.target.value); });
   $('main').addEventListener('click', e => {
     if (holdClick(e)) { e.stopPropagation(); return; }
     const eqs = e.target.closest('[data-eqsrc]');
     if (eqs) { e.stopPropagation(); setEquivSource(eqs.dataset.eqsrc); return; }   // tab-local source chips (A)
+    if (e.target.closest('[data-heroequiv]')) { e.stopPropagation(); showOtherBrands({ focusTab: true }); return; }   // the hero's way to the lookup (F10)
     const gq = e.target.closest('[data-goequiv]');
     if (gq) {   // Plan-card jump (B); it remembers its card, for the way back (F23)
       e.stopPropagation();
@@ -4161,6 +4236,13 @@ function wire() {
   $('#keepBackup').addEventListener('click', () => { endKeepNote({ focus: true }); toast(t('backupSaved', { file: saveBackup() })); });
   $('#keepHow').addEventListener('click', e => openHelp(e.currentTarget, '#shelf-saved'));
   $('#keepNo').addEventListener('click', () => { endKeepNote({ focus: true }); toast(t('keepLater')); });
+  // "Find a paint's match in another brand" (F10): the next paint picked opens Other brands. The field takes the
+  // focus (this is a tap the painter made, so the phone keyboard may rise).
+  $('#firstRunLookup').addEventListener('click', () => {
+    lookupNext = true;
+    $('#seedQ').focus();
+    toast(t('lookupHow'));
+  });
   // "Mark my shelf first" opens the list, as an index (item 78): the grid was 3,375 squares with no names
   $('#firstRunShelf').addEventListener('click', () => {
     endFirstRun();
@@ -4204,6 +4286,10 @@ function wire() {
 }
 
 async function init() {
+  // The studio's order for this screen, before anything is drawn in it (item 84). The wheel measures its own
+  // box on a resize, and a change of this breakpoint comes with one.
+  placeWheel();
+  PHONE.addEventListener('change', placeWheel);
   const url = new URLSearchParams(location.search);
   // Theme precedence: the link's `t` (a shared scheme carries the theme it was designed in) > the
   // stored pref > the OS. Held separately from the resolved value because applyPrefsToState() below
@@ -4259,7 +4345,7 @@ async function init() {
   const linkSeedGone = !state.customHex && !state.baseId && !!(url.get('p') || url.get('c'));
   if (!state.customHex && !state.baseId) {
     state.baseId = (randomStartPaint(state.idx, Math.random) || state.idx.paints[0]).id;
-    if (!linked.harmony) state.harmony = rollHarmony(null, { neutral: false }, Math.random);
+    if (!linked.harmony) { state.harmony = rollHarmony(null, { neutral: false }, Math.random); rolledAtLoad = true; }
   }
   if (state.name) { linkName = state.name; delete state.name; }   // n=: offered by Save, never saved by itself
   // The saved scheme the address bar names (s=, this device only): a refresh keeps "Saved" / "Changed"
@@ -4302,7 +4388,7 @@ async function init() {
     recent: () => recentPicks,
     markOf: store.markOf, ownedIds: store.ownedIds,
     seedPaint: selectPaint,
-    seedHex: (hex, { live } = {}) => seedFromHex(hex, live ? { speak: false } : { news: true }),
+    seedHex: (hex, { live } = {}) => seedFromHex(hex, live ? { speak: false, pick: 'live' } : { news: true, pick: true }),
     restoreSeed, markPaint, histMark, takeModeNote,
     paintDetails: (id, back) => openPaintSheet(id, back),
     coarse: () => COARSE, phone: () => PHONE.matches,

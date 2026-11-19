@@ -763,3 +763,100 @@ for a low contrast ratio. That is not true for two hues of one lightness (a red 
 WCAG ratio measures only light against dark. The tab says "Weak: close in light and dark".
 
 Checked in Chromium at phone and desktop sizes; not on an iPhone. Open: items 81 to 84.
+
+### 11.11 Other brands for one brand, and the lookup's door (F11, F10; PLAN item 81)
+
+**F11.** The Other brands list was the 8 closest paints of all brands together. A painter who asks for "the
+Vallejo version of Mephiston Red" asks about one brand. Measured on the 2,626 base and layer paints that are
+still made (`equivalents`, dataset 1.15.0):
+
+| | Before | Now |
+|---|---:|---:|
+| Brands in the list of one paint (mean) | 4.8 of 9 | 9 of 9 |
+| A given other brand has a row | 54% | 100% |
+
+The tab now has a select, **In**. Its default view is the best match of each brand. A brand, when chosen,
+shows its 8 closest paints. The rows keep the true ΔE and its label (§2 of the constitution). A row for each
+brand also shows the weak matches that the old list hid: of the 23,634 rows of the default view, 32% are Good
+or better, 25% Fair, 38% Loose and 5% Poor. That is the honest answer to the question: for some paints a brand
+has no close paint, and the row says so.
+
+**F10.** The review's minimum was built, not a new screen:
+
+- The hero line has an **Other brands** button where the output is under the studio (1,024px or less). It
+  opens the tab for the starting paint and puts its top under the header. One tap replaces a scroll of about
+  1,000px and a tap.
+- The first-run band has **Find a paint's match in another brand**. It puts the cursor in the paint field,
+  and the next paint picked opens Other brands.
+
+The button needs room in the hero line. On a phone the hero is now two rows for every pick (64px to 74px; 92px
+for a neutral paint at 360px). Before, it was one, two or three rows (26px to 100px), so the wheel moved when
+the pick changed. In two columns the tab is on the screen beside the hero, and the button would make the hero a
+row taller for some paints, so it does not show there.
+
+Not built: direction C of `mockups/buying-assistant.html` (a substitute finder with own, buy and brand
+limits). It waits for the painters' answers (§8).
+
+Checked in Chromium at 360px, 390px, 820px, 1,180px and 1,440px, light and dark; not on an iPhone. Open:
+items 82 to 84.
+
+### 11.12 The phone's first screen (F09, F13; PLAN item 84)
+
+**F09.** Where each block starts on a 390 × 844 phone, after a pick (px from the top of the page):
+
+| Block | Before | Now |
+|---|---:|---:|
+| The paint (hero) | 283 | 283 |
+| The harmony row | 815 | 373 |
+| The pots (live palette) | 994 | 523 |
+| The wheel | 373 | 1,034 |
+| The Recipe's tabs | 1,539 | 1,509 |
+
+The finding gave three directions. Two of them could not do the work:
+
+- **A shorter wheel.** The pots' first row is 238px tall. To show it, the pots must start at y = 606 or
+  less, which is 388px higher than they were. The whole wheel block is 427px. A smaller wheel cannot give
+  that, so item 48 (the wheel's size) stays as it is.
+- **A scroll to the pots after a pick.** The page must move 770px. The paint field is then off the screen,
+  so the next pick starts with a scroll back. A painter who tries three paints scrolls six times.
+- **The pots above the wheel** (built). The paint field, the paint, the harmony row and the first three pots
+  are on one screen, in the order of the band's three steps: a paint, a harmony, the pots. No scroll is
+  necessary between picks.
+
+The cost: on a phone the wheel is one scroll down (it starts 190px below an 844px screen). The wheel is the
+tool to explore; the pots are the answer that an experienced painter came for (§1 of this review). On a
+tablet and a desktop the order did not change, because the pots are on the first screen there already.
+
+The wheel's node moves in the page at the 520px breakpoint. A CSS `order` would change only the picture, and
+the Tab key and a screen reader would still go to the wheel first.
+
+Safari on an iPhone shows less than 844px while its address bar is large (about 664px). There the three
+colours and their pot bands show, and the pots' names start at the bottom edge. The live palette's head is
+one row on a phone now (its label is "Live palette"), which gave 29px of that.
+
+**F13.** A load with no paint in its link rolls one of 9 harmonies. Two of the 9 (Shades, Monochromatic) give
+colours of one hue. The measure is the least ΔE between two colour roles' pots, on the 1,562 starting paints:
+
+| Harmony | Two roles under ΔE 10 | Pots that are Good or better |
+|---|---:|---:|
+| Triadic | 6% | 75% |
+| Square | 7% | 79% |
+| Split-complementary | 8% | 80% |
+| Tetradic | 12% | 80% |
+| Shades | 23% | 95% |
+| Complementary, Compound | 32% | 88%, 85% |
+| Analogous | 39% | 90% |
+| Monochromatic | 83% | 96% |
+
+The painter's first own pick now starts on Triadic: the harmony with the most distinct colours, and the one
+that the finding named first. Split-complementary is as good a choice (5 points more Good matches, 2 points
+less distinct); the constant is one line (`harmony.js FIRST_PICK_HARMONY`). The rule applies once, and only
+while the rolled harmony is still on screen. Ten cases were checked in the browser: a pick from the field, a
+starter, a typed hex, a hex cancelled with Esc, a grey first pick, a chip or a roll before the pick, a link
+with a harmony, a link with a paint, and "Start from this colour".
+
+**Not changed:** the first-run band is still 44px taller on a phone than before item 81 (its two text
+actions do not fit on one row). On a first visit the band fills the first screen with or without those 44px.
+
+Checked in Chromium at 360 × 740, 375 × 667, 390 × 664, 390 × 844, 430 × 932 and 800px wide, light and dark;
+not on an iPhone. Open: items 82 and 83.

@@ -212,3 +212,12 @@ test('startsNeutral: the regression-test colours (#F5DCD6 under 10, #F3D5CE in t
   assert.equal(startsNeutral(C, 'neutral-pop'), true);    // the link's neutral-pop survives the reload
   assert.equal(startsNeutral(C, 'complementary'), false);
 });
+
+test('the first pick of a visit starts on a hue harmony that a roll can give (item 84)', async () => {
+  const { FIRST_PICK_HARMONY, rollPool, isNeutralHarmony, HARMONY_STEPS } = await import('../src/js/harmony.js');
+  assert.equal(FIRST_PICK_HARMONY, 'triadic');
+  // a rule harmony with hue partners: three colours on the wheel, never Custom and never a neutral scheme
+  assert.ok(rollPool(null, { neutral: false }).includes(FIRST_PICK_HARMONY));
+  assert.ok(!isNeutralHarmony(FIRST_PICK_HARMONY));
+  assert.ok(HARMONY_STEPS[FIRST_PICK_HARMONY].every(s => s.dh));
+});
