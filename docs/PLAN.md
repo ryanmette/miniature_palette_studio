@@ -1153,6 +1153,11 @@ item 85, come after the first painters answer.
     painters' words in the Accessibility tab and "Warhammer Colour (Citadel)" (F20); the brand in the tick's name
     (F21); the counts line's reflow (F22); back to the role card from Other brands (F23); two lines for a name in the
     live palette (F24).
+86. **Restore… takes a paint list (CSV)** (Ryan, 2026-11-24: "I can't upload a paint shelf?"; **built 2026-11-24**).
+    Ryan looked in ⋯ for the upload. Restore… took only a `.json` backup, so its file picker showed a CSV as grey,
+    and the upload was only at the Shelf's Import…. Now Restore… also takes a CSV and adds it, as Import… does
+    (one rule for each kind of file: a backup replaces after the confirm, a list adds). Its hint says so, and a
+    file in which no row matches a paint gives a notice that stays (it was the toast "Imported 0 paints").
 
 ### Next (as of 2026-11-18, after v1.20.0)
 

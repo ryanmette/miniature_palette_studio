@@ -3182,13 +3182,18 @@ function exportCollectionCsv() {
   toast(`Exported ${n.owned} owned · ${n.want} on the shopping list`);
 }
 /** Import a paintRack CSV (merges) or a Palette Studio JSON backup (#27). A backup REPLACES the shelf
- *  and settings, so it goes through the same confirm as ⋯ → Restore… — one rule for every .json. */
+ *  and settings, so it goes through the same confirm as ⋯ → Restore… — one rule for every .json.
+ *  ⋯ → Restore… comes here too: a painter who looks in ⋯ for "upload my shelf" picks a CSV there, and
+ *  it ADDS, as Import… does (Ryan, 2026-11-24). One door, one rule for each kind of file. */
 function importCollectionFile(file, opener) {
   const reader = new FileReader();
   reader.onload = () => {
     const text = String(reader.result || '');
     if (/\.json$/i.test(file.name) || /^\s*[{[]/.test(text)) { confirmRestore(text, opener); return; }
     const { matched, added, changed, unmatched } = applyCsv(text);
+    // No paint matched: the file is not a paint list (or holds paints of no brand in the data). A notice
+    // that stays, not a toast that says "Imported 0 paints": nothing changed, and the painter must see why.
+    if (!matched) { fileNotice('noPaints', opener); return; }
     // say what the merge DID — an import that silently rewrites existing marks (owned → to-buy
     // via a wishlist row) must at least be visible in the toast
     const bits = [`${added} new`, changed ? `${changed} changed` : '', unmatched.length ? `${unmatched.length} unmatched` : ''].filter(Boolean);
@@ -3466,11 +3471,8 @@ function setupSettings() {
   $('#restoreBtn').addEventListener('click', () => $('#restoreFile').click());
   $('#restoreFile').addEventListener('change', e => {
     const f = e.target.files && e.target.files[0]; e.target.value = '';
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => confirmRestore(String(reader.result || ''), $('#restoreBtn'));
-    reader.onerror = () => fileNotice('readFail', $('#restoreBtn'));
-    reader.readAsText(f);
+    // A backup (.json) opens the Restore confirm; a paint list (CSV) is added to the shelf, as Import… does.
+    if (f) importCollectionFile(f, $('#restoreBtn'));
   });
   // Help & info
   $('#aboutOpenMenu').addEventListener('click', () => { closeSettings(null); openAbout($('#settingsBtn')); });
@@ -3803,8 +3805,8 @@ function fileNotice(key, opener) {
   d.classList.add('notice');
   $('#cdlgCancel').textContent = t('close');
   openConfirm({
-    title: t(key === 'readFail' ? 'readFailTitle' : 'notBackupTitle'),
-    body: () => `<p>${ui.esc(t(key === 'readFail' ? 'readFailBody' : 'notBackupBody'))}</p>`,
+    title: t(`${key}Title`),
+    body: () => `<p>${ui.esc(t(`${key}Body`))}</p>`,
     okLabel: t('pickAnother'), opener,
     onOk: () => opener?.click(),   // still inside the click: the file picker may open
   });
