@@ -165,10 +165,10 @@
             <button type="button" class="btn" id="backupBtn" data-i18n="backUp">Back up everything</button>
             <button type="button" class="btn" id="restoreBtn" aria-haspopup="dialog" data-i18n="restore">Restore…</button>
           </div>
-          <input id="restoreFile" type="file" accept=".json,application/json" hidden />
+          <input id="restoreFile" type="file" accept=".json,.csv,application/json,text/csv" hidden />
           <!-- fixed slot: the hint, or the name of the file a backup just saved -->
           <div class="fixslot" id="backupSlot">
-            <p class="sethint" id="backupNow" role="status">Owned paints, your shopping list and settings, in one file.</p>
+            <p class="sethint" id="backupNow" role="status">Owned paints, your shopping list and settings, in one file. Restore… also adds a paint list (CSV).</p>
           </div>
         </div>
       </div>

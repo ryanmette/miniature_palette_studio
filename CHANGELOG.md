@@ -30,6 +30,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - **A steadier hero on a phone.** The hero is always two rows there. It was one, two or three rows (26px to
     100px), so the wheel moved when the pick changed.
 ### Changed
+- **⋯ → Restore… takes a paint list (CSV)** (PLAN §5 item 86). Before, Restore… took only a backup file
+  (`.json`), and a CSV showed grey in its file picker. A painter who looked in ⋯ to upload a list of paints
+  found no way. Now a CSV picked there is added to the shelf, as the Shelf's **Import…** does: it adds paints
+  and removes none. A backup still replaces the shelf, after the confirm. The hint under the buttons says
+  "Restore… also adds a paint list (CSV)", and Help has a new question, "How do I add a list of my paints?".
+- **A file with no paint in it gives a notice** (Import… and Restore…). Before, a CSV in which no row matched a
+  paint gave the toast "Imported 0 paints · 0 new", which goes after a few seconds. Now a notice stays, says
+  that nothing changed and what a paint list needs, and offers **Pick another file**.
 - **The phone's first screen shows the pots** (PLAN §5 item 84; `docs/UX_REVIEW.md` F09 and F13).
   - **The pots come before the wheel on a phone** (520px or less). The order is now: the paint, the row of
     harmonies, the live palette, then the wheel. Before, the wheel was first, and after a pick the pots
