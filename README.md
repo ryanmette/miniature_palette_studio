@@ -10,6 +10,12 @@ color-blindness / contrast accessibility checks.
 no runtime dependencies; installable as an offline-capable PWA.
 
 ## Status
+**v1.21.0** — the lookup release. **Other brands** answers "what is the Vallejo version of this paint?": its list
+shows the best match in each other brand, or the closest paints in one brand that you choose, and the hero line on a
+phone has an Other brands button. On a phone, the pots come before the wheel, so a pick shows its paints at once.
+**Restore…** also takes a list of paints (CSV) and adds it to your shelf. Many small fixes from the UX review. Paint
+data 1.15.0 gives fourteen Two Thin Coats paints their true type (metallic or glaze).
+
 **v1.20.0** — the your-shelf release. The work of a UX review before the first showing (`docs/UX_REVIEW.md`): the
 Shelf's **List** is an index of brands and lines, so marking the paints you own is quick; the Studio asks one time if
 your schemes must **use your paints**, and the Metal part uses a metallic that you own; the Recipe's **Add** button

@@ -1,19 +1,19 @@
 // version.js — the app's version, in one place. About shows it next to the paint data's own
 // version (from paints.json). scripts/check-docs.mjs fails the build when it differs from
 // package.json, so a release that bumps one and forgets the other cannot ship (CLAUDE.md §8).
-export const APP_VERSION = '1.20.0';
+export const APP_VERSION = '1.21.0';
 
 /** What's new (mockups/help-about.html, answer 5): About shows these lines under "What's new in {version}". Write
  *  them when a release is cut (CLAUDE.md §8 checklist), a few short lines for a painter, from the CHANGELOG. */
 export const WHATS_NEW = {
-  version: '1.20.0',
-  date: '2026-11-18',
+  version: '1.21.0',
+  date: '2026-11-24',
   items: [
-    'Mark your paints faster: the Shelf’s list is now an index of brands and lines.',
-    'Schemes can use your paints: the Studio asks one time, and the Metal part uses your metallic.',
-    'Add puts only the scheme’s own pots on the shopping list. The ladder pots have their own button.',
-    'Keep your shelf safe: the app says how one time, and Help has the steps for an iPhone.',
-    'The Army Painter’s and Two Thin Coats’ triads are in: the Recipe shows the maker’s tones.',
+    'Other brands has a new list: the best match in each brand, or the closest paints in one brand.',
+    'Other brands is one tap from the paint’s name on a phone and a tablet.',
+    'On a phone, the pots come before the wheel, so a pick shows its paints at once.',
+    'Restore… also takes a list of paints (CSV), and adds them to your shelf.',
+    'Many small fixes from the review: a way to the list after Add, clearer words, steadier rows.',
   ],
 };
 
@@ -21,6 +21,17 @@ export const WHATS_NEW = {
  *  moves the WHATS_NEW it replaces to the front of this list (CLAUDE.md §8; a test fails when one is missing). It
  *  starts at 1.13.0, the first release with lines for a painter: older releases are in CHANGELOG.md only. */
 export const EARLIER_NEWS = [
+  {
+    version: '1.20.0',
+    date: '2026-11-18',
+    items: [
+      'Mark your paints faster: the Shelf’s list is now an index of brands and lines.',
+      'Schemes can use your paints: the Studio asks one time, and the Metal part uses your metallic.',
+      'Add puts only the scheme’s own pots on the shopping list. The ladder pots have their own button.',
+      'Keep your shelf safe: the app says how one time, and Help has the steps for an iPhone.',
+      'The Army Painter’s and Two Thin Coats’ triads are in: the Recipe shows the maker’s tones.',
+    ],
+  },
   {
     version: '1.19.0',
     date: '2026-11-18',
